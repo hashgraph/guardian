@@ -37,6 +37,10 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
                 routerLink: '/tools'
             },
             {
+                title: 'Manage Formulas',
+                routerLink: '/formulas'
+            },
+            {
                 title: 'Manage Schema Rules',
                 routerLink: '/schema-rules'
             },
@@ -157,6 +161,18 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
                 childItems.push({
                     title: 'Schema Rules',
                     routerLink: '/schema-rules'
+                });
+            }
+            if (user.STATISTICS_LABEL_READ) {
+                childItems.push({
+                    title: 'Policy Labels',
+                    routerLink: '/policy-labels'
+                });
+            }
+            if (user.FORMULAS_FORMULA_READ) {
+                childItems.push({
+                    title: 'Formulas',
+                    routerLink: '/formulas'
                 });
             }
         }

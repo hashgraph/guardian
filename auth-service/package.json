@@ -10,8 +10,8 @@
       "image-size": "1.0.2"
   },
   "dependencies": {
-    "@guardian/common": "^3.0.0",
-    "@guardian/interfaces": "^3.0.0",
+    "@guardian/common": "^3.1.0-rc",
+    "@guardian/interfaces": "^3.1.0-rc",
     "@meeco/cryppo": "^2.0.2",
     "@mikro-orm/core": "6.2.2",
     "@mikro-orm/mongodb": "6.2.2",
@@ -45,7 +45,7 @@
     "@types/gulp": "^4",
     "@types/gulp-rename": "^2",
     "@types/jsonwebtoken": "^8.5.4",
-    "@types/node": "^18.16.0",
+    "@types/node": "^22.10.10",
     "@types/node-vault": "^0",
     "chai": "^4.3.4",
     "cross-env": "^7.0.3",
@@ -79,5 +79,5 @@
     "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ui-service.xml"
   },
   "type": "module",
-  "version": "3.0.0"
+  "version": "3.1.0-rc"
 }

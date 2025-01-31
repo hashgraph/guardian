@@ -11,7 +11,7 @@ export class SynchronizationVCs extends SynchronizationTask {
         super('vcs', mask);
     }
 
-    protected override async sync(): Promise<void> {
+    public override async sync(): Promise<void> {
         const em = DataBaseHelper.getEntityManager();
         const collection = em.getCollection<Message>('message');
 
@@ -42,6 +42,8 @@ export class SynchronizationVCs extends SynchronizationTask {
         const documents = collection.find({
             type: { $in: [MessageType.VC_DOCUMENT] },
             ...this.filter(),
+        }, {
+            limit: 100000
         });
         const allDocuments: Message[] = [];
         const fileIds: Set<string> = new Set<string>();

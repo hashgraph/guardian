@@ -520,6 +520,24 @@ export class UserPermissions {
         return this.check(Permissions.SCHEMAS_RULE_EXECUTE);
     }
 
+    //SCHEMA LABELS
+    public get STATISTICS_LABEL_CREATE(): boolean {
+        return this.check(Permissions.STATISTICS_LABEL_CREATE);
+    }
+
+    public get STATISTICS_LABEL_READ(): boolean {
+        return this.check(Permissions.STATISTICS_LABEL_READ);
+    }
+
+    //SCHEMA FORMULAS
+    public get FORMULAS_FORMULA_CREATE(): boolean {
+        return this.check(Permissions.FORMULAS_FORMULA_CREATE);
+    }
+
+    public get FORMULAS_FORMULA_READ(): boolean {
+        return this.check(Permissions.FORMULAS_FORMULA_READ);
+    }
+
     public static isPolicyAdmin(user: any): boolean {
         return (
             UserPermissions.has(user, Permissions.POLICIES_MIGRATION_CREATE) ||

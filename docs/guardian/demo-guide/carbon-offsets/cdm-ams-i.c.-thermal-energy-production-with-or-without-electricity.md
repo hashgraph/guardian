@@ -44,7 +44,7 @@ This policy is a digitized version of the CDM’s methodology AMS IC:  Thermal e
 
 ### Policy Guide&#x20;
 
-This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.&#x20;
+This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.&#x20;
 
 ### Available Roles&#x20;
 

@@ -1,10 +1,8 @@
-import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
-import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, SimpleChanges } from '@angular/core';
-import { Schema, SchemaField, UnitSystem } from '@guardian/interfaces';
+import { Schema, SchemaField, SchemaRuleValidateResult, UnitSystem } from '@guardian/interfaces';
 import { IPFSService } from 'src/app/services/ipfs.service';
-import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';
-import { SchemaRuleValidateResult } from '../../common/models/field-rule-validator';
+import { FormulasViewDialog } from '../../formulas/dialogs/formulas-view-dialog/formulas-view-dialog.component';
+import { DialogService } from 'primeng/dynamicdialog';
 
 interface IFieldControl extends SchemaField {
     fullPath: string;
@@ -17,6 +15,7 @@ interface IFieldControl extends SchemaField {
     count: number;
     pageIndex: number;
     pageSize: number;
+    notCorrespondCondition?: boolean;
 }
 
 interface IFieldIndexControl {
@@ -32,10 +31,6 @@ interface IFieldIndexControl {
     selector: 'app-schema-form-view',
     templateUrl: './schema-form-view.component.html',
     styleUrls: ['./schema-form-view.component.scss'],
-    providers: [
-        { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
-        { provide: NGX_MAT_DATE_FORMATS, useValue: GUARDIAN_DATETIME_FORMAT }
-    ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SchemaFormViewComponent implements OnInit {
@@ -46,11 +41,16 @@ export class SchemaFormViewComponent implements OnInit {
     @Input('values') values: any;
     @Input() dryRun?: boolean = false;
     @Input() rules?: SchemaRuleValidateResult;
+    @Input() formulas?: any;
 
     public fields: IFieldControl[] | undefined = [];
     private pageSize: number = 25;
 
-    constructor(private ipfs: IPFSService, private changeDetector: ChangeDetectorRef) { }
+    constructor(
+        private ipfs: IPFSService,
+        private dialogService: DialogService,
+        private changeDetector: ChangeDetectorRef
+    ) { }
 
     ngOnInit(): void {
         this.init();
@@ -321,7 +321,7 @@ export class SchemaFormViewComponent implements OnInit {
     }
 
     public ifFieldVisible(item: IFieldControl): boolean {
-        return !item.hide && !item.hidden;
+        return !item.hide && !item.notCorrespondCondition;
     }
 
     public ifSimpleField(item: IFieldControl): boolean {
@@ -346,5 +346,19 @@ export class SchemaFormViewComponent implements OnInit {
 
     public isRulesStatus(item: IFieldControl) {
         return this.rules?.[item.fullPath]?.status;
+    }
+
+    public isFormulas(item: IFieldControl) {
+        return this.formulas ? this.formulas[item.fullPath] : undefined;
+    }
+
+    public showFormulas(formulas: any) {
+        const dialogRef = this.dialogService.open(FormulasViewDialog, {
+            showHeader: false,
+            width: '950px',
+            styleClass: 'guardian-dialog',
+            data: formulas,
+        });
+        dialogRef.onClose.subscribe((result: any) => { });
     }
 }

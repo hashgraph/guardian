@@ -6,6 +6,10 @@ form {
     .form-field-container {
         margin-bottom: 24px;
 
+        ::ng-deep .p-inputtext.ng-dirty.ng-invalid {
+            border-color: #f44336;
+        }
+
         &:last-child {
             margin-bottom: 0px;
         }
@@ -391,4 +395,12 @@ form {
             display: block;
         }
     }
+}
+
+.upload-btn {
+    background: var(--guardian-background);
+    border: none;
+    margin: 4px;
+    height: 34px;
+    cursor: pointer;
 }

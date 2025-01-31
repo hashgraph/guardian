@@ -11,7 +11,7 @@ jobs:
     runs-on: guardian-linux-medium
     strategy:
       matrix:
-        node-version: [ 20.10.0 ]
+        node-version: [ 20.18.1 ]
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7618a84e # v2.10.4

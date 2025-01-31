@@ -15,7 +15,7 @@
                     <div class="form-field-prefix" *ngIf="isPrefix(item)">{{item.unit}}</div>
 
                     <div *ngIf="isInput(item) && !isIPFS(item)" class="form-field-input guardian-input-container">
-                        <input 
+                        <input
                             pInputText
                             [value]="item.value"
                             [readonly]="true"
@@ -24,17 +24,17 @@
 
                     <div *ngIf="isInput(item) && isIPFS(item)" class="form-field-ipfs guardian-input-container">
                         <div class="form-field-url">
-                            <input 
+                            <input
                                 pInputText
                                 [value]="item.value"
                                 [readonly]="true"
                                 type="text"/>
                             <div class="form-field-url-buttons">
                                 <button
-                                    [cdkCopyToClipboard]="item.value" 
+                                        [cdkCopyToClipboard]="item.value"
                                     class="guardian-button guardian-button-primary">Copy Link</button>
                                 <button
-                                    [cdkCopyToClipboard]="getCID(item.value)" 
+                                        [cdkCopyToClipboard]="getCID(item.value)"
                                     class="guardian-button guardian-button-secondary">Copy CID</button>
                             </div>
                         </div>
@@ -66,20 +66,32 @@
 
                     <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>
 
-                    <div 
+                    <div
+                        *ngIf="isFormulas(item) as formulas"
+                        class="form-field-formula">
+                        <button 
+                            class="guardian-icon-button guardian-icon-button-secondary" 
+                            (click)="showFormulas(formulas)">
+                            <svg-icon
+                                src="/assets/images/icons/function.svg"
+                                svgClass="icon-color-primary"></svg-icon>
+                        </button>
+                    </div>
+
+                    <div
                         *ngIf="isRules(item) as rule"
                         class="form-field-rule"
                         [pTooltip]="rule.tooltip"
                         tooltipPosition="top"
                         [showDelay]="1000">
-                        <svg-icon 
-                            *ngIf="rule.status === 'Failure' || rule.status === 'Error'" 
-                            src="/assets/images/icons/warning-2.svg" 
-                            svgClass="icon-color-warning"></svg-icon>
-                        <svg-icon 
-                            *ngIf="rule.status === 'Success'" 
-                            src="/assets/images/icons/check.svg" 
-                            svgClass="icon-color-success"></svg-icon>
+                        <svg-icon
+                                *ngIf="rule.status === 'Failure' || rule.status === 'Error'"
+                                src="/assets/images/icons/warning-2.svg"
+                                svgClass="icon-color-warning"></svg-icon>
+                        <svg-icon
+                                *ngIf="rule.status === 'Success'"
+                                src="/assets/images/icons/check.svg"
+                                svgClass="icon-color-success"></svg-icon>
                     </div>
                 </div>
             </div>
@@ -92,8 +104,8 @@
                     <b>The field type does not match the field type in the schema</b>
                 </div>
 
-                <div 
-                    *ngFor="let listItem of getItemsPage(item)" 
+                <div
+                    *ngFor="let listItem of getItemsPage(item)"
                     class="form-field-array-item-container"
                     [attr.index]="item.list.indexOf(listItem)"
                 >
@@ -103,7 +115,7 @@
                             <div class="form-field-prefix" *ngIf="isPrefix(item)">{{item.unit}}</div>
 
                             <div *ngIf="isInput(item) && !isIPFS(item)" class="form-field-input guardian-input-container">
-                                <input 
+                                <input
                                     pInputText
                                     [value]="listItem.value"
                                     [readonly]="true"
@@ -112,17 +124,17 @@
 
                             <div *ngIf="isInput(item) && isIPFS(item)" class="form-field-ipfs guardian-input-container">
                                 <div class="form-field-url">
-                                    <input 
+                                    <input
                                         pInputText
                                         [value]="listItem.value"
                                         [readonly]="true"
                                         type="text"/>
                                     <div class="form-field-url-buttons">
                                         <button
-                                            [cdkCopyToClipboard]="listItem.value" 
+                                                [cdkCopyToClipboard]="listItem.value"
                                             class="guardian-button guardian-button-primary">Copy Link</button>
                                         <button
-                                            [cdkCopyToClipboard]="getCID(listItem.value)" 
+                                                [cdkCopyToClipboard]="getCID(listItem.value)"
                                             class="guardian-button guardian-button-secondary">Copy CID</button>
                                     </div>
                                 </div>
@@ -171,19 +183,25 @@
                 <div *ngIf="this.values && this.values[item.name]" class="form-field-array-item">
                     <div class="form-field-group">
                         <ng-container [ngSwitch]="item.customType">
-                            <app-geojson-type 
+                            <app-geojson-type
                                 *ngSwitchCase="'geo'"
-                                [preset]="this.values && this.values[item.name]" 
+                                [preset]="this.values && this.values[item.name]"
                                 [disabled]="true">
                             </app-geojson-type>
-                            <app-schema-form-view 
-                                *ngSwitchDefault 
-                                [fields]="item.fields" 
-                                [private-fields]="hide"
-                                [delimiter-hide]="true"
-                                [dryRun]="dryRun" 
-                                [values]="this.values && this.values[item.name]"
-                                [rules]="rules">
+                            <app-sentinel-hub-type
+                                    *ngSwitchCase="'sentinel'"
+                                    [disabled]="true"
+                                    [preset]="this.values && this.values[item.name]">
+                            </app-sentinel-hub-type>
+                            <app-schema-form-view
+                                    *ngSwitchDefault
+                                    [dryRun]="dryRun"
+                                    [private-fields]="hide"
+                                    [delimiter-hide]="true"
+                                    [fields]="item.fields"
+                                    [values]="this.values && this.values[item.name]"
+                                    [rules]="rules"
+                                    [formulas]="formulas">
                             </app-schema-form-view>
                         </ng-container>
                     </div>
@@ -198,14 +216,20 @@
                         <ng-container [ngSwitch]="item.customType">
                             <app-geojson-type *ngSwitchCase="'geo'" [preset]="listItem" [disabled]="true">
                             </app-geojson-type>
-                            <app-schema-form-view 
-                                *ngSwitchDefault 
-                                [fields]="item.fields" 
-                                [private-fields]="hide"
-                                [delimiter-hide]="true" 
-                                [dryRun]="dryRun" 
-                                [values]="listItem"
-                                [rules]="rules">
+                            <app-sentinel-hub-type
+                                    *ngSwitchCase="'sentinel'"
+                                    [disabled]="true"
+                                    [preset]="listItem">
+                            </app-sentinel-hub-type>
+                            <app-schema-form-view
+                                    *ngSwitchDefault
+                                    [delimiter-hide]="true"
+                                    [private-fields]="hide"
+                                    [dryRun]="dryRun"
+                                    [fields]="item.fields"
+                                    [values]="listItem"
+                                    [rules]="rules"
+                                    [formulas]="formulas">
                             </app-schema-form-view>
                         </ng-container>
                     </div>

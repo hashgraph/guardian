@@ -50,7 +50,7 @@ This approach is more precise than traditional methodologies, which rely on more
 
 ## Policy Guide
 
-This policy is published to Hedera network and can either be imported via Github(.policy file) or IPSF timestamp.
+This policy is published to Hedera network and can either be imported via Github(.policy file) or IPFS timestamp.
 
 Latest Version - 0.0.3
 Hedera Topic - [0.0.3972127](https://explore.lworks.io/testnet/topics/0.0.3972127)

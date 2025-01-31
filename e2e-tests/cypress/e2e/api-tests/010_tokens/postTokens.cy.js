@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
+context("Tokens", { tags: ['tokens', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     it("Create a new token", () => {
@@ -23,6 +23,7 @@ context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
                     "tokenSymbol": "string",
                     "tokenType": "string"
                 },
+                timeout: 180000,
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
             });

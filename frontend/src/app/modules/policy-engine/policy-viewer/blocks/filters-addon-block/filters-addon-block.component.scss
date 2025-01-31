@@ -24,11 +24,8 @@
 }
 
 .content {
-    box-shadow: 0px 3px 6px #00000020;
-    background: #e5e5e5;
+    background: #f9fafc;
     display: inline-block;
-    margin: 7px;
-    padding: 10px 10px 6px 10px;
 }
 
 .content-name {
@@ -37,6 +34,101 @@
 }
 
 .content-select {
+    min-width: 265px;
+    max-width: 265px;
+    display: flex;
+    flex-direction: column;
+    align-self: flex-end;
+    flex: 1;
+    height: 38px;
+}
+
+.grouped-content {
+    display: flex;
+    align-items: flex-start;
+}
+
+.type-select {
+    min-width: 265px;
+    display: flex;
+    flex-direction: column;
+    align-self: flex-end;
+    flex: 1;
+    height: 38px;
+}
+
+p-dropdown,
+p-calendar {
+    height: 40px;
+}
+
+.common-prefix-dropdown {
+    background-color: white;
+    display: block;
+    height: 38px;
+    border: 1px solid #ced4da;
+    padding: 9px 6px 9px 12px;
+    color: #848FA9;
+    font-size: 14px;
+    box-sizing: border-box;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-right: 0;
+    white-space: nowrap;
+}
+
+.prefix-dropdown {
+    font-size: 14px;
+    color: #848FA9;
     display: inline-block;
-    width: 190px;
+    margin-right: 5px;
+}
+
+::ng-deep .p-dropdown-label {
+    font-size: 14px;
+    color: #23252E;
+}
+
+::ng-deep .p-component {
+    border-radius: 8px;
+    outline: none;
+    box-shadow: none;
+}
+
+::ng-deep .filter-dropdown .p-dropdown {
+    border-radius: 0 8px 8px 0;
+    border-left: 0;
+}
+
+::ng-deep .calendar-filter .p-inputtext {
+    padding: 8px 8px 11px 16px;
+    border-radius: 0 8px 8px 0;
+    border-left: 0;
+    height: 37px;
+}
+
+::ng-deep .calendar-filter .p-datepicker-trigger {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    background-color: white;
+    color: gray;
+    border: none;
+    padding: 0;
+}
+
+.input-filter {
+    background-color: white;
+    display: block;
+    height: 38px;
+    border: 1px solid #ced4da;
+    padding: 9px 6px 9px 12px;
+    font-size: 14px;
+    box-sizing: border-box;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-left: 0;
+    outline: none;
 }

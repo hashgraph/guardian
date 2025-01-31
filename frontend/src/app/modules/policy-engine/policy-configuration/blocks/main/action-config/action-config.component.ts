@@ -1,6 +1,6 @@
-import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { UserType } from '@guardian/interfaces';
-import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
+import {Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
+import {UserType} from '@guardian/interfaces';
+import {IModuleVariables, PolicyBlock, SchemaVariables} from '../../../../structures';
 
 /**
  * Settings for block of 'interfaceAction' type.
@@ -30,9 +30,19 @@ export class ActionConfigComponent implements OnInit {
     properties!: any;
     schemas!: SchemaVariables[];
 
-    constructor(
-    ) {
-        
+    public dropdownOptions = [
+        {label: 'Selector', value: 'selector'},
+        {label: 'Download', value: 'download'},
+        {label: 'Dropdown', value: 'dropdown'}
+    ];
+
+    public userOptions = [
+        {label: 'Owner', value: 'owner'},
+        {label: 'Current', value: 'current'}
+    ];
+
+    constructor() {
+
     }
 
     ngOnInit(): void {

@@ -13,45 +13,55 @@
             <!-- simple field -->
             <div *ngIf="ifSimpleField(item)" class="form-field">
 
-                <div *ngIf="!isHelpText(item)" class="label-field" 
-                    [attr.default]="item.default && !item.isPreset && !item.control.dirty">
+                <div *ngIf="!isHelpText(item)" class="label-field"
+                     [attr.default]="item.default && !item.isPreset && !item.control.dirty">
                     <span *ngIf="ifRequiredField(item)" class="required-field">*</span>
                     {{ item.description }}
                 </div>
- 
+
                 <div *ngIf="isHelpText(item)" class="label-field help-text"
-                    [ngStyle]="{ 'color': item.textColor, 'font-size': item.textSize}">
+                     [ngStyle]="{ 'color': item.textColor, 'font-size': item.textSize}">
                     <span *ngIf="ifRequiredField(item)" class="required-field">*</span>
-                    <b *ngIf="item.textBold; else plainDescription">{{item.description}}</b>
-                    <ng-template #plainDescription>{{item.description}}</ng-template>
+                    <b *ngIf="item.textBold; else plainDescription">{{ item.description }}</b>
+                    <ng-template #plainDescription>{{ item.description }}</ng-template>
                 </div>
 
                 <div *ngIf="!isFormForFinishSetup && item.suggest && isEmpty(item.control.value)" class="suggestion">
-                    <div class="suggestion-name"><span class="suggestion-header">Suggestion:</span> {{item.suggest}}</div>
-                    <button 
-                        (click)="patchSuggestValue(item)" 
-                        class="guardian-button guardian-button-secondary">Fill the field with suggestion</button>
+                    <div *ngIf="!suggestIsObject(item.suggest)" class="suggestion-name"><span
+                            class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
+                    </div>
+                    <button
+                        (click)="patchSuggestValue(item)"
+                        class="guardian-button guardian-button-secondary">Fill the field with suggestion
+                    </button>
                 </div>
-                
-                <div 
-                    class="form-field-value" 
+
+                <div
+                    class="form-field-value"
+
                     [attr.invalid-required-field]="ifRequiredField(item) && !item.control.valid"
                     [attr.rules-status]="isRulesStatus(item)"
                 >
                     <div *ngIf="isPrefix(item)" class="form-field-prefix">{{ item.unit }}</div>
 
-                    <div 
+                    <div
                         *ngIf="isInput(item)"
                         class="form-field-input guardian-input-container"
                         [ngClass]="{'ipfs-url' : isIPFS(item)}"
                     >
-                        <input pInputText [formControl]="item.control"  [placeholder]="getPlaceholderByFieldType(item)" type="text"/>
+                        <input pInputText [formControl]="item.control" [placeholder]="getPlaceholderByFieldType(item)"
+                               type="text"/>
                         <div *ngIf="isIPFS(item)">
                             <div class="file-upload">
                                 <ng-container [ngSwitch]="item.fileUploading">
-                                    <mat-spinner *ngSwitchCase="true" [diameter]="38"></mat-spinner>
-                                    <button mat-icon-button *ngSwitchCase="false" class="upload-btn" (click)="uploadFile(item)">
-                                        <mat-icon>attach_file</mat-icon>
+                                    <p-progressSpinner
+                                        *ngSwitchCase="true"
+                                        [style]="{ width: '38px', height: '38px' }">
+                                    </p-progressSpinner>
+
+                                    <button mat-icon-button *ngSwitchCase="false" class="upload-btn"
+                                            (click)="uploadFile(item)">
+                                        <i class="pi pi-paperclip"></i>
                                     </button>
                                 </ng-container>
                             </div>
@@ -59,62 +69,47 @@
                     </div>
 
                     <div *ngIf="isDateTime(item)" class="form-field-input guardian-input-container">
-                        <p-calendar 
-                            class="guardian-datepicker"
-                            [formControl]="item.control" 
-                            [showIcon]="true" 
-                            [showTime]="true" 
-                            [showSeconds]="true"
-                            dateFormat="yy-mm-dd"
-                            appendTo='body'/>
+                        <date-time-control [control]="item.control" [item]="item" [showTime]="true"></date-time-control>
                     </div>
 
                     <div *ngIf="isDate(item)" class="form-field-input guardian-input-container">
-                        <p-calendar 
-                            class="guardian-datepicker"
-                            [formControl]="item.control" 
-                            [showIcon]="true" 
-                            dateFormat="yy-mm-dd"
-                            appendTo='body'/>
+                        <date-time-control [control]="item.control" [item]="item" [showTime]="false"
+                                           [showSeconds]="false"></date-time-control>
                     </div>
 
                     <div *ngIf="isTime(item)" class="form-field-input guardian-input-container">
-                        <p-calendar 
-                            class="guardian-datepicker"
-                            [formControl]="item.control" 
-                            [showIcon]="true" 
-                            [timeOnly]="true"
-                            [showSeconds]="true"
-                            dateFormat="yy-mm-dd"
-                            appendTo='body'/>
+                        <date-time-control [control]="item.control" [item]="item" [showSeconds]="true" [showTime]="true"
+                                           [timeOnly]="true"></date-time-control>
                     </div>
 
                     <div *ngIf="isBoolean(item)" class="form-field-boolean guardian-input-container">
                         <div class="boolean-field">
-                            <p-radioButton 
+                            <p-radioButton
                                 class="guardian-radio-button radio-button-24"
-                                [name]="item.id" 
+                                [name]="item.id"
                                 [value]="true"
-                                [formControl]="item.control" 
-                                inputId="{{item.id}}_true" />
+                                [formControl]="item.control"
+                                inputId="{{item.id}}_true"/>
                             <label for="{{item.id}}_true">True</label>
                         </div>
                         <div class="boolean-field">
-                            <p-radioButton 
+                            <p-radioButton
                                 class="guardian-radio-button radio-button-24"
-                                [name]="item.id" 
+                                [name]="item.id"
                                 [value]="false"
-                                [formControl]="item.control" 
-                                inputId="{{item.id}}_false" />
+                                [formControl]="item.control"
+                                inputId="{{item.id}}_false"/>
+
                             <label for="{{item.id}}_false">False</label>
                         </div>
                         <div *ngIf="!item.required" class="boolean-field">
-                            <p-radioButton 
+                            <p-radioButton
                                 class="guardian-radio-button radio-button-24"
-                                [name]="item.id" 
+                                [name]="item.id"
                                 [value]="undefined"
-                                [formControl]="item.control" 
-                                inputId="{{item.id}}_unset" />
+                                [formControl]="item.control"
+                                inputId="{{item.id}}_unset"/>
+
                             <label for="{{item.id}}_unset">Unset</label>
                         </div>
                     </div>
@@ -122,11 +117,12 @@
                     <div *ngIf="isEnum(item)" class="form-field-input guardian-input-container">
                         <p-dropdown
                             class="guardian-dropdown"
-                            [formControl]="item.control" 
+                            [formControl]="item.control"
                             [options]="item.enumValues"
-                            [showClear]="false"     
+                            [showClear]="false"
                             appendTo="body"
                             placeholder="Not selected"
+                            [appendTo]="'body'"
                             panelStyleClass="guardian-dropdown-panel">
                             <ng-template pTemplate="footer">
                                 <div *ngIf="item.fileUploading" class="guardian-loading">
@@ -136,69 +132,80 @@
                         </p-dropdown>
                     </div>
 
-                    <div *ngIf="isPostfix(item)" class="form-field-postfix">{{item.unit}}</div>
+                    <div *ngIf="isPostfix(item)" class="form-field-postfix">{{ item.unit }}</div>
 
-                    <div 
+                    <div
                         *ngIf="isRules(item) as rule"
                         class="form-field-rule"
                         [pTooltip]="rule.tooltip"
                         tooltipPosition="top"
                         [showDelay]="1000">
-                        <svg-icon 
-                            *ngIf="rule.status === 'Failure' || rule.status === 'Error'" 
-                            src="/assets/images/icons/warning-2.svg" 
+                        <svg-icon
+                            *ngIf="rule.status === 'Failure' || rule.status === 'Error'"
+                            src="/assets/images/icons/warning-2.svg"
                             svgClass="icon-color-warning"></svg-icon>
-                        <svg-icon 
-                            *ngIf="rule.status === 'Success'" 
-                            src="/assets/images/icons/check.svg" 
+                        <svg-icon
+                            *ngIf="rule.status === 'Success'"
+                            src="/assets/images/icons/check.svg"
                             svgClass="icon-color-success"></svg-icon>
                     </div>
                 </div>
 
                 <div *ngIf="ifInvalidField(item)" class="invalid-field-label">
-                    {{getInvalidMessageByFieldType(item)}}
+                    {{ getInvalidMessageByFieldType(item) }}
                 </div>
             </div>
 
             <!-- array of simple fields -->
             <div *ngIf="ifSimpleArray(item)" class="form-field-array">
                 <div class="label-field" id="detail-section">
-                    <div *ngIf="!isChildSchema && fields" class="page-number">{{i}}/{{fields.length - 1}}</div>
+                    <div *ngIf="!isChildSchema && fields" class="page-number">{{ i }}/{{ fields.length - 1 }}</div>
                     <div [attr.default]="item.default && !item.isPreset && !item.control.dirty">
-                        <span *ngIf="ifRequiredField(item)" class="required-field">*</span> {{item.description}}
+                        <span *ngIf="ifRequiredField(item)" class="required-field">*</span> {{ item.description }}
                     </div>
-                    <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="delimiter-to-next-page"></div>
-                    <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="next-page-number">{{i + 1}}</div>
+                    <div *ngIf="!isChildSchema && fields && i !== fields.length - 1"
+                         class="delimiter-to-next-page"></div>
+                    <div *ngIf="!isChildSchema && fields && i !== fields.length - 1"
+                         class="next-page-number">{{ i + 1 }}
+                    </div>
                 </div>
 
                 <div *ngIf="!isFormForFinishSetup && item.suggest && isEmpty(item.control.value)" class="suggestion">
-                    <div class="suggestion-name"><span class="suggestion-header">Suggestion:</span> {{item.suggest}}</div>
-                    <button 
-                        (click)="patchSuggestValue(item)" 
+                    <div *ngIf="!suggestIsObject(item.suggest)" class="suggestion-name"><span
+                            class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
+                    </div>
+                    <button
+                            (click)="patchSuggestValue(item)"
                         class="guardian-button guardian-button-secondary">Fill the field with suggestion</button>
                 </div>
 
-                <div *ngFor="let listItem of item.list" class="form-field-array-item-container" 
+                <div *ngFor="let listItem of item.list; index as i" [attr.required]="item.required"
                     [attr.index]="listItem.index"
-                    [attr.required]="item.required" 
+                     class="form-field-array-item-container"
                     [formGroup]="item.control"
                 >
                     <div class="form-field-array-item">
-                        <div class="form-field-value" [attr.invalid-required-field]="ifRequiredField(item) && !listItem.control.valid">
+                        <div class="form-field-value"
+                             [attr.invalid-required-field]="ifRequiredField(item) && !listItem.control.valid">
                             <div *ngIf="isPrefix(item)" class="form-field-prefix">{{ item.unit }}</div>
 
-                            <div 
+                            <div
                                 *ngIf="isInput(item)"
                                 class="form-field-input guardian-input-container"
                                 [ngClass]="{'ipfs-url' : isIPFS(item)}"
                             >
-                                <input pInputText [formControl]="listItem.control" [placeholder]="getPlaceholderByFieldType(item)" type="text"/>
+                                <input pInputText [formControl]="listItem.control"
+                                       [placeholder]="getPlaceholderByFieldType(item)" type="text"/>
                                 <div *ngIf="isIPFS(item)">
                                     <div class="file-upload">
                                         <ng-container [ngSwitch]="listItem.fileUploading">
-                                            <mat-spinner *ngSwitchCase="true" [diameter]="38"></mat-spinner>
-                                            <button mat-icon-button *ngSwitchCase="false" class="upload-btn" (click)="uploadFile(listItem)">
-                                                <mat-icon>attach_file</mat-icon>
+                                            <p-progressSpinner
+                                                *ngSwitchCase="true"
+                                                [style]="{ width: '38px', height: '38px' }">
+                                            </p-progressSpinner>
+                                            <button *ngSwitchCase="false" class="upload-btn"
+                                                    (click)="uploadFile(listItem)">
+                                                <i class="pi pi-paperclip"></i>
                                             </button>
                                         </ng-container>
                                     </div>
@@ -206,62 +213,49 @@
                             </div>
 
                             <div *ngIf="isDateTime(item)" class="form-field-input guardian-input-container">
-                                <p-calendar 
-                                    class="guardian-datepicker"
-                                    [formControl]="listItem.control" 
-                                    [showIcon]="true" 
-                                    [showTime]="true"
-                                    [showSeconds]="true"
-                                    dateFormat="yy-mm-dd"
-                                    appendTo='body'/>
+                                <date-time-control [control]="listItem.control" [index]="i" [isMany]="true"
+                                                   [item]="listItem" [showTime]="true"
+                                                   [value]="item.suggest"></date-time-control>
                             </div>
 
                             <div *ngIf="isDate(item)" class="form-field-input guardian-input-container">
-                                <p-calendar 
-                                    class="guardian-datepicker"
-                                    [formControl]="listItem.control" 
-                                    [showIcon]="true"
-                                    dateFormat="yy-mm-dd"
-                                    appendTo='body'/>
+                                <date-time-control [control]="listItem.control" [isMany]="true" [item]="listItem"
+                                                   [showSeconds]="false" [showTime]="false"></date-time-control>
                             </div>
 
                             <div *ngIf="isTime(item)" class="form-field-input guardian-input-container">
-                                <p-calendar 
-                                    class="guardian-datepicker"
-                                    [formControl]="listItem.control" 
-                                    [showIcon]="true" 
-                                    [timeOnly]="true"
-                                    [showSeconds]="true"
-                                    dateFormat="yy-mm-dd"
-                                    appendTo='body'/>
+                                <date-time-control [control]="listItem.control" [index]="i" [isMany]="true"
+                                                   [item]="listItem"
+                                                   [showSeconds]="true" [showTime]="true"
+                                                   [timeOnly]="true"></date-time-control>
                             </div>
 
                             <div *ngIf="isBoolean(item)" class="form-field-boolean guardian-input-container">
                                 <div class="boolean-field">
-                                    <p-radioButton 
+                                    <p-radioButton
                                         class="guardian-radio-button radio-button-24"
-                                        [name]="listItem.id" 
+                                        [name]="listItem.id"
                                         [value]="true"
                                         [formControl]="listItem.control"
-                                        inputId="{{listItem.id}}_true" />
+                                        inputId="{{listItem.id}}_true"/>
                                     <label for="{{listItem.id}}_true">True</label>
                                 </div>
                                 <div class="boolean-field">
-                                    <p-radioButton 
+                                    <p-radioButton
                                         class="guardian-radio-button radio-button-24"
-                                        [name]="listItem.id" 
+                                        [name]="listItem.id"
                                         [value]="false"
                                         [formControl]="listItem.control"
-                                        inputId="{{listItem.id}}_false" />
+                                        inputId="{{listItem.id}}_false"/>
                                     <label for="{{listItem.id}}_false">False</label>
                                 </div>
                                 <div *ngIf="!item.required" class="boolean-field">
-                                    <p-radioButton 
+                                    <p-radioButton
                                         class="guardian-radio-button radio-button-24"
-                                        [name]="listItem.id" 
+                                        [name]="listItem.id"
                                         [value]="undefined"
                                         [formControl]="listItem.control"
-                                        inputId="{{listItem.id}}_unset" />
+                                        inputId="{{listItem.id}}_unset"/>
                                     <label for="{{listItem.id}}_unset">Unset</label>
                                 </div>
                             </div>
@@ -271,8 +265,9 @@
                                     class="guardian-dropdown"
                                     [formControl]="listItem.control"
                                     [options]="item.enumValues"
-                                    [showClear]="false"     
+                                    [showClear]="false"
                                     appendTo="body"
+                                    [appendTo]="'body'"
                                     placeholder="Not selected"
                                     panelStyleClass="guardian-dropdown-panel">
                                     <ng-template pTemplate="footer">
@@ -283,14 +278,14 @@
                                 </p-dropdown>
                             </div>
 
-                            <div *ngIf="isPostfix(item)" class="form-field-postfix">{{item.unit}}</div>
+                            <div *ngIf="isPostfix(item)" class="form-field-postfix">{{ item.unit }}</div>
                         </div>
-                        
+
                         <div class="fields-remove" *ngIf="!item.control.disabled">
-                            <div 
-                                class="guardian-icon-button big" 
+                            <div
+                                class="guardian-icon-button big"
                                 (click)="removeItem(item, listItem, $event)">
-                                <svg-icon 
+                                <svg-icon
                                     class="icon-btn"
                                     src="/assets/images/icons/delete.svg"
                                     [svgClass]="'icon-color-delete'">
@@ -298,40 +293,50 @@
                             </div>
                         </div>
                     </div>
-                    <div *ngIf="ifInvalidField(listItem)" class="invalid-field-label">{{getInvalidMessageByFieldType(item)}}</div>
+                    <div *ngIf="ifInvalidField(listItem)"
+                         class="invalid-field-label">{{ getInvalidMessageByFieldType(item) }}
+                    </div>
                 </div>
 
-                <button 
+                <button
                     *ngIf="!item.control.disabled"
-                    (click)="addItem(item)" 
+                    (click)="addItem(item)"
                     class="guardian-button guardian-button-secondary add-btn">
                     <div class="guardian-button-icon">
                         <svg-icon class="icon-btn svg-icon"
-                            src="/assets/images/icons/add.svg"
-                            svgClass="icon-color-primary">
+                                  src="/assets/images/icons/add.svg"
+                                  svgClass="icon-color-primary">
                         </svg-icon>
                     </div>
                     <div class="guardian-button-label">Add Field</div>
                 </button>
             </div>
 
-            <div *ngIf="ifSubSchema(item)" class="accordion-container form-field-group sub-schema sub-schema-{{item.customType}}">
+            <div *ngIf="ifSubSchema(item)"
+                 class="accordion-container form-field-group sub-schema sub-schema-{{item.customType}}">
                 <p-accordion class="guardian-accordion">
                     <p-accordionTab [(selected)]="item.open">
                         <ng-template pTemplate="header">
                             <div class="group-label-field" id="detail-section">
-                                <div *ngIf="!isChildSchema && fields" class="page-number">{{i + 1}}/{{fields.length}}</div>
-                                <span class="detail-section-title" [attr.default]="item.default && !item.isPreset && !item.control.dirty">
-                                    <span *ngIf="ifRequiredField(item)" class="required-field">*</span> {{ item.description }}
+                                <div *ngIf="!isChildSchema && fields" class="page-number">{{ i + 1 }}
+                                    /{{ fields.length }}
+                                </div>
+                                <span class="detail-section-title"
+                                      [attr.default]="item.default && !item.isPreset && !item.control.dirty">
+                                    <span *ngIf="ifRequiredField(item)"
+                                          class="required-field">*</span> {{ item.description }}
                                 </span>
-                                <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="delimiter-to-next-page"></div>
-                                <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="next-page-number">{{i + 2}}</div>
+                                <div *ngIf="!isChildSchema && fields && i !== fields.length - 1"
+                                     class="delimiter-to-next-page"></div>
+                                <div *ngIf="!isChildSchema && fields && i !== fields.length - 1"
+                                     class="next-page-number">{{ i + 2 }}
+                                </div>
 
                                 <div
-                                    *ngIf="item.control && !item.required && !item.control.disabled" 
-                                    class="guardian-icon-button big" 
+                                    *ngIf="item.control && !item.required && !item.control.disabled"
+                                    class="guardian-icon-button big"
                                     (click)="removeGroup(item, $event)">
-                                    <svg-icon 
+                                    <svg-icon
                                         class="icon-btn"
                                         src="/assets/images/icons/delete.svg"
                                         svgClass="icon-color-delete">
@@ -340,11 +345,15 @@
                             </div>
                         </ng-template>
 
-                        <div *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control.value, item)" class="suggestion">
-                            <div class="suggestion-name"><span class="suggestion-header">Suggestion:</span> {{item.suggest}}</div>
-                            <button 
-                                (click)="patchSuggestValue(item)" 
-                                class="guardian-button guardian-button-secondary">Fill the field with suggestion</button>
+                        <div *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control?.value, item)"
+                             class="suggestion">
+                            <div *ngIf="!suggestIsObject(item.suggest)" class="suggestion-name"><span
+                                    class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
+                            </div>
+                            <button
+                                (click)="patchSuggestValue(item)"
+                                class="guardian-button guardian-button-secondary">Fill the field with suggestion
+                            </button>
                         </div>
 
                         <div *ngIf="ifInvalidField(item)" class="invalid-field-label invalid-sub-schema">
@@ -354,28 +363,28 @@
                         <div *ngIf="item.control" class="form-field-array-item">
                             <div class="form-field-sub-group">
                                 <ng-container [ngSwitch]="item.customType">
-                                    <app-geojson-type 
-                                        *ngSwitchCase="'geo'" 
-                                        [formGroup]="item.control" 
+                                    <app-geojson-type
+                                        *ngSwitchCase="'geo'"
+                                        [formGroup]="item.control"
                                         [preset]="item.preset"
                                         [disabled]="item.control?.disabled">
                                     </app-geojson-type>
-                                    <app-sentinel-hub-type 
-                                        *ngSwitchCase="'sentinel'" 
+                                    <app-sentinel-hub-type
+                                        *ngSwitchCase="'sentinel'"
                                         [disabled]="item.control?.disabled"
                                         [formGroup]="item.control"
                                         [preset]="item.preset">
                                     </app-sentinel-hub-type>
-                                    <app-schema-form 
-                                        *ngSwitchDefault 
-                                        [formGroup]="item.control" 
-                                        [fields]="item.fields" 
+                                    <app-schema-form
+                                        *ngSwitchDefault
+                                        [formGroup]="item.control"
+                                        [fields]="item.fields"
                                         [private-fields]="hide"
-                                        [conditions]="item.conditions" 
+                                        [conditions]="item.conditions"
                                         [delimiter-hide]="true"
-                                        [dryRun]="dryRun" 
+                                        [dryRun]="dryRun"
                                         [isChildSchema]="true"
-                                        [policyId]="policyId" 
+                                        [policyId]="policyId"
                                         [preset]="item.preset"
                                         [rules]="rules"
                                     >
@@ -384,65 +393,77 @@
                             </div>
                         </div>
 
-                        <button 
+                        <button
                             *ngIf="!item.control && !item.readonly"
                             (click)="addGroup(item)"
                             class="guardian-button guardian-button-secondary add-btn">
                             <div class="guardian-button-icon">
                                 <svg-icon class="icon-btn svg-icon"
-                                    src="/assets/images/icons/add.svg"
-                                    svgClass="icon-color-primary">
+                                          src="/assets/images/icons/add.svg"
+                                          svgClass="icon-color-primary">
                                 </svg-icon>
                             </div>
-                            <div class="guardian-button-label">Add [{{item.description}}]</div>
+                            <div class="guardian-button-label">Add [{{ item.description }}]</div>
                         </button>
                     </p-accordionTab>
                 </p-accordion>
             </div>
 
             <!-- array of sub schemas -->
-            <div *ngIf="ifSubSchemaArray(item)" class="accordion-container form-field-group schema-form-field-array-group sub-schemas sub-schema-{{item.customType}}">
+            <div *ngIf="ifSubSchemaArray(item)"
+                 class="accordion-container form-field-group schema-form-field-array-group sub-schemas sub-schema-{{item.customType}}">
                 <p-accordion class="guardian-accordion">
                     <p-accordionTab [(selected)]="item.open">
                         <ng-template pTemplate="header">
                             <div class="group-label-field" id="detail-section">
-                                <div *ngIf="!isChildSchema && fields" class="page-number">{{i}}/{{fields.length - 1}}</div>
+                                <div *ngIf="!isChildSchema && fields" class="page-number">{{ i }}
+                                    /{{ fields.length - 1 }}
+                                </div>
                                 <span [attr.default]="item.default && !item.isPreset && !item.control.dirty">
-                                    <span *ngIf="ifRequiredField(item)" class="required-field">*</span> {{item.description}}
+                                    <span *ngIf="ifRequiredField(item)"
+                                          class="required-field">*</span> {{ item.description }}
                                 </span>
-                                <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="delimiter-to-next-page"></div>
-                                <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="next-page-number">{{i + 1}}</div>
+                                <div *ngIf="!isChildSchema && fields && i !== fields.length - 1"
+                                     class="delimiter-to-next-page"></div>
+                                <div *ngIf="!isChildSchema && fields && i !== fields.length - 1"
+                                     class="next-page-number">{{ i + 1 }}
+                                </div>
                             </div>
                         </ng-template>
 
                         <div *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control.value, item)" class="suggestion">
-                            <div class="suggestion-name"><span class="suggestion-header">Suggestion:</span> {{item.suggest}}</div>
-                            <button 
-                                (click)="patchSuggestValue(item)" 
-                                class="guardian-button guardian-button-secondary">Fill the field with suggestion</button>
+                            <div *ngIf="!suggestIsObject(item.suggest)" class="suggestion-name"><span
+                                    class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
+                            </div>
+                            <button
+                                (click)="patchSuggestValue(item)"
+                                class="guardian-button guardian-button-secondary">Fill the field with suggestion
+                            </button>
                         </div>
 
                         <div *ngIf="ifInvalidField(item)" class="invalid-field-label invalid-sub-schema">
                             Please make sure all fields in schemas contain a valid value
                         </div>
 
-                        <div *ngFor="let listItem of item.list" class="accordion-container form-field-array-item-container" 
-                            [attr.index]="listItem.index"
-                            [attr.required]="item.required"
+                        <div *ngFor="let listItem of item.list"
+                             class="accordion-container form-field-array-item-container"
+                             [attr.index]="listItem.index"
+                             [attr.required]="item.required"
                         >
                             <p-accordion class="guardian-accordion">
                                 <p-accordionTab [(selected)]="listItem.open">
                                     <ng-template pTemplate="header">
                                         <div class="group-label-field" id="detail-section">
-                                            <span [attr.default]="item.default && !item.isPreset && !item.control.dirty">
-                                                {{item.description}} #{{listItem.index2}}
+                                            <span
+                                                [attr.default]="item.default && !item.isPreset && !item.control.dirty">
+                                                {{ item.description }} #{{ listItem.index2 }}
                                             </span>
 
                                             <div
                                                 *ngIf="!item.control.disabled"
-                                                class="guardian-icon-button big" 
+                                                class="guardian-icon-button big"
                                                 (click)="removeItem(item, listItem, $event)">
-                                                <svg-icon 
+                                                <svg-icon
                                                     class="icon-btn"
                                                     src="/assets/images/icons/delete.svg"
                                                     svgClass="icon-color-delete">
@@ -454,28 +475,28 @@
                                     <div class="form-field-array-item">
                                         <div class="form-field-group">
                                             <ng-container [ngSwitch]="item.customType">
-                                                <app-geojson-type 
-                                                    *ngSwitchCase="'geo'" 
+                                                <app-geojson-type
+                                                    *ngSwitchCase="'geo'"
                                                     [formGroup]="listItem.control"
-                                                    [disabled]="item.control?.disabled" 
+                                                    [disabled]="item.control?.disabled"
                                                     [preset]="listItem.preset">
                                                 </app-geojson-type>
-                                                <app-sentinel-hub-type 
-                                                    *ngSwitchCase="'sentinel'" 
+                                                <app-sentinel-hub-type
+                                                    *ngSwitchCase="'sentinel'"
                                                     [disabled]="item.control?.disabled"
-                                                    [formGroup]="listItem.control" 
+                                                    [formGroup]="listItem.control"
                                                     [preset]="listItem.preset">
                                                 </app-sentinel-hub-type>
-                                                <app-schema-form 
+                                                <app-schema-form
                                                     *ngSwitchDefault
-                                                    [formGroup]="listItem.control" 
-                                                    [fields]="item.fields" 
+                                                    [formGroup]="listItem.control"
+                                                    [fields]="item.fields"
                                                     [private-fields]="hide"
-                                                    [conditions]="item.conditions" 
+                                                    [conditions]="item.conditions"
                                                     [delimiter-hide]="true"
-                                                    [dryRun]="dryRun" 
+                                                    [dryRun]="dryRun"
                                                     [isChildSchema]="true"
-                                                    [policyId]="policyId" 
+                                                    [policyId]="policyId"
                                                     [preset]="listItem.preset"
                                                     [rules]="rules"
                                                     [paginationHidden]="paginationHidden">
@@ -489,17 +510,17 @@
 
                         </div>
 
-                        <button 
+                        <button
                             *ngIf="!item.control.disabled"
-                            (click)="addItem(item)" 
+                            (click)="addItem(item)"
                             class="guardian-button guardian-button-secondary add-btn">
                             <div class="guardian-button-icon">
                                 <svg-icon class="icon-btn svg-icon"
-                                    src="/assets/images/icons/add.svg"
-                                    svgClass="icon-color-primary">
+                                          src="/assets/images/icons/add.svg"
+                                          svgClass="icon-color-primary">
                                 </svg-icon>
                             </div>
-                            <div class="guardian-button-label">Add [{{item.description}}]</div>
+                            <div class="guardian-button-label">Add [{{ item.description }}]</div>
                         </button>
 
                     </p-accordionTab>
@@ -512,8 +533,8 @@
             <div *ngFor="let condition of getConditions(item)">
                 <app-schema-form
                     *ngIf="condition.ifCondition.fieldValue === options.controls[item.name]?.value; else elseCondition"
-                    [fields]="condition.thenFields" 
-                    [formGroup]="condition.conditionForm" 
+                    [fields]="condition.thenFields"
+                    [formGroup]="condition.conditionForm"
                     [preset]="condition.preset"
                     [readonly-fields]="readonly"
                     (destroy)="removeConditionFields(condition.thenFields, condition)"
@@ -523,15 +544,15 @@
                     [rules]="rules">
                 </app-schema-form>
                 <ng-template #elseCondition>
-                    <app-schema-form 
+                    <app-schema-form
                         *ngIf="condition.elseFields && condition.elseFields.length > 0"
-                        [readonly-fields]="readonly" 
+                        [readonly-fields]="readonly"
                         [fields]="condition.elseFields"
-                        [formGroup]="condition.conditionForm" 
+                        [formGroup]="condition.conditionForm"
                         [preset]="condition.preset"
                         (destroy)="removeConditionFields(condition.elseFields, condition)"
-                        [dryRun]="dryRun" 
-                        [isChildSchema]="true" 
+                        [dryRun]="dryRun"
+                        [isChildSchema]="true"
                         [policyId]="policyId"
                         [rules]="rules">
                     </app-schema-form>
@@ -543,11 +564,13 @@
 
     <div *ngIf="fields && showButtons && !comesFromDialog && !isChildSchema" class="progress-footer page-btns">
         <ng-container *ngFor="let config of buttonsConfig">
-            <button 
+            <button
                 *ngIf="config.visible()"
                 (click)="config.fn()"
+                [disabled]="config.disabled()"
                 type="button"
-                class="guardian-button guardian-button-{{config.type}}">{{config.text}}</button>
+                class="guardian-button guardian-button-{{config.type}}">{{ config.text }}
+            </button>
         </ng-container>
     </div>
 </form>

@@ -1,20 +1,21 @@
-
-
-<mat-select
-    [(value)]="value"
+<p-dropdown
+    [(ngModel)]="value"
     [disabled]="disabled"
-    placeholder="{{value}}"
-    (selectionChange)="onChange()"
+    placeholder="Select a schema"
+    [options]="schemas"
+    optionLabel="displayName"
+    optionValue="value"
+    [appendTo]="'body'"
+    (ngModelChange)="onChange()"
 >
-    <mat-option
-        *ngFor="let schema of schemas"
-        class="schema-variable"
-        [attr.status]="schema.status"
-        matTooltipPosition="below"
-        matTooltipClass="guardian-tooltip small-guardian-tooltip"
-        matTooltipShowDelay="500"
-        [matTooltip]="schema.tooltip"
-        [value]="schema.value"
-        [attr.disable]="schema.disable"
-    >{{schema.displayName}}</mat-option>
-</mat-select>
+    <ng-template let-item pTemplate="item">
+        <div
+            pTooltip="{{ item.tooltip }}"
+            tooltipPosition="top"
+            class="schema-variable"
+            [attr.status]="item.status"
+        >
+            {{ item.displayName }}
+        </div>
+    </ng-template>
+</p-dropdown>

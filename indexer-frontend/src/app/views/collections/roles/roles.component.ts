@@ -20,6 +20,7 @@ import { ColumnType, TableComponent } from '@components/table/table.component';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
+import { HederaType } from '@components/hedera-explorer/hedera-explorer.component';
 
 @Component({
     selector: 'roles',
@@ -53,11 +54,25 @@ import { InputTextModule } from 'primeng/inputtext';
 export class RolesComponent extends BaseGridComponent {
     columns: any[] = [
         {
-            type: ColumnType.TEXT,
+            type: ColumnType.HEDERA,
             field: 'consensusTimestamp',
             title: 'grid.consensus_timestamp',
             width: '250px',
             sort: true,
+            hederaType: HederaType.TRANSACTION,
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'consensusTimestamp',
+            title: 'grid.date',
+            width: '250px',
+            sort: true,
+            formatValue: (value: any) => {
+                const fixedTimestamp = Math.floor(value * 1000);
+                value = new Date(fixedTimestamp);
+                const formattedDate = value.toLocaleString();
+                return formattedDate;
+            }
         },
         {
             type: ColumnType.TEXT,
@@ -88,6 +103,12 @@ export class RolesComponent extends BaseGridComponent {
             width: '650px',
         },
         {
+            type: ColumnType.TEXT,
+            field: 'analytics.sr',
+            title: 'grid.sr',
+            width: '250px',
+        },
+        {
             type: ColumnType.BUTTON,
             title: 'grid.open',
             btn_label: 'grid.open',
@@ -111,6 +132,16 @@ export class RolesComponent extends BaseGridComponent {
             }),
             new Filter({
                 type: 'input',
+                field: 'options.role',
+                label: 'grid.role',
+            }),
+            new Filter({
+                type: 'input',
+                field: 'analytics.sr',
+                label: 'grid.sr',
+            }),
+            new Filter({
+                type: 'input',
                 field: 'options.issuer',
                 label: 'grid.issuer',
             }),
@@ -118,7 +149,7 @@ export class RolesComponent extends BaseGridComponent {
                 type: 'input',
                 field: 'analytics.policyId',
                 label: 'grid.filter.policy_id',
-            })
+            }),
         );
     }
 

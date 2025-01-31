@@ -20,6 +20,7 @@ import { ColumnType, TableComponent } from '@components/table/table.component';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
+import { HederaType } from '@components/hedera-explorer/hedera-explorer.component';
 
 @Component({
     selector: 'tokens',
@@ -53,10 +54,39 @@ import { InputTextModule } from 'primeng/inputtext';
 export class TokensComponent extends BaseGridComponent {
     columns: any[] = [
         {
-            type: ColumnType.TEXT,
+            type: ColumnType.HEDERA,
             field: 'tokenId',
             title: 'grid.token_id',
             width: '250px',
+            hederaType: HederaType.TOKEN,
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'createdTimestamp',
+            title: 'grid.createdTimestamp',
+            width: '250px',
+            sort: true,
+            formatValue: (value: any) => {
+                if (value) {
+                    value = new Date(Math.floor(value * 1000));
+                    const formattedDate = value.toLocaleString();
+                    return formattedDate;
+                }
+            }
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'modifiedTimestamp',
+            title: 'grid.modifiedTimestamp',
+            width: '250px',
+            sort: true,
+            formatValue: (value: any) => {
+                if (value) {
+                    value = new Date(Math.floor(value * 1000));
+                    const formattedDate = value.toLocaleString();
+                    return formattedDate;
+                }
+            }
         },
         {
             type: ColumnType.TEXT,
@@ -77,10 +107,11 @@ export class TokensComponent extends BaseGridComponent {
             width: '200px',
         },
         {
-            type: ColumnType.TEXT,
+            type: ColumnType.HEDERA,
             field: 'treasury',
             title: 'grid.treasury',
             width: '200px',
+            hederaType: HederaType.ACCOUNT,
         },
         {
             type: ColumnType.BUTTON,

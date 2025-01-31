@@ -1,41 +1,43 @@
 <div class="dialog-body">
-    <p-tabView>
-        <p-tabPanel *ngFor="let tab of items; let i = index">
-            <ng-template pTemplate="header">
-                <div (click)="handleChangeTab(i)" class="tabview-label">
-                    {{ tab.label }}
-                </div>
-            </ng-template>
-        </p-tabPanel>
-    </p-tabView>
+    <ng-container *ngIf="!loading">
+        <p-tabView>
+            <p-tabPanel *ngFor="let tab of items; let i = index">
+                <ng-template pTemplate="header">
+                    <div (click)="handleChangeTab(i)" class="tabview-label">
+                        {{ tab.label }}
+                    </div>
+                </ng-template>
+            </p-tabPanel>
+        </p-tabView>
 
-    <ng-container *ngIf="isImportTypeSelected" [ngSwitch]="this.importType">
-        <ng-template [ngSwitchCase]="0">
-            <app-file-drag-n-drop
-                (onFileLoaded)="importFromFile($event)"
-                dropZoneLabel="Import Schema .schema file"
-                fileExtension="schema"
-            ></app-file-drag-n-drop>
-        </ng-template>
-        <ng-template [ngSwitchCase]="1">
-            <form [formGroup]="dataForm">
-                <label class="form-label" htmlFor="timestamp">Message timestamp</label>
-                <input
-                    formControlName="timestamp"
-                    id="timestamp"
-                    pInputText
-                    placeholder="Timestamp"
-                    type="text"
-                />
-            </form>
-        </ng-template>
-        <ng-template [ngSwitchCase]="2">
-            <app-file-drag-n-drop
-                (onFileLoaded)="importFromExcel($event)"
-                dropZoneLabel="Import Schema .xlsx file"
-                fileExtension="xlsx"
-            ></app-file-drag-n-drop>
-        </ng-template>
+        <ng-container *ngIf="isImportTypeSelected" [ngSwitch]="this.importType">
+            <ng-template [ngSwitchCase]="0">
+                <app-file-drag-n-drop
+                    (onFileLoaded)="importFromFile($event)"
+                    dropZoneLabel="Import Schema .schema file"
+                    fileExtension="schema"
+                ></app-file-drag-n-drop>
+            </ng-template>
+            <ng-template [ngSwitchCase]="1">
+                <form [formGroup]="dataForm">
+                    <label class="form-label" htmlFor="timestamp">Message timestamp</label>
+                    <input
+                        formControlName="timestamp"
+                        id="timestamp"
+                        pInputText
+                        placeholder="Timestamp"
+                        type="text"
+                    />
+                </form>
+            </ng-template>
+            <ng-template [ngSwitchCase]="2">
+                <app-file-drag-n-drop
+                    (onFileLoaded)="importFromExcel($event)"
+                    dropZoneLabel="Import Schema .xlsx file"
+                    fileExtension="xlsx"
+                ></app-file-drag-n-drop>
+            </ng-template>
+        </ng-container>
     </ng-container>
 
     <div *ngIf="loading && !taskId" class="loading">

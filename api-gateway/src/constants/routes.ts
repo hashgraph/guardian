@@ -1,4 +1,5 @@
 export const PREFIXES = {
+    ACCOUNTS: 'accounts',
     ARTIFACTS: '/artifacts/',
     MODULES: '/modules/',
     THEMES: '/themes/',
@@ -9,4 +10,5 @@ export const PREFIXES = {
     CONTRACTS: '/contracts/',
     TAGS: '/tags/',
     IPFS: 'ipfs',
+    PROFILES: 'profiles'
 };

@@ -219,6 +219,14 @@ GET: /api/v1/policies/{policyId}/dry-run/ipfs?pageIndex=0&pageSize=100
 
 To get complete information on above API, please check : [#returns-lists-of-ipfs-files.](dry-run-mode-using-apis/returns-list-of-ipfs-files.md#returns-lists-of-ipfs-files. "mention")
 
+#### 4.9 Savepoint
+
+Savepoint will allow to mark any of the action in the dry run as savepoint, which can restored from that point. This feature is similar to adding checkpoints in the execution workflow.
+
+<figure><img src="../../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+
 ## 2. Demo Video
 
 [Youtube](https://www.youtube.com/watch?v=fLoQcCOBgfU\&t=115s)

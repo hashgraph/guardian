@@ -4,7 +4,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyAddonBlock, IPolicyDocument } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
-import { PolicyUtils } from '../helpers/utils.js';
+import { PolicyUtils, QueryType } from '../helpers/utils.js';
 import ObjGet from 'lodash.get';
 import ObjSet from 'lodash.set';
 
@@ -106,32 +106,19 @@ export class DocumentsSourceAddon {
         for (const filter of ref.options.filters) {
             const expr = filters[filter.field] || {};
 
-            switch (filter.type) {
-                case 'equal':
-                    Object.assign(expr, { $eq: filter.value })
-                    break;
-
-                case 'not_equal':
-                    Object.assign(expr, { $ne: filter.value });
-                    break;
-
-                case 'in':
-                    Object.assign(expr, { $in: filter.value.split(',') });
-                    break;
-
-                case 'not_in':
-                    Object.assign(expr, { $nin: filter.value.split(',') });
-                    break;
-
-                default:
-                    throw new BlockActionError(`Unknown filter type: ${filter.type}`, ref.blockType, ref.uuid);
+            const query = PolicyUtils.parseQuery(filter.type, filter.value);
+            if (query && query.expression) {
+                Object.assign(expr, query.expression)
+            } else {
+                throw new BlockActionError(`Unknown filter type: ${filter.type}`, ref.blockType, ref.uuid);
             }
+
             filters[filter.field] = expr;
         }
 
         const dynFilters = {};
         for (const [key, value] of Object.entries(await ref.getFilters(user))) {
-            dynFilters[key] = { $eq: value };
+            dynFilters[key] = value;
         }
 
         Object.assign(filters, dynFilters);
@@ -196,7 +183,7 @@ export class DocumentsSourceAddon {
                 throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
         }
 
-        if(!countResult) {
+        if (!countResult) {
             const selectiveAttributeBlock = ref.getSelectiveAttributes()[0];
             for (const dataItem of data as IPolicyDocument[]) {
                 if (selectiveAttributeBlock) {
@@ -250,30 +237,18 @@ export class DocumentsSourceAddon {
         }
 
         for (const filter of ref.options.filters) {
-            switch (filter.type) {
-                case 'equal':
-                    filters.push({ $eq: [filter.value, `\$${filter.field}`] });
-                    break;
-
-                case 'not_equal':
-                    filters.push({ $ne: [filter.value, `\$${filter.field}`] });
-                    break;
-
-                case 'in':
-                    filters.push({ $in: [`\$${filter.field}`, filter.value.split(',')] });
-                    break;
-
-                case 'not_in':
-                    filters.push({ $nin: [`\$${filter.field}`, filter.value.split(',')] });
-                    break;
-
-                default:
-                    throw new BlockActionError(`Unknown filter type: ${filter.type}`, ref.blockType, ref.uuid);
+            const queryType = filter.type as QueryType;
+            const queryValue = PolicyUtils.getQueryValue(queryType, filter.value);
+            const queryExpression = PolicyUtils.getQueryExpression(queryType, queryValue);
+            if (queryExpression) {
+                filters.push(PolicyUtils.getQueryFilter(filter.field, queryExpression));
+            } else {
+                throw new BlockActionError(`Unknown filter type: ${filter.type}`, ref.blockType, ref.uuid);
             }
         }
 
         for (const [key, value] of Object.entries(await ref.getFilters(user))) {
-            filters.push({ $eq: [value, `\$${key}`] });
+            filters.push(PolicyUtils.getQueryFilter(key, value));
         }
 
         if (globalFilters) {

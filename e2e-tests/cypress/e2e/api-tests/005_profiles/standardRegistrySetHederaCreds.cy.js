@@ -3,7 +3,7 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 
-context('Profiles', { tags: ['profiles', 'thirdPool'] }, () => {
+context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     it('Get Standard Registry account information', () => {
@@ -26,7 +26,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool'] }, () => {
                 }).then((response) => {
                     let accessToken = 'Bearer ' + response.body.accessToken
                     cy.request({
-                        method: 'GET',
+                        method: METHOD.GET,
                         url: API.ApiServer + 'profiles/' + SRUsername,
                         headers: {
                             authorization: accessToken
@@ -56,7 +56,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool'] }, () => {
                                     .then(() => {
                                         //get info about StandardRegistry and put it in the file
                                         cy.request({
-                                            method: 'GET',
+                                            method: METHOD.GET,
                                             url: API.ApiServer + 'profiles/' + SRUsername,
                                             headers: {
                                                 authorization: accessToken

@@ -1,6 +1,6 @@
 import { ApiResponse } from './helpers/api-response.js';
-import { BinaryMessageResponse, DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyImportExport, PolicyStatistic, PolicyStatisticImportExport, StatisticAssessmentMessage, StatisticMessage, Users } from '@guardian/common';
-import { EntityStatus, IOwner, MessageAPI, PolicyType, Schema, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
+import { BinaryMessageResponse, DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyStatistic, PolicyStatisticImportExport, StatisticAssessmentMessage, StatisticMessage, Users } from '@guardian/common';
+import { EntityStatus, IOwner, MessageAPI, PolicyType, Schema, SchemaEntity } from '@guardian/interfaces';
 import { publishSchema } from './helpers/index.js';
 import { findRelationships, generateSchema, generateVcDocument, getOrCreateTopic, publishConfig, uniqueDocuments } from './helpers/policy-statistics-helpers.js';
 
@@ -164,28 +164,13 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
 
-                const { schemas, toolSchemas } = await PolicyImportExport.loadAllSchemas(policy);
-                const systemSchemas = await DatabaseServer.getSchemas({
-                    topicId: policy.topicId,
-                    entity: { $in: [SchemaEntity.MINT_TOKEN, SchemaEntity.MINT_NFTOKEN] }
-                });
-
-                const all = []
-                    .concat(schemas, toolSchemas, systemSchemas)
-                    .filter((s) => s.status === SchemaStatus.PUBLISHED && s.entity !== 'EVC');
+                const schemas = await PolicyStatisticImportExport.getPolicySchemas(policy);
 
                 if (item.status === EntityStatus.PUBLISHED) {
                     const schema = await DatabaseServer.getSchema({ topicId: item.topicId });
-                    return new MessageResponse({
-                        policy,
-                        schemas: all,
-                        schema
-                    });
+                    return new MessageResponse({ policy, schemas, schema });
                 } else {
-                    return new MessageResponse({
-                        policy,
-                        schemas: all
-                    });
+                    return new MessageResponse({ policy, schemas });
                 }
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -300,7 +285,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 item.topicId = topic.topicId;
                 item.messageId = statMessageResult.getId();
 
-                const schema = await generateSchema(item, owner);
+                const schema = await generateSchema(item.topicId, item.config, owner);
                 await publishSchema(schema, owner, messageServer, MessageAction.PublishSchema);
                 await DatabaseServer.createAndSaveSchema(schema);
 
@@ -678,6 +663,8 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
 
+                const schemas = await PolicyStatisticImportExport.getPolicySchemas(policy);
+
                 const preview = await PolicyStatisticImportExport.parseZipFile(Buffer.from(zip.data));
                 const { definition } = preview;
 
@@ -686,12 +673,14 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 delete definition.status;
                 delete definition.owner;
                 delete definition.messageId;
+                delete definition.topicId;
                 definition.creator = owner.creator;
                 definition.owner = owner.owner;
                 definition.policyId = policyId;
                 definition.policyTopicId = policy.topicId;
                 definition.policyInstanceTopicId = policy.instanceTopicId;
                 definition.status = EntityStatus.DRAFT;
+                definition.config = PolicyStatisticImportExport.updateSchemas(schemas, definition.config);
                 definition.config = PolicyStatisticImportExport.validateConfig(definition.config);
                 const row = await DatabaseServer.createStatistic(definition);
                 return new MessageResponse(row);

@@ -70,6 +70,29 @@ export class NFTsComponent extends BaseGridComponent {
         },
         {
             type: ColumnType.TEXT,
+            field: 'analytics.policyId',
+            title: 'grid.policy',
+            width: '250px',
+            link: {
+                field: 'analytics.policyId',
+                url: '/policies'
+            }
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'analytics.sr',
+            title: 'grid.sr',
+            width: '250px',
+            link: {
+                field: 'analytics.sr',
+                url: '/registries',
+                filters: {
+                    'options.did': 'analytics.sr'
+                }
+            }
+        },
+        {
+            type: ColumnType.TEXT,
             field: 'metadata',
             title: 'grid.metadata',
             width: '250px',

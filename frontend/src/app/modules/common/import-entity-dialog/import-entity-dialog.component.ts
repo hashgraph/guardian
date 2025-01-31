@@ -10,6 +10,8 @@ import { MenuItem } from 'primeng/api';
 import { ToolsService } from 'src/app/services/tools.service';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
+import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
+import { FormulasService } from 'src/app/services/formulas.service';
 
 export enum ImportEntityType {
     Policy = 'policy',
@@ -19,7 +21,9 @@ export enum ImportEntityType {
     Record = 'record',
     SchemaRule = 'schema-rule',
     Theme = 'theme',
-    Statistic = 'statistic'
+    Statistic = 'statistic',
+    PolicyLabel = 'policy-label',
+    Formula = 'formula',
 }
 
 export interface IImportEntityArray {
@@ -31,6 +35,8 @@ export interface IImportEntityArray {
     xlsx?: any,
     rule?: any,
     statistic?: any,
+    label?: any,
+    formula?: any,
 }
 
 export interface IImportEntityMessage {
@@ -42,6 +48,8 @@ export interface IImportEntityMessage {
     xlsx?: any,
     rule?: any,
     statistic?: any,
+    label?: any,
+    formula?: any,
 }
 
 export type IImportEntityResult = IImportEntityArray | IImportEntityMessage;
@@ -93,7 +101,9 @@ export class ImportEntityDialog {
         private informService: InformService,
         private taskService: TasksService,
         private schemaRulesService: SchemaRulesService,
-        private policyStatisticsService: PolicyStatisticsService
+        private policyStatisticsService: PolicyStatisticsService,
+        private policyLabelsService: PolicyLabelsService,
+        private formulasService: FormulasService,
     ) {
         const _config = this.config.data || {};
 
@@ -161,6 +171,22 @@ export class ImportEntityDialog {
                 this.title = 'Import Statistic';
                 this.fileExtension = 'statistic';
                 this.placeholder = 'Import Statistic .statistic file';
+                break;
+            case 'policy-label':
+                this.type = ImportEntityType.PolicyLabel;
+                this.canImportFile = true;
+                this.canImportMessage = false;
+                this.title = 'Import Label';
+                this.fileExtension = 'label';
+                this.placeholder = 'Import Label .label file';
+                break;
+            case 'formula':
+                this.type = ImportEntityType.Formula;
+                this.canImportFile = true;
+                this.canImportMessage = false;
+                this.title = 'Import Formula';
+                this.fileExtension = 'formula';
+                this.placeholder = 'Import Formula .formula file';
                 break;
             default:
                 this.type = ImportEntityType.Policy;
@@ -233,22 +259,50 @@ export class ImportEntityDialog {
         reader.readAsArrayBuffer(file);
         reader.addEventListener('load', (e: any) => {
             const arrayBuffer = e.target.result;
-            if (this.type === ImportEntityType.Xlsx) {
-                this.excelFromFile(arrayBuffer);
-            } else if (this.type === ImportEntityType.Module) {
-                this.moduleFromFile(arrayBuffer);
-            } else if (this.type === ImportEntityType.Tool) {
-                this.toolFromFile(arrayBuffer);
-            } else if (this.type === ImportEntityType.Policy) {
-                this.policyFromFile(arrayBuffer);
-            } else if (this.type === ImportEntityType.Record) {
-                this.recordFromFile(arrayBuffer);
-            } else if (this.type === ImportEntityType.SchemaRule) {
-                this.ruleFromFile(arrayBuffer);
-            } else if (this.type === ImportEntityType.Theme) {
-                this.themeFromFile(arrayBuffer);
-            } else if (this.type === ImportEntityType.Statistic) {
-                this.statisticFromFile(arrayBuffer);
+            switch (this.type) {
+                case ImportEntityType.Xlsx: {
+                    this.excelFromFile(arrayBuffer);
+                    break;
+                }
+                case ImportEntityType.Module: {
+                    this.moduleFromFile(arrayBuffer);
+                    break;
+                }
+                case ImportEntityType.Tool: {
+                    this.toolFromFile(arrayBuffer);
+                    break;
+                }
+                case ImportEntityType.Policy: {
+                    this.policyFromFile(arrayBuffer);
+                    break;
+                }
+                case ImportEntityType.Record: {
+                    this.recordFromFile(arrayBuffer);
+                    break;
+                }
+                case ImportEntityType.SchemaRule: {
+                    this.ruleFromFile(arrayBuffer);
+                    break;
+                }
+                case ImportEntityType.Theme: {
+                    this.themeFromFile(arrayBuffer);
+                    break;
+                }
+                case ImportEntityType.Statistic: {
+                    this.statisticFromFile(arrayBuffer);
+                    break;
+                }
+                case ImportEntityType.PolicyLabel: {
+                    this.labelFromFile(arrayBuffer);
+                    break;
+                }
+                case ImportEntityType.Formula: {
+                    this.formulaFromFile(arrayBuffer);
+                    break;
+                }
+                default: {
+                    break;
+                }
             }
         });
     }
@@ -259,22 +313,43 @@ export class ImportEntityDialog {
             return;
         }
         const messageId = this.dataForm.get('timestamp')?.value;
-        if (this.type === ImportEntityType.Module) {
-            this.moduleFromMessage(messageId);
-        } else if (this.type === ImportEntityType.Tool) {
-            this.toolFromMessage(messageId);
-        } else if (this.type === ImportEntityType.Policy) {
-            this.policyFromMessage(messageId);
-        } else if (this.type === ImportEntityType.Xlsx) {
-            return;
-        } else if (this.type === ImportEntityType.Record) {
-            return;
-        } else if (this.type === ImportEntityType.SchemaRule) {
-            return;
-        } else if (this.type === ImportEntityType.Theme) {
-            return;
-        } else if (this.type === ImportEntityType.Statistic) {
-            return;
+        switch (this.type) {
+            case ImportEntityType.Xlsx: {
+                return;
+            }
+            case ImportEntityType.Module: {
+                this.moduleFromMessage(messageId);
+                break;
+            }
+            case ImportEntityType.Tool: {
+                this.toolFromMessage(messageId);
+                break;
+            }
+            case ImportEntityType.Policy: {
+                this.policyFromMessage(messageId);
+                break;
+            }
+            case ImportEntityType.Record: {
+                return;
+            }
+            case ImportEntityType.SchemaRule: {
+                return;
+            }
+            case ImportEntityType.Theme: {
+                return;
+            }
+            case ImportEntityType.Statistic: {
+                return;
+            }
+            case ImportEntityType.PolicyLabel: {
+                return;
+            }
+            case ImportEntityType.Formula: {
+                return;
+            }
+            default: {
+                return;
+            }
         }
     }
 
@@ -438,6 +513,40 @@ export class ImportEntityDialog {
                     type: 'file',
                     data: arrayBuffer,
                     statistic: result
+                });
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    //Label
+    private labelFromFile(arrayBuffer: any) {
+        this.loading = true;
+        this.policyLabelsService
+            .previewByFile(arrayBuffer)
+            .subscribe((result) => {
+                this.loading = false;
+                this.setResult({
+                    type: 'file',
+                    data: arrayBuffer,
+                    label: result
+                });
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    //Label
+    private formulaFromFile(arrayBuffer: any) {
+        this.loading = true;
+        this.formulasService
+            .previewByFile(arrayBuffer)
+            .subscribe((result) => {
+                this.loading = false;
+                this.setResult({
+                    type: 'file',
+                    data: arrayBuffer,
+                    formula: result
                 });
             }, (e) => {
                 this.loading = false;

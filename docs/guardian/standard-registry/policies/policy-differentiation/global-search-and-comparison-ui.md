@@ -9,7 +9,7 @@
 
 Global policy search and comparison relies on Indexer for some of its functionality. Such Indexer can be deployed locally, or run elsewhere so long as there is an HTTP access path which must be specified in the _ANALYTICS\_SERVICE_ parameter in the .env configuration file:\
 \
-_Example:_&#x20;
+&#xNAN;_&#x45;xample:_&#x20;
 
 _"ANALYTICS\_SERVICE": "http://localhost:3021",_
 

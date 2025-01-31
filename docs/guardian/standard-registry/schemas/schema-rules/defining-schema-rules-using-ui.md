@@ -61,8 +61,7 @@ Clicking on a schema box opens the side menu which lists all the fields availabl
 ![](<../../../../.gitbook/assets/7 (1) (1).png>)
 
 \
-&#xNAN;_&#x4E;ote: sub-schemas do not produce corresponding document, when such sub-schema is selected in the schema
-view the right hand panel shows the fields from the parent schema of which this sub-schema is a part._
+&#xNAN;_&#x4E;ote: sub-schemas do not produce corresponding document, when such sub-schema is selected in the schema view the right hand panel shows the fields from the parent schema of which this sub-schema is a part._
 
 **1.3.2.3 Properties**
 

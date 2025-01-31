@@ -17,6 +17,9 @@ import {
 } from '@components/overview-form/overview-form.component';
 import { ActivityComponent } from '@components/activity/activity.component';
 import { InputTextareaModule } from 'primeng/inputtextarea';
+import { ColumnType } from '@components/table/table.component';
+import { createChart } from '../base-details/relationships-chart.config';
+import { EChartsOption } from 'echarts';
 
 @Component({
     selector: 'policy-details',
@@ -42,7 +45,10 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
     ],
 })
 export class PolicyDetailsComponent extends BaseDetailsComponent {
-    tabs: any[] = ['overview', 'activity', 'raw'];
+    
+    public chartOption: EChartsOption = createChart();
+
+    tabs: any[] = ['overview', 'activity', 'relationships', 'raw'];
     overviewFields: OverviewFormField[] = [
         {
             label: 'details.policy.overview.topic_id',
@@ -109,7 +115,24 @@ export class PolicyDetailsComponent extends BaseDetailsComponent {
         }
     }
 
-    protected override onNavigate(): void {}
+    protected override onNavigate(): void {
+        if (this.id && this.tab === 'relationships') {
+            this.loading = true;
+            this.entitiesService.getPolicyRelationships(this.id).subscribe({
+                next: (result) => {
+                    this.setRelationships(result);
+                    this.setChartData();
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                },
+                error: ({ message }) => {
+                    this.loading = false;
+                    console.error(message);
+                },
+            });
+        }
+    }
 
     protected override getTabIndex(name: string): number {
         if (this.target) {
@@ -125,6 +148,20 @@ export class PolicyDetailsComponent extends BaseDetailsComponent {
             return this.tabs[index] || 'raw';
         } else {
             return 'raw';
+        }
+    }
+
+    private setChartData() {
+        this.chartOption = createChart(this.relationships);
+    }
+
+    public onSelect(event: any) {
+        if (event.dataType === 'node') {
+            this.toEntity(
+                String(event.data?.entityType),
+                event.name,
+                'relationships'
+            );
         }
     }
 
@@ -156,6 +193,14 @@ export class PolicyDetailsComponent extends BaseDetailsComponent {
         this.router.navigate(['/vp-documents'], {
             queryParams: {
                 'analytics.policyId': this.id,
+            },
+        });
+    }
+
+    public override onOpenFormulas() {
+        this.router.navigate(['/formulas'], {
+            queryParams: {
+                topicId: this.row.topicId,
             },
         });
     }

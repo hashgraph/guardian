@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NgxMatDatetimePickerModule } from '@angular-material-components/datetime-picker';
 import { MaterialModule } from './material.module';
 import { DatetimePicker } from './datetime-picker/datetime-picker.component';
 import { HederaExplorer } from './hedera-explorer/hedera-explorer.component';
@@ -33,12 +32,17 @@ import { ButtonModule } from 'primeng/button';
 import { PaginatorComponent } from './paginator/paginator.component';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { StatusDropdown } from './status-dropdown/status-dropdown.component';
-import { CustomCustomDialogComponent } from './custom-confirm-dialog/custom-confirm-dialog.component';
+import { CustomConfirmDialogComponent } from './custom-confirm-dialog/custom-confirm-dialog.component';
 import { TreeGraphComponent } from './tree-graph/tree-graph.component';
 import { GuardianSwitchButton } from './guardian-switch-button/guardian-switch-button.component';
 import { ImportEntityDialog } from './import-entity-dialog/import-entity-dialog.component';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
 import { TabViewModule } from 'primeng/tabview';
+import { TooltipModule } from 'primeng/tooltip';
+import { MathLiveComponent } from './mathlive/mathlive.component';
+import { MenuButton } from './menu-button/menu-button.component';
+import { CheckboxButton } from './checkbox-button/checkbox-button.component';
+import { IPFSLinkComponent } from './ipfs-link/ipfs-link.component';
 
 @NgModule({
     declarations: [
@@ -63,16 +67,19 @@ import { TabViewModule } from 'primeng/tabview';
         AlertComponent,
         PaginatorComponent,
         StatusDropdown,
-        CustomCustomDialogComponent,
+        CustomConfirmDialogComponent,
         TreeGraphComponent,
         GuardianSwitchButton,
-        ImportEntityDialog
+        ImportEntityDialog,
+        MathLiveComponent,
+        MenuButton,
+        CheckboxButton,
+        IPFSLinkComponent
     ],
     imports: [
         CommonModule,
         FormsModule,
         MaterialModule,
-        NgxMatDatetimePickerModule,
         NgxFileDropModule,
         NgxColorsModule,
         NgxMaskDirective,
@@ -83,7 +90,8 @@ import { TabViewModule } from 'primeng/tabview';
         ButtonModule,
         TabViewModule,
         DynamicDialogModule,
-        AngularSvgIconModule.forRoot()
+        AngularSvgIconModule.forRoot(),
+        TooltipModule,
     ],
     providers: [
         provideNgxMask(),
@@ -111,10 +119,15 @@ import { TabViewModule } from 'primeng/tabview';
         PaginatorComponent,
         DataInputDialogComponent,
         StatusDropdown,
-        CustomCustomDialogComponent,
+        CustomConfirmDialogComponent,
         TreeGraphComponent,
         GuardianSwitchButton,
-        ImportEntityDialog
+        ImportEntityDialog,
+        MathLiveComponent,
+        MenuButton,
+        CheckboxButton,
+        IPFSLinkComponent
     ]
 })
-export class CommonComponentsModule { }
+export class CommonComponentsModule {
+}

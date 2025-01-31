@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { AnalyticsService } from 'src/app/services/analytics.service';
-import { CompareStorage } from 'src/app/services/compare-storage.service';
+import {Component, OnInit} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {AnalyticsService} from 'src/app/services/analytics.service';
+import {CompareStorage} from 'src/app/services/compare-storage.service';
 
 enum ItemType {
     Document = 'document',
@@ -17,13 +17,40 @@ enum ItemType {
     styleUrls: ['./compare.component.scss']
 })
 export class CompareComponent implements OnInit {
+    public eventOptions = [
+        {label: 'Don\'t compare', value: 0},
+        {label: 'All events', value: 1}
+    ];
+
+    public propertyOptions = [
+        {label: 'Don\'t compare', value: 0},
+        {label: 'Only simple properties', value: 1},
+        {label: 'All properties', value: 2}
+    ];
+
+    public childrenOptions = [
+        {label: 'Don\'t compare', value: 0},
+        {label: 'Only child blocks of the first level', value: 1},
+        {label: 'All children', value: 2}
+    ];
+
+    public uuidOptions = [
+        {label: 'Don\'t compare', value: 0},
+        {label: 'All UUID', value: 1}
+    ];
+
+    public typeOptions: any[] = [
+        {label: 'Tree', value: 'tree'},
+        {label: 'Table', value: 'table'}
+    ];
+
     public loading: boolean = true;
-    public eventsLvl: string = '1';
-    public propLvl: string = '2';
-    public childrenLvl: string = '2';
-    public idLvl: string = '0';
+    public eventsLvl: Record<string, any> = this.eventOptions[1];
+    public propLvl: Record<string, any> = this.propertyOptions[2]
+    public childrenLvl: Record<string, any> = this.childrenOptions[2];
+    public idLvl: Record<string, any> = this.uuidOptions[0];
     public needApplyFilters: boolean = false;
-    public visibleType: 'tree' | 'table' = 'tree';
+    public visibleType: Record<string, any> = this.typeOptions[0];
     public result: any;
     public total: any;
 
@@ -135,7 +162,7 @@ export class CompareComponent implements OnInit {
     private getItems(): any[] {
         const results = [];
         for (const item of this.items) {
-            const result = { ...item };
+            const result = {...item};
             if (item.type === 'file') {
                 const file = this.compareStorage.getFile(item.value);
                 if (!file) {
@@ -157,10 +184,10 @@ export class CompareComponent implements OnInit {
     private loadDocument() {
         this.error = null;
         const options = {
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl,
+            eventsLvl: this.eventsLvl.value,
+            propLvl: this.propLvl.value,
+            childrenLvl: this.childrenLvl.value,
+            idLvl: this.idLvl.value,
             documentIds: this.getIds()
         }
         if (!options.documentIds || options.documentIds.length < 2) {
@@ -174,7 +201,7 @@ export class CompareComponent implements OnInit {
             setTimeout(() => {
                 this.loading = false;
             }, 500);
-        }, ({ message }) => {
+        }, ({message}) => {
             this.loading = false;
             console.error(message);
         });
@@ -183,10 +210,10 @@ export class CompareComponent implements OnInit {
     private downloadDocuments() {
         this.error = null;
         const options = {
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl,
+            eventsLvl: this.eventsLvl.value,
+            propLvl: this.propLvl.value,
+            childrenLvl: this.childrenLvl.value,
+            idLvl: this.idLvl.value,
             documentIds: this.getIds()
         }
         if (!options.documentIds || options.documentIds.length < 2) {
@@ -199,7 +226,7 @@ export class CompareComponent implements OnInit {
                 this.downloadObjectAsJson(data, 'report');
             }
             this.loading = false;
-        }, ({ message }) => {
+        }, ({message}) => {
             this.loading = false;
             console.error(message);
         });
@@ -208,10 +235,10 @@ export class CompareComponent implements OnInit {
     private loadPolicy() {
         this.error = null;
         const options = {
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl,
+            eventsLvl: this.eventsLvl.value,
+            propLvl: this.propLvl.value,
+            childrenLvl: this.childrenLvl.value,
+            idLvl: this.idLvl.value,
             policies: this.getItems()
         }
         if (!options.policies || options.policies.length < 2) {
@@ -225,7 +252,7 @@ export class CompareComponent implements OnInit {
             setTimeout(() => {
                 this.loading = false;
             }, 500);
-        }, ({ message }) => {
+        }, ({message}) => {
             this.loading = false;
             console.error(message);
         });
@@ -234,10 +261,10 @@ export class CompareComponent implements OnInit {
     private downloadPolicy() {
         this.error = null;
         const options = {
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl,
+            eventsLvl: this.eventsLvl.value,
+            propLvl: this.propLvl.value,
+            childrenLvl: this.childrenLvl.value,
+            idLvl: this.idLvl.value,
             policies: this.getItems()
         }
         if (!options.policies || options.policies.length < 2) {
@@ -250,7 +277,7 @@ export class CompareComponent implements OnInit {
                 this.downloadObjectAsJson(data, 'report');
             }
             this.loading = false;
-        }, ({ message }) => {
+        }, ({message}) => {
             this.loading = false;
             console.error(message);
         });
@@ -265,7 +292,7 @@ export class CompareComponent implements OnInit {
             return;
         }
         const options = {
-            idLvl: this.idLvl,
+            idLvl: this.idLvl.value,
             schemas: ids
         }
         this.analyticsService.compareSchema(options).subscribe((value) => {
@@ -274,7 +301,7 @@ export class CompareComponent implements OnInit {
             setTimeout(() => {
                 this.loading = false;
             }, 500);
-        }, ({ message }) => {
+        }, ({message}) => {
             this.loading = false;
             console.error(message);
         });
@@ -289,7 +316,7 @@ export class CompareComponent implements OnInit {
             return;
         }
         const options = {
-            idLvl: this.idLvl,
+            idLvl: this.idLvl.value,
             schemas: ids
         }
         this.analyticsService.compareSchemaFile(options, 'csv').subscribe((data) => {
@@ -297,7 +324,7 @@ export class CompareComponent implements OnInit {
                 this.downloadObjectAsJson(data, 'report');
             }
             this.loading = false;
-        }, ({ message }) => {
+        }, ({message}) => {
             this.loading = false;
             console.error(message);
         });
@@ -312,10 +339,10 @@ export class CompareComponent implements OnInit {
             return;
         }
         const options = {
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl,
+            eventsLvl: this.eventsLvl.value,
+            propLvl: this.propLvl.value,
+            childrenLvl: this.childrenLvl.value,
+            idLvl: this.idLvl.value,
             moduleId1: ids[0],
             moduleId2: ids[1]
         }
@@ -325,7 +352,7 @@ export class CompareComponent implements OnInit {
             setTimeout(() => {
                 this.loading = false;
             }, 500);
-        }, ({ message }) => {
+        }, ({message}) => {
             this.loading = false;
             console.error(message);
         });
@@ -340,10 +367,10 @@ export class CompareComponent implements OnInit {
             return;
         }
         const options = {
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl,
+            eventsLvl: this.eventsLvl.value,
+            propLvl: this.propLvl.value,
+            childrenLvl: this.childrenLvl.value,
+            idLvl: this.idLvl.value,
             moduleId1: ids[0],
             moduleId2: ids[1]
         }
@@ -352,7 +379,7 @@ export class CompareComponent implements OnInit {
                 this.downloadObjectAsJson(data, 'report');
             }
             this.loading = false;
-        }, ({ message }) => {
+        }, ({message}) => {
             this.loading = false;
             console.error(message);
         });
@@ -361,10 +388,10 @@ export class CompareComponent implements OnInit {
     private loadTool() {
         this.error = null;
         const options = {
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl,
+            eventsLvl: this.eventsLvl.value,
+            propLvl: this.propLvl.value,
+            childrenLvl: this.childrenLvl.value,
+            idLvl: this.idLvl.value,
             toolIds: this.getIds()
         }
         if (!options.toolIds || options.toolIds.length < 2) {
@@ -378,7 +405,7 @@ export class CompareComponent implements OnInit {
             setTimeout(() => {
                 this.loading = false;
             }, 500);
-        }, ({ message }) => {
+        }, ({message}) => {
             this.loading = false;
             console.error(message);
         });
@@ -387,10 +414,10 @@ export class CompareComponent implements OnInit {
     private downloadTools() {
         this.error = null;
         const options = {
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl,
+            eventsLvl: this.eventsLvl.value,
+            propLvl: this.propLvl.value,
+            childrenLvl: this.childrenLvl.value,
+            idLvl: this.idLvl.value,
             toolIds: this.getIds()
         }
         if (!options.toolIds || options.toolIds.length < 2) {
@@ -403,7 +430,7 @@ export class CompareComponent implements OnInit {
                 this.downloadObjectAsJson(data, 'report');
             }
             this.loading = false;
-        }, ({ message }) => {
+        }, ({message}) => {
             this.loading = false;
             console.error(message);
         });
@@ -473,12 +500,12 @@ export class CompareComponent implements OnInit {
 
     downloadObjectAsJson(csvContent: any, exportName: string) {
         const data = csvContent.replace('text/csv;charset=utf-8;', '');
-        var blob = new Blob([data], { type: 'text/csv;charset=utf-8;' });
-        var link = document.createElement("a");
+        var blob = new Blob([data], {type: 'text/csv;charset=utf-8;'});
+        var link = document.createElement('a');
         if (link.download !== undefined) {
             var url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", exportName + '.csv');
+            link.setAttribute('href', url);
+            link.setAttribute('download', exportName + '.csv');
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();

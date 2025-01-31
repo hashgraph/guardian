@@ -12,3 +12,60 @@
     justify-content: flex-end;
     padding: 5px 0 20px 0;
 }
+
+.mat-dialog-title {
+    font-size: 24px;
+    margin-top: 30px;
+    color: var(--color-grey-black-1)
+}
+
+::ng-deep .p-dialog {
+    border-radius: 18px !important;
+}
+
+
+::ng-deep .p-dialog-header {
+    display: none;
+}
+
+::ng-deep .p-dialog-content {
+    padding: 0 1.9rem 10px;
+    border-radius: 18px !important;
+}
+
+::ng-deep .p-dialog-content .custom-dialog {
+    max-height: 204px;
+    padding: 0;
+    font-weight: 400;
+}
+
+.mat-dialog-content {
+    margin-top: 18px;
+    font-size: 14px;
+    font-family: Roboto, sans-serif;
+    line-height: 20px;
+    letter-spacing: .017em;
+    color: var(--color-grey-black-1)
+}
+
+.mat-dialog-actions {
+    column-gap: 8px;
+}
+
+.mat-raised-button,
+.mat-button {
+    border: none;
+    width: 138px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-grey-black-1);
+    background: var(--color-grey-white);
+}
+
+.mat-raised-button {
+    border: none;
+    width: 138px;
+    color: var(--color-grey-white);
+    font-size: 14px;
+    font-weight: 600;
+}

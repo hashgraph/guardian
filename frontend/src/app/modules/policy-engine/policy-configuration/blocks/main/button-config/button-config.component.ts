@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlock } from '../../../../structures';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
+import {IModuleVariables, PolicyBlock} from '../../../../structures';
 
 /**
  * Settings for block of 'interfaceAction' type.
@@ -17,13 +17,25 @@ export class ButtonConfigComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlock;
-    
+
     propHidden: any = {
         buttonsGroup: false,
         buttons: {}
     };
 
     properties!: any;
+
+    public buttonTypeOptions = [
+        {label: 'Selector', value: 'selector'},
+        {label: 'Selector Dialog', value: 'selector-dialog'}
+    ];
+
+    public filterTypeOptions = [
+        {label: 'Equal', value: 'equal'},
+        {label: 'Not Equal', value: 'not_equal'},
+        {label: 'In', value: 'in'},
+        {label: 'Not In', value: 'not_in'}
+    ];
 
     constructor() {
     }
@@ -77,7 +89,7 @@ export class ButtonConfigComponent implements OnInit {
     onRemoveFilter(button: any, i: number) {
         button.filters.splice(i, 1);
     }
-    
+
     onSave() {
         this.item.changed = true;
     }

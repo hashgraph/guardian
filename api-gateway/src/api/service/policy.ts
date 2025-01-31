@@ -1,11 +1,11 @@
 import { Auth, AuthUser } from '#auth';
+import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
+import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache } from '#helpers';
+import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyTestDTO, PolicyValidationDTO, RunningDetailsDTO, ServiceUnavailableErrorDTO, TaskDTO } from '#middlewares';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyHelper, TaskAction, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
-import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyTestDTO, PolicyValidationDTO, RunningDetailsDTO, ServiceUnavailableErrorDTO, TaskDTO } from '#middlewares';
-import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache } from '#helpers';
-import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 
 async function getOldResult(user: IAuthUser): Promise<PolicyDTO[]> {
     const options: any = {};
@@ -29,6 +29,7 @@ export class PolicyApi {
     @Auth(
         Permissions.POLICIES_POLICY_READ,
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         Permissions.POLICIES_POLICY_AUDIT,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
@@ -95,6 +96,7 @@ export class PolicyApi {
     @Auth(
         Permissions.POLICIES_POLICY_READ,
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         Permissions.POLICIES_POLICY_AUDIT,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
@@ -453,6 +455,7 @@ export class PolicyApi {
     @Auth(
         Permissions.POLICIES_POLICY_READ,
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         Permissions.POLICIES_POLICY_AUDIT,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
@@ -880,6 +883,7 @@ export class PolicyApi {
     @Get('/:policyId/navigation')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -925,6 +929,7 @@ export class PolicyApi {
     @Get('/:policyId/groups')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1319,6 +1324,7 @@ export class PolicyApi {
     @Post('/:policyId/groups')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1371,6 +1377,7 @@ export class PolicyApi {
     @Get('/:policyId/blocks')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1417,6 +1424,7 @@ export class PolicyApi {
     @Get('/:policyId/blocks/:uuid')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1473,6 +1481,7 @@ export class PolicyApi {
     @Post('/:policyId/blocks/:uuid')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1538,6 +1547,7 @@ export class PolicyApi {
     @Post('/:policyId/tag/:tagName/blocks')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1603,6 +1613,7 @@ export class PolicyApi {
     @Get('/:policyId/tag/:tagName')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1654,6 +1665,7 @@ export class PolicyApi {
     @Get('/:policyId/tag/:tagName/blocks')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1709,6 +1721,7 @@ export class PolicyApi {
     @Get('/:policyId/blocks/:uuid/parents')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -2807,6 +2820,227 @@ export class PolicyApi {
     /**
      * Clear dry-run state.
      */
+    @Post('/:policyId/savepoint/create')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+                      summary: 'Create dry-run savepoint.',
+                      description: 'Create dry-run savepoint.' + ONLY_SR
+                  })
+    @ApiParam({
+                  name: 'policyId',
+                  type: String,
+                  description: 'Policy Id',
+                  required: true,
+                  example: Examples.DB_ID
+              })
+    @ApiBody({
+                 description: '.'
+             })
+    @ApiOkResponse({
+                       description: '.'
+                   })
+    @ApiInternalServerErrorResponse({
+                                        description: 'Internal server error.',
+                                        type: InternalServerErrorDTO
+                                    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async createSavepoint(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: any,
+        @Req() req
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+        const policy = await engineService.accessPolicy(policyId, owner, 'read');
+        if (!PolicyHelper.isDryRunMode(policy)) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN);
+        }
+
+        console.log('Create savepoint');
+
+        const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
+        try {
+            return await engineService.createSavepoint(body, owner, policyId);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Clear dry-run state.
+     */
+    @Post('/:policyId/savepoint/delete')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+                      summary: 'Delete dry-run savepoint.',
+                      description: 'Delete dry-run savepoint.' + ONLY_SR
+                  })
+    @ApiParam({
+                  name: 'policyId',
+                  type: String,
+                  description: 'Policy Id',
+                  required: true,
+                  example: Examples.DB_ID
+              })
+    @ApiBody({
+                 description: '.'
+             })
+    @ApiOkResponse({
+                       description: '.'
+                   })
+    @ApiInternalServerErrorResponse({
+                                        description: 'Internal server error.',
+                                        type: InternalServerErrorDTO
+                                    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async deleteSavepoint(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: any,
+        @Req() req
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+        const policy = await engineService.accessPolicy(policyId, owner, 'read');
+        if (!PolicyHelper.isDryRunMode(policy)) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN);
+        }
+
+        console.log('Delete savepoint');
+
+        const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
+        try {
+            return await engineService.deleteSavepoint(body, owner, policyId);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Get savepoint state.
+     */
+    @Get('/:policyId/savepoint/restore')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+                      summary: 'Get savepoint state.',
+                      description: 'Get savepoint state.' + ONLY_SR
+                  })
+    @ApiParam({
+                  name: 'policyId',
+                  type: String,
+                  description: 'Policy Id',
+                  required: true,
+                  example: Examples.DB_ID
+              })
+    @ApiBody({
+                 description: '.'
+             })
+    @ApiOkResponse({
+                       description: '.'
+                   })
+    @ApiInternalServerErrorResponse({
+                                        description: 'Internal server error.',
+                                        type: InternalServerErrorDTO
+                                    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getSavepointState(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Req() req
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+        const policy = await engineService.accessPolicy(policyId, owner, 'read');
+        if (!PolicyHelper.isDryRunMode(policy)) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN);
+        }
+
+        const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
+        try {
+            return await engineService.getSavepointState(owner, policyId);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Clear dry-run state.
+     */
+    @Post('/:policyId/savepoint/restore')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+                      summary: 'Restore dry-run savepoint.',
+                      description: 'Restore dry-run savepoint.' + ONLY_SR
+                  })
+    @ApiParam({
+                  name: 'policyId',
+                  type: String,
+                  description: 'Policy Id',
+                  required: true,
+                  example: Examples.DB_ID
+              })
+    @ApiBody({
+                 description: '.'
+             })
+    @ApiOkResponse({
+                       description: '.'
+                   })
+    @ApiInternalServerErrorResponse({
+                                        description: 'Internal server error.',
+                                        type: InternalServerErrorDTO
+                                    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async restoreSavepoint(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: any,
+        @Req() req
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+        const policy = await engineService.accessPolicy(policyId, owner, 'read');
+        if (!PolicyHelper.isDryRunMode(policy)) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN);
+        }
+
+        console.log('restore savepoint');
+
+        const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
+        try {
+            return await engineService.restoreSavepoint(body, owner, policyId);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Clear dry-run state.
+     */
     @Post('/:policyId/dry-run/restart')
     @Auth(
         Permissions.POLICIES_POLICY_UPDATE,
@@ -3057,6 +3291,7 @@ export class PolicyApi {
     @Get('/:policyId/multiple')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -3099,6 +3334,7 @@ export class PolicyApi {
     @Post('/:policyId/multiple/')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )

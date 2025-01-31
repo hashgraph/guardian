@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlock } from '../../../../structures';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
+import {IModuleVariables, PolicyBlock} from '../../../../structures';
 
 /**
  * Settings for block of 'switch' and 'interfaceStepBlock' types.
@@ -17,7 +17,7 @@ export class SwitchConfigComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlock;
-    
+
     propHidden: any = {
         main: false,
         options: false,
@@ -26,6 +26,23 @@ export class SwitchConfigComponent implements OnInit {
     };
 
     properties!: any;
+
+    public executionFlowOptions = [
+        {label: 'First True', value: 'firstTrue'},
+        {label: 'All True', value: 'allTrue'}
+    ];
+
+    public conditionTypeOptions = [
+        {label: 'Equal', value: 'equal'},
+        {label: 'Not Equal', value: 'not_equal'},
+        {label: 'Unconditional', value: 'unconditional'}
+    ];
+
+    public actorOptions = [
+        {label: 'Current User', value: ''},
+        {label: 'Document Owner', value: 'owner'},
+        {label: 'Document Issuer', value: 'issuer'}
+    ];
 
     constructor() {
     }
@@ -63,7 +80,7 @@ export class SwitchConfigComponent implements OnInit {
     onRemoveCondition(i: number) {
         this.properties.conditions.splice(i, 1);
     }
-    
+
     onSave() {
         this.item.changed = true;
     }

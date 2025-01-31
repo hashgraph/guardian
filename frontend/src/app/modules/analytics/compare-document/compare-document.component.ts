@@ -1,8 +1,9 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { IResultContext } from '../interfaces/result-context.interface';
-import { ITreeContext } from '../interfaces/tree-context.interface';
-import { ITableColumns } from '../interfaces/table-columns.interface';
-import { ITreeItemContext } from '../interfaces/tree-item-context.interface';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges} from '@angular/core';
+import {IResultContext} from '../interfaces/result-context.interface';
+import {ITreeContext} from '../interfaces/tree-context.interface';
+import {ITableColumns} from '../interfaces/table-columns.interface';
+import {ITreeItemContext} from '../interfaces/tree-item-context.interface';
+import BlockIcons from '../../policy-engine/services/block-icons';
 
 interface IInfoContext {
     id: string;
@@ -82,6 +83,8 @@ export class CompareDocumentComponent implements OnInit {
     public _systemProp = true;
     private _pOffset = 30;
 
+    public icons: any = Object.assign({}, BlockIcons);
+
     get comparationLabels(): any {
         switch (this.comparationType) {
             case 'policy': {
@@ -137,9 +140,10 @@ export class CompareDocumentComponent implements OnInit {
 
         if (!this.customColumnSize) {
             const k = (this.customColumnSize) ? this.customColumnSize : Math.round(100 / this.size);
-            this._gridStyle = `max(calc(${k}vw - 80px), 680px)`;
+            const m = Math.round(280 / this.size);
+            this._gridStyle = `max(calc(${k}vw - 120px - ${m}px), 695px)`;
             for (let i = 1; i < this.size; i++) {
-                this._gridStyle += ` 35px max(calc(${k}vw - 45px), 720px)`;
+                this._gridStyle += ` 35px max(calc(${k}vw - 90px - ${m}px), 725px)`;
             }
         }
 
@@ -522,5 +526,9 @@ export class CompareDocumentComponent implements OnInit {
         document.querySelectorAll('.left-tree').forEach(el => {
             el.scrollLeft = event.target.scrollLeft;
         })
+    }
+
+    isObject(value: any): boolean {
+        return value !== null && typeof value === 'object';
     }
 }

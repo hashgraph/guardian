@@ -1,8 +1,9 @@
 <!-- Config Prop -->
 <table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propHeader">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'properties')" [attr.collapse]="propHidden.properties">
-            <mat-icon>arrow_drop_down</mat-icon>
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'properties')"
+            [attr.collapse]="propHidden.properties">
+            <i class="pi" [ngClass]="propHidden.properties ? 'pi-caret-down' : 'pi-caret-right'"></i>
         </td>
         <td class="propHeaderCell cellName">Properties</td>
         <td class="propHeaderCell"></td>
@@ -27,7 +28,7 @@
         <td class="propRowCell cellName">Visible</td>
         <td class="propRowCell">
             <input class="prop-input" type="checkbox" [(ngModel)]="properties.visible" [readonly]="readonly"
-                (blur)="onSave()">
+                   (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.properties">
@@ -35,7 +36,7 @@
         <td class="propRowCell cellName">Multiple</td>
         <td class="propRowCell">
             <input class="prop-input" type="checkbox" [(ngModel)]="properties.multiple" [readonly]="readonly"
-                (change)="onMultipleChange()">
+                   (change)="onMultipleChange()">
         </td>
     </tr>
 
@@ -43,10 +44,15 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Icon Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.iconType" [disabled]="readonly" (change)="onSave()">
-                <mat-option value="common">Common Library</mat-option>
-                <mat-option value="custom">Custom</mat-option>
-            </mat-select>
+            <p-dropdown [(ngModel)]="properties.iconType"
+                        [options]="iconTypeOptions"
+                        [disabled]="readonly"
+                        (onChange)="onSave()"
+                        [appendTo]="'body'"
+                        placeholder="Select Icon Type"
+                        optionLabel="label"
+                        optionValue="value">
+            </p-dropdown>
         </td>
     </tr>
 
@@ -57,22 +63,25 @@
             <div class="icon-container">
                 <input class="prop-input" [(ngModel)]="properties.icon" [readonly]="readonly" class="icon-input">
                 <input class="prop-input" type="file" class="file-input" accept="image/*"
-                    (change)="onFileSelected($event, properties)" #fileUpload>
+                       (change)="onFileSelected($event, properties)" #fileUpload>
                 <ng-container [ngSwitch]="fileLoading" *ngIf="properties.iconType === 'custom' && !readonly">
                     <div *ngSwitchCase="true">
-                        <mat-spinner [diameter]="20" class="file-spinner"></mat-spinner>
+                        <p-progressSpinner
+                            [style]="{ width: '20px', height: '20px' }"
+                            class="file-spinner">
+                        </p-progressSpinner>
                     </div>
 
                     <div *ngSwitchCase="false">
                         <button mat-icon-button class="upload-btn" class="file-action-button"
-                            (click)="fileUpload.click()">
-                            <mat-icon class="file-action-icon">attach_file</mat-icon>
+                                (click)="fileUpload.click()">
+                            <i class="pi pi-paperclip file-action-icon"></i>
                         </button>
                     </div>
                 </ng-container>
                 <div *ngIf="properties.icon">
                     <button mat-icon-button class="upload-btn" class="file-action-button" (click)="iconPreview()">
-                        <mat-icon class="file-action-icon">remove_red_eye</mat-icon>
+                        <i class="pi pi-eye file-action-icon"></i>
                     </button>
                 </div>
             </div>
@@ -83,12 +92,12 @@
         <tr class="propHeader">
             <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'dynamicFilterGroup')"
                 [attr.collapse]="propHidden.dynamicFilterGroup">
-                <mat-icon>arrow_drop_down</mat-icon>
+                <i class="pi pi-eye file-action-icon"></i>
             </td>
             <td class="propHeaderCell cellName">Dynamic Filters</td>
             <td class="propHeaderCell">
                 <div class="propAdd" (click)="addDynamicFilter()">
-                    <mat-icon>add</mat-icon>
+                    <i class="pi pi-plus"></i>
                     <span>Add Dynamic Filter</span>
                 </div>
             </td>
@@ -97,18 +106,18 @@
             <tr class="propRow" [attr.collapse]="propHidden.dynamicFilterGroup">
                 <td class="propRowCol cellCollapse" (click)="onHide(propHidden.dynamicFilters, i)"
                     [attr.collapse]="propHidden.dynamicFilters[i]">
-                    <mat-icon>arrow_drop_down</mat-icon>
+                    <i class="pi pi-caret-down"></i>
                 </td>
-                <td class="propRowCell cellName">Dynamic Filter {{i}}</td>
+                <td class="propRowCell cellName">Dynamic Filter {{ i }}</td>
                 <td class="propRowCell">
                     <span
                         *ngIf="properties.dynamicFilters[i].field && properties.dynamicFilters[i].type && properties.dynamicFilters[i].nextItemField"
                         class="not-editable-text">
-                        {{properties.dynamicFilters[i].nextItemField}} {{properties.dynamicFilters[i].type}}
-                        {{properties.dynamicFilters[i].field}}
+                        {{ properties.dynamicFilters[i].nextItemField }} {{ properties.dynamicFilters[i].type }}
+                        {{ properties.dynamicFilters[i].field }}
                     </span>
                     <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveDynamicFilter(i)">
-                        <mat-icon>delete</mat-icon>
+                        <i class="pi pi-trash"></i>
                     </span>
                 </td>
             </tr>
@@ -117,12 +126,15 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Type</td>
                 <td class="propRowCell">
-                    <mat-select [(value)]="properties.dynamicFilters[i].type" [disabled]="readonly" (change)="onSave()">
-                        <mat-option value="equal">Equal</mat-option>
-                        <mat-option value="not_equal">Not Equal</mat-option>
-                        <mat-option value="in">In</mat-option>
-                        <mat-option value="not_in">Not In</mat-option>
-                    </mat-select>
+                    <p-dropdown [(ngModel)]="properties.dynamicFilters[i].type"
+                                [options]="filterTypeOptions"
+                                [disabled]="readonly"
+                                (onChange)="onSave()"
+                                [appendTo]="'body'"
+                                placeholder="Select Filter Type"
+                                optionLabel="label"
+                                optionValue="value">
+                    </p-dropdown>
                 </td>
             </tr>
             <tr class="propRow" [attr.collapse]="propHidden.dynamicFilterGroup || propHidden.dynamicFilters[i]">
@@ -130,7 +142,7 @@
                 <td class="propRowCell cellName">Field Path</td>
                 <td class="propRowCell">
                     <document-path [(value)]="properties.dynamicFilters[i].field" [readonly]="readonly"
-                        (change)="onSave()"></document-path>
+                                   (change)="onSave()"></document-path>
                 </td>
             </tr>
             <tr class="propRow" [attr.collapse]="propHidden.dynamicFilterGroup || propHidden.dynamicFilters[i]">
@@ -138,7 +150,7 @@
                 <td class="propRowCell cellName">Next Item Field Path</td>
                 <td class="propRowCell">
                     <document-path [(value)]="properties.dynamicFilters[i].nextItemField" [readonly]="readonly"
-                        (change)="onSave()">
+                                   (change)="onSave()">
                     </document-path>
                 </td>
             </tr>
@@ -148,7 +160,7 @@
     <tr class="propHeader">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'commonVariableGroup')"
             [attr.collapse]="propHidden.commonVariableGroup">
-            <mat-icon>arrow_drop_down</mat-icon>
+            <i class="pi pi-chevron-down"></i>
         </td>
         <td class="propHeaderCell cellName">Common Variables</td>
         <td class="propHeaderCell"></td>
@@ -195,26 +207,28 @@
     </tr>
 
     <tr class="propHeader">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'variableGroup')" [attr.collapse]="propHidden.variableGroup">
-            <mat-icon>arrow_drop_down</mat-icon>
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'variableGroup')"
+            [attr.collapse]="propHidden.variableGroup">
+            <i class="pi pi-chevron-down"></i>
         </td>
         <td class="propHeaderCell cellName">Variables</td>
         <td class="propHeaderCell">
             <div class="propAdd" (click)="addVariable()">
-                <mat-icon>add</mat-icon>
+                <i class="pi pi-plus"></i>
                 <span>Add Variable</span>
             </div>
         </td>
     </tr>
     <ng-container *ngFor="let item of properties.variables; let i=index">
         <tr class="propRow" [attr.collapse]="propHidden.variableGroup">
-            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.variables, i)" [attr.collapse]="propHidden.variables[i]">
-                <mat-icon>arrow_drop_down</mat-icon>
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.variables, i)"
+                [attr.collapse]="propHidden.variables[i]">
+                <i class="pi pi-chevron-down"></i>
             </td>
-            <td class="propRowCell cellName">Variable {{i}}</td>
+            <td class="propRowCell cellName">Variable {{ i }}</td>
             <td class="propRowCell">
                 <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveVariable(i)">
-                    <mat-icon>delete</mat-icon>
+                    <i class="pi pi-trash"></i>
                 </span>
             </td>
         </tr>
@@ -224,7 +238,7 @@
             <td class="propRowCell cellName">Name</td>
             <td class="propRowCell">
                 <input class="prop-input" [(ngModel)]="properties.variables[i].name" [readonly]="readonly"
-                    (blur)="onSave()">
+                       (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.variableGroup || propHidden.variables[i]">
@@ -232,37 +246,39 @@
             <td class="propRowCell cellName">Value</td>
             <td class="propRowCell">
                 <document-path [(value)]="properties.variables[i].value" [readonly]="readonly" [displayTooltip]="true"
-                    (change)="onSave()">
+                               (change)="onSave()">
                 </document-path>
             </td>
         </tr>
     </ng-container>
 
     <tr class="propHeader">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'filterGroup')" [attr.collapse]="propHidden.filterGroup">
-            <mat-icon>arrow_drop_down</mat-icon>
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'filterGroup')"
+            [attr.collapse]="propHidden.filterGroup">
+            <i class="pi pi-chevron-down"></i>
         </td>
         <td class="propHeaderCell cellName">Filters</td>
         <td class="propHeaderCell">
             <div class="propAdd" (click)="addFilter()">
-                <mat-icon>add</mat-icon>
+                <i class="pi pi-plus"></i>
                 <span>Add Filter</span>
             </div>
         </td>
     </tr>
     <ng-container *ngFor="let item of properties.filters; let i=index">
         <tr class="propRow" [attr.collapse]="propHidden.filterGroup">
-            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.filters, i)" [attr.collapse]="propHidden.filters[i]">
-                <mat-icon>arrow_drop_down</mat-icon>
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.filters, i)"
+                [attr.collapse]="propHidden.filters[i]">
+                <i class="pi pi-chevron-down"></i>
             </td>
-            <td class="propRowCell cellName">Filter {{i}}</td>
+            <td class="propRowCell cellName">Filter {{ i }}</td>
             <td class="propRowCell">
                 <span *ngIf="properties.filters[i].field && properties.filters[i].type && properties.filters[i].value"
-                    class="not-editable-text">
-                    {{properties.filters[i].field}} {{properties.filters[i].type}} {{properties.filters[i].value}}
+                      class="not-editable-text">
+                    {{ properties.filters[i].field }} {{ properties.filters[i].type }} {{ properties.filters[i].value }}
                 </span>
                 <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveFilter(i)">
-                    <mat-icon>delete</mat-icon>
+                    <i class="pi pi-trash"></i>
                 </span>
             </td>
         </tr>
@@ -271,22 +287,30 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Type</td>
             <td class="propRowCell">
-                <mat-select [(value)]="properties.filters[i].type" [disabled]="readonly" (change)="onSave()">
-                    <mat-option value="equal">Equal</mat-option>
-                    <mat-option value="not_equal">Not Equal</mat-option>
-                    <mat-option value="in">In</mat-option>
-                    <mat-option value="not_in">Not In</mat-option>
-                </mat-select>
+                <p-dropdown [(ngModel)]="properties.filters[i].type"
+                            [options]="filterTypeOptions"
+                            [disabled]="readonly"
+                            (onChange)="onSave()"
+                            placeholder="Select Filter Type"
+                            optionLabel="label"
+                            appendTo="body"
+                            optionValue="value">
+                </p-dropdown>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Variable Type</td>
             <td class="propRowCell">
-                <mat-select [(value)]="properties.filters[i].typeValue" [disabled]="readonly" (change)="onSave()">
-                    <mat-option value="value">Value</mat-option>
-                    <mat-option value="variable">Variable</mat-option>
-                </mat-select>
+                <p-dropdown [(ngModel)]="properties.filters[i].typeValue"
+                            [options]="typeValueOptions"
+                            [disabled]="readonly"
+                            (onChange)="onSave()"
+                            placeholder="Select Type Value"
+                            optionLabel="label"
+                            appendTo="body"
+                            optionValue="value">
+                </p-dropdown>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
@@ -294,7 +318,7 @@
             <td class="propRowCell cellName">Field</td>
             <td class="propRowCell">
                 <document-path [(value)]="properties.filters[i].field" [readonly]="readonly"
-                    (change)="onSave()"></document-path>
+                               (change)="onSave()"></document-path>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
@@ -302,7 +326,7 @@
             <td class="propRowCell cellName">Value</td>
             <td class="propRowCell">
                 <input class="prop-input" [(ngModel)]="properties.filters[i].value" [readonly]="readonly"
-                    (blur)="onSave()">
+                       (blur)="onSave()">
             </td>
         </tr>
     </ng-container>

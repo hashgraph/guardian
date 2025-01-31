@@ -19,6 +19,8 @@ import {
 import { TagModule } from 'primeng/tag';
 import { ActivityComponent } from '@components/activity/activity.component';
 import { InputTextareaModule } from 'primeng/inputtextarea';
+import { ColumnType, TableComponent } from '@components/table/table.component';
+import { HederaType } from '@components/hedera-explorer/hedera-explorer.component';
 
 export enum TokenType {
     FT = 'FUNGIBLE_COMMON',
@@ -46,15 +48,20 @@ export enum TokenType {
         OverviewFormComponent,
         ActivityComponent,
         TagModule,
-        InputTextareaModule
+        InputTextareaModule,
+        TableComponent
     ],
 })
 export class TokenDetailsComponent extends BaseDetailsComponent {
-    tabs: any[] = ['overview', 'raw'];
+    public labels: any[] = [];
+
+    tabs: any[] = ['overview', 'labels', 'raw'];
+
     overviewFields: OverviewFormField[] = [
         {
             label: 'details.token.overview.token_id',
             path: 'tokenId',
+            hederaExplorerType: HederaType.TOKEN,
         },
         {
             label: 'details.token.overview.name',
@@ -67,12 +74,47 @@ export class TokenDetailsComponent extends BaseDetailsComponent {
         {
             label: 'details.token.overview.treasury',
             path: 'treasury',
+            link: '/tokens',
+            filters: {
+                treasury: 'treasury',
+            },
         },
         {
             label: 'details.token.overview.type',
             path: 'type',
         },
     ];
+
+    labelColumns: any[] = [
+        {
+            title: 'details.hedera.consensus_timestamp',
+            field: 'consensusTimestamp',
+            type: ColumnType.TEXT,
+            width: '250px',
+            link: {
+                field: 'consensusTimestamp',
+                url: '/label-documents',
+            },
+        },
+        {
+            title: 'details.hedera.topic_id',
+            field: 'topicId',
+            type: ColumnType.TEXT,
+            width: '100px'
+        },
+        {
+            title: 'details.hedera.name',
+            field: 'analytics.labelName',
+            type: ColumnType.TEXT,
+            width: '200px'
+        },
+        {
+            title: 'details.hedera.issuer',
+            field: 'analytics.issuer',
+            type: ColumnType.TEXT,
+            width: '300px'
+        }
+    ]
 
     additionalOveriviewFormFields: OverviewFormField[] = [];
 
@@ -124,7 +166,16 @@ export class TokenDetailsComponent extends BaseDetailsComponent {
         }
     }
 
-    protected override onNavigate(): void {}
+    protected override setResult(result?: any) {
+        super.setResult(result);
+        if (result) {
+            this.labels = result.labels || [];
+        } else {
+            this.labels = [];
+        }
+    }
+
+    protected override onNavigate(): void { }
 
     protected override getTabIndex(name: string): number {
         if (this.target) {

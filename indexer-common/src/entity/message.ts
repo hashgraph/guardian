@@ -1,14 +1,6 @@
-import {
-    Entity,
-    Property,
-    PrimaryKey,
-    SerializedPrimaryKey,
-    Unique,
-    Index,
-    Enum,
-} from '@mikro-orm/core';
-import { ObjectId } from '@mikro-orm/mongodb';
 import { Message as IMessage, MessageAction, MessageType } from '@indexer/interfaces';
+import { Entity, Enum, Index, PrimaryKey, Property, SerializedPrimaryKey, Unique } from '@mikro-orm/core';
+import { ObjectId } from '@mikro-orm/mongodb';
 
 @Entity()
 @Unique({ name: 'consensus_timestamp', properties: ['consensusTimestamp'] })
@@ -16,12 +8,17 @@ import { Message as IMessage, MessageAction, MessageType } from '@indexer/interf
 @Index({ name: 'status', properties: ['status'] })
 @Index({ name: 'type', properties: ['type'] })
 @Index({ name: 'files', properties: ['files'] })
+@Index({ name: 'last_update', properties: ['lastUpdate'] })
+@Index({ name: 'loaded', properties: ['loaded'] })
 export class Message implements IMessage {
     @PrimaryKey()
     _id: ObjectId;
 
     @SerializedPrimaryKey()
     id!: string;
+
+    @Property()
+    lastUpdate: number;
 
     @Property()
     topicId: string;
@@ -69,6 +66,7 @@ export class Message implements IMessage {
         textSearch?: string;
         childSchemas?: any[];
         owner?: string;
+        issuer?: string;
         tools?: any[];
         tokens?: string[];
         vcCount?: number;
@@ -77,6 +75,9 @@ export class Message implements IMessage {
         hash?: string;
         hashMap?: any;
         properties?: string[];
+        tokenId?: string,
+        labels?: string[];
+        labelName?: string;
     };
 
     @Property({ nullable: true })
@@ -90,4 +91,10 @@ export class Message implements IMessage {
 
     @Property({ nullable: true })
     tokens: string[];
+
+    @Property({ nullable: true })
+    sequenceNumber?: number;
+
+    @Property({ nullable: true })
+    loaded: boolean;
 }

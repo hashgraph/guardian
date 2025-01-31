@@ -10,7 +10,8 @@ import { EntityService } from './api/entities.service.js';
 import { FiltersService } from './api/filters.service.js';
 import { LandingService } from './api/landing.service.js';
 import { AnalyticsService } from './api/analytics.service.js';
-import { SynchronizationAnalytics, SynchronizationContracts, SynchronizationDid, SynchronizationModules, SynchronizationPolicy, SynchronizationProjects, SynchronizationRegistries, SynchronizationRoles, SynchronizationSchemas, SynchronizationTools, SynchronizationTopics, SynchronizationVCs, SynchronizationVPs, } from './helpers/synchronizers/index.js';
+import { SettingsService } from './api/settings.service.js';
+import { SynchronizationAll } from './helpers/synchronizers/index.js';
 import { fixtures } from './helpers/fixtures.js';
 
 const channelName = (
@@ -58,14 +59,6 @@ async function updateIndexes() {
     }
 }
 
-function getMask(mask: string | undefined): string {
-    return (mask || '0 * * * *');
-}
-
-function getBoolean(flag: string | undefined): boolean {
-    return (flag?.toLowerCase() === 'true');
-}
-
 @Module({
     imports: [
         ClientsModule.register([
@@ -86,7 +79,8 @@ function getBoolean(flag: string | undefined): boolean {
         EntityService,
         FiltersService,
         LandingService,
-        AnalyticsService
+        AnalyticsService,
+        SettingsService,
     ],
 })
 class AppModule { }
@@ -138,43 +132,7 @@ Promise.all([
         /**
          * Sync tasks
          */
-        (new SynchronizationAnalytics(getMask(process.env.SYNC_ANALYTICS_MASK)))
-            .start(getBoolean(process.env.START_SYNC_ANALYTICS));
-        (new SynchronizationProjects(getMask(process.env.SYNC_ANALYTICS_MASK)))
-            .start(getBoolean(process.env.START_SYNC_ANALYTICS));
-
-        (new SynchronizationModules(getMask(process.env.SYNC_MODULES_MASK)))
-            .start(getBoolean(process.env.START_SYNC_MODULES));
-
-        (new SynchronizationRegistries(getMask(process.env.SYNC_REGISTRIES_MASK)))
-            .start(getBoolean(process.env.START_SYNC_REGISTRIES));
-
-        (new SynchronizationRoles(getMask(process.env.SYNC_ROLES_MASK)))
-            .start(getBoolean(process.env.START_SYNC_ROLES));
-
-        (new SynchronizationTools(getMask(process.env.SYNC_TOOLS_MASK)))
-            .start(getBoolean(process.env.START_SYNC_TOOLS));
-
-        (new SynchronizationTopics(getMask(process.env.SYNC_TOPICS_MASK)))
-            .start(getBoolean(process.env.START_SYNC_TOPICS));
-
-        (new SynchronizationSchemas(getMask(process.env.SYNC_SCHEMAS_MASK)))
-            .start(getBoolean(process.env.START_SYNC_SCHEMAS));
-
-        (new SynchronizationDid(getMask(process.env.SYNC_DID_DOCUMENTS_MASK)))
-            .start(getBoolean(process.env.START_SYNC_DID_DOCUMENTS));
-
-        (new SynchronizationVCs(getMask(process.env.SYNC_VC_DOCUMENTS_MASK)))
-            .start(getBoolean(process.env.START_SYNC_VC_DOCUMENTS));
-
-        (new SynchronizationVPs(getMask(process.env.SYNC_VP_DOCUMENTS_MASK)))
-            .start(getBoolean(process.env.START_SYNC_VP_DOCUMENTS));
-
-        (new SynchronizationPolicy(getMask(process.env.SYNC_POLICIES_MASK)))
-            .start(getBoolean(process.env.START_SYNC_POLICIES));
-
-        (new SynchronizationContracts(getMask(process.env.SYNC_CONTRACTS_MASK)))
-            .start(getBoolean(process.env.START_SYNC_CONTRACTS));
+        SynchronizationAll.createAllTasks();
     },
     (reason) => {
         console.log(reason);

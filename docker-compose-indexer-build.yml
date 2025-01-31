@@ -28,6 +28,13 @@ services:
   ipfs-node:
     image: ipfs/kubo:v0.31.0
 
+  ipfs-check:
+    image: ghcr.io/ipfs/ipfs-check:main-latest
+    expose:
+      - 3333
+    ports:
+      - 3333:3333
+
   message-broker:
     image: nats:2.9.25
     expose:

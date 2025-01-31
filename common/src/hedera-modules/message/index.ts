@@ -21,3 +21,6 @@ export { GuardianRoleMessage } from './guardian-role-message.js';
 export { UserPermissionsMessage } from './user-permissions-message.js';
 export { StatisticMessage } from './statistic-message.js';
 export { StatisticAssessmentMessage } from './statistic-assessment-message.js';
+export { LabelMessage } from './label-message.js';
+export { LabelDocumentMessage } from './label-document-message.js';
+export { FormulaMessage } from './formula-message.js';

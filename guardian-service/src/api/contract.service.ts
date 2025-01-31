@@ -1328,7 +1328,7 @@ export async function contractAPI(
                     type: TopicType.ContractTopic,
                     name: TopicType.ContractTopic,
                     description: TopicType.ContractTopic,
-                    owner: owner.creator,
+                    owner: owner.owner,
                     policyId: null,
                     policyUUID: null,
                 },
@@ -1355,7 +1355,7 @@ export async function contractAPI(
             );
             const contract = await dataBaseServer.save(Contract, {
                 contractId,
-                owner: owner.creator,
+                owner: owner.owner,
                 description,
                 permissions: type === ContractType.WIPE ?
                     (version !== '1.0.0' ? 7 : 15)
@@ -1380,7 +1380,7 @@ export async function contractAPI(
                 .setTopicObject(topic)
                 .sendMessage(contractMessage);
             const userTopic = await TopicConfig.fromObject(
-                await DatabaseServer.getTopicByType(owner.creator, TopicType.UserTopic),
+                await DatabaseServer.getTopicByType(owner.owner, TopicType.UserTopic),
                 true
             );
             await topicHelper.twoWayLink(topic, userTopic, contractMessageResult.getId());
@@ -1436,7 +1436,7 @@ export async function contractAPI(
                 Contract,
                 {
                     contractId,
-                    owner: owner.creator,
+                    owner: owner.owner,
                     description,
                     permissions,
                     topicId: memo,
@@ -1454,7 +1454,7 @@ export async function contractAPI(
                 },
                 {
                     contractId,
-                    owner: owner.creator,
+                    owner: owner.owner,
                 }
             ) as Contract & { contractId: string; version: string; };
             if (
@@ -3408,4 +3408,34 @@ export async function contractAPI(
             return new MessageError(error);
         }
     });
+
+    ApiResponse(ContractAPI.GET_RETIRE_VCS_FROM_INDEXER, async (msg: {
+        owner: IOwner,
+        contractTopicId: string
+    }) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid get contract parameters');
+            }
+
+            const { owner, contractTopicId } = msg;
+
+            if (!owner.creator) {
+                throw new Error('Owner is required');
+            }
+
+            const messages = await new Workers().addNonRetryableTask({
+                type: WorkerTaskType.ANALYTICS_GET_RETIRE_DOCUMENTS,
+                data: {
+                    payload: { options: { topicId: contractTopicId } }
+                }
+            }, 2);
+
+            return new MessageResponse([messages, messages.length]);
+        } catch (error) {
+            await logger.error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
 }

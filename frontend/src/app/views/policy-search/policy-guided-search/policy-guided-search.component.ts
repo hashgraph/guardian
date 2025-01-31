@@ -1,11 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { PolicyCategoryType } from '@guardian/interfaces';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { IPolicyCategory } from 'src/app/modules/policy-engine/structures';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { TagsService } from 'src/app/services/tag.service';
+import {Component, OnInit} from '@angular/core';
+import {UntypedFormControl} from '@angular/forms';
+import {PolicyCategoryType} from '@guardian/interfaces';
+import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
+import {IPolicyCategory} from 'src/app/modules/policy-engine/structures';
+import {PolicyEngineService} from 'src/app/services/policy-engine.service';
+import {TagsService} from 'src/app/services/tag.service';
 
 interface PolicyResult {
     id: string;
@@ -26,7 +25,7 @@ export class PolicyGuidedSearchComponent implements OnInit {
     loading: boolean = false;
 
     selectedCategoryIds: string[] = [];
-    searchFilter = new UntypedFormControl({ value: '', disabled: true });
+    searchFilter = new UntypedFormControl({value: '', disabled: true});
 
     policyScale: string;
     categories: IPolicyCategory[] = [];
@@ -40,7 +39,6 @@ export class PolicyGuidedSearchComponent implements OnInit {
 
     constructor(
         public tagsService: TagsService,
-        public dialog: MatDialog,
         private policyEngineService: PolicyEngineService
     ) {
     }

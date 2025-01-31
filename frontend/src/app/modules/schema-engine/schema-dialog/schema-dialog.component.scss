@@ -39,7 +39,8 @@ textarea {
     background-color: unset;
 }
 
-:host .restore-data button mat-icon {
+:host .restore-data button i,
+:host .restore-data button svg {
     margin-left: 5px;
 }
 

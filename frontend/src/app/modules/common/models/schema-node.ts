@@ -1,5 +1,5 @@
 import { Schema } from "@guardian/interfaces";
-import { TreeListView, TreeListData, TreeListItem } from "../tree-graph/tree-list";
+import { TreeListView, TreeListData } from "../tree-graph/tree-list";
 import { TreeNode } from "../tree-graph/tree-node";
 
 export interface SchemaData {
@@ -76,6 +76,7 @@ export class DocumentNode extends TreeNode<any> {
         const clone = new DocumentNode(this.id, this.type, this.data);
         clone.type = this.type;
         clone.data = this.data;
+        clone.entity = this.entity;
         clone.childIds = new Set(this.childIds);
         return clone;
     }

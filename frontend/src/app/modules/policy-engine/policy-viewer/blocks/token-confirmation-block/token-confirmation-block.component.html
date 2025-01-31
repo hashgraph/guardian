@@ -3,28 +3,36 @@
         <div class="title">Token {{ action }}</div>
         <div class="description">
             Please enter the private key for the account
-            (<hedera-explorer [params]="accountId" type="accounts">{{ accountId }}</hedera-explorer>)
+            (
+            <hedera-explorer [params]="accountId" type="accounts">{{ accountId }}</hedera-explorer>
+            )
             to <span>{{ action }}</span> it with the token <span>{{ tokenName }}</span>
-            (<hedera-explorer [params]="tokenId" type="tokens">{{ tokenId }}</hedera-explorer>)
+            (
+            <hedera-explorer [params]="tokenId" type="tokens">{{ tokenId }}</hedera-explorer>
+            )
         </div>
         <form class="form" [formGroup]="dataForm">
-            <mat-form-field appearance="outline">
-                <mat-label>* Private Key</mat-label>
-                <input #privateKeyInput formControlName="privateKey" matInput placeholder="Private Key" type="password" />
-                <button
-                    (click)="privateKeyInput.type === 'password'
-                            ? (privateKeyInput.type = 'text')
-                            : (privateKeyInput.type = 'password')"
-                    aria-label="Visibility"
-                    mat-icon-button
-                    matSuffix
-                >
-                    <mat-icon>
-                        {{privateKeyInput.type === "password" ? "visibility" : "visibility_off"}}
-                    </mat-icon>
-                </button>
-            </mat-form-field>
-            <div style="margin-top: 15px; margin-left: auto;">
+            <div class="form-group">
+                <div class="input-group">
+                    <input
+                        pInputText
+                        id="privateKeyInput"
+                        #privateKeyInput
+                        formControlName="privateKey"
+                        placeholder="Private Key"
+                        type="password"
+                        class="full-width">
+                    <button
+                        type="button"
+                        (click)="togglePasswordVisibility(privateKeyInput)"
+                        aria-label="Toggle password visibility"
+                        class="p-button-icon-only">
+                        <i [ngClass]="privateKeyInput.type === 'password' ? 'pi pi-eye' : 'pi pi-eye-slash'"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px; margin-left: auto;">
                 <p-button
                     (click)="onSkip()"
                     [label]="

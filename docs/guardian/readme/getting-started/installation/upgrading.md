@@ -1,4 +1,4 @@
-# ⬆ Upgrading
+# ⬆️ Upgrading
 
 ## Introduction
 
@@ -37,8 +37,6 @@ Data Upgrading process involves the developer team providing the solution for Up
 The migration process guides the team to produce artifacts that will help to correctly define the migration itself and the customer to decide for upgrading and executing the data migration.
 
 In this case the migration that we account for is an homogeneous migration: a migration from source databases to target databases where the source and target databases are of the same database management system. During upgrading the system, the schemas for the source and target databases are almost identical except for changes in some of the fields, collections and documents. For changing data the source databases must be transformed during migration.
-
-<figure><img src="https://lh6.googleusercontent.com/Qrl-sFH7iOX48hMQd-2WenXxx_MZrwlzZt25Wje3PJlvtu7Y-o8rMKUJ4VcPWT7gLTjkuO72YK_xN073UyTYBcciEXyLVV_C8nxzwkwSlmhiUmPHM4n3cEBaLqTHgxbFTETL44x-F8UbZ19CUDk1yz4" alt="" width="563"><figcaption></figcaption></figure>
 
 #### 1) Data Migration Profiling:
 
@@ -257,7 +255,7 @@ Service1 2.1.3 is compatible with only with version 3.2.x of service3 and just b
 
 Service 2.1.3 is backward compatible with with all versions of service6 until 4.x.x
 
-Service 3.2.3 ……\\
+Service 3.2.3 ……
 
 | <p><br></p>                                                    | **service1** | **service2**             | **service3**            | **service4** | **service5** | **service6** |
 | -------------------------------------------------------------- | ------------ | ------------------------ | ----------------------- | ------------ | ------------ | ------------ |
@@ -350,8 +348,6 @@ Guardian migration consists of a small script that runs as the first step of eve
 
 Guardian already deals with this problem: Due to the long-term nature of some sustainability projects, Policy Engine (PE) maintains unlimited ‘read’ backward compatibility with 'old’ schema definition language elements. In other words, new PE versions will recognize and be able to process all existing valid policies with schemas defined starting from the beginning of Guardian existence. ([https://docs.hedera.com/guardian/guardian/standard-registry/schemas/schema-versioning-and-deprecation-policy](https://docs.hedera.com/guardian/guardian/standard-registry/schemas/schema-versioning-and-deprecation-policy))
 
-<figure><img src="https://lh6.googleusercontent.com/gH_1XRPtZCQYbAhwQ0h88RmJIPpYoWAEQWvHlVMIF1RRNtnxymKtclI7srYsap4qyjX52B-5Msbyz6xG5F_SHXV8pMWbUI-sUYKpmADDZf7udl-B4QdnDDHUveOzIdFrspoGNoyzBfUYYQsbP8dY3mg" alt="" width="563"><figcaption></figcaption></figure>
-
 **Guardian dials with Schema breaking changes**
 
 * Removing or renaming an element;
@@ -402,8 +398,6 @@ All microservices should make it clear what version of a different microservice 
 
 A good way of versioning is through semantic versioning, that is, keeping versions as a set of numbers that make it clear when a breaking change happens (for instance, one number can mean that the API has been modified).
 
-<figure><img src="https://lh6.googleusercontent.com/x8r8JqXXt9WeTdmc3x8FX20iQ756f5zb2l1bjMqGvBa82TRO4spDi7nVIDJdDWkizSkoo4-NJsmrAZF1iEyjlhai7D-BwdbSqt7tOHCDQ1JTGAKfXQECpNkF18mBH7uBu-ZXtmgs-3HRUan52LHOrY8" alt="" width="563"><figcaption></figcaption></figure>
-
 **Version Technique**
 
 * URI versioning: In this approach, developers add version information directly to a service's [URI](https://www.techtarget.com/whatis/definition/URI-Uniform-Resource-Identifier), which provides a quick way to identify a specific version of the service by simply glancing at either the [URL or URN](https://www.cbtnuggets.com/blog/technology/networking/networking-basics-whats-the-difference-between-uri-url-and-urn). Here's an example of how that looks:
@@ -416,7 +410,7 @@ A good way of versioning is through semantic versioning, that is, keeping versio
 Application processes can be shut down on purpose or through an unexpected event. An application process should be completely disposable without any unwanted side-effects. Moreover, processes should start quickly.
 
 An important part of managing dependencies has to do with what happens when a service is updated to fit new requirements or solve a design issue. **Other microservices may depend on the semantics of the old version or worse: depend on the way data is modeled in the database.**\
-As microservices are developed in isolation, this means a team usually cannot wait for another team to make the necessary changes to a dependent service before going live. The way to solve this is through versioning. **All microservices should make it clear what version of a different microservice they require and what version they are.**\\
+As microservices are developed in isolation, this means a team usually cannot wait for another team to make the necessary changes to a dependent service before going live. The way to solve this is through versioning. **All microservices should make it clear what version of a different microservice they require and what version they are.**
 
 #### 6) Microservice apps are expected to run in an execution environment as stateless processes.
 
@@ -443,10 +437,7 @@ Although cloud targets infrastructures, **Azure** and **AWS**, namely, offer the
 * Azure App Services, optimized for web services **enables the deployment**:
   * From source code (gain cloud dependency);
   * From docker image;
-  * From the docker-compose.yml file (the docker containers are inside a single AppService,single POD, rather than multiple AppServices as one might expect.)
-
-and
-
+  * From the docker-compose.yml file (the docker containers are inside a single AppService,single POD, rather than multiple AppServices as one might expect.) and
 * Amazon elastic container registry.
 
 At the same time, they offer services that grant direct access to Kubernetes: Azure has its **Azure Kubernetes Service (AKS)** while AWS has Amazon **EKS (and obviously on EC2)**.
@@ -489,9 +480,7 @@ For the Guardian Upgrade process the Green Instance will be the copy on which al
 
 ### Review the release notes and documentation
 
-Thoroughly review the release notes and documentation provided for the target version. These resources will help you understand the changes, new features, and any potential breaking changes in the upgraded version.\\
-
-<figure><img src="https://lh6.googleusercontent.com/2L368pX30ogGl4adgM3f911u1cwIBZg8wVnXPoe-ZHpi7X6FOe20Kh16yYU3itt6bozrpJKH_QP49QjMHGiNggmb70i2hD8M1um6YIpuqYvtJUeVXRKfJpT_JA4q3iA2X_xzHUwQ3sakOlk5Ns0SdTY" alt="" width="563"><figcaption></figcaption></figure>
+Thoroughly review the release notes and documentation provided for the target version. These resources will help you understand the changes, new features, and any potential breaking changes in the upgraded version.
 
 You can find the installation guide and release notes for the target version in the Hedera Guardian [documentation](https://docs.hedera.com/guardian/guardian/readme/getting-started) and in the Guardian [official repository](https://github.com/hashgraph/guardian/releases).
 
@@ -499,7 +488,7 @@ You can find the installation guide and release notes for the target version in 
 
 It is essential to create a complete backup of the existing Hedera Guardian application and its associated databases before proceeding with the upgrade. This ensures that the application data is safeguarded and can be restored if needed.
 
-Refer to this document, [Backup tool](https://docs.google.com/document/d/1PG7dKgKHigNBS-Bs5lHIdgwvObKzAWwkTLk1XY\_9M0s/edit), for more details.
+Refer to this document, [Backup tool](https://docs.google.com/document/d/1PG7dKgKHigNBS-Bs5lHIdgwvObKzAWwkTLk1XY_9M0s/edit), for more details.
 
 While backing up consider that until release 2.13.0 environment was described by **.env.docker**
 
@@ -515,7 +504,7 @@ At folder: ./guardian/configs
 
 At folder: ./guardian/\<service-name>/configs/
 
-Make sure to back up all these files. As for an example, starting from the implementation provided at [Backup tool](https://docs.google.com/document/d/1PG7dKgKHigNBS-Bs5lHIdgwvObKzAWwkTLk1XY\_9M0s/edit):
+Make sure to back up all these files. As for an example, starting from the implementation provided at [Backup tool](https://docs.google.com/document/d/1PG7dKgKHigNBS-Bs5lHIdgwvObKzAWwkTLk1XY_9M0s/edit):
 
 1. configure /usr/local/bin to contain the whole guardian tree folders.
 2. change line 6 of script configs-backup.sh from:
@@ -599,7 +588,7 @@ If the prior version of the Hedera Guardian application has been customized by y
 
 #### Identify performance behavior
 
-Collect metrics from the current Guardian running instance to analyze performance, logs, and metrics to identify current instance behavior as of monitoring[ tools](https://docs.hedera.com/guardian/monitoring-tools) available for Guardian since release 2.12.1.
+Collect metrics from the current Guardian running instance to analyze performance, logs, and metrics to identify current instance behavior as of [monitoring tools](../../../../guardian-in-production/monitoring-tools.md) available for Guardian since release 2.12.1.
 
 ### Tasks Checklist during the upgrade
 
@@ -711,7 +700,7 @@ Once testing is successfully completed:
 
 #### Monitor and Rollback if Needed
 
-Continuously monitor the green environment's performance, logs, and metrics to identify any issues or anomalies. Compare the result of previous metrics to the new revealed metrics as per the [monitoring tools](https://docs.hedera.com/guardian/monitoring-tools) available for Guardian since release 2.12.1.
+Continuously monitor the green environment's performance, logs, and metrics to identify any issues or anomalies. Compare the result of previous metrics to the new revealed metrics as per the [monitoring tools](../../../../guardian-in-production/monitoring-tools.md) available for Guardian since release 2.12.1.
 
 If any critical issues arise, you can quickly rollback by switching the load balancer to route all traffic back to the blue environment.
 

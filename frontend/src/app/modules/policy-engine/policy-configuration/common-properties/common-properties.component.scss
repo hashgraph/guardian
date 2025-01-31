@@ -20,7 +20,8 @@
     color: #6166ff;
 }
 
-.mat-option-link mat-icon {
+.mat-option-link i,
+.mat-option-link svg,{
     margin-right: 2px;
     top: -2px;
     left: -4px;
@@ -44,7 +45,8 @@
     top: 4px;
 }
 
-.prop-input-event mat-icon {
+.prop-input-event i,
+.prop-input-event svg {
     position: relative !important;
     font-size: 20px !important;
     height: 20px;
@@ -65,7 +67,8 @@
     top: 4px;
 }
 
-.prop-output-icon mat-icon {
+.prop-output-icon i,
+.prop-output-icon svg {
     position: relative !important;
     font-size: 20px !important;
     height: 20px;
@@ -83,7 +86,38 @@
     font-weight: 500
 }
 
+.wrapper-readonly-prop {
+    border: 4px solid #f7f7f7;
+    border-radius: 6px;
+}
+
 .current-elm {
     color: #5161e1 !important;
     font-weight: 500;
+    height: 30px;
+    padding-top: 6px;
+    font-size:16px;
+    font-family: 'Roboto', sans-serif;
+}
+
+.propRowCell {
+    height: 40px;
+}
+
+.propRowCell span {
+    font-size:16px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+}
+
+::ng-deep .propRowCell input.prop-input {
+    min-height: 38px;
+    font-size: 16px !important;
+    color: var(--color-grey-6);
+    font-family: "Roboto", sans-serif;
+}
+
+::ng-deep p-dropdown .p-dropdown,
+::ng-deep p-multiselect .p-multiselect {
+    width: 100% !important;
 }

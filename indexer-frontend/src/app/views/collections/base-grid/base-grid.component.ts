@@ -149,7 +149,6 @@ export abstract class BaseGridComponent {
 
     public updateRequest(): void {
         const filters = this.getFilters();
-        console.log(filters);
         this.router.navigate([], {
             relativeTo: this.route,
             queryParams: filters,

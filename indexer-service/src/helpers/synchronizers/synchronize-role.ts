@@ -10,7 +10,7 @@ export class SynchronizationRoles extends SynchronizationTask {
         super('roles', mask);
     }
 
-    protected override async sync(): Promise<void> {
+    public override async sync(): Promise<void> {
         const em = DataBaseHelper.getEntityManager();
         const collection = em.getCollection<Message>('message');
 
@@ -50,6 +50,7 @@ export class SynchronizationRoles extends SynchronizationTask {
         if (policyMessage) {
             analytics.policyId = policyMessage.consensusTimestamp;
             analytics.textSearch += `|${policyMessage.consensusTimestamp}`;
+            analytics.sr = policyMessage.owner;
         }
         return analytics;
     }
@@ -62,6 +63,9 @@ export class SynchronizationRoles extends SynchronizationTask {
                 },
                 {
                     'analytics.policyId': null,
+                },
+                {
+                    'analytics.sr': null,
                 },
             ],
         };

@@ -25,6 +25,7 @@ export enum PermissionCategories {
     ACCESS = 'ACCESS',
     DELEGATION = 'DELEGATION',
     STATISTICS = 'STATISTICS',
+    FORMULAS = 'FORMULAS',
 }
 
 /**
@@ -65,7 +66,9 @@ export enum PermissionEntities {
     TRUST_CHAIN = 'TRUST_CHAIN',
     ROLE = 'ROLE',
     STATISTIC = 'STATISTIC',
-    RULE = 'RULE'
+    RULE = 'RULE',
+    LABEL = 'LABEL',
+    FORMULA = 'FORMULA',
 }
 
 /**
@@ -221,10 +224,15 @@ export enum Permissions {
     //STATISTICS
     STATISTICS_STATISTIC_CREATE = 'STATISTICS_STATISTIC_CREATE',
     STATISTICS_STATISTIC_READ = 'STATISTICS_STATISTIC_READ',
+    STATISTICS_LABEL_CREATE = 'STATISTICS_LABEL_CREATE',
+    STATISTICS_LABEL_READ = 'STATISTICS_LABEL_READ',
     //SCHEMA RULES
     SCHEMAS_RULE_CREATE = 'SCHEMAS_RULE_CREATE',
     SCHEMAS_RULE_READ = 'SCHEMAS_RULE_READ',
-    SCHEMAS_RULE_EXECUTE = 'SCHEMAS_RULE_EXECUTE'
+    SCHEMAS_RULE_EXECUTE = 'SCHEMAS_RULE_EXECUTE',
+    //FORMULAS
+    FORMULAS_FORMULA_CREATE = 'FORMULAS_FORMULA_CREATE',
+    FORMULAS_FORMULA_READ = 'FORMULAS_FORMULA_READ'
 }
 
 /**
@@ -349,7 +357,7 @@ export const PermissionsArray: {
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.CONTRACT,
             action: PermissionActions.MANAGE,
-            disabled: false,
+            disabled: true,
             dependOn: [
                 Permissions.CONTRACTS_CONTRACT_READ,
                 Permissions.CONTRACTS_CONTRACT_CREATE,
@@ -1143,7 +1151,27 @@ export const PermissionsArray: {
             category: PermissionCategories.STATISTICS,
             entity: PermissionEntities.STATISTIC,
             action: PermissionActions.CREATE,
+            disabled: false,
+            dependOn: [
+                Permissions.STATISTICS_STATISTIC_READ
+            ]
+        },
+        {
+            name: Permissions.STATISTICS_LABEL_READ,
+            category: PermissionCategories.STATISTICS,
+            entity: PermissionEntities.LABEL,
+            action: PermissionActions.READ,
             disabled: false
+        },
+        {
+            name: Permissions.STATISTICS_LABEL_CREATE,
+            category: PermissionCategories.STATISTICS,
+            entity: PermissionEntities.LABEL,
+            action: PermissionActions.CREATE,
+            disabled: false,
+            dependOn: [
+                Permissions.STATISTICS_LABEL_READ
+            ]
         },
         //SCHEMA RULE
         {
@@ -1158,14 +1186,39 @@ export const PermissionsArray: {
             category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.RULE,
             action: PermissionActions.CREATE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.SCHEMAS_RULE_READ
+            ]
         },
         {
             name: Permissions.SCHEMAS_RULE_EXECUTE,
             category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.RULE,
             action: PermissionActions.EXECUTE,
+            disabled: false,
+            dependOn: [
+                Permissions.SCHEMAS_RULE_READ
+            ]
+        },
+
+        //SCHEMA RULE
+        {
+            name: Permissions.FORMULAS_FORMULA_READ,
+            category: PermissionCategories.FORMULAS,
+            entity: PermissionEntities.FORMULA,
+            action: PermissionActions.READ,
             disabled: false
+        },
+        {
+            name: Permissions.FORMULAS_FORMULA_CREATE,
+            category: PermissionCategories.FORMULAS,
+            entity: PermissionEntities.FORMULA,
+            action: PermissionActions.CREATE,
+            disabled: false,
+            dependOn: [
+                Permissions.FORMULAS_FORMULA_READ
+            ]
         },
         //ACCESS
         {
@@ -1309,6 +1362,8 @@ export const SRDefaultPermission: Permissions[] = [
     Permissions.SCHEMAS_RULE_CREATE,
     Permissions.SCHEMAS_RULE_READ,
     Permissions.SCHEMAS_RULE_EXECUTE,
+    Permissions.FORMULAS_FORMULA_CREATE,
+    Permissions.FORMULAS_FORMULA_READ,
 ];
 
 export const AuditDefaultPermission: Permissions[] = [
@@ -1334,6 +1389,8 @@ export const DefaultRoles: Permissions[] = [
     Permissions.ACCESS_POLICY_ASSIGNED_AND_PUBLISHED,
     Permissions.STATISTICS_STATISTIC_READ,
     Permissions.STATISTICS_STATISTIC_CREATE,
+    Permissions.STATISTICS_LABEL_READ,
+    Permissions.STATISTICS_LABEL_CREATE,
     Permissions.SCHEMAS_RULE_EXECUTE,
 ];
 

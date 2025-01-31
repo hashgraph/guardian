@@ -4,15 +4,6 @@ icon: computer
 
 # Policy Labels UI
 
-## **Policy Labels**
-
-Policy Labels functionality enables Guardian users to create and publish assessment and evaluation tools (‘Label
-definitions’) for tokens and their provenance data. These tools can be applied to any tokens to automatically verify if
-the tokens/data satisfy conditions/rules defined in the Label. These conditions can be of significant complexity, which
-is conveniently hidden from end users behind simple wizard-like UI. Thus, Labels can be used by individuals to assess
-properties of tokens without knowledge of methodologies and/or mathematical skills. Labels can be applied to issued
-tokens/data retrospectively, the results of evaluations (‘Label documents’) can be published or kept private.
-
 ## **1. Permissions**
 
 Access to Policy Labels functionality is controlled by the corresponding permissions settings.
@@ -43,17 +34,13 @@ After the initial creation, Policy Label definitions must be configured further 
 
 #### **2.3.1 Generic configuration**
 
-Generic configuration of Policy Label definitions consists of name and description field. Label authors should configure
-meaningful names and descriptions for their labels as these are the attributes label users would rely on to understand
-the applicability of labels to their specific use-cases.
+Generic configuration of Policy Label definitions consists of name and description field. Label authors should configure meaningful names and descriptions for their labels as these are the attributes label users would rely on to understand the applicability of labels to their specific use-cases.
 
 ![](../../../../.gitbook/assets/5.png)
 
 #### **2.3.2 Imports**
 
-To include other published label definitions and statistics into the definition of a label being configured, these
-structural components must be imported into the context of the current label. Import operation links a parent label with
-the imported elements, which makes them available to the Label author in the side menu of the UI.
+To include other published label definitions and statistics into the definition of a label being configured, these structural components must be imported into the context of the current label. Import operation links a parent label with the imported elements, which makes them available to the Label author in the side menu of the UI.
 
 <figure><img src="../../../../.gitbook/assets/6.png" alt=""><figcaption></figcaption></figure>
 
@@ -69,8 +56,7 @@ Label configurator consists of 3 sections
 
 1\. Side menu, for displaying components which can be dragged-and-dropped into the label editor.
 
-2\. Label editor, which hosts the components where they can be arranged into a hierarchical structure representing the
-evaluation logic.
+2\. Label editor, which hosts the components where they can be arranged into a hierarchical structure representing the evaluation logic.
 
 3\. Component properties, which define specifics of the behavior of the individual components.
 
@@ -78,17 +64,15 @@ evaluation logic.
 
 **2.3.3.1 Components: Groups**
 
-Groups are components which define the general structure of Labels. Each group has its own name (title) in the
-navigation panel and represents a specific namespace in which components have access to each other's variables. Groups
-define sufficient validity conditions for the target documents.
+Groups are components which define the general structure of Labels. Each group has its own name (title) in the navigation panel and represents a specific namespace in which components have access to each other's variables. Groups define sufficient validity conditions for the target documents.
 
 **Configuration**
 
 * **Tag** – the name of the namespace
 * **Title** – title in the navigation panel
 * **Rule** – defines the principle by which the group will be evaluated
-    * **At least one** – the group is considered valid if at least 1 of the direct (immediate) child components is valid
-    * **Every** – the group is considered valid if all direct (immediate) child components are valid
+  * **At least one** – the group is considered valid if at least 1 of the direct (immediate) child components is valid
+  * **Every** – the group is considered valid if all direct (immediate) child components are valid
 
 ![](../../../../.gitbook/assets/11.png)
 
@@ -105,8 +89,8 @@ A Rule is considered ‘valid’ if all its conditions successfully verify for t
 * **Tag** – name of the namespace
 * **Title** – title in the navigation panel
 
-For components which are members of the same group, each component that is positioned below another component (i.e.
-‘follows’ the prior component) has access to the variables of the previous component via its Tag.\
+For components which are members of the same group, each component that is positioned below another component (i.e. ‘follows’ the prior component) has access to the variables of the previous component via its Tag.\
+
 
 **2.3.3.2.1 Editing Rules**
 
@@ -116,46 +100,37 @@ Rules can be edited in the corresponding area of the UI:
 
 **Rules editor consists of 2 sections:**
 
-1\. Schema hierarchy and content (fields) display, which allows users to find and select specific fields in schemas for
-use in the Label calculation/evaluation (see more detailed description in the Statistics documentation section) **.**
+1\. Schema hierarchy and content (fields) display, which allows users to find and select specific fields in schemas for use in the Label calculation/evaluation (see more detailed description in the Statistics documentation section) **.**
 
 ![](../../../../.gitbook/assets/14.png)
 
-2\. Formula and Rules configurator (see more detailed description in the Statistics and Schema Rules documentation
-sections).
+2\. Formula and Rules configurator (see more detailed description in the Statistics and Schema Rules documentation sections).
 
-**Variables** (see more detailed description in the [Statistics and Schema Rules](../../usage-statistics/statistics.md)
-documentation sections).
+**Variables** (see more detailed description in the [Statistics and Schema Rules](../../usage-statistics/statistics.md) documentation sections).
 
 ![](../../../../.gitbook/assets/15.png)
 
-**Scores** (see more detailed description in the [Statistics](../../usage-statistics/statistics.md) documentation
-section).
+**Scores** (see more detailed description in the [Statistics](../../usage-statistics/statistics.md) documentation section).
 
 ![](../../../../.gitbook/assets/16.png)
 
-**Formulas (**&#x73;ee more detailed description in the [Statistics](../../usage-statistics/statistics.md) documentation
-section).
+**Formulas (**&#x73;ee more detailed description in the [Statistics](../../usage-statistics/statistics.md) documentation section).
 
 ![](../../../../.gitbook/assets/17.png)
 
-**Conditions** Formula and Rules configurator (see more detailed description in
-the [Schema Rules](../../schemas/schema-rules/) documentation section).
+**Conditions** Formula and Rules configurator (see more detailed description in the [Schema Rules](../../schemas/schema-rules/) documentation section).
 
 ![](../../../../.gitbook/assets/18.png)
 
 **2.3.3.3 Components: Statistics**
 
-Existing Statistics can be used as components in Labels. As they don’t contain conditions they are always evaluated as
-valid when the Label which contains them is evaluated. Therefore, their primary function is to serve as data sources for
-other components in the Label, as their variables can be accessed directly by other components in the same namespace.
+Existing Statistics can be used as components in Labels. As they don’t contain conditions they are always evaluated as valid when the Label which contains them is evaluated. Therefore, their primary function is to serve as data sources for other components in the Label, as their variables can be accessed directly by other components in the same namespace.
 
 ![](../../../../.gitbook/assets/19.png)
 
 **2.3.3.4 Components: Labels**
 
-Existing labels can be used as components of other (higher order) labels. The internal structure of such embedded labels
-remains unchanged.
+Existing labels can be used as components of other (higher order) labels. The internal structure of such embedded labels remains unchanged.
 
 ![](../../../../.gitbook/assets/20.png)
 
@@ -163,12 +138,11 @@ remains unchanged.
 
 It is recommended to frequently use ‘Save’ button to preserve the current state of the Label being edited.
 
-<figure><img src="../../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **2.3.5 Preview**
 
-Label authors can preview (i.e. ‘dry run’ test) their Label functioning once its definition is complete by clicking the
-‘Preview’ button in the configurator UI. Such test evaluations require manual input of the test data.
+Label authors can preview (i.e. ‘dry run’ test) their Label functioning once its definition is complete by clicking the ‘Preview’ button in the configurator UI. Such test evaluations require manual input of the test data.
 
 <figure><img src="../../../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
 
@@ -178,14 +152,10 @@ Label authors can preview (i.e. ‘dry run’ test) their Label functioning once
 
 <figure><img src="../../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
 
-Components which were successfully validated on the provided test data would be marked in green, the unsuccessful
-results are marked in red.
+Components which were successfully validated on the provided test data would be marked in green, the unsuccessful results are marked in red.
 
 {% hint style="info" %}
-**Note**: Depending on the structure of the Label and the configuration of its rules it is not necessarily required for
-all Label components to be valid for the Label itself to be successfully validated. Groups can be configured such that
-some components do not validate, however the main top-level groups can be valid which is the main condition for Labels
-validity.
+**Note**: Depending on the structure of the Label and the configuration of its rules it is not necessarily required for all Label components to be valid for the Label itself to be successfully validated. Groups can be configured such that some components do not validate, however the main top-level groups can be valid which is the main condition for Labels validity.
 {% endhint %}
 
 **2.3.6 Publishing**
@@ -202,8 +172,7 @@ Once the Label has been published it can be used to create Label documents on sp
 
 **2.4.1 Targets**
 
-The first step in the creation of a Label document is to select the target token (i.e. a VP document linked to the
-token).
+The first step in the creation of a Label document is to select the target token (i.e. a VP document linked to the token).
 
 <figure><img src="../../../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
 
@@ -215,12 +184,11 @@ All steps defined in the Label evaluation flow must be followed.
 
 **2.4.3 Results**
 
-If a Label is evaluated as valid a corresponding document is created containing all Label information. This document can
-be published to make it accessible externally.
+If a Label is evaluated as valid a corresponding document is created containing all Label information. This document can be published to make it accessible externally.
 
 <figure><img src="../../../../.gitbook/assets/image (12).png" alt=""><figcaption></figcaption></figure>
 
-### **2.5 Viewing Label documents**
+### **2.5  Viewing Label documents**
 
 Existing Label documents can be accessed from the corresponding grid.
 
@@ -229,6 +197,8 @@ Existing Label documents can be accessed from the corresponding grid.
 <figure><img src="../../../../.gitbook/assets/image (14).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../../.gitbook/assets/image (15).png" alt=""><figcaption></figcaption></figure>
+
+
 
 ## **3. Labels Import\Export**
 

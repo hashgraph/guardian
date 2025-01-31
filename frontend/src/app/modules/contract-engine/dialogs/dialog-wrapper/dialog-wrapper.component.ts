@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
-
 @Component({
     selector: 'app-dialog-wrapper',
     templateUrl: './dialog-wrapper.component.html',

@@ -8,7 +8,7 @@
         <ng-container *ngIf="isConfirmed; else noDIDSettings">
             <div class="actions-container">
                 <div *ngIf="policies" class="dropdown-block">
-                    <p-dropdown (onChange)="onFilter()" [(ngModel)]="policyDropdownItem" [options]="policies!">
+                    <p-dropdown (onChange)="onFilter()" [appendTo]="'body'" [(ngModel)]="policyDropdownItem" [options]="policies!">
                         <ng-template pTemplate="selectedItem">
                             <div *ngIf="policyDropdownItem">
                                 <span class="dropdown-label">Policy</span>
@@ -185,8 +185,8 @@
     <div class="not-exist">
         <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
         </svg-icon>
-        <span class="info-text-strong">There were no Tokens created yet</span>
-        <span class="info-text">Please create new token to see the data</span>
+        <span class="info-text-strong">There are no tokens created yet</span>
+        <span class="info-text">Please create a new token to see the data</span>
     </div>
 </ng-template>
 

@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, } from '@angular/core';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
-import { Schema } from '@guardian/interfaces';
+import { DocumentValidators, Schema, SchemaRuleValidateResult } from '@guardian/interfaces';
 import { forkJoin, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { FormulasService } from 'src/app/services/formulas.service';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaService } from 'src/app/services/schema.service';
-import { SchemaRuleValidateResult, SchemaRuleValidators } from '../../common/models/field-rule-validator';
+import { FormulasTree } from '../../formulas/models/formula-tree';
 
 /**
  * View document
@@ -37,13 +37,17 @@ export class DocumentViewComponent implements OnInit {
     public pageIndex: number = 0;
     public pageSize: number = 5;
     public schemaMap: { [x: string]: Schema | null } = {};
-    public rules: SchemaRuleValidators;
+    public rules: DocumentValidators;
     public rulesResults: SchemaRuleValidateResult;
+    public formulas: FormulasTree | null;
+    public formulasResults: any | null;
+
     private destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
         private schemaService: SchemaService,
         private schemaRulesService: SchemaRulesService,
+        private formulasService: FormulasService,
         private ref: ChangeDetectorRef
     ) {
 
@@ -98,6 +102,9 @@ export class DocumentViewComponent implements OnInit {
             if (!this.schemaMap[type]) {
                 this.schemaMap[type] = null;
             }
+            if(!this.schemaId) {
+                this.schemaId = `#${type}`;
+            }
         }
         const requests: any[] = [];
         for (const [type, schema] of Object.entries(this.schemaMap)) {
@@ -127,11 +134,21 @@ export class DocumentViewComponent implements OnInit {
                 })
                 .pipe(takeUntil(this.destroy$))
         )
+        requests.push(
+            this.formulasService
+                .getFormulasData({
+                    policyId: this.policyId,
+                    schemaId: this.schemaId,
+                    documentId: this.documentId
+                })
+                .pipe(takeUntil(this.destroy$))
+        )
 
         this.loading = true;
         forkJoin(requests).subscribe((results: any[]) => {
+            const formulas = results.pop();
             const rules = results.pop();
-            this.rules = new SchemaRuleValidators(rules);
+
             for (const result of results) {
                 if (result) {
                     try {
@@ -145,7 +162,13 @@ export class DocumentViewComponent implements OnInit {
                     }
                 }
             }
+
+            this.rules = new DocumentValidators(rules);
             this.rulesResults = this.rules.validateVC(this.schemaId, this.document);
+            this.formulas = FormulasTree.from(formulas);
+            this.formulas?.setDocuments(this.document);
+            this.formulasResults = this.formulas?.getFields(this.schemaId);
+
             setTimeout(() => {
                 this.loading = false;
                 this.ref.detectChanges();

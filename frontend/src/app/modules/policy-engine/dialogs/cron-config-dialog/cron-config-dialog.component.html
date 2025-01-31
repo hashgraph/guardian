@@ -1,61 +1,70 @@
-<h1 mat-dialog-title>Custom Period</h1>
-<div mat-dialog-content class="dialog-content" [attr.started]="started">
+<h1 class="dialog-title">Custom Period</h1>
+<div class="dialog-content" [attr.started]="started">
     <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
         <div class="c1">
-            <div class="f1" style="padding: 6px 4px; margin-right: 8px;">
-                <mat-label>Start Date:</mat-label>
-                <datetime-picker [(value)]="startDate" [readonly]="true"></datetime-picker>
+            <div class="f1">
+                <label for="startDate">Start Date:</label>
+                <p-calendar
+                    id="startDate"
+                    formControlName="startDate"
+                    dateFormat="dd/mm/yy"
+                    [appendTo]="'body'"
+                    [hourFormat]="'12'"
+                    [showTime]="true"
+                    [stepHour]="true"
+                    [stepMinute]="true"
+                ></p-calendar>
             </div>
-            <div class="f1" style="padding: 15px 10px; margin-left: 28px;">
-                <mat-label>Interval:</mat-label>
-                <input matInput type="number" min="1" max="100" formControlName="interval" (change)="selectPeriod()">
+
+            <div class="f1">
+                <label for="interval">Interval:</label>
+                <input
+                    id="interval"
+                    pInputText
+                    type="number"
+                    min="1"
+                    max="100"
+                    formControlName="interval"
+                    (change)="selectPeriod()">
             </div>
-            <div class="f1" style="padding: 15px 10px; margin-left: 8px;">
-                <mat-label>Period:</mat-label>
-                <mat-select [(value)]="period" (selectionChange)="selectPeriod()">
-                    <mat-option value="month">Month</mat-option>
-                    <mat-option value="week">Week</mat-option>
-                    <mat-option value="day">Day</mat-option>
-                    <mat-option value="hour">Hour</mat-option>
-                    <mat-option value="minute">Minute</mat-option>
-                </mat-select>
+
+            <div class="f1">
+                <label for="period">Period:</label>
+                <p-dropdown
+                    id="period"
+                    formControlName="period"
+                    [options]="periodOptions"
+                    placeholder="Select a period"
+                    (onChange)="selectPeriod()"
+                    [appendTo]="'body'"
+                ></p-dropdown>
             </div>
         </div>
 
-        <div class="delimiter"></div>
+            <div class="delimiter"></div>
 
         <div *ngIf="period=='week'" style="height: 80px;width: 100%;"></div>
         <div *ngIf="period=='month'" style="height: 120px;width: 100%;"></div>
-
-        <!-- <mat-form-field class="example-full-width" appearance="outline">
-            <mat-label>* Mask: minute hour day(month) month day(week)</mat-label>
-            <input matInput type="text" placeholder="* * * * *" formControlName="mask">
-        </mat-form-field> -->
-
         <div>
-            {{timeString}}
+            {{ timeString }}
         </div>
 
         <div class="delimiter"></div>
+        <p-accordion [multiple]="true">
+            <p-accordionTab header="Cron Mask (advanced)">
+                <div class="form-group input-mask-container">
+                    <label>* Mask: minute hour day(month) month day(week)</label>
+                    <input pInputText type="text" placeholder="* * * * *" formControlName="mask"
+                           class="example-full-width"/>
+                </div>
+            </p-accordionTab>
+        </p-accordion>
 
-        <mat-accordion>
-            <mat-expansion-panel>
-                <mat-expansion-panel-header>
-                    <mat-panel-title>
-                        Cron Mask (advanced)
-                    </mat-panel-title>
-                </mat-expansion-panel-header>
-                <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>* Mask: minute hour day(month) month day(week)</mat-label>
-                    <input matInput type="text" placeholder="* * * * *" formControlName="mask">
-                </mat-form-field>
-            </mat-expansion-panel>
-        </mat-accordion>
-
-        <div mat-dialog-actions>
-            <button mat-raised-button color="primary" type="submit" [attr.started]="started"
-                [disabled]="!dataForm.valid">Ok</button>
-            <button mat-button type="button" (click)="onNoClick()">Cancel</button>
+        <div class="dialog-actions">
+            <p-button label="Ok" icon="pi pi-check" type="submit" [attr.started]="started"
+                      [disabled]="!dataForm.valid" styleClass="p-button-ok p-button-primary"></p-button>
+            <p-button label="Cancel" icon="pi pi-times" type="button" (click)="onNoClick()"
+                      styleClass="p-button-cancel"></p-button>
         </div>
     </form>
 

@@ -429,4 +429,61 @@ export class Schema implements ISchema {
             });
         }
     }
+
+    /**
+     * Get all fields
+     */
+    public getFields(): SchemaField[] {
+        return this._getFields([], this.fields);
+    }
+
+    /**
+     * Get all fields
+     */
+    private _getFields(result: SchemaField[], fields?: SchemaField[]): SchemaField[] {
+        if (Array.isArray(fields)) {
+            for (const field of fields) {
+                result.push(field);
+                this._getFields(result, field.fields);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get field
+     */
+    public getField(path: string): SchemaField | null {
+        return this._getField(path, this.fields);
+    }
+
+    /**
+     * Get field
+     */
+    private _getField(path: string, fields?: SchemaField[]): SchemaField | null {
+        if (Array.isArray(fields)) {
+            for (const field of fields) {
+                if (field.path === path) {
+                    return field;
+                }
+                const result = this._getField(path, field.fields);
+                if (result) {
+                    return result;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Create Schema
+     */
+    public static from(response: ISchema): Schema | null {
+        try {
+            return new Schema(response);
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+    }
 }

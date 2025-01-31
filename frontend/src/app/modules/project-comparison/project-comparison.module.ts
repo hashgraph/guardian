@@ -7,7 +7,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { AnnotationBlockComponent } from './component/annotation-block/annotation-block.component';
 import { ProjectsOverviewComponent } from './component/projects-overview/projects-overview.component';
 import { ProjectsComparisonTableComponent } from './component/projects-comparison-table/projects-comparison-table.component';
@@ -17,6 +17,11 @@ import { CompareModule } from '../analytics/analytics.module';
 
 @NgModule({
     declarations: [
+        AnnotationBlockComponent,
+        ProjectsOverviewComponent,
+        ProjectsComparisonTableComponent
+    ],
+    exports: [
         AnnotationBlockComponent,
         ProjectsOverviewComponent,
         ProjectsComparisonTableComponent
@@ -32,14 +37,10 @@ import { CompareModule } from '../analytics/analytics.module';
         ButtonModule,
         MultiSelectModule,
         ReactiveFormsModule,
-        HttpClientModule,
         AngularSvgIconModule.forRoot(),
         CompareModule
-    ],
-    exports: [
-        AnnotationBlockComponent,
-        ProjectsOverviewComponent,
-        ProjectsComparisonTableComponent
+    ], providers: [
+        provideHttpClient(withInterceptorsFromDi())
     ]
 })
 export class ProjectComparisonModule {

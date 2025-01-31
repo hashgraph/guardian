@@ -8,15 +8,13 @@
         "guardian": {
             "architect": {
                 "build": {
-                    "builder": "@angular-devkit/build-angular:browser",
+                    "builder": "@angular-devkit/build-angular:application",
                     "configurations": {
                         "development": {
-                            "buildOptimizer": false,
-                            "extractLicenses": false,
+                          "extractLicenses": false,
                             "namedChunks": true,
                             "optimization": false,
-                            "sourceMap": true,
-                            "vendorChunk": true
+                            "sourceMap": true
                         },
                         "production": {
                             "budgets": [
@@ -99,42 +97,46 @@
                         ],
                         "index": "src/index.html",
                         "inlineStyleLanguage": "scss",
-                        "main": "src/main.ts",
-                        "outputPath": "dist/guardian",
-                        "polyfills": "src/polyfills.ts",
+                        "outputPath": {
+                          "base": "dist/guardian"
+                        },
+                        "polyfills": [
+                          "src/polyfills.ts"
+                        ],
                         "scripts": [
                             "./node_modules/leader-line/leader-line.min.js"
                         ],
                         "styles": [
-                          "./node_modules/@angular/material/legacy-prebuilt-themes/legacy-indigo-pink.css",
                           "./node_modules/ngx-toastr/toastr.css",
                           "./node_modules/primeng/resources/themes/saga-blue/theme.css",
                           "./node_modules/primeng/resources/primeng.min.css",
                           "./node_modules/primeicons/primeicons.css",
                           "src/styles.scss"
                         ],
-                        "tsConfig": "tsconfig.app.json"
+                        "tsConfig": "tsconfig.app.json",
+                        "browser": "src/main.ts",
+                        "preserveSymlinks": true
                     }
                 },
                 "extract-i18n": {
                     "builder": "@angular-devkit/build-angular:extract-i18n",
                     "options": {
-                        "browserTarget": "guardian:build"
+                        "buildTarget": "guardian:build"
                     }
                 },
                 "serve": {
                     "builder": "@angular-devkit/build-angular:dev-server",
                     "configurations": {
                         "development": {
-                            "browserTarget": "guardian:build:development",
+                            "buildTarget": "guardian:build:development",
                             "proxyConfig": "proxy.conf.json"
                         },
                         "production": {
-                            "browserTarget": "guardian:build:production",
+                            "buildTarget": "guardian:build:production",
                             "proxyConfig": "proxy.conf.json"
                         },
                         "demo": {
-                            "browserTarget": "guardian:build:demo",
+                            "buildTarget": "guardian:build:demo",
                             "proxyConfig": "proxy.conf.json"
                         }
                     },

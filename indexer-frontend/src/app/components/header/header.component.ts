@@ -20,6 +20,8 @@ import { RippleModule } from 'primeng/ripple';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
+import { ProgressBarComponent } from '@components/progress-bar/progress-bar.component';
+import { LandingService } from '@services/landing.service';
 
 @Component({
     selector: 'app-header',
@@ -38,6 +40,7 @@ import { InputTextModule } from 'primeng/inputtext';
         IconFieldModule,
         InputIconModule,
         InputTextModule,
+        ProgressBarComponent,
     ],
 })
 export class HeaderComponent {
@@ -82,6 +85,18 @@ export class HeaderComponent {
             label: 'header.roles',
             routerLink: '/roles',
         },
+        {
+            label: 'header.statistics',
+            routerLink: '/statistics',
+        },
+        {
+            label: 'header.labels',
+            routerLink: '/labels',
+        },
+        {
+            label: 'header.formulas',
+            routerLink: '/formulas',
+        },
     ];
 
     public documentsMenu: MenuItem[] = [
@@ -96,6 +111,14 @@ export class HeaderComponent {
         {
             label: 'header.vps',
             routerLink: '/vp-documents',
+        },
+        {
+            label: 'header.statistic_documents',
+            routerLink: '/statistic-documents',
+        },
+        {
+            label: 'header.label_documents',
+            routerLink: '/label-documents',
         },
     ];
 
@@ -114,10 +137,13 @@ export class HeaderComponent {
         },
     ];
 
+    public loadedMessagesCount: number = 0;
+    public messagesTotal: number = 0;
+
     constructor(
-        private route: ActivatedRoute,
         private router: Router,
-        private translocoService: TranslocoService
+        private translocoService: TranslocoService,
+        private landingService: LandingService
     ) {}
 
     ngOnInit() {
@@ -136,6 +162,17 @@ export class HeaderComponent {
                 this.home = event.url === '/';
             }
         });
+
+        this.landingService.startPollingDataLoadingProgress();
+
+        this.landingService.dataLoadingProgress$.subscribe((progress) => {
+            this.loadedMessagesCount = progress.loadedCount;
+            this.messagesTotal = progress.total;
+        });
+    }
+
+    ngOnDestroy(): void {
+        this.landingService.stopPollingDataLoadingProgress();
     }
 
     public onSearch(): void {

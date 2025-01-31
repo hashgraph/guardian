@@ -3,6 +3,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import moment from 'moment';
 
 /**
  * Component for display block of 'requestVcDocument' type.
@@ -27,6 +28,19 @@ export class FiltersAddonBlockComponent implements OnInit {
     target: any;
     filters: any;
     currentValue: any;
+    currentType: string = 'eq';
+    queryType: string = 'equal';
+
+    userDefinedOptions = [
+        { name: 'Equal', value: 'eq' },
+        { name: 'Not Equal', value: 'ne' },
+        { name: 'In', value: 'in' },
+        { name: 'Not In', value: 'nin' },
+        { name: 'Greater Than', value: 'gt' },
+        { name: 'Greater Than or Equal', value: 'gte' },
+        { name: 'Less Than', value: 'lt' },
+        { name: 'Less Than or Equal', value: 'lte' }
+      ];
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -84,6 +98,39 @@ export class FiltersAddonBlockComponent implements OnInit {
         }
     }
 
+    private parseFilterValue(value: string): [string, string] {
+        if (typeof value === 'string') {
+            if (value.startsWith('eq:')) {
+                return ['eq', value.substring('eq'.length + 1)];
+            }
+            if (value.startsWith('ne:')) {
+                return ['ne', value.substring('ne'.length + 1)];
+            }
+            if (value.startsWith('in:')) {
+                return ['in', value.substring('in'.length + 1)];
+            }
+            if (value.startsWith('nin:')) {
+                return ['nin', value.substring('nin'.length + 1)];
+            }
+            if (value.startsWith('gt:')) {
+                return ['gt', value.substring('gt'.length + 1)];
+            }
+            if (value.startsWith('gte:')) {
+                return ['gte', value.substring('gte'.length + 1)];
+            }
+            if (value.startsWith('lt:')) {
+                return ['lt', value.substring('lt'.length + 1)];
+            }
+            if (value.startsWith('lte:')) {
+                return ['lte', value.substring('lte'.length + 1)];
+            }
+            if (value.startsWith('regex:')) {
+                return ['eq', value.substring('regex'.length + 1)];
+            }
+        }
+        return ['eq', value];
+    }
+
     setData(data: any) {
         this.currentValue = null;
         if (data) {
@@ -92,7 +139,16 @@ export class FiltersAddonBlockComponent implements OnInit {
             this.target = data.targetBlock;
             this.content = data.uiMetaData.content;
             this.filters = data.filters;
-            this.currentValue = data.filterValue;
+
+            this.queryType = data.queryType;
+            if (this.queryType === 'user_defined') {
+                const [type, value] = this.parseFilterValue(data.filterValue);
+                this.currentType = type;
+                this.currentValue = value;
+            } else {
+                this.currentType = this.queryType || 'eq';
+                this.currentValue = data.filterValue;
+            }
 
             if (this.type == 'unelected') {
             }
@@ -102,14 +158,17 @@ export class FiltersAddonBlockComponent implements OnInit {
                 this.options = [];
                 if (data.canBeEmpty) {
                     this.options.push({
-                        name: "",
+                        name: "Not selected",
                         value: null,
                     });
                 }
                 if (options) {
                     for (let i = 0; i < options.length; i++) {
                         const item = options[i];
-                        this.options.push(item);
+                        this.options.push({
+                            name: item.name,
+                            value: String(item.value)
+                        })
                     }
                 }
             }
@@ -118,10 +177,22 @@ export class FiltersAddonBlockComponent implements OnInit {
         }
     }
 
-    onFilters() {
+    onFilters(event: any) {
+        if(this.type === 'datepicker'){
+            this.currentValue = moment(this.currentValue).format('YYYY-MM-DD');
+        }
+
         this.loading = true;
+        const options: any = { filterValue: null };
+        if(this.currentValue) {
+            if (this.queryType === 'user_defined') {
+                options.filterValue = this.currentType + ':' + this.currentValue;
+            } else {
+                options.filterValue = this.currentValue;
+            }
+        }
         this.policyEngineService
-            .setBlockData(this.id, this.policyId, { filterValue: this.currentValue })
+            .setBlockData(this.id, this.policyId, options)
             .subscribe(() => {
                 this.loading = false;
             }, (e) => {

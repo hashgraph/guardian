@@ -1,4 +1,4 @@
-<div [attr.status]="policyInfo?.status" [attr.instance]="!!policy" class="content">
+<div [attr.instance]="!!policy" [attr.status]="policyInfo?.status" class="content">
     <ng-container *ngIf="!isConfirmed">
         <div class="not-exist">
             Before starting work you need to get DID
@@ -20,7 +20,7 @@
                 class="dry-run-action-btn"
                 title="Edit Policy"
             >
-                <mat-icon>edit</mat-icon>
+                <i class="pi pi-pencil"></i>
                 <span>Edit</span>
             </div>
 
@@ -29,42 +29,61 @@
                 class="dry-run-action-btn"
                 title="Save Policy"
             >
-                <mat-icon>restart_alt</mat-icon>
+              <svg-icon class="icon-style-restart_alt" src="/assets/images/icons/restart_alt.svg"
+                        svgClass="icon-style-restart_alt"></svg-icon>
                 <span>Restart</span>
             </div>
 
             <div class="delimiter"></div>
 
-            <div class="dry-run-action-btn" (click)="createVirtualUser()">
-                <mat-icon>person_add</mat-icon>
+          <div (click)="createSavepoint()" class="dry-run-action-btn">
+            <i class="pi pi-flag"></i>
+            <span>Savepoint</span>
+          </div>
+
+          <!--            <div (click)="deleteSavepoint()" class="dry-run-action-btn">-->
+          <!--              <i class="pi pi-times"></i>-->
+          <!--              <span>Delete Savepoint</span>-->
+          <!--            </div>-->
+
+          <div (click)="restoreSavepoint()" [attr.disabled]="!savePointState" class="dry-run-action-btn">
+            <i class="pi pi-undo"></i>
+            <span>Restore</span>
+          </div>
+
+
+          <div class="delimiter"></div>
+
+          <div (click)="createVirtualUser()" class="dry-run-action-btn">
+                <i class="pi pi-user-plus"></i>
                 <span>Create User</span>
             </div>
 
-            <div class="dry-run-group-btn" [matMenuTriggerFor]="menu">
-                <mat-icon>group</mat-icon>
+          <div (click)="menu.toggle($event)" class="dry-run-group-btn">
+                <i class="pi pi-users"></i>
                 <span>Users</span>
                 <div class="expand-group">
-                    <mat-icon>arrow_drop_down</mat-icon>
+                    <i class="pi pi-sort-down-fill"></i>
                 </div>
             </div>
 
             <div class="delimiter"></div>
 
             <div
-                class="dry-run-action-btn record-btn"
                 (click)="startRecord()"
-                title="Start Record"
-                [attr.disabled]="recordingActive">
-                <mat-icon>radio_button_checked</mat-icon>
+                [attr.disabled]="recordingActive"
+                class="dry-run-action-btn record-btn"
+                title="Start Record">
+                <i class="pi pi-circle-on"></i>
                 <span>Record</span>
             </div>
 
             <div
-                class="dry-run-action-btn run-btn"
                 (click)="runRecord()"
-                title="Run Record"
-                [attr.disabled]="recordingActive">
-                <mat-icon>play_arrow</mat-icon>
+                [attr.disabled]="recordingActive"
+                class="dry-run-action-btn run-btn"
+                title="Run Record">
+                <i class="pi pi-play"></i>
                 <span>Run</span>
             </div>
 
@@ -102,17 +121,18 @@
             <div class="delimiter"></div>
         </div>
 
-        <div class="policy-header" [attr.policy-status]="policyInfo.status" [attr.expired]="!!policyInfo.discontinuedDate">
+      <div [attr.expired]="!!policyInfo.discontinuedDate" [attr.policy-status]="policyInfo.status"
+           class="policy-header">
             <div class="guardian-user-back-button">
-                <button 
-                    (click)="onBack()" 
-                    class="guardian-button guardian-button-secondary"
+                <button
+                    (click)="onBack()"
                     [ngClass]="{ 'back-button': isDryRun || !!policyInfo.discontinuedDate }"
+                    class="guardian-button guardian-button-secondary"
                 >
                     <div class="guardian-button-icon">
                         <svg-icon class="icon-btn svg-icon"
-                            src="/assets/images/icons/left-arrow.svg"
-                            svgClass="icon-color-primary">
+                                  src="/assets/images/icons/left-arrow.svg"
+                                  svgClass="icon-color-primary">
                         </svg-icon>
                     </div>
                     <div class="guardian-button-label">Back to Manage Policies</div>
@@ -120,8 +140,9 @@
             </div>
             <div *ngIf="policyInfo" class="policy-info-container">
                 <div class="policy-name-container">
-                    <span *ngIf="policyInfo && policyInfo.name">{{policyInfo.name}}</span>
+                    <span *ngIf="policyInfo && policyInfo.name">{{ policyInfo.name }}</span>
                 </div>
+
 
                 <div class="policy-additional-info-container">
                     <span
@@ -138,15 +159,15 @@
                     >
                         Role: {{ policyInfo.userRoles.join(", ") }}
                     </span>
-                    <span *ngIf="isMultipleGroups" class="current-user-group" [matMenuTriggerFor]="group">
+                  <span (click)="group.toggle($event)" *ngIf="isMultipleGroups" class="current-user-group">
                         <span
                             [ngClass]="isDryRun ? 'white-additional-policy-info-text' : ''"
                             class="additional-policy-info-text"
                             title="Group: {{userGroup}} / Role: {{userRole}}"
                         >
-                            Group: {{userGroup}} / Role: {{userRole}}</span>
+                            Group: {{ userGroup }} / Role: {{ userRole }}</span>
                             <div>
-                                <mat-icon>arrow_drop_down</mat-icon>
+                                <i class="pi pi-caret-down"></i>
                             </div>
                     </span>
                 </div>
@@ -165,17 +186,17 @@
             <div style="width: 100%; overflow-y: scroll;">
                 <render-block
                     [block]="policy"
-                    [policyId]="policyId"
                     [dryRun]="isDryRun"
+                    [policyId]="policyId"
                     style="width: 100%;"
                 ></render-block>
 
                 <div *ngIf="!navigationFooterDisabled" class="progress-footer-container">
                     <div class="progress-footer">
-                        <button (click)="onNavigationPrevButton()" [disabled]="prevButtonDisabled" class="button" label="Previous" pButton
+                        <button (click)="onNavigationPrevButton()" [disabled]="prevButtonDisabled" class="button"
+                                label="Previous" pButton
                                 type="button"></button>
                         <div *ngIf="!nextButtonDisabled">
-                            <!-- <button pButton type="button" class="p-button-outlined" label="Save Changes" style="margin-right: 16px;"></button> -->
                             <button (click)="onNavigationNextButton()" class="p-button" label="Next" pButton
                                     type="button"></button>
                         </div>
@@ -185,100 +206,82 @@
         </div>
 
         <div
-            [attr.hidden-container]="view === 'policy'"
             *ngIf="isDryRun"
+            [attr.hidden-container]="view === 'policy'"
             [attr.policy-status]="policyInfo.status"
             class="second-policy-container"
         >
             <div class="table-container">
-                <table
-                    [dataSource]="documents"
-                    class="document-table"
-                    mat-table
-                >
-                    <ng-container matColumnDef="createDate">
-                        <th *matHeaderCellDef mat-header-cell>Create Date</th>
-                        <td *matCellDef="let element" mat-cell>
-                            {{ element.createDate }}
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="type">
-                        <th *matHeaderCellDef mat-header-cell>Type</th>
-                        <td *matCellDef="let element" mat-cell>
-                            {{ element.__type }}
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="owner">
-                        <th *matHeaderCellDef mat-header-cell>Owner</th>
-                        <td *matCellDef="let element" mat-cell>
-                            {{ element.owner }}
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="size">
-                        <th *matHeaderCellDef mat-header-cell>Size</th>
-                        <td *matCellDef="let element" mat-cell>
-                            {{ element.document?.size }} Byte
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="url">
-                        <th *matHeaderCellDef mat-header-cell>Url</th>
-                        <td *matCellDef="let element" mat-cell>
-                            {{ element.documentURL }}
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="document">
-                        <th mat-header-cell *matHeaderCellDef></th>
-                        <td mat-cell *matCellDef="let element">
-                            <div
-                                (click)="openDocument(element)"
-                                class="btn-settings"
-                                matTooltip="Document"
-                                matTooltipClass="guardian-tooltip"
-                                matTooltipPosition="above"
-                            >
-                                <svg
-                                    fill="none"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    width="24"
-                                    xmlns="http://www.w3.org/2000/svg"
+                <p-table [value]="documents" class="document-table">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>Create Date</th>
+                            <th>Type</th>
+                            <th>Owner</th>
+                            <th>Size</th>
+                            <th>Url</th>
+                            <th></th>
+                        </tr>
+                    </ng-template>
+
+                  <ng-template let-element pTemplate="body">
+                        <tr>
+                            <td>{{ element.createDate }}</td>
+                            <td>{{ element.__type }}</td>
+                            <td>{{ element.owner }}</td>
+                            <td>{{ element.document?.size }} Byte</td>
+                            <td>{{ element.documentURL }}</td>
+                            <td>
+                                <div
+                                    (click)="openDocument(element)"
+                                    class="btn-settings"
+                                    pTooltip="Document"
+                                    tooltipPosition="top"
+                                    tooltipStyleClass="guardian-tooltip"
                                 >
-                                    <path
-                                        class="icon-color"
-                                        clip-rule="evenodd"
-                                        d="M7.36842 3C6.06037 3 5 4.09894 5 5.45455V18.5455C5 19.9011 6.06038 21 7.36842 21H17.6316C18.9397 21 20 19.9011 20 18.5455V10.3636C20 10.1466 19.9168 9.93853 19.7688 9.78509L13.453 3.23966C13.3774 3.16136 13.2881 3.10055 13.191 3.05979C13.0978 3.02068 12.9973 3 12.8947 3H7.36842ZM12.1053 4.63636H7.36842C6.9324 4.63636 6.57895 5.00267 6.57895 5.45455V18.5455C6.57895 18.9973 6.93241 19.3636 7.36842 19.3636H17.6316C18.0676 19.3636 18.4211 18.9973 18.4211 18.5455V11.1818H12.8947C12.4587 11.1818 12.1053 10.8155 12.1053 10.3636V4.63636ZM17.3046 9.54548L13.6842 5.79347V9.54548H17.3046Z"
-                                        fill="#23252E"
-                                        fill-rule="evenodd"
-                                    />
-                                </svg>
-                            </div>
-                        </td>
-                    </ng-container>
-                    <tr *matHeaderRowDef="columns; sticky: true" mat-header-row></tr>
-                    <tr *matRowDef="let row; columns: columns" mat-row></tr>
-                </table>
+                                    <svg
+                                        fill="none"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        width="24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            class="icon-color"
+                                            clip-rule="evenodd"
+                                            d="M7.36842 3C6.06037 3 5 4.09894 5 5.45455V18.5455C5 19.9011 6.06038 21 7.36842 21H17.6316C18.9397 21 20 19.9011 20 18.5455V10.3636C20 10.1466 19.9168 9.93853 19.7688 9.78509L13.453 3.23966C13.3774 3.16136 13.2881 3.10055 13.191 3.05979C13.0978 3.02068 12.9973 3 12.8947 3H7.36842ZM12.1053 4.63636H7.36842C6.9324 4.63636 6.57895 5.00267 6.57895 5.45455V18.5455C6.57895 18.9973 6.93241 19.3636 7.36842 19.3636H17.6316C18.0676 19.3636 18.4211 18.9973 18.4211 18.5455V11.1818H12.8947C12.4587 11.1818 12.1053 10.8155 12.1053 10.3636V4.63636ZM17.3046 9.54548L13.6842 5.79347V9.54548H17.3046Z"
+                                            fill="#23252E"
+                                            fill-rule="evenodd"
+                                        />
+                                    </svg>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+
             </div>
 
             <app-paginator
+                (page)="onPage($event)"
+                [length]="documentCount"
                 [pageIndex]="pageIndex"
                 [pageSize]="pageSize"
-                [length]="documentCount"
-                (page)="onPage($event)"
             ></app-paginator>
 
         </div>
     </ng-container>
 
     <app-record-controller
-        *ngIf="isDryRun"
         #recordController
-        [policyId]="policyId"
         (update)="updatePolicy()"
+        *ngIf="isDryRun && permissions.POLICIES_RECORD_ALL"
         [(active)]="recordingActive"
+        [policyId]="policyId"
     ></app-record-controller>
 </div>
 
-<mat-menu #menu="matMenu">
+<p-overlayPanel #menu>
     <div
         (click)="setVirtualUser(item)"
         *ngFor="let item of virtualUsers"
@@ -289,9 +292,9 @@
         <div class="debug-user-did">{{ item.hederaAccountId }}</div>
         <div class="debug-user-did">{{ item.did }}</div>
     </div>
-</mat-menu>
+</p-overlayPanel>
 
-<mat-menu #group="matMenu">
+<p-overlayPanel #group>
     <div class="group-header">
         Select Group
     </div>
@@ -314,7 +317,7 @@
             </div>
         </div>
     </div>
-    <div class="user-group user-group-default" (click)="setGroup(null)">
+  <div (click)="setGroup(null)" class="user-group user-group-default">
         <div class="user-group-header">
             Default state
         </div>
@@ -325,7 +328,7 @@
             <span>Role: </span><span>Not Set</span>
         </div>
     </div>
-</mat-menu>
+</p-overlayPanel>
 
 <ng-template #preloader>
     <div class="preloader-image"></div>

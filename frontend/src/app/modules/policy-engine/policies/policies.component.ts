@@ -1,7 +1,16 @@
-import { Component, Inject, OnInit } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ContractType, IUser, PolicyHelper, PolicyType, Schema, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
+import {
+    ContractType,
+    IUser,
+    PolicyHelper,
+    PolicyType,
+    Schema,
+    SchemaHelper,
+    TagType,
+    Token,
+    UserPermissions
+} from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
@@ -21,7 +30,9 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
 import { SearchPolicyDialog } from '../../analytics/search-policy-dialog/search-policy-dialog.component';
 import { mobileDialog } from 'src/app/utils/mobile-utils';
 import { DialogService } from 'primeng/dynamicdialog';
-import { SuggestionsConfigurationComponent } from '../../../views/suggestions-configuration/suggestions-configuration.component';
+import {
+    SuggestionsConfigurationComponent
+} from '../../../views/suggestions-configuration/suggestions-configuration.component';
 import { DeletePolicyDialogComponent } from '../dialogs/delete-policy-dialog/delete-policy-dialog.component';
 import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
 import { DiscontinuePolicy } from '../dialogs/discontinue-policy/discontinue-policy.component';
@@ -31,7 +42,11 @@ import { PolicyTestDialog } from '../dialogs/policy-test-dialog/policy-test-dial
 import { NewImportFileDialog } from '../dialogs/new-import-file-dialog/new-import-file-dialog.component';
 import { PublishPolicyDialog } from '../dialogs/publish-policy-dialog/publish-policy-dialog.component';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from '../../common/import-entity-dialog/import-entity-dialog.component';
+import {
+    IImportEntityResult,
+    ImportEntityDialog,
+    ImportEntityType
+} from '../../common/import-entity-dialog/import-entity-dialog.component';
 
 class MenuButton {
     public readonly visible: boolean;
@@ -143,10 +158,12 @@ const columns = [{
             user.POLICIES_POLICY_DELETE
         )
     }
+}, {
+    id: 'multi-instance',
+    permissions: (user: UserPermissions) => {
+        return user.POLICIES_POLICY_EXECUTE && !user.POLICIES_POLICY_MANAGE;
+    }
 }];
-
-
-
 
 /**
  * Component for choosing a policy and
@@ -263,23 +280,43 @@ export class PoliciesComponent implements OnInit {
         )
     }
 
-    public instanceLabel(policy: any): string {
-        if (this.user?.POLICIES_POLICY_MANAGE) {
-            if (
-                policy.status === PolicyType.PUBLISH ||
-                policy.status === PolicyType.DISCONTINUED
-            ) {
-                return 'Open';
-            } else if (
-                policy.status === PolicyType.DEMO
-            ) {
-                return 'Demo';
-            } else {
-                return 'Dry run';
+    public showInstance(policy: any): string | null {
+        switch (policy.status) {
+            case PolicyType.PUBLISH:
+            case PolicyType.DISCONTINUED: {
+                if (this.user.POLICIES_POLICY_MANAGE) {
+                    return 'Open';
+                } else if (this.user.POLICIES_POLICY_EXECUTE) {
+                    return 'Register';
+                } else {
+                    return null;
+                }
             }
-        } else {
-            return 'Register'
+            case PolicyType.DRY_RUN: {
+                if (this.user.POLICIES_POLICY_UPDATE) {
+                    return 'Dry run';
+                } else {
+                    return null;
+                }
+            }
+            case PolicyType.DEMO: {
+                if (this.user.POLICIES_POLICY_UPDATE) {
+                    return 'Demo';
+                } else {
+                    return null;
+                }
+            }
+            default: {
+                return null;
+            }
         }
+    }
+
+    public checkMultiPolicyStatus(status: string): boolean {
+        return (
+            status === PolicyType.PUBLISH ||
+            status === PolicyType.DISCONTINUED
+        )
     }
 
     public showStatus(policy: any): boolean {
@@ -288,15 +325,6 @@ export class PoliciesComponent implements OnInit {
             policy.status === PolicyType.DRY_RUN ||
             policy.status === PolicyType.PUBLISH_ERROR ||
             policy.status === PolicyType.PUBLISH
-        )
-    }
-
-    public showInstance(policy: any): boolean {
-        return (
-            policy.status === PolicyType.DRY_RUN ||
-            policy.status === PolicyType.DEMO ||
-            policy.status === PolicyType.PUBLISH ||
-            policy.status === PolicyType.DISCONTINUED
         )
     }
 
@@ -505,6 +533,22 @@ export class PoliciesComponent implements OnInit {
         }
     }
 
+    public selectedMenuData: any;
+
+    public onMenuClick(event: MouseEvent, overlayPanel: any, policy: any): void {
+        this.selectedMenuData = this.getMenu(policy);
+
+        overlayPanel.toggle(event)
+    }
+
+    public selectedSubMenuData: any[] = [];
+
+    public onSubMenuClick(event: MouseEvent, overlayPanel: any, group: any): void {
+        this.selectedSubMenuData = group.buttons ?? [];
+
+        overlayPanel.toggle(event)
+    }
+
     private subscription = new Subscription();
 
     constructor(
@@ -512,7 +556,6 @@ export class PoliciesComponent implements OnInit {
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
         private router: Router,
-        private dialog: MatDialog,
         private dialogService: DialogService,
         private taskService: TasksService,
         private informService: InformService,
@@ -523,7 +566,7 @@ export class PoliciesComponent implements OnInit {
         private contractSerivce: ContractService,
         private wsService: WebSocketService,
         @Inject(CONFIGURATION_ERRORS)
-        private _configurationErrors: Map<string, any>
+        private _configurationErrors: Map<string, any>,
     ) {
         this.policies = null;
         this.pageIndex = 0;
@@ -817,6 +860,7 @@ export class PoliciesComponent implements OnInit {
     }
 
     private _input?: any;
+
     public importVirtualKeys(policy?: any) {
         const handler = () => {
             input.removeEventListener('change', handler);
@@ -1093,19 +1137,20 @@ export class PoliciesComponent implements OnInit {
     }
 
     public createMultiPolicy(element: any) {
-        const dialogRef = this.dialog.open(MultiPolicyDialogComponent, mobileDialog({
+        const dialogRef = this.dialogService.open(MultiPolicyDialogComponent, {
+            showHeader: false,
             width: '650px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            autoFocus: false,
+            styleClass: 'guardian-dialog',
             data: {
                 policyId: element.id
             }
-        }));
-        dialogRef.afterClosed().subscribe(async (result) => {
+        });
+
+        dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.importPolicyDetails(result);
             }
+
             this.loadPolicy();
         });
     }
@@ -1245,16 +1290,21 @@ export class PoliciesComponent implements OnInit {
     }
 
     public applyFilters(): void {
-        if (this.filters.policyName && this.filters.tag) {
-            this.filterByNameAndTag();
+        if (this.filters.policyName) {
+            if (this.filters.tag) {
+                this.filterByNameAndTag();
+                this.noFilterResults = this.filteredPolicies.length === 0;
+            } else {
+                this.filterByPolicyName();
+                this.noFilterResults = this.filteredPolicies.length === 0;
+            }
+        } else if (this.filters.tag) {
+            this.filterByTag();
             this.noFilterResults = this.filteredPolicies.length === 0;
-            return;
+        } else {
+            this.filteredPolicies = [];
+            this.noFilterResults = false;
         }
-
-        this.filters.policyName
-            ? this.filterByPolicyName()
-            : this.filterByTag();
-        this.noFilterResults = this.filteredPolicies.length === 0;
     }
 
     public clearFilters(): void {
@@ -1397,7 +1447,8 @@ export class PoliciesComponent implements OnInit {
                 policy: item
             }
         });
-        dialogRef.onClose.subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     public onRunTest($event: any) {

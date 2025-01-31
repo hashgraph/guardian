@@ -7,5 +7,6 @@ export enum SchemaCategory {
     SYSTEM = 'SYSTEM',
     TAG = 'TAG',
     TOOL = 'TOOL',
-    STATISTIC = 'STATISTIC'
+    STATISTIC = 'STATISTIC',
+    LABEL = 'LABEL'
 }

@@ -78,7 +78,7 @@ paths:
     post:
       operationId: AccountApi_changePassword
       summary: Change user password.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: User credentials.
@@ -1153,7 +1153,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_3
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/{contractId}/permissions:
     get:
       operationId: ContractsApi_contractPermissions
@@ -1463,7 +1463,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_3
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/wipe/{contractId}/requests/{hederaId}:
     delete:
       operationId: ContractsApi_clearWipeRequestsWithHederaId
@@ -1754,7 +1754,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_3
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/wipe/{contractId}/wiper/{hederaId}/{tokenId}:
     post:
       operationId: ContractsApi_wipeAddWiperWithToken
@@ -1803,7 +1803,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_3
       security:
-        - bearer: [ ]
+        - bearer: []
     delete:
       operationId: ContractsApi_wipeRemoveWiperWithToken
       summary: Remove wipe wiper for token.
@@ -4771,7 +4771,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_11
       security:
-        - bearer: [ ]
+        - bearer: []
   /policies/{policyId}/transactions:
     get:
       operationId: PolicyApi_getSchemaTransactions
@@ -7232,7 +7232,7 @@ paths:
       tags: &ref_12
         - schema
       security:
-        - bearer: [ ]
+        - bearer: []
   /schema/{schemaId}/transactions:
     get:
       operationId: SingleSchemaApi_getSchemaTransactions
@@ -7600,7 +7600,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_13
       security:
-        - bearer: [ ]
+        - bearer: []
   /schemas/type-by-user/{schemaType}:
     get:
       operationId: SchemaApi_getSchemaByTypeAndUser
@@ -9514,7 +9514,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_16
       security:
-        - bearer: [ ]
+        - bearer: []
   /tokens/push:
     post:
       operationId: TokensApi_pushTokenAsync
@@ -12151,7 +12151,7 @@ paths:
       operationId: PolicyStatisticsApi_createStatisticDefinition
       summary: Creates a new statistic definition.
       description: Creates a new statistic definition.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: Configuration.
@@ -12179,7 +12179,7 @@ paths:
       tags: &ref_27
         - policy-statistics
       security:
-        - bearer: [ ]
+        - bearer: []
     get:
       operationId: PolicyStatisticsApi_getStatisticDefinitions
       summary: Return a list of all statistic definitions.
@@ -12234,7 +12234,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_27
       security:
-        - bearer: [ ]
+        - bearer: []
   /policy-statistics/{definitionId}:
     get:
       operationId: PolicyStatisticsApi_getStatisticDefinitionById
@@ -12267,7 +12267,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_27
       security:
-        - bearer: [ ]
+        - bearer: []
     put:
       operationId: PolicyStatisticsApi_updateStatisticDefinition
       summary: Updates statistic definition.
@@ -12308,7 +12308,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_27
       security:
-        - bearer: [ ]
+        - bearer: []
     delete:
       operationId: PolicyStatisticsApi_deleteStatisticDefinition
       summary: Deletes the statistic definition.
@@ -12340,7 +12340,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_27
       security:
-        - bearer: [ ]
+        - bearer: []
   /policy-statistics/{definitionId}/publish:
     put:
       operationId: PolicyStatisticsApi_publishStatisticDefinition
@@ -12373,7 +12373,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_27
       security:
-        - bearer: [ ]
+        - bearer: []
   /policy-statistics/{definitionId}/relationships:
     get:
       operationId: PolicyStatisticsApi_getStatisticRelationships
@@ -12406,7 +12406,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_27
       security:
-        - bearer: [ ]
+        - bearer: []
   /policy-statistics/{definitionId}/documents:
     get:
       operationId: PolicyStatisticsApi_getStatisticDocuments
@@ -12462,7 +12462,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_27
       security:
-        - bearer: [ ]
+        - bearer: []
   /policy-statistics/{definitionId}/assessment:
     post:
       operationId: PolicyStatisticsApi_createStatisticAssessment
@@ -12502,7 +12502,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_27
       security:
-        - bearer: [ ]
+        - bearer: []
     get:
       operationId: PolicyStatisticsApi_getStatisticAssessments
       summary: Return a list of all statistic assessment.
@@ -12557,7 +12557,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_27
       security:
-        - bearer: [ ]
+        - bearer: []
   /policy-statistics/{definitionId}/assessment/{assessmentId}:
     get:
       operationId: PolicyStatisticsApi_getStatisticAssessment
@@ -12597,7 +12597,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_27
       security:
-        - bearer: [ ]
+        - bearer: []
   /policy-statistics/{definitionId}/assessment/{assessmentId}/relationships:
     get:
       operationId: PolicyStatisticsApi_getStatisticAssessmentRelationships
@@ -12637,7 +12637,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_27
       security:
-        - bearer: [ ]
+        - bearer: []
   /policy-statistics/{policyId}/import/file:
     post:
       operationId: PolicyStatisticsApi_importStatisticDefinition
@@ -12679,7 +12679,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_27
       security:
-        - bearer: [ ]
+        - bearer: []
   /policy-statistics/{definitionId}/export/file:
     get:
       operationId: PolicyStatisticsApi_exportStatisticDefinition
@@ -12708,13 +12708,13 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_27
       security:
-        - bearer: [ ]
+        - bearer: []
   /policy-statistics/import/file/preview:
     post:
       operationId: PolicyStatisticsApi_previewStatisticDefinition
       summary: Imports a zip file containing statistic definition.
       description: Imports a zip file containing statistic definition.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: File.
@@ -12741,13 +12741,13 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_27
       security:
-        - bearer: [ ]
+        - bearer: []
   /schema-rules:
     post:
       operationId: SchemaRulesApi_createSchemaRule
       summary: Creates a new schema rule.
       description: Creates a new schema rule.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: Configuration.
@@ -12775,7 +12775,7 @@ paths:
       tags: &ref_28
         - schema-rules
       security:
-        - bearer: [ ]
+        - bearer: []
     get:
       operationId: SchemaRulesApi_getSchemaRules
       summary: Return a list of all schema rules.
@@ -12830,7 +12830,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_28
       security:
-        - bearer: [ ]
+        - bearer: []
   /schema-rules/{ruleId}:
     get:
       operationId: SchemaRulesApi_getSchemaRuleById
@@ -12863,7 +12863,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_28
       security:
-        - bearer: [ ]
+        - bearer: []
     put:
       operationId: SchemaRulesApi_updateSchemaRule
       summary: Updates schema rule.
@@ -12902,7 +12902,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_28
       security:
-        - bearer: [ ]
+        - bearer: []
     delete:
       operationId: SchemaRulesApi_deleteSchemaRule
       summary: Deletes the schema rule.
@@ -12934,7 +12934,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_28
       security:
-        - bearer: [ ]
+        - bearer: []
   /schema-rules/{ruleId}/activate:
     put:
       operationId: SchemaRulesApi_activateSchemaRule
@@ -12967,7 +12967,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_28
       security:
-        - bearer: [ ]
+        - bearer: []
   /schema-rules/{ruleId}/inactivate:
     put:
       operationId: SchemaRulesApi_inactivateSchemaRule
@@ -13000,7 +13000,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_28
       security:
-        - bearer: [ ]
+        - bearer: []
   /schema-rules/{ruleId}/relationships:
     get:
       operationId: SchemaRulesApi_getSchemaRuleRelationships
@@ -13033,13 +13033,13 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_28
       security:
-        - bearer: [ ]
+        - bearer: []
   /schema-rules/data:
     post:
       operationId: SchemaRulesApi_getSchemaRuleData
       summary: ''
       description: ''
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: Configuration.
@@ -13066,7 +13066,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_28
       security:
-        - bearer: [ ]
+        - bearer: []
   /schema-rules/{policyId}/import/file:
     post:
       operationId: SchemaRulesApi_importSchemaRule
@@ -13106,7 +13106,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_28
       security:
-        - bearer: [ ]
+        - bearer: []
   /schema-rules/{ruleId}/export/file:
     get:
       operationId: SchemaRulesApi_exportSchemaRule
@@ -13135,13 +13135,13 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_28
       security:
-        - bearer: [ ]
+        - bearer: []
   /schema-rules/import/file/preview:
     post:
       operationId: SchemaRulesApi_previewSchemaRule
       summary: Imports a zip file containing rules.
       description: Imports a zip file containing rules.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: File.
@@ -13168,7 +13168,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_28
       security:
-        - bearer: [ ]
+        - bearer: []
   /worker-tasks:
     get:
       operationId: WorkerTasksController_getAllWorkerTasks

@@ -7,18 +7,23 @@ export class QueueService extends NatsService{
     public messageQueueName = 'queue-service';
     public replySubject = 'reply-queue-service-' + GenerateUUIDv4();
 
-    private readonly refreshInterval = 1 * 1000; // 1s
-    private readonly processTimeout = 1 * 60 * 60000; // 1 hour
+    private readonly clearInterval = parseInt(process.env.CLEAR_INTERVAL, 10) || 30 * 1000; // 1m
+    private readonly refreshInterval = parseInt(process.env.REFRESH_INTERVAL, 10) || 1 * 1000; // 1s
+    private readonly processTimeout = parseInt(process.env.PROCESS_TIMEOUT, 10) || 1 * 60 * 60000; // 1 hour
+
+    private trigger: boolean = false;
 
     public async init() {
         await super.init();
 
-        // worker job
+        // worker jobs
         setInterval(async () => {
             await this.refreshAndReassignTasks();
+        }, this.refreshInterval);
+        setInterval(async () => {
             await this.clearOldTasks();
             await this.clearLongPendingTasks();
-        }, this.refreshInterval);
+        }, this.clearInterval);
 
         this.getMessages(QueueEvents.ADD_TASK_TO_QUEUE, (task: ITask) => {
             try {
@@ -169,29 +174,33 @@ export class QueueService extends NatsService{
     }
 
     private async refreshAndReassignTasks() {
-        const workers = await this.getFreeWorkers();
+        if (!this.trigger) {
+            this.trigger = true;
+            const workers = await this.getFreeWorkers();
 
-        const dataBaseServer = new DatabaseServer();
+            const dataBaseServer = new DatabaseServer();
 
-        for (const worker of workers) {
-            const task = await dataBaseServer.findOne(TaskEntity, {
-                priority: {
-                    $gte: worker.minPriority,
-                    $lte: worker.maxPriority
-                },
-                processedTime: null
-            });
-            if (!task) {
-                continue;
+            for (const worker of workers) {
+                const task = await dataBaseServer.findOne(TaskEntity, {
+                    priority: {
+                        $gte: worker.minPriority,
+                        $lte: worker.maxPriority
+                    },
+                    processedTime: null
+                });
+                if (!task) {
+                    continue;
+                }
+                const r = await this.sendMessage(worker.subject, this.taskEntityToITask(task)) as any;
+                if (r?.result) {
+                    task.processedTime = new Date();
+                    task.sent = true;
+                    await dataBaseServer.save(TaskEntity, task);
+                } else {
+                    console.log('task sent error')
+                }
             }
-            const r = await this.sendMessage(worker.subject, this.taskEntityToITask(task)) as any;
-            if (r?.result) {
-                task.processedTime = new Date();
-                task.sent = true;
-                await dataBaseServer.save(TaskEntity, task);
-            } else {
-                console.log('task sent error')
-            }
+            this.trigger = false;
         }
     }
 

@@ -1,15 +1,10 @@
 import { DataBaseHelper, Message, TokenCache } from '@indexer/common';
-import { MessageType, MessageAction, PolicyAnalytics } from '@indexer/interfaces';
+import { MessageType, MessageAction, PolicyAnalytics, TokenType } from '@indexer/interfaces';
 import { textSearch } from '../text-search-options.js';
 import { parsePolicyFile } from '../parsers/policy.parser.js';
 import { HashComparator, PolicyLoader } from '../../analytics/index.js';
 import { SynchronizationTask } from '../synchronization-task.js';
 import { loadFiles } from '../load-files.js';
-
-enum TokenType {
-    FT = 'FUNGIBLE_COMMON',
-    NFT = 'NON_FUNGIBLE_UNIQUE',
-}
 
 export class SynchronizationPolicy extends SynchronizationTask {
     public readonly name: string = 'policy';
@@ -18,7 +13,7 @@ export class SynchronizationPolicy extends SynchronizationTask {
         super('policy', mask);
     }
 
-    protected override async sync(): Promise<void> {
+    public override async sync(): Promise<void> {
         const em = DataBaseHelper.getEntityManager();
         const collection = em.getCollection<Message>('message');
         const collection2 = em.getCollection<TokenCache>('token_cache');
@@ -152,6 +147,9 @@ export class SynchronizationPolicy extends SynchronizationTask {
             return;
         }
         const policyData = await parsePolicyFile(policyFileBuffer, false);
+        if (!policyData) {
+            return;
+        }
         analytics.tools = policyData.tools?.map((tool: any) => tool.messageId) || [];
         for (const tool of analytics.tools) {
             analytics.textSearch += `|${tool}`;

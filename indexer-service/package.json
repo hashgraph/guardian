@@ -1,8 +1,8 @@
 {
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
-        "@indexer/common": "^3.0.0",
-        "@indexer/interfaces": "^3.0.0",
+        "@indexer/common": "^3.1.0-rc",
+        "@indexer/interfaces": "^3.1.0-rc",
         "mongodb": "6.5.0",
         "@mikro-orm/core": "6.2.2",
         "@mikro-orm/mongodb": "6.2.2",
@@ -11,7 +11,7 @@
         "@nestjs/core": "^9.4.1",
         "@nestjs/microservices": "^9.4.1",
         "axios": "^1.7.2",
-        "bs58": "^4.0.1",
+        "bs58": "^6.0.0",
         "axios-retry": "^3.2.4",
         "cron": "^3.1.7",
         "cross-blob": "^2.0.1",
@@ -28,7 +28,7 @@
     "devDependencies": {
         "@types/gulp": "^4",
         "@types/gulp-rename": "^2",
-        "@types/node": "^18.16.0",
+        "@types/node": "^22.10.10",
         "chai": "4.3.4",
         "gulp": "^4.0.2",
         "gulp-copy": "^4.0.1",
@@ -60,5 +60,5 @@
     },
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "3.0.0"
+    "version": "3.1.0-rc"
 }

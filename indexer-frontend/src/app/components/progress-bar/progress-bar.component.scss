@@ -1,0 +1,34 @@
+
+.progress-container {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+
+    .progress-icon {
+        &.loading {
+            animation: loading 5s linear infinite;
+        }
+    }
+
+    .progress-text {
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--color-grey-white, #FFFFFF);
+    }
+
+    .progress-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--color-grey-white, #FFFFFF);
+    }
+}
+
+@keyframes loading {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

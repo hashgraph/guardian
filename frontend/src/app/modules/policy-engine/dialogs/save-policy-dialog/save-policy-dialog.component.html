@@ -1,49 +1,57 @@
-<div mat-dialog-content class="content">
-    <div *ngIf="isActionSelected$ | async; else selectActionTemplate">
-        <h1 mat-dialog-title *ngIf="isActionSelected$ | async">{{getTitle()}}</h1>
-        <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
-            <mat-form-field class="example-full-width" appearance="outline">
-                <mat-label>* NAME:</mat-label>
-                <input matInput type="text" placeholder="Policy name" formControlName="name">
-            </mat-form-field>
-
-            <mat-form-field class="example-full-width" appearance="outline">
-                <mat-label>* TAG:</mat-label>
-                <input matInput type="text" placeholder="policyTag" formControlName="policyTag">
-            </mat-form-field>
-
-            <mat-form-field class="example-full-width" appearance="outline">
-                <mat-label>TOPIC DESCRIPTION:</mat-label>
-                <input matInput type="text" placeholder="Topic description" formControlName="topicDescription"
-                    maxlength="50">
-            </mat-form-field>
-
-            <mat-form-field class="example-full-width" appearance="outline">
-                <mat-label>DESCRIPTION:</mat-label>
-                <textarea matInput type="text" placeholder="Description" formControlName="description"></textarea>
-            </mat-form-field>
-
-            <div mat-dialog-actions>
-                <button mat-raised-button color="primary" type="submit" [disabled]="!dataForm.valid">Ok</button>
-                <button mat-button type="button" (click)="onNoClick()">Cancel</button>
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{(isActionSelected$ | async) ? getTitle() : 'Select action'}}</div>
+    </div>
+    <div class="header-icon" (click)="onNoClick()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<ng-container *ngIf="isActionSelected$ | async; else selectActionTemplate">
+    <div class="dialog-body">
+        <form [formGroup]="dataForm" (ngSubmit)="onSubmit()" class="form-field">
+            <div class="guardian-input-container">
+                <label class="form-label" htmlFor="version">* Name</label>
+                <input formControlName="name" pInputText type="text" placeholder="Name" />
+            </div>
+            <div class="guardian-input-container">
+                <label class="form-label" htmlFor="version">* Policy Tag</label>
+                <input formControlName="policyTag" pInputText type="text" placeholder="Tag" />
+            </div>
+            <div class="guardian-input-container">
+                <label class="form-label" htmlFor="version">Topic Description</label>
+                <input formControlName="topicDescription" pInputText type="text" placeholder="Topic Description" maxlength="50"/>
+            </div>
+            <div class="guardian-textarea-container">
+                <label class="form-label">Description</label>
+                <textarea formControlName="description" pTextarea rows="3"  placeholder="Description"></textarea>
             </div>
         </form>
     </div>
-    <ng-template #selectActionTemplate>
-        <div class="action-select-step">
-            <div class="login-header">
-                Select action
+    <div class="dialog-footer">
+        <div class="action-buttons">
+            <div class="dialog-button">
+                <button 
+                    (click)="onNoClick()" 
+                    class="guardian-button guardian-button-secondary">Close</button>
             </div>
-            <button mat-button (click)="setAction(1)">
-                <span class="action-name">Create new policy</span>
-            </button>
-            <button mat-button (click)="setAction(2)" *ngIf="!isNewVersionDisabled">
-                <span class="action-name">Create new version</span>
-            </button>
+            <div class="dialog-button">
+                <button 
+                    (click)="onSubmit()" 
+                    class="guardian-button guardian-button-primary"
+                    [disabled]="dataForm.invalid">Ok</button>
+            </div>
         </div>
-    </ng-template>
-
-    <button *ngIf="!(isActionSelected$ | async)" mat-icon-button class="close-button" type="button" [mat-dialog-close]>
-        <mat-icon>clear</mat-icon>
-    </button>
-</div>
+    </div>
+</ng-container>
+<ng-template #selectActionTemplate>
+    <div class="dialog-body">
+        <div class="action-select-step">
+            <button 
+                (click)="setAction(1)" 
+                class="guardian-button guardian-button-secondary">Create new policy</button>
+            <button 
+                (click)="setAction(2)" 
+                class="guardian-button guardian-button-secondary">Create new version</button>
+        </div>
+    </div>
+</ng-template>

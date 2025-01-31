@@ -272,7 +272,12 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
         }, {});
     }
 
-    ngOnInit() {}
+    ngOnInit() {
+        setTimeout(() =>  {
+            this.setParents(this.treeData)
+            this.cdRef.detectChanges();
+        }, 50)
+    }
 
     ngAfterViewInit() {
         const schemasNode = {

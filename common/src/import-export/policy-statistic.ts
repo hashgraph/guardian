@@ -1,6 +1,9 @@
 import JSZip from 'jszip';
-import { PolicyStatistic } from '../entity/index.js';
-import { IFormulaData, IRuleData, IScoreData, IScoreOption, IStatisticConfig, IVariableData } from '@guardian/interfaces';
+import { Policy, PolicyStatistic, Schema as SchemaCollection } from '../entity/index.js';
+import { IFormulaData, IRuleData, IScoreData, IScoreOption, IStatisticConfig, IVariableData, Schema, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
+import { SchemaRuleImportExport } from './schema-rule.js';
+import { PolicyImportExport } from './policy.js';
+import { DatabaseServer } from '../database-modules/index.js';
 
 /**
  * PolicyStatistic components
@@ -78,6 +81,71 @@ export class PolicyStatisticImportExport {
     }
 
     /**
+     * Load policy schemas
+     * @param policy policy
+     * @returns policy schemas
+     */
+    public static async getPolicySchemas(policy: Policy): Promise<SchemaCollection[]> {
+        const { schemas, toolSchemas } = await PolicyImportExport.loadAllSchemas(policy);
+        const systemSchemas = await DatabaseServer.getSchemas({
+            topicId: policy.topicId,
+            entity: { $in: [SchemaEntity.MINT_TOKEN, SchemaEntity.MINT_NFTOKEN] }
+        });
+
+        const all = []
+            .concat(schemas, toolSchemas, systemSchemas)
+            .filter((s) => s.status === SchemaStatus.PUBLISHED && s.entity !== 'EVC');
+        return all;
+    }
+
+    /**
+     * Update schema uuid
+     * @param schemas policy schemas
+     * @param data config
+     * @returns new config
+     */
+    public static updateSchemas(schemas: SchemaCollection[], data?: IStatisticConfig): IStatisticConfig | undefined {
+        if (!data) {
+            return;
+        }
+
+        const fieldMap = new Map<string, string>();
+        const schemaObjects = schemas.map((s) => new Schema(s));
+        for (const schema of schemaObjects) {
+            const allFields = schema.getFields();
+            for (const field of allFields) {
+                const key = `${schema.name}|${field.path}|${field.description}|${field.type}|${field.isArray}|${field.isRef}`;
+                fieldMap.set(key, schema.iri);
+            }
+        }
+
+        const schemaMap = new Map<string, string>();
+        const variables = data.variables;
+        const rules = data.rules;
+
+        if (Array.isArray(variables)) {
+            for (const variable of variables) {
+                const key = `${variable.schemaName}|${variable.path}|${variable.fieldDescription}|${variable.fieldType}|${variable.fieldArray}|${variable.fieldRef}`;
+                schemaMap.set(variable.schemaId, fieldMap.get(key));
+            }
+        }
+
+        if (Array.isArray(variables)) {
+            for (const variable of variables) {
+                variable.schemaId = schemaMap.get(variable.schemaId);
+            }
+        }
+
+        if (Array.isArray(rules)) {
+            for (const rule of rules) {
+                rule.schemaId = schemaMap.get(rule.schemaId);
+            }
+        }
+
+        return data;
+    }
+
+    /**
      * Validate Config
      *
      * @param data config
@@ -97,7 +165,7 @@ export class PolicyStatisticImportExport {
      *
      * @param data Variables
      */
-    private static validateVariables(data?: IVariableData[]): IVariableData[] {
+    public static validateVariables(data?: IVariableData[]): IVariableData[] {
         const variables: IVariableData[] = [];
         if (Array.isArray(data)) {
             for (const variable of data) {
@@ -134,7 +202,7 @@ export class PolicyStatisticImportExport {
      *
      * @param data Scores
      */
-    private static validateScores(data?: IScoreData[]): IScoreData[] {
+    public static validateScores(data?: IScoreData[]): IScoreData[] {
         const scores: IScoreData[] = [];
         if (Array.isArray(data)) {
             for (const score of data) {
@@ -165,7 +233,7 @@ export class PolicyStatisticImportExport {
      *
      * @param data Formulas
      */
-    private static validateFormulas(data?: IFormulaData[]): IFormulaData[] {
+    public static validateFormulas(data?: IFormulaData[]): IFormulaData[] {
         const formulas: IFormulaData[] = [];
         if (Array.isArray(data)) {
             for (const formula of data) {
@@ -191,11 +259,42 @@ export class PolicyStatisticImportExport {
     }
 
     /**
+     * Validate Formulas with rule
+     *
+     * @param data Formulas
+     */
+    public static validateFormulasWithRule(data?: IFormulaData[]): IFormulaData[] {
+        const formulas: IFormulaData[] = [];
+        if (Array.isArray(data)) {
+            for (const formula of data) {
+                formulas.push(PolicyStatisticImportExport.validateFormulaWithRule(formula));
+            }
+        }
+        return formulas;
+    }
+
+    /**
+     * Validate Formula with rule
+     *
+     * @param data Formula
+     */
+    private static validateFormulaWithRule(data?: IFormulaData): IFormulaData {
+        const formula: IFormulaData = {
+            id: PolicyStatisticImportExport.validateString(data.id),
+            type: PolicyStatisticImportExport.validateString(data.type),
+            description: PolicyStatisticImportExport.validateString(data.description),
+            formula: PolicyStatisticImportExport.validateString(data.formula),
+            rule: SchemaRuleImportExport.validateRule(data.rule),
+        }
+        return formula;
+    }
+
+    /**
      * Validate Rules
      *
      * @param data Rules
      */
-    private static validateRules(data?: IRuleData[]): IRuleData[] {
+    public static validateRules(data?: IRuleData[]): IRuleData[] {
         const rules: IRuleData[] = [];
         if (Array.isArray(data)) {
             for (const rule of data) {

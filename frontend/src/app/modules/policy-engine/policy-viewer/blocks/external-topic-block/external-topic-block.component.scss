@@ -145,6 +145,7 @@
     height: 40px;
     padding-left: 15px;
     box-sizing: border-box;
+    align-content: center;
 }
 
 .schema-row>div {
@@ -176,7 +177,8 @@
     border-radius: 4px;
 }
 
-.synchronization-update mat-icon {
+.synchronization-update i,
+.synchronization-update svg {
     position: absolute;
     pointer-events: none;
     font-size: 22px;
@@ -193,6 +195,8 @@
 .text {
     padding-bottom: 16px;
     padding-left: 15px;
+    font-size: 14px;
+    margin-top: 20px;
 }
 
 .text.note {
@@ -212,4 +216,30 @@
 
 .loading-text {
     font-size: 18px;
+}
+
+.form-content.first-step input {
+    margin-left: 15px;
+    width: 745px;
+}
+
+.form-content.first-step .form-group {
+    position: relative;
+}
+
+.form-content.first-step .form-group label {
+    position: absolute;
+    font-size: 10px;
+    top: -5px;
+    left: 30px;
+    padding: 0 4px;
+    background: var(--color-grey-white);
+}
+
+.form-content.step-three schemas-block{
+    margin-left: 3px;
+}
+
+.form-content.step-three .text.second {
+    margin-top: 8px;
 }

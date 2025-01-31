@@ -5,7 +5,7 @@ paths:
       operationId: AccountApi_getSession
       summary: Returns current session of the user.
       description: Returns current user session.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -22,13 +22,13 @@ paths:
       tags: &ref_0
         - accounts
       security:
-        - bearer: [ ]
+        - bearer: []
   /accounts/register:
     post:
       operationId: AccountApi_register
       summary: Registers a new user account.
       description: Object that contain username, password and role (optional) fields.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         content:
@@ -53,7 +53,7 @@ paths:
     post:
       operationId: AccountApi_login
       summary: Logs user into the system.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         content:
@@ -79,7 +79,7 @@ paths:
       operationId: AccountApi_getAccessToken
       summary: Returns access token.
       description: Returns access token.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -92,7 +92,7 @@ paths:
         Returns all users except those with roles Standard Registry and Auditor.
         Only users with the Standard Registry role are allowed to make the
         request.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -112,13 +112,13 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_0
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /accounts/standard-registries:
     get:
       operationId: AccountApi_getStandatdRegistries
       summary: Returns all Standard Registries.
       description: Returns all Standard Registries.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -138,13 +138,13 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_0
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /accounts/standard-registries/aggregated:
     get:
       operationId: AccountApi_getAggregatedStandardRegistries
       summary: Returns all Standard Registries aggregated with polices and vcDocuments.
       description: Returns all Standard Registries aggregated with polices and vcDocuments
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -166,13 +166,13 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_0
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /accounts/balance:
     get:
       operationId: AccountApi_getBalance
       summary: Returns user's Hedera account balance.
       description: Requests current Hedera account balance.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -192,7 +192,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_0
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /analytics/search/policies:
     post:
       operationId: AnalyticsApi_searchPolicies
@@ -200,7 +200,7 @@ paths:
       description: >-
         Search policies. Only users with the Standard Registry role are allowed
         to make the request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: Filters.
@@ -232,7 +232,7 @@ paths:
       tags: &ref_1
         - analytics
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /analytics/compare/policies:
     post:
       operationId: AnalyticsApi_comparePolicies
@@ -240,7 +240,7 @@ paths:
       description: >-
         Compare policies. Only users with the Standard Registry role are allowed
         to make the request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: Filters.
@@ -285,7 +285,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_1
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /analytics/compare/modules:
     post:
       operationId: AnalyticsApi_compareModules
@@ -293,7 +293,7 @@ paths:
       description: >-
         Compare modules. Only users with the Standard Registry role are allowed
         to make the request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: Filters.
@@ -328,7 +328,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_1
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /analytics/compare/schemas:
     post:
       operationId: AnalyticsApi_compareSchemas
@@ -336,7 +336,7 @@ paths:
       description: >-
         Compare schemas. Only users with the Standard Registry role are allowed
         to make the request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: Filters.
@@ -369,7 +369,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_1
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /analytics/compare/documents:
     post:
       operationId: AnalyticsApi_compareDocuments
@@ -377,7 +377,7 @@ paths:
       description: >-
         Compare documents. Only users with the Standard Registry role are
         allowed to make the request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: Filters.
@@ -414,7 +414,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_1
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /analytics/compare/tools:
     post:
       operationId: AnalyticsApi_compareTools
@@ -422,7 +422,7 @@ paths:
       description: >-
         Compare tools. Only users with the Standard Registry role are allowed to
         make the request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: Filters.
@@ -459,7 +459,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_1
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /analytics/compare/policies/export:
     post:
       operationId: AnalyticsApi_comparePoliciesExport
@@ -467,7 +467,7 @@ paths:
       description: >-
         Compare policies. Only users with the Standard Registry role are allowed
         to make the request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: Filters.
@@ -512,7 +512,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_1
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /analytics/compare/modules/export:
     post:
       operationId: AnalyticsApi_compareModulesExport
@@ -520,7 +520,7 @@ paths:
       description: >-
         Compare modules. Only users with the Standard Registry role are allowed
         to make the request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: Filters.
@@ -555,7 +555,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_1
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /analytics/compare/schemas/export:
     post:
       operationId: AnalyticsApi_compareSchemasExport
@@ -563,7 +563,7 @@ paths:
       description: >-
         Compare schemas. Only users with the Standard Registry role are allowed
         to make the request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: Filters.
@@ -596,7 +596,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_1
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /analytics/compare/documents/export:
     post:
       operationId: AnalyticsApi_compareDocumentsExport
@@ -604,7 +604,7 @@ paths:
       description: >-
         Compare documents. Only users with the Standard Registry role are
         allowed to make the request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: Filters.
@@ -641,7 +641,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_1
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /analytics/compare/tools/export:
     post:
       operationId: AnalyticsApi_compareToolsExport
@@ -649,7 +649,7 @@ paths:
       description: >-
         Compare tools. Only users with the Standard Registry role are allowed to
         make the request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: Filters.
@@ -686,7 +686,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_1
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /analytics/search/blocks:
     post:
       operationId: AnalyticsApi_searchBlocks
@@ -694,7 +694,7 @@ paths:
       description: >-
         Search same blocks. Only users with the Standard Registry role are
         allowed to make the request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: Filters.
@@ -706,7 +706,7 @@ paths:
               Filter:
                 value:
                   uuid: ''
-                  config: { }
+                  config: {}
       responses:
         '200':
           description: Successful operation.
@@ -726,14 +726,14 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_1
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /artifacts:
     get:
       tags:
         - artifacts
       description: Returns all artifacts.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Returns all artifacts.
       parameters:
         - in: query
@@ -819,14 +819,14 @@ paths:
       tags:
         - artifacts
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /artifacts/{artifactId}:
     delete:
       tags:
         - artifacts
       description: Delete artifact.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Delete artifact.
       parameters:
         - in: path
@@ -911,14 +911,14 @@ paths:
       tags: &ref_2
         - contracts
       security:
-        - bearer: [ ]
+        - bearer: []
     post:
       operationId: ContractsApi_createContract
       summary: Create contract.
       description: >-
         Create smart-contract. Only users with the Standard Registry role are
         allowed to make the request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         content:
@@ -947,7 +947,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/import:
     post:
       operationId: ContractsApi_importContract
@@ -955,7 +955,7 @@ paths:
       description: >-
         Import smart-contract. Only users with the Standard Registry role are
         allowed to make the request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         content:
@@ -990,7 +990,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/{contractId}/permissions:
     get:
       operationId: ContractsApi_contractPermissions
@@ -1025,7 +1025,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/{contractId}:
     delete:
       operationId: ContractsApi_removeContract
@@ -1060,7 +1060,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/wipe/requests:
     get:
       operationId: ContractsApi_getWipeRequests
@@ -1118,7 +1118,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/wipe/{contractId}/requests/enable:
     post:
       operationId: ContractsApi_enableWipeRequests
@@ -1149,7 +1149,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/wipe/{contractId}/requests/disable:
     post:
       operationId: ContractsApi_disableWipeRequests
@@ -1180,7 +1180,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/wipe/requests/{requestId}/approve:
     post:
       operationId: ContractsApi_approveWipeRequest
@@ -1211,7 +1211,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/wipe/requests/{requestId}/reject:
     delete:
       operationId: ContractsApi_rejectWipeRequest
@@ -1248,7 +1248,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/wipe/{contractId}/requests:
     delete:
       operationId: ContractsApi_clearWipeRequests
@@ -1279,7 +1279,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/wipe/{contractId}/admin/{hederaId}:
     post:
       operationId: ContractsApi_wipeAddAdmin
@@ -1317,7 +1317,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
     delete:
       operationId: ContractsApi_wipeRemoveAdmin
       summary: Remove wipe admin.
@@ -1354,7 +1354,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/wipe/{contractId}/manager/{hederaId}:
     post:
       operationId: ContractsApi_wipeAddManager
@@ -1392,7 +1392,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
     delete:
       operationId: ContractsApi_wipeRemoveManager
       summary: Remove wipe manager.
@@ -1429,7 +1429,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/wipe/{contractId}/wiper/{hederaId}:
     post:
       operationId: ContractsApi_wipeAddWiper
@@ -1467,7 +1467,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
     delete:
       operationId: ContractsApi_wipeRemoveWiper
       summary: Remove wipe wiper.
@@ -1504,7 +1504,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/retire/{contractId}/pools/sync:
     post:
       operationId: ContractsApi_retireSyncPools
@@ -1539,7 +1539,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/retire/requests:
     get:
       operationId: ContractsApi_getRetireRequests
@@ -1595,7 +1595,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/retire/pools:
     get:
       operationId: ContractsApi_getRetirePools
@@ -1658,7 +1658,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/retire/{contractId}/requests:
     delete:
       operationId: ContractsApi_clearRetireRequests
@@ -1693,7 +1693,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/retire/{contractId}/pools:
     delete:
       operationId: ContractsApi_clearRetirePools
@@ -1728,7 +1728,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
     post:
       operationId: ContractsApi_setRetirePool
       summary: Set retire pool.
@@ -1768,7 +1768,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/retire/pools/{poolId}:
     delete:
       operationId: ContractsApi_unsetRetirePool
@@ -1803,7 +1803,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/retire/requests/{requestId}:
     delete:
       operationId: ContractsApi_unsetRetireRequest
@@ -1838,7 +1838,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/retire/pools/{poolId}/retire:
     post:
       operationId: ContractsApi_retire
@@ -1877,7 +1877,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/retire/requests/{requestId}/approve:
     post:
       operationId: ContractsApi_approveRetire
@@ -1908,7 +1908,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/retire/requests/{requestId}/cancel:
     delete:
       operationId: ContractsApi_cancelRetireRequest
@@ -1937,7 +1937,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/retire/{contractId}/admin/{hederaId}:
     post:
       operationId: ContractsApi_retireAddAdmin
@@ -1975,7 +1975,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
     delete:
       operationId: ContractsApi_retireRemoveAdmin
       summary: Remove wipe admin.
@@ -2012,7 +2012,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /contracts/retire:
     get:
       operationId: ContractsApi_getRetireVCs
@@ -2061,13 +2061,13 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
       security:
-        - bearer: [ ]
+        - bearer: []
   /demo/registered-users:
     get:
       operationId: DemoApi_registeredUsers
       summary: Returns list of registered users.
       description: Returns list of registered users.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -2083,7 +2083,7 @@ paths:
         - demo
       description: Generates a new Hedera account with a random private key.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         '200':
           description: Successful operation.
@@ -2107,7 +2107,7 @@ paths:
         - demo
       description: Generates a new Hedera account with a random private key.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Generates a new Hedera account with a random private key.
       responses:
         '202':
@@ -2153,14 +2153,14 @@ paths:
       operationId: IpfsApi_postFile
       summary: Add file from ipfs.
       description: Add file from ipfs.
-      parameters: [ ]
+      parameters: []
       responses:
         '201':
           description: ''
       tags:
         - ipfs
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /ipfs/file/{cid}:
     get:
       tags:
@@ -2175,7 +2175,7 @@ paths:
           required: true
           description: File CID.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         '201':
           description: Created.
@@ -2198,7 +2198,7 @@ paths:
         - logs
       description: Returns logs. For users with the Standard Registry role only.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       requestBody:
         description: Log filters.
         content:
@@ -2247,7 +2247,7 @@ paths:
               type: string
           description: Attributes to exclude.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Returns logs attributes.
       responses:
         '200':
@@ -2274,7 +2274,7 @@ paths:
         - maps
       description: Returns map api key.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Returns map api key.
       responses:
         '200':
@@ -2294,7 +2294,7 @@ paths:
   /map/sh:
     get:
       operationId: MapApi_getSentinelKey
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: ''
@@ -2303,7 +2303,7 @@ paths:
   /metrics:
     get:
       operationId: MetricsApi_getMetrics
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: ''
@@ -2317,7 +2317,7 @@ paths:
         Returns all modules. Only users with the Standard Registry and Installer
         role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Return a list of all modules.
       parameters:
         - in: query
@@ -2369,7 +2369,7 @@ paths:
         Creates a new module. Only users with the Standard Registry role are
         allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Creates a new module.
       requestBody:
         description: Object that contains module configuration.
@@ -2394,7 +2394,7 @@ paths:
   /modules/schemas:
     get:
       operationId: ModulesApi_getModuleSchemas
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: ''
@@ -2402,7 +2402,7 @@ paths:
         - modules
     post:
       operationId: ModulesApi_postSchemas
-      parameters: [ ]
+      parameters: []
       responses:
         '201':
           description: ''
@@ -2423,7 +2423,7 @@ paths:
           description: Selected module ID.
       summary: Retrieves module configuration.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         '200':
           description: Successful operation.
@@ -2463,7 +2463,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Module'
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         '200':
           description: Successful operation.
@@ -2495,7 +2495,7 @@ paths:
           required: true
           description: Module ID.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Deletes the module.
       responses:
         '200':
@@ -2522,7 +2522,7 @@ paths:
         Returns modules menu. Only users with the Standard Registry and
         Installer role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Return a list of modules.
       responses:
         '200':
@@ -2559,7 +2559,7 @@ paths:
           required: true
           description: Selected module ID.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: >-
         Return module and its artifacts in a zip file format for the specified
         module.
@@ -2592,7 +2592,7 @@ paths:
           required: true
           description: Selected module ID.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Return Heder message ID for the specified published module.
       responses:
         '200':
@@ -2620,7 +2620,7 @@ paths:
         DB. Only users with the Standard Registry role are allowed to make the
         request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Imports new module from IPFS.
       requestBody:
         description: >-
@@ -2660,7 +2660,7 @@ paths:
         VCs, from the provided zip file into the local DB. Only users with the
         Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Imports new module from a zip file.
       requestBody:
         description: >-
@@ -2698,7 +2698,7 @@ paths:
         users with the Standard Registry role are allowed to make the request.
       summary: Module preview from IPFS.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       requestBody:
         description: >-
           Object that contains the identifier of the Hedera message which
@@ -2738,7 +2738,7 @@ paths:
         request.
       summary: Module preview from a zip file.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       requestBody:
         description: >-
           A zip file that contains the module and associated schemas and VCs to
@@ -2784,7 +2784,7 @@ paths:
           description: Selected module ID.
       summary: Publishes the module onto IPFS.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         '200':
           description: Successful operation.
@@ -2810,7 +2810,7 @@ paths:
         Validates selected module. Only users with the Standard Registry role
         are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Validates module.
       requestBody:
         description: Object that contains module configuration.
@@ -2843,7 +2843,7 @@ paths:
       description: >-
         Creates a new tool. Only users with the Standard Registry role are
         allowed to make the request.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -2860,7 +2860,7 @@ paths:
       tags: &ref_4
         - tools
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
     get:
       operationId: ToolsApi_getTools
       summary: Return a list of all tools.
@@ -2897,7 +2897,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_4
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /tools/push:
     post:
       operationId: ToolsApi_createNewToolAsync
@@ -2905,7 +2905,7 @@ paths:
       description: >-
         Creates a new tool. Only users with the Standard Registry role are
         allowed to make the request.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -2921,7 +2921,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_4
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /tools/{id}:
     delete:
       operationId: ToolsApi_deleteTool
@@ -2947,7 +2947,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_4
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
     get:
       operationId: ToolsApi_getToolById
       summary: Retrieves tool configuration.
@@ -2980,7 +2980,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_4
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
     put:
       operationId: ToolsApi_updateTool
       summary: Updates tool configuration.
@@ -3013,7 +3013,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_4
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /tools/{id}/publish:
     put:
       operationId: ToolsApi_publishTool
@@ -3049,7 +3049,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_4
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /tools/{id}/push/publish:
     put:
       operationId: ToolsApi_publishToolAsync
@@ -3085,7 +3085,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_4
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /tools/validate:
     post:
       operationId: ToolsApi_validateTool
@@ -3093,7 +3093,7 @@ paths:
       description: >-
         Validates selected tool. Only users with the Standard Registry role are
         allowed to make the request.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: ''
@@ -3113,7 +3113,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_4
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /tools/{id}/export/file:
     get:
       operationId: ToolsApi_toolExportFile
@@ -3146,7 +3146,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_4
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /tools/{id}/export/message:
     get:
       operationId: ToolsApi_toolExportMessage
@@ -3181,7 +3181,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_4
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /tools/import/message/preview:
     post:
       operationId: ToolsApi_toolImportMessagePreview
@@ -3190,7 +3190,7 @@ paths:
         Imports new tool and all associated artifacts from IPFS into the local
         DB. Only users with the Standard Registry role are allowed to make the
         request.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -3210,7 +3210,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_4
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /tools/import/message:
     post:
       operationId: ToolsApi_toolImportMessage
@@ -3219,7 +3219,7 @@ paths:
         Imports new tool and all associated artifacts from IPFS into the local
         DB. Only users with the Standard Registry role are allowed to make the
         request.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -3239,7 +3239,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_4
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /tools/import/file/preview:
     post:
       operationId: ToolsApi_toolImportFilePreview
@@ -3248,7 +3248,7 @@ paths:
         Imports new tool and all associated artifacts, such as schemas and VCs,
         from the provided zip file into the local DB. Only users with the
         Standard Registry role are allowed to make the request.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -3268,7 +3268,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_4
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /tools/import/file:
     post:
       operationId: ToolsApi_toolImportFile
@@ -3277,7 +3277,7 @@ paths:
         Imports new tool and all associated artifacts, such as schemas and VCs,
         from the provided zip file into the local DB. Only users with the
         Standard Registry role are allowed to make the request.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -3297,7 +3297,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_4
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /tools/push/import/file:
     post:
       operationId: ToolsApi_toolImportFileAsync
@@ -3306,7 +3306,7 @@ paths:
         Imports new tool and all associated artifacts, such as schemas and VCs,
         from the provided zip file into the local DB. Only users with the
         Standard Registry role are allowed to make the request.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -3326,7 +3326,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_4
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /tools/push/import/message:
     post:
       operationId: ToolsApi_toolImportMessageAsync
@@ -3335,7 +3335,7 @@ paths:
         Imports new tool and all associated artifacts from IPFS into the local
         DB. Only users with the Standard Registry role are allowed to make the
         request.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -3355,7 +3355,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_4
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /tools/menu/all:
     get:
       operationId: ToolsApi_getMenu
@@ -3363,7 +3363,7 @@ paths:
       description: >-
         Returns tools menu. Only users with the Standard Registry role are
         allowed to make the request.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: ''
@@ -3383,7 +3383,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_4
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /profiles/{username}:
     get:
       operationId: ProfileApi_getProfile
@@ -3418,8 +3418,8 @@ paths:
       tags: &ref_5
         - profiles
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
     put:
       operationId: ProfileApi_setUserProfile
       summary: Sets Hedera credentials for the user.
@@ -3455,8 +3455,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_5
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /profiles/push/{username}:
     put:
       operationId: ProfileApi_setUserProfileAsync
@@ -3497,8 +3497,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_5
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /profiles/{username}/balance:
     get:
       operationId: ProfileApi_getUserBalance
@@ -3532,8 +3532,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_5
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /profiles/restore/{username}:
     put:
       operationId: ProfileApi_restoreUserProfile
@@ -3572,8 +3572,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_5
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /profiles/restore/topics/{username}:
     put:
       operationId: ProfileApi_restoreTopic
@@ -3612,14 +3612,14 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_5
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /profiles/did-document/validate:
     post:
       operationId: ProfileApi_validateDidDocument
       summary: Validate DID document format.
       description: Validate DID document format.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: DID Document.
@@ -3646,14 +3646,14 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_5
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /profiles/did-keys/validate:
     post:
       operationId: ProfileApi_validateDidKeys
       summary: Validate DID document keys.
       description: Validate DID document keys.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: DID Document and keys.
@@ -3680,8 +3680,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_5
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /policies:
     get:
       tags:
@@ -3690,7 +3690,7 @@ paths:
         Returns all policies. Only users with the Standard Registry and
         Installer role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Return a list of all policies.
       parameters:
         - in: query
@@ -3751,7 +3751,7 @@ paths:
         Creates a new policy. Only users with the Standard Registry role are
         allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Creates a new policy.
       requestBody:
         description: Object that contains policy configuration.
@@ -3780,7 +3780,7 @@ paths:
       description: >-
         Migrate policy data. Only users with the Standard Registry role are
         allowed to make the request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: Migration config.
@@ -3811,7 +3811,7 @@ paths:
       tags: &ref_6
         - policies
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /policies/push/migrate-data:
     post:
       operationId: PolicyApi_migrateDataAsync
@@ -3819,7 +3819,7 @@ paths:
       description: >-
         Migrate policy data asynchronous. Only users with the Standard Registry
         role are allowed to make the request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: Migration config.
@@ -3842,7 +3842,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_6
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /policies/push:
     post:
       tags:
@@ -3851,7 +3851,7 @@ paths:
         Creates a new policy. Only users with the Standard Registry role are
         allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Creates a new policy.
       requestBody:
         description: Object that contains policy configuration.
@@ -3881,7 +3881,7 @@ paths:
     post:
       operationId: PolicyApi_updatePolicyAsync
       summary: ''
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -3897,17 +3897,17 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_6
       security:
-        - bearerAuth: [ ]
-        - bearerAuth: [ ]
+        - bearerAuth: []
+        - bearerAuth: []
     delete:
       operationId: PolicyApi_deletePolicyAsync
-      parameters: [ ]
+      parameters: []
       responses:
         '202':
           description: ''
       tags: *ref_6
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /policies/{policyId}:
     get:
       tags:
@@ -3924,7 +3924,7 @@ paths:
           description: Selected policy ID.
       summary: Retrieves policy configuration.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         '200':
           description: Successful operation.
@@ -3971,7 +3971,7 @@ paths:
             schema:
               $ref: '#/components/schemas/PolicyConfig'
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         '200':
           description: Successful operation.
@@ -4017,7 +4017,7 @@ paths:
                   type: string
       summary: Publishes the policy onto IPFS.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         '200':
           description: Successful operation.
@@ -4045,7 +4045,7 @@ paths:
         topic. Only users with the Standard Registry role are allowed to make
         the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: >-
         Publishes the policy with the specified (internal) policy ID onto IPFS,
         sends a message featuring its IPFS CID into the corresponding Hedera
@@ -4093,7 +4093,7 @@ paths:
         transaction. Only users with the Standard Registry role are allowed to
         make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Dry Run policy.
       parameters:
         - in: path
@@ -4131,7 +4131,7 @@ paths:
           required: true
           in: path
           description: Policy identifier.
-          schema: { }
+          schema: {}
       requestBody:
         required: true
         description: Discontinue details.
@@ -4159,8 +4159,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_6
       security:
-        - bearerAuth: [ ]
-        - bearerAuth: [ ]
+        - bearerAuth: []
+        - bearerAuth: []
   /policies/{policyId}/draft:
     put:
       tags:
@@ -4169,7 +4169,7 @@ paths:
         Return policy to editing. Only users with the Standard Registry role are
         allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Return policy to editing.
       parameters:
         - in: path
@@ -4203,7 +4203,7 @@ paths:
         Validates selected policy. Only users with the Standard Registry role
         are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Validates policy.
       requestBody:
         description: Object that contains policy configuration.
@@ -4234,7 +4234,7 @@ paths:
       operationId: PolicyApi_getPolicyNavigation
       summary: Returns a policy navigation.
       description: Returns a policy navigation.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -4250,8 +4250,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_6
       security:
-        - bearerAuth: [ ]
-        - bearerAuth: [ ]
+        - bearerAuth: []
+        - bearerAuth: []
   /policies/{policyId}/groups:
     get:
       tags:
@@ -4266,7 +4266,7 @@ paths:
           description: Selected policy ID.
       summary: Returns a list of groups the user is a member of.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         '200':
           description: Successful operation.
@@ -4324,7 +4324,7 @@ paths:
                 uuid:
                   type: string
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         '200':
           description: Successful operation.
@@ -4377,7 +4377,7 @@ paths:
           required: true
           in: path
           description: Policy identifier.
-          schema: { }
+          schema: {}
       responses:
         '200':
           description: Documents.
@@ -4398,8 +4398,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_6
       security:
-        - bearerAuth: [ ]
-        - bearerAuth: [ ]
+        - bearerAuth: []
+        - bearerAuth: []
   /policies/{policyId}/blocks:
     get:
       tags:
@@ -4416,7 +4416,7 @@ paths:
           description: Selected policy ID.
       summary: Retrieves data for the policy root block.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         '200':
           description: Successful operation.
@@ -4456,7 +4456,7 @@ paths:
           description: Selected block UUID.
       summary: Requests block data.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         '200':
           description: Successful operation.
@@ -4500,7 +4500,7 @@ paths:
             schema:
               type: object
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         '200':
           description: Successful operation.
@@ -4519,7 +4519,7 @@ paths:
       operationId: PolicyApi_setBlocksByTagName
       summary: Sends data to the specified block.
       description: Sends data to the specified block.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -4535,15 +4535,15 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_6
       security:
-        - bearerAuth: [ ]
-        - bearerAuth: [ ]
+        - bearerAuth: []
+        - bearerAuth: []
     get:
       operationId: PolicyApi_getBlocksByTagName
       summary: Requests block data.
       description: >-
         Requests block data by tag. Only users with a role that described in
         block are allowed to make the request.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -4559,8 +4559,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_6
       security:
-        - bearerAuth: [ ]
-        - bearerAuth: [ ]
+        - bearerAuth: []
+        - bearerAuth: []
   /policies/{policyId}/tag/{tagName}:
     get:
       operationId: PolicyApi_getBlockByTagName
@@ -4568,7 +4568,7 @@ paths:
       description: >-
         Requests block data by tag. Only users with a role that described in
         block are allowed to make the request.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -4584,12 +4584,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_6
       security:
-        - bearerAuth: [ ]
-        - bearerAuth: [ ]
+        - bearerAuth: []
+        - bearerAuth: []
   /policies/{policyId}/blocks/{uuid}/parents:
     get:
       operationId: PolicyApi_getBlockParents
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: ''
@@ -4610,7 +4610,7 @@ paths:
           required: true
           description: Selected policy ID.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: >-
         Return policy and its artifacts in a zip file format for the specified
         policy.
@@ -4647,7 +4647,7 @@ paths:
           required: true
           description: Selected policy ID.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Return Heder message ID for the specified published policy.
       responses:
         '200':
@@ -4703,8 +4703,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_6
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /policies/import/message:
     post:
       tags:
@@ -4724,7 +4724,7 @@ paths:
               summary: Example of a topic ID of policy version.
               value: 0.0.00000001
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Imports new policy from IPFS.
       requestBody:
         description: >-
@@ -4766,7 +4766,7 @@ paths:
         DB. Only users with the Standard Registry role are allowed to make the
         request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: >-
         Imports new policy and all associated artifacts from IPFS into the local
         DB.
@@ -4808,7 +4808,7 @@ paths:
         users with the Standard Registry role are allowed to make the request.
       summary: Policy preview from IPFS.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       requestBody:
         description: >-
           Object that contains the identifier of the Hedera message which
@@ -4846,7 +4846,7 @@ paths:
         Previews the policy from IPFS without loading it into the local DB. Only
         users with the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Previews the policy from IPFS without loading it into the local DB.
       requestBody:
         description: >-
@@ -4896,7 +4896,7 @@ paths:
               summary: Example of a topic ID of policy version.
               value: 0.0.00000001
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Imports new policy from a zip file.
       requestBody:
         description: >-
@@ -4936,7 +4936,7 @@ paths:
         VCs, from the provided zip file into the local DB. Only users with the
         Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: >-
         Imports new policy and all associated artifacts, such as schemas and
         VCs, from the provided zip file into the local DB.
@@ -4977,7 +4977,7 @@ paths:
         request.
       summary: Policy preview from a zip file.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       requestBody:
         description: >-
           A zip file that contains the policy and associated schemas and VCs to
@@ -5046,8 +5046,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_6
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /policies/push/import/xlsx:
     post:
       operationId: PolicyApi_importPolicyFromXlsxAsync
@@ -5089,8 +5089,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_6
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /policies/import/xlsx/preview:
     post:
       operationId: PolicyApi_importPolicyFromXlsxPreview
@@ -5099,7 +5099,7 @@ paths:
         Previews the policy from a xlsx file without loading it into the local
         DB. Only users with the Standard Registry role are allowed to make the
         request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: A xlsx file containing policy config.
@@ -5126,12 +5126,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_6
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /policies/blocks/about:
     get:
       operationId: PolicyApi_getBlockAbout
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: ''
@@ -5144,7 +5144,7 @@ paths:
         Returns all virtual users. Only users with the Standard Registry role
         are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Returns all virtual users.
       parameters:
         - in: path
@@ -5185,7 +5185,7 @@ paths:
         Create a new virtual account. Only users with the Standard Registry role
         are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Create a new virtual account.
       parameters:
         - in: path
@@ -5226,7 +5226,7 @@ paths:
         Logs virtual user into the system. Only users with the Standard Registry
         role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Logs virtual user into the system.
       parameters:
         - in: path
@@ -5277,7 +5277,7 @@ paths:
         Restarts the execution of the policy. Clear data in database. Only users
         with the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Restarts the execution of the policy.
       parameters:
         - in: path
@@ -5307,7 +5307,7 @@ paths:
         Returns lists of virtual transactions. Only users with the Standard
         Registry role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Returns lists of virtual transactions.
       parameters:
         - in: path
@@ -5350,7 +5350,7 @@ paths:
         Returns lists of virtual artifacts. Only users with the Standard
         Registry role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Returns lists of virtual artifacts.
       parameters:
         - in: path
@@ -5393,7 +5393,7 @@ paths:
         Returns lists of virtual artifacts. Only users with the Standard
         Registry role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Returns lists of virtual artifacts.
       parameters:
         - in: path
@@ -5436,7 +5436,7 @@ paths:
         Creates a link between the current policy and the main policy. Or
         creates a group making the current policy the main one.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Creates Multi policy config.
       parameters:
         - in: path
@@ -5482,7 +5482,7 @@ paths:
         - policies
       description: Requests Multi policy config.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Requests Multi policy config.
       parameters:
         - in: path
@@ -5513,7 +5513,7 @@ paths:
       operationId: PolicyApi_getPolicyCategoriesAsync
       summary: Get all categories
       description: Get all categories
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -5535,7 +5535,7 @@ paths:
       operationId: PolicyApi_getPoliciesByCategory
       summary: Get filtered policies
       description: Get policies by categories and text
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: Filters
@@ -5570,7 +5570,7 @@ paths:
         - schema
       description: Returns schema by schema ID.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Returns schema by schema ID.
       parameters:
         - in: path
@@ -5630,7 +5630,7 @@ paths:
       tags: &ref_7
         - schema
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /schema/{schemaId}/tree:
     get:
       operationId: SingleSchemaApi_getSchemaTree
@@ -5671,14 +5671,14 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_7
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /schemas:
     get:
       tags:
         - schemas
       description: Returns all schemas.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Returns all schemas.
       parameters:
         - in: query
@@ -5744,7 +5744,7 @@ paths:
               summary: Example of a Topic ID
               value: 0.0.00000001
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Create new schema.
       requestBody:
         description: Object that contains a valid schema.
@@ -5771,7 +5771,7 @@ paths:
         - schemas
       description: Returns all schemas by topicId.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Returns all schemas by topicId.
       parameters:
         - in: path
@@ -5860,7 +5860,7 @@ paths:
       tags: &ref_8
         - schemas
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /schemas/list/all:
     get:
       operationId: SchemaApi_getAll
@@ -5868,7 +5868,7 @@ paths:
       description: >-
         Returns a list of schemas. Only users with the Standard Registry role
         are allowed to make the request.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -5890,7 +5890,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_8
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /schemas/list/sub:
     get:
       operationId: SchemaApi_getSub
@@ -5932,7 +5932,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_8
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
   /schemas/push/copy:
     post:
       operationId: SchemaApi_copySchemaAsync
@@ -5940,7 +5940,7 @@ paths:
       description: >-
         Copy schema. Only users with the Standard Registry role are allowed to
         make the request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: Object that contains a valid schema.
@@ -5967,8 +5967,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_8
       security:
-        - bearer: [ ]
-        - bearerAuth: [ ]
+        - bearer: []
+        - bearerAuth: []
   /schemas/push/{topicId}:
     post:
       tags:
@@ -5977,7 +5977,7 @@ paths:
         Creates new schema. Only users with the Standard Registry role are
         allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Create new schema.
       parameters:
         - in: path
@@ -6029,7 +6029,7 @@ paths:
           required: true
           description: Schema ID.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Updates the schema.
       requestBody:
         description: Object that contains a valid schema.
@@ -6071,7 +6071,7 @@ paths:
           required: true
           description: Schema ID.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Deletes the schema.
       responses:
         '200':
@@ -6109,7 +6109,7 @@ paths:
           required: true
           description: Schema ID.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Publishes the schema.
       requestBody:
         description: Object that contains policy version.
@@ -6150,7 +6150,7 @@ paths:
         Only users with the Standard Registry role are allowed to make the
         request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: >-
         Publishes the schema with the provided (internal) schema ID onto IPFS,
         sends a message featuring IPFS CID into the corresponding Hedera topic.
@@ -6196,7 +6196,7 @@ paths:
         Previews the schema from IPFS without loading it into the local DB. Only
         users with the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Schema preview from IPFS.
       requestBody:
         description: >-
@@ -6237,7 +6237,7 @@ paths:
         Previews the schema from IPFS without loading it into the local DB. Only
         users with the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Schema preview from IPFS.
       requestBody:
         description: >-
@@ -6276,7 +6276,7 @@ paths:
         Previews the schema from a zip file. Only users with the Standard
         Registry role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Schema preview from a zip file.
       requestBody:
         description: A zip file containing the schema to be viewed.
@@ -6324,7 +6324,7 @@ paths:
               summary: Example of a Topic ID
               value: 0.0.00000001
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Imports new schema from IPFS.
       requestBody:
         description: >-
@@ -6365,7 +6365,7 @@ paths:
         Imports new schema from IPFS into the local DB. Only users with the
         Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Imports new schema from IPFS.
       requestBody:
         description: >-
@@ -6426,7 +6426,7 @@ paths:
               summary: Example of a Topic ID
               value: 0.0.00000001
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Imports new schema from a zip file.
       requestBody:
         description: A zip file containing schema to be imported.
@@ -6463,7 +6463,7 @@ paths:
         Imports new schema from a zip file into the local DB. Only users with
         the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Imports new schema from a zip file.
       requestBody:
         description: A zip file containing schema to be imported.
@@ -6510,7 +6510,7 @@ paths:
         contain IPFS CIDs of these schema files. Only users with the Standard
         Registry role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: List Hedera message IDs of published schemas.
       parameters:
         - in: path
@@ -6544,7 +6544,7 @@ paths:
         Returns schema files for the schemas. Only users with the Standard
         Registry role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Return zip file with schemas.
       parameters:
         - in: path
@@ -6581,7 +6581,7 @@ paths:
           required: true
           description: Username.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Creates new system schema.
       requestBody:
         description: Object that contains a valid schema.
@@ -6610,7 +6610,7 @@ paths:
         Returns all system schemas by username. Only users with the Standard
         Registry role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Returns all system schemas by username.
       parameters:
         - in: path
@@ -6678,7 +6678,7 @@ paths:
           required: true
           description: Schema ID.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Updates the schema.
       requestBody:
         description: Object that contains a valid schema.
@@ -6720,7 +6720,7 @@ paths:
           required: true
           description: Schema ID.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Deletes the schema.
       responses:
         '200':
@@ -6757,7 +6757,7 @@ paths:
           required: true
           description: Schema ID.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Publishes the schema.
       requestBody:
         description: Object that contains policy version.
@@ -6808,7 +6808,7 @@ paths:
           required: true
           description: schema type.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Returns schema by schema type.
       responses:
         '200':
@@ -6861,8 +6861,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_8
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /schemas/{topicId}/import/xlsx:
     post:
       operationId: SchemaApi_importPolicyFromXlsx
@@ -6903,8 +6903,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_8
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /schemas/push/{topicId}/import/xlsx:
     post:
       operationId: SchemaApi_importPolicyFromXlsxAsync
@@ -6945,8 +6945,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_8
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /schemas/import/xlsx/preview:
     post:
       operationId: SchemaApi_importPolicyFromXlsxPreview
@@ -6954,7 +6954,7 @@ paths:
       description: >-
         Previews the schema from a xlsx file. Only users with the Standard
         Registry role are allowed to make the request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: A xlsx file containing schema config.
@@ -6981,8 +6981,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_8
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /schemas/export/template:
     get:
       operationId: SchemaApi_exportTemplate
@@ -6990,7 +6990,7 @@ paths:
       description: >-
         Returns a list of schemas. Only users with the Standard Registry role
         are allowed to make the request.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -7011,8 +7011,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_8
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /settings:
     get:
       tags:
@@ -7021,7 +7021,7 @@ paths:
         Returns current settings. For users with the Standard Registry role
         only.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Returns current settings.
       responses:
         '200':
@@ -7045,7 +7045,7 @@ paths:
         - settings
       description: Set settings. For users with the Standard Registry role only.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Set settings.
       responses:
         '201':
@@ -7066,7 +7066,7 @@ paths:
         - settings
       description: Returns current environment name.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Returns current environment name.
       responses:
         '200':
@@ -7085,7 +7085,7 @@ paths:
   /settings/about:
     get:
       operationId: SettingsApi_getAbout
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: ''
@@ -7094,7 +7094,7 @@ paths:
   /tags:
     post:
       operationId: TagsApi_setTags
-      parameters: [ ]
+      parameters: []
       responses:
         '201':
           description: ''
@@ -7106,7 +7106,7 @@ paths:
         - tags
       description: Search tags.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       requestBody:
         description: Object that contains filters.
         required: true
@@ -7188,7 +7188,7 @@ paths:
         - tags
       description: Delete tag.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Delete tag.
       parameters:
         - in: path
@@ -7221,7 +7221,7 @@ paths:
         - tags
       description: synchronization.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       requestBody:
         description: Object that contains filters.
         required: true
@@ -7270,7 +7270,7 @@ paths:
         - tags
       description: Returns all schema.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Returns all schemas.
       parameters:
         - in: query
@@ -7324,7 +7324,7 @@ paths:
         Creates new schema. Only users with the Standard Registry role are
         allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Creates new schema.
       requestBody:
         description: Object that contains a valid schema.
@@ -7358,7 +7358,7 @@ paths:
         Deletes the schema with the provided schema ID. Only users with the
         Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Delete the schema.
       parameters:
         - in: path
@@ -7398,7 +7398,7 @@ paths:
           required: true
           description: Schema ID.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Updates the schema.
       requestBody:
         description: Object that contains a valid schema.
@@ -7443,7 +7443,7 @@ paths:
           required: true
           description: Schema ID.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Publishes the schema.
       responses:
         '200':
@@ -7470,7 +7470,7 @@ paths:
         - tags
       description: Return a list of all published schemas.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Return a list of all published schemas.
       responses:
         '200':
@@ -7497,7 +7497,7 @@ paths:
         - tasks
       description: Returns task statuses by Id.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Returns task statuses.
       parameters:
         - in: path
@@ -7533,7 +7533,7 @@ paths:
         as the KYC, Freeze, and Association statuses. Not allowed for the
         Auditor role.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Return a list of tokens.
       responses:
         '200':
@@ -7568,7 +7568,7 @@ paths:
         Creates a new token. Only users with the Standard Registry role are
         allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Creates a new token.
       requestBody:
         description: Object that contains token information.
@@ -7617,7 +7617,7 @@ paths:
         Creates a new token. Only users with the Standard Registry role are
         allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Creates a new token.
       requestBody:
         description: Object that contains token information.
@@ -7646,7 +7646,7 @@ paths:
   /tokens/push/{tokenId}:
     delete:
       operationId: TokensApi_deleteTokenAsync
-      parameters: [ ]
+      parameters: []
       responses:
         '202':
           description: ''
@@ -7667,7 +7667,7 @@ paths:
           required: true
           description: Token ID.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Associates the user with the provided Hedera token.
       responses:
         '200':
@@ -7690,7 +7690,7 @@ paths:
         Associates the user with the provided Hedera token. Only users with the
         Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Associates the user with the provided Hedera token.
       parameters:
         - in: path
@@ -7731,7 +7731,7 @@ paths:
           required: true
           description: Token ID.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Associate the user with the provided Hedera token.
       responses:
         '202':
@@ -7754,7 +7754,7 @@ paths:
         Disassociates the user with the provided Hedera token. Only users with
         the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Disassociates the user with the provided Hedera token.
       parameters:
         - in: path
@@ -7801,7 +7801,7 @@ paths:
           required: true
           description: Username.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Sets the KYC flag for the user.
       responses:
         '200':
@@ -7834,7 +7834,7 @@ paths:
         Sets the KYC flag for the user. Only users with the Standard Registry
         role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Sets the KYC flag for the user.
       parameters:
         - in: path
@@ -7887,7 +7887,7 @@ paths:
           required: true
           description: Username.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Unsets the KYC flag for the user.
       responses:
         '200':
@@ -7920,7 +7920,7 @@ paths:
         Unsets the KYC flag for the user. Only users with the Standard Registry
         role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Unsets the KYC flag for the user.
       parameters:
         - in: path
@@ -7973,7 +7973,7 @@ paths:
           required: true
           description: Username.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Freeze transfers of the specified token for the user.
       responses:
         '200':
@@ -8019,7 +8019,7 @@ paths:
           required: true
           description: Username.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Unfreezes transfers of the specified token for the user.
       responses:
         '200':
@@ -8052,7 +8052,7 @@ paths:
         Freezes transfers of the specified token for the user. Only users with
         the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Freeze transfers of the specified token for the user.
       parameters:
         - in: path
@@ -8092,7 +8092,7 @@ paths:
         Unfreezes transfers of the specified token for the user. Only users with
         the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Unfreezes transfers of the specified token for the user.
       parameters:
         - in: path
@@ -8132,7 +8132,7 @@ paths:
         Returns user information for the selected token. Only users with the
         Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       parameters:
         - in: path
           name: tokenId
@@ -8203,14 +8203,14 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_9
       security:
-        - bearer: [ ]
+        - bearer: []
   /themes:
     get:
       tags:
         - themes
       description: Returns all themes.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Return a list of all themes.
       responses:
         '200':
@@ -8236,7 +8236,7 @@ paths:
         - themes
       description: Creates a new theme.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Creates a new theme.
       requestBody:
         description: Object that contains theme configuration.
@@ -8279,7 +8279,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Theme'
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         '200':
           description: Successful operation.
@@ -8309,7 +8309,7 @@ paths:
           required: true
           description: Theme ID.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Deletes the theme.
       responses:
         '200':
@@ -8334,7 +8334,7 @@ paths:
         - themes
       description: Imports new theme from the provided zip file into the local DB.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Imports new theme from a zip file.
       requestBody:
         description: A zip file that contains the theme to be imported.
@@ -8374,7 +8374,7 @@ paths:
           required: true
           description: Selected theme ID.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Returns a zip file containing the theme.
       responses:
         '200':
@@ -8397,7 +8397,7 @@ paths:
         Requests all VP documents. Only users with the Auditor role are allowed
         to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Returns a list of all VP documents.
       parameters:
         - in: query
@@ -8469,7 +8469,7 @@ paths:
           required: true
           description: Hash or ID of a VP document.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Returns a trustchain for a VP document.
       responses:
         '200':
@@ -8496,7 +8496,7 @@ paths:
         Creates a new policy by wizard. Only users with the Standard Registry
         role are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Creates a new policy.
       requestBody:
         description: Object that contains wizard configuration.
@@ -8534,7 +8534,7 @@ paths:
       description: >-
         Creates a new policy by wizard. Only users with the Standard Registry
         role are allowed to make the request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         content:
@@ -8656,7 +8656,7 @@ paths:
           required: true
           description: Policy identifier.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Get policy config.
       requestBody:
         description: Object that contains wizard configuration.
@@ -8690,17 +8690,17 @@ paths:
   /branding:
     post:
       operationId: BrandingApi_setBranding
-      parameters: [ ]
+      parameters: []
       responses:
         '401':
           description: Unauthorized
       tags: &ref_10
         - branding
       security:
-        - bearer: [ ]
+        - bearer: []
     get:
       operationId: BrandingApi_getBranding
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: ''
@@ -8712,7 +8712,7 @@ paths:
       description: >-
         Get next and nested suggested block types. Only users with the Standard
         Registry role are allowed to make the request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         content:
@@ -8741,8 +8741,8 @@ paths:
       tags: &ref_11
         - suggestions
       security:
-        - bearer: [ ]
-        - bearerAuth: [ ]
+        - bearer: []
+        - bearerAuth: []
   /suggestions/config:
     post:
       operationId: SuggestionsApi_setPolicySuggestionsConfig
@@ -8750,7 +8750,7 @@ paths:
       description: >-
         Set suggestions config. Only users with the Standard Registry role are
         allowed to make the request.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         content:
@@ -8774,15 +8774,15 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_11
       security:
-        - bearer: [ ]
-        - bearerAuth: [ ]
+        - bearer: []
+        - bearerAuth: []
     get:
       operationId: SuggestionsApi_getPolicySuggestionsConfig
       summary: Get suggestions config
       description: >-
         Get suggestions config. Only users with the Standard Registry role are
         allowed to make the request.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation. Response suggestions config.
@@ -8800,14 +8800,14 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_11
       security:
-        - bearer: [ ]
-        - bearerAuth: [ ]
+        - bearer: []
+        - bearerAuth: []
   /notifications:
     get:
       operationId: NotificationsApi_getAllNotifications
       summary: Get all notifications
       description: Returns all notifications.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation. Returns notifications and count.
@@ -8831,14 +8831,14 @@ paths:
       tags: &ref_12
         - notifications
       security:
-        - bearer: [ ]
-        - bearerAuth: [ ]
+        - bearer: []
+        - bearerAuth: []
   /notifications/new:
     get:
       operationId: NotificationsApi_getNewNotifications
       summary: Get new notifications
       description: Returns new notifications.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation. Returns new notifications.
@@ -8858,14 +8858,14 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_12
       security:
-        - bearer: [ ]
-        - bearerAuth: [ ]
+        - bearer: []
+        - bearerAuth: []
   /notifications/progresses:
     get:
       operationId: NotificationsApi_getProgresses
       summary: Get progresses
       description: Returns progresses.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation. Returns progresses.
@@ -8885,14 +8885,14 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_12
       security:
-        - bearer: [ ]
-        - bearerAuth: [ ]
+        - bearer: []
+        - bearerAuth: []
   /notifications/read/all:
     post:
       operationId: NotificationsApi_readAll
       summary: Read all notifications
       description: Returns new notifications.
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation. Returns notifications.
@@ -8912,8 +8912,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_12
       security:
-        - bearer: [ ]
-        - bearerAuth: [ ]
+        - bearer: []
+        - bearerAuth: []
   /notifications/delete/{notificationId}:
     delete:
       operationId: NotificationsApi_delete
@@ -8942,14 +8942,14 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_12
       security:
-        - bearer: [ ]
-        - bearerAuth: [ ]
+        - bearer: []
+        - bearerAuth: []
   /projects/search:
     post:
       operationId: ProjectsAPI_projectSearch
       summary: Search projects
       description: Search projects by filters
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: The question of choosing a methodology
@@ -8984,7 +8984,7 @@ paths:
       operationId: ProjectsAPI_compareDocuments
       summary: Compare documents.
       description: Compare documents.
-      parameters: [ ]
+      parameters: []
       requestBody:
         required: true
         description: Filters.
@@ -9021,7 +9021,7 @@ paths:
       operationId: ProjectsAPI_getPolicyProperties
       summary: Get all properties
       description: Get all properties
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: Successful operation.
@@ -9072,8 +9072,8 @@ paths:
       tags: &ref_14
         - record
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /record/{policyId}/recording/start:
     post:
       operationId: RecordApi_startRecord
@@ -9114,8 +9114,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_14
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /record/{policyId}/recording/stop:
     post:
       operationId: RecordApi_stopRecord
@@ -9157,8 +9157,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_14
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /record/{policyId}/recording/actions:
     get:
       operationId: RecordApi_getRecordActions
@@ -9194,8 +9194,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_14
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /record/{policyId}/running/start:
     post:
       operationId: RecordApi_runRecord
@@ -9236,8 +9236,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_14
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /record/{policyId}/running/stop:
     post:
       operationId: RecordApi_stopRunning
@@ -9278,8 +9278,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_14
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /record/{policyId}/running/results:
     get:
       operationId: RecordApi_getRecordResults
@@ -9313,8 +9313,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_14
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /record/{policyId}/running/details:
     get:
       operationId: RecordApi_getRecordDetails
@@ -9348,8 +9348,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_14
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /record/{policyId}/running/fast-forward:
     post:
       operationId: RecordApi_fastForward
@@ -9390,8 +9390,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_14
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /record/{policyId}/running/retry:
     post:
       operationId: RecordApi_retryStep
@@ -9432,8 +9432,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_14
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /record/{policyId}/running/skip:
     post:
       operationId: RecordApi_skipStep
@@ -9474,8 +9474,8 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_14
       security:
-        - bearerAuth: [ ]
-        - bearer: [ ]
+        - bearerAuth: []
+        - bearer: []
   /ai-suggestions/ask:
     get:
       operationId: AISuggestionsAPI_getAIAnswer
@@ -9508,7 +9508,7 @@ paths:
       operationId: AISuggestionsAPI_rebuildVector
       summary: Rebuild AI vector
       description: Rebuilds vector based on policy data in the DB
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: ''
@@ -9526,7 +9526,7 @@ paths:
           required: true
           description: JSON type.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Returns schema by type.
       responses:
         '200':
@@ -9567,7 +9567,7 @@ paths:
           description: Tag from the selected policy.
       summary: Requests block ID from a policy by tag.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         '200':
           description: Successful operation.
@@ -9594,7 +9594,7 @@ paths:
         - policies
       description: Sends data to the specified block.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Sends data to the specified block.
       parameters:
         - in: path
@@ -9640,7 +9640,7 @@ paths:
         Requests block data by tag. Only users with a role that described in
         block are allowed to make the request.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Requests block data.
       parameters:
         - in: path
@@ -9687,7 +9687,7 @@ paths:
               type: string
               format: binary
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         '201':
           description: Created.
@@ -9710,7 +9710,7 @@ paths:
         - artifacts
       description: Upload artifact. For users with the Standard Registry role only.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       requestBody:
         content:
           multipart/form-data:
@@ -9756,7 +9756,7 @@ paths:
         - artifacts
       description: Returns all artifacts.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Returns all artifacts.
       parameters:
         - in: query
@@ -9815,7 +9815,7 @@ paths:
         - artifacts
       description: Upload artifact. For users with the Standard Registry role only.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       requestBody:
         content:
           multipart/form-data:
@@ -9861,7 +9861,7 @@ paths:
         - artifacts
       description: Delete artifact.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Delete artifact.
       parameters:
         - in: path
@@ -9893,7 +9893,7 @@ paths:
         - tags
       description: Creates new tag.
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Creates new tag.
       requestBody:
         description: Object that contains tag information.
@@ -9941,7 +9941,7 @@ info:
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-tags: [ ]
+tags: []
 servers:
   - url: /api/v1
     description: version 1.0
@@ -10516,7 +10516,7 @@ components:
         - user
     Date:
       type: object
-      properties: { }
+      properties: {}
     RetirePoolDTO:
       type: object
       properties:
@@ -11119,7 +11119,7 @@ components:
         - status
     Object:
       type: object
-      properties: { }
+      properties: {}
     RecordActionDTO:
       type: object
       properties:

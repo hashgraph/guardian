@@ -45,13 +45,21 @@ import { UsersManagementComponent } from './views/user-management/user-managemen
 import { UsersManagementDetailComponent } from './views/user-management-detail/user-management-detail.component';
 import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
 import { MapService } from './services/map.service';
-import { StatisticAssessmentViewComponent } from './modules/policy-statistics/statistic-assessment-view/statistic-assessment-view.component';
-import { StatisticAssessmentsComponent } from './modules/policy-statistics/statistic-assessments/statistic-assessments.component';
-import { StatisticAssessmentConfigurationComponent } from './modules/policy-statistics/statistic-assessment-configuration/statistic-assessment-configuration.component';
-import { StatisticDefinitionConfigurationComponent } from './modules/policy-statistics/statistic-definition-configuration/statistic-definition-configuration.component';
-import { StatisticDefinitionsComponent } from './modules/policy-statistics/statistic-definitions/statistic-definitions.component';
-import { SchemaRulesComponent } from './modules/schema-rules/schema-rules/schema-rules.component';
-import { SchemaRuleConfigurationComponent } from './modules/schema-rules/schema-rule-configuration/schema-rule-configuration.component';
+import { PolicyLabelsComponent } from './modules/statistics/policy-labels/policy-labels/policy-labels.component';
+import { PolicyLabelConfigurationComponent } from './modules/statistics/policy-labels/policy-label-configuration/policy-label-configuration.component';
+import { StatisticAssessmentConfigurationComponent } from './modules/statistics/policy-statistics/statistic-assessment-configuration/statistic-assessment-configuration.component';
+import { StatisticAssessmentViewComponent } from './modules/statistics/policy-statistics/statistic-assessment-view/statistic-assessment-view.component';
+import { StatisticAssessmentsComponent } from './modules/statistics/policy-statistics/statistic-assessments/statistic-assessments.component';
+import { StatisticDefinitionConfigurationComponent } from './modules/statistics/policy-statistics/statistic-definition-configuration/statistic-definition-configuration.component';
+import { StatisticDefinitionsComponent } from './modules/statistics/policy-statistics/statistic-definitions/statistic-definitions.component';
+import { SchemaRuleConfigurationComponent } from './modules/statistics/schema-rules/schema-rule-configuration/schema-rule-configuration.component';
+import { SchemaRulesComponent } from './modules/statistics/schema-rules/schema-rules/schema-rules.component';
+import { PolicyLabelDocumentConfigurationComponent } from './modules/statistics/policy-labels/policy-label-document-configuration/policy-label-document-configuration.component';
+import { PolicyLabelDocumentsComponent } from './modules/statistics/policy-labels/policy-label-documents/policy-label-documents.component';
+import { PolicyLabelDocumentViewComponent } from './modules/statistics/policy-labels/policy-label-document-view/policy-label-document-view.component';
+import { FormulasComponent } from './modules/formulas/formulas/formulas.component';
+import { FormulaConfigurationComponent } from './modules/formulas/formula-configuration/formula-configuration.component';
+
 
 @Injectable({
     providedIn: 'root'
@@ -298,7 +306,8 @@ const routes: Routes = [
             roles: [UserRole.STANDARD_REGISTRY, UserRole.USER],
             permissions: [
                 Permissions.POLICIES_POLICY_READ,
-                Permissions.POLICIES_POLICY_EXECUTE
+                Permissions.POLICIES_POLICY_EXECUTE,
+                Permissions.POLICIES_POLICY_MANAGE,
             ]
         }
     },
@@ -309,7 +318,8 @@ const routes: Routes = [
         data: {
             roles: [UserRole.STANDARD_REGISTRY, UserRole.USER],
             permissions: [
-                Permissions.POLICIES_POLICY_EXECUTE
+                Permissions.POLICIES_POLICY_EXECUTE,
+                Permissions.POLICIES_POLICY_MANAGE,
             ]
         }
     },
@@ -566,7 +576,6 @@ const routes: Routes = [
             ]
         }
     },
-
     {
         path: 'schema-rules',
         component: SchemaRulesComponent,
@@ -592,6 +601,104 @@ const routes: Routes = [
             ],
             permissions: [
                 Permissions.SCHEMAS_RULE_READ
+            ]
+        }
+    },
+    {
+        path: 'policy-labels',
+        component: PolicyLabelsComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.STATISTICS_LABEL_READ
+            ]
+        }
+    },
+    {
+        path: 'policy-labels/:definitionId',
+        component: PolicyLabelConfigurationComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.STATISTICS_LABEL_READ
+            ]
+        }
+    },
+    {
+        path: 'policy-labels/:definitionId/document',
+        component: PolicyLabelDocumentConfigurationComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.STATISTICS_LABEL_READ
+            ]
+        }
+    },
+    {
+        path: 'policy-labels/:definitionId/documents',
+        component: PolicyLabelDocumentsComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.STATISTICS_LABEL_READ
+            ]
+        }
+    },
+    {
+        path: 'policy-labels/:definitionId/documents/:documentId',
+        component: PolicyLabelDocumentViewComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.STATISTICS_LABEL_READ
+            ]
+        }
+    },
+    {
+        path: 'formulas',
+        component: FormulasComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.FORMULAS_FORMULA_READ
+            ]
+        }
+    },
+    {
+        path: 'formulas/:formulaId',
+        component: FormulaConfigurationComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.FORMULAS_FORMULA_READ
             ]
         }
     },

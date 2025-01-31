@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import { Artifact, Policy, PolicyCategory, PolicyTest, PolicyTool, Schema, Tag, Token } from '../entity/index.js';
+import { Artifact, Formula, Policy, PolicyCategory, PolicyTool, Schema, Tag, Token } from '../entity/index.js';
 import { DatabaseServer } from '../database-modules/index.js';
 import { ImportExportUtils } from './utils.js';
 import { PolicyCategoryExport } from '@guardian/interfaces';
@@ -18,6 +18,7 @@ export interface IPolicyComponents {
     policy: Policy;
     tokens: Token[];
     schemas: Schema[];
+    formulas: Formula[];
     artifacts: IArtifact[];
     tags: Tag[];
     tools: PolicyTool[];
@@ -116,7 +117,9 @@ export class PolicyImportExport {
         const allCategories = await DatabaseServer.getPolicyCategories();
         policy.categoriesExport = policy.categories?.length ? PolicyImportExport.getPolicyCategoriesExport(policy, allCategories) : [];
 
-        return { policy, tokens, schemas, tools, artifacts, tags, tests };
+        const formulas = await dataBaseServer.find(Formula, { policyId: policy.id });
+
+        return { policy, tokens, schemas, tools, artifacts, tags, tests, formulas };
     }
 
     /**
@@ -234,6 +237,16 @@ export class PolicyImportExport {
             zip.file(`tests/${test.uuid}.record`, test.data);
         }
 
+        zip.folder('formulas');
+        for (const formula of components.formulas) {
+            const item = { ...formula };
+            delete item._id;
+            delete item.id;
+            delete item.status;
+            item.id = formula.id.toString();
+            zip.file(`formulas/${item.uuid}.json`, JSON.stringify(item));
+        }
+
         zip.file(PolicyImportExport.policyFileName, JSON.stringify(policyObject));
         return zip;
     }
@@ -253,17 +266,19 @@ export class PolicyImportExport {
         const policy = JSON.parse(policyString);
 
         const fileEntries = Object.entries(content.files).filter(file => !file[1].dir);
-        const [tokensStringArray, schemasStringArray, toolsStringArray, tagsStringArray] = await Promise.all([
+        const [tokensStringArray, schemasStringArray, toolsStringArray, tagsStringArray, formulasStringArray] = await Promise.all([
             Promise.all(fileEntries.filter(file => /^tokens\/.+/.test(file[0])).map(file => file[1].async('string'))),
             Promise.all(fileEntries.filter(file => /^schem[a,e]s\/.+/.test(file[0])).map(file => file[1].async('string'))),
             Promise.all(fileEntries.filter(file => /^tools\/.+/.test(file[0])).map(file => file[1].async('string'))),
-            Promise.all(fileEntries.filter(file => /^tags\/.+/.test(file[0])).map(file => file[1].async('string')))
+            Promise.all(fileEntries.filter(file => /^tags\/.+/.test(file[0])).map(file => file[1].async('string'))),
+            Promise.all(fileEntries.filter(file => /^formulas\/.+/.test(file[0])).map(file => file[1].async('string')))
         ]);
 
         const tokens = tokensStringArray.map(item => JSON.parse(item));
         const schemas = schemasStringArray.map(item => JSON.parse(item));
         const tools = toolsStringArray.map(item => JSON.parse(item));
         const tags = tagsStringArray.map(item => JSON.parse(item));
+        const formulas = formulasStringArray.map(item => JSON.parse(item));
 
         const metaDataFile = (Object.entries(content.files).find(file => file[0] === 'artifacts/metadata.json'));
         const metaDataString = metaDataFile && await metaDataFile[1].async('string') || '[]';
@@ -309,7 +324,7 @@ export class PolicyImportExport {
             policy.categoriesExport = [];
         }
 
-        return { policy, tokens, schemas, artifacts, tags, tools, tests };
+        return { policy, tokens, schemas, artifacts, tags, tools, tests, formulas };
     }
 
     /**
@@ -359,4 +374,18 @@ export class PolicyImportExport {
         return policyCategoryIds;
     }
 
+    /**
+     * Load all schemas (deep find)
+     * @param policy policy
+     *
+     * @returns schemas
+     */
+    public static async fastLoadSchemas(policy: Policy) {
+        const topicId = policy.topicId;
+        const tools: any[] = policy.tools || [];
+        const toolsTopicMap = tools.map((t) => t.topicId);
+        const schemas = await new DatabaseServer().find(Schema, { topicId, readonly: false });
+        const toolSchemas = await DatabaseServer.getSchemas({ topicId: { $in: toolsTopicMap } });
+        return { schemas, toolSchemas };
+    }
 }

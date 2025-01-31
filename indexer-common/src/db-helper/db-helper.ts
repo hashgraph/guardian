@@ -74,7 +74,7 @@ export class DataBaseHelper {
     public static async loadFile(filename: string, raw: false): Promise<string>
     public static async loadFile(filename: string, raw: true): Promise<Buffer>
     public static async loadFile(filename: string, raw = false): Promise<string | Buffer> {
-        const files = await DataBaseHelper.gridFS.find({ filename }).toArray();
+        const files = await DataBaseHelper.gridFS.find({ filename }, { limit: 1 }).toArray();
         if (files.length === 0) {
             return null;
         }
