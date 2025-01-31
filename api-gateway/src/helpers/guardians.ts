@@ -1,4 +1,24 @@
-import { Singleton } from '../helpers/decorators/singleton.js';
+import {
+    ModuleDTO,
+    PolicyLabelComponentsDTO,
+    PolicyLabelDocumentDTO,
+    PolicyLabelDocumentRelationshipsDTO,
+    PolicyLabelDTO,
+    PolicyLabelFiltersDTO,
+    PolicyLabelRelationshipsDTO,
+    SchemaRuleDataDTO,
+    SchemaRuleDTO,
+    SchemaRuleRelationshipsDTO,
+    StatisticAssessmentDTO,
+    StatisticAssessmentRelationshipsDTO,
+    StatisticDefinitionDTO,
+    StatisticDefinitionRelationshipsDTO,
+    TagDTO,
+    ThemeDTO,
+    TokenDTO,
+    ToolDTO
+} from '#middlewares';
+import { IAuthUser, NatsService } from '@guardian/common';
 import {
     ApplicationStates,
     AssignedEntityType,
@@ -18,7 +38,6 @@ import {
     IToken,
     ITokenInfo,
     IUser,
-    IVC,
     IVCDocument,
     IVPDocument,
     MessageAPI,
@@ -29,28 +48,8 @@ import {
     SchemaNode,
     SuggestionsOrderPriority
 } from '@guardian/interfaces';
-import { IAuthUser, NatsService } from '@guardian/common';
+import { Singleton } from '../helpers/decorators/singleton.js';
 import { NewTask } from './task-manager.js';
-import {
-    ModuleDTO,
-    TagDTO,
-    ThemeDTO,
-    TokenDTO,
-    ToolDTO,
-    StatisticDefinitionDTO,
-    StatisticAssessmentDTO,
-    StatisticAssessmentRelationshipsDTO,
-    StatisticDefinitionRelationshipsDTO,
-    SchemaRuleDTO,
-    SchemaRuleRelationshipsDTO,
-    SchemaRuleDataDTO,
-    PolicyLabelDTO,
-    PolicyLabelDocumentDTO,
-    PolicyLabelRelationshipsDTO,
-    PolicyLabelDocumentRelationshipsDTO,
-    PolicyLabelComponentsDTO,
-    PolicyLabelFiltersDTO
-} from '#middlewares';
 
 /**
  * Filters type
@@ -3221,7 +3220,6 @@ export class Guardians extends NatsService {
     public async previewSchemaRule(zip: any, owner: IOwner) {
         return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_RULE_FILE, { zip, owner });
     }
-
 
     /**
      * Get Indexer availability
