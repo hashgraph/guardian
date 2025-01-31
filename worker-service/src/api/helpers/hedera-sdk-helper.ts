@@ -51,7 +51,6 @@ import Long from 'long';
 import { TransactionLogger } from './transaction-logger.js';
 import process from 'process';
 import { FireblocksHelper } from './fireblocks-helper.js';
-import { IResultWithMetadata, TransactionTypes } from '@guardian/common';
 
 export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 30;
 export const INITIAL_BALANCE = 30;
@@ -257,82 +256,157 @@ export class HederaSDKHelper {
     }
 
     /**
-     * Get balance account (AccountBalanceQuery)
+     * Create new token (TokenCreateTransaction)
      *
-     * @param client
-     * @param {string | AccountId} accountId - Account Id
+     * @param {string} name - Token name
+     * @param {string} symbol - Token symbol
+     * @param {boolean} nft - Fungible or NonFungible Token
+     * @param {number} decimals - Decimals
+     * @param {number} initialSupply - Initial Supply
+     * @param {string} tokenMemo - Memo field
+     * @param {AccountId} treasuryId - treasury account
+     * @param {PrivateKey} treasuryKey - treasury account
+     * @param {PrivateKey} [supplyKey] - set supply key
+     * @param {PrivateKey} [adminKey] - set admin key
+     * @param {PrivateKey} [kycKey] - set kyc key
+     * @param {PrivateKey} [freezeKey] - set freeze key
+     * @param {PrivateKey} [wipeKey] - set wipe key
      *
-     * @returns {string} - balance
+     * @returns {string} - Token id
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Account balance query timeout exceeded')
-    public static async balance(client: Client, accountId: string | AccountId): Promise<number> {
-        const query = new AccountBalanceQuery()
-            .setAccountId(accountId);
-        const accountBalance = await query.execute(client);
-        if (accountBalance && accountBalance.hbars) {
-            return accountBalance.hbars.to(HbarUnit.Hbar).toNumber();
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token create transaction timeout exceeded')
+    public async newToken(
+        name: string,
+        symbol: string,
+        nft: boolean,
+        decimals: number,
+        initialSupply: number,
+        tokenMemo: string,
+        treasuryId: AccountId,
+        treasuryKey: PrivateKey,
+        supplyKey: PrivateKey,
+        adminKey: PrivateKey | null,
+        kycKey: PrivateKey | null,
+        freezeKey: PrivateKey | null,
+        wipeKey: PrivateKey | ContractId | DelegateContractId | null
+    ): Promise<string> {
+        const client = this.client;
+        let transaction = new TokenCreateTransaction()
+            .setTokenName(name)
+            .setTokenSymbol(symbol)
+            .setTreasuryAccountId(treasuryId)
+            .setDecimals(decimals)
+            .setInitialSupply(initialSupply)
+            .setTokenMemo(tokenMemo)
+            .setMaxTransactionFee(MAX_FEE);
+
+        if (adminKey) {
+            transaction = transaction.setAdminKey(adminKey);
         }
-        return NaN;
+        if (kycKey) {
+            transaction = transaction.setKycKey(kycKey);
+        }
+        if (freezeKey) {
+            transaction = transaction.setFreezeKey(freezeKey);
+        }
+        if (wipeKey) {
+            transaction = transaction.setWipeKey(wipeKey);
+        }
+        if (supplyKey) {
+            transaction = transaction.setSupplyKey(supplyKey);
+        }
+        if (nft) {
+            transaction = transaction.setTokenType(TokenType.NonFungibleUnique);
+        }
+        transaction = transaction.freezeWith(client);
+
+        let signTx: Transaction = transaction;
+        if (adminKey) {
+            signTx = await signTx.sign(adminKey);
+        }
+        if (treasuryKey) {
+            signTx = await signTx.sign(treasuryKey);
+        }
+
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenCreateTransaction');
+        const tokenId = receipt.tokenId;
+
+        return tokenId.toString();
     }
 
     /**
-     * Get transactions
-     * @param accountId Account identifier
-     * @param transactiontype
-     * @param timestamp Timestamp
-     * @param order Order
-     * @param filter Filter
-     * @param limit Limit
-     * @returns Transactions
+     * Update token (TokenUpdateTransaction)
+     *
+     * @param {TokenId} tokenId - Token Id
+     * @param {PrivateKey} adminKey - Admin Key
+     * @param {PrivateKey} treasuryKey - Treasury Key
+     * @param {any} changes - changes
+     *
+     * @returns {boolean} - status
      */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get transactions request timeout exceeded')
-    public static async getTransactions(
-        accountId?: string,
-        transactiontype?: string,
-        timestamp?: string,
-        order = 'asc',
-        filter?: any,
-        limit?: number,
-    ): Promise<any[]> {
-        const params: any = {
-            limit: HederaSDKHelper.REST_API_MAX_LIMIT,
-            order,
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token update transaction timeout exceeded')
+    public async updateToken(
+        tokenId: TokenId,
+        adminKey: PrivateKey,
+        changes: { [x: string]: any }
+    ): Promise<boolean> {
+        const client = this.client;
+        let transaction = new TokenUpdateTransaction()
+            .setTokenId(tokenId)
+            .setMaxTransactionFee(MAX_FEE)
+
+        if (changes.hasOwnProperty('tokenName')) {
+            transaction = transaction.setTokenName(changes.tokenName);
         }
-        if (accountId) {
-            params['account.id'] = accountId;
+        if (changes.hasOwnProperty('tokenSymbol')) {
+            transaction = transaction.setTokenName(changes.tokenSymbol);
         }
-        if (transactiontype) {
-            params.transactiontype = transactiontype;
+        if (changes.hasOwnProperty('freezeKey')) {
+            transaction = transaction.setFreezeKey(changes.freezeKey);
         }
-        if (timestamp) {
-            params.timestamp = timestamp;
+        if (changes.hasOwnProperty('kycKey')) {
+            transaction = transaction.setKycKey(changes.kycKey);
         }
-        const p: any = {
-            params,
-            responseType: 'json',
-        };
-        const url = `${Environment.HEDERA_TRANSACTIONS_API}`;
-        return await HederaSDKHelper.hederaRestApi(url, p, 'transactions', filter, limit);
+        if (changes.hasOwnProperty('wipeKey')) {
+            transaction = transaction.setWipeKey(changes.wipeKey);
+        }
+        transaction = transaction.freezeWith(client);
+        let signTx: Transaction = transaction;
+        if (adminKey) {
+            signTx = await signTx.sign(adminKey);
+        }
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenUpdateTransaction');
+        const transactionStatus = receipt.status;
+        return transactionStatus === Status.Success;
     }
 
     /**
-     * Transaction response
-     * @param account
-     * @private
+     * Delete token (TokenDeleteTransaction)
+     *
+     * @param {TokenId} tokenId - Token Id
+     * @param {PrivateKey} adminKey - Admin Key
+     *
+     * @returns {boolean} - status
      */
-    private static transactionResponse(account: string) {
-        if (HederaSDKHelper.fn) {
-            try {
-                const result = HederaSDKHelper.fn(account);
-                if (typeof result.then === 'function') {
-                    result.then(null, (error: Error) => {
-                        console.error(error);
-                    });
-                }
-            } catch (e) {
-                console.error(e);
-            }
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token delete transaction timeout exceeded')
+    public async deleteToken(
+        tokenId: TokenId,
+        adminKey: PrivateKey
+    ): Promise<boolean> {
+        const client = this.client;
+        const transaction = new TokenDeleteTransaction()
+            .setTokenId(tokenId)
+            .setMaxTransactionFee(MAX_FEE)
+            .freezeWith(client);
+
+        let signTx: Transaction = transaction;
+        if (adminKey) {
+            signTx = await signTx.sign(adminKey);
         }
+
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenDeleteTransaction');
+        const transactionStatus = receipt.status;
+        return transactionStatus === Status.Success;
     }
 
     /**
@@ -381,238 +455,6 @@ export class HederaSDKHelper {
     }
 
     /**
-     * Hedera REST api
-     * @param url Url
-     * @param options Options
-     * @param type Type
-     * @param filters Filters
-     * @param limit
-     * @returns Result
-     */
-    private static async hederaRestApi(
-        url: string,
-        options: { params?: any },
-        type: 'nfts' | 'transactions' | 'logs',
-        filters?: { [key: string]: any },
-        limit?: number,
-    ) {
-        const params: any = {
-            ...options,
-            responseType: 'json',
-        }
-        let hasNext = true;
-        const result = [];
-        while (hasNext) {
-            const res = await axios.get(url, params);
-            delete params.params;
-
-            if (!res || !res.data || !res.data[type]) {
-                throw new Error(`Invalid ${type} response`);
-            }
-
-            const typedData = res.data[type];
-
-            if (filters) {
-                for (const item of typedData) {
-                    for (const filter of Object.keys(filters)) {
-                        if (item[filter] === filters[filter]) {
-                            result.push(item);
-                            if (result.length === limit) {
-                                return result;
-                            }
-                        }
-                    }
-                }
-            } else {
-                for (const item of typedData) {
-                    result.push(item);
-                    if (result.length === limit) {
-                        return result;
-                    }
-                }
-            }
-            url = `${res.request.protocol}//${res.request.host}${res.data.links?.next}`;
-            hasNext = !!res.data.links?.next;
-        }
-
-        return result;
-    }
-
-    /**
-     * Create new token (TokenCreateTransaction)
-     *
-     * @param {string} name - Token name
-     * @param {string} symbol - Token symbol
-     * @param {boolean} nft - Fungible or NonFungible Token
-     * @param {number} decimals - Decimals
-     * @param {number} initialSupply - Initial Supply
-     * @param {string} tokenMemo - Memo field
-     * @param {AccountId} treasuryId - treasury account
-     * @param {PrivateKey} treasuryKey - treasury account
-     * @param {PrivateKey} [supplyKey] - set supply key
-     * @param {PrivateKey} [adminKey] - set admin key
-     * @param {PrivateKey} [kycKey] - set kyc key
-     * @param {PrivateKey} [freezeKey] - set freeze key
-     * @param {PrivateKey} [wipeKey] - set wipe key
-     *
-     * @returns {string} - Token id
-     */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token create transaction timeout exceeded')
-    public async newToken(
-        name: string,
-        symbol: string,
-        nft: boolean,
-        decimals: number,
-        initialSupply: number,
-        tokenMemo: string,
-        treasuryId: AccountId,
-        treasuryKey: PrivateKey,
-        supplyKey: PrivateKey,
-        adminKey: PrivateKey | null,
-        kycKey: PrivateKey | null,
-        freezeKey: PrivateKey | null,
-        wipeKey: PrivateKey | ContractId | DelegateContractId | null
-    ): Promise<IResultWithMetadata<string>> {
-        const client = this.client;
-        let transaction = new TokenCreateTransaction()
-            .setTokenName(name)
-            .setTokenSymbol(symbol)
-            .setTreasuryAccountId(treasuryId)
-            .setDecimals(decimals)
-            .setInitialSupply(initialSupply)
-            .setTokenMemo(tokenMemo)
-            .setMaxTransactionFee(MAX_FEE);
-
-        if (adminKey) {
-            transaction = transaction.setAdminKey(adminKey);
-        }
-        if (kycKey) {
-            transaction = transaction.setKycKey(kycKey);
-        }
-        if (freezeKey) {
-            transaction = transaction.setFreezeKey(freezeKey);
-        }
-        if (wipeKey) {
-            transaction = transaction.setWipeKey(wipeKey);
-        }
-        if (supplyKey) {
-            transaction = transaction.setSupplyKey(supplyKey);
-        }
-        if (nft) {
-            transaction = transaction.setTokenType(TokenType.NonFungibleUnique);
-        }
-        transaction = transaction.freezeWith(client);
-
-        let signTx: Transaction = transaction;
-        if (adminKey) {
-            signTx = await signTx.sign(adminKey);
-        }
-        if (treasuryKey) {
-            signTx = await signTx.sign(treasuryKey);
-        }
-
-        const receipt = await this.executeAndReceipt(client, signTx, TransactionTypes.TokenCreateTransaction);
-        const tokenId = receipt.tokenId;
-
-        return {
-            data: tokenId.toString(),
-            metadata: {
-                type: TransactionTypes.TokenCreateTransaction,
-                transactionId: transaction.transactionId.toString(),
-                tokenId: tokenId.toString()
-            }
-        };
-    }
-
-    /**
-     * Update token (TokenUpdateTransaction)
-     *
-     * @param {TokenId} tokenId - Token Id
-     * @param {PrivateKey} adminKey - Admin Key
-     * @param {any} changes - changes
-     *
-     * @returns {boolean} - status
-     */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token update transaction timeout exceeded')
-    public async updateToken(
-        tokenId: TokenId,
-        adminKey: PrivateKey,
-        changes: { [x: string]: any }
-    ): Promise<IResultWithMetadata<boolean>> {
-        const client = this.client;
-        let transaction = new TokenUpdateTransaction()
-            .setTokenId(tokenId)
-            .setMaxTransactionFee(MAX_FEE)
-
-        if (changes.hasOwnProperty('tokenName')) {
-            transaction = transaction.setTokenName(changes.tokenName);
-        }
-        if (changes.hasOwnProperty('tokenSymbol')) {
-            transaction = transaction.setTokenName(changes.tokenSymbol);
-        }
-        if (changes.hasOwnProperty('freezeKey')) {
-            transaction = transaction.setFreezeKey(changes.freezeKey);
-        }
-        if (changes.hasOwnProperty('kycKey')) {
-            transaction = transaction.setKycKey(changes.kycKey);
-        }
-        if (changes.hasOwnProperty('wipeKey')) {
-            transaction = transaction.setWipeKey(changes.wipeKey);
-        }
-        transaction = transaction.freezeWith(client);
-        let signTx: Transaction = transaction;
-        if (adminKey) {
-            signTx = await signTx.sign(adminKey);
-        }
-        const receipt = await this.executeAndReceipt(client, signTx, TransactionTypes.TokenUpdateTransaction);
-        const transactionStatus = receipt.status;
-        return {
-            data: transactionStatus === Status.Success,
-            metadata: {
-                type: TransactionTypes.TokenUpdateTransaction,
-                transactionId: transaction.transactionId.toString(),
-                tokenId: receipt.tokenId.toString()
-            }
-        }
-    }
-
-    /**
-     * Delete token (TokenDeleteTransaction)
-     *
-     * @param {TokenId} tokenId - Token Id
-     * @param {PrivateKey} adminKey - Admin Key
-     *
-     * @returns {boolean} - status
-     */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token delete transaction timeout exceeded')
-    public async deleteToken(
-        tokenId: TokenId,
-        adminKey: PrivateKey
-    ): Promise<IResultWithMetadata<boolean>> {
-        const client = this.client;
-        const transaction = new TokenDeleteTransaction()
-            .setTokenId(tokenId)
-            .setMaxTransactionFee(MAX_FEE)
-            .freezeWith(client);
-
-        let signTx: Transaction = transaction;
-        if (adminKey) {
-            signTx = await signTx.sign(adminKey);
-        }
-
-        const receipt = await this.executeAndReceipt(client, signTx, TransactionTypes.TokenDeleteTransaction);
-        const transactionStatus = receipt.status;
-        return {
-            data: transactionStatus === Status.Success,
-            metadata: {
-                type: TransactionTypes.TokenDeleteTransaction,
-                transactionId: transaction.transactionId.toString(),
-                tokenId: tokenId.toString()
-            }
-        }
-    }
-
-    /**
      * Associate tokens with account (TokenAssociateTransaction)
      *
      * @param {string | TokenId} tokenId - Token Id
@@ -622,7 +464,7 @@ export class HederaSDKHelper {
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token associate transaction timeout exceeded')
-    public async associate(tokenId: string | TokenId, id: string, key: string): Promise<IResultWithMetadata<boolean>> {
+    public async associate(tokenId: string | TokenId, id: string, key: string): Promise<boolean> {
         const client = this.client;
 
         const accountId = AccountId.fromString(id);
@@ -633,17 +475,10 @@ export class HederaSDKHelper {
             .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(accountKey);
-        const receipt = await this.executeAndReceipt(client, signTx, TransactionTypes.TokenAssociateTransaction);
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenAssociateTransaction');
         const transactionStatus = receipt.status;
 
-        return {
-            data: transactionStatus === Status.Success,
-            metadata: {
-                type: TransactionTypes.TokenAssociateTransaction,
-                transactionId: transaction.transactionId.toString(),
-                tokenId: receipt.tokenId.toString()
-            }
-        }
+        return transactionStatus === Status.Success;
     }
 
     /**
@@ -656,7 +491,7 @@ export class HederaSDKHelper {
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token dissociate transaction timeout exceeded')
-    public async dissociate(tokenId: string | TokenId, id: string, key: string): Promise<IResultWithMetadata<boolean>> {
+    public async dissociate(tokenId: string | TokenId, id: string, key: string): Promise<boolean> {
         const client = this.client;
 
         const accountId = AccountId.fromString(id);
@@ -667,17 +502,10 @@ export class HederaSDKHelper {
             .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(accountKey);
-        const receipt = await this.executeAndReceipt(client, signTx, TransactionTypes.TokenAssociateTransaction);
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenDissociateTransaction');
         const transactionStatus = receipt.status;
 
-        return {
-            data: transactionStatus === Status.Success,
-            metadata: {
-                type: TransactionTypes.TokenAssociateTransaction,
-                transactionId: transaction.transactionId.toString(),
-                tokenId: receipt.tokenId.toString()
-            }
-        }
+        return transactionStatus === Status.Success;
     }
 
     /**
@@ -690,7 +518,7 @@ export class HederaSDKHelper {
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token freeze transaction timeout exceeded')
-    public async freeze(tokenId: string | TokenId, accountId: string, freezeKey: string): Promise<IResultWithMetadata<boolean>> {
+    public async freeze(tokenId: string | TokenId, accountId: string, freezeKey: string): Promise<boolean> {
         const client = this.client;
 
         const _freezeKey = HederaUtils.parsPrivateKey(freezeKey, true, 'Freeze Key');
@@ -700,17 +528,10 @@ export class HederaSDKHelper {
             .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_freezeKey);
-        const receipt = await this.executeAndReceipt(client, signTx, TransactionTypes.TokenFreezeTransaction);
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenFreezeTransaction');
         const transactionStatus = receipt.status;
 
-        return {
-            data: transactionStatus === Status.Success,
-            metadata: {
-                type: TransactionTypes.TokenFreezeTransaction,
-                transactionId: transaction.transactionId.toString(),
-                tokenId: receipt.tokenId.toString()
-            }
-        }
+        return transactionStatus === Status.Success;
     }
 
     /**
@@ -723,7 +544,7 @@ export class HederaSDKHelper {
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token unfreeze transaction timeout exceeded')
-    public async unfreeze(tokenId: string | TokenId, accountId: string, freezeKey: string): Promise<IResultWithMetadata<boolean>> {
+    public async unfreeze(tokenId: string | TokenId, accountId: string, freezeKey: string): Promise<boolean> {
         const client = this.client;
 
         const _freezeKey = HederaUtils.parsPrivateKey(freezeKey, true, 'Freeze Key');
@@ -733,17 +554,10 @@ export class HederaSDKHelper {
             .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_freezeKey);
-        const receipt = await this.executeAndReceipt(client, signTx, TransactionTypes.TokenUnfreezeTransaction);
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenUnfreezeTransaction');
         const transactionStatus = receipt.status;
 
-        return {
-            data: transactionStatus === Status.Success,
-            metadata: {
-                type: TransactionTypes.TokenUnfreezeTransaction,
-                transactionId: transaction.transactionId.toString(),
-                tokenId: receipt.tokenId.toString()
-            }
-        }
+        return transactionStatus === Status.Success;
     }
 
     /**
@@ -756,7 +570,7 @@ export class HederaSDKHelper {
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token grant KYC transaction timeout exceeded')
-    public async grantKyc(tokenId: string | TokenId, accountId: string, kycKey: string): Promise<IResultWithMetadata<boolean>> {
+    public async grantKyc(tokenId: string | TokenId, accountId: string, kycKey: string): Promise<boolean> {
         const client = this.client;
 
         const _kycKey = HederaUtils.parsPrivateKey(kycKey, true, 'KYC Key');
@@ -766,17 +580,10 @@ export class HederaSDKHelper {
             .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_kycKey);
-        const receipt = await this.executeAndReceipt(client, signTx, TransactionTypes.TokenGrantKycTransaction);
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenGrantKycTransaction');
         const transactionStatus = receipt.status;
 
-        return {
-            data: transactionStatus === Status.Success,
-            metadata: {
-                type: TransactionTypes.TokenGrantKycTransaction,
-                transactionId: transaction.transactionId.toString(),
-                tokenId: receipt.tokenId.toString()
-            }
-        }
+        return transactionStatus === Status.Success;
     }
 
     /**
@@ -789,7 +596,7 @@ export class HederaSDKHelper {
      * @returns {boolean} - Status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Token revoke KYC transaction timeout exceeded')
-    public async revokeKyc(tokenId: string | TokenId, accountId: string, kycKey: string): Promise<IResultWithMetadata<boolean>> {
+    public async revokeKyc(tokenId: string | TokenId, accountId: string, kycKey: string): Promise<boolean> {
         const client = this.client;
 
         const _kycKey = HederaUtils.parsPrivateKey(kycKey, true, 'KYC Key');
@@ -799,17 +606,10 @@ export class HederaSDKHelper {
             .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_kycKey);
-        const receipt = await this.executeAndReceipt(client, signTx, TransactionTypes.TokenRevokeKycTransaction);
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenRevokeKycTransaction');
         const transactionStatus = receipt.status;
 
-        return {
-            data: transactionStatus === Status.Success,
-            metadata: {
-                type: TransactionTypes.TokenRevokeKycTransaction,
-                transactionId: transaction.transactionId.toString(),
-                tokenId: receipt.tokenId.toString()
-            }
-        }
+        return transactionStatus === Status.Success;
     }
 
     /**
@@ -828,7 +628,7 @@ export class HederaSDKHelper {
         supplyKey: string | PrivateKey,
         amount: number,
         transactionMemo?: string
-    ): Promise<IResultWithMetadata<boolean>> {
+    ): Promise<boolean> {
         const client = this.client;
 
         const _supplyKey = HederaUtils.parsPrivateKey(supplyKey, true, 'Supply Key');
@@ -839,17 +639,10 @@ export class HederaSDKHelper {
             .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_supplyKey);
-        const receipt = await this.executeAndReceipt(client, signTx, TransactionTypes.TokenMintTransaction);
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenMintTransaction');
         const transactionStatus = receipt.status;
 
-        return {
-            data: transactionStatus === Status.Success,
-            metadata: {
-                type: TransactionTypes.TokenMintTransaction,
-                transactionId: transaction.transactionId.toString(),
-                tokenId: receipt.tokenId.toString()
-            }
-        }
+        return transactionStatus === Status.Success;
     }
 
     /**
@@ -869,7 +662,7 @@ export class HederaSDKHelper {
         supplyKey: string | PrivateKey,
         data: Uint8Array[],
         transactionMemo?: string
-    ): Promise<IResultWithMetadata<number[]>> {
+    ): Promise<number[]> {
         const client = this.client;
 
         const _supplyKey = HederaUtils.parsPrivateKey(supplyKey, true, 'Supply Key');
@@ -880,33 +673,14 @@ export class HederaSDKHelper {
             .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_supplyKey);
-        const receipt = await this.executeAndReceipt(client, signTx, TransactionTypes.TokenMintNFTTransaction, data);
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenMintNFTTransaction', data);
         const transactionStatus = receipt.status;
 
         if (transactionStatus === Status.Success) {
-            return {
-                data: receipt.serials.map(e => e.toNumber()),
-                metadata: {
-                    type: TransactionTypes.TokenMintNFTTransaction,
-                    transactionId: transaction.transactionId.toString(),
-                    tokenId: receipt.tokenId.toString()
-                }
-            }
+            return receipt.serials.map(e => e.toNumber())
         } else {
             return null;
         }
-    }
-
-    /**
-     * New treasury
-     * @param accountId
-     * @param privateKey
-     */
-    public newTreasury(accountId: string | AccountId, privateKey: string | PrivateKey) {
-        return {
-            id: typeof accountId === 'string' ? AccountId.fromString(accountId) : accountId,
-            key: typeof privateKey === 'string' ? PrivateKey.fromString(privateKey) : privateKey
-        };
     }
 
     /**
@@ -927,7 +701,7 @@ export class HederaSDKHelper {
         wipeKey: string | PrivateKey,
         amount: number,
         transactionMemo?: string
-    ): Promise<IResultWithMetadata<boolean>> {
+    ): Promise<boolean> {
         const client = this.client;
 
         const _wipeKey = HederaUtils.parsPrivateKey(wipeKey, true, 'Wipe Key');
@@ -939,17 +713,10 @@ export class HederaSDKHelper {
             .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_wipeKey);
-        const receipt = await this.executeAndReceipt(client, signTx, TransactionTypes.TokenWipeTransaction);
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenWipeTransaction');
         const transactionStatus = receipt.status;
 
-        return {
-            data: transactionStatus === Status.Success,
-            metadata: {
-                type: TransactionTypes.TokenWipeTransaction,
-                transactionId: transaction.transactionId.toString(),
-                tokenId: receipt.tokenId.toString()
-            }
-        }
+        return transactionStatus === Status.Success;
     }
 
     /**
@@ -972,7 +739,7 @@ export class HederaSDKHelper {
         scoreKey: string | PrivateKey,
         amount: number,
         transactionMemo?: string
-    ): Promise<IResultWithMetadata<boolean>> {
+    ): Promise<boolean> {
         const client = this.client;
 
         const _scoreKey = HederaUtils.parsPrivateKey(scoreKey);
@@ -983,17 +750,232 @@ export class HederaSDKHelper {
             .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_scoreKey);
-        const receipt = await this.executeAndReceipt(client, signTx, TransactionTypes.TransferTransaction, amount);
+        const receipt = await this.executeAndReceipt(client, signTx, 'TransferTransaction', amount);
         const transactionStatus = receipt.status;
 
+        return transactionStatus === Status.Success;
+    }
+
+    /**
+     * Transfer non-fungible token from some accounts to other accounts (TransferTransaction)
+     *
+     * @param {string | TokenId} tokenId - Token Id
+     * @param {string | AccountId} targetId - Target Account Id
+     * @param {string | AccountId} scoreId - Treasury Account Id
+     * @param {string | PrivateKey} scoreKey - Token Score key
+     * @param {number[]} serials - serials
+     * @param {string} [transactionMemo] - Memo field
+     *
+     * @returns {boolean} - Status
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Transfer NFT transaction timeout exceeded')
+    public async transferNFT(
+        tokenId: string | TokenId,
+        targetId: string | AccountId,
+        scoreId: string | AccountId,
+        scoreKey: string | PrivateKey,
+        serials: number[],
+        transactionMemo?: string
+    ): Promise<boolean> {
+        const client = this.client;
+
+        const _scoreKey = HederaUtils.parsPrivateKey(scoreKey);
+        let transaction = new TransferTransaction()
+            .setTransactionMemo(transactionMemo)
+            .setMaxTransactionFee(MAX_FEE);
+
+        for (const serial of serials) {
+            transaction = transaction
+                .addNftTransfer(tokenId, serial, scoreId, targetId)
+
+        }
+        transaction = transaction.freezeWith(client);
+        const signTx = await transaction.sign(_scoreKey);
+        const receipt = await this.executeAndReceipt(client, signTx, 'NFTTransferTransaction', serials);
+        const transactionStatus = receipt.status;
+
+        return transactionStatus === Status.Success;
+    }
+
+    /**
+     * Create new Account (AccountCreateTransaction)
+     *
+     * @param {number} initialBalance - Initial Balance
+     *
+     * @returns {any} - Account Id and Account Private Key
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Account create transaction timeout exceeded')
+    public async newAccount(initialBalance: number): Promise<{
+        /**
+         * Account ID
+         */
+        id: AccountId;
+        /**
+         * Private key
+         */
+        key: PrivateKey;
+    }> {
+        const client = this.client;
+
+        const newPrivateKey = PrivateKey.generate();
+        const transaction = new AccountCreateTransaction()
+            .setKey(newPrivateKey.publicKey)
+            .setMaxTransactionFee(MAX_FEE)
+            .setInitialBalance(new Hbar(initialBalance || INITIAL_BALANCE));
+        const receipt = await this.executeAndReceipt(client, transaction, 'AccountCreateTransaction');
+        const newAccountId = receipt.accountId;
+
         return {
-            data: transactionStatus === Status.Success,
-            metadata: {
-                type: TransactionTypes.TransferTransaction,
-                transactionId: transaction.transactionId.toString(),
-                tokenId: receipt.tokenId.toString()
+            id: newAccountId,
+            key: newPrivateKey
+        };
+    }
+
+    /**
+     * New treasury
+     * @param accountId
+     * @param privateKey
+     */
+    public newTreasury(accountId: string | AccountId, privateKey: string | PrivateKey) {
+        return {
+            id: typeof accountId === 'string' ? AccountId.fromString(accountId) : accountId,
+            key: typeof privateKey === 'string' ? PrivateKey.fromString(privateKey) : privateKey
+        };
+    }
+
+    /**
+     * Create new Topic (TopicCreateTransaction)
+     * @param {PrivateKey | string} [adminKey] - Topic Admin Key
+     * @param {PrivateKey | string} [submitKey] - Topic Submit Key
+     * @param {string} [topicMemo] - Topic Memo
+     * @returns {string} - Topic Id
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Topic create transaction timeout exceeded')
+    public async newTopic(
+        adminKey?: PrivateKey | string,
+        submitKey?: PrivateKey | string,
+        topicMemo?: string
+    ): Promise<string> {
+        const client = this.client;
+
+        let transaction: any = new TopicCreateTransaction()
+            .setMaxTransactionFee(MAX_FEE);
+
+        if (topicMemo) {
+            transaction = transaction.setTopicMemo(topicMemo.substring(0, 100));
+        }
+
+        if (submitKey) {
+            const accountKey = HederaUtils.parsPrivateKey(submitKey, true, 'Submit Key');
+            transaction = transaction.setSubmitKey(accountKey);
+        }
+
+        if (adminKey) {
+            const accountKey = HederaUtils.parsPrivateKey(adminKey, true, 'Admin Key');
+            transaction = transaction.setAdminKey(accountKey)
+        }
+
+        transaction = transaction.freezeWith(client);
+
+        if (adminKey) {
+            const accountKey = HederaUtils.parsPrivateKey(adminKey, true, 'Admin Key');
+            transaction = await transaction.sign(accountKey);
+        }
+
+        const receipt = await this.executeAndReceipt(client, transaction, 'TopicCreateTransaction');
+        const topicId = receipt.topicId;
+
+        return topicId.toString();
+    }
+
+    /**
+     * Submit message to the topic (TopicMessageSubmitTransaction)
+     *
+     * @param topicId Topic identifier
+     * @param message Message to publish
+     *
+     * @param privateKey
+     * @param transactionMemo
+     * @param signOptions
+     * @returns Message timestamp
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Topic message submit transaction timeout exceeded')
+    public async submitMessage(
+        topicId: string | TopicId,
+        message: string,
+        privateKey?: string | PrivateKey,
+        transactionMemo?: string,
+        signOptions?: ISignOptions
+    ): Promise<string> {
+        const client = this.client;
+
+        const maxChunks = (process.env.HEDERA_MAX_CHUNKS) ? parseInt(process.env.HEDERA_MAX_CHUNKS, 10) : 20;
+        let messageTransaction: Transaction = new TopicMessageSubmitTransaction({
+            topicId,
+            message,
+            maxChunks
+        }).setMaxTransactionFee(MAX_FEE);
+
+        if (transactionMemo) {
+            messageTransaction = messageTransaction.setTransactionMemo(transactionMemo.substring(0, 100));
+        }
+
+        let signType = SignType.INTERNAL;
+        if (signOptions?.signType) {
+            signType = signOptions.signType;
+        }
+
+        if (privateKey) {
+            switch (signType) {
+                case SignType.FIREBLOCKS: {
+                    const signData = (signOptions as any).data as FireblocksCreds;
+
+                    const fireblocksClient = new FireblocksHelper(
+                        signData.apiKey,
+                        signData.privateKey,
+                        signData.vaultId,
+                        signData.assetId,
+                    );
+                    const accountIds = Object.values(this.client.network) as AccountId[];
+                    messageTransaction.setNodeAccountIds([accountIds[0]]);
+                    messageTransaction = messageTransaction.freezeWith(client);
+                    messageTransaction = await messageTransaction.sign(HederaUtils.parsPrivateKey(privateKey));
+                    const tx = await fireblocksClient.createTransaction(messageTransaction.toBytes());
+
+                    if (!tx || !Array.isArray(tx.signedMessages)) {
+                        throw new Error(`Fireblocks signing failed`);
+                    }
+
+                    const signedMessage = tx.signedMessages[0];
+                    if (signedMessage) {
+                        const pubKey = PublicKey.fromStringED25519(signedMessage.publicKey);
+                        const signature = Buffer.from(signedMessage.signature.fullSig, 'hex');
+                        try {
+                            messageTransaction.addSignature(pubKey, signature);
+                        } catch (error) {
+                            throw new Error(error);
+                        }
+                    }
+                    break;
+                }
+
+                case SignType.INTERNAL: {
+                    messageTransaction = messageTransaction.freezeWith(client);
+                    messageTransaction = await messageTransaction.sign(HederaUtils.parsPrivateKey(privateKey));
+                    break;
+                }
+
+                default:
+                    messageTransaction = messageTransaction.freezeWith(client);
+                    messageTransaction = await messageTransaction.sign(HederaUtils.parsPrivateKey(privateKey));
             }
         }
+
+        const rec = await this.executeAndRecord(client, messageTransaction, 'TopicMessageSubmitTransaction');
+        const seconds = rec.consensusTimestamp.seconds.toString();
+        const nanos = rec.consensusTimestamp.nanos.toString();
+
+        return (seconds + '.' + ('000000000' + nanos).slice(-9));
     }
 
     /**
@@ -1116,449 +1098,6 @@ export class HederaSDKHelper {
     }
 
     /**
-     * Transfer non-fungible token from some accounts to other accounts (TransferTransaction)
-     *
-     * @param {string | TokenId} tokenId - Token Id
-     * @param {string | AccountId} targetId - Target Account Id
-     * @param {string | AccountId} scoreId - Treasury Account Id
-     * @param {string | PrivateKey} scoreKey - Token Score key
-     * @param {number[]} serials - serials
-     * @param {string} [transactionMemo] - Memo field
-     *
-     * @returns {boolean} - Status
-     */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Transfer NFT transaction timeout exceeded')
-    public async transferNFT(
-        tokenId: string | TokenId,
-        targetId: string | AccountId,
-        scoreId: string | AccountId,
-        scoreKey: string | PrivateKey,
-        serials: number[],
-        transactionMemo?: string
-    ): Promise<IResultWithMetadata<boolean>> {
-        const client = this.client;
-
-        const _scoreKey = HederaUtils.parsPrivateKey(scoreKey);
-        let transaction = new TransferTransaction()
-            .setTransactionMemo(transactionMemo)
-            .setMaxTransactionFee(MAX_FEE);
-
-        for (const serial of serials) {
-            transaction = transaction
-                .addNftTransfer(tokenId, serial, scoreId, targetId)
-
-        }
-        transaction = transaction.freezeWith(client);
-        const signTx = await transaction.sign(_scoreKey);
-        const receipt = await this.executeAndReceipt(client, signTx, TransactionTypes.NFTTransferTransaction, serials);
-        const transactionStatus = receipt.status;
-
-        return {
-            data: transactionStatus === Status.Success,
-            metadata: {
-                type: TransactionTypes.NFTTransferTransaction,
-                transactionId: transaction.transactionId.toString(),
-                tokenId: receipt.tokenId.toString()
-            }
-        }
-    }
-
-    /**
-     * Create new Account (AccountCreateTransaction)
-     *
-     * @param {number} initialBalance - Initial Balance
-     *
-     * @returns {any} - Account Id and Account Private Key
-     */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Account create transaction timeout exceeded')
-    public async newAccount(initialBalance: number): Promise<IResultWithMetadata<{
-        /**
-         * Account ID
-         */
-        id: AccountId;
-        /**
-         * Private key
-         */
-        key: PrivateKey;
-    }>> {
-        const client = this.client;
-
-        const newPrivateKey = PrivateKey.generate();
-        const transaction = new AccountCreateTransaction()
-            .setKey(newPrivateKey.publicKey)
-            .setMaxTransactionFee(MAX_FEE)
-            .setInitialBalance(new Hbar(initialBalance || INITIAL_BALANCE));
-        const receipt = await this.executeAndReceipt(client, transaction, TransactionTypes.AccountCreateTransaction);
-        const newAccountId = receipt.accountId;
-
-        return {
-            data: {
-                id: newAccountId,
-                key: newPrivateKey
-            },
-            metadata: {
-                type: TransactionTypes.AccountCreateTransaction,
-                transactionId: transaction.transactionId.toString(),
-                accountId: receipt.accountId.toString()
-            }
-        }
-    }
-
-    /**
-     * Create new Topic (TopicCreateTransaction)
-     * @param {PrivateKey | string} [adminKey] - Topic Admin Key
-     * @param {PrivateKey | string} [submitKey] - Topic Submit Key
-     * @param {string} [topicMemo] - Topic Memo
-     * @returns {string} - Topic Id
-     */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Topic create transaction timeout exceeded')
-    public async newTopic(
-        adminKey?: PrivateKey | string,
-        submitKey?: PrivateKey | string,
-        topicMemo?: string
-    ): Promise<IResultWithMetadata<string>> {
-        const client = this.client;
-
-        let transaction: TopicCreateTransaction = new TopicCreateTransaction()
-            .setMaxTransactionFee(MAX_FEE);
-
-        if (topicMemo) {
-            transaction = transaction.setTopicMemo(topicMemo.substring(0, 100));
-        }
-
-        if (submitKey) {
-            const accountKey = HederaUtils.parsPrivateKey(submitKey, true, 'Submit Key');
-            transaction = transaction.setSubmitKey(accountKey);
-        }
-
-        if (adminKey) {
-            const accountKey = HederaUtils.parsPrivateKey(adminKey, true, 'Admin Key');
-            transaction = transaction.setAdminKey(accountKey)
-        }
-
-        transaction = transaction.freezeWith(client);
-
-        if (adminKey) {
-            const accountKey = HederaUtils.parsPrivateKey(adminKey, true, 'Admin Key');
-            transaction = await transaction.sign(accountKey);
-        }
-
-        const receipt = await this.executeAndReceipt(client, transaction, TransactionTypes.TopicCreateTransaction);
-        const topicId = receipt.topicId;
-
-        return {
-            data: topicId.toString(),
-            metadata: {
-                type: TransactionTypes.TopicCreateTransaction,
-                transactionId: transaction.transactionId.toString(),
-                topicId: topicId.toString()
-            }
-        };
-    }
-
-    /**
-     * Submit message to the topic (TopicMessageSubmitTransaction)
-     *
-     * @param topicId Topic identifier
-     * @param message Message to publish
-     *
-     * @param privateKey
-     * @param transactionMemo
-     * @param signOptions
-     * @returns Message timestamp
-     */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Topic message submit transaction timeout exceeded')
-    public async submitMessage(
-        topicId: string | TopicId,
-        message: string,
-        privateKey?: string | PrivateKey,
-        transactionMemo?: string,
-        signOptions?: ISignOptions
-    ): Promise<IResultWithMetadata<string>> {
-        const client = this.client;
-
-        const maxChunks = (process.env.HEDERA_MAX_CHUNKS) ? parseInt(process.env.HEDERA_MAX_CHUNKS, 10) : 20;
-        let messageTransaction: Transaction = new TopicMessageSubmitTransaction({
-            topicId,
-            message,
-            maxChunks
-        }).setMaxTransactionFee(MAX_FEE);
-
-        if (transactionMemo) {
-            messageTransaction = messageTransaction.setTransactionMemo(transactionMemo.substring(0, 100));
-        }
-
-        let signType = SignType.INTERNAL;
-        if (signOptions?.signType) {
-            signType = signOptions.signType;
-        }
-
-        if (privateKey) {
-            switch (signType) {
-                case SignType.FIREBLOCKS: {
-                    const signData = (signOptions as any).data as FireblocksCreds;
-
-                    const fireblocksClient = new FireblocksHelper(
-                        signData.apiKey,
-                        signData.privateKey,
-                        signData.vaultId,
-                        signData.assetId,
-                    );
-                    const accountIds = Object.values(this.client.network) as AccountId[];
-                    messageTransaction.setNodeAccountIds([accountIds[0]]);
-                    messageTransaction = messageTransaction.freezeWith(client);
-                    messageTransaction = await messageTransaction.sign(HederaUtils.parsPrivateKey(privateKey));
-                    const tx = await fireblocksClient.createTransaction(messageTransaction.toBytes());
-
-                    if (!tx || !Array.isArray(tx.signedMessages)) {
-                        throw new Error(`Fireblocks signing failed`);
-                    }
-
-                    const signedMessage = tx.signedMessages[0];
-                    if (signedMessage) {
-                        const pubKey = PublicKey.fromStringED25519(signedMessage.publicKey);
-                        const signature = Buffer.from(signedMessage.signature.fullSig, 'hex');
-                        try {
-                            messageTransaction.addSignature(pubKey, signature);
-                        } catch (error) {
-                            throw new Error(error);
-                        }
-                    }
-                    break;
-                }
-
-                case SignType.INTERNAL: {
-                    messageTransaction = messageTransaction.freezeWith(client);
-                    messageTransaction = await messageTransaction.sign(HederaUtils.parsPrivateKey(privateKey));
-                    break;
-                }
-
-                default:
-                    messageTransaction = messageTransaction.freezeWith(client);
-                    messageTransaction = await messageTransaction.sign(HederaUtils.parsPrivateKey(privateKey));
-            }
-        }
-
-        const rec = await this.executeAndRecord(client, messageTransaction, TransactionTypes.TopicMessageSubmitTransaction);
-        return {
-            data: rec.consensusTimestamp.toString(),
-            metadata: {
-                type: TransactionTypes.TopicMessageSubmitTransaction,
-                transactionId: messageTransaction.transactionId.toString(),
-                consensusTimestamp: rec.consensusTimestamp.toString()
-            }
-        }
-    }
-
-    /**
-     * Set transaction response callback
-     * @param fn
-     */
-    public static setTransactionResponseCallback(fn: Function) {
-        HederaSDKHelper.fn = fn;
-    }
-
-    /**
-     * Create Hedera Smart Contract
-     *
-     * @param {string | FileId} bytecodeFileId - Code File Id
-     * @param {ContractFunctionParameters} parameters - Contract Parameters
-     * @param gas
-     * @param {string} contractMemo - Memo
-     *
-     * @returns {string} - Contract Id
-     */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract create transaction timeout exceeded')
-    public async createContract(
-        bytecodeFileId: string | FileId,
-        parameters: ContractFunctionParameters,
-        gas: number = 1000000,
-        contractMemo?: string
-    ): Promise<IResultWithMetadata<[string, ContractLogInfo]>> {
-        const client = this.client;
-        const contractInstantiateTx = new ContractCreateTransaction()
-            .setBytecodeFileId(bytecodeFileId)
-            .setGas(gas)
-            .setConstructorParameters(parameters)
-            .setContractMemo(contractMemo)
-            .setMaxTransactionFee(MAX_FEE);
-        const contractInstantiateSubmit = await contractInstantiateTx.execute(
-            client
-        );
-        const contractInstantiateRx =
-            await contractInstantiateSubmit.getReceipt(client);
-        const contractId = contractInstantiateRx.contractId;
-        const contractRecord =
-            await contractInstantiateSubmit.getRecord(client);
-
-        return {
-            data: [`${contractId}`, contractRecord.contractFunctionResult.logs?.[0]],
-            metadata: {
-                type: TransactionTypes.ContractCreateTransaction,
-                transactionId: contractInstantiateTx.transactionId.toString(),
-                contractId: contractInstantiateRx.contractId.toString(),
-                consensusTimestamp: contractRecord.consensusTimestamp.toString()
-            }
-        }
-    }
-
-    /**
-     * Crate client
-     * @param operatorId
-     * @param operatorKey
-     */
-    public static client(operatorId?: string | AccountId, operatorKey?: string | PrivateKey) {
-        const client = Environment.createClient();
-        if (operatorId && operatorKey) {
-            client.setOperator(operatorId, operatorKey);
-        }
-        return client;
-    }
-
-    /**
-     * Query Contract Hedera
-     *
-     * @param {string | ContractId} contractId - Contract Id
-     * @param gas
-     * @param {string} functionName - Function Name
-     * @param {ContractFunctionParameters} parameters - Contract Parameters
-     *
-     * @returns {ContractFunctionResult} - Contract Query Result
-     */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract call query timeout exceeded')
-    public async contractQuery(
-        contractId: string | ContractId,
-        gas: number,
-        functionName: string,
-        parameters: { type: ContractParamType; value: any }[] = []
-    ): Promise<ContractFunctionResult> {
-        const client = this.client;
-        const contractQueryTx = new ContractCallQuery()
-            .setContractId(contractId)
-            .setGas(gas)
-            .setFunction(functionName, this._parseContractParameters(parameters))
-        return await contractQueryTx.execute(client);
-    }
-
-    /**
-     * Query Contract Hedera
-     *
-     * @param {string | ContractId} contractId - Contract Id
-     * @param gas
-     * @param {ContractFunctionParameters} parameters - Contract Parameters
-     *
-     * @returns {ContractFunctionResult} - Contract Query Result
-     */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract call query timeout exceeded')
-    public async customContractQuery(
-        contractId: string | ContractId,
-        gas: number,
-        parameters: Uint8Array
-    ): Promise<ContractFunctionResult> {
-        const client = this.client;
-        const contractQueryTx = new ContractCallQuery()
-            .setContractId(contractId)
-            .setGas(gas)
-            .setFunctionParameters(parameters)
-        return await contractQueryTx.execute(client);
-    }
-
-    /**
-     * Parse contract parameters
-     * @param params Contract parameters
-     * @returns Contract parameters
-     */
-    private _parseContractParameters(
-        params: { type: ContractParamType; value: any }[]
-    ): ContractFunctionParameters {
-        let contractParams = new ContractFunctionParameters();
-        for (const param of params) {
-            switch (param.type) {
-                case ContractParamType.ADDRESS_ARRAY:
-                    contractParams = contractParams.addAddressArray(param.value);
-                    break;
-                case ContractParamType.ADDRESS:
-                    contractParams = contractParams.addAddress(param.value);
-                    break;
-                case ContractParamType.BOOL:
-                    contractParams = contractParams.addBool(param.value);
-                    break;
-                case ContractParamType.UINT8:
-                    contractParams = contractParams.addUint8(param.value);
-                    break;
-                case ContractParamType.INT64:
-                    contractParams = contractParams.addInt64(param.value);
-                    break;
-                case ContractParamType.INT64_ARRAY:
-                    contractParams = contractParams.addInt64Array(param.value);
-                    break;
-                default:
-            }
-        }
-        return contractParams;
-    }
-
-    /**
-     * Call Contract Hedera
-     *
-     * @param {string | ContractId} contractId - Contract Id
-     * @param gas
-     * @param {string} functionName - Function Name
-     * @param {ContractFunctionParameters} parameters - Contract Parameters
-     *
-     * @returns {boolean} - Status
-     */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract execute transaction timeout exceeded')
-    public async contractCall(
-        contractId: string | ContractId,
-        gas: number,
-        functionName: string,
-        parameters: { type: ContractParamType; value: any }[] = [],
-    ): Promise<boolean> {
-        const client = this.client;
-        const contractExecuteTx = await new ContractExecuteTransaction()
-            .setContractId(contractId)
-            .setGas(gas)
-            .setFunction(functionName, this._parseContractParameters(parameters))
-            .setMaxTransactionFee(MAX_FEE)
-            .freezeWith(client);
-        const contractExecuteSubmit = await contractExecuteTx.execute(client);
-        const contractExecuteRx = await contractExecuteSubmit.getReceipt(
-            client
-        );
-        return contractExecuteRx.status === Status.Success;
-    }
-
-    /**
-     * Call Contract Hedera
-     *
-     * @param {string | ContractId} contractId - Contract Id
-     * @param gas
-     * @param {ContractFunctionParameters} parameters - Contract Parameters
-     *
-     * @returns {boolean} - Status
-     */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract execute transaction timeout exceeded')
-    public async customContractCall(
-        contractId: string | ContractId,
-        gas: number,
-        parameters: Uint8Array,
-    ): Promise<boolean> {
-        const client = this.client;
-        const contractExecuteTx = await new ContractExecuteTransaction()
-            .setContractId(contractId)
-            .setGas(gas)
-            .setFunctionParameters(parameters)
-            .setMaxTransactionFee(MAX_FEE)
-            .freezeWith(client);
-        const contractExecuteSubmit = await contractExecuteTx.execute(client);
-        const contractExecuteRx = await contractExecuteSubmit.getReceipt(
-            client
-        );
-        return contractExecuteRx.status === Status.Success;
-    }
-
-    /**
      * Execute and receipt
      * @param client
      * @param transaction
@@ -1599,7 +1138,7 @@ export class HederaSDKHelper {
             try {
                 const account = client.operatorAccountId.toString();
                 await this.transactionStartLog(id, type);
-                let receipt: TransactionReceipt;
+                let receipt;
                 try {
                     const result = await transaction.execute(client);
                     receipt = await result.getReceipt(client);
@@ -1632,8 +1171,7 @@ export class HederaSDKHelper {
     /**
      * Receipt query
      * @param client Client
-     * @param transactionId
-     * @param count
+     * @param transacationId Transaction identifier
      * @returns Transaction result
      */
     private async receiptQuery(
@@ -1690,7 +1228,7 @@ export class HederaSDKHelper {
             try {
                 const account = client.operatorAccountId.toString();
                 await this.transactionStartLog(id, type);
-                let record: TransactionRecord;
+                let record;
                 try {
                     const result = await transaction.execute(client);
                     record = await result.getRecord(client);
@@ -1721,6 +1259,338 @@ export class HederaSDKHelper {
     }
 
     /**
+     * Record query
+     * @param client Client
+     * @param transacationId Transaction identifier
+     * @returns Transaction result
+     */
+    private async recordQuery(
+        client: Client,
+        transactionId: string | TransactionId,
+        count = 0
+    ): Promise<TransactionRecord> {
+        try {
+            let recordQuery = new TransactionRecordQuery()
+                .setMaxQueryPayment(new Hbar(MAX_FEE))
+                .setTransactionId(transactionId);
+            const transactionCost = await recordQuery.getCost(client);
+            const newCost = transactionCost.toTinybars().multiply(2);
+            recordQuery = recordQuery.setQueryPayment(
+                Hbar.fromTinybars(newCost)
+            );
+            return await recordQuery.execute(client);
+        } catch (error) {
+            const errorMessage =
+                typeof error === 'string' ? error : error?.message;
+            if (
+                count < 10 &&
+                errorMessage &&
+                errorMessage.indexOf(HederaResponseCode.DUPLICATE_TRANSACTION) >
+                -1
+            ) {
+                return await this.recordQuery(client, transactionId, count++);
+            }
+            throw error;
+        }
+    }
+
+    /**
+     * Set transaction response callback
+     * @param fn
+     */
+    public static setTransactionResponseCallback(fn: Function) {
+        HederaSDKHelper.fn = fn;
+    }
+
+    /**
+     * Transaction response
+     * @param account
+     * @private
+     */
+    private static transactionResponse(account: string) {
+        if (HederaSDKHelper.fn) {
+            try {
+                const result = HederaSDKHelper.fn(account);
+                if (typeof result.then === 'function') {
+                    result.then(null, (error) => {
+                        console.error(error);
+                    });
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    }
+
+    /**
+     * Crate client
+     * @param operatorId
+     * @param operatorKey
+     */
+    public static client(operatorId?: string | AccountId, operatorKey?: string | PrivateKey) {
+        const client = Environment.createClient();
+        if (operatorId && operatorKey) {
+            client.setOperator(operatorId, operatorKey);
+        }
+        return client;
+    }
+
+    /**
+     * Get balance account (AccountBalanceQuery)
+     *
+     * @param {string | AccountId} accountId - Account Id
+     *
+     * @returns {string} - balance
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Account balance query timeout exceeded')
+    public static async balance(client: Client, accountId: string | AccountId): Promise<number> {
+        const query = new AccountBalanceQuery()
+            .setAccountId(accountId);
+        const accountBalance = await query.execute(client);
+        if (accountBalance && accountBalance.hbars) {
+            return accountBalance.hbars.to(HbarUnit.Hbar).toNumber();
+        }
+        return NaN;
+    }
+
+    /**
+     * Create Hedera Smart Contract
+     *
+     * @param {string | FileId} bytecodeFileId - Code File Id
+     * @param {ContractFunctionParameters} parameters - Contract Parameters
+     * @param {string} contractMemo - Memo
+     *
+     * @returns {string} - Contract Id
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract create transaction timeout exceeded')
+    public async createContract(
+        bytecodeFileId: string | FileId,
+        parameters: ContractFunctionParameters,
+        gas: number = 1000000,
+        contractMemo?: string
+    ): Promise<[string, ContractLogInfo]> {
+        const client = this.client;
+        const contractInstantiateTx = new ContractCreateTransaction()
+            .setBytecodeFileId(bytecodeFileId)
+            .setGas(gas)
+            .setConstructorParameters(parameters)
+            .setContractMemo(contractMemo)
+            .setMaxTransactionFee(MAX_FEE);
+        const contractInstantiateSubmit = await contractInstantiateTx.execute(
+            client
+        );
+        const contractInstantiateRx =
+            await contractInstantiateSubmit.getReceipt(client);
+        const contractId = contractInstantiateRx.contractId;
+        const contractRecord =
+            await contractInstantiateSubmit.getRecord(client);
+
+        return [`${contractId}`, contractRecord.contractFunctionResult.logs?.[0]];
+    }
+
+    /**
+     * Parse contract parameters
+     * @param params Contract parameters
+     * @returns Contract parameters
+     */
+    private _parseContractParameters(
+        params: { type: ContractParamType; value: any }[]
+    ): ContractFunctionParameters {
+        let contractParams = new ContractFunctionParameters();
+        for (const param of params) {
+            switch (param.type) {
+                case ContractParamType.ADDRESS_ARRAY:
+                    contractParams = contractParams.addAddressArray(param.value);
+                    break;
+                case ContractParamType.ADDRESS:
+                    contractParams = contractParams.addAddress(param.value);
+                    break;
+                case ContractParamType.BOOL:
+                    contractParams = contractParams.addBool(param.value);
+                    break;
+                case ContractParamType.UINT8:
+                    contractParams = contractParams.addUint8(param.value);
+                    break;
+                case ContractParamType.INT64:
+                    contractParams = contractParams.addInt64(param.value);
+                    break;
+                case ContractParamType.INT64_ARRAY:
+                    contractParams = contractParams.addInt64Array(param.value);
+                    break;
+                default:
+            }
+        }
+        return contractParams;
+    }
+
+    /**
+     * Query Contract Hedera
+     *
+     * @param {string | ContractId} contractId - Contract Id
+     * @param {string} functionName - Function Name
+     * @param {ContractFunctionParameters} parameters - Contract Parameters
+     *
+     * @returns {ContractFunctionResult} - Contract Query Result
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract call query timeout exceeded')
+    public async contractQuery(
+        contractId: string | ContractId,
+        gas: number,
+        functionName: string,
+        parameters: { type: ContractParamType; value: any }[] = []
+    ): Promise<ContractFunctionResult> {
+        const client = this.client;
+        const contractQueryTx = new ContractCallQuery()
+            .setContractId(contractId)
+            .setGas(gas)
+            .setFunction(functionName, this._parseContractParameters(parameters))
+        const contractQueryResult = await contractQueryTx.execute(client);
+        return contractQueryResult;
+    }
+
+    /**
+     * Query Contract Hedera
+     *
+     * @param {string | ContractId} contractId - Contract Id
+     * @param {string} functionName - Function Name
+     * @param {ContractFunctionParameters} parameters - Contract Parameters
+     *
+     * @returns {ContractFunctionResult} - Contract Query Result
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract call query timeout exceeded')
+    public async customContractQuery(
+        contractId: string | ContractId,
+        gas: number,
+        parameters: Uint8Array
+    ): Promise<ContractFunctionResult> {
+        const client = this.client;
+        const contractQueryTx = new ContractCallQuery()
+            .setContractId(contractId)
+            .setGas(gas)
+            .setFunctionParameters(parameters)
+        const contractQueryResult = await contractQueryTx.execute(client);
+        return contractQueryResult;
+    }
+
+    /**
+     * Call Contract Hedera
+     *
+     * @param {string | ContractId} contractId - Contract Id
+     * @param {string} functionName - Function Name
+     * @param {ContractFunctionParameters} parameters - Contract Parameters
+     * @param {string[]} additionalKeys - Additional Keys
+     *
+     * @returns {boolean} - Status
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract execute transaction timeout exceeded')
+    public async contractCall(
+        contractId: string | ContractId,
+        gas: number,
+        functionName: string,
+        parameters: { type: ContractParamType; value: any }[] = [],
+    ): Promise<boolean> {
+        const client = this.client;
+        const contractExecuteTx = await new ContractExecuteTransaction()
+            .setContractId(contractId)
+            .setGas(gas)
+            .setFunction(functionName, this._parseContractParameters(parameters))
+            .setMaxTransactionFee(MAX_FEE)
+            .freezeWith(client);
+        const contractExecuteSubmit = await contractExecuteTx.execute(client);
+        const contractExecuteRx = await contractExecuteSubmit.getReceipt(
+            client
+        );
+        return contractExecuteRx.status === Status.Success;
+    }
+
+    /**
+     * Call Contract Hedera
+     *
+     * @param {string | ContractId} contractId - Contract Id
+     * @param {string} functionName - Function Name
+     * @param {ContractFunctionParameters} parameters - Contract Parameters
+     * @param {string[]} additionalKeys - Additional Keys
+     *
+     * @returns {boolean} - Status
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract execute transaction timeout exceeded')
+    public async customContractCall(
+        contractId: string | ContractId,
+        gas: number,
+        parameters: Uint8Array,
+    ): Promise<boolean> {
+        const client = this.client;
+        const contractExecuteTx = await new ContractExecuteTransaction()
+            .setContractId(contractId)
+            .setGas(gas)
+            .setFunctionParameters(parameters)
+            .setMaxTransactionFee(MAX_FEE)
+            .freezeWith(client);
+        const contractExecuteSubmit = await contractExecuteTx.execute(client);
+        const contractExecuteRx = await contractExecuteSubmit.getReceipt(
+            client
+        );
+        return contractExecuteRx.status === Status.Success;
+    }
+
+    /**
+     * Hedera REST api
+     * @param url Url
+     * @param options Options
+     * @param type Type
+     * @param filters Filters
+     * @returns Result
+     */
+    private static async hederaRestApi(
+        url: string,
+        options: { params?: any },
+        type: 'nfts' | 'transactions' | 'logs',
+        filters?: { [key: string]: any },
+        limit?: number,
+    ) {
+        const params: any = {
+            ...options,
+            responseType: 'json',
+        }
+        let hasNext = true;
+        const result = [];
+        while (hasNext) {
+            const res = await axios.get(url, params);
+            delete params.params;
+
+            if (!res || !res.data || !res.data[type]) {
+                throw new Error(`Invalid ${type} response`);
+            }
+
+            const typedData = res.data[type];
+
+            if (filters) {
+                for (const item of typedData) {
+                    for (const filter of Object.keys(filters)) {
+                        if (item[filter] === filters[filter]) {
+                            result.push(item);
+                            if (result.length === limit) {
+                                return result;
+                            }
+                        }
+                    }
+                }
+            } else {
+                for (const item of typedData) {
+                    result.push(item);
+                    if (result.length === limit) {
+                        return result;
+                    }
+                }
+            }
+            url = `${res.request.protocol}//${res.request.host}${res.data.links?.next}`;
+            hasNext = !!res.data.links?.next;
+        }
+
+        return result;
+    }
+
+    /**
      * Get Contract Info
      *
      * @param {string | ContractId} contractId - Contract Id
@@ -1748,6 +1618,7 @@ export class HederaSDKHelper {
      * @param contractId Contract identifier
      * @param timestamp Timestamp
      * @param order Order
+     * @param limit Limit
      * @returns Logs
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get contract events request timeout exceeded')
@@ -1824,40 +1695,43 @@ export class HederaSDKHelper {
     }
 
     /**
-     * Record query
-     * @param client Client
-     * @param transactionId
-     * @param count
-     * @returns Transaction result
+     * Get transactions
+     * @param accountId Account identifier
+     * @param type Type
+     * @param timestamp Timestamp
+     * @param order Order
+     * @param filter Filter
+     * @param limit Limit
+     * @returns Transactions
      */
-    private async recordQuery(
-        client: Client,
-        transactionId: string | TransactionId,
-        count = 0
-    ): Promise<TransactionRecord> {
-        try {
-            let recordQuery = new TransactionRecordQuery()
-                .setMaxQueryPayment(new Hbar(MAX_FEE))
-                .setTransactionId(transactionId);
-            const transactionCost = await recordQuery.getCost(client);
-            const newCost = transactionCost.toTinybars().multiply(2);
-            recordQuery = recordQuery.setQueryPayment(
-                Hbar.fromTinybars(newCost)
-            );
-            return await recordQuery.execute(client);
-        } catch (error) {
-            const errorMessage =
-                typeof error === 'string' ? error : error?.message;
-            if (
-                count < 10 &&
-                errorMessage &&
-                errorMessage.indexOf(HederaResponseCode.DUPLICATE_TRANSACTION) >
-                -1
-            ) {
-                return await this.recordQuery(client, transactionId, count++);
-            }
-            throw error;
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get transactions request timeout exceeded')
+    public static async getTransactions(
+        accountId?: string,
+        transactiontype?: string,
+        timestamp?: string,
+        order = 'asc',
+        filter?: any,
+        limit?: number,
+    ): Promise<any[]> {
+        const params: any = {
+            limit: HederaSDKHelper.REST_API_MAX_LIMIT,
+            order,
         }
+        if (accountId) {
+            params['account.id'] = accountId;
+        }
+        if (transactiontype) {
+            params.transactiontype = transactiontype;
+        }
+        if (timestamp) {
+            params.timestamp = timestamp;
+        }
+        const p: any = {
+            params,
+            responseType: 'json',
+        };
+        const url = `${Environment.HEDERA_TRANSACTIONS_API}`;
+        return await HederaSDKHelper.hederaRestApi(url, p, 'transactions', filter, limit);
     }
 
     /**
