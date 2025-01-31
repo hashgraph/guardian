@@ -139,6 +139,7 @@ export class FiltersAddonBlockComponent implements OnInit {
             this.target = data.targetBlock;
             this.content = data.uiMetaData.content;
             this.filters = data.filters;
+
             this.queryType = data.queryType;
             if (this.queryType === 'user_defined') {
                 const [type, value] = this.parseFilterValue(data.filterValue);

@@ -4,17 +4,20 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.type" [disabled]="readonly" (change)="onSave()">
-                <mat-option value="selector">Selector</mat-option>
-                <mat-option value="download">Download</mat-option>
-                <mat-option value="dropdown">Dropdown</mat-option>
-            </mat-select>
+            <p-dropdown
+                [(ngModel)]="properties.type"
+                [disabled]="readonly"
+                (onChange)="onSave()"
+                [appendTo]="'body'"
+                placeholder="Select an option"
+                [options]="dropdownOptions">
+            </p-dropdown>
         </td>
     </tr>
 
     <tr class="propHeader">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <mat-icon>arrow_drop_down</mat-icon>
+            <i class="pi pi-caret-down"></i>
         </td>
         <td class="propHeaderCell cellName">UI</td>
         <td class="propHeaderCell"></td>
@@ -38,23 +41,24 @@
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'optionsGroup')"
                 [attr.collapse]="propHidden.optionsGroup">
-                <mat-icon *ngIf="properties.uiMetaData.options.length">arrow_drop_down</mat-icon>
+                <i class="pi pi-caret-down" *ngIf="properties.uiMetaData.options.length"></i>
             </td>
             <td class="propRowCell cellName">Options</td>
             <td class="propRowCell">
                 <div class="propAdd" (click)="addOptions()">
-                    <mat-icon>add</mat-icon>
+                    <i class="pi pi-plus"></i>
                     <span>Add Options</span>
                 </div>
             </td>
         </tr>
         <ng-container *ngFor="let option of properties.uiMetaData.options; let i=index">
             <tr class="propRow subRow" [attr.collapse]="propHidden.main || propHidden.optionsGroup">
-                <td class="propRowCol cellCollapse" (click)="onHide(propHidden.options, i)" [attr.collapse]="propHidden.options[i]">
-                    <mat-icon>arrow_drop_down</mat-icon>
+                <td class="propRowCol cellCollapse" (click)="onHide(propHidden.options, i)"
+                    [attr.collapse]="propHidden.options[i]">
+                    <i class="pi pi-caret-down"></i>
                 </td>
-                <td class="propRowCell cellName">Options {{i}}</td>
-                <td class="propRowCell">{{option.name}}</td>
+                <td class="propRowCell cellName">Options {{ i }}</td>
+                <td class="propRowCell">{{ option.name }}</td>
             </tr>
 
             <tr class="propRow subRow-2"
@@ -86,10 +90,15 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">User</td>
                 <td class="propRowCell">
-                    <mat-select [(value)]="option.user" [disabled]="readonly" (change)="onSave()">
-                        <mat-option value="owner">Owner</mat-option>
-                        <mat-option value="current">Current</mat-option>
-                    </mat-select>
+                    <p-dropdown
+                        [(ngModel)]="option.user"
+                        [disabled]="readonly"
+                        (onChange)="onSave()"
+                        placeholder="Select user"
+                        [options]="userOptions"
+                        [appendTo]="'body'"
+                    >
+                    </p-dropdown>
                 </td>
             </tr>
             <tr class="propRow subRow-2"
@@ -109,13 +118,13 @@
             <td class="propRowCell cellName">Button Content</td>
             <td class="propRowCell">
                 <input class="prop-input" [(ngModel)]="properties.uiMetaData.content" [readonly]="readonly"
-                    (blur)="onSave()">
+                       (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'dropdownGroup')"
                 [attr.collapse]="propHidden.dropdownGroup">
-                <mat-icon>arrow_drop_down</mat-icon>
+                <i class="pi pi-caret-down"></i>
             </td>
             <td class="propRowCell cellName">Dropdown Options</td>
             <td class="propRowCell">
@@ -150,12 +159,13 @@
             <td class="propRowCell cellName">Button Content</td>
             <td class="propRowCell">
                 <input class="prop-input" [(ngModel)]="properties.uiMetaData.content" [readonly]="readonly"
-                    (blur)="onSave()">
+                       (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.main">
-            <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'fileGroup')" [attr.collapse]="propHidden.fileGroup">
-                <mat-icon>arrow_drop_down</mat-icon>
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'fileGroup')"
+                [attr.collapse]="propHidden.fileGroup">
+                <i class="pi pi-caret-down"></i>
             </td>
             <td class="propRowCell cellName">File Options</td>
             <td class="propRowCell">
@@ -166,11 +176,11 @@
             <td class="propRowCell cellName">Schema</td>
             <td class="propRowCell">
                 <select-schema
-                    [schemas]="schemas" 
+                    [schemas]="schemas"
                     [(value)]="properties.schema"
-                    [disabled]="readonly" 
+                    [disabled]="readonly"
                     (change)="onSave()"
-                    ></select-schema>
+                ></select-schema>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.fileGroup">

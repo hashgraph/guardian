@@ -15,3 +15,24 @@
     display: inline-block;
     min-width: 1px;
 }
+
+::ng-deep document-path .container {
+    height: 40px !important;
+}
+
+.propRow {
+    height: 40px;
+}
+
+.propRow .propRowCell.cellName {
+    padding-left: 18px !important;
+}
+
+.propRow .propRowCell.not-editable-text span:first-child {
+    padding-left: 2px;
+}
+
+.propRow .propRowCell.not-editable-text span.remove-prop {
+    top: 8px;
+    right: 8px;
+}

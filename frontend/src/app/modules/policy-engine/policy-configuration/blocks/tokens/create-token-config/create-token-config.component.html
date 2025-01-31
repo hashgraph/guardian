@@ -1,8 +1,9 @@
 <!-- UI Prop -->
 <table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propHeader">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'properties')" [attr.collapse]="propHidden.properties">
-            <mat-icon>arrow_drop_down</mat-icon>
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'properties')"
+            [attr.collapse]="propHidden.properties">
+            <i class="pi pi-caret-down"></i>
         </td>
         <td class="propHeaderCell cellName">Properties</td>
         <td class="propHeaderCell"></td>
@@ -12,11 +13,15 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Token Template</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.template" [disabled]="readonly" (change)="onSave()">
-                <mat-option *ngFor="let token of tokenTemplate" [value]="token.value">
-                    {{token.name}}
-                </mat-option>
-            </mat-select>
+            <p-dropdown [(ngModel)]="properties.template"
+                        [options]="tokenTemplate"
+                        [disabled]="readonly"
+                        (onChange)="onSave()"
+                        [appendTo]="'body'"
+                        placeholder="Select Template"
+                        optionLabel="name"
+                        optionValue="value">
+            </p-dropdown>
         </td>
     </tr>
 
@@ -25,13 +30,13 @@
         <td class="propRowCell cellName">Autorun</td>
         <td class="propRowCell">
             <input class="prop-input" type="checkbox" [(ngModel)]="properties.autorun"
-                [readonly]="readonly" (blur)="onSave()">
+                   [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
 
     <tr class="propHeader">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <mat-icon>arrow_drop_down</mat-icon>
+            <i class="pi pi-caret-down"></i>
         </td>
         <td class="propHeaderCell cellName">UI</td>
         <td class="propHeaderCell"></td>
@@ -43,7 +48,7 @@
             <td class="propRowCell cellName">Title</td>
             <td class="propRowCell">
                 <input class="prop-input" [(ngModel)]="properties.title" [readonly]="readonly"
-                    (blur)="onSave()">
+                       (blur)="onSave()">
             </td>
         </tr>
 
@@ -52,7 +57,7 @@
             <td class="propRowCell cellName">Description</td>
             <td class="propRowCell">
                 <input class="prop-input" [(ngModel)]="properties.description" [readonly]="readonly"
-                    (blur)="onSave()">
+                       (blur)="onSave()">
             </td>
         </tr>
     </ng-container>

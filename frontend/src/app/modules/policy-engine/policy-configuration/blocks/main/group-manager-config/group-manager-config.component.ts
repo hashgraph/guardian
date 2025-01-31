@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlock } from '../../../../structures';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
+import {IModuleVariables, PolicyBlock} from '../../../../structures';
 
 /**
  * Settings for block of 'policyRolesBlock' type.
@@ -17,12 +17,22 @@ export class GroupManagerConfigComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlock;
-    
+
     propHidden: any = {
         main: false,
     };
 
     properties!: any;
+
+    public canInviteOptions = [
+        {label: 'Group Owner', value: 'owner'},
+        {label: 'All', value: 'all'}
+    ];
+
+    public canDeleteOptions = [
+        {label: 'Group Owner', value: 'owner'},
+        {label: 'All', value: 'all'}
+    ];
 
     constructor() {
     }
@@ -49,7 +59,7 @@ export class GroupManagerConfigComponent implements OnInit {
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
     }
-    
+
     onSave() {
         this.item.changed = true;
     }

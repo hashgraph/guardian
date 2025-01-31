@@ -27,4 +27,9 @@ export class RawNFT {
      * Metadata
      */
     metadata: string;
+
+    /**
+     * Analytics
+     */
+    analytics?: any;
 }

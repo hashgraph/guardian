@@ -121,6 +121,10 @@ export interface PolicyActivity {
      * Schemas
      */
     schemas: number;
+    /**
+     * Formulas
+     */
+    formulas: number;
 }
 
 /**

@@ -19,6 +19,15 @@ function rejectTimeout(t: number): Promise<void> {
     })
 }
 
+function getAnalytycsHeaders() {
+    const headers: any = {};
+    const token = process.env.ANALYTICS_SERVICE_TOKEN;
+    if (token) {
+        headers.Authorization = `Bearer ${token}`
+    }
+    return headers;
+}
+
 /**
  * Worker class
  */
@@ -311,10 +320,56 @@ export class Worker extends NatsService {
                 case WorkerTaskType.ANALYTICS_SEARCH_POLICIES: {
                     const { options } = task.data.payload;
                     try {
+                        const headers = getAnalytycsHeaders();
                         const response = await axios.post(
                             `${this.analyticsService}/analytics/search/policy`,
                             options,
-                            { responseType: 'json' }
+                            {
+                                responseType: 'json',
+                                headers
+                            }
+                        );
+                        result.data = response.data;
+                    } catch (error) {
+                        if (error.code === 'ECONNREFUSED') {
+                            result.error = 'Indexer service is not available';
+                        } else {
+                            result.error = error.message;
+                        }
+                    }
+                    break;
+                }
+
+                case WorkerTaskType.ANALYTICS_GET_RETIRE_DOCUMENTS: {
+                    const { options } = task.data.payload;
+                    try {
+                        const headers = getAnalytycsHeaders();
+                        const response = await axios.post(
+                            `${this.analyticsService}/analytics/search/retire`,
+                            options,
+                            {
+                                responseType: 'json',
+                                headers
+                            }
+                        );
+                        result.data = response.data;
+
+                    } catch (error) {
+                        if (error.code === 'ECONNREFUSED') {
+                            result.error = 'Indexer service is not available';
+                        } else {
+                            result.error = error.message;
+                        }
+                    }
+                    break;
+                }
+
+                case WorkerTaskType.ANALYTICS_GET_INDEXER_AVAILABILITY: {
+                    try {
+                        const headers = getAnalytycsHeaders();
+                        const response = await axios.get(
+                            `${this.analyticsService}/analytics/checkAvailability`,
+                            { headers }
                         );
                         result.data = response.data;
                     } catch (error) {

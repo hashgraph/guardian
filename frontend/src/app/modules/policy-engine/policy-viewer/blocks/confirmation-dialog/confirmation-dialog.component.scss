@@ -10,11 +10,14 @@
     font-style: normal;
     font-weight: 500;
     line-height: 14px;
+    padding-left: 4px;
 }
 
 .textarea {
     display: flex;
     flex-direction: column;
+    margin-top: 8px;
+    padding: 4px;
 }
 
 .buttons {

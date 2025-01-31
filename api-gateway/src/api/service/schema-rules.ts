@@ -2,7 +2,7 @@ import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { Permissions, UserPermissions } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, SchemaRuleDTO, SchemaRuleDataDTO, SchemaRuleRelationshipsDTO, pageHeader } from '#middlewares';
+import { Examples, InternalServerErrorDTO, SchemaRuleDTO, SchemaRuleDataDTO, SchemaRuleOptionsDTO, SchemaRuleRelationshipsDTO, pageHeader } from '#middlewares';
 import { Guardians, InternalException, EntityOwner } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 
@@ -390,24 +390,25 @@ export class SchemaRulesApi {
         description: '',
     })
     @ApiBody({
-        description: 'Configuration.',
-        type: SchemaRuleDataDTO,
+        description: 'Options.',
+        type: SchemaRuleOptionsDTO,
         required: true
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: SchemaRuleDataDTO,
+        isArray: true
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(SchemaRuleDataDTO, InternalServerErrorDTO)
+    @ApiExtraModels(SchemaRuleOptionsDTO, SchemaRuleDataDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async getSchemaRuleData(
         @AuthUser() user: IAuthUser,
-        @Body() options: any
-    ): Promise<SchemaRuleDataDTO> {
+        @Body() options: SchemaRuleOptionsDTO
+    ): Promise<SchemaRuleDataDTO[]> {
         try {
             if (!options) {
                 throw new HttpException('Invalid config.', HttpStatus.UNPROCESSABLE_ENTITY);

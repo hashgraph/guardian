@@ -21,13 +21,14 @@
                     </span>
                 </div>
                 <div class="filter-container">
-                    <p-dropdown 
-                        (onChange)="onFilter()" 
-                        [(ngModel)]="roleFilterValue" 
+                    <p-dropdown
+                        (onChange)="onFilter()"
+                        [appendTo]="'body'"
+                        [(ngModel)]="roleFilterValue"
                         [options]="roleFilterOption">
                         <ng-template pTemplate="selectedItem">
                             <div *ngIf="roleFilterValue">
-                                <span class="dropdown-label">Role</span> 
+                                <span class="dropdown-label">Role</span>
                                 <span class="dropdown-item">{{ roleFilterValue.name }}</span>
                             </div>
                         </ng-template>
@@ -39,13 +40,14 @@
                     </p-dropdown>
                 </div>
                 <div class="filter-container">
-                    <p-dropdown 
-                        (onChange)="onFilter()" 
-                        [(ngModel)]="statusFilterValue" 
+                    <p-dropdown
+                        (onChange)="onFilter()"
+                        [appendTo]="'body'"
+                        [(ngModel)]="statusFilterValue"
                         [options]="statusFilterOption">
                         <ng-template pTemplate="selectedItem">
                             <div *ngIf="statusFilterValue">
-                                <span class="dropdown-label">Status</span> 
+                                <span class="dropdown-label">Status</span>
                                 <span class="dropdown-item">
                                     {{ statusFilterValue.name }}
                                 </span>
@@ -66,7 +68,7 @@
         </div>
     </div>
 
-    <ng-container *ngIf="page && page.length > 0; else noData">    
+    <ng-container *ngIf="page && page.length > 0; else noData">
         <div class="grid-container">
             <table>
                 <tr class="grid-header">
@@ -105,9 +107,9 @@
                     </ng-container>
                 </tbody>
             </table>
-            <app-paginator 
-                [pageIndex]="pageIndex" 
-                [pageSize]="pageSize" 
+            <app-paginator
+                [pageIndex]="pageIndex"
+                [pageSize]="pageSize"
                 [length]="count"
                 (page)="onPage($event)"
             ></app-paginator>
@@ -119,6 +121,6 @@
     <div class="not-exist">
         <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
         </svg-icon>
-        <span class="info-text-strong">There were no Users created yet</span>
+        <span class="info-text-strong">There are no users created yet</span>
     </div>
 </ng-template>

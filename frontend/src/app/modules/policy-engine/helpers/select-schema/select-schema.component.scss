@@ -58,3 +58,12 @@
     font-weight: 500;
     font-size: 14px;
 }
+
+::ng-deep p-dropdown {
+    //display: block;
+    //max-width: 375px !important;
+}
+
+::ng-deep .p-overlay {
+    min-width: 375px !important;
+}

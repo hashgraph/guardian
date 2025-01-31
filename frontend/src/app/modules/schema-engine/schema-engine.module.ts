@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NgxMatDatetimePickerModule, NgxMatNativeDateModule, NgxMatTimepickerModule, } from '@angular-material-components/datetime-picker';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { GoogleMapsModule } from '@angular/google-maps';
@@ -45,6 +44,8 @@ import { AccordionModule } from 'primeng/accordion';
 import { DateTimeComponent } from './schema-form/controls/date-time/date-time.component';
 import { EnumComponent } from './schema-form/controls/enum/enum';
 import { InputComponent } from './schema-form/controls/input/input';
+import { FormulasModule } from '../formulas/formulas.module';
+import { DialogService } from 'primeng/dynamicdialog';
 
 @NgModule({
     declarations: [
@@ -77,9 +78,6 @@ import { InputComponent } from './schema-form/controls/input/input';
         FormsModule,
         CommonComponentsModule,
         MaterialModule,
-        NgxMatDatetimePickerModule,
-        NgxMatNativeDateModule,
-        NgxMatTimepickerModule,
         ClipboardModule,
         CodemirrorModule,
         ArtifactEngineModule,
@@ -95,6 +93,7 @@ import { InputComponent } from './schema-form/controls/input/input';
         RadioButtonModule,
         SelectButtonModule,
         AccordionModule,
+        FormulasModule,
         AngularSvgIconModule.forRoot()
     ],
     exports: [
@@ -110,5 +109,9 @@ import { InputComponent } from './schema-form/controls/input/input';
         SchemaFieldConfigurationComponent,
         SchemaFormDialog
     ],
+    providers: [
+        DialogService
+    ],
 })
-export class SchemaEngineModule { }
+export class SchemaEngineModule {
+}

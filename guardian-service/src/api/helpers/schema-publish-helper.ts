@@ -113,6 +113,41 @@ export async function publishSchema(
 }
 
 /**
+ * Publish schemas
+ * @param schemas
+ * @param messageServer
+ * @param owner
+ * @param notifier
+ */
+export async function publishSchemas(
+    schemas: Iterable<SchemaCollection>,
+    owner: IOwner,
+    messageServer: MessageServer,
+    type: MessageAction
+): Promise<void> {
+    const tasks = [];
+    for (const schema of schemas) {
+        tasks.push(publishSchema(schema, owner, messageServer, type));
+    }
+    await Promise.all(tasks);
+}
+
+/**
+ * Save schemas
+ * @param schemas
+ * @param messageServer
+ * @param owner
+ * @param notifier
+ */
+export async function saveSchemas(
+    schemas: Iterable<SchemaCollection>
+): Promise<void> {
+    for (const schema of schemas) {
+        await DatabaseServer.createAndSaveSchema(schema);
+    }
+}
+
+/**
  * Publishing schemas in defs
  * @param defs Definitions
  * @param user

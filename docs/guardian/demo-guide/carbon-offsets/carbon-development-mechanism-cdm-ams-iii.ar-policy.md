@@ -1,4 +1,4 @@
-# 🏭 CDM AMS-III.AR : Carbon Development Mechanism
+# 🏭 CDM AMS-III.AR : Substituting fossil fuel based lighting with LED/CFL lighting systems
 
 ## **Table of Contents**
 
@@ -31,7 +31,7 @@ In conclusion, LED/CFL bulbs outshine fuel-based lighting on multiple fronts. Th
 
 ## **Demo Video**
 
-[Youtube Link](https://youtu.be/czbsLZU\_Gl4)
+[Youtube Link](https://youtu.be/czbsLZU_Gl4)
 
 ## **Policy Workflow**
 
@@ -90,7 +90,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 <figure><img src="../../../.gitbook/assets/image (509).png" alt=""><figcaption></figcaption></figure>
 
-5. Сreate a new user again and assign their role as VVB.
+5. Create a new user again and assign their role as VVB.
 
 <figure><img src="../../../.gitbook/assets/image (510).png" alt=""><figcaption></figcaption></figure>
 

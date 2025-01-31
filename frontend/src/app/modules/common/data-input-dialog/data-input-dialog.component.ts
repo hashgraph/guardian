@@ -1,6 +1,7 @@
 import { Component, Inject } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+
+import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
 
 /**
  * Dialog for creating policy.
@@ -17,10 +18,14 @@ export class DataInputDialogComponent {
     title: string = '';
     fieldsConfig: any = [];
 
+    isVisible: boolean = true;
+
     constructor(
-        public dialogRef: MatDialogRef<DataInputDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        public dialogRef: DynamicDialogRef,
+        public config: DynamicDialogConfig
     ) {
+        const data = config.data;
+
         if (!data) {
             return;
         }

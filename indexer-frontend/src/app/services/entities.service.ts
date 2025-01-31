@@ -36,6 +36,13 @@ import {
     VP,
     VPDetails,
     Relationships,
+    Statistic,
+    StatisticDetails,
+    Label,
+    LabelDetails,
+    Formula,
+    FormulaDetails,
+    FormulaRelationships,
 } from '@indexer/interfaces';
 
 /**
@@ -62,6 +69,13 @@ export class EntitiesService {
         const entity = 'registries';
         return this.http.get<RegistryDetails>(
             `${this.url}/${entity}/${messageId}`
+        ) as any;
+    }
+
+    public getRegistryRelationships(messageId: string): Observable<Relationships> {
+        const entity = 'registries';
+        return this.http.get<Relationships>(
+            `${this.url}/${entity}/${messageId}/relationships`
         ) as any;
     }
     //#endregion
@@ -101,6 +115,13 @@ export class EntitiesService {
         const entity = 'policies';
         return this.http.get<PolicyDetails>(
             `${this.url}/${entity}/${messageId}`
+        ) as any;
+    }
+
+    public getPolicyRelationships(messageId: string): Observable<Relationships> {
+        const entity = 'policies';
+        return this.http.get<Relationships>(
+            `${this.url}/${entity}/${messageId}/relationships`
         ) as any;
     }
     //#endregion
@@ -319,6 +340,85 @@ export class EntitiesService {
         ) as any;
     }
     //#endregion
+    //#region LABELS
+    public getLabels(filters: PageFilters): Observable<Page<Label>> {
+        const entity = 'labels';
+        const options = ApiUtils.getOptions(filters);
+        return this.http.get<Page<Label>>(
+            `${this.url}/${entity}`,
+            options
+        ) as any;
+    }
+
+    public getLabel(messageId: string): Observable<LabelDetails> {
+        const entity = 'labels';
+        return this.http.get<LabelDetails>(
+            `${this.url}/${entity}/${messageId}`
+        ) as any;
+    }
+
+    public getLabelDocuments(filters: PageFilters): Observable<Page<VP>> {
+        const entity = 'label-documents';
+        const options = ApiUtils.getOptions(filters);
+        return this.http.get<Page<VP>>(`${this.url}/${entity}`, options) as any;
+    }
+
+    public getLabelDocument(messageId: string): Observable<VPDetails> {
+        const entity = 'label-documents';
+        return this.http.get<VPDetails>(
+            `${this.url}/${entity}/${messageId}`
+        ) as any;
+    }
+
+    //#endregion
+    //#region STATISTICS
+    public getStatistics(filters: PageFilters): Observable<Page<Statistic>> {
+        const entity = 'statistics';
+        const options = ApiUtils.getOptions(filters);
+        return this.http.get<Page<Statistic>>(
+            `${this.url}/${entity}`,
+            options
+        ) as any;
+    }
+
+    public getStatistic(messageId: string): Observable<StatisticDetails> {
+        const entity = 'statistics';
+        return this.http.get<StatisticDetails>(
+            `${this.url}/${entity}/${messageId}`
+        ) as any;
+    }
+
+    public getStatisticDocuments(filters: PageFilters): Observable<Page<VC>> {
+        const entity = 'statistic-documents';
+        const options = ApiUtils.getOptions(filters);
+        return this.http.get<Page<VC>>(`${this.url}/${entity}`, options) as any;
+    }
+    //#endregion
+    //#endregion
+
+    //#region FORMULAS
+    public getFormulas(filters: PageFilters): Observable<Page<Formula>> {
+        const entity = 'formulas';
+        const options = ApiUtils.getOptions(filters);
+        return this.http.get<Page<Formula>>(
+            `${this.url}/${entity}`,
+            options
+        ) as any;
+    }
+
+    public getFormula(messageId: string): Observable<FormulaDetails> {
+        const entity = 'formulas';
+        return this.http.get<FormulaDetails>(
+            `${this.url}/${entity}/${messageId}`
+        ) as any;
+    }
+
+    public getFormulaRelationships(messageId: string): Observable<FormulaRelationships> {
+        const entity = 'formulas';
+        return this.http.get<FormulaRelationships>(
+            `${this.url}/${entity}/${messageId}/relationships`
+        ) as any;
+    }
     //#endregion
 
     public updateFiles<T>(messageId: string): Observable<T> {

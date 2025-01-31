@@ -51,13 +51,14 @@ import {
     PolicyRoles,
     PolicyStatistic,
     PolicyStatisticDocument,
+    SchemaRule,
+    PolicyLabel,
     PolicyTest,
     PolicyTool,
     Record,
     RetirePool,
     RetireRequest,
     Schema,
-    SchemaRule,
     SecretManager,
     Settings,
     SplitDocuments,
@@ -76,7 +77,9 @@ import {
     VpDocument,
     Wallet,
     WiperRequest,
-    Workers
+    Workers,
+    PolicyLabelDocument,
+    Formula
 } from '@guardian/common';
 import { ApplicationStates, PolicyEvents, PolicyType, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
@@ -111,6 +114,9 @@ import { AISuggestionsService } from './helpers/ai-suggestions.js';
 import { AssignedEntityAPI } from './api/assigned-entity.service.js';
 import { permissionAPI } from './api/permission.service.js';
 import { setDefaultSchema } from './api/helpers/default-schemas.js';
+import { policyLabelsAPI } from './api/policy-labels.service.js';
+import { initMathjs } from './utils/formula.js';
+import { formulasAPI } from './api/formulas.service.js';
 
 export const obj = {};
 
@@ -161,7 +167,10 @@ const necessaryEntity = [
     PolicyTest,
     PolicyStatistic,
     PolicyStatisticDocument,
-    SchemaRule
+    SchemaRule,
+    PolicyLabel,
+    PolicyLabelDocument,
+    Formula
 ]
 
 Promise.all([
@@ -266,6 +275,8 @@ Promise.all([
         await permissionAPI(logger);
         await statisticsAPI(logger);
         await schemaRulesAPI(logger);
+        await policyLabelsAPI(logger);
+        await formulasAPI(logger);
     } catch (error) {
         console.error(error.message);
         process.exit(0);
@@ -361,7 +372,7 @@ Promise.all([
     let policyEngine: PolicyEngine;
     validator.setValidAction(async () => {
         if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
-            const data = await workersHelper.addRetryableTask({
+            process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addRetryableTask({
                 type: WorkerTaskType.NEW_TOPIC,
                 data: {
                     hederaAccountId: OPERATOR_ID,
@@ -370,7 +381,6 @@ Promise.all([
                     topicMemo: TopicMemo.getGlobalTopicMemo()
                 }
             }, 10);
-            process.env.INITIALIZATION_TOPIC_ID = data.data;
         }
 
         state.updateState(ApplicationStates.INITIALIZING);
@@ -489,6 +499,8 @@ Promise.all([
         logger
     );
     clearPolicyCache.start(true);
+
+    initMathjs();
 
     startMetricsServer();
 }, (reason) => {

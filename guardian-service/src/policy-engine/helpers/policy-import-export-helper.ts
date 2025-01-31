@@ -1,5 +1,5 @@
-import { BlockType, ConfigType, GenerateUUIDv4, IOwner, IRootConfig, ModuleStatus, PolicyTestStatus, PolicyToolMetadata, PolicyType, SchemaCategory, SchemaEntity, TagType, TopicType } from '@guardian/interfaces';
-import { DatabaseServer, IPolicyComponents, PinoLogger, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, PolicyTool, RecordImportExport, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Tag, Token, Topic, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { BlockType, ConfigType, EntityStatus, GenerateUUIDv4, IFormula, IOwner, IRootConfig, ModuleStatus, PolicyTestStatus, PolicyToolMetadata, PolicyType, SchemaCategory, SchemaEntity, TagType, TopicType } from '@guardian/interfaces';
+import { DatabaseServer, IPolicyComponents, PinoLogger, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, PolicyTool, RecordImportExport, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Tag, Token, Topic, TopicConfig, TopicHelper, Users, Formula, FormulaImportExport } from '@guardian/common';
 import { ImportArtifactResult, ImportTokenMap, ImportTokenResult, ImportToolMap, ImportToolResults, ImportSchemaMap, ImportSchemaResult, importArtifactsByFiles, importSubTools, importTokensByFiles, publishSystemSchemas, importTag, SchemaImportExportHelper } from '../../api/helpers/index.js';
 import { PolicyConverterUtils } from '../policy-converter-utils.js';
 import { INotifier, emptyNotifier } from '../../helpers/notifier.js';
@@ -50,6 +50,21 @@ export interface ImportTestResult {
     files: [any, Buffer][];
 }
 
+export interface ImportFormulaResult {
+    /**
+     * New schema uuid
+     */
+    formulasMap: Map<string, string>;
+    /**
+     * Errors
+     */
+    errors: any[];
+    /**
+     * Errors
+     */
+    files: IFormula[];
+}
+
 export class PolicyImport {
     private readonly demo: boolean;
     private readonly notifier: INotifier;
@@ -73,6 +88,8 @@ export class PolicyImport {
     private testsMapping: Map<string, string>;
     // tslint:disable-next-line:no-unused-variable
     private topicId: string;
+    private formulasResult: ImportFormulaResult;
+    private formulasMapping: Map<string, string>;
 
     constructor(demo: boolean, notifier: INotifier) {
         this.demo = demo;
@@ -135,7 +152,7 @@ export class PolicyImport {
                 owner: user.owner,
                 policyId: null,
                 policyUUID: null,
-                topicId: `0.0.${Date.now()}${(Math.random()*1000).toFixed(0)}`
+                topicId: `0.0.${Date.now()}${(Math.random() * 1000).toFixed(0)}`
             }, null, null);
             await DatabaseServer.saveTopic(this.topicRow.toObject());
         } else if (versionOfTopicId) {
@@ -309,14 +326,55 @@ export class PolicyImport {
         this.testsMapping = testsMap;
     }
 
+    private async importFormulas(formulas: Formula[], user: IOwner) {
+        this.notifier.completedAndStart('Import formulas');
+
+        const formulasMap = new Map<string, string>();
+        const errors: any[] = [];
+        const files: IFormula[] = [];
+        for (const formula of formulas) {
+            const oldUUID = formula.uuid;
+            const newUUID = GenerateUUIDv4();
+            try {
+                files.push({
+                    uuid: newUUID,
+                    name: formula.name,
+                    description: formula.description,
+                    owner: user.creator,
+                    creator: user.creator,
+                    status: EntityStatus.DRAFT,
+                    config: formula.config
+                })
+                formulasMap.set(oldUUID, newUUID);
+            } catch (error) {
+                errors.push({
+                    type: 'test',
+                    uuid: oldUUID,
+                    name: oldUUID,
+                    error: error.toString(),
+                })
+            }
+        }
+
+        this.formulasResult = { formulasMap, errors, files };
+        this.formulasMapping = formulasMap;
+    }
+
     private async updateUUIDs(policy: Policy): Promise<Policy> {
         await PolicyImportExportHelper.replaceConfig(
             policy,
             this.schemasMapping,
             this.artifactsMapping,
             this.tokenMapping,
-            this.toolsMapping
+            this.toolsMapping,
         );
+        for (const formula of this.formulasResult.files) {
+            PolicyImportExportHelper.replaceFormulaConfig(
+                formula,
+                this.schemasMapping,
+                this.formulasMapping,
+            );
+        }
         return policy;
     }
 
@@ -359,6 +417,17 @@ export class PolicyImport {
         for (const [test, data] of this.testsResult.files) {
             test.policyId = policy.id;
             await DatabaseServer.createPolicyTest(test, data);
+        }
+    }
+
+    private async saveFormulas(policy: Policy) {
+        this.notifier.completedAndStart('Saving formulas in DB');
+        for (const formula of this.formulasResult.files) {
+            formula.policyId = policy.id;
+            formula.policyTopicId = policy.topicId;
+            formula.policyInstanceTopicId = policy.instanceTopicId;
+            formula.config = FormulaImportExport.validateConfig(formula.config);
+            await DatabaseServer.createFormula(formula);
         }
     }
 
@@ -425,6 +494,11 @@ export class PolicyImport {
                 errors.push(error);
             }
         }
+        if (this.formulasResult.errors) {
+            for (const error of this.formulasResult.errors) {
+                errors.push(error);
+            }
+        }
         return errors;
     }
 
@@ -436,7 +510,7 @@ export class PolicyImport {
         metadata: PolicyToolMetadata | null,
         logger: PinoLogger,
     ): Promise<ImportPolicyResult> {
-        const { policy, tokens, schemas, artifacts, tags, tools, tests } = policyComponents;
+        const { policy, tokens, schemas, artifacts, tags, tools, tests, formulas } = policyComponents;
         await this.resolveAccount(user);
         await this.dataPreparation(policy, user, additionalPolicyConfig);
         await this.createPolicyTopic(policy, versionOfTopicId, user);
@@ -446,12 +520,15 @@ export class PolicyImport {
         await this.importSchemas(schemas, user);
         await this.importArtifacts(artifacts, user);
         await this.importTests(tests, user);
+        await this.importFormulas(formulas, user);
+
         await this.updateUUIDs(policy);
 
         const row = await this.savePolicy(policy);
         await this.saveTopic(row);
         await this.saveArtifacts(row);
         await this.saveTests(row);
+        await this.saveFormulas(row);
         await this.saveHash(row, logger);
         await this.setSuggestionsConfig(row, user);
         await this.importTags(row, tags);
@@ -569,6 +646,24 @@ export class PolicyImportExportHelper {
         regenerateIds(policy.config);
 
         replaceArtifactProperties(policy.config, 'uuid', artifactsMap);
+    }
+
+    /**
+     * Replace config
+     * @param policy
+     * @param schemasMap
+     */
+    public static async replaceFormulaConfig(
+        formula: IFormula,
+        schemasMapping: ImportSchemaMap[],
+        toolsMapping: Map<string, string>,
+    ) {
+        for (const item of schemasMapping) {
+            FormulaImportExport.replaceIds(formula.config, item.oldIRI, item.newIRI);
+        }
+        for (const [oldId, newId] of toolsMapping.entries()) {
+            FormulaImportExport.replaceIds(formula.config, oldId, newId);
+        }
     }
 
     /**

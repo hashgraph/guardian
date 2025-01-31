@@ -1,8 +1,17 @@
 <div class="container">
-    <input #input matInput [ngxMatDatetimePicker]="dateTimePicker" (dateChange)="onValue($event)" [placeholder]="placeholder"
-       class="mat-input-element" [value]="value" [disabled]="readonly">
-    <mat-datepicker-toggle matSuffix [for]="$any(dateTimePicker)" [tabindex]='-1'></mat-datepicker-toggle>
-    <ngx-mat-datetime-picker #dateTimePicker [showSpinners]="showSpinners" [showSeconds]="showSeconds"
-        [stepHour]="stepHour" [stepMinute]="stepMinute" [stepSecond]="stepSecond" [touchUi]="touchUi"
-        [enableMeridian]="enableMeridian" [defaultTime]="defaultTime" [disabled]="readonly"></ngx-mat-datetime-picker>
+    <p-calendar [(ngModel)]="currentDate"
+                (onSelect)="onValue($event)"
+                [placeholder]="placeholder"
+                [disabled]="readonly"
+                [hourFormat]="enableMeridian ? '12' : '24'"
+                [showTime]="true"
+                [showSeconds]="showSeconds"
+                [stepHour]="stepHour"
+                [stepMinute]="stepMinute"
+                [stepSecond]="stepSecond"
+                [touchUI]="touchUi"
+                class="p-inputtext"
+                [appendTo]="appendTo ? 'body' : null"
+    >
+    </p-calendar>
 </div>

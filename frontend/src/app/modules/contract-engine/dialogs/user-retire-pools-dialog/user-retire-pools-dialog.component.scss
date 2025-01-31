@@ -7,6 +7,7 @@
     align-items: center;
     justify-content: center;
 }
+
 .pool {
     display: grid;
     grid-template-columns: minmax(150px, 1fr) 150px 100px;
@@ -17,36 +18,44 @@
     margin-bottom: 20px;
     border-radius: 10px;
 }
+
 .status {
     text-wrap: nowrap;
     font-size: 20px;
     font-weight: bold;
     flex-basis: 117px;
+
     &__label--available {
         color: green;
     }
+
     &__label--not-available {
         color: gray;
     }
 }
+
 .approve {
     // text-wrap: nowrap;
     font-size: 20px;
     font-weight: bold;
     flex-basis: 117px;
+
     &__label--approve {
         color: green;
     }
+
     &__label--no-approve {
         color: goldenrod;
     }
 }
+
 .tokens {
     display: flex;
     overflow: auto;
     display: flex;
     padding: 5px;
     gap: 25px;
+
     .token-card {
         display: flex;
         flex-direction: column;
@@ -58,7 +67,18 @@
 
         color: rgb(71, 71, 71);
 
-        mat-icon {
+        & span:last-child {
+            margin: 5px 0 0 2px;
+        }
+
+        svg-icon {
+            width: 26px;
+            height: 26px;
+            line-height: 26px;
+            font-size: 26px
+        }
+
+        i, svg {
             color: #3f51b5;
         }
 
@@ -68,8 +88,9 @@
             align-items: center;
             gap: 10px;
             font-weight: bold;
+            margin-top: 2px;
 
-            mat-icon {
+            i, svg {
                 font-size: 30px;
                 width: 30px;
                 height: 30px;
@@ -77,9 +98,13 @@
         }
 
         &__count {
-            mat-icon {
+            i, svg {
                 transform: translateX(-2px);
             }
+        }
+
+        .icon-style-calculate {
+            margin-left: 2px;
         }
     }
 }
@@ -87,7 +112,8 @@
 :host ::ng-deep .pool-actions {
     display: flex;
     align-items: center;
-    mat-icon {
+
+    i, svg {
         font-size: 25px;
         width: 25px;
         height: 25px;
@@ -110,5 +136,37 @@
 
     &__back {
         justify-self: flex-start;
+        margin-left: 9px;
+        background: var(--color-grey-white);
+        border: none;
+        cursor: pointer;
     }
+}
+
+::ng-deep .g-dialog-cancel-btn {
+    i {
+        font-size: 22px;
+        margin: 8px;
+    }
+}
+
+::ng-deep .g-dialog-actions .g-dialog-actions-btn {
+    padding: 11px 20px !important;
+}
+
+.action-buttons {
+    margin-bottom: 20px;
+    width: 230px;
+}
+
+::ng-deep .table-paginator {
+    margin-bottom: 15px;
+}
+
+.pool-actions button {
+    border-radius: 5px;
+    border: none;
+    padding: 10px 20px;
+    font-size: 15px;
+    cursor: pointer;
 }

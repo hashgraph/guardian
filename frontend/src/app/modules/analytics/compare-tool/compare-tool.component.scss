@@ -77,15 +77,15 @@
     background: rgb(252 252 252);
     border: 1px solid rgb(220 220 220);
     position: absolute;
-    top: 14px;
-    left: 3px;
+    top: 18px;
+    left: 4px;
     cursor: pointer;
 
-    mat-icon {
-        font-size: 22px;
+    i, svg {
+        font-size: 16px;
         position: absolute;
-        left: 2px;
-        top: 1px;
+        left: 4px;
+        top: 4px;
     }
 }
 
@@ -179,7 +179,7 @@
         line-height: 16px;
         overflow: hidden;
 
-        mat-icon {
+        i, svg {
             font-size: 16px;
             height: 16px;
             width: 16px;
@@ -517,12 +517,11 @@
             cursor: pointer;
             display: none;
 
-            mat-icon {
+            i, svg {
                 position: absolute;
                 pointer-events: none;
-                left: -1px;
-                top: -1px;
-                font-size: 16px;
+                top: 2px;
+                font-size: 10px;
                 display: none;
             }
 
@@ -672,24 +671,24 @@
         padding-left: 24px;
     }
 
-    .merge-table-content::ng-deep mat-row[type="FULL"]:not([rate="100%"]) {
+    ::ng-deep .mat-row[type="FULL"]:not([rate="100%"]) {
         background: #fffada;
     }
 
-    .merge-table-content::ng-deep mat-row[type="FULL"] {
+    ::ng-deep .mat-row[type="FULL"] {
         background: #d0ffd6;
     }
 
-    .merge-table-content::ng-deep mat-row[type="PARTLY"] {
+    ::ng-deep .mat-row[type="PARTLY"] {
         background: #fffada;
     }
 
-    .merge-table-content::ng-deep mat-row[type="LEFT"],
-    .merge-table-content::ng-deep mat-row[type="RIGHT"] {
+    ::ng-deep .mat-row[type="LEFT"],
+    ::ng-deep .mat-row[type="RIGHT"] {
         background: #ffc5c6;
     }
 
-    .merge-table-content::ng-deep mat-row[type="PARTLY"][rate="100%"] {
+    ::ng-deep .mat-row[type="PARTLY"][rate="100%"] {
         background: linear-gradient(45deg, #d0ffd6 48%, #fffada 52%);
     }
 
@@ -871,4 +870,30 @@
     div {
         height: 1px;
     }
+}
+
+.table .mat-header-cell,
+.table .mat-cell {
+    padding: 4px 8px;
+    min-width: 30px;
+    max-width: 185px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.table {
+    font-size: 14px;
+    table-layout: fixed;
+    width: 100%;
+}
+
+.mat-row {
+    display: table-row;
+}
+
+.mat-header-cell {
+    font-size: 14px;
+    text-align: left;
+    padding: 0 !important;
 }

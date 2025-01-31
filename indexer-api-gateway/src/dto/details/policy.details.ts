@@ -150,6 +150,11 @@ export class PolicyActivityDTO implements PolicyActivity {
         example: 10,
     })
     roles: number;
+    @ApiProperty({
+        description: 'Formulas',
+        example: 10,
+    })
+    formulas: number;
 }
 
 export class PolicyDTO

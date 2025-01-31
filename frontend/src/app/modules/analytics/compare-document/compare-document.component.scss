@@ -81,7 +81,7 @@
     left: 3px;
     cursor: pointer;
 
-    mat-icon {
+    i, svg {
         font-size: 22px;
         position: absolute;
         left: 2px;
@@ -179,7 +179,7 @@
         line-height: 16px;
         overflow: hidden;
 
-        mat-icon {
+        i, svg {
             font-size: 16px;
             height: 16px;
             width: 16px;
@@ -517,7 +517,7 @@
             cursor: pointer;
             display: none;
 
-            mat-icon {
+            i, svg {
                 position: absolute;
                 pointer-events: none;
                 left: -1px;
@@ -871,4 +871,30 @@
     div {
         height: 1px;
     }
+}
+
+.table .mat-header-cell,
+.table .mat-cell {
+    padding: 4px 8px;
+    min-width: 90px;
+    max-width: 185px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.table {
+    font-size: 14px;
+    table-layout: fixed;
+    width: 100%;
+}
+
+.mat-row {
+    display: table-row;
+}
+
+.mat-header-cell {
+    font-size: 14px;
+    text-align: left;
+    padding: 0 !important;
 }

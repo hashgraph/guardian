@@ -60,7 +60,8 @@
                                                             <app-schema-form-view 
                                                                 [schema]="schema"
                                                                 [values]="first._ipfs[0].credentialSubject"
-                                                                [private-fields]="privateFields">
+                                                                [private-fields]="privateFields"
+                                                                [formulas]="formulasResults">
                                                             </app-schema-form-view>
                                                         </div>
                                                     </div>
@@ -119,7 +120,7 @@
                     </p-tabPanel>
 
                     <p-tabPanel [header]="'details.relationships' | transloco">
-                        <div echarts [options]="chartOption" class="relationships-chart" (chartDblClick)="onSelect($event)">
+                        <div echarts [options]="chartOption" class="relationships-chart" (chartClick)="onSelect($event)">
                         </div>
                     </p-tabPanel>
                     }

@@ -1,33 +1,33 @@
 <div class="dialog-body">
     <app-separate-stepper
-            [(currentNode)]="currentNode"
-            [treeData]="treeData"
+        [(currentNode)]="currentNode"
+        [treeData]="treeData"
     ></app-separate-stepper>
 </div>
 <div class="dialog-footer">
     <div class="action-buttons">
         <div class="create-policy-button">
             <p-button
-                    (click)="onCreate()"
-                    [attr.disabled]="!this.dataForm.valid"
-                    label="Create Policy"
-                    [outlined]=true
+                (click)="onCreate()"
+                [attr.disabled]="!this.dataForm.valid"
+                label="Create Policy"
+                [outlined]=true
             >
             </p-button>
         </div>
         <div class="navigation-buttons">
             <p-button
-                    (click)="handlePrevClick()"
-                    *ngIf="matTree?.hasPrevStep"
-                    class="prev-button"
-                    label="Prev"
-                    [outlined]=true
+                (click)="handlePrevClick()"
+                *ngIf="matTree?.hasPrevStep"
+                class="prev-button"
+                label="Prev"
+                [outlined]=true
             ></p-button>
             <p-button
-                    (click)="handleNextClick()"
-                    *ngIf="matTree?.hasNextStep"
-                    class="next-button"
-                    label="Next"
+                (click)="handleNextClick()"
+                *ngIf="matTree?.hasNextStep"
+                class="next-button"
+                label="Next"
             ></p-button>
         </div>
     </div>
@@ -42,27 +42,35 @@
         <div class="form-input-container">
             <label class="form-label" htmlFor="sectoralScope">Sectoral scope</label>
             <p-dropdown
-                    #operationDropdown
-                    [options]="sectoralScopeOptions"
-                    formControlName="sectoralScope"
-                    id="sectoralScope"
-                    optionLabel="name"
-                    optionValue="id"
-                    placeholder="Not selected"
+                #operationDropdown
+                [options]="sectoralScopeOptions"
+                formControlName="sectoralScope"
+                id="sectoralScope"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="Not selected"
+                [appendTo]="'body'"
             >
+                <ng-template pTemplate="selectedItem" let-selectedItem>
+                    {{ selectedItem ? selectedItem.name : 'Not selected' }}
+                </ng-template>
             </p-dropdown>
         </div>
         <div class="form-input-container">
             <label class="form-label" htmlFor="projectScale">Project Scale</label>
             <p-dropdown
-                    #operationDropdown
-                    [options]="projectScaleOptions"
-                    formControlName="projectScale"
-                    id="projectScale"
-                    optionLabel="name"
-                    optionValue="id"
-                    placeholder="Not selected"
+                #operationDropdown
+                [options]="projectScaleOptions"
+                formControlName="projectScale"
+                id="projectScale"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="Not selected"
+                [appendTo]="'body'"
             >
+                <ng-template pTemplate="selectedItem" let-selectedItem>
+                    {{ selectedItem ? selectedItem.name : 'Not selected' }}
+                </ng-template>
             </p-dropdown>
         </div>
         <div class="form-input-container">
@@ -76,10 +84,10 @@
         <div class="form-input-container">
             <label htmlFor="tag">* Tag</label>
             <input
-                    formControlName="policyTag"
-                    id="tag"
-                    pInputText
-                    type="text"
+                formControlName="policyTag"
+                id="tag"
+                pInputText
+                type="text"
             />
         </div>
         <div class="form-input-container">
@@ -89,20 +97,20 @@
         <div class="form-input-container">
             <label class="form-label" htmlFor="topicDescription">Topic Description</label>
             <input
-                    formControlName="topicDescription"
-                    id="topicDescription"
-                    pInputText
-                    type="text"
+                formControlName="topicDescription"
+                id="topicDescription"
+                pInputText
+                type="text"
             />
         </div>
         <div class="form-input-container">
             <label class="form-label" for="description">Description</label>
             <textarea
-                    cols="30"
-                    formControlName="description"
-                    id="description"
-                    pInputTextarea
-                    rows="3"
+                cols="30"
+                formControlName="description"
+                id="description"
+                pInputTextarea
+                rows="3"
             ></textarea>
         </div>
 
@@ -110,41 +118,45 @@
         <div class="form-input-container">
             <label class="form-label" htmlFor="appliedTechnologyType">Applied Technology Type/Measure</label>
             <p-dropdown
-                    #operationDropdown
-                    [options]="appliedTechnologyTypeOptions"
-                    formControlName="appliedTechnologyType"
-                    id="appliedTechnologyType"
-                    optionLabel="name"
-                    optionValue="id"
-                    placeholder="Not selected"
+                #operationDropdown
+                [options]="appliedTechnologyTypeOptions"
+                formControlName="appliedTechnologyType"
+                id="appliedTechnologyType"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="Not selected"
+                [appendTo]="'body'"
             >
+                <ng-template pTemplate="selectedItem" let-selectedItem>
+                    {{ selectedItem ? selectedItem.name : 'Not selected' }}
+                </ng-template>
             </p-dropdown>
         </div>
         <div class="form-input-container">
             <label class="form-label" htmlFor="migrationActivityType">Mitigation Activity Type</label>
             <p-multiSelect
-                    #operationDropdown
-                    [options]="migrationActivityTypeOptions"
-                    defaultLabel="Not selected"
-                    display="chip"
-                    formControlName="migrationActivityType"
-                    id="migrationActivityType"
-                    optionLabel="name"
-                    optionValue="id"
+                #operationDropdown
+                [options]="migrationActivityTypeOptions"
+                defaultLabel="Not selected"
+                display="chip"
+                formControlName="migrationActivityType"
+                id="migrationActivityType"
+                optionLabel="name"
+                optionValue="id"
             >
             </p-multiSelect>
         </div>
         <div class="form-input-container">
             <label class="form-label" htmlFor="subType">Sub Type</label>
             <p-multiSelect
-                    #operationDropdown
-                    [options]="subTypeOptions"
-                    defaultLabel="Not selected"
-                    display="chip"
-                    formControlName="subType"
-                    id="subType"
-                    optionLabel="name"
-                    optionValue="id"
+                #operationDropdown
+                [options]="subTypeOptions"
+                defaultLabel="Not selected"
+                display="chip"
+                formControlName="subType"
+                id="subType"
+                optionLabel="name"
+                optionValue="id"
             >
             </p-multiSelect>
         </div>
@@ -164,26 +176,26 @@
 <ng-template #policyRoles let-control="control">
     <div *ngIf="control.value.length" class="policy-roles-container">
         <div
-                *ngFor="let role of control.value"
-                [attr.disabled]="role === 'OWNER'"
-                class="policy-role-card-container"
+            *ngFor="let role of control.value"
+            [attr.disabled]="role === 'OWNER'"
+            class="policy-role-card-container"
         >
             <div class="policy-role-card">
                 <span>{{ role }}</span>
                 <svg
-                        (click)="onRemoveRole(control, role)"
-                        *ngIf="role !== 'OWNER'"
-                        fill="none"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
+                    (click)="onRemoveRole(control, role)"
+                    *ngIf="role !== 'OWNER'"
+                    fill="none"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
                 >
                     <path
-                            class="delete-icon-color"
-                            clip-rule="evenodd"
-                            d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22ZM9.13388 7.36612C8.64573 6.87796 7.85427 6.87796 7.36612 7.36612C6.87796 7.85427 6.87796 8.64573 7.36612 9.13388L10.2323 12.0001L7.36612 14.8662C6.87796 15.3544 6.87796 16.1458 7.36612 16.634C7.85427 17.1222 8.64573 17.1222 9.13388 16.634L12.0001 13.7678L14.8661 16.6339C15.3543 17.122 16.1457 17.122 16.6339 16.6339C17.122 16.1457 17.122 15.3543 16.6339 14.8661L13.7678 12.0001L16.6339 9.134C17.122 8.64584 17.122 7.85439 16.6339 7.36623C16.1457 6.87808 15.3543 6.87808 14.8661 7.36623L12.0001 10.2323L9.13388 7.36612Z"
-                            fill-rule="evenodd"
+                        class="delete-icon-color"
+                        clip-rule="evenodd"
+                        d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22ZM9.13388 7.36612C8.64573 6.87796 7.85427 6.87796 7.36612 7.36612C6.87796 7.85427 6.87796 8.64573 7.36612 9.13388L10.2323 12.0001L7.36612 14.8662C6.87796 15.3544 6.87796 16.1458 7.36612 16.634C7.85427 17.1222 8.64573 17.1222 9.13388 16.634L12.0001 13.7678L14.8661 16.6339C15.3543 17.122 16.1457 17.122 16.6339 16.6339C17.122 16.1457 17.122 15.3543 16.6339 14.8661L13.7678 12.0001L16.6339 9.134C17.122 8.64584 17.122 7.85439 16.6339 7.36623C16.1457 6.87808 15.3543 6.87808 14.8661 7.36623L12.0001 10.2323L9.13388 7.36612Z"
+                        fill-rule="evenodd"
                     />
                 </svg>
             </div>
@@ -201,10 +213,10 @@
             />
         </div>
         <p-button
-                (click)="onAddRole(control, nameInput.value)"
-                class="add-role-button"
-                icon="pi pi-plus"
-                [outlined]=true
+            (click)="onAddRole(control, nameInput.value)"
+            class="add-role-button"
+            icon="pi pi-plus"
+            [outlined]=true
         >
         </p-button>
     </div>
@@ -214,50 +226,15 @@
     <div class="policy-schemas-input">
         <label class="form-label">Which schemas will be used in policy?</label>
         <p-multiSelect
-                (onChange)="onSelectedSchemasChange($event.value)"
-                [group]="true"
-                [ngModel]="selectedSchemas"
-                [options]="groupedSchemas"
-                appendTo="body"
-                defaultLabel="Select Schema"
+            (onChange)="onSelectedSchemasChange($event.value)"
+            [group]="true"
+            [ngModel]="selectedSchemas"
+            [options]="groupedSchemas"
+            appendTo="body"
+            defaultLabel="Select Schema"
         >
         </p-multiSelect>
     </div>
-
-    <!--    <mat-form-field appearance="outline" class="full-width">-->
-    <!--        <mat-select-->
-    <!--            [value]="selectedSchemas"-->
-    <!--            (selectionChange)="onSelectedSchemasChange($event.value)"-->
-    <!--            multiple-->
-    <!--        >-->
-    <!--            <mat-optgroup-->
-    <!--                *ngFor="let group of groupedSchemas"-->
-    <!--                [label]="group.name"-->
-    <!--            >-->
-    <!--                <mat-option-->
-    <!--                    [matTooltip]="-->
-    <!--                        getSchemaName(-->
-    <!--                            schema.name,-->
-    <!--                            schema.version || schema.sourceVersion,-->
-    <!--                            schema.status-->
-    <!--                        )-->
-    <!--                    "-->
-    <!--                    matTooltipPosition="below"-->
-    <!--                    matTooltipClass="guardian-tooltip"-->
-    <!--                    matTooltipShowDelay="500"-->
-    <!--                    *ngFor="let schema of group.schemas"-->
-    <!--                    [value]="schema"-->
-    <!--                    >{{-->
-    <!--                        getSchemaName(-->
-    <!--                            schema.name,-->
-    <!--                            schema.version || schema.sourceVersion,-->
-    <!--                            schema.status-->
-    <!--                        )-->
-    <!--                    }}</mat-option-->
-    <!--                >-->
-    <!--            </mat-optgroup>-->
-    <!--        </mat-select>-->
-    <!--    </mat-form-field>-->
 </ng-template>
 
 <ng-template
@@ -271,7 +248,7 @@
         <div class="policy-schemas-input mb-24">
             <label class="form-label">Which users are able to view?</label>
             <p-multiSelect
-                    (onChange)="
+                (onChange)="
                     onSchemaRolesConfigChange(
                         control,
                         $event.value,
@@ -279,78 +256,31 @@
                         options
                     )
                 "
-                    [ngModelOptions]="{ standalone: true }"
-                    [ngModel]="options.displayedInRoles"
-                    [options]="policyRolesForm.value"
-                    appendTo="body"
-                    defaultLabel="Select Users"
+                [ngModelOptions]="{ standalone: true }"
+                [ngModel]="options.displayedInRoles"
+                [options]="policyRolesForm.value"
+                appendTo="body"
+                defaultLabel="Select Users"
             >
             </p-multiSelect>
         </div>
-
-        <!--        <mat-form-field appearance="outline" class="full-width">-->
-        <!--            <mat-label>Which users are able to view?</mat-label>-->
-        <!--            <mat-select-->
-        <!--                [value]="options.displayedInRoles"-->
-        <!--                (selectionChange)="-->
-        <!--                    onSchemaRolesConfigChange(-->
-        <!--                        control,-->
-        <!--                        $event.value,-->
-        <!--                        schema.fields,-->
-        <!--                        options-->
-        <!--                    )-->
-        <!--                "-->
-        <!--                multiple-->
-        <!--            >-->
-        <!--                <mat-option-->
-        <!--                    *ngFor="let role of policyRolesForm.value"-->
-        <!--                    [value]="role"-->
-        <!--                    >{{ role }}</mat-option-->
-        <!--                >-->
-        <!--            </mat-select>-->
-        <!--        </mat-form-field>-->
         <div class="form-field-info mb-24">
             <div class="policy-schemas-input">
                 <label class="form-label">Produced schema:</label>
-                <!--                <p-multiSelect-->
-                <!--                    [options]="selectedSchemas"-->
-                <!--                    formControlName="dependencySchemaIri"-->
-                <!--                    defaultLabel="Select Schema"-->
-                <!--                    appendTo="body"-->
-                <!--                    optionLabel="name"-->
-                <!--                    optionValue="iri"-->
-                <!--                >-->
-                <!--                </p-multiSelect>-->
-
                 <p-dropdown
-                        [options]="selectedSchemas"
-                        appendTo="body"
-                        formControlName="dependencySchemaIri"
-                        optionLabel="name"
-                        optionValue="iri"
-                        placeholder="Select Schema"
+                    [options]="selectedSchemas"
+                    appendTo="body"
+                    formControlName="dependencySchemaIri"
+                    optionLabel="name"
+                    optionValue="iri"
+                    placeholder="Select Schema"
                 ></p-dropdown>
             </div>
-
-            <!--            <mat-form-field appearance="outline" class="full-width">-->
-            <!--                <mat-label>Produced schema:</mat-label>-->
-            <!--                <mat-select formControlName="dependencySchemaIri">-->
-            <!--                    <mat-option></mat-option>-->
-            <!--                    <mat-option-->
-            <!--                        *ngFor="let schema of selectedSchemas"-->
-            <!--                        [value]="schema.iri"-->
-            <!--                        >{{ schema.name }}</mat-option-->
-            <!--                    >-->
-            <!--                </mat-select>-->
-            <!--            </mat-form-field>-->
-            <button
-                    (click)="op.toggle($event)"
-                    class="info-btn"
-                    color="primary"
-                    mat-mini-fab
-            >
-                i
-            </button>
+            <p-button
+                class="info-btn pi pi-info-circle"
+                styleClass="p-button-rounded p-button-primary"
+                (click)="op.toggle($event)">
+            </p-button>
             <p-overlayPanel #op>
                 <img [src]="'/assets/produced-schema.gif'" class="help-img"/>
             </p-overlayPanel>
@@ -358,71 +288,38 @@
 
         <div class="policy-schemas-input mb-24">
             <label class="form-label">Relationship schema:</label>
-            <!--            <p-multiSelect-->
-            <!--                [options]="selectedSchemas"-->
-            <!--                formControlName="relationshipsSchemaIri"-->
-            <!--                defaultLabel="Select Schema"-->
-            <!--                appendTo="body"-->
-            <!--                optionLabel="name"-->
-            <!--                optionValue="iri"-->
-            <!--            >-->
-            <!--            </p-multiSelect>-->
-
             <p-dropdown
-                    [options]="selectedSchemas"
-                    appendTo="body"
-                    formControlName="relationshipsSchemaIri"
-                    optionLabel="name"
-                    optionValue="iri"
-                    placeholder="Select Schema"
+                [options]="selectedSchemas"
+                appendTo="body"
+                formControlName="relationshipsSchemaIri"
+                optionLabel="name"
+                optionValue="iri"
+                placeholder="Select Schema"
             ></p-dropdown>
         </div>
-        <!--        <mat-form-field appearance="outline">-->
-        <!--            <mat-label>Relationship schema:</mat-label>-->
-        <!--            <mat-select formControlName="relationshipsSchemaIri">-->
-        <!--                <mat-option></mat-option>-->
-        <!--                <mat-option-->
-        <!--                    *ngFor="let schema of selectedSchemas"-->
-        <!--                    [value]="schema.iri"-->
-        <!--                    >{{ schema.name }}</mat-option-->
-        <!--                >-->
-        <!--            </mat-select>-->
-        <!--        </mat-form-field>-->
         <div class="form-field-info mb-24">
             <div class="policy-schemas-input">
                 <label class="form-label">Initial for roles:</label>
                 <p-multiSelect
-                        [options]="policyRolesForm.value"
-                        appendTo="body"
-                        defaultLabel="Select Role"
-                        formControlName="initialRolesFor"
+                    [options]="policyRolesForm.value"
+                    appendTo="body"
+                    defaultLabel="Select Role"
+                    formControlName="initialRolesFor"
+                    [appendTo]="'body'"
                 >
                 </p-multiSelect>
             </div>
-            <!--            <mat-form-field appearance="outline" class="full-width">-->
-            <!--                <mat-label>Initial for roles:</mat-label>-->
-            <!--                <mat-select formControlName="initialRolesFor" multiple>-->
-            <!--                    <mat-option-->
-            <!--                        *ngFor="let role of policyRolesForm.value"-->
-            <!--                        [value]="role"-->
-            <!--                        >{{ role }}</mat-option-->
-            <!--                    >-->
-            <!--                </mat-select>-->
-            <!--            </mat-form-field>-->
-            <button
-                    (click)="initialStepGif.toggle($event)"
-                    class="info-btn"
-                    color="primary"
-                    mat-mini-fab
-            >
-                i
-            </button>
+            <p-button
+                class="info-btn pi pi-info-circle"
+                styleClass="p-button-rounded p-button-primary"
+                (click)="initialStepGif.toggle($event)">
+            </p-button>
             <p-overlayPanel #initialStepGif>
                 <img [src]="'/assets/initial-step.gif'" class="help-img"/>
             </p-overlayPanel>
         </div>
         <ng-container
-                *ngTemplateOutlet="
+            *ngTemplateOutlet="
                 infoBtn;
                 context: {
                     formControl: control.get('isApproveEnable'),
@@ -438,64 +335,33 @@
             <p-inputSwitch formControlName="isMintSchema"></p-inputSwitch>
             <span class="input-switch-label">Minting tokens</span>
         </div>
-        <!--        <mat-slide-toggle-->
-        <!--            class="slide-toggle"-->
-        <!--            [formControl]="control.get('isMintSchema')"-->
-        <!--            labelPosition="after"-->
-        <!--            color="primary"-->
-        <!--        >-->
-        <!--            Minting tokens-->
-        <!--        </mat-slide-toggle>-->
     </form>
     <form
-            *ngIf="control.get('isMintSchema')?.value"
-            [formGroup]="control.get('mintOptions')"
+        *ngIf="control.get('isMintSchema')?.value"
+        [formGroup]="control.get('mintOptions')"
     >
         <div class="policy-schemas-input mb-24">
             <label class="form-label">Token:</label>
             <p-dropdown
-                    [options]="tokens"
-                    appendTo="body"
-                    formControlName="tokenId"
-                    optionLabel="tokenName"
-                    optionValue="tokenId"
-                    placeholder="Select Schema"
+                [options]="tokens"
+                appendTo="body"
+                formControlName="tokenId"
+                optionLabel="tokenName"
+                optionValue="tokenId"
+                placeholder="Select Schema"
             ></p-dropdown>
         </div>
-
-        <!--        <mat-form-field appearance="outline">-->
-        <!--            <mat-label>Token:</mat-label>-->
-        <!--            <mat-select formControlName="tokenId">-->
-        <!--                <mat-option></mat-option>-->
-        <!--                <mat-option-->
-        <!--                    *ngFor="let token of tokens"-->
-        <!--                    [value]="token.tokenId"-->
-        <!--                    >{{ token.tokenName }}</mat-option-->
-        <!--                >-->
-        <!--            </mat-select>-->
-        <!--        </mat-form-field>-->
-
         <div class="policy-schemas-input mb-24">
             <label class="form-label">Field:</label>
             <p-dropdown
-                    [options]="mintFields"
-                    appendTo="body"
-                    formControlName="rule"
-                    optionLabel="description"
-                    optionValue="name"
-                    placeholder="Select Schema"
+                [options]="mintFields"
+                appendTo="body"
+                formControlName="rule"
+                optionLabel="description"
+                optionValue="name"
+                placeholder="Select Schema"
             ></p-dropdown>
         </div>
-        <!--        <mat-form-field appearance="outline" class="contract-form-base-token">-->
-        <!--            <mat-label>Field:</mat-label>-->
-        <!--            <mat-select formControlName="rule">-->
-        <!--                <mat-option-->
-        <!--                    *ngFor="let schemaField of mintFields"-->
-        <!--                    [value]="schemaField.name"-->
-        <!--                    >{{ schemaField.description }}</mat-option-->
-        <!--                >-->
-        <!--            </mat-select>-->
-        <!--        </mat-form-field>-->
     </form>
 </ng-template>
 
@@ -509,7 +375,7 @@
 >
     <form [formGroup]="control">
         <ng-container
-                *ngTemplateOutlet="
+            *ngTemplateOutlet="
                 infoBtn;
                 context: {
                     formControl: control.get('isApprover'),
@@ -521,7 +387,7 @@
         >
         </ng-container>
         <ng-container
-                *ngTemplateOutlet="
+            *ngTemplateOutlet="
                 infoBtn;
                 context: {
                     formControl: control.get('isCreator'),
@@ -533,7 +399,7 @@
         >
         </ng-container>
         <ng-container
-                *ngTemplateOutlet="roleGridColumns; context: {gridColumns: control.get('gridColumns')?.value , fields, approveEnable, dependencySchema }"
+            *ngTemplateOutlet="roleGridColumns; context: {gridColumns: control.get('gridColumns')?.value , fields, approveEnable, dependencySchema }"
         ></ng-container>
         <ng-template
             #roleGridColumns
@@ -557,8 +423,8 @@
                             <div class="column-title">{{ column.title }}</div>
                             <div class="cursor-pointer">
                                 <svg-icon (click)="onRemoveColumn(column.title, gridColumns)"
-                                    src="/assets/images/icons/delete.svg"
-                                    svgClass="accent-color-red"></svg-icon>
+                                          src="/assets/images/icons/delete.svg"
+                                          svgClass="accent-color-red"></svg-icon>
                             </div>
                         </div>
                     </div>
@@ -584,17 +450,6 @@
                         type="text"
                     />
                 </div>
-
-                <!--                <mat-form-field class="full-width" appearance="outline">-->
-                <!--                    <mat-label>* Column name:</mat-label>-->
-                <!--                    <input-->
-                <!--                        #titleInput-->
-                <!--                        matInput-->
-                <!--                        type="text"-->
-                <!--                        placeholder="Title"-->
-                <!--                    />-->
-                <!--                </mat-form-field>-->
-
                 <div class="policy-schemas-input w-45">
                     <label class="form-label">* Field:</label>
                     <p-dropdown
@@ -606,40 +461,12 @@
                         placeholder="Select Field"
                     ></p-dropdown>
                 </div>
-                <!--                <mat-form-field-->
-                <!--                    appearance="outline"-->
-                <!--                    class="contract-form-base-token"-->
-                <!--                >-->
-                <!--                    <mat-label>* Field:</mat-label>-->
-                <!--                    <mat-select #fieldSelect="matSelect">-->
-                <!--                        <mat-option-->
-                <!--                            *ngFor="let schemaField of fields"-->
-                <!--                            [value]="schemaField.name"-->
-                <!--                            >{{ schemaField.description }}</mat-option-->
-                <!--                        >-->
-                <!--                    </mat-select>-->
-                <!--                </mat-form-field>-->
-
                 <p-button (click)="onAddColumn(titleInput.value, fieldSelect.value, gridColumns)"
-                    class="add-role-button"
-                    icon="pi pi-plus"
-                    [outlined]=true
+                          class="add-role-button"
+                          icon="pi pi-plus"
+                          [outlined]=true
                 >
                 </p-button>
-                <!--                <button-->
-                <!--                    style="transform: translateY(-8px);"-->
-                <!--                    mat-icon-button-->
-                <!--                    color="primary"-->
-                <!--                    (click)="-->
-                <!--                        onAddColumn(-->
-                <!--                            titleInput.value,-->
-                <!--                            fieldSelect.value,-->
-                <!--                            gridColumns-->
-                <!--                        )-->
-                <!--                    "-->
-                <!--                >-->
-                <!--                    <mat-icon>add</mat-icon>-->
-                <!--                </button>-->
             </div>
         </ng-template>
     </form>
@@ -657,37 +484,12 @@
         >
         </p-multiSelect>
     </div>
-
-    <!--    <mat-form-field appearance="outline" class="full-width">-->
-    <!--        <mat-label>Which users are able to view?</mat-label>-->
-    <!--        <mat-select-->
-    <!--            [value]="selectedTrustChainRoles"-->
-    <!--            (selectionChange)="onSelectedTrustChainRolesChange($event.value)"-->
-    <!--            multiple-->
-    <!--        >-->
-    <!--            <mat-option-->
-    <!--                *ngFor="let role of policyRolesForm.value"-->
-    <!--                [value]="role"-->
-    <!--                >{{ role }}</mat-option-->
-    <!--            >-->
-    <!--        </mat-select>-->
-    <!--    </mat-form-field>-->
 </ng-template>
 
 <ng-template #trustChainRoleConfig let-control="control">
     <form [formGroup]="control">
         <div class="policy-schemas-input mb-24">
             <label class="form-label">Minting Schema:</label>
-            <!--            <p-multiSelect-->
-            <!--                [options]="mintedSchemas"-->
-            <!--                formControlName="mintSchemaIri"-->
-            <!--                defaultLabel="Select Schema"-->
-            <!--                appendTo="body"-->
-            <!--                optionLabel="name"-->
-            <!--                optionValue="iri"-->
-            <!--            >-->
-            <!--            </p-multiSelect>-->
-
             <p-dropdown
                 [options]="mintedSchemas"
                 appendTo="body"
@@ -697,31 +499,10 @@
                 placeholder="Select Schema"
             ></p-dropdown>
         </div>
-
-        <!--        <mat-form-field appearance="outline" class="full-width">-->
-        <!--            <mat-label>Minting Schema:</mat-label>-->
-        <!--            <mat-select formControlName="mintSchemaIri">-->
-        <!--                <mat-option-->
-        <!--                    *ngFor="let schema of mintedSchemas"-->
-        <!--                    [value]="schema.iri"-->
-        <!--                    >{{ schema.name }}</mat-option-->
-        <!--                >-->
-        <!--            </mat-select>-->
-        <!--        </mat-form-field>-->
-
         <div class="input-switch-container">
             <p-inputSwitch formControlName="viewOnlyOwnDocuments"></p-inputSwitch>
             <span class="input-switch-label">View only own VPs</span>
         </div>
-
-        <!--        <mat-slide-toggle-->
-        <!--            class="slide-toggle"-->
-        <!--            [formControl]="control.get('viewOnlyOwnDocuments')"-->
-        <!--            labelPosition="after"-->
-        <!--            color="primary"-->
-        <!--        >-->
-        <!--            View only own VPs?-->
-        <!--        </mat-slide-toggle>-->
     </form>
 </ng-template>
 
@@ -737,13 +518,12 @@
             <p-inputSwitch [formControl]="formControl"></p-inputSwitch>
             <span class="input-switch-label">{{ title }}</span>
         </div>
-        <button
-            (click)="someHelpGif.toggle($event)"
+        <p-button
+            class="info-btn pi pi-info-circle"
+            styleClass="p-button-rounded p-button-primary"
             [disabled]="!helpSrc"
-            class="info-btn"
-            color="primary"
-            mat-mini-fab
-        >i</button>
+            (click)="someHelpGif.toggle($event)">
+        </p-button>
         <p-overlayPanel #someHelpGif>
             <img [src]="helpSrc" class="help-img"/>
         </p-overlayPanel>

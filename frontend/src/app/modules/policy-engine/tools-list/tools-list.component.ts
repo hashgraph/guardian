@@ -1,5 +1,4 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { Router } from '@angular/router';
 import { GenerateUUIDv4, IUser, SchemaHelper, TagType, UserPermissions } from '@guardian/interfaces';
 import { forkJoin } from 'rxjs';
@@ -62,7 +61,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
         public tagsService: TagsService,
         private profileService: ProfileService,
         private toolsService: ToolsService,
-        private dialog: MatDialog,
+        private dialog: DialogService,
         private dialogService: DialogService,
         private informService: InformService,
         private router: Router,
@@ -301,10 +300,10 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                 dialogTitle: 'Delete tool',
                 dialogText: 'Are you sure to delete tool?'
             },
-            disableClose: true,
-            autoFocus: false
+            modal: true,
+            closable: false,
         });
-        dialogRef.afterClosed().subscribe((result) => {
+        dialogRef.onClose.subscribe((result) => {
             if (!result) {
                 return;
             }

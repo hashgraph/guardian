@@ -3,25 +3,30 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Input Documents</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.inputDocuments" [disabled]="readonly" (change)="onSave()">
-                <mat-option value="aggregate">Aggregate</mat-option>
-                <mat-option value="separate">Separate</mat-option>
-            </mat-select>
+            <p-dropdown
+                [(ngModel)]="properties.inputDocuments"
+                [disabled]="readonly"
+                (onChange)="onSave()"
+                placeholder="Select input document type"
+                [options]="inputDocumentsOptions"
+                [appendTo]="'body'"
+            >
+            </p-dropdown>
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'inputSchemaGroup')"
             [attr.collapse]="propHidden.inputSchemaGroup">
-            <mat-icon>arrow_drop_down</mat-icon>
+            <i class="pi pi-caret-down"></i>
         </td>
         <td class="propRowCell cellName">Input Schema</td>
         <td class="propRowCell">
             <select-schema
-                [schemas]="schemas" 
+                [schemas]="schemas"
                 [(value)]="properties.inputSchema"
-                [disabled]="readonly" 
+                [disabled]="readonly"
                 (change)="onSelectInput()"
-                ></select-schema>
+            ></select-schema>
         </td>
     </tr>
     <ng-container *ngIf="properties.inputSchema">
@@ -35,7 +40,7 @@
         <tr class="propRow subRow" [attr.collapse]="propHidden.inputSchemaGroup">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">
-                <span class="lvl" [attr.lvl]="field.lvl">{{field.title}}</span>
+                <span class="lvl" [attr.lvl]="field.lvl">{{ field.title }}</span>
             </td>
             <td class="propRowCell">
                 <input class="prop-input" [(ngModel)]="field.value" [readonly]="readonly" (blur)="onSave()">
@@ -46,16 +51,16 @@
     <tr class="propRow">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'outputSchemaGroup')"
             [attr.collapse]="propHidden.outputSchemaGroup">
-            <mat-icon>arrow_drop_down</mat-icon>
+            <i class="pi pi-caret-down"></i>
         </td>
         <td class="propRowCell cellName">Output Schema</td>
         <td class="propRowCell">
             <select-schema
-                [schemas]="schemas" 
+                [schemas]="schemas"
                 [(value)]="properties.outputSchema"
-                [disabled]="readonly" 
+                [disabled]="readonly"
                 (change)="onSelectOutput()"
-                ></select-schema>
+            ></select-schema>
         </td>
     </tr>
     <ng-container *ngIf="properties.outputSchema">
@@ -69,7 +74,7 @@
         <tr class="propRow subRow" [attr.collapse]="propHidden.outputSchemaGroup">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">
-                <span class="lvl" [attr.lvl]="field.lvl">{{field.title}}</span>
+                <span class="lvl" [attr.lvl]="field.lvl">{{ field.title }}</span>
             </td>
             <td class="propRowCell">
                 <input class="prop-input" [(ngModel)]="field.value" [readonly]="readonly" (blur)="onSave()">

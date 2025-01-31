@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("External", { tags: ['external', 'thirdPool'] }, () => {
+context("External", { tags: ['external', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     let policyTag, owner
@@ -34,7 +34,7 @@ context("External", { tags: ['external', 'thirdPool'] }, () => {
         })
     });
 
-    it("Sends data from an external source", () => {
+    it("Sends data from an external source", { tags: ['smoke'] }, () => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.External,

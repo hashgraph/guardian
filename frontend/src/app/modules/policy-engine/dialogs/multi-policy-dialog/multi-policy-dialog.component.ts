@@ -1,6 +1,6 @@
 import { AfterContentInit, Component, Inject, OnInit } from '@angular/core';
-import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 /**
  * Export schema dialog.
@@ -27,10 +27,12 @@ export class MultiPolicyDialogComponent implements OnInit, AfterContentInit {
     instanceTopicId: any;
 
     constructor(
-        public dialogRef: MatDialogRef<MultiPolicyDialogComponent>,
         private policyEngineService: PolicyEngineService,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        private dialogRef: DynamicDialogRef,
+        private config: DynamicDialogConfig,
     ) {
+        const data = this.config.data
+
         this.policyId = data.policyId;
     }
 
@@ -78,7 +80,7 @@ export class MultiPolicyDialogComponent implements OnInit, AfterContentInit {
         }, 100);
     }
 
-    onOk(): void {
+    onClose(): void {
         this.dialogRef.close();
     }
 

@@ -101,6 +101,8 @@ export abstract class BaseDetailsComponent {
                 return () => this.onOpenContracts();
             case Activity.Users:
                 return () => this.onOpenUsers();
+            case Activity.Formulas:
+                return () => this.onOpenFormulas();
             default:
                 throw new Error(`Unknown activity: ${activity}`);
         }
@@ -158,6 +160,11 @@ export abstract class BaseDetailsComponent {
         this.router.navigate(['/registry-users']);
     }
 
+    protected onOpenFormulas() {
+        this.router.navigate(['/formulas']);
+    }
+
+
     protected handleActivities(activity: any) {
         this.totalActivity = 0;
         this.activityItems = [];
@@ -187,7 +194,7 @@ export abstract class BaseDetailsComponent {
             .updateFiles(first.consensusTimestamp)
             .subscribe({
                 next: (result) => {
-                    if(result) {
+                    if (result) {
                         this.first = result;
                         this.setFiles(this.first);
                     }
@@ -239,7 +246,9 @@ export abstract class BaseDetailsComponent {
                     const url = item.files[i];
                     const document = item.documents?.[i];
                     const json = this.getDocument(document);
-                    const credentialSubject = this.getCredentialSubject(document);
+                    const documentObject = this.getDocumentObject(document);
+                    const credentialSubject = this.getCredentialSubject(documentObject);
+                    const verifiableCredential = this.getVerifiableCredential(documentObject);
                     const cid = new CID(url);
                     const ipfs = {
                         version: cid.version,
@@ -247,7 +256,9 @@ export abstract class BaseDetailsComponent {
                         global: cid.toV1().toString('base32'),
                         document,
                         json,
-                        credentialSubject
+                        documentObject,
+                        credentialSubject,
+                        verifiableCredential
                     }
                     if (!document) {
                         item._ipfsStatus = false;
@@ -267,13 +278,33 @@ export abstract class BaseDetailsComponent {
         }
     }
 
-    protected getCredentialSubject(item: any): any {
+    protected getDocumentObject(item: any): any {
         try {
-            return JSON.parse(item).credentialSubject[0];
+            return JSON.parse(item);
         } catch (error) {
             console.log(error);
+            return null;
+        }
+    }
+
+    protected getCredentialSubject(item: any): any {
+        try {
+            return item.credentialSubject[0];
+        } catch (error) {
             return {};
         }
+    }
+
+    protected getVerifiableCredential(item: any): any[] {
+        try {
+            return item.verifiableCredential;
+        } catch (error) {
+            return [];
+        }
+    }
+
+    protected getFirstDocument() {
+        return this.first._ipfs[0];
     }
 
     protected setRelationships(result: Relationships): void {

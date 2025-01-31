@@ -10,9 +10,15 @@
 }
 
 .file-action-button {
-    height: 100%;
-    width: 20px;
+    //height: 100%;
     width: 23px;
+    background: white;
+    border: none;
+    margin-top: 12px;
+
+    i {
+        position: relative;
+    }
 }
 
 .file-spinner {

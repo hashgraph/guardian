@@ -23,6 +23,9 @@ import { ToolMessage } from './tool-message.js';
 import { RoleMessage } from './role-message.js';
 import { GuardianRoleMessage } from './guardian-role-message.js';
 import { UserPermissionsMessage } from './user-permissions-message.js';
+import { StatisticMessage } from './statistic-message.js';
+import { LabelMessage } from './label-message.js';
+import { FormulaMessage } from './formula-message.js';
 
 /**
  * Message server
@@ -306,6 +309,15 @@ export class MessageServer {
                 break;
             case MessageType.UserPermissions:
                 message = UserPermissionsMessage.fromMessageObject(json);
+                break;
+            case MessageType.PolicyStatistic:
+                message = StatisticMessage.fromMessageObject(json);
+                break;
+            case MessageType.PolicyLabel:
+                message = LabelMessage.fromMessageObject(json);
+                break;
+            case MessageType.Formula:
+                message = FormulaMessage.fromMessageObject(json);
                 break;
             // Default schemas
             case 'schema-document':
@@ -596,7 +608,7 @@ export class MessageServer {
                 const timeStamp = messageId.trim();
                 const { operatorId, operatorKey, dryRun } = this.clientOptions;
                 const workers = new Workers();
-                const {topicId} = await workers.addNonRetryableTask({
+                const { topicId } = await workers.addNonRetryableTask({
                     type: WorkerTaskType.GET_TOPIC_MESSAGE,
                     data: {
                         operatorId,

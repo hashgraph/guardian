@@ -121,7 +121,7 @@
             white-space: nowrap;
             text-overflow: ellipsis;
         }
-    
+
         .role-icon {
             display: none;
             width: 20px;
@@ -279,7 +279,7 @@
                         align-items: center;
                         // justify-content: center;
                         padding-left: 4px;
-                        
+
                         &.big {
                             width: 170px;
                             min-width: 170px;
@@ -496,4 +496,45 @@
     .secondary {
         margin-right: 12px;
     }
+}
+
+.grid-header.header-container {
+    height: 64px;
+}
+
+.grid-header.header-container .name {
+    text-align: left;
+    padding-left: 25px;
+}
+
+.grid-header.header-container .description,
+.grid-header.header-container .status{
+    text-align: left;
+}
+
+.grid-header.header-container .checkbox {
+    padding-right: 5px;
+}
+
+.grid-row.row-container {
+    height: 64px;
+    font-size: 14px;
+    padding-left: 30px;
+}
+
+.grid-row.row-container .name {
+    padding-left: 25px;
+    width: 350px;
+}
+
+.grid-row.row-container .description {
+    width: 550px;
+}
+
+.grid-row.row-container .version {
+    text-align: center;
+}
+
+.grid-row.row-container .checkbox {
+    padding-left: 60px;
 }

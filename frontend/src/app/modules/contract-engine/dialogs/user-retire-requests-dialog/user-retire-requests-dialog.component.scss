@@ -64,7 +64,7 @@
 
         color: rgb(71, 71, 71);
 
-        mat-icon {
+        i, svg {
             color: #3f51b5;
         }
 
@@ -76,7 +76,7 @@
             gap: 10px;
             font-weight: bold;
 
-            mat-icon {
+            i, svg {
                 font-size: 30px;
                 width: 30px;
                 height: 30px;
@@ -84,7 +84,7 @@
         }
 
         &__count {
-            mat-icon {
+            i, svg {
                 transform: translateX(-2px);
             }
         }
@@ -103,7 +103,7 @@
 :host ::ng-deep .request-actions {
     display: flex;
     align-items: center;
-    mat-icon {
+    i, svg {
         font-size: 25px;
         width: 25px;
         height: 25px;
