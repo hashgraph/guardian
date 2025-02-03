@@ -58,6 +58,7 @@ export class AppComponent implements OnInit {
         const progressFooter = document.getElementById('block-progress-footer');
         switch (type) {
             case 'COLLAPSE': {
+                document.body.style.setProperty('--header-width', 'var(--header-width-collapse)');
                 document.getElementById('main-content')!.style.left = 'var(--header-width-collapse)';
                 document.getElementById('main-content')!.setAttribute('main-collapse-menu', 'true');
                 if (progressFooter) {
@@ -72,6 +73,7 @@ export class AppComponent implements OnInit {
                 break;
             }
             case 'EXPAND': {
+                document.body.style.setProperty('--header-width', 'var(--header-width-expand)');
                 document.getElementById('main-content')!.style.left = 'var(--header-width-expand)';
                 document.getElementById('main-content')!.setAttribute('main-collapse-menu', 'false');
                 if (progressFooter) {

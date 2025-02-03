@@ -7,7 +7,7 @@ import { PolicyStatisticsService } from 'src/app/services/policy-statistics.serv
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { NewPolicyStatisticsDialog } from '../dialogs/new-policy-statistics-dialog/new-policy-statistics-dialog.component';
-import { CustomCustomDialogComponent } from '../../../common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { CustomConfirmDialogComponent } from '../../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from '../../../common/import-entity-dialog/import-entity-dialog.component';
 
 
@@ -353,7 +353,7 @@ export class StatisticDefinitionsComponent implements OnInit {
         if (item.status === 'PUBLISHED') {
             return;
         }
-        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',
@@ -387,7 +387,7 @@ export class StatisticDefinitionsComponent implements OnInit {
         const rules = row?.config?.rules || [];
         const main = rules.find((r) => r.type === 'main');
         if (!main) {
-            const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+            const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
                 showHeader: false,
                 width: '640px',
                 styleClass: 'guardian-dialog',
@@ -402,7 +402,7 @@ export class StatisticDefinitionsComponent implements OnInit {
             });
             dialogRef.onClose.subscribe((result) => { });
         } else {
-            const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+            const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
                 showHeader: false,
                 width: '640px',
                 styleClass: 'guardian-dialog',

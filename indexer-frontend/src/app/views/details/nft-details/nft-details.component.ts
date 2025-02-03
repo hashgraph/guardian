@@ -54,7 +54,20 @@ export class NFTDetailsComponent extends BaseDetailsComponent {
             path: 'metadata',
             link: '/vp-documents',
             pattern: '^\\d{10}\\.\\d{9}$'
-        }
+        },
+        {
+            label: 'details.nft.overview.sr',
+            path: 'analytics.sr',
+            link: '/registries',
+            filters: {
+                'options.did': 'analytics.sr',
+            },
+        },
+        {
+            label: 'details.nft.overview.policy',
+            path: 'analytics.policyId',
+            link: '/policies',
+        },
     ]
     tabs: any[] = ['overview', 'history', 'labels', 'raw'];
     historyColumns: any[] = [

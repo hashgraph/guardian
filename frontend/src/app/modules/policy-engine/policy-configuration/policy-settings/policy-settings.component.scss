@@ -143,7 +143,8 @@
             padding-left: 44px;
             padding-right: 16px;
 
-            i, svg {
+            i,
+            svg {
                 position: absolute;
                 left: 11px;
                 top: 9px;
@@ -171,7 +172,8 @@
         color: var(--pc-active-icon-color);
         border-radius: 6px;
 
-        i, svg {
+        i,
+        svg {
             position: absolute;
             left: 12px;
             top: 4px;
@@ -338,8 +340,7 @@
         .rule-condition-select {
             border: 1px solid #e0e0e0;
             border-radius: 6px;
-            padding: 8px 10px;
-            height: 38px;
+            height: 42px;
             box-sizing: border-box;
             margin-right: 10px;
             max-width: 420px;
@@ -347,7 +348,7 @@
 
         .rule-condition-label {
             padding: 8px 10px;
-            height: 38px;
+            height: 42px;
             box-sizing: border-box;
             margin-right: 10px;
         }
@@ -376,7 +377,7 @@
         }
 
         .block-color-prev {
-            height: 34px;
+            height: 42px;
             position: relative;
             width: 150px;
             background: #fff;
@@ -392,7 +393,7 @@
 
         .rule-color-prop {
             display: flex;
-            height: 34px;
+            height: 42px;
             box-sizing: border-box;
             margin: 4px 38px 4px 0px;
             min-width: 60px;
@@ -401,18 +402,19 @@
 
         .rule-color-prop-value {
             width: 30px;
-            height: 34px;
+            height: 42px;
             margin-right: 12px;
+            padding-top: 4px; 
         }
 
         .rule-color-prop-select {
             border: 1px solid #e0e0e0;
             border-radius: 6px;
             padding: 7px 10px;
-            height: 34px;
+            height: 42px;
             box-sizing: border-box;
             margin-right: 10px;
-            width: 90px;
+            width: 125px;
         }
 
         .rule-color-delete {
@@ -421,7 +423,7 @@
 
         .new-rule {
             position: relative;
-            height: 34px;
+            height: 42px;
             box-sizing: border-box;
             overflow: hidden;
             padding: 7px 12px 7px 40px;
@@ -492,7 +494,7 @@
     .theme-container {
         margin: 20px 10px 20px 10px;
         border-bottom: 1px solid #000;
-      height: 80px;
+        height: 80px;
         overflow: hidden;
         align-items: flex-end;
         display: flex;
@@ -676,11 +678,11 @@
 }
 
 .settings-select,
-.settings-select ::ng-deep p-dropdown .p-dropdown{
+.settings-select ::ng-deep p-dropdown .p-dropdown {
     height: 38px !important;
 }
 
-.settings-select .p-fluid{
+.settings-select .p-fluid {
     position: relative;
     line-height: 0.2;
 }
@@ -723,9 +725,9 @@
     position: relative;
 
     p-dropdown {
-        width: 92px;
-        left: -3px;
-        top: -3px;
+        width: 123px;
+        left: 0px;
+        top: 0px;
         position: absolute;
         z-index: 2000;
     }

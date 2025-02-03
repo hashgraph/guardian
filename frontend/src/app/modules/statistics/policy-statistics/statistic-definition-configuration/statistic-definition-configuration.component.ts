@@ -19,7 +19,7 @@ import { TreeSource } from '../../../common/tree-graph/tree-source';
 import { createAutocomplete } from '../../../common/models/lang-modes/autocomplete';
 import { SchemaScore, SchemaScores } from '../../../common/models/schema-scores';
 import { SchemaRule, SchemaRules } from '../../../common/models/schema-rules';
-import { CustomCustomDialogComponent } from '../../../common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { CustomConfirmDialogComponent } from '../../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 
 @Component({
     selector: 'app-statistic-definition-configuration',
@@ -349,8 +349,6 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
         }, 200)
     }
 
-
-
     public onCollapseField(field: TreeListItem<any>) {
         if (this.rootNode) {
             const rootView = this.rootNode.fields;
@@ -512,7 +510,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
     }
 
     public onDeleteVariable(formula: any) {
-        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',
@@ -541,7 +539,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
     }
 
     public onDeleteScore(score: SchemaScore) {
-        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',
@@ -656,7 +654,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
         const rules = this.item?.config?.rules || [];
         const main = rules.find((r) => r.type === 'main');
         if (!main) {
-            const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+            const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
                 showHeader: false,
                 width: '640px',
                 styleClass: 'guardian-dialog',
@@ -671,7 +669,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
             });
             dialogRef.onClose.subscribe((result) => { });
         } else {
-            const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+            const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
                 showHeader: false,
                 width: '640px',
                 styleClass: 'guardian-dialog',

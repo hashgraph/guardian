@@ -8,7 +8,6 @@ import {
     AggregateVC,
     ApprovalDocument as ApprovalDocumentCollection,
     Artifact as ArtifactCollection,
-    Artifact,
     ArtifactChunk as ArtifactChunkCollection,
     AssignEntity,
     BlockCache,
@@ -19,6 +18,7 @@ import {
     DryRun,
     DryRunFiles,
     ExternalDocument,
+    Formula,
     MintRequest,
     MintTransaction,
     MultiDocuments,
@@ -70,10 +70,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
     /**
      * Documents handling chunk size
      */
-    private static readonly DOCUMENTS_HANDLING_CHUNK_SIZE = process.env
-                                                                .DOCUMENTS_HANDLING_CHUNK_SIZE
-                                                            ? parseInt(process.env.DOCUMENTS_HANDLING_CHUNK_SIZE, 10)
-                                                            : 500;
+    private static readonly DOCUMENTS_HANDLING_CHUNK_SIZE = process.env.DOCUMENTS_HANDLING_CHUNK_SIZE
+        ? parseInt(process.env.DOCUMENTS_HANDLING_CHUNK_SIZE, 10)
+        : 500;
 
     /**
      * Add dry run id
@@ -135,13 +134,13 @@ export class DatabaseServer extends AbstractDatabaseServer {
         const naturalCount = Math.floor(amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
         for (let i = 0; i < naturalCount; i++) {
             const items = await new DataBaseHelper(DryRun).find({dryRunId}, limit);
-            for (let item of items) {
+            for (const item of items) {
                 item.savepoint = true;
             }
             await new DataBaseHelper(DryRun).update(items);
         }
         const restItems = await new DataBaseHelper(DryRun).find({dryRunId});
-        for (let item of restItems) {
+        for (const item of restItems) {
             item.savepoint = true;
         }
         await new DataBaseHelper(DryRun).update(restItems);
@@ -165,6 +164,18 @@ export class DatabaseServer extends AbstractDatabaseServer {
         }
         const restItems = await new DataBaseHelper(DryRun).find({dryRunId, savepoint: {$exists: false}});
         await new DataBaseHelper(DryRun).remove(restItems);
+
+        // const files = await new DataBaseHelper(DryRunFiles).find({ policyId: dryRunId });
+        // await new DataBaseHelper(DryRunFiles).remove(files);
+    }
+
+    /**
+     * Get savepoint state
+     * @param dryRunId
+     * @param systemMode
+     */
+    public static async getSavepointSate(dryRunId: string): Promise<DryRun> {
+        return await new DataBaseHelper(DryRun).findOne({dryRunId, savepoint: true});
 
         // const files = await new DataBaseHelper(DryRunFiles).find({ policyId: dryRunId });
         // await new DataBaseHelper(DryRunFiles).remove(files);
@@ -498,6 +509,65 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Create Formula
+     * @param formula
+     */
+    public static async createFormula(
+        formula: FilterObject<Formula>
+    ): Promise<Formula> {
+        const item = new DataBaseHelper(Formula).create(formula);
+        return await new DataBaseHelper(Formula).save(item);
+    }
+
+    /**
+     * Get Formulas
+     * @param filters
+     * @param options
+     */
+    public static async getFormulasAndCount(
+        filters?: FilterObject<Formula>,
+        options?: FindOptions<unknown>
+    ): Promise<[Formula[], number]> {
+        return await new DataBaseHelper(Formula).findAndCount(filters, options);
+    }
+
+    /**
+     * Get Formulas
+     * @param filters
+     * @param options
+     */
+    public static async getFormulas(
+        filters?: FilterObject<Formula>,
+        options?: unknown
+    ): Promise<Formula[]> {
+        return await new DataBaseHelper(Formula).find(filters, options);
+    }
+
+    /**
+     * Get Formula By ID
+     * @param id
+     */
+    public static async getFormulaById(id: string): Promise<Formula | null> {
+        return await new DataBaseHelper(Formula).findOne(id);
+    }
+
+    /**
+     * Update Formula
+     * @param formula
+     */
+    public static async updateFormula(formula: Formula): Promise<Formula> {
+        return await new DataBaseHelper(Formula).update(formula);
+    }
+
+    /**
+     * Delete Formula
+     * @param formula
+     */
+    public static async removeFormula(formula: Formula): Promise<void> {
+        return await new DataBaseHelper(Formula).remove(formula);
+    }
+
+    /**
      * Dry-run
      * @private
      */
@@ -560,7 +630,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param item Item
      * @param amount Amount
      */
-    private async createMuchData<T extends BaseEntity>(entityClass: new () => T, item: Partial<T> & {id: string, _id: string}, amount: number): Promise<void> {
+    private async createMuchData<T extends BaseEntity>(entityClass: new () => T, item: Partial<T> & { id: string, _id: string }, amount: number): Promise<void> {
         const naturalCount = Math.floor((amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE));
         const restCount = (amount % DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
 
@@ -609,7 +679,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         did: string,
         owner: string
     ): Promise<AssignEntity> {
-        const item = new DataBaseHelper(AssignEntity).create({type, entityId, assigned, did, owner});
+        const item = new DataBaseHelper(AssignEntity).create({ type, entityId, assigned, did, owner });
         return await new DataBaseHelper(AssignEntity).save(item);
     }
 
@@ -619,7 +689,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      *
      * @virtual
      */
-    public async checkUserInGroup(group: {policyId: string, did: string, owner: string, uuid: string}): Promise<PolicyRolesCollection | null> {
+    public async checkUserInGroup(group: { policyId: string, did: string, owner: string, uuid: string }): Promise<PolicyRolesCollection | null> {
         return await this.findOne(PolicyRolesCollection, {
             policyId: group.policyId,
             did: group.did,
@@ -663,15 +733,15 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async clearPolicyCacheData(cachePolicyId: string) {
         const amount = await new DataBaseHelper(PolicyCacheData).count({
-                                                                           cachePolicyId
-                                                                       });
+            cachePolicyId
+        });
         const naturalCount = Math.floor(
             amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE
         );
         for (let i = 0; i < naturalCount; i++) {
             const items = await new DataBaseHelper(PolicyCacheData).find(
-                {cachePolicyId},
-                {limit: DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE}
+                { cachePolicyId },
+                { limit: DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE }
             );
             await new DataBaseHelper(PolicyCacheData).remove(
                 items.map((item) => {
@@ -682,8 +752,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
             );
         }
         const restItems = await new DataBaseHelper(PolicyCacheData).find({
-                                                                             cachePolicyId
-                                                                         });
+            cachePolicyId
+        });
         await new DataBaseHelper(PolicyCacheData).remove(
             restItems.map((item) => {
                 item._id = item.newId;
@@ -745,7 +815,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param policyId
      */
     public static async countMultiPolicyTransactions(policyId: string): Promise<number> {
-        return await new DataBaseHelper(MultiPolicyTransaction).count({policyId, status: 'Waiting'});
+        return await new DataBaseHelper(MultiPolicyTransaction).count({ policyId, status: 'Waiting' });
     }
 
     /**
@@ -768,7 +838,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      *
      * @virtual
      */
-    public async createAggregateDocuments(item: VcDocumentCollection & {blockId: string}, blockId: string): Promise<void> {
+    public async createAggregateDocuments(item: VcDocumentCollection & { blockId: string }, blockId: string): Promise<void> {
         item.blockId = blockId;
         const newVC = this.create(AggregateVC, item);
         await this.save(AggregateVC, newVC);
@@ -820,7 +890,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param amount Amount
      */
     public async createMintTransactions(transaction: Partial<MintTransaction>, amount: number): Promise<void> {
-        await this.createMuchData(MintTransaction, transaction as Partial<MintTransaction> & {id: string, _id: string}, amount);
+        await this.createMuchData(MintTransaction, transaction as Partial<MintTransaction> & { id: string, _id: string }, amount);
     }
 
     /**
@@ -833,9 +903,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
         const item = dbHelper.create(module);
         if (
             (await dbHelper.count({
-                                      name: item.name,
-                                      owner: item.owner
-                                  })) > 0
+                name: item.name,
+                owner: item.owner
+            })) > 0
         ) {
             throw new Error(`Module with name ${item.name} is already exists`);
         }
@@ -883,9 +953,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param config
      * @param buffer
      */
-    public static async createPolicyTest(config: {[key: string]: unknown}, buffer: Buffer): Promise<PolicyTest> {
+    public static async createPolicyTest(config: { [key: string]: unknown }, buffer: Buffer): Promise<PolicyTest> {
         const file = await DatabaseServer.saveFile(GenerateUUIDv4(), buffer);
-        const item = new DataBaseHelper(PolicyTest).create({...config, file});
+        const item = new DataBaseHelper(PolicyTest).create({ ...config, file });
         return await new DataBaseHelper(PolicyTest).save(item);
     }
 
@@ -1015,18 +1085,18 @@ export class DatabaseServer extends AbstractDatabaseServer {
         systemMode?: boolean
     ): Promise<void> {
         await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
-                                                                             did,
-                                                                             username,
-                                                                             hederaAccountId,
-                                                                             active
-                                                                         }, policyId, 'VirtualUsers', !!systemMode));
+            did,
+            username,
+            hederaAccountId,
+            active
+        }, policyId, 'VirtualUsers', !!systemMode));
 
         if (hederaAccountKey) {
             await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
-                                                                                 did,
-                                                                                 type: did,
-                                                                                 hederaAccountKey
-                                                                             }, policyId, 'VirtualKey', !!systemMode));
+                did,
+                type: did,
+                hederaAccountKey
+            }, policyId, 'VirtualKey', !!systemMode));
         }
     }
 
@@ -1083,7 +1153,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param id Policy ID
      */
     public static async deletePolicy(id: string): Promise<void> {
-        await new DataBaseHelper(Policy).delete({id});
+        await new DataBaseHelper(Policy).delete({ id });
     }
 
     /**
@@ -1093,7 +1163,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @returns tests
      */
     public static async deletePolicyTest(policyId: string, id: string): Promise<void> {
-        await new DataBaseHelper(PolicyTest).delete({id, policyId});
+        await new DataBaseHelper(PolicyTest).delete({ id, policyId });
     }
 
     /**
@@ -1103,7 +1173,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @returns tests
      */
     public static async deletePolicyTests(policyId: string): Promise<void> {
-        await new DataBaseHelper(PolicyTest).delete({policyId});
+        await new DataBaseHelper(PolicyTest).delete({ policyId });
     }
 
     /**
@@ -1111,7 +1181,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param id
      */
     public static async deleteSchemas(id: string): Promise<void> {
-        await new DataBaseHelper(SchemaCollection).delete({id});
+        await new DataBaseHelper(SchemaCollection).delete({ id });
     }
 
     /**
@@ -1190,9 +1260,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
         blockId: string
     ): Promise<ExternalDocument[]> {
         return await this.find(ExternalDocument, {
-            policyId: {$eq: policyId},
-            blockId: {$eq: blockId},
-            active: {$eq: true}
+            policyId: { $eq: policyId },
+            blockId: { $eq: blockId },
+            active: { $eq: true }
         });
     }
 
@@ -1207,7 +1277,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         if (!did) {
             return null;
         }
-        return await this.findOne(PolicyRolesCollection, {policyId, did, active: true});
+        return await this.findOne(PolicyRolesCollection, { policyId, did, active: true });
     }
 
     /**
@@ -1261,7 +1331,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @virtual
      */
     public async getAllPolicyUsers(policyId: string): Promise<PolicyRolesCollection[]> {
-        return await this.find(PolicyRolesCollection, {policyId, active: true});
+        return await this.find(PolicyRolesCollection, { policyId, active: true });
     }
 
     /**
@@ -1273,7 +1343,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @virtual
      */
     public async getAllUsersByRole(policyId: string, uuid: string, role: string): Promise<PolicyRolesCollection[]> {
-        return await this.find(PolicyRolesCollection, {policyId, uuid, role});
+        return await this.find(PolicyRolesCollection, { policyId, uuid, role });
     }
 
     /**
@@ -1345,6 +1415,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
         return await new DataBaseHelper(ArtifactCollection).findOne(filters);
     }
 
+    //Static
+
     /**
      * Get Artifact File By UUID
      * @param uuid File UUID
@@ -1352,12 +1424,12 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getArtifactFileByUUID(uuid: string): Promise<Buffer> {
         const artifactChunks = (await new DataBaseHelper(ArtifactChunkCollection).find({
-                                                                                           uuid
-                                                                                       }, {
-                                                                                           orderBy: {
-                                                                                               number: 'ASC'
-                                                                                           }
-                                                                                       })).map(item => item.data.buffer);
+            uuid
+        }, {
+            orderBy: {
+                number: 'ASC'
+            }
+        })).map(item => item.data.buffer);
         return artifactChunks.length > 0 ? Buffer.concat(artifactChunks) : Buffer.from('');
     }
 
@@ -1367,7 +1439,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param options Options
      * @returns Artifacts
      */
-    public static async getArtifacts(filters?: FilterQuery<ArtifactCollection>, options?: FindOptions<Artifact>): Promise<ArtifactCollection[]> {
+    public static async getArtifacts(filters?: FilterQuery<ArtifactCollection>, options?: FindOptions<ArtifactCollection>): Promise<ArtifactCollection[]> {
         return await new DataBaseHelper(ArtifactCollection).find(filters, options);
     }
 
@@ -1388,9 +1460,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getAssignedEntities(did: string, type?: AssignedEntityType): Promise<AssignEntity[]> {
         if (type) {
-            return await (new DataBaseHelper(AssignEntity)).find({type, did});
+            return await (new DataBaseHelper(AssignEntity)).find({ type, did });
         } else {
-            return await (new DataBaseHelper(AssignEntity)).find({did});
+            return await (new DataBaseHelper(AssignEntity)).find({ did });
         }
     }
 
@@ -1401,7 +1473,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param did
      */
     public static async getAssignedEntity(type: AssignedEntityType, entityId: string, did: string): Promise<AssignEntity | null> {
-        return await (new DataBaseHelper(AssignEntity)).findOne({type, entityId, did});
+        return await (new DataBaseHelper(AssignEntity)).findOne({ type, entityId, did });
     }
 
     /**
@@ -1478,7 +1550,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param did
      */
     public async getDidDocument(did: string): Promise<DidDocumentCollection | null> {
-        return await this.findOne(DidDocumentCollection, {did});
+        return await this.findOne(DidDocumentCollection, { did });
     }
 
     /**
@@ -1486,7 +1558,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param did
      */
     public static async getDidDocument(did: string): Promise<DidDocumentCollection | null> {
-        return await (new DataBaseHelper(DidDocumentCollection)).findOne({did});
+        return await (new DataBaseHelper(DidDocumentCollection)).findOne({ did });
     }
 
     /**
@@ -1556,9 +1628,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
         userId: string
     ): Promise<ExternalDocument | null> {
         return await this.findOne(ExternalDocument, {
-            policyId: {$eq: policyId},
-            blockId: {$eq: blockId},
-            owner: {$eq: userId}
+            policyId: { $eq: policyId },
+            blockId: { $eq: blockId },
+            owner: { $eq: userId }
         });
     }
 
@@ -1571,7 +1643,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getFilteredPolicies(categoryIds: string[], text: string): Promise<Policy[]> {
         const conditions = await GetConditionsPoliciesByCategories(categoryIds, text);
-        return await new DataBaseHelper(Policy).find({$and: conditions});
+        return await new DataBaseHelper(Policy).find({ $and: conditions });
     }
 
     /**
@@ -1593,7 +1665,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @virtual
      */
     public async getGroupByID(policyId: string, uuid: string): Promise<PolicyRolesCollection | null> {
-        return await this.findOne(PolicyRolesCollection, {policyId, uuid});
+        return await this.findOne(PolicyRolesCollection, { policyId, uuid });
     }
 
     /**
@@ -1604,7 +1676,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @returns Group
      */
     public static async getGroupByID(policyId: string, uuid: string): Promise<PolicyRolesCollection | null> {
-        return await new DataBaseHelper(PolicyRolesCollection).findOne({policyId, uuid});
+        return await new DataBaseHelper(PolicyRolesCollection).findOne({ policyId, uuid });
     }
 
     /**
@@ -1634,7 +1706,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         if (!did) {
             return [];
         }
-        return await new DataBaseHelper(PolicyRolesCollection).find({policyId, did}, options);
+        return await new DataBaseHelper(PolicyRolesCollection).find({ policyId, did }, options);
     }
 
     /**
@@ -1722,7 +1794,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param uuid
      */
     public static async getModuleByUUID(uuid: string): Promise<PolicyModule | null> {
-        return await new DataBaseHelper(PolicyModule).findOne({uuid});
+        return await new DataBaseHelper(PolicyModule).findOne({ uuid });
     }
 
     /**
@@ -1750,7 +1822,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @returns MultiPolicy
      */
     public static async getMultiPolicy(instanceTopicId: string, owner: string): Promise<MultiPolicy | null> {
-        return await new DataBaseHelper(MultiPolicy).findOne({instanceTopicId, owner});
+        return await new DataBaseHelper(MultiPolicy).findOne({ instanceTopicId, owner });
     }
 
     /**
@@ -1759,7 +1831,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param owner
      */
     public static async getMultiPolicyTransactions(policyId: string, user: string): Promise<MultiPolicyTransaction[]> {
-        return await new DataBaseHelper(MultiPolicyTransaction).find({policyId, user, status: 'Waiting'});
+        return await new DataBaseHelper(MultiPolicyTransaction).find({ policyId, user, status: 'Waiting' });
     }
 
     /**
@@ -1817,7 +1889,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @virtual
      */
     public async getMultiSignStatus(uuid: string, documentId: string, userId: string = 'Group'): Promise<MultiDocuments> {
-        return await this.findOne(MultiDocuments, {uuid, documentId, userId});
+        return await this.findOne(MultiDocuments, { uuid, documentId, userId });
     }
 
     /**
@@ -1848,8 +1920,6 @@ export class DatabaseServer extends AbstractDatabaseServer {
         return await new DataBaseHelper(Policy).findOne(policyId);
     }
 
-    //Static
-
     /**
      * Get policy
      * @param filters
@@ -1871,7 +1941,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param policyTag
      */
     public static async getPolicyByTag(policyTag: string): Promise<Policy | null> {
-        return await new DataBaseHelper(Policy).findOne({policyTag});
+        return await new DataBaseHelper(Policy).findOne({ policyTag });
     }
 
     /**
@@ -1879,7 +1949,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param uuid
      */
     public static async getPolicyByUUID(uuid: string): Promise<Policy | null> {
-        return await new DataBaseHelper(Policy).findOne({uuid});
+        return await new DataBaseHelper(Policy).findOne({ uuid });
     }
 
     /**
@@ -1946,7 +2016,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @returns tests
      */
     public static async getPolicyTest(policyId: string, id: string): Promise<PolicyTest> {
-        return await new DataBaseHelper(PolicyTest).findOne({id, policyId});
+        return await new DataBaseHelper(PolicyTest).findOne({ id, policyId });
     }
 
     /**
@@ -1956,7 +2026,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @returns tests
      */
     public static async getPolicyTestByRecord(resultId: string): Promise<PolicyTest> {
-        return await new DataBaseHelper(PolicyTest).findOne({resultId});
+        return await new DataBaseHelper(PolicyTest).findOne({ resultId });
     }
 
     /**
@@ -1965,7 +2035,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @returns tests
      */
     public static async getPolicyTests(policyId: string): Promise<PolicyTest[]> {
-        return await new DataBaseHelper(PolicyTest).find({policyId});
+        return await new DataBaseHelper(PolicyTest).find({ policyId });
     }
 
     /**
@@ -1975,7 +2045,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @returns tests
      */
     public static async getPolicyTestsByStatus(policyId: string, status: PolicyTestStatus): Promise<PolicyTest[]> {
-        return await new DataBaseHelper(PolicyTest).find({status, policyId});
+        return await new DataBaseHelper(PolicyTest).find({ status, policyId });
     }
 
     /**
@@ -1985,7 +2055,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getPublishPolicies(): Promise<Policy[]> {
         return await new DataBaseHelper(Policy).find({
-                                                         status: {$eq: PolicyType.PUBLISH}
+            status: { $eq: PolicyType.PUBLISH }
         });
     }
 
@@ -2023,7 +2093,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @returns Retire pools
      */
     public static async getRetirePools(tokenIds: string[]): Promise<RetirePool[]> {
-        return await new DataBaseHelper(RetirePool).find({tokenIds: {$in: tokenIds}});
+        return await new DataBaseHelper(RetirePool).find({ tokenIds: { $in: tokenIds } });
     }
 
     /**
@@ -2033,9 +2103,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async getSchemaByIRI(iri: string, topicId?: string): Promise<SchemaCollection | null> {
         if (topicId) {
-            return await new DataBaseHelper(SchemaCollection).findOne({iri, topicId});
+            return await new DataBaseHelper(SchemaCollection).findOne({ iri, topicId });
         } else {
-            return await new DataBaseHelper(SchemaCollection).findOne({iri});
+            return await new DataBaseHelper(SchemaCollection).findOne({ iri });
         }
     }
 
@@ -2054,10 +2124,10 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async getSchemaByType(topicId: string, entity: SchemaEntity): Promise<SchemaCollection | null> {
         return await new DataBaseHelper(SchemaCollection).findOne({
-                                                                      entity,
-                                                                      readonly: true,
-                                                                      topicId
-                                                                  });
+            entity,
+            readonly: true,
+            topicId
+        });
     }
 
     /**
@@ -2067,10 +2137,10 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getSchemaByType(topicId: string, entity: SchemaEntity): Promise<SchemaCollection | null> {
         return await new DataBaseHelper(SchemaCollection).findOne({
-                                                                      entity,
-                                                                      readonly: true,
-                                                                      topicId
-                                                                  });
+            entity,
+            readonly: true,
+            topicId
+        });
     }
 
     /**
@@ -2096,7 +2166,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param ids
      */
     public static async getSchemasByIds(ids: string[]): Promise<SchemaCollection[]> {
-        return await new DataBaseHelper(SchemaCollection).find({id: {$in: ids}});
+        return await new DataBaseHelper(SchemaCollection).find({ id: { $in: ids } });
     }
 
     /**
@@ -2129,7 +2199,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         did: string
     ): Promise<SuggestionsConfig | null> {
         return await new DataBaseHelper(SuggestionsConfig).findOne({
-                                                                       user: did
+            user: did
         });
     }
 
@@ -2139,9 +2209,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getSystemSchema(entity: SchemaEntity): Promise<SchemaCollection | null> {
         return await new DataBaseHelper(SchemaCollection).findOne({
-                                                                      entity,
-                                                                      system: true,
-                                                                      active: true
+            entity,
+            system: true,
+            active: true
         });
     }
 
@@ -2150,7 +2220,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param uuid
      */
     public async getTagById(uuid: string): Promise<Tag | null> {
-        return await this.findOne(Tag, {uuid});
+        return await this.findOne(Tag, { uuid });
     }
 
     /**
@@ -2158,7 +2228,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param uuid
      */
     public static async getTagById(uuid: string): Promise<Tag | null> {
-        return await new DataBaseHelper(Tag).findOne({uuid});
+        return await new DataBaseHelper(Tag).findOne({ uuid });
     }
 
     /**
@@ -2231,9 +2301,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async getToken(tokenId: string, dryRun: string = null): Promise<TokenCollection | null> {
         if (dryRun) {
-            return this.findOne(TokenCollection, {tokenId});
+            return this.findOne(TokenCollection, { tokenId });
         } else {
-            return await new DataBaseHelper(TokenCollection).findOne({tokenId});
+            return await new DataBaseHelper(TokenCollection).findOne({ tokenId });
         }
     }
 
@@ -2242,7 +2312,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param tokenId
      */
     public static async getToken(tokenId: string): Promise<TokenCollection | null> {
-        return await new DataBaseHelper(TokenCollection).findOne({tokenId});
+        return await new DataBaseHelper(TokenCollection).findOne({ tokenId });
     }
 
     /**
@@ -2283,7 +2353,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param uuid
      */
     public static async getToolByUUID(uuid: string): Promise<PolicyTool | null> {
-        return await new DataBaseHelper(PolicyTool).findOne({uuid});
+        return await new DataBaseHelper(PolicyTool).findOne({ uuid });
     }
 
     /**
@@ -2342,7 +2412,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param topicId
      */
     public async getTopicById(topicId: string): Promise<TopicCollection | null> {
-        return await this.findOne(TopicCollection, {topicId});
+        return await this.findOne(TopicCollection, { topicId });
     }
 
     /**
@@ -2350,7 +2420,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param topicId
      */
     public static async getTopicById(topicId: string): Promise<TopicCollection | null> {
-        return await new DataBaseHelper(TopicCollection).findOne({topicId});
+        return await new DataBaseHelper(TopicCollection).findOne({ topicId });
     }
 
     /**
@@ -2359,7 +2429,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param type
      */
     public static async getTopicByType(owner: string, type: TopicType): Promise<TopicCollection | null> {
-        return await new DataBaseHelper(TopicCollection).findOne({owner, type});
+        return await new DataBaseHelper(TopicCollection).findOne({ owner, type });
     }
 
     /**
@@ -2463,7 +2533,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         if (!did && !uuid) {
             return null;
         }
-        return await this.findOne(PolicyRolesCollection, {policyId, did, uuid});
+        return await this.findOne(PolicyRolesCollection, { policyId, did, uuid });
     }
 
     /**
@@ -2475,7 +2545,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         if (!did) {
             return null;
         }
-        return await new DataBaseHelper(PolicyRolesCollection).find({policyId, did});
+        return await new DataBaseHelper(PolicyRolesCollection).find({ policyId, did });
     }
 
     /**
@@ -2487,7 +2557,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @virtual
      */
     public async getUserRoles(policyId: string, did: string): Promise<PolicyRolesCollection[]> {
-        return await this.find(PolicyRolesCollection, {policyId, did});
+        return await this.find(PolicyRolesCollection, { policyId, did });
     }
 
     /**
@@ -2498,7 +2568,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @virtual
      */
     public async getUsersByRole(policyId: string, role: string): Promise<PolicyRolesCollection[]> {
-        return await this.find(PolicyRolesCollection, {policyId, role});
+        return await this.find(PolicyRolesCollection, { policyId, role });
     }
 
     /**
@@ -2784,10 +2854,10 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async getVirtualHederaAccountInfo(hederaAccountId: string): Promise<DryRun> {
         const item = (await new DataBaseHelper(DryRun).findOne({
-                                                                   dryRunId: this.dryRun,
-                                                                   dryRunClass: 'HederaAccountInfo',
-                                                                   hederaAccountId
-                                                               }));
+            dryRunId: this.dryRun,
+            dryRunClass: 'HederaAccountInfo',
+            hederaAccountId
+        }));
         return item?.tokenMap || {};
     }
 
@@ -2800,11 +2870,11 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async getVirtualKey(did: string, keyName: string): Promise<string | null> {
         const item = (await new DataBaseHelper(DryRun).findOne({
-                                                                   dryRunId: this.dryRun,
-                                                                   dryRunClass: 'VirtualKey',
-                                                                   did,
-                                                                   type: keyName
-                                                               }));
+            dryRunId: this.dryRun,
+            dryRunClass: 'VirtualKey',
+            did,
+            type: keyName
+        }));
         return item?.hederaAccountKey;
     }
 
@@ -2834,10 +2904,10 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getVirtualMessage(dryRun: string, messageId: string): Promise<DryRun | null> {
         return (await new DataBaseHelper(DryRun).findOne({
-                                                             dryRunId: dryRun,
-                                                             dryRunClass: 'Message',
-                                                             messageId
-                                                         }));
+            dryRunId: dryRun,
+            dryRunClass: 'Message',
+            messageId
+        }));
     }
 
     /**
@@ -2863,10 +2933,10 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async getVirtualUser(did: string): Promise<IAuthUser | null> {
         return (await new DataBaseHelper(DryRun).findOne({
-                                                             dryRunId: this.dryRun,
-                                                             dryRunClass: 'VirtualUsers',
-                                                             did
-                                                         })) as unknown as IAuthUser;
+            dryRunId: this.dryRun,
+            dryRunClass: 'VirtualUsers',
+            did
+        })) as unknown as IAuthUser;
     }
 
     /**
@@ -2877,18 +2947,18 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getVirtualUser(policyId: string): Promise<DryRun | null> {
         return await new DataBaseHelper(DryRun).findOne({
-                                                            dryRunId: policyId,
-                                                            dryRunClass: 'VirtualUsers',
-                                                            active: true
-                                                        }, {
-                                                            fields: [
-                                                                'id',
-                                                                'did',
-                                                                'username',
-                                                                'hederaAccountId',
-                                                                'active'
-                                                            ]
-                                                        } as unknown as FindOptions<unknown>);
+            dryRunId: policyId,
+            dryRunClass: 'VirtualUsers',
+            active: true
+        }, {
+            fields: [
+                'id',
+                'did',
+                'username',
+                'hederaAccountId',
+                'active'
+            ]
+        } as unknown as FindOptions<unknown>);
     }
 
     /**
@@ -2899,19 +2969,19 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getVirtualUsers(policyId: string): Promise<DryRun[]> {
         return (await new DataBaseHelper(DryRun).find({
-                                                          dryRunId: policyId,
-                                                          dryRunClass: 'VirtualUsers'
-                                                      }, {
-                                                          fields: [
-                                                              'id',
-                                                              'did',
-                                                              'username',
-                                                              'hederaAccountId',
-                                                              'active'
-                                                          ] as unknown as PopulatePath.ALL[],
-                                                          orderBy: {
-                                                              createDate: 1
-                                                          }
+            dryRunId: policyId,
+            dryRunClass: 'VirtualUsers'
+        }, {
+            fields: [
+                'id',
+                'did',
+                'username',
+                'hederaAccountId',
+                'active'
+            ] as unknown as PopulatePath.ALL[],
+            orderBy: {
+                createDate: 1
+            }
         }));
     }
 
@@ -3002,7 +3072,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @virtual
      */
     public async removeAggregateDocument(hash: string, blockId: string): Promise<void> {
-        const item = await this.find(AggregateVC, {blockId, hash});
+        const item = await this.find(AggregateVC, { blockId, hash });
         await this.remove(AggregateVC, item);
     }
 
@@ -3040,7 +3110,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         did: string,
         owner?: string
     ): Promise<boolean> {
-        const filters: {type: AssignedEntityType, entityId: string, did: string, owner?: string} = {type, entityId, did};
+        const filters: { type: AssignedEntityType, entityId: string, did: string, owner?: string } = { type, entityId, did };
 
         if (owner) {
             filters.owner = owner;
@@ -3439,10 +3509,10 @@ export class DatabaseServer extends AbstractDatabaseServer {
         const topicId = message.getTopicId();
 
         await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
-                                                                             document,
-                                                                             topicId,
-                                                                             messageId
-                                                                         }, dryRun, 'Message', false));
+            document,
+            topicId,
+            messageId
+        }, dryRun, 'Message', false));
     }
 
     /**
@@ -3455,7 +3525,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @virtual
      */
     public async setActiveGroup(policyId: string, did: string, uuid: string): Promise<void> {
-        const groups = await this.find(PolicyRolesCollection, {policyId, did});
+        const groups = await this.find(PolicyRolesCollection, { policyId, did });
         for (const group of groups) {
             group.active = group.uuid === uuid;
         }
@@ -3483,7 +3553,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
     public async setMultiSigDocument(
         uuid: string,
         documentId: string,
-        user: {id: string, did: string, group: string, username: string},
+        user: { id: string, did: string, group: string, username: string },
         status: string,
         document: IVC
     ): Promise<MultiDocuments> {
@@ -3517,10 +3587,10 @@ export class DatabaseServer extends AbstractDatabaseServer {
         status: string
     ): Promise<MultiDocuments> {
         let item = await this.findOne(MultiDocuments, {
-            uuid: {$eq: uuid},
-            documentId: {$eq: documentId},
-            group: {$eq: group},
-            userId: {$eq: 'Group'}
+            uuid: { $eq: uuid },
+            documentId: { $eq: documentId },
+            group: { $eq: group },
+            userId: { $eq: 'Group' }
         });
         if (item) {
             item.status = status;
@@ -3600,14 +3670,14 @@ export class DatabaseServer extends AbstractDatabaseServer {
     public static async setVirtualFile(
         policyId: string,
         file: ArrayBuffer,
-        url: {url: string}
+        url: { url: string }
     ): Promise<void> {
         await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
-                                                                             document: {
-                                                                                 size: file?.byteLength
-                                                                             },
-                                                                             documentURL: url?.url
-                                                                         }, policyId, 'Files', false));
+            document: {
+                size: file?.byteLength
+            },
+            documentURL: url?.url
+        }, policyId, 'Files', false));
     }
 
     /**
@@ -3620,12 +3690,12 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async setVirtualKey(did: string, keyName: string, key: string): Promise<void> {
         await new DataBaseHelper(DryRun).save({
-                                                  dryRunId: this.dryRun,
-                                                  dryRunClass: 'VirtualKey',
-                                                  did,
-                                                  type: keyName,
-                                                  hederaAccountKey: key
-                                              } as Partial<DryRun>);
+            dryRunId: this.dryRun,
+            dryRunClass: 'VirtualKey',
+            did,
+            type: keyName,
+            hederaAccountKey: key
+        } as Partial<DryRun>);
     }
 
     /**
@@ -3642,9 +3712,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
         operatorId?: string
     ): Promise<void> {
         await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
-                                                                             type,
-                                                                             hederaAccountId: operatorId
-                                                                         }, policyId, 'Transactions', false));
+            type,
+            hederaAccountId: operatorId
+        }, policyId, 'Transactions', false));
     }
 
     /**
@@ -3656,9 +3726,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async setVirtualUser(policyId: string, did: string): Promise<void> {
         const items = (await new DataBaseHelper(DryRun).find({
-                                                                 dryRunId: policyId,
-                                                                 dryRunClass: 'VirtualUsers'
-                                                             }));
+            dryRunId: policyId,
+            dryRunClass: 'VirtualUsers'
+        }));
         for (const item of items) {
             item.active = item.did === did;
             await new DataBaseHelper(DryRun).save(item);
@@ -3813,7 +3883,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param item
      */
     public static async updateSchema(id: string, item: SchemaCollection): Promise<void> {
-        await new DataBaseHelper(SchemaCollection).update(item, {id});
+        await new DataBaseHelper(SchemaCollection).update(item, { id });
     }
 
     /**
@@ -3966,10 +4036,10 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async virtualAssociate(hederaAccountId: string, token: TokenCollection): Promise<boolean> {
         const item = await new DataBaseHelper(DryRun).findOne({
-                                                                  dryRunId: this.dryRun,
-                                                                  dryRunClass: 'HederaAccountInfo',
-                                                                  hederaAccountId
-                                                              });
+            dryRunId: this.dryRun,
+            dryRunClass: 'HederaAccountInfo',
+            hederaAccountId
+        });
         if (item) {
             if (item.tokenMap[token.tokenId]) {
                 throw new Error('Token already associated');
@@ -3987,11 +4057,11 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 kyc: token.enableKYC ? false : null
             };
             await new DataBaseHelper(DryRun).save({
-                                                      dryRunId: this.dryRun,
-                                                      dryRunClass: 'HederaAccountInfo',
-                                                      hederaAccountId,
-                                                      tokenMap
-                                                  });
+                dryRunId: this.dryRun,
+                dryRunClass: 'HederaAccountInfo',
+                hederaAccountId,
+                tokenMap
+            });
         }
         return true;
     }
@@ -4005,10 +4075,10 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async virtualDissociate(hederaAccountId: string, tokenId: string): Promise<boolean> {
         const item = await new DataBaseHelper(DryRun).findOne({
-                                                                  dryRunId: this.dryRun,
-                                                                  dryRunClass: 'HederaAccountInfo',
-                                                                  hederaAccountId
-                                                              });
+            dryRunId: this.dryRun,
+            dryRunClass: 'HederaAccountInfo',
+            hederaAccountId
+        });
         if (!item || !item.tokenMap[tokenId]) {
             throw new Error('Token is not associated');
         }
@@ -4026,10 +4096,10 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async virtualFreeze(hederaAccountId: string, tokenId: string): Promise<boolean> {
         const item = await new DataBaseHelper(DryRun).findOne({
-                                                                  dryRunId: this.dryRun,
-                                                                  dryRunClass: 'HederaAccountInfo',
-                                                                  hederaAccountId
-                                                              });
+            dryRunId: this.dryRun,
+            dryRunClass: 'HederaAccountInfo',
+            hederaAccountId
+        });
         if (!item || !item.tokenMap[tokenId]) {
             throw new Error('Token is not associated');
         }
@@ -4053,10 +4123,10 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async virtualGrantKyc(hederaAccountId: string, tokenId: string): Promise<boolean> {
         const item = await new DataBaseHelper(DryRun).findOne({
-                                                                  dryRunId: this.dryRun,
-                                                                  dryRunClass: 'HederaAccountInfo',
-                                                                  hederaAccountId
-                                                              });
+            dryRunId: this.dryRun,
+            dryRunClass: 'HederaAccountInfo',
+            hederaAccountId
+        });
         if (!item || !item.tokenMap[tokenId]) {
             throw new Error('Token is not associated');
         }
@@ -4080,10 +4150,10 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async virtualRevokeKyc(hederaAccountId: string, tokenId: string): Promise<boolean> {
         const item = await new DataBaseHelper(DryRun).findOne({
-                                                                  dryRunId: this.dryRun,
-                                                                  dryRunClass: 'HederaAccountInfo',
-                                                                  hederaAccountId
-                                                              });
+            dryRunId: this.dryRun,
+            dryRunClass: 'HederaAccountInfo',
+            hederaAccountId
+        });
         if (!item || !item.tokenMap[tokenId]) {
             throw new Error('Token is not associated');
         }
@@ -4107,10 +4177,10 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async virtualUnfreeze(hederaAccountId: string, tokenId: string): Promise<boolean> {
         const item = await new DataBaseHelper(DryRun).findOne({
-                                                                  dryRunId: this.dryRun,
-                                                                  dryRunClass: 'HederaAccountInfo',
-                                                                  hederaAccountId
-                                                              });
+            dryRunId: this.dryRun,
+            dryRunClass: 'HederaAccountInfo',
+            hederaAccountId
+        });
         if (!item || !item.tokenMap[tokenId]) {
             throw new Error('Token is not associated');
         }

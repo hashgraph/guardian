@@ -22,5 +22,6 @@ export enum MessageType {
     GUARDIAN_ROLE = 'Guardian-Role-Document',
     USER_PERMISSIONS = 'User-Permissions',
     POLICY_STATISTIC = 'Policy-Statistic',
-    POLICY_LABEL = 'Policy-Label'
+    POLICY_LABEL = 'Policy-Label',
+    FORMULA = 'Formula'
 }

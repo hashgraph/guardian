@@ -50,6 +50,7 @@ export class SynchronizationRoles extends SynchronizationTask {
         if (policyMessage) {
             analytics.policyId = policyMessage.consensusTimestamp;
             analytics.textSearch += `|${policyMessage.consensusTimestamp}`;
+            analytics.sr = policyMessage.owner;
         }
         return analytics;
     }
@@ -62,6 +63,9 @@ export class SynchronizationRoles extends SynchronizationTask {
                 },
                 {
                     'analytics.policyId': null,
+                },
+                {
+                    'analytics.sr': null,
                 },
             ],
         };

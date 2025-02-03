@@ -136,7 +136,7 @@ export class AnalyticsService {
         try {
             const { topicId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const [messages, count] = (await em.findAndCount(
+            const [messages] = (await em.findAndCount(
                 Message,
                 {
                     topicId,
@@ -152,22 +152,23 @@ export class AnalyticsService {
             )) as any;
 
             for (const message of messages) {
-                let VCdocuments: VCDetails[] = [];
+                const VCdocuments: VCDetails[] = [];
                 for (const fileName of message.files) {
                     try {
                         const file = await DataBaseHelper.loadFile(fileName);
                         VCdocuments.push(JSON.parse(file) as VCDetails);
+                        // tslint:disable-next-line:no-empty
                     } catch (error) {
                     }
                 }
                 message.documents = VCdocuments;
 
-                var messageCache = messagesCache.find((cache: MessageCache) => cache.consensusTimestamp == message.consensusTimestamp);
+                const messageCache = messagesCache.find((cache: MessageCache) => cache.consensusTimestamp === message.consensusTimestamp);
                 if (messageCache) {
                     message.sequenceNumber = messageCache.sequenceNumber;
                 }
             }
-            
+
             return new MessageResponse<Message[]>(messages);
         } catch (error) {
             return new MessageError(error);

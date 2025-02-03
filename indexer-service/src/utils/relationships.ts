@@ -9,6 +9,7 @@ const categories = [
     MessageType.ROLE_DOCUMENT,
     MessageType.VC_DOCUMENT,
     MessageType.VP_DOCUMENT,
+    MessageType.TOKEN,
 ];
 
 class RelationshipItem {
@@ -56,6 +57,9 @@ class RelationshipItem {
                 break;
             case MessageType.ROLE_DOCUMENT:
                 this._name = item.options?.role;
+                break;
+            case MessageType.TOKEN:
+                this._name = item.options?.tokenName;
                 break;
             default:
                 break;
@@ -222,6 +226,21 @@ export class Relationships {
                 }
                 break;
             }
+            case MessageType.STANDARD_REGISTRY: {
+                const policyMessages = await this.em.find(Message, {
+                    type: MessageType.INSTANCE_POLICY,
+                    'options.owner': item.options.did
+                } as any);
+
+                policyMessages.forEach(policy => {
+                    this.messages.set(policy.consensusTimestamp, new RelationshipItem(policy.consensusTimestamp, policy));
+                    this.links.push({
+                        source: messageId,
+                        target: policy.consensusTimestamp,
+                        type: 'relationships',
+                    });
+                });
+            }
             default:
                 break;
         }
@@ -238,6 +257,21 @@ export class Relationships {
                     type: 'relationships',
                 });
             }
+        }
+
+        if (item.analytics.tokens?.length > 0) {
+            const tokenMessages = await this.em.find(Message, {
+                topicId: item.topicId,
+                type: MessageType.TOKEN,
+            });
+            tokenMessages.forEach(token => {
+                this.messages.set(token.tokens[0], new RelationshipItem(token.tokens[0], token));
+                this.links.push({
+                    source: token.tokens[0],
+                    target: messageId,
+                    type: 'relationships',
+                });
+            });
         }
     }
 }

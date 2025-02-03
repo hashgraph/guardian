@@ -30,6 +30,18 @@ export class LandingAnalyticsDTO implements LandingAnalytics {
     totalIssuance: number;
 
     @ApiProperty({
+        description: 'Total serialized',
+        example: '10',
+    })
+    totalSerialized: number;
+
+    @ApiProperty({
+        description: 'Total fungible',
+        example: '10',
+    })
+    totalFungible: number;
+
+    @ApiProperty({
         description: 'ISO Date',
         example: '2024-06-12T14:17:26.689Z'
     })

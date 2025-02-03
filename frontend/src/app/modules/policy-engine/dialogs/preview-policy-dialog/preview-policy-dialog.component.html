@@ -99,6 +99,10 @@
                 <div class="field-header">Tokens</div>
                 <div class="field-value">{{ tokens }}</div>
             </div>
+            <div *ngIf="formulas" class="field-container">
+                <div class="field-header">Formulas</div>
+                <div class="field-value">{{ formulas }}</div>
+            </div>
             <div *ngIf="similar" class="field-container">
                 <div class="field-header">Similar Policies</div>
                 <div class="field-value">{{ similar }}</div>

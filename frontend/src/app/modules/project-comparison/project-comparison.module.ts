@@ -15,7 +15,8 @@ import { CommonModule } from '@angular/common';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { CompareModule } from '../analytics/analytics.module';
 
-@NgModule({ declarations: [
+@NgModule({
+    declarations: [
         AnnotationBlockComponent,
         ProjectsOverviewComponent,
         ProjectsComparisonTableComponent
@@ -24,7 +25,9 @@ import { CompareModule } from '../analytics/analytics.module';
         AnnotationBlockComponent,
         ProjectsOverviewComponent,
         ProjectsComparisonTableComponent
-    ], imports: [CommonModule,
+    ],
+    imports: [
+        CommonModule,
         FormsModule,
         BrowserModule,
         InputTextModule,
@@ -35,6 +38,10 @@ import { CompareModule } from '../analytics/analytics.module';
         MultiSelectModule,
         ReactiveFormsModule,
         AngularSvgIconModule.forRoot(),
-        CompareModule], providers: [provideHttpClient(withInterceptorsFromDi())] })
+        CompareModule
+    ], providers: [
+        provideHttpClient(withInterceptorsFromDi())
+    ]
+})
 export class ProjectComparisonModule {
 }

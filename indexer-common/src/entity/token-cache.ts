@@ -21,6 +21,12 @@ export class TokenCache implements RawToken {
     status: string;
 
     @Property()
+    createdTimestamp: string;
+
+    @Property()
+    modifiedTimestamp: string;
+
+    @Property()
     lastUpdate: number;
 
     @Property()

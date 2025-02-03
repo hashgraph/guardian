@@ -1,34 +1,31 @@
-<div class="g-dialog-content">
-    <div class="g-dialog-header">
-        <div class="g-dialog-cancel">
-            <div class="g-dialog-cancel-btn" (click)="onNoClick()">
-                <i class="pi pi-times"></i>
-            </div>
-        </div>
-        <div class="g-dialog-title">
-            {{ title }}
-        </div>
-        <div class="g-dialog-actions">
-            <div class="g-dialog-actions-btn" (click)="onSubmit()" [attr.disabled]="!dataForm.valid">
-                {{ button }}
-            </div>
-        </div>
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{ title }}</div>
     </div>
-    <div class="g-dialog-body">
-        <div class="context">
-            <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
-                <div class="example-full-width">
-                    <label for="name">* NAME:</label>
-                    <input
-                        id="name"
-                        pInputText
-                        type="text"
-                        placeholder="Theme name"
-                        formControlName="name"
-                        class="p-inputtext p-component"
-                    />
-                </div>
-            </form>
+    <div class="header-icon" (click)="onNoClick()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <form [formGroup]="dataForm" (ngSubmit)="onSubmit()" class="form-field">
+        <div class="guardian-input-container">
+            <label class="form-label" htmlFor="version">* Name</label>
+            <input formControlName="name" pInputText type="text" placeholder="Theme name" />
+        </div>
+    </form>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button 
+                (click)="onNoClick()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+        <div class="dialog-button">
+            <button 
+                (click)="onSubmit()" 
+                class="guardian-button guardian-button-primary"
+                [disabled]="dataForm.invalid">{{ button }}</button>
         </div>
     </div>
 </div>

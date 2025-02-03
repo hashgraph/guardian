@@ -14,3 +14,4 @@ export * from './synchronize-contracts.js';
 export * from './synchronize-projects.js';
 export * from './synchronize-all.js';
 export * from './synchronize-labels.js';
+export * from './synchronize-formula.js';

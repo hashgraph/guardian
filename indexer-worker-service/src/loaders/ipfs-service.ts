@@ -11,8 +11,8 @@ export class IPFSService {
     public static node: BaseNode;
 
     public static async init() {
-        this.node = new HttpNode();
-        await this.node.start();
+        IPFSService.node = new HttpNode();
+        await IPFSService.node.start();
     }
 
     public static parseCID(file: string): CID | null {
@@ -28,14 +28,14 @@ export class IPFSService {
     }
 
     private static async loadFile(cid: string): Promise<Buffer | undefined> {
-        const check = await this.node.check(cid);
+        const check = await IPFSService.node.check(cid);
         if (check.check === true) {
-            const file = await this.node.get(cid);
+            const file = await IPFSService.node.get(cid);
             console.log(`IPFS loaded: ${cid}`);
             return file;
         } else if (check.check === undefined) {
             console.log(`IPFS check: ${cid}`, check.error);
-            const file = await this.node.get(cid);
+            const file = await IPFSService.node.get(cid);
             console.log(`IPFS loaded: ${cid}`);
             return file;
         } else {
@@ -52,7 +52,7 @@ export class IPFSService {
                     reject(new Error('Timeout exceeded'));
                 }, IPFSService.LOAD_TIMEOUT);
             });
-            return await Promise.race([this.loadFile(cid), timeoutPromise]);
+            return await Promise.race([IPFSService.loadFile(cid), timeoutPromise]);
         } catch (error) {
             console.log(`IPFS error: ${cid}`, error.message);
             return undefined;

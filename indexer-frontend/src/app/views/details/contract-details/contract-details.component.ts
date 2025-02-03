@@ -61,6 +61,10 @@ export class ContractDetailsComponent extends BaseDetailsComponent {
         {
             label: 'details.contract.overview.owner',
             path: 'owner',
+            link: '/contracts',
+            filters: {
+                owner: 'owner',
+            },
         },
         {
             label: 'details.contract.overview.type',
