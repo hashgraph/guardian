@@ -280,6 +280,8 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
 				}
 			})
 
+			cy.wait(10000)
+
 			let requestForDeviceCreationProgress = {
 				method: METHOD.GET,
 				url: API.ApiServer + API.Policies + policyId + "/" + API.Blocks + deviceGridBlockId,
@@ -331,6 +333,8 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
 				}
 			}
 
+			cy.wait(10000)
+
 			Checks.whileDeviceApproving("Approved", requestForDeviceApproveProgress, 0)
 
 			//Get issue data and prepare body for create
@@ -373,6 +377,8 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
 						authorization
 					}
 				}
+
+				cy.wait(10000)
 
 				Checks.whileIssueRequestCreating("Waiting for approval", requestForIssueCreationProgress, 0)
 			})
@@ -418,7 +424,10 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
 				}
 			}
 
+			cy.wait(10000)
+
 			Checks.whileIssueRequestApproving("Approved", requestForIssueApproveProgress, 0)
+
 
 			let requestForBalance = {
 				method: METHOD.GET,
@@ -427,6 +436,8 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
 					authorization
 				}
 			}
+			
+			cy.wait(10000)
 
 			Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
 			Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)

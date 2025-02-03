@@ -10,19 +10,19 @@ context('Start policy test', { tags: ['policies', 'secondPool', 'all'] }, () => 
 	before('Get test id', () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies,
-                headers: {
-                    authorization,
-                },
-                timeout: 180000
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-                response.body.forEach(element => {
-                    if (element.name == "iRec_2") {
-                        policyId = element.id
-                    }
-                })
+				method: METHOD.GET,
+				url: API.ApiServer + API.Policies,
+				headers: {
+					authorization,
+				},
+				timeout: 180000
+			}).then((response) => {
+				expect(response.status).to.eq(STATUS_CODE.OK);
+				response.body.forEach(element => {
+					if (element.name == "iRecDRF") {
+						policyId = element.id
+					}
+				})
 				cy.request({
 					method: METHOD.GET,
 					url: API.ApiServer + API.Policies + policyId,

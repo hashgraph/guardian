@@ -6,37 +6,52 @@ context('Import policy test', { tags: ['policies', 'secondPool', 'all'] }, () =>
     const SRUsername = Cypress.env('SRUser');
     let policyId;
 
-
-    before('Import policy and dry-run it', () => {
+    before('Get policy id', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies,
-                headers: {
-                    authorization,
-                },
-                timeout: 180000
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-                response.body.forEach(element => {
-                    if (element.name == "iRec_2") {
-                        policyId = element.id
-                    }
+            cy.fixture("iRecDRF.policy", "binary")
+                .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
+                .then((file) => {
+                    cy.request({
+                        method: METHOD.POST,
+                        url: API.ApiServer + API.PolicisImportFile,
+                        body: file,
+                        headers: {
+                            "content-type": "binary/octet-stream",
+                            authorization,
+                        },
+                        timeout: 180000,
+                    }).then((response) => {
+                        expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                        cy.request({
+                            method: METHOD.GET,
+                            url: API.ApiServer + API.Policies,
+                            headers: {
+                                authorization,
+                            },
+                            timeout: 180000
+                        }).then((response) => {
+                            expect(response.status).to.eq(STATUS_CODE.OK);
+                            response.body.forEach(element => {
+                                if (element.name == "iRecDRF") {
+                                    policyId = element.id
+                                }
+                            })
+                            cy.request({
+                                method: METHOD.PUT,
+                                url:
+                                    API.ApiServer + API.Policies + policyId + "/" + API.DryRun,
+                                headers: {
+                                    authorization,
+                                },
+                                timeout: 180000,
+                            }).then((response) => {
+                                expect(response.status).to.eq(STATUS_CODE.OK);
+                            });
+                        })
+                    })
                 })
-                cy.request({
-                    method: METHOD.PUT,
-                    url:
-                        API.ApiServer + API.Policies + policyId + "/" + API.DryRun,
-                    headers: {
-                        authorization,
-                    },
-                    timeout: 180000,
-                }).then((response) => {
-                    expect(response.status).to.eq(STATUS_CODE.OK);
-                });
-            });
-        })
-    });
+        });
+    })
 
     it('Import a new policy test', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {

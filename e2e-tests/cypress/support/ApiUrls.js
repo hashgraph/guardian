@@ -99,6 +99,8 @@ const API = {
     PolicisImportMsgPreviewPush: "policies/push/import/message/preview",
     PolicyGroups: "groups/",
     DryRun: "dry-run/",
+    DryRunUser: "dry-run/user/",
+    DryRunLogin: "dry-run/login/",
     ChooseRegistrantRole: "tag/choose_role/blocks/",
     CreateApplication: "tag/create_application/blocks",
     WaitForApproveApplication: "tag/wait_for_approve",
@@ -114,12 +116,38 @@ const API = {
     GetIssues: "tag/issue_requests_grid(evident)/blocks",
     ApproveIssueRequestsBtn: "tag/approve_issue_requests_btn/blocks",
     CreateIssue: "tag/create_issue_request_form/blocks",
+    Categories: "methodologies/categories",
+
+    //Records
+    Record: "record/",
+    RecordStatus: "status/",
+    RecordStart: "recording/start/",
+    RecordStop: "recording/stop/",
+    RecordActions: "recording/actions/",
+    RunningStart: "running/start/",
+    RunningStop: "running/stop/",
+    RecordResults: "running/results/",
+    RecordDetails: "running/details/",
+    RecordFastForward: "running/fast-forward/",
+    RecordRetry: "running/retry/",
+    RecordSkip: "running/skip/",
 
     //Artifacts
     Artifacts: "artifacts/",
 
     //Tags
     Tags: "tags/",
+    ChooseRoleTag: "tag/choose_role/",
+    CreateApplicationTag: "tag/create_application/",
+    ApproveApplicationTag: "tag/approve_registrant_btn/",
+    RegistrantGrid: "tag/registrants_grid/",
+    CreateDeviceTag: "tag/create_device_form/",
+    DeviceGrid: "tag/approve_devices_grid/",
+    ApproveDeviceTag: "tag/approve_device_btn/",
+    CreateIssueTag: "tag/create_issue_request_form/",
+    IssueGrid: "tag/issue_requests_grid(evident)/",
+    ApproveIssueTag: "tag/approve_issue_requests_btn/",
+    GetTokenAmountTag: "tag/vp_grid/",
 
     //General
     ExportCSV: "export?type=csv",
