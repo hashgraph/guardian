@@ -3,6 +3,7 @@ import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } 
 import { IndexerMessageAPI } from '@indexer/common';
 import { ApiClient } from '../api-client.js';
 import { ProjectCoordinatesDTO, LandingAnalyticsDTO, InternalServerErrorDTO } from '#dto';
+import { DataLoadingProgress } from '@indexer/interfaces';
 
 @Controller('landing')
 @ApiTags('landing')
@@ -10,7 +11,7 @@ export class LandingApi extends ApiClient {
     @ApiOperation({
         summary: 'Get landing page analytics',
         description:
-            'Returns count of registries, methodologies, projects, totalIssuance, date',
+            'Returns count of registries, methodologies, projects, totalIssuance, totalSerialized, totalFungible, date',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error',
@@ -46,6 +47,27 @@ export class LandingApi extends ApiClient {
     async getProjectCoordinates(): Promise<ProjectCoordinatesDTO[]> {
         return await this.send(
             IndexerMessageAPI.GET_PROJECTS_COORDINATES,
+            {}
+        );
+    }
+
+    @ApiOperation({
+        summary: 'Get data loading progress',
+        description: 'Returns the number of messages loaded and the total number of messages',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Get('/data-loading-progress')
+    @ApiOkResponse({
+        description: 'Data loading progress result',
+        type: [DataLoadingProgress],
+    })
+    @HttpCode(HttpStatus.OK)
+    async getDataLoadingProgress(): Promise<DataLoadingProgress> {
+        return await this.send(
+            IndexerMessageAPI.GET_DATA_LOADING_PROGRESS,
             {}
         );
     }

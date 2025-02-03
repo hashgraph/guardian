@@ -2,8 +2,8 @@
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
         "@filebase/client": "^0.0.5",
-        "@guardian/common": "^3.0.0",
-        "@guardian/interfaces": "^3.0.0",
+        "@guardian/common": "^3.1.0-rc",
+        "@guardian/interfaces": "^3.1.0-rc",
         "@hashgraph/sdk": "2.52.0",
         "@nestjs/common": "^9.4.1",
         "@nestjs/core": "^9.4.1",
@@ -33,7 +33,7 @@
     "devDependencies": {
         "@types/gulp": "^4",
         "@types/gulp-rename": "^2",
-        "@types/node": "^18.16.0",
+        "@types/node": "^22.10.10",
         "chai": "4.3.4",
         "concurrently": "^8.2.2",
         "gulp": "^4.0.2",
@@ -70,5 +70,5 @@
     },
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "3.0.0"
+    "version": "3.1.0-rc"
 }

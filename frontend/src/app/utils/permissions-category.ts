@@ -170,7 +170,7 @@ export class CategoryGroup implements ICategory {
 
     constructor(permission: IPermission) {
         this.id = permission.category;
-        this.name = categoryNames.get(permission.category) || '';
+        this.name = categoryNames.get(permission.category) || permission.category || '';
         this.actions = actionName;
     }
 

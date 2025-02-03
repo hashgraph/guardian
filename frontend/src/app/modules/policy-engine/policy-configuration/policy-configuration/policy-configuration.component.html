@@ -10,10 +10,10 @@
   <div *ngIf="isModuleValid" [attr.readonly]="readonly" class="policy-configuration">
         <div class="top-toolbar">
             <ng-container *ngIf="rootType === 'Policy'">
-              <!--                <div (click)="backToPolicies()" class="top-toolbar-btn all-status" title="Back">-->
-              <!--                    <i class="pi pi-arrow-left"></i>-->
-              <!--                    <span>Back</span>-->
-              <!--                </div>-->
+                              <div (click)="backToPolicies()" class="top-toolbar-btn all-status" title="Back">
+                                  <i class="pi pi-arrow-left"></i>
+                                  <span>Back</span>
+                              </div>
 
               <div (click)="savePolicy()" class="top-toolbar-btn readonly-status" title="Save Policy">
                     <i class="pi pi-save"></i>

@@ -976,7 +976,7 @@ Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/2838](https://github.com/hashgraph/guardian/issues/2838)
 
-Documentation Link:&#x20;
+Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/dry-run/demo-guide-on-dry-run-operations](https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/dry-run/demo-guide-on-dry-run-operations)
 
 ### Standardize UI on Angular Material, remove/replace PrimeNG
 

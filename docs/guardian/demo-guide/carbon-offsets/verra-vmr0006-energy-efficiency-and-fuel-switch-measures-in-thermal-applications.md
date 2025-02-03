@@ -140,12 +140,12 @@ Verified Carbon Unit (VCU) credits, each equivalent to one tonne of CO2.
 
 ![](<../../../.gitbook/assets/20 (4).png>)
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 13. Once the report is submitted, we now log in as the VVB and validate the monitoring report by clicking on the “Verify” button.\
 
 
-    <figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+    <figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 14. Once the monitoring report is validated, we log in as the SR and click on “Mint” to mint the tokens.\
 
 

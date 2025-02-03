@@ -237,6 +237,10 @@ export class PolicyEngineService {
         return this.http.post<any>(`${this.url}/${policyId}/savepoint/restore`, null);
     }
 
+    public getSavepointState(policyId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${policyId}/savepoint/restore`);
+    }
+
     public loadDocuments(
         policyId: string,
         documentType: string,

@@ -1368,15 +1368,15 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public saveAsPolicy() {
         const dialogRef = this.dialog.open(SavePolicyDialog, {
-            width: '500px',
+            showHeader: false,
+            width: '550px',
+            styleClass: 'guardian-dialog',
             data: {
                 policy: this.policyTemplate,
                 action: this.policyTemplate.status === 'DRAFT'
                     ? PolicyAction.CREATE_NEW_POLICY
                     : null
-            },
-            modal: true,
-            closable: false,
+            }
         });
         dialogRef.onClose.subscribe(async (result) => {
             if (result && this.policyTemplate) {

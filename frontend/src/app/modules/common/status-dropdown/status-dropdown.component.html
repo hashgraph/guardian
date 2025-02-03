@@ -1,6 +1,6 @@
 <p-dropdown
+    #dropdown
     *ngIf="!disabled"
-    [(ngModel)]="value"
     [options]="list"
     [showClear]="false"
     class="guardian-dropdown guardian-dropdown-status status-{{status}}"
@@ -9,9 +9,10 @@
     optionValue="value"
     [placeholder]="label"
     panelStyleClass="guardian-dropdown-panel guardian-dropdown-status-panel"
-    (onChange)="onChange()"
+    (onChange)="onChange($event, dropdown)"
 >
     <ng-template pTemplate="selectedItem">
+        {{label}}
     </ng-template>
     <ng-template let-option pTemplate="item">
         <div>

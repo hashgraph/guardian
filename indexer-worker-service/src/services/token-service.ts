@@ -31,6 +31,14 @@ export class TokenService {
                 data.totalSupply = info.total_supply;
                 data.decimals = info.decimals;
             }
+            
+            if(!data.createdTimestamp) {
+                data.createdTimestamp = info.created_timestamp;
+            }
+            
+            if(!data.modifiedTimestamp) {
+                data.modifiedTimestamp = info.modified_timestamp;
+            }
 
             if (data.memo && row.status !== 'UPDATED') {
                 await TopicService.addTopic(data.memo);

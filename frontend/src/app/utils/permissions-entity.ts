@@ -17,7 +17,7 @@ export class EntityDelegate implements IEntity {
     constructor(permission: IPermission, parent: ICategory) {
         this.parent = parent;
         this.id = permission.entity;
-        this.name = entityNames.get(permission.entity) || '';
+        this.name = entityNames.get(permission.entity) || permission.entity || '';
         this.type = 'checkbox';
         this.actions = new Array(1);
     }
@@ -88,7 +88,7 @@ export class EntityGroup implements IEntity {
     constructor(permission: IPermission, parent: ICategory) {
         this.parent = parent;
         this.id = permission.entity;
-        this.name = entityNames.get(permission.entity) || '';
+        this.name = entityNames.get(permission.entity) || permission.entity || '';
         if (permission.action === PermissionActions.ALL) {
             this.type = 'all';
             this.actions = new Array(1);
@@ -193,7 +193,7 @@ export class EntityAccess implements IEntity {
     constructor(permission: IPermission, parent: ICategory) {
         this.parent = parent;
         this.id = permission.entity;
-        this.name = entityNames.get(permission.entity) || '';
+        this.name = entityNames.get(permission.entity) || permission.entity || '';
         this.type = 'radio';
         this.actions = new Array(4);
         this.control = new UntypedFormControl('Assigned & Published');

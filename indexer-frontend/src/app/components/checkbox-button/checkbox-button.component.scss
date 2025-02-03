@@ -1,0 +1,53 @@
+:host {
+    --checkbox-button-on-first-color: #4169E2;
+    --checkbox-button-on-second-color: #e1e7fa;
+    --checkbox-button-off-first-color: #848FA9;
+    --checkbox-button-off-second-color: #ffffff;
+    display: inline-flex;
+}
+
+.guardian-button {
+    width: 100%;
+    min-height: 28px;
+    padding: 1px 12px 1px 8px;
+
+    &[select="false"] {
+        color: var(--checkbox-button-off-first-color);
+        background-color: var(--checkbox-button-off-second-color);
+        border: 1px solid var(--checkbox-button-off-first-color);
+    
+        .guardian-button-icon {
+            width: 0px !important;
+            height: auto !important;
+            position: relative;
+
+            svg {
+                display: none;
+            }
+        }
+    }
+
+    &[select="true"] {
+        color: var(--checkbox-button-on-first-color);
+        background-color: var(--checkbox-button-on-second-color);
+        border: 1px solid var(--checkbox-button-on-first-color);
+
+        .guardian-button-icon {
+            width: 24px !important;
+            height: auto !important;
+            position: relative;
+        
+            svg {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                fill: var(--checkbox-button-on-first-color);
+            }
+        }
+    }
+
+    .guardian-button-label {
+        padding-left: 4px;
+    }
+}

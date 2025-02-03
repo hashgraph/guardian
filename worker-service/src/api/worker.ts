@@ -19,7 +19,6 @@ function rejectTimeout(t: number): Promise<void> {
     })
 }
 
-
 function getAnalytycsHeaders() {
     const headers: any = {};
     const token = process.env.ANALYTICS_SERVICE_TOKEN;

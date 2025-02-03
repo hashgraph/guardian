@@ -302,11 +302,11 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
         });
 
     /**
-     * Inactivate schema rule
+     * Get schema rule data
      *
-     * @param {any} msg - schema rule id
+     * @param {any} msg - options
      *
-     * @returns {any} - schema rule
+     * @returns {any} - schema rule data
      */
     ApiResponse(MessageAPI.GET_SCHEMA_RULE_DATA,
         async (msg: {

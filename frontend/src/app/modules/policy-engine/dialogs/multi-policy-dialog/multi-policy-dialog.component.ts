@@ -1,6 +1,6 @@
-import {AfterContentInit, Component, Inject, OnInit} from '@angular/core';
-import {PolicyEngineService} from 'src/app/services/policy-engine.service';
-import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
+import { AfterContentInit, Component, Inject, OnInit } from '@angular/core';
+import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 /**
  * Export schema dialog.
@@ -80,7 +80,7 @@ export class MultiPolicyDialogComponent implements OnInit, AfterContentInit {
         }, 100);
     }
 
-    onOk(): void {
+    onClose(): void {
         this.dialogRef.close();
     }
 

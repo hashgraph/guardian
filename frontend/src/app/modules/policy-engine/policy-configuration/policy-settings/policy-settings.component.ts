@@ -215,15 +215,13 @@ export class PolicySettingsComponent implements OnInit {
             newTheme.name = 'New Theme';
         }
         const dialogRef = this.dialog.open(NewThemeDialog, {
+            showHeader: false,
             width: '650px',
-            // panelClass: 'g-dialog',
+            styleClass: 'guardian-dialog',
             data: {
                 type,
                 theme: newTheme
-            },
-            styleClass: 'g-dialog',
-            modal: true,
-            closable: false,
+            }
         });
         dialogRef.onClose.subscribe(async (r) => {
             if (r) {
@@ -329,14 +327,13 @@ export class PolicySettingsComponent implements OnInit {
 
     public editTheme(theme: Theme) {
         const dialogRef = this.dialog.open(NewThemeDialog, {
+            showHeader: false,
             width: '650px',
+            styleClass: 'guardian-dialog',
             data: {
                 type: 'edit',
                 theme: theme
             },
-            styleClass: 'g-dialog',
-            modal: true,
-            closable: false,
         });
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {

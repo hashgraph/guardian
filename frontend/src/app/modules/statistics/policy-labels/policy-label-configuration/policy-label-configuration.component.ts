@@ -13,7 +13,7 @@ import { SearchLabelDialog } from '../dialogs/search-label-dialog/search-label-d
 import { PolicyLabelPreviewDialog } from '../dialogs/policy-label-preview-dialog/policy-label-preview-dialog.component';
 import { LabelConfig } from './components/label-config';
 import { RulesConfig } from './components/rules-config';
-import { CustomCustomDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 
 @Component({
     selector: 'app-policy-label-configuration',
@@ -280,7 +280,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
     }
 
     private publish() {
-        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',
