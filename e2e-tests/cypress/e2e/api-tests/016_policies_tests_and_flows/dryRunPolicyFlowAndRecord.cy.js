@@ -81,7 +81,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                     //Choose registrant role 
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.Policies + policyId + "/" + API.ChooseRoleTag + API.Blocks,
+                        url: API.ApiServer + API.Policies + policyId + "/" + API.ChooseRegistrantRole,
                         headers: {
                             authorization
                         },
@@ -96,7 +96,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                         //Create application
                         cy.request({
                             method: METHOD.POST,
-                            url: API.ApiServer + API.Policies + policyId + "/" + API.CreateApplicationTag + API.Blocks,
+                            url: API.ApiServer + API.Policies + policyId + "/" + API.CreateApplication,
                             headers: {
                                 authorization
                             },
@@ -145,7 +145,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                     //Choose approver role
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.Policies + policyId + "/" + API.ChooseRoleTag + API.Blocks,
+                        url: API.ApiServer + API.Policies + policyId + "/" + API.ChooseRegistrantRole,
                         headers: {
                             authorization
                         },
@@ -158,7 +158,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                         //Get document id for approve
                         cy.request({
                             method: METHOD.GET,
-                            url: API.ApiServer + API.Policies + policyId + "/" + API.RegistrantGrid + API.Blocks,
+                            url: API.ApiServer + API.Policies + policyId + "/" + API.GetApplications,
                             headers: {
                                 authorization
                             },
@@ -170,7 +170,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                             //Approve application
                             cy.request({
                                 method: METHOD.POST,
-                                url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveApplicationTag + API.Blocks,
+                                url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveApplication,
                                 headers: {
                                     authorization
                                 },
@@ -208,7 +208,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                 //Create device
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.CreateDeviceTag + API.Blocks,
+                    url: API.ApiServer + API.Policies + policyId + "/" + API.CreateDevice,
                     headers: {
                         authorization
                     },
@@ -288,7 +288,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                 //Get device document id
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.DeviceApproveGrid + API.Blocks,
+                    url: API.ApiServer + API.Policies + policyId + "/" + API.GetDevices,
                     headers: {
                         authorization
                     },
@@ -300,7 +300,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                     //Approve device
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveDeviceTag + API.Blocks,
+                        url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveDevice,
                         headers: {
                             authorization
                         },
@@ -336,7 +336,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                 //Create issue request
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.CreateIssueTag + API.Blocks,
+                    url: API.ApiServer + API.Policies + policyId + "/" + API.CreateIssue,
                     headers: {
                         authorization
                     },
@@ -415,7 +415,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                 //Get issue document id
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.IssueGrid + API.Blocks,
+                    url: API.ApiServer + API.Policies + policyId + "/" + API.GetIssues,
                     headers: {
                         authorization
                     },
@@ -427,7 +427,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                     //Approve issue
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveIssueTag + API.Blocks,
+                        url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveIssueRequestsBtn,
                         headers: {
                             authorization
                         },

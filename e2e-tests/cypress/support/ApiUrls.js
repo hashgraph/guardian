@@ -137,8 +137,6 @@ const API = {
 
     //Tags
     Tags: "tags/",
-    ChooseRoleTag: "tag/choose_role/",
-    CreateApplicationTag: "tag/create_application/",
     ApproveApplicationTag: "tag/approve_registrant_btn/",
     RegistrantGrid: "tag/registrants_grid/",
     CreateDeviceTag: "tag/create_device_form/",
