@@ -12,7 +12,7 @@ services:
       - cypress-container
     environment:
       - PORT=${PORT}
-      - CYPRESS_baseUrl=http://localhost:3000
+      - CYPRESS_baseUrl=http://localhost:4200
       - TAG=${TAG}
     network_mode: "host"
-    command: ./entrypoint.sh
+    command: "./entrypoint.sh"
