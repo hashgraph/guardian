@@ -142,7 +142,7 @@ const API = {
     ApproveApplicationTag: "tag/approve_registrant_btn/",
     RegistrantGrid: "tag/registrants_grid/",
     CreateDeviceTag: "tag/create_device_form/",
-    DeviceGrid: "tag/approve_devices_grid/",
+    DeviceApproveGrid: "tag/approve_devices_grid/",
     ApproveDeviceTag: "tag/approve_device_btn/",
     CreateIssueTag: "tag/create_issue_request_form/",
     IssueGrid: "tag/issue_requests_grid(evident)/",

@@ -288,7 +288,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                 //Get device document id
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.DeviceGrid + API.Blocks,
+                    url: API.ApiServer + API.Policies + policyId + "/" + API.DeviceApproveGrid + API.Blocks,
                     headers: {
                         authorization
                     },
