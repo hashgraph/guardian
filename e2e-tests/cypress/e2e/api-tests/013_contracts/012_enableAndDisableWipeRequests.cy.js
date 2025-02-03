@@ -420,6 +420,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
 
 			Checks.whileIssueRequestApproving("Approved", requestForIssueApproveProgress, 0)
 
+
 			let requestForBalance = {
 				method: METHOD.GET,
 				url: API.ApiServer + API.ListOfTokens,
