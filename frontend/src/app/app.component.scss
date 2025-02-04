@@ -479,3 +479,7 @@ body {
 ::ng-deep p-progressspinner svg circle {
     stroke: var(--button-primary-color) !important;
 }
+
+::ng-deep p-dropdown .p-dropdown-label-empty {
+    min-height: 36px;
+}
