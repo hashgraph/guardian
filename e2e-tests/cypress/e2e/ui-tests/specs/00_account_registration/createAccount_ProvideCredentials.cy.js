@@ -1,9 +1,7 @@
-import { AuthenticationPage } from "../../pages/authentication";
 import { HomePage } from "../../pages/homepage";
-import { ConfigPage } from "../../pages/configpage";
-
-const home = new AuthenticationPage();
 const homepage = new HomePage();
+
+import { ConfigPage } from "../../pages/configpage";
 const configpage = new ConfigPage();
 
 context("Create User Accounts", { tags: ['ui'] }, () => {
@@ -19,7 +17,7 @@ context("Create User Accounts", { tags: ['ui'] }, () => {
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
-        home.visit();
+        homepage.visit();
     })
 
     it("Create Standard Registry by providing Hedera ID and KEY", () => {

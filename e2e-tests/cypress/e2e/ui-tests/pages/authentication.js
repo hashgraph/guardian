@@ -1,6 +1,4 @@
 import URL from "../../../support/GuardianUrls";
-import { METHOD} from "../../../support/api/api-const";
-import API from "../../../support/ApiUrls";
 
 const AuthPageLocators = {
     usernameInput: '[formcontrolname="login"]',
@@ -19,8 +17,8 @@ const AuthPageLocators = {
     createNewBtn: "*[class^='create-link']",
     roleName: "*[class^='role-name']",
     role: '[role="combobox"]',
-    title :  'h1.user-onboarding-wizard__title',
-    card : '.standard-registry__card',
+    title: 'h1.user-onboarding-wizard__title',
+    card: '.standard-registry__card',
     taskReq: '/api/v1/tasks/**',
 };
 
@@ -29,13 +27,13 @@ export class AuthenticationPage {
         cy.visit(URL.Root);
     }
 
-    static waitForTask(){
+    static waitForTask() {
         cy.intercept(AuthPageLocators.taskReq).as(
-          "waitForTastToComplete"
-      );
-      cy.wait("@waitForTastToComplete", { timeout: 100000 })
-      }
-      
+            "waitForTastToComplete"
+        );
+        cy.wait("@waitForTastToComplete", { timeout: 100000 })
+    }
+
 
     login(username) {
         cy.reload()
@@ -52,12 +50,12 @@ export class AuthenticationPage {
 
     checkSetup(role) {
         cy.wait(2000);
-       
+
 
         cy.get("body").then((body) => {
             if (body.find(AuthPageLocators.card).length) {
                 cy.log("Requires registration")
-           
+
                 cy.contains('StandardRegistry').click();
                 cy.contains('Next').click();
                 cy.contains(AuthPageLocators.generateBtn).click();
@@ -68,9 +66,9 @@ export class AuthenticationPage {
                     cy.contains("Policies").click({ force: true });
                 });
             }
-         else {
-                     cy.log("Role already set")
-                }
+            else {
+                cy.log("Role already set")
+            }
         });
     }
 

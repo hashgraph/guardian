@@ -1,16 +1,18 @@
-import common from "mocha/lib/interfaces/common";
-import {AuthenticationPage} from "../../pages/authentication";
-import {LogsPage} from "../../pages/logs";
+import { HomePage } from "../../pages/homepage";
+const homepage = new HomePage();
 
-const home = new AuthenticationPage();
+import { LogsPage } from "../../pages/logs";
 const logs = new LogsPage();
 
-describe("Check logs page", {tags: '@ui'}, () => {
+
+context("Check logs page", { tags: ['ui'] }, () => {
+
+    const SRUsername = Cypress.env('SRUser');
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
-        home.visit();
-        home.login("StandardRegistry");
+        homepage.visit();
+        homepage.login(SRUsername);
         logs.openLogsTab();
     })
 
@@ -37,13 +39,6 @@ describe("Check logs page", {tags: '@ui'}, () => {
         logs.verifyIfTypeColumnContains("WARN");
     });
 
-    //cannot click on dymamic element by cypress
-    // it("Verify if it possible to filter by data range", () => {
-    //     logs.openDateRangePicker();
-    //     logs.selectTodayDate();
-    //     logs.clickOnApplyButton();
-    // });
-
     it("Verify if it possible to filter by data attributes", () => {
         logs.selectFirstOptionInAttributes();
         logs.clickOnApplyButton();
@@ -66,4 +61,10 @@ describe("Check logs page", {tags: '@ui'}, () => {
         logs.verifyIfAttributeFieldIsEmpty();
     });
 
+    //datepickers don't work on logs page
+    // it("Verify if it possible to filter by data range", () => {
+    //     logs.openDateRangePicker();
+    //     logs.selectTodayDate();
+    //     logs.clickOnApplyButton();
+    // });
 });

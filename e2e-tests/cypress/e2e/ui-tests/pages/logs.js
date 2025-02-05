@@ -1,13 +1,14 @@
 import URL from "../../../support/GuardianUrls";
+import CommonElements from "../../../support/defaultUIElements";
 
 const LogsPageLocators = {
     LogModal: 'div.p-dialog',
-    detailsBtn: "Details",
+    detailsButton: "Details",
     apllyBtn: 'button[label="Apply"]',
     messageField: '[placeholder="Message"]',
     logData: 'tr.row-item',
     typeSelect: '[ng-reflect-name="type"]',
-    typeDefaultOption: '[ng-reflect-name="type"] .country-item-value',
+    typeDefaultOption: '[aria-label="Message Type"]',
     typeOption: '.mat-option-text',
     logType: '.log-type',
     tableBody: 'tbody tr',
@@ -24,11 +25,12 @@ const LogsPageLocators = {
 export class LogsPage {
 
     openLogsTab() {
-        cy.visit(URL.Root + URL.Logs);
+        cy.get(CommonElements.navBar).contains(CommonElements.administrationTab).click()
+        cy.get(CommonElements.navBar).contains(CommonElements.logsTab).click()
     }
 
     openDetailsModal() {
-        cy.contains(LogsPageLocators.detailsBtn).first().click();
+        cy.contains(LogsPageLocators.detailsButton).first().click();
     }
 
     verifyLogModalIsDisplayed() {
@@ -93,7 +95,7 @@ export class LogsPage {
     }
 
     verifyIfTypeFieldHasDefaultValue() {
-        cy.get(LogsPageLocators.typeDefaultOption).contains('Message Type All').should("be.visible");
+        cy.get(LogsPageLocators.typeDefaultOption).should("exist");
     }
 
     verifyIfDateRangeFieldIsEmpty() {

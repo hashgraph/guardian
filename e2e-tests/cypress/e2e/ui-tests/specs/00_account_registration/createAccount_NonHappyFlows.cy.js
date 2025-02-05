@@ -1,28 +1,25 @@
-import { AuthenticationPage } from "../../pages/authentication";
 import { HomePage } from "../../pages/homepage";
-
-const home = new AuthenticationPage();
 const homepage = new HomePage();
 
 context("Create User Accounts_Non Happy Scenarios", { tags: ['ui'] }, () => {
 
-    const SRName = "SR";
-    const userName = "User";
+    const SRUsername = Cypress.env('SRUser');
+    const userUsername = Cypress.env('User');
     const SRNameNew = "TestSRUI" + Math.floor(Math.random() * 9999);
     const userNameNew = "TestUserUI" + Math.floor(Math.random() * 9999);
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
-        home.visit();
+        homepage.visit();
     })
 
     it("Verify error message when SR account with the same name alredy exists", () => {
-        homepage.createAccount("SR", SRName);
+        homepage.createAccount("SR", SRUsername);
         homepage.verifyAlert();
     });
 
     it("Verify error message when User account with the same name alredy exists", () => {
-        homepage.createAccount("User", userName);
+        homepage.createAccount("User", userUsername);
         homepage.verifyAlert();
     });
 
