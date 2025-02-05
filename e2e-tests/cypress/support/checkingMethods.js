@@ -222,3 +222,16 @@ export const getAccessToken = (username) => {
         })
     })
 }
+
+export const waitForElement = (element, maxAttempts = 200, interval = 2000) => {
+    if (maxAttempts > 0) {
+        maxAttempts--;
+        cy.get('body').then((body) => {
+            if (body.find(element).length == 0) {
+                cy.log("Waiting for operation proceed...");
+                cy.wait(interval);
+                waitForElement(element, maxAttempts, interval);
+            }
+        })
+    }
+}
