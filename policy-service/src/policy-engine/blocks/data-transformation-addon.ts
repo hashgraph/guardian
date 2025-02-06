@@ -1,5 +1,5 @@
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { IPolicyAddonBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
+import { IPolicyAddonBlock, IPolicyDocument } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
 import { fileURLToPath } from 'url';
@@ -51,9 +51,9 @@ export class DataTransformationAddon {
             worker.on('error', (error) => {
                 reject(error);
             });
-            worker.on('message', async (data) => {
+            worker.on('message', async (result: any) => {
                 try {
-                    await done(data.result, data.final);
+                    await done(result.result, result.final);
                 } catch (error) {
                     reject(error);
                 }
