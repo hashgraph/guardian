@@ -102,7 +102,7 @@ export class DocumentViewComponent implements OnInit {
             if (!this.schemaMap[type]) {
                 this.schemaMap[type] = null;
             }
-            if(!this.schemaId) {
+            if (!this.schemaId) {
                 this.schemaId = `#${type}`;
             }
         }
@@ -134,6 +134,7 @@ export class DocumentViewComponent implements OnInit {
                 })
                 .pipe(takeUntil(this.destroy$))
         )
+
         requests.push(
             this.formulasService
                 .getFormulasData({
@@ -148,6 +149,10 @@ export class DocumentViewComponent implements OnInit {
         forkJoin(requests).subscribe((results: any[]) => {
             const formulas = results.pop();
             const rules = results.pop();
+
+            if (!formulas.document) {
+                formulas.document = { document: this.document };
+            }
 
             for (const result of results) {
                 if (result) {
