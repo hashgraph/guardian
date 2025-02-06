@@ -150,10 +150,6 @@ export class DocumentViewComponent implements OnInit {
             const formulas = results.pop();
             const rules = results.pop();
 
-            if (!formulas.document) {
-                formulas.document = { document: this.document };
-            }
-
             for (const result of results) {
                 if (result) {
                     try {
@@ -170,6 +166,11 @@ export class DocumentViewComponent implements OnInit {
 
             this.rules = new DocumentValidators(rules);
             this.rulesResults = this.rules.validateVC(this.schemaId, this.document);
+            
+            if (formulas && !formulas.document) {
+                formulas.document = { document: this.document };
+            }
+
             this.formulas = FormulasTree.from(formulas);
             this.formulas?.setDocuments(this.document);
             this.formulasResults = this.formulas?.getFields(this.schemaId);
