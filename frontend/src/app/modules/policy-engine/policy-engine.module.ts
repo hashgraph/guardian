@@ -147,6 +147,7 @@ import { JsonEditorDialogComponent } from './dialogs/json-editor-dialog/json-edi
 import { PolicyTestDialog } from './dialogs/policy-test-dialog/policy-test-dialog.component';
 import { NewImportFileDialog } from './dialogs/new-import-file-dialog/new-import-file-dialog.component';
 import { RequestDocumentBlockDialog } from './policy-viewer/blocks/request-document-block/dialog/request-document-block-dialog.component';
+import { DataTransformationConfigComponent } from './policy-configuration/blocks/calculate/data-transformation-config/data-transformation-config.component';
 
 @NgModule({
     declarations: [
@@ -252,7 +253,8 @@ import { RequestDocumentBlockDialog } from './policy-viewer/blocks/request-docum
         DropdownBlockAddonComponent,
         RequestAddonConfigComponent,
         RequestDocumentBlockAddonComponent,
-        RequestDocumentBlockDialog
+        RequestDocumentBlockDialog,
+        DataTransformationConfigComponent
     ],
     imports: [
         CommonModule,
