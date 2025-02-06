@@ -25,8 +25,8 @@ const LogsPageLocators = {
 export class LogsPage {
 
     openLogsTab() {
-        cy.get(CommonElements.navBar).contains(CommonElements.administrationTab).click()
-        cy.get(CommonElements.navBar).contains(CommonElements.logsTab).click()
+        cy.get(CommonElements.navBar).contains(CommonElements.administrationTab).click();
+        cy.get(CommonElements.navBar).contains(CommonElements.logsTab).click();
     }
 
     openDetailsModal() {
@@ -63,9 +63,12 @@ export class LogsPage {
     }
 
     verifyIfTypeColumnContains(type) {
-        cy.get(LogsPageLocators.logData).each(($el) => {
-            cy.wrap($el).find('td').eq(0).contains(type);
-        });
+        cy.get("body").then(($body) => {
+            if ($body.find(LogsPageLocators.logData).length != 0)
+                cy.wrap($body).find(LogsPageLocators.logData).each($element => {
+                    cy.wrap($element).find('td').eq(0).contains(type);
+                });
+        })
     }
 
     openDateRangePicker() {

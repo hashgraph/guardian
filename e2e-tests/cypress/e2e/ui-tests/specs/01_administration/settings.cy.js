@@ -1,9 +1,8 @@
-import { HomePage } from "../../pages/homepage";
+import { HomePage } from "../../pages/homePage";
 const homepage = new HomePage();
 
 import { SettingsPage } from "../../pages/settings";
 const settings = new SettingsPage();
-
 
 context("Check settings page", { tags: ['ui'] }, () => {
 

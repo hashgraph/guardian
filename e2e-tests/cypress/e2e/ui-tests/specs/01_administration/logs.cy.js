@@ -1,9 +1,8 @@
-import { HomePage } from "../../pages/homepage";
+import { HomePage } from "../../pages/homePage";
 const homepage = new HomePage();
 
 import { LogsPage } from "../../pages/logs";
 const logs = new LogsPage();
-
 
 context("Check logs page", { tags: ['ui'] }, () => {
 

@@ -1,24 +1,26 @@
-import {AuthenticationPage} from "../../pages/authentication";
-import {PoliciesPage} from "../../pages/policies";
+import { HomePage } from "../../pages/homePage";
+const homepage = new HomePage();
 
-const home = new AuthenticationPage();
+import { PoliciesPage } from "../../pages/policies";
 const policies = new PoliciesPage();
 
-describe("Dry run Policy", {tags: '@ui'}, () => {
+context("Dry run Policy", { tags: ['ui'] }, () => {
 
+    const SRUsername = Cypress.env('SRUser');
     const name = Math.floor(Math.random() * 999) + "testName";
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
-        home.visit();
+        homepage.visit();
+        homepage.login(SRUsername);
+        policies.openPoliciesTab();
     })
 
+    //TBD: Full policy flow with tokens minting
     it("checks dry run workflow", () => {
-        home.login("StandardRegistry");
-        policies.openPoliciesTab();
         policies.createPolicyButton();
         policies.fillNewPolicyForm(name);
-        policies.openPoliciesTab();
+        policies.backToPoliciesList();
         policies.checkStatus(name, "Draft");
         policies.startDryRun(name);
         policies.stopDryRun(name);

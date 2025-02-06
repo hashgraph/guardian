@@ -1,9 +1,8 @@
-import { HomePage } from "../../pages/homepage";
+import { HomePage } from "../../pages/homePage";
 const homepage = new HomePage();
 
 import {StatusPage} from "../../pages/status";
 const status = new StatusPage();
-
 
 context("Verify status of services", { tags: ['ui'] }, () => {
 

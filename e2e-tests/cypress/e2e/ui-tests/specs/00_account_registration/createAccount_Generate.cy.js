@@ -1,9 +1,8 @@
-import { HomePage } from "../../pages/homepage";
+import { HomePage } from "../../pages/homePage";
 const homepage = new HomePage();
 
-import { ConfigPage } from "../../pages/configpage";
+import { ConfigPage } from "../../pages/configPage";
 const configpage = new ConfigPage();
-
 
 context("Create User Accounts", { tags: ['ui'] }, () => {
 

@@ -226,11 +226,24 @@ export const getAccessToken = (username) => {
 export const waitForElement = (element, maxAttempts = 200, interval = 2000) => {
     if (maxAttempts > 0) {
         maxAttempts--;
-        cy.get('body').then((body) => {
+        cy.get('body', { log: false }).then((body) => {
             if (body.find(element).length == 0) {
-                cy.log("Waiting for operation proceed...");
-                cy.wait(interval);
+                cy.log(`Waiting for operation to complete after ${interval/1000} seconds...`);
+                cy.wait(interval, { log: false });
                 waitForElement(element, maxAttempts, interval);
+            }
+        })
+    }
+}
+
+export const waitForDryRun = (maxAttempts = 200, interval = 2000) => {
+    if (maxAttempts > 0) {
+        maxAttempts--;
+        cy.get('body', { log: false }).then((body) => {
+            if (body.find("div.loading").length != 0) {
+                cy.log(`Waiting for operation with dry-run policy to complete after ${interval/1000} seconds...`);
+                cy.wait(interval, { log: false });
+                waitForDryRun(maxAttempts, interval);
             }
         })
     }

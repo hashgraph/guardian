@@ -37,6 +37,8 @@ let SRDid;
 
 registerCypressGrep()
 
+require('cy-verify-downloads').addCustomCommand();
+
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 
@@ -274,5 +276,3 @@ before(() => {
         });
     })
 });
-
-require('cy-verify-downloads').addCustomCommand();

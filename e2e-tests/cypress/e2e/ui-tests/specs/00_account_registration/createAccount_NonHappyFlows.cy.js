@@ -1,4 +1,4 @@
-import { HomePage } from "../../pages/homepage";
+import { HomePage } from "../../pages/homePage";
 const homepage = new HomePage();
 
 context("Create User Accounts_Non Happy Scenarios", { tags: ['ui'] }, () => {
