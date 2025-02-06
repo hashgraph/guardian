@@ -367,6 +367,17 @@ export const BlockAbout = {
         'output': null,
         'defaultEvent': false
     },
+    'dataTransformationAddon': {
+        'label': 'Data Transformation',
+        'title': 'Add \'Data Transformation\' Addon',
+        'post': true,
+        'get': true,
+        'children': 'None',
+        'control': 'Special',
+        'input': null,
+        'output': null,
+        'defaultEvent': false,
+    },
     'policyRolesBlock': {
         'label': 'Roles',
         'title': 'Add \'Choice Of Roles\' Block',
