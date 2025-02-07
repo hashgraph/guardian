@@ -49,7 +49,7 @@ context("Workflow iREC 3 Policy", { tags: ['ui'] }, () => {
         userPoliciesPage.registerInPolicy(name);
         homePage.logOut();
 
-        //Token associate
+        //Token grant KYC
         homePage.login(SRUsername);
         tokensPage.openTokensTab();
         tokensPage.grantKYC(name, userUsername);

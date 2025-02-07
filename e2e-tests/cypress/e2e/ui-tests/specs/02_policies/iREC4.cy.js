@@ -1,71 +1,82 @@
+import { HomePage } from "../ui-tests/pages/homePage";
+const homePage = new HomePage();
 
-import {AuthenticationPage} from "../../pages/authentication";
-import {PoliciesPage} from "../../pages/policies";
-import {RegistrantPage} from "../../pages/registrant-page";
-import {TokensPage} from "../../pages/tokens";
+import { PoliciesPage } from "../ui-tests/pages/policiesPage";
+const policiesPage = new PoliciesPage();
 
-const home = new AuthenticationPage();
-const policies = new PoliciesPage();
-const registrant = new RegistrantPage();
-const tokens = new TokensPage();
+import { UserManagementPage } from "../ui-tests/pages/userManagementPage";
+const userManagementPage = new UserManagementPage();
 
-describe("Workflow iREC 4 Policy", {tags: '@ui'}, () => {
+import { UserPoliciesPage } from "../ui-tests/pages/userPoliciesPage";
+const userPoliciesPage = new UserPoliciesPage();
+
+import { TokensPage } from "../ui-tests/pages/tokensPage";
+const tokensPage = new TokensPage();
+
+context("Workflow iREC 4 Policy", { tags: ['ui'] }, () => {
+
+    const SRUsername = Cypress.env('SRUser');
+    const userUsername = Cypress.env('User');
+    const name = "iRec_4_1738936261393";
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
-        home.visit();
+        homePage.visit();
     })
 
     it("checks iREC 4 policy workflow", () => {
-        home.login("StandardRegistry");
-        policies.openPoliciesTab();
-        policies.importPolicyButton();
-        policies.importPolicyMessage("1690484516.927729003");  //iRec4
-        policies.openPoliciesTab();
-        policies.publishPolicy();
-        home.logOut("StandardRegistry");
+        //Import and publish policy
+        homePage.login(SRUsername);
+        policiesPage.openPoliciesTab();
+        policiesPage.importPolicyFromIPFS("1707126227.976010003");  //iRec4
+        policiesPage.backToPoliciesList();
+        policiesPage.checkStatus(name, "Draft");
+        policiesPage.publishPolicy(name);
+        policiesPage.backToPoliciesList();
+        policiesPage.checkStatus(name, "Published");
 
-        home.login("Registrant");
-        home.checkSetup("Registrant");
-        registrant.createGroup("Registrant");
-        home.logOut("Registrant");
+        //Give permissions to user
+        userManagementPage.openUserManagementTab();
+        userManagementPage.assignPolicyToUser(userUsername, name);
+        homePage.logOut();
 
-        home.login("StandardRegistry");
-        policies.openPoliciesTab();
-        policies.approveUser();
-        home.logOut("StandardRegistry");
+        //Register user as Registrant and create application
+        homePage.login(userUsername);
+        userPoliciesPage.openPoliciesTab();
+        userPoliciesPage.registerInPolicy(name);
+        homePage.logOut();
 
-        home.login("Registrant");
-        registrant.createDevice();
-        home.logOut("Registrant");
+        //Approve application
+        homePage.login(SRUsername);
+        policiesPage.openPoliciesTab();
+        policiesPage.approveUserInPolicy(name);
+        homePage.logOut();
 
-        home.login("StandardRegistry");
-        policies.openPoliciesTab();
-        policies.approveDevice();
-        home.logOut("StandardRegistry");
+        //Create device
+        homePage.login(userUsername);
+        userPoliciesPage.openPoliciesTab();
+        userPoliciesPage.createDeviceInPolicy(name);
+        homePage.logOut();
 
-        home.login("Registrant");
-        registrant.createIssueRequest();
-        home.logOut("Registrant");
+        //Approve device
+        homePage.login(SRUsername);
+        policiesPage.openPoliciesTab();
+        policiesPage.approveDeviceInPolicy(name);
+        homePage.logOut();
 
-        home.login("StandardRegistry");
-        policies.openPoliciesTab();
-        policies.approveRequest();
-        home.logOut("StandardRegistry");
+        //Create issue request
+        homePage.login(userUsername);
+        userPoliciesPage.openPoliciesTab();
+        //TBD: verify that datepicker works
+        userPoliciesPage.createIssueRequestInPolicy(name);
+        homePage.logOut();
 
-        home.login("Registrant");
-        policies.openPoliciesTab();
-        registrant.checkTokenHistory();
-        registrant.openTokensTab();
-        registrant.checkTokenBalance();
-        home.logOut("Registrant");
-
-        home.login("StandardRegistry");
-        tokens.openTokensTab();
-        policies.checkTokenHistory();
-        policies.openPoliciesTab();
-        policies.checkTrustChain();
-        home.logOut("StandardRegistry");
-
+        //Approve issue request and verify balance increase
+        homePage.login(SRUsername);
+        policiesPage.openPoliciesTab();
+        policiesPage.approveIssueRequestInPolicy(name);
+        tokensPage.openTokensTab();
+        tokensPage.verifyBalance(name, userUsername);
+        homePage.logOut();
     });
 });
