@@ -5,14 +5,14 @@ const d = new Date(2022, 3, 3);
 
 const UserPoliciesPageLocators = {
     roleSelect: '[formcontrolname="roleOrGroup"]',
-    registrantRole: "li[aria-label='Registrant']",
+    role: (roleName) => `li[aria-label=${roleName}]`,
     nextButton: "button[label='Next']",
     requestDocumentBlock: "request-document-block",
     nextButtonInApplicationRegister: "button:contains('Next ')",
     submitButton: "button:contains('Submit ')",
     divTitle: "div.title",
     waitingForApprovalTitle: "span[title='Waiting for approval']",
-    revokeOption: "div.btn-option",
+    signedStatus: "div.status-SIGNED",
     deviceTab: "Devices",
     issueRequestsTab: "Issue Requests",
     createDeviceButton: " Create New Device ",
@@ -20,6 +20,7 @@ const UserPoliciesPageLocators = {
     createButton: 'Create',
     requiredFillDateLabel: "Please make sure the field contain a valid date value",
     requiredFillNumberLabel: "Please make sure the field contain a valid number value",
+    signButton: 'div.btn-SIGN',
 
     policiesList: "/api/v1/policies?pageIndex=0&pageSize=10",
     passInput: '[formcontrolname="password"]',
@@ -45,51 +46,72 @@ const UserPoliciesPageLocators = {
 
 export class UserPoliciesPage {
 
-    openPoliciesTab(){
+    openPoliciesTab() {
         cy.get(CommonElements.navBar).should('exist')
         cy.get("body").then(($body) => {
-            if ($body.find(`span:contains(${CommonElements.userPoliciesTab})`).length==0)
+            if ($body.find(`span:contains(${CommonElements.userPoliciesTab})`).length == 0)
                 cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).click();
         })
         cy.get(CommonElements.navBar).contains(CommonElements.userPoliciesTab).click();
     }
 
-    registerInPolicy(name) {
-        this.openPolicy(name);
-        cy.get(UserPoliciesPageLocators.roleSelect).click();
-        cy.get(UserPoliciesPageLocators.registrantRole).click();
+    registerInPolicy(role = "Registrant") {
+        cy.get(UserPoliciesPageLocators.roleSelect).should('be.visible').click();
+        cy.get(UserPoliciesPageLocators.role(role)).click();
         cy.get(UserPoliciesPageLocators.nextButton).click();
-        Checks.waitForElement(UserPoliciesPageLocators.requestDocumentBlock);
-        cy.get(UserPoliciesPageLocators.nextButtonInApplicationRegister).click();
-        cy.get(UserPoliciesPageLocators.nextButtonInApplicationRegister).click();
-        cy.get(UserPoliciesPageLocators.submitButton).click();
-        Checks.waitForElement(UserPoliciesPageLocators.divTitle);
+        if (role == "Registrant") {
+            Checks.waitForElement(UserPoliciesPageLocators.requestDocumentBlock);
+            cy.get(UserPoliciesPageLocators.nextButtonInApplicationRegister).click();
+            cy.get(UserPoliciesPageLocators.nextButtonInApplicationRegister).click();
+            cy.get(UserPoliciesPageLocators.submitButton).click();
+            Checks.waitForElement(UserPoliciesPageLocators.divTitle);
+        }
+        else
+            Checks.waitForElement(UserPoliciesPageLocators.signButton);
     }
 
-    openPolicy(name){
+    openPolicy(name) {
         cy.contains("td", name).siblings().eq(0).click();
     }
 
-    createDeviceInPolicy(name) {
-        this.openPolicy(name);
+    createDeviceInPolicy() {
         cy.contains(UserPoliciesPageLocators.deviceTab).click();
         cy.contains(UserPoliciesPageLocators.createDeviceButton).click();
         cy.get(CommonElements.dialogWindow).contains(UserPoliciesPageLocators.createButton).click();
         Checks.waitForElement(UserPoliciesPageLocators.waitingForApprovalTitle);
     }
 
-    createIssueRequestInPolicy(name) {
-        this.openPolicy(name);
+    createIssueRequestInPolicy() {
         cy.contains(UserPoliciesPageLocators.deviceTab).click();
         cy.contains(UserPoliciesPageLocators.createIssueRequestButton).click();
-        cy.contains(UserPoliciesPageLocators.requiredFillDateLabel).parent().parent().find('input').type('2025-01-03', {force: true})
-        cy.contains(UserPoliciesPageLocators.requiredFillDateLabel).parent().parent().find('input').type('2025-01-05', {force: true})
+        cy.contains(UserPoliciesPageLocators.requiredFillDateLabel).parent().parent().find('input').type('2025-01-03', { force: true })
+        cy.contains(UserPoliciesPageLocators.requiredFillDateLabel).parent().parent().find('input').type('2025-01-05', { force: true })
         cy.contains(UserPoliciesPageLocators.requiredFillNumberLabel).parent().parent().find('input').type('1')
         cy.get(CommonElements.dialogWindow).contains(UserPoliciesPageLocators.createButton).click();
         cy.get(CommonElements.Loading).should('not.exist');
         cy.contains(UserPoliciesPageLocators.issueRequestsTab).click();
         Checks.waitForElement(UserPoliciesPageLocators.waitingForApprovalTitle);
     }
+
+    approve() {
+        cy.get(UserPoliciesPageLocators.signButton).click();
+        Checks.waitForElement(UserPoliciesPageLocators.signedStatus);
+    }
+
+    approveUserInPolicy() {
+        this.approve()
+    }
+
+    approveDeviceInPolicy() {
+        cy.contains(UserPoliciesPageLocators.deviceTab).click();
+        this.approve()
+    }
+
+    approveIssueRequestInPolicy() {
+        cy.contains(UserPoliciesPageLocators.issueRequestsTab).click();
+        this.approve()
+    }
+
 
 
 

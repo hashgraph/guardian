@@ -19,7 +19,7 @@ export class UserManagementPage {
     }
 
     assignPolicyToUser(userName, policyName) {
-        cy.get(userManagementPageLocators.userManagementGrid).contains(userName).siblings().find(userManagementPageLocators.userRoleButton).click();
+        cy.get(userManagementPageLocators.userManagementGrid).contains(new RegExp("^" + userName + "$", "g")).siblings().find(userManagementPageLocators.userRoleButton).click();
         cy.contains(userManagementPageLocators.assignedPoliciesTab).click();
         Checks.waitForLoading();
         cy.contains(policyName).siblings().find(CommonElements.checkBox).click();

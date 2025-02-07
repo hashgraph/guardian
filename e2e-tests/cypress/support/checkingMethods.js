@@ -1,6 +1,7 @@
 const optionKey = "option";
 import { METHOD } from "../support/api/api-const";
 import API from "../support/ApiUrls";
+import CommonElements from "../support/defaultUIElements";
 
 export const whileWipeRequestCreating = (dataToCompare, request, attempts) => {
     if (attempts < 100) {
@@ -227,11 +228,23 @@ export const waitForElement = (element, maxAttempts = 200, interval = 2000) => {
     if (maxAttempts > 0) {
         maxAttempts--;
         cy.get('body', { log: false }).then((body) => {
-            cy.log(body.find(element));
             if (body.find(element).length == 0) {
                 cy.log(`Waiting for operation to complete after ${interval/1000} seconds...`);
                 cy.wait(interval, { log: false });
                 waitForElement(element, maxAttempts, interval);
+            }
+        })
+    }
+}
+//
+export const waitForBalanceIncrease = (balance, username, maxAttempts = 200, interval = 10000) => {
+    if (maxAttempts > 0) {
+        maxAttempts--;
+        cy.get('body', { log: false }).then((body) => {
+            if (body.find(`td:contains(${balance})`).length == 0) {
+                cy.wait(interval, { log: false });
+                cy.contains("td", username).siblings().find(CommonElements.svg).click();
+                waitForElement(balance, username, maxAttempts, interval);
             }
         })
     }

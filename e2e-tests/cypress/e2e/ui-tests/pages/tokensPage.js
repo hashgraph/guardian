@@ -70,7 +70,7 @@ export class TokensPage {
 
 	verifyBalance(name, username) {
 		this.openAndRefreshUserTokensData(name, username);
-		Checks.waitForElement(TokensPageLocators.balanceIncreaseElement);
+		Checks.waitForBalanceIncrease(TokensPageLocators.balanceIncreaseElement, username);
 	}
 
 

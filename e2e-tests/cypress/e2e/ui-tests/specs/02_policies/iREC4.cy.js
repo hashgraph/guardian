@@ -17,7 +17,7 @@ context("Workflow iREC 4 Policy", { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const userUsername = Cypress.env('User');
-    const name = "iRec_4_1738936261393";
+    const name = "iRec_4";
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -42,8 +42,8 @@ context("Workflow iREC 4 Policy", { tags: ['ui'] }, () => {
 
         //Register user as Registrant and create application
         homePage.login(userUsername);
-        userPoliciesPage.openPoliciesTab();
-        userPoliciesPage.registerInPolicy(name);
+        userPoliciesPage.openPolicy(name);
+        userPoliciesPage.registerInPolicy();
         homePage.logOut();
 
         //Approve application
@@ -55,7 +55,8 @@ context("Workflow iREC 4 Policy", { tags: ['ui'] }, () => {
         //Create device
         homePage.login(userUsername);
         userPoliciesPage.openPoliciesTab();
-        userPoliciesPage.createDeviceInPolicy(name);
+        userPoliciesPage.openPolicy(name);
+        userPoliciesPage.createDeviceInPolicy();
         homePage.logOut();
 
         //Approve device
@@ -68,7 +69,8 @@ context("Workflow iREC 4 Policy", { tags: ['ui'] }, () => {
         homePage.login(userUsername);
         userPoliciesPage.openPoliciesTab();
         //TBD: verify that datepicker works
-        userPoliciesPage.createIssueRequestInPolicy(name);
+        userPoliciesPage.openPolicy(name);
+        userPoliciesPage.createIssueRequestInPolicy();
         homePage.logOut();
 
         //Approve issue request and verify balance increase

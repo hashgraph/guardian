@@ -192,24 +192,26 @@ export class PoliciesPage {
         Checks.waitForElement(PoliciesPageLocators.policyBlock, undefined, 5000);
     }
 
-    approveUserInPolicy(name) {
-        cy.contains("td", name).siblings().eq(0).click();
+    approve() {
         cy.get(PoliciesPageLocators.approveButton).click();
         Checks.waitForElement(PoliciesPageLocators.revokeOption);
+    }
+
+    approveUserInPolicy(name) {
+        cy.contains("td", name).siblings().eq(0).click();
+        this.approve()
     }
 
     approveDeviceInPolicy(name) {
         cy.contains("td", name).siblings().eq(0).click();
         cy.contains(PoliciesPageLocators.deviceTab).click();
-        cy.get(PoliciesPageLocators.approveButton).click();
-        Checks.waitForElement(PoliciesPageLocators.revokeOption);
+        this.approve()
     }
 
     approveIssueRequestInPolicy(name) {
         cy.contains("td", name).siblings().eq(0).click();
         cy.contains(PoliciesPageLocators.issueRequestsTab).click();
-        cy.get(PoliciesPageLocators.approveButton).click();
-        Checks.waitForElement(PoliciesPageLocators.revokeOption);
+        this.approve()
     }
 
 
