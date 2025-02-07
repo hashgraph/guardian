@@ -123,6 +123,7 @@
         "raw_data": "Raw data",
         "labels": "Labels",
         "formulas": "Formulas",
+        "table": "Table",
         "tabs": {
             "activity": "Activity"
         },
