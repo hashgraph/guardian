@@ -16,7 +16,6 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 import { LandingService } from '@services/landing.service';
-import { ProgressBarComponent } from "../../components/progress-bar/progress-bar.component";
 
 @Component({
     selector: 'app-home',

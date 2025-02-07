@@ -24,6 +24,7 @@ import {
 } from '@components/overview-form/overview-form.component';
 import { ButtonModule } from 'primeng/button';
 import { FormulasTree } from '../../../models/formula-tree';
+import { ProjectLocationsComponent } from '@components/project-locations/project-locations.component';
 
 @Component({
     selector: 'vc-document-details',
@@ -34,22 +35,23 @@ import { FormulasTree } from '../../../models/formula-tree';
     ],
     standalone: true,
     imports: [
-        CommonModule,
-        LoadingComponent,
-        MatTabsModule,
-        NgxEchartsDirective,
-        MatInputModule,
-        TranslocoModule,
-        TabViewModule,
-        TableComponent,
-        ProgressSpinnerModule,
-        SchemaFormViewComponent,
-        InputTextareaModule,
-        SelectButtonModule,
-        FormsModule,
-        OverviewFormComponent,
-        ButtonModule
-    ],
+    CommonModule,
+    LoadingComponent,
+    MatTabsModule,
+    NgxEchartsDirective,
+    MatInputModule,
+    TranslocoModule,
+    TabViewModule,
+    TableComponent,
+    ProgressSpinnerModule,
+    SchemaFormViewComponent,
+    InputTextareaModule,
+    SelectButtonModule,
+    FormsModule,
+    OverviewFormComponent,
+    ButtonModule,
+    ProjectLocationsComponent
+],
 })
 export class VcDocumentDetailsComponent extends BaseDetailsComponent {
     public chartOption: EChartsOption = createChart();
@@ -132,6 +134,10 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
     formulas?: FormulasTree | null;
     formulasResults?: any | null;
 
+    
+    mapTabs: any[] = ['json', 'table'];
+    mapTabIndex: number = 0;
+
     constructor(
         entitiesService: EntitiesService,
         route: ActivatedRoute,
@@ -140,12 +146,42 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
         super(entitiesService, route, router);
     }
 
+    geoShapes: any = [];
+
     protected override setResult(result?: any) {
         super.setResult(result);
+
         try {
             if (result?.schema) {
                 this.schema = new Schema(result?.schema, '');
                 this.documentViewOption = 'document';
+                
+                if (result?.item?.documents?.length >= 0) {
+                    const geoFieldNames: string[] = [];
+    
+                    this.schema.fields?.forEach((field: any) => {
+                        if (field?.context?.type === 'GeoJSON') {
+                            geoFieldNames.push(field.name);
+                        }
+                    });
+                    
+                    console.log(this.schema);
+                    console.log(geoFieldNames);
+                    console.log(JSON.parse(result.item.documents[0]));
+    
+                    geoFieldNames.forEach(fieldName => {
+                        console.log(fieldName);
+                        result.item.documents.forEach((document: string) => {
+                            const vc = this.getCredentialSubject(JSON.parse(document));
+                            const locations = vc[fieldName];
+
+                            console.log(locations);
+                            if (locations) {
+                                this.geoShapes.push(locations);
+                            }
+                        });
+                    });
+                }
             } else {
                 this.documentViewOption = 'json';
             }

@@ -14,6 +14,22 @@
                     @if (target) {
                     <p-tabPanel [header]="'details.overview' | transloco">
                         <app-overview-form [target]="target" [fields]="overviewFields"></app-overview-form>
+                        
+                        @if (geoShapes?.length > 0) {
+                            <div class="map-project-container">
+                                <app-project-locations [geoShapes]="geoShapes"></app-project-locations>
+                                <div class="map-sidebar">
+                                    <p-tabView [activeIndex]="tabIndex" [hidden]="loading">
+                                        <p-tabPanel [header]="'details.json' | transloco">
+                                            <div>1</div>
+                                        </p-tabPanel>
+                                        <p-tabPanel [header]="'details.table' | transloco">
+                                            <div>2</div>
+                                        </p-tabPanel>
+                                    </p-tabView>
+                                </div>
+                            </div>
+                        }
                     </p-tabPanel>
 
                     <p-tabPanel [header]="'details.documents' | transloco">
@@ -137,3 +153,4 @@
         }
     </div>
 </div>
+
