@@ -13,7 +13,7 @@ describe("Tags Policy", {tags: '@ui'}, () => {
         home.visit();
         home.login("StandardRegistry");
         policies.openPoliciesTab();
-        policies.createPolicyButton();
+        policies.createPolicy();
         policies.fillNewPolicyForm(name);
     })
 

@@ -16,7 +16,7 @@ describe("Workflow  Policy", {tags: '@ui'}, () => {
     it("checks workflow", () => {
         home.login("StandardRegistry");
         policies.openPoliciesTab();
-        policies.createPolicyButton();
+        policies.createPolicy();
         policies.fillNewPolicyForm(name);
     });
 });

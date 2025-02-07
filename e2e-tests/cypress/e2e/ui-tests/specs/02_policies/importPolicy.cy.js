@@ -1,58 +1,31 @@
-import {AuthenticationPage} from "../../pages/authentication";
-import {PoliciesPage} from "../../pages/policies";
+import { HomePage } from "../../pages/homePage";
+const homepage = new HomePage();
 
-const home = new AuthenticationPage();
+import { PoliciesPage } from "../../pages/policies";
 const policies = new PoliciesPage();
 
-describe("Import Policy", {tags: '@ui'}, () => {
+context("Import Policy", { tags: ['ui'] }, () => {
 
-    const name = Math.floor(Math.random() * 999) + "testName";
+    const SRUsername = Cypress.env('SRUser');
+    const importedFromFilePolicyName = "60testName";
+    const importedFromIPFSPolicyName = "406testName";
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
-        home.visit();
-        home.login("StandardRegistry");
+        homepage.visit();
+        homepage.login(SRUsername);
         policies.openPoliciesTab();
     })
 
     it("Verify if it possible to Import published policy from file", () => {
-        policies.clickOnButtonByText("Import");
-        policies.clickOnButtonByTextInModal("Import from file");
-        policies.uploadFile("policyImportPublished.policy");
-        policies.openPoliciesTab();
-        policies.checkPolicyTableContains("60testName");
+        policies.importPolicyFromFile("policyImportPublished.policy");
+        policies.backToPoliciesList();
+        policies.checkStatus(importedFromFilePolicyName, "Draft");
     });
 
     it("Verify if it possible to Import published policy from IPFS", () => {
-        policies.clickOnButtonByText("Import");
-        policies.clickOnButtonByTextInModal("Import from IPFS");
-        policies.fillImportIPFSForm("1695130119.675870328");
-        policies.openPoliciesTab();
-        policies.checkPolicyTableContains("406testName");
+        policies.importPolicyFromIPFS("1738845461.094286000");
+        policies.backToPoliciesList();
+        policies.checkStatus(importedFromIPFSPolicyName, "Draft");
     });
-
-    //its a bug
-    // it("Verify if it possible to Import draft policy from file", () => {
-    //     policies.clickOnButtonByText("Import");
-    //     policies.clickOnButtonByTextInModal("Import from file");
-    //     policies.uploadFile("policyImportDraft.policy");
-    //     policies.openPoliciesTab();
-    //     policies.checkPolicyTableContains("testDraft");
-    // });
-    //
-    // it("Verify if it possible to Import dry run policy from file", () => {
-    //     policies.clickOnButtonByText("Import");
-    //     policies.clickOnButtonByTextInModal("Import from file");
-    //     policies.uploadFile("policyDryRunImport.policy");
-    //     policies.openPoliciesTab();
-    //     policies.checkPolicyTableContains("testDryRunImport");
-    // });
-    //
-    // it("Verify if it possible to Import dry run policy from IPFS", () => {
-    //     policies.clickOnButtonByText("Import");
-    //     policies.clickOnButtonByTextInModal("Import from IPFS");
-    //     policies.fillImportIPFSForm("1695.222205299");
-    //     policies.openPoliciesTab();
-    //     policies.checkPolicyTableContains("policyDryRunImportIPFS");
-    // });
 });

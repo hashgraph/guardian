@@ -13,7 +13,7 @@ describe("Edit Policy. Udo/Redo flow", {tags: '@ui'}, () => {
         home.visit();
         home.login("StandardRegistry");
         policies.openPoliciesTab();
-        policies.createPolicyButton();
+        policies.createPolicy();
         policies.fillNewPolicyForm(name);
         policies.openPoliciesTab();
         policies.checkStatus(name, "Draft");

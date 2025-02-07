@@ -6,10 +6,19 @@ const CommonElements = {
     administrationTab: 'Administration',
     mainPoliciesTab: 'Policies',
     policiesTab: 'Manage Policies',
+    userPoliciesTab: 'List of Policies',
     logsTab: 'Logs',
     settingsTab: 'Settings',
     statusTab: 'Status',
 	dialogWindow: 'div[role="dialog"]',
+    fileInput: 'input[type="file"]',
+    Loading: "div.guardian-loading",
+    userManagementTab: "User Management",
+    checkBox: "p-checkbox",
+    tokensTab: "Tokens",
+    listOfTokensTab:"List of Tokens",
+    manageTokens:"Manage Tokens",
+    svg: "svg-icon"
 };
 
 export default CommonElements;

@@ -18,7 +18,7 @@ context("Dry run Policy", { tags: ['ui'] }, () => {
 
     //TBD: Full policy flow with tokens minting
     it("checks dry run workflow", () => {
-        policies.createPolicyButton();
+        policies.createPolicy();
         policies.fillNewPolicyForm(name);
         policies.backToPoliciesList();
         policies.checkStatus(name, "Draft");

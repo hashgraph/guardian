@@ -14,6 +14,7 @@ const HomePageLocators = {
 	alert: '[role="alert"]',
 	passwordDifError: " Passwords are different ",
 	userAlreadyExistError: "An account with the same name already exists.",
+	logoutIcon: "[ng-reflect-content='Logout']"
 
 	// submitBtn: '[type="submit"]',
 	// logoutBtn: "Log out",
@@ -36,6 +37,10 @@ export class HomePage {
 		cy.get(HomePageLocators.usernameLoginInput).type(username);
 		cy.get(HomePageLocators.passInput).type(password);
 		cy.get(HomePageLocators.loginButton).click();
+	}
+
+	logOut(){
+		cy.get(HomePageLocators.logoutIcon).click();
 	}
 
 	createAccount(accType, username) {

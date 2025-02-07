@@ -17,12 +17,12 @@ context("Workflow Policy Deletion", { tags: ['ui'] }, () => {
     })
 
     it("Verify if it impossible to delete dry run policy", () => {
-        policies.createPolicyButton();
+        policies.createPolicy();
         policies.fillNewPolicyForm(name);
         policies.backToPoliciesList();
         policies.checkStatus(name, "Draft");
         policies.startDryRun(name);
-        policies.checkButtonIsNotActive(name);
+        policies.verifyThatDeleteButtonIsNotActive(name);
         policies.stopDryRun(name);
     });
 

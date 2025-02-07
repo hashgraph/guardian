@@ -7,12 +7,23 @@ const PoliciesPageLocators = {
     deleteButton: "p-button[label='Delete']",
     actionsMore: "div.btn-icon-menu",
     createPolicyButton: 'p-button[ng-reflect-content="Create a Policy"]',
+    importPolicyButton: 'p-button[ng-reflect-content="Import"]',
     inputName: "[formcontrolname='name']",
     policyBlock: '[class="block-item"]',
     policyDeleteButton: "Delete Policy",
     createButton: "Create",
     exportPolicy: "Export policy",
     exportFileButton: " Save to file ",
+    exportMessageIdButton: " Copy message identifier ",
+    publishPolicyButton: 'Publish',
+    versionInput: 'input[id="version"]',
+    importButton: 'button:contains("Import")',
+    importIPFSOption: " Import from IPFS ",
+    asNewPolicyRadioButton: "p-radiobutton[inputid='new-mode']",
+    approveButton: 'div.btn-approve',
+    revokeOption: "div.btn-option",
+    deviceTab: "Devices",
+    issueRequestsTab: "Issue Requests",
 
     // importBtn: '[label="Import"]',
     // importContinueBtn: 'p-button[label="Import"]',
@@ -26,7 +37,6 @@ const PoliciesPageLocators = {
     // policiesList: "/api/v1/policies?pageIndex=0&pageSize=100",
     // continueImportBtn: 'p-button[label="Import"]',
     // publishBtn: "Publish",
-    // versionInput: 'input[id="version"]',
     // publishPolicyBtn: 'button[label="Ok"]',
     // publishedStatus: "Published",
     // dropDawnPublishBtn: "li[role='option']",
@@ -35,7 +45,6 @@ const PoliciesPageLocators = {
     // addBtn: "*[class^='btn-approve btn-option ng-star-inserted']",
     // createPolicyBtn: 'p-button[ng-reflect-content="Create a Policy"]',
     // draftBtn: 'ng-reflect-menu="[object Object]"',
-    // approveBtn: 'div.btn-approve',
     // taskReq: '/api/v1/tasks/**',
     // disabledBtn: 'button.policy-menu-btn-des',
     // modalWindow: 'app-confirmation-dialog',
@@ -78,11 +87,15 @@ const PoliciesPageLocators = {
 export class PoliciesPage {
 
     openPoliciesTab() {
-        cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).click();
+        cy.get(CommonElements.navBar).should('exist')
+        cy.get("body").then(($body) => {
+            if ($body.find(`span:contains(${CommonElements.policiesTab})`).length==0)
+                cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).click();
+        })
         cy.get(CommonElements.navBar).contains(CommonElements.policiesTab).click();
     }
 
-    createPolicyButton() {
+    createPolicy() {
         cy.get(PoliciesPageLocators.createPolicyButton).click();
     }
 
@@ -97,7 +110,7 @@ export class PoliciesPage {
     }
 
     checkStatus(name, status) {
-        cy.contains("td", name).siblings().contains(status).should("be.visible");
+        cy.contains("td", name).siblings().contains(status).should("exist");
     }
 
     deletePolicy(policyName) {
@@ -111,26 +124,103 @@ export class PoliciesPage {
     startDryRun(name) {
         cy.contains("td", name).siblings().contains("Draft").click();
         cy.contains("div.dropdown-item-title", "Dry Run").click();
-        Checks.waitForDryRun();
+        Checks.waitForLoading();
     }
 
     stopDryRun(name) {
         cy.contains("td", name).siblings().contains("div", "In Dry Run").click();
         cy.contains("div.dropdown-item-title", "Stop").click();
-        Checks.waitForDryRun();
+        Checks.waitForLoading();
     }
 
     exportPolicyAsFile(name) {
-        cy.contains(name).parent().parent().find(PoliciesPageLocators.actionsMore).click();
-        cy.contains(PoliciesPageLocators.exportPolicy).click();
+        this.openExportModal(name);
         cy.get(CommonElements.dialogWindow).contains(PoliciesPageLocators.exportFileButton).click();
         cy.verifyDownload('.policy', { contains: true });
     }
 
+    exportPolicyAsMessageId(name) {
+        this.openExportModal(name);
+        cy.wait(500);
+        cy.get(CommonElements.dialogWindow).contains(PoliciesPageLocators.exportMessageIdButton).focus().click();
+        cy.window().then((win) => {
+            win.navigator.clipboard.readText().then((text) => {
+                expect(text).to.match(/\d+\.\d+/g);
+            });
+        });
+    }
+
+    openExportModal(name) {
+        cy.contains(name).parent().parent().find(PoliciesPageLocators.actionsMore).click();
+        cy.contains(PoliciesPageLocators.exportPolicy).click();
+    }
+
+    verifyThatButtonDisabled(buttonName) {
+        cy.contains(buttonName).should('be.disabled');
+    }
+
+    verifyThatDeleteButtonIsNotActive(name) {
+        cy.contains(name).parent().parent().find(PoliciesPageLocators.actionsMore).click();
+        this.verifyThatButtonDisabled(PoliciesPageLocators.policyDeleteButton)
+    }
+
+    publishPolicy(name) {
+        cy.contains("td", name).siblings().eq(3).click();
+        cy.contains("div.dropdown-item-title", PoliciesPageLocators.publishPolicyButton).click();
+        cy.get(PoliciesPageLocators.versionInput).type("0.8.4");
+        cy.contains(CommonElements.Button, PoliciesPageLocators.publishPolicyButton).click();
+        Checks.waitForElement(PoliciesPageLocators.policyBlock, undefined, 5000);
+    }
+
+    importPolicyFromFile(policyFileName) {
+        cy.get(PoliciesPageLocators.importPolicyButton).click();
+        cy.fixture(policyFileName, { encoding: null }).as("policyForImport");
+        cy.get(CommonElements.dialogWindow).find(CommonElements.fileInput).selectFile("@policyForImport", { force: true });
+        cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).click();
+        Checks.waitForElement(PoliciesPageLocators.asNewPolicyRadioButton);
+        cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).click();
+        Checks.waitForElement(PoliciesPageLocators.policyBlock, undefined, 5000);
+    }
+
+    importPolicyFromIPFS(messageId) {
+        cy.get(PoliciesPageLocators.importPolicyButton).click();
+        cy.contains(PoliciesPageLocators.importIPFSOption).click();
+        cy.get(CommonElements.dialogWindow).find(CommonElements.Input).type(messageId);
+        cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).click();
+        Checks.waitForElement(PoliciesPageLocators.asNewPolicyRadioButton);
+        cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).click();
+        Checks.waitForElement(PoliciesPageLocators.policyBlock, undefined, 5000);
+    }
+
+    approveUserInPolicy(name) {
+        cy.contains("td", name).siblings().eq(0).click();
+        cy.get(PoliciesPageLocators.approveButton).click();
+        Checks.waitForElement(PoliciesPageLocators.revokeOption);
+    }
+
+    approveDeviceInPolicy(name) {
+        cy.contains("td", name).siblings().eq(0).click();
+        cy.contains(PoliciesPageLocators.deviceTab).click();
+        cy.get(PoliciesPageLocators.approveButton).click();
+        Checks.waitForElement(PoliciesPageLocators.revokeOption);
+    }
+
+    approveIssueRequestInPolicy(name) {
+        cy.contains("td", name).siblings().eq(0).click();
+        cy.contains(PoliciesPageLocators.issueRequestsTab).click();
+        cy.get(PoliciesPageLocators.approveButton).click();
+        Checks.waitForElement(PoliciesPageLocators.revokeOption);
+    }
 
 
 
 
+
+
+
+    checkButtonInModalIsNotActive(text) {
+        //cy.get(PoliciesPageLocators.dialogContainer).contains(new RegExp("^" + text + "$", "g")).should('have.css', 'cursor', 'default');
+    }
 
     clickOnExportButton(name) {
         // cy.contains(name).parent().parent().find(PoliciesPageLocators.actionsMore).click();
@@ -141,19 +231,8 @@ export class PoliciesPage {
         // cy.get(CommonElements.dialogWindow).contains(text).click({ force: true });
     }
 
-    checkButtonIsNotActive(name) {
-        // cy.contains(name).parent().parent().find(PoliciesPageLocators.actionsMore).click();
-        // cy.contains(PoliciesPageLocators.policyDeleteButton).should('be.disabled');
-    }
-
     importPolicyButton() {
         // cy.get(PoliciesPageLocators.importIcon).click();
-    }
-
-    approveUser() {
-        // cy.contains("Register").first().click();
-        // cy.get(PoliciesPageLocators.approveBtn).click();
-        // cy.wait(60000);
     }
     approveDevice() {
         // cy.contains("Register").first().click();
@@ -204,7 +283,12 @@ export class PoliciesPage {
         // PoliciesPage.waitForPolicyEdit();
     }
 
-    publishPolicy() {
+    checkButtonIsNotActive(name) {
+        // cy.contains(name).parent().parent().find(PoliciesPageLocators.actionsMore).click();
+        // cy.contains(PoliciesPageLocators.policyDeleteButton).should('be.disabled');
+    }
+
+    publishPolicyOld() {
         // cy.get("tbody>tr").eq("0").find("td").eq("0").within((firstCell) => {
         //     cy.wrap(firstCell.text()).as("policyName").then(() => {
         //         cy.get("@policyName").then((policyName) => {
@@ -423,10 +507,6 @@ export class PoliciesPage {
         //         });
         //     });
         // });
-    }
-
-    checkButtonInModalIsNotActive(text) {
-        // cy.get(PoliciesPageLocators.dialogContainer).contains(new RegExp("^" + text + "$", "g")).should('have.css', 'cursor', 'default');
     }
 
     checkButtonInModalIsActive(text) {

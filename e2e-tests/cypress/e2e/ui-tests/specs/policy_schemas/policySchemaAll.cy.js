@@ -15,7 +15,7 @@ describe("Workflow Policy Schemas",  { tags: '@ui' }, () => {
         home.login("StandardRegistry");
         // create policy
        policies.openPoliciesTab();
-       policies.createPolicyButton();
+       policies.createPolicy();
        policies.fillNewPolicyForm(policyname);
        cy.writeFile('test.env.json', {
         policyname: policyname,
