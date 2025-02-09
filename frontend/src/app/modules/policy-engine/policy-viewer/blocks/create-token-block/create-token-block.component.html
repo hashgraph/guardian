@@ -1,14 +1,15 @@
 <div class="content-page" [hidden]="!isExist">
     <ng-container *ngIf="dataForm">
         <form [formGroup]="dataForm" (ngSubmit)="onSubmit()" class="form-page">
-            <h1 *ngIf="title" mat-dialog-title>{{title}}</h1>
+            <h1 *ngIf="title" class="dialog-title">{{title}}</h1>
             <div *ngIf="description" class="description">{{description}}</div>
             <div class="schema-form">
                 <app-token-configuration [dataForm]="dataForm" [contracts]="contracts"
                     [hide-type]="true"></app-token-configuration>
             </div>
-            <div class="page-btns">
-                <button mat-raised-button color="primary" type="submit" [disabled]="!dataForm.valid">Ok</button>
+            <div class="dialog-actions">
+            <button pButton type="submit" label="Ok" [disabled]="!dataForm.valid"
+                    class="p-button-raised p-button-primary raised-button"></button>
             </div>
         </form>
     </ng-container>
