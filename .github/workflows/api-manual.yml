@@ -1,7 +1,16 @@
-name: Guardian CI UI Tests(Manual)
-run-name: Guardian CI UI Tests(Manual)
+name: Guardian CI API Tests(Manual)
+run-name: Guardian CI API Tests(Manual) - ${{ inputs.tags }}
 on:
     workflow_dispatch:
+        inputs:
+            tags:
+                type: string
+                description: Tags for run API tests(smoke, accounts, firstPool and etc.)
+                default: 'all'
+            ui_flag:
+                type: boolean
+                description: True to run UI tests
+                default: false
         description: 'Manual run'
 jobs:
     buildAndTest:
@@ -50,6 +59,11 @@ jobs:
                   popd
                   pushd notification-service
                   yarn run build
+                  popdpushd frontend
+                  npm install
+                  npm run build
+                  npm run build:prod
+                  npm run build:demo
                   popd
                   pushd logger-service
                   yarn run build
@@ -135,13 +149,20 @@ jobs:
                   ACCESS_TOKEN_UPDATE_INTERVAL: 600000
 
             - name: Run tests with Cypress
+              if: ${{ !inputs.ui_flag }}
               run: |
                   pushd e2e-tests
                   npm install
-                  npx cypress run --env "operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=ui,grepFilterSpecs=true" --spec "cypress/e2e/ui-tests/**/*.cy.js" --browser chrome         
+                  npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=${{ inputs.tags }},grepFilterSpecs=true" --spec "cypress/e2e/api-tests/**/*.cy.js" --browser chrome         
                   popd
+
+            - name: Run tests with Cypress UI
+              if: ${{ inputs.ui_flag }}
+              run: |
+                  pushd e2e-tests
+                  npm install
+                  npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=ui,grepFilterSpecs=true" --spec "cypress/e2e/ui-tests/**/*.cy.js" --browser chrome         
+                  popd
+                  
             - name: Publish API Test Results
-              uses: EnricoMi/publish-unit-test-result-action@170bf24d20d201b842d7a52403b73ed297e6645b # v2.18.0
-              if: always()
-              with:
-                  files: e2e-tests/cypress/test_results/**/*.xml
+              uses: EnricoMi/publish-unit-test-result-action@170bf24d20d201b842d7a52403b73ed297e6645b
