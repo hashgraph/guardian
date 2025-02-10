@@ -81,12 +81,12 @@ export class UserPoliciesPage {
         Checks.waitForElement(UserPoliciesPageLocators.waitingForApprovalTitle);
     }
 
-    createIssueRequestInPolicy() {
+    createIssueRequestInPolicy(ammount = '1') {
         cy.contains(UserPoliciesPageLocators.deviceTab).click();
         cy.contains(UserPoliciesPageLocators.createIssueRequestButton).click();
         cy.contains(UserPoliciesPageLocators.requiredFillDateLabel).parent().parent().find('input').type('2025-01-03', { force: true })
         cy.contains(UserPoliciesPageLocators.requiredFillDateLabel).parent().parent().find('input').type('2025-01-05', { force: true })
-        cy.contains(UserPoliciesPageLocators.requiredFillNumberLabel).parent().parent().find('input').type('1')
+        cy.contains(UserPoliciesPageLocators.requiredFillNumberLabel).parent().parent().find('input').type(ammount)
         cy.get(CommonElements.dialogWindow).contains(UserPoliciesPageLocators.createButton).click();
         cy.get(CommonElements.Loading).should('not.exist');
         cy.contains(UserPoliciesPageLocators.issueRequestsTab).click();
