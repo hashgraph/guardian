@@ -102,6 +102,9 @@ jobs:
                   pushd notification-service
                   npm start &
                   sleep 20
+                  pushd frontend
+                  npm start &
+                  sleep 20
                   popd
                   pushd logger-service
                   npm start &
