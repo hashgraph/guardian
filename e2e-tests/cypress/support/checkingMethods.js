@@ -229,12 +229,15 @@ export const waitForElement = (element, maxAttempts = 200, interval = 2000) => {
         maxAttempts--;
         cy.get('body', { log: false }).then((body) => {
             if (body.find(element).length == 0) {
-                cy.log(`Waiting for operation to complete after ${interval/1000} seconds...`);
+                cy.log(`Waiting for operation to complete after ${interval / 1000} seconds...`);
                 cy.wait(interval, { log: false });
                 waitForElement(element, maxAttempts, interval);
             }
         })
     }
+    else
+        throw new Error(`Element doesn't exist after a few attempts...`)
+
 }
 //
 export const waitForBalanceIncrease = (balance, username, maxAttempts = 200, interval = 10000) => {
@@ -244,7 +247,7 @@ export const waitForBalanceIncrease = (balance, username, maxAttempts = 200, int
             if (body.find(`td:contains(${balance})`).length == 0) {
                 cy.wait(interval, { log: false });
                 cy.contains("td", username).siblings().find(CommonElements.svg).click();
-                waitForElement(balance, username, maxAttempts, interval);
+                waitForBalanceIncrease(balance, username, maxAttempts, interval);
             }
         })
     }
@@ -255,7 +258,7 @@ export const waitForLoading = (maxAttempts = 200, interval = 2000) => {
         maxAttempts--;
         cy.get('body', { log: false }).then((body) => {
             if (body.find("div.loading").length != 0) {
-                cy.log(`Waiting for operation with dry-run policy to complete after ${interval/1000} seconds...`);
+                cy.log(`Waiting for operation with dry-run policy to complete after ${interval / 1000} seconds...`);
                 cy.wait(interval, { log: false });
                 waitForLoading(maxAttempts, interval);
             }

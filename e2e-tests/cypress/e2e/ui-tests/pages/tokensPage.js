@@ -68,9 +68,9 @@ export class TokensPage {
 		cy.get(TokensPageLocators.grantKYCButton).click();
 	}
 
-	verifyBalance(name, username) {
+	verifyBalance(name, username, balance = " 1 ") {
 		this.openAndRefreshUserTokensData(name, username);
-		Checks.waitForBalanceIncrease(TokensPageLocators.balanceIncreaseElement, username);
+		Checks.waitForBalanceIncrease(balance, username);
 	}
 
 

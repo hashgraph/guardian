@@ -24,6 +24,7 @@ const PoliciesPageLocators = {
     revokeOption: "div.btn-option",
     deviceTab: "Devices",
     issueRequestsTab: "Issue Requests",
+    approvedLabel: "span[title = 'Approved']",
 
     // importBtn: '[label="Import"]',
     // importContinueBtn: 'p-button[label="Import"]',
@@ -89,7 +90,7 @@ export class PoliciesPage {
     openPoliciesTab() {
         cy.get(CommonElements.navBar).should('exist')
         cy.get("body").then(($body) => {
-            if ($body.find(`span:contains(${CommonElements.policiesTab})`).length==0)
+            if ($body.find(`span:contains(${CommonElements.policiesTab})`).length == 0)
                 cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).click();
         })
         cy.get(CommonElements.navBar).contains(CommonElements.policiesTab).click();
@@ -192,26 +193,29 @@ export class PoliciesPage {
         Checks.waitForElement(PoliciesPageLocators.policyBlock, undefined, 5000);
     }
 
-    approve() {
+    approve(waitFor) {
         cy.get(PoliciesPageLocators.approveButton).click();
-        Checks.waitForElement(PoliciesPageLocators.revokeOption);
+        if (waitFor == "revoke")
+            Checks.waitForElement(PoliciesPageLocators.revokeOption);
+        if (waitFor == "approvedLabel")
+            Checks.waitForElement(PoliciesPageLocators.approvedLabel);
     }
 
-    approveUserInPolicy(name) {
+    approveUserInPolicy(name, waitFor = "revoke") {
         cy.contains("td", name).siblings().eq(0).click();
-        this.approve()
+        this.approve(waitFor);
     }
 
-    approveDeviceInPolicy(name) {
+    approveDeviceInPolicy(name, waitFor = "revoke") {
         cy.contains("td", name).siblings().eq(0).click();
         cy.contains(PoliciesPageLocators.deviceTab).click();
-        this.approve()
+        this.approve(waitFor);
     }
 
-    approveIssueRequestInPolicy(name) {
+    approveIssueRequestInPolicy(name, waitFor = "revoke") {
         cy.contains("td", name).siblings().eq(0).click();
         cy.contains(PoliciesPageLocators.issueRequestsTab).click();
-        this.approve()
+        this.approve(waitFor);
     }
 
 
@@ -313,7 +317,7 @@ export class PoliciesPage {
         // });
     }
 
-    approve() {
+    approveOld() {
         // cy.contains("Policies").click({ force: true });
         // cy.get("td").first().parent().get("td").eq("8").click();
         // cy.wait(12000);
