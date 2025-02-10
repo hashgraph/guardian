@@ -130,7 +130,7 @@ jobs:
                   sleep 20
                   popd
                   pushd frontend
-                  npm start &
+                  ./node_modules/.bin/ng  serve --proxy-config ./proxy.conf.json &
                   sleep 20
                   popd
                   sleep 60
