@@ -79,6 +79,8 @@ export class TokenService {
                     status: '',
                     lastUpdate: 0,
                     serialNumber: 0,
+                    createdTimestamp: '',
+                    modifiedTimestamp: '',
                     hasNext: false,
                     name: '',
                     symbol: '',

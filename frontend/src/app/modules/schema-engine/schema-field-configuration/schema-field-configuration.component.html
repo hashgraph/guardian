@@ -210,8 +210,8 @@
                     </button>
                 </div>
 
-                <div *ngIf="canBePrivate" class="checkbox-field-container">
-                    <p-checkbox [formControl]="field.controlPrivate"></p-checkbox>
+                <div *ngIf="canBePrivate" class="checkbox-field-container private">
+                    <p-checkbox [formControl]="field.controlPrivate" [binary]="true"></p-checkbox>
                     <label class="checkbox-label">Private</label>
                 </div>
             </ng-template>
