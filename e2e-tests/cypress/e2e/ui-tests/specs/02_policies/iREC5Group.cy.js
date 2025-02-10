@@ -1,16 +1,16 @@
-import { HomePage } from "../ui-tests/pages/homePage";
+import { HomePage } from "../../pages/homePage";
 const homePage = new HomePage();
 
-import { PoliciesPage } from "../ui-tests/pages/policiesPage";
+import { PoliciesPage } from "../../pages/policiesPage";
 const policiesPage = new PoliciesPage();
 
-import { UserManagementPage } from "../ui-tests/pages/userManagementPage";
+import { UserManagementPage } from "../../pages/userManagementPage";
 const userManagementPage = new UserManagementPage();
 
-import { UserPoliciesPage } from "../ui-tests/pages/userPoliciesPage";
+import { UserPoliciesPage } from "../../pages/userPoliciesPage";
 const userPoliciesPage = new UserPoliciesPage();
 
-import { TokensPage } from "../ui-tests/pages/tokensPage";
+import { TokensPage } from "../../pages/tokensPage";
 const tokensPage = new TokensPage();
 
 context("Workflow iREC 5 Policy - with Groups(Approver/User)", { tags: ['ui'] }, () => {
