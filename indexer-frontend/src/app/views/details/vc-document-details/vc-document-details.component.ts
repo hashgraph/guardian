@@ -157,25 +157,16 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
                 this.documentViewOption = 'document';
                 
                 if (result?.item?.documents?.length >= 0) {
-                    const geoFieldNames: string[] = [];
-    
-                    this.schema.fields?.forEach((field: any) => {
-                        if (field?.context?.type === 'GeoJSON') {
-                            geoFieldNames.push(field.name);
-                        }
-                    });
+                    const geoFieldPaths: string[] = this.findGeoField(this.schema);
                     
-                    console.log(this.schema);
-                    console.log(geoFieldNames);
-                    console.log(JSON.parse(result.item.documents[0]));
-    
-                    geoFieldNames.forEach(fieldName => {
-                        console.log(fieldName);
+                    // console.log(this.schema);
+                    // console.log(JSON.parse(result.item.documents[0]));
+
+                    geoFieldPaths.forEach(path => {
                         result.item.documents.forEach((document: string) => {
                             const vc = this.getCredentialSubject(JSON.parse(document));
-                            const locations = vc[fieldName];
-
-                            console.log(locations);
+                            const locations = this.getValue(vc, path);
+                            
                             if (locations) {
                                 this.geoShapes.push(locations);
                             }
@@ -284,5 +275,24 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
 
     public getJson(item: any): string {
         return JSON.stringify(item, null, 4);
+    }
+
+    public findGeoField(obj: any): string[] {
+        const fieldNames: string[] = [];
+        if (obj.fields && obj.fields.length > 0) {
+            obj.fields.forEach((field: any) => {
+                if (field?.context?.type === 'GeoJSON') {
+                    fieldNames.push(field.name);
+                }
+                if (field.fields && field.fields.length > 0) {
+                    fieldNames.push(...this.findGeoField(field));
+                }
+            });
+        }
+        return fieldNames;
+    }
+    
+    public getValue(obj: any, path: string): any {
+        return path.split('.').reduce((acc, key) => acc?.[key], obj);
     }
 }

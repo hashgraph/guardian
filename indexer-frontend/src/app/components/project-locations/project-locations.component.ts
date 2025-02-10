@@ -11,7 +11,7 @@ import Select from 'ol/interaction/Select.js';
 import { Router } from '@angular/router';
 import { ProjectCoordinates } from '@indexer/interfaces';
 import { getCenter } from 'ol/extent';
-import { Geometry, MultiPolygon, Polygon } from 'ol/geom';
+import { LineString, MultiLineString, MultiPoint, MultiPolygon, Polygon } from 'ol/geom';
 import { Coordinate } from 'ol/coordinate';
 import { transform } from 'ol/proj';
 
@@ -53,7 +53,7 @@ const POLYGON = {
     SELECTED_BORDER_WIDTH: 3
 };
 
-const cluster = new CircleStyle({
+const clusterStyle = new CircleStyle({
     radius: CLUSTER.RADIUS,
     fill: new Fill({ color: CLUSTER.COLOR }),
     stroke: new Stroke({
@@ -70,7 +70,7 @@ const selectedCluster = new CircleStyle({
     }),
 });
 
-const point = new CircleStyle({
+const pointStyle = new CircleStyle({
     radius: POINT.RADIUS,
     fill: new Fill({ color: POINT.COLOR }),
     stroke: new Stroke({
@@ -87,7 +87,7 @@ const selectedPoint = new CircleStyle({
     }),
 });
 
-const polygon = new Style({
+const polygonStyle = new Style({
     fill: new Fill({
         color: POLYGON.FILL_COLOR,
     }),
@@ -106,26 +106,15 @@ const selectedPolygon = new Style({
     }),
 });
 
-const styles: any = {
+const defaultStyles: any = {
     Point: new Style({
-        image: point,
+        image: pointStyle,
     }),
+    Cluster: new Style({
+        image: clusterStyle,
+    }),
+    Polygon: polygonStyle,
 };
-function styleFunction(feature: any) {
-    const size = feature.get('features').length;
-    return size > 1
-        ? new Style({
-            image: cluster,
-            text: new Text({
-                font: CLUSTER.FONT,
-                text: size.toString(),
-                fill: new Fill({
-                    color: CLUSTER.FONT_COLOR,
-                }),
-            }),
-        })
-        : styles.Point;
-}
 
 const activeStyles: any = {
     Point: new Style({
@@ -136,20 +125,46 @@ const activeStyles: any = {
     }),
     Polygon: selectedPolygon,
 };
+
+function styleFunction(feature: any) {
+    const geometry = feature.getGeometry();
+    if (geometry) {
+        const geometryType = geometry.getType();
+        switch (geometryType) {
+            case 'Point':
+                const size = feature.get('features')?.length;
+                return size > 1
+                    ? new Style({
+                        image: clusterStyle,
+                        text: new Text({
+                            font: CLUSTER.FONT,
+                            text: size.toString(),
+                            fill: new Fill({
+                                color: CLUSTER.FONT_COLOR,
+                            }),
+                        }),
+                    })
+                    : defaultStyles.Point;
+
+            default:
+                return defaultStyles[geometryType];
+        }
+    }
+}
+
 function activeStyleFunction(feature: any) {
     const geometry = feature.getGeometry();
     if (geometry) {
         const geometryType = geometry.getType();
         switch (geometryType) {
             case 'Point':
-                const size = feature.get('features').length;
+                const size = feature.get('features')?.length;
                 return activeStyles[size > 1 ? 'Cluster' : 'Point'];
 
             default:
                 return activeStyles[geometryType];
         }
     }
-
 }
 
 @Component({
@@ -165,30 +180,15 @@ export class ProjectLocationsComponent {
 
     public map!: Map;
     private vectorSource: VectorSource = new VectorSource();
-    private polygonSource: VectorSource = new VectorSource();
+    private geoShapesSource: VectorSource = new VectorSource();
     private center!: Coordinate;
 
     constructor(private router: Router) { }
 
-    ngAfterViewInit() {
-        // this.initMap();
-    }
-
     ngOnChanges() {
-        let mappedLocations: Record<string, ProjectCoordinates[]> = {};
-
         const points: any[] = [];
 
         if (this.projectLocations && this.projectLocations.length > 0) {
-            // mappedLocations = this.projectLocations?.reduce((acc: Record<string, any[]>, location: ProjectCoordinates) => {
-            //     (acc[location.projectId] ||= []).push(location);
-            //     return acc;
-            // }, {} as Record<string, ProjectCoordinates[]>)
-
-            // const polygons: any[] = [];
-
-            console.log(this.projectLocations);
-
             this.projectLocations.forEach(location => {
                 const coordinates = location.coordinates
                     .split('|')
@@ -205,46 +205,6 @@ export class ProjectLocationsComponent {
                     },
                 });
             });
-            
-            
-            // for (const [projectId, locations] of Object.entries(mappedLocations)) {
-            //     const projectCoordinates: any = [];
-            //     let pointsSum: number[] = [0, 0];
-
-            //     locations.forEach(location => {
-            //         const coordinates = location.coordinates
-            //             .split('|')
-            //             .map((coordinate: string) => parseFloat(coordinate));
-            //         pointsSum[0] += coordinates[0];
-            //         pointsSum[1] += coordinates[1];
-            //         projectCoordinates.push(coordinates);
-
-                    
-            //         points.push({
-            //             type: 'Feature',
-            //             geometry: {
-            //                 type: 'Point',
-            //                 coordinates: coordinates,
-            //             },
-            //             properties: {
-            //                 projectId: projectId,
-            //             },
-            //         });
-            //     });
-
-            //     const centerPoint: number[] = [pointsSum[0] / locations.length, pointsSum[1] / locations.length];
-
-            //     points.push({
-            //         type: 'Feature',
-            //         geometry: {
-            //             type: 'Point',
-            //             coordinates: centerPoint,
-            //         },
-            //         properties: {
-            //             projectId: projectId,
-            //         },
-            //     });
-            // }
 
             const pointsFeature = new GeoJSON({
                 featureProjection: 'EPSG:3857',
@@ -255,27 +215,19 @@ export class ProjectLocationsComponent {
 
             this.vectorSource?.clear(true);
             this.vectorSource?.addFeatures(pointsFeature);
-
-            this.polygonSource?.clear(true);
-            // this.polygonSource?.addFeatures(polygonsFeature);
         }
 
         if (this.geoShapes && this.geoShapes.length > 0) {
-            console.log('geoShapes');
-            
             const shapeFeatures: any[] = [];
-            
+
             this.geoShapes.forEach((shape) => {
                 var feature = {
                     type: 'Feature',
                     geometry: shape,
                 }
                 shapeFeatures.push(feature);
-
-
                 this.center = transform(this.getFeatureCenter(shape), 'EPSG:4326', 'EPSG:3857');
             });
-
 
             const features = new GeoJSON({
                 featureProjection: 'EPSG:3857',
@@ -284,24 +236,17 @@ export class ProjectLocationsComponent {
                 features: shapeFeatures,
             });
 
-            // const polygonsFeature = new GeoJSON({
-            //     featureProjection: 'EPSG:3857',
-            // }).readFeatures({
-            //     type: 'FeatureCollection',
-            //     features: polygons,
-            // });
-
             this.vectorSource?.clear(true);
             this.vectorSource?.addFeatures(features);
 
-            this.polygonSource?.clear(true);
-            this.polygonSource?.addFeatures(features);
+            this.geoShapesSource?.clear(true);
+            this.geoShapesSource?.addFeatures(features);
         }
 
         if (!this.map) {
             setTimeout(() => {
                 this.initMap();
-                
+
                 if (this.center) {
                     this.map.getView().animate({
                         center: this.center,
@@ -324,9 +269,9 @@ export class ProjectLocationsComponent {
             style: styleFunction,
         });
 
-        const polygonLayer = new VectorLayer({
-            source: this.polygonSource,
-            style: polygon,
+        const geoShapesLayer = new VectorLayer({
+            source: this.geoShapesSource,
+            style: styleFunction,
         });
 
         this.map = new Map({
@@ -334,7 +279,7 @@ export class ProjectLocationsComponent {
                 new TileLayer({
                     source: new OSM(),
                 }),
-                polygonLayer,
+                geoShapesLayer,
                 clusterLayer,
             ],
             target: 'map',
@@ -346,13 +291,14 @@ export class ProjectLocationsComponent {
         });
         const selectClick = new Select({
             condition: doubleClick,
+            style: styleFunction,
         });
         selectClick.getFeatures().on('add', (event) => {
             // tslint:disable-next-line:no-shadowed-variable
             const features = event.element.get('features');
             const geometry = event.element.getGeometry();
 
-            if (geometry && features.length == 1 && features[0].get('projectId')) {
+            if (geometry && features?.length == 1 && features[0].get('projectId')) {
                 const geometryType = geometry.getType();
                 if (geometryType == 'Point') {
                     this.router.navigate([
@@ -362,20 +308,20 @@ export class ProjectLocationsComponent {
                 }
             }
         });
-        
+
         this.map.addInteraction(selectHover);
         this.map.addInteraction(selectClick);
 
-        if (this.geoShapes) {
+        if (this.geoShapes && this.geoShapes.length > 0) {
             this.map.getView().on('change:resolution', () => {
                 const zoom = this.map.getView().getZoom();
-                
+
                 if (zoom && zoom > 10) {
                     clusterLayer.setVisible(false);
-                    polygonLayer.setVisible(true);
+                    geoShapesLayer.setVisible(true);
                 } else {
                     clusterLayer.setVisible(true);
-                    polygonLayer.setVisible(false);
+                    geoShapesLayer.setVisible(false);
                 }
             });
         }
@@ -386,20 +332,32 @@ export class ProjectLocationsComponent {
 
         const { type, coordinates } = feature;
 
-        if (type === 'Point') {
-            return coordinates;
+        switch (type) {
+            case 'Point': {
+                return coordinates;
+            }
+            case 'MultiPoint': {
+                const geometry = new MultiPoint(coordinates);
+                return getCenter(geometry.getExtent());
+            }
+            case 'LineString': {
+                const geometry = new LineString(coordinates);
+                return getCenter(geometry.getExtent());
+            }
+            case 'Polygon': {
+                const geometry = new Polygon(coordinates);
+                return getCenter(geometry.getExtent());
+            }
+            case 'MultiLineString': {
+                const geometry = new MultiLineString(coordinates);
+                return getCenter(geometry.getExtent());
+            }
+            case 'MultiPolygon': {
+                const geometry = new MultiPolygon(coordinates);
+                return getCenter(geometry.getExtent());
+            }
+            default:
+                return [0, 0];
         }
-
-        if (type === 'Polygon') {
-            const polygon = new Polygon(coordinates);
-            return getCenter(polygon.getExtent());
-        }
-
-        if (type === 'MultiPolygon') {
-            const multiPolygon = new MultiPolygon(coordinates);
-            return getCenter(multiPolygon.getExtent());
-        }
-
-        return [0, 0];
     }
 }
