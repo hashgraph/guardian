@@ -138,6 +138,7 @@ jobs:
                   sleep 60
               env:
                   CI: true
+                  NODE_OPTIONS: --openssl-legacy-provider
                   OPERATOR_ID: ${{ secrets.CI_HEDERA_ACCOUNT }}
                   OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
                   JWT_PRIVATE_KEY: ${{ secrets.CI_JWT_PRIVATE_KEY }}
