@@ -38,7 +38,7 @@ jobs:
         run: yarn install
 
       - name: Start NatsMQ
-        uses: step-security/nats-action@0306fc1c4e4f49dbe4db5865a3135ab1516a5aee # v0.1.0
+        uses: step-security/nats-action@f731258911ac56527212b6572608282bbd385216 # v0.1.2
         with:
           port: '4222'
 
