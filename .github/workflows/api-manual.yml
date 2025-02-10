@@ -60,12 +60,6 @@ jobs:
                   pushd notification-service
                   yarn run build
                   popd
-                  pushd frontend
-                  npm install
-                  npm run build
-                  npm run build:prod
-                  npm run build:demo
-                  popd
                   pushd logger-service
                   yarn run build
                   popd
