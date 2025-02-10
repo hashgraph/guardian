@@ -1,5 +1,5 @@
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { IPolicyAddonBlock, IPolicyDocument } from '../policy-engine.interface.js';
+import { IPolicyAddonBlock, IPolicyCalculateBlock, IPolicyDocument } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
 import { fileURLToPath } from 'url';
@@ -26,15 +26,19 @@ const filename = fileURLToPath(import.meta.url);
     variables: []
 })
 export class DataTransformationAddon {
-    async getTransformedData(transformationBlock: IPolicyAddonBlock,user: PolicyUser, data: any) {
+    async getTransformedData(transformationBlock: IPolicyAddonBlock, user: PolicyUser, data: any) {
         return new Promise<IPolicyDocument | IPolicyDocument[]>(async (resolve, reject) => {
-            const importCode = `const [done, user, documents] = arguments;\r\n`;
+            const importCode = `const [done, user, documents, sources] = arguments;\r\n`;
             const expression = transformationBlock.options.expression || '';
+
+            const sources: IPolicyDocument[] = await this.getSources(user) || [];
+
             const worker = new Worker(path.join(path.dirname(filename), '..', 'helpers', 'data-transformation-addon-worker.js'), {
                 workerData: {
                     execFunc: `${importCode}${expression}`,
                     user,
                     documents: data,
+                    sources,
                 },
             });
 
@@ -63,10 +67,24 @@ export class DataTransformationAddon {
 
     async getData(user: PolicyUser, uuid: string, queryParams: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const parentBlock:IPolicyAddonBlock = ref.parent as IPolicyAddonBlock;
-        if(parentBlock) {
+        const parentBlock: IPolicyAddonBlock = ref.parent as IPolicyAddonBlock;
+        if (parentBlock) {
             const parentData = await parentBlock.getData(user, uuid, queryParams);
             return await this.getTransformedData(ref, user, parentData.data);
         }
+    }
+    
+    protected async getSources(user: PolicyUser): Promise<any[]> {
+        const data = [];
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
+        for (const child of ref.children) {
+            if (child.blockClassName === 'SourceAddon') {
+                const childData = await (child as IPolicyAddonBlock).getFromSource(user, null);
+                for (const item of childData) {
+                    data.push(item);
+                }
+            }
+        }
+        return data;
     }
 }

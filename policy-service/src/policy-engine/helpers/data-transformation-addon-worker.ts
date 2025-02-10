@@ -9,10 +9,11 @@ function execute(): void {
     const done = (result, final = true) => {
         parentPort.postMessage({result, final});
     }
-    const { execFunc, user, documents } = workerData;
+
+    const { execFunc, user, documents, sources } = workerData;
 
     const func = Function(execFunc);
-    func.apply(documents, [done, user, documents, mathjs, formulajs]);
+    func.apply(documents, [done, user, documents, sources, mathjs, formulajs]);
 }
 
 execute();
