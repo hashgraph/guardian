@@ -74,3 +74,25 @@
         color: white;
     }
 }
+
+::ng-deep .p-dialog-header {
+    padding: 15px;
+    border-radius: 10px 10px 0 0;
+}
+
+.dialog-title {
+    margin-top: 0;
+    font-size: 22px;
+}
+
+.content.dialog-content {
+   display: grid;
+}
+
+.content.dialog-actions {
+    width: 70%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 10px;
+    justify-self: end;
+}
