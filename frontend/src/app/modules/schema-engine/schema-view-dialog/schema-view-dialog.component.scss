@@ -190,3 +190,32 @@ form {
     box-sizing: border-box;
     color: #181818;
 }
+
+::ng-deep .p-dialog {
+    max-height: inherit;
+}
+
+::ng-deep .p-dialog-header {
+    border-radius: 10px 10px 0 0;
+}
+
+::ng-deep .full-width .p-dropdown {
+    width: 100% !important;
+}
+
+.actions {
+    display: grid;
+    justify-content: end;
+    padding-top: 20px;
+}
+
+.actions .buttons {
+    width: 22%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 15px;
+
+    ::ng-deep .p-button {
+        border-radius: 10px;
+    }
+}

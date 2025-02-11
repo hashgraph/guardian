@@ -19,7 +19,7 @@
     }
 }
 
-:host ::ng-deep .p-dialog {
+::ng-deep .p-dialog {
     width: 720px;
     border-radius: 16px !important;
     display: grid;
@@ -29,12 +29,12 @@
     background: var(--color-grey-white, #FFF);
 }
 
-:host ::ng-deep .p-dialog .p-dialog-header {
+::ng-deep .p-dialog .p-dialog-header {
     padding: 0;
     font: 400 24px / 32px Roboto, "Helvetica Neue", sans-serif;
 }
 
-:host ::ng-deep .p-dialog .p-button-ok {
+::ng-deep .p-dialog .p-button-ok {
     background-color: var(--primary-color);
     color: var(--color-grey-white, #FFF);
     border-radius: 20px;
@@ -42,6 +42,10 @@
     font-weight: bold;
 }
 
-:host ::ng-deep .p-dialog .p-button-ok:hover {
+::ng-deep .p-dialog .p-button-ok:hover {
     background-color: var(--blue-700);
+}
+
+::ng-deep .p-dialog {
+    width: 720px;
 }

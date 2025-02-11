@@ -14,7 +14,6 @@
                 <div class="field-header">Policy</div>
                 <div>
                     <div class="form-group" [ngClass]="{ 'form-invalid': !topicId }" style="min-width: 383px">
-                        <label for="policyDropdown" class="form-label">* Policy</label>
                         <p-dropdown
                             id="policyDropdown"
                             [(ngModel)]="topicId"
@@ -32,7 +31,6 @@
                 <div class="field-header">Tool</div>
                 <div>
                     <div class="form-group" [ngClass]="{ 'form-invalid': !topicId }" style="min-width: 383px">
-                        <label for="toolDropdown" class="form-label">* Tool</label>
                         <p-dropdown
                             id="toolDropdown"
                             [(ngModel)]="topicId"
@@ -82,22 +80,27 @@
                     <div *ngFor="let error of errors" class="field-array-item error-type-{{error.type}}">
                         <div>{{ error.worksheet }}</div>
                         <div>{{ error.__path }}</div>
-                        <div>{{ error.text }}</div>
+                        <div>
+                            <div>{{ error.text }}</div>
+                            <div *ngIf="error.message && error.message !== error.text">{{ error.message }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div mat-dialog-actions>
-        <div class="cancel-button">
-            <p-button
-                (click)="onClose()"
-                label="Cancel"
-                [outlined]=true
-            ></p-button>
-        </div>
-        <div>
-            <p-button (click)="onImport()" [disabled]="!topicId" label="Import"></p-button>
+    <div class="actions">
+        <div class="buttons">
+            <div class="cancel-button">
+                <p-button
+                    (click)="onClose()"
+                    label="Cancel"
+                    [outlined]=true
+                ></p-button>
+            </div>
+            <div>
+                <p-button (click)="onImport()" [disabled]="!topicId" label="Import"></p-button>
+            </div>
         </div>
     </div>
 </div>
