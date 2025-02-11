@@ -1,122 +1,124 @@
-import {AuthenticationPage} from "../../../pages/authentication";
-import {PoliciesPage} from "../../../pages/policies";
+import { HomePage } from "../../../pages/homePage";
+const homePage = new HomePage();
 
-const home = new AuthenticationPage();
-const policies = new PoliciesPage();
+import { PoliciesPage } from "../../../pages/policiesPage";
+const policiesPage = new PoliciesPage();
 
-describe("Edit Policy", {tags: '@ui'}, () => {
+context("Edit Policy", { tags: ['ui'] }, () => {
 
     const name = Math.floor(Math.random() * 999) + "testName";
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
-        home.visit();
-        home.login("StandardRegistry");
-        policies.openPoliciesTab();
-        policies.createPolicy();
-        policies.fillNewPolicyForm(name);
-        policies.openPoliciesTab();
+        homePage.visit();
+        homePage.login(SRUsername);
+        policiesPage.openPoliciesTab();
     })
 
     it("Verify if it possible to edit draft policy", () => {
-        policies.checkStatus(name, "Draft");
-        policies.clickEditPolicy(name);
-        policies.fillFieldInEditPolicyPage("Name", name+"Edited");
-        policies.fillFieldInEditPolicyPage("Description", "Description Edited");
-        policies.clickSaveButton();
-        policies.openPoliciesTab();
-        policies.checkPolicyTableContains(name+"Edited");
-        policies.checkPolicyTableContains("Description Edited");
+        policiesPage.createPolicy();
+        policiesPage.fillNewPolicyForm(name);
+        policiesPage.backToPoliciesList();
+        policiesPage.checkStatus(name, "Draft");
+        policiesPage.openEditingPolicy(name);
+
+
+        policiesPage.fillFieldInEditPolicyPage("Name", name+"Edited");
+        policiesPage.fillFieldInEditPolicyPage("Description", "Description Edited");
+        policiesPage.clickSaveButton();
+        policiesPage.openPoliciesTab();
+        policiesPage.checkPolicyTableContains(name+"Edited");
+        policiesPage.checkPolicyTableContains("Description Edited");
     });
 
     it("Verify if it impossible to edit In Dry Run policy", () => {
-        policies.startDryRun(name);
-        policies.checkStatus(name, " In Dry Run ");
-        policies.clickEditPolicy(name);
-        policies.checkFieldInEditPolicyIsNotEditable("Name");
-        policies.checkFieldInEditPolicyIsNotEditable("Policy Tag");
-        policies.checkFieldInEditPolicyIsNotEditable("Topic Description");
-        policies.checkFieldInEditPolicyIsNotEditable("Description");
+        policiesPage.startDryRun(name);
+        policiesPage.checkStatus(name, " In Dry Run ");
+        policiesPage.clickEditPolicy(name);
+        policiesPage.checkFieldInEditPolicyIsNotEditable("Name");
+        policiesPage.checkFieldInEditPolicyIsNotEditable("Policy Tag");
+        policiesPage.checkFieldInEditPolicyIsNotEditable("Topic Description");
+        policiesPage.checkFieldInEditPolicyIsNotEditable("Description");
     });
 
     it("Verify if it impossible to edit Published policy", () => {
-        policies.publishDraftPolicy(name);
-        policies.openPoliciesTab();
-        policies.checkStatus(name, " Published ");
-        policies.clickEditPolicy(name);
-        policies.checkFieldInEditPolicyIsNotEditable("Name");
-        policies.checkFieldInEditPolicyIsNotEditable("Policy Tag");
-        policies.checkFieldInEditPolicyIsNotEditable("Topic Description");
-        policies.checkFieldInEditPolicyIsNotEditable("Description");
+        policiesPage.publishDraftPolicy(name);
+        policiesPage.openPoliciesTab();
+        policiesPage.checkStatus(name, " Published ");
+        policiesPage.clickEditPolicy(name);
+        policiesPage.checkFieldInEditPolicyIsNotEditable("Name");
+        policiesPage.checkFieldInEditPolicyIsNotEditable("Policy Tag");
+        policiesPage.checkFieldInEditPolicyIsNotEditable("Topic Description");
+        policiesPage.checkFieldInEditPolicyIsNotEditable("Description");
     });
 
     it("Verify if fields are still empty after cancel editing", () => {
-        policies.checkStatus(name, "Draft");
-        policies.clickEditPolicy(name);
-        policies.fillFieldInEditPolicyPage("Name", name+"Edited");
-        policies.fillFieldInEditPolicyPage("Topic Description", "Topic Description Edited");
-        policies.fillFieldInEditPolicyPage("Description", "Description Edited");
-        policies.openPoliciesTab();
-        policies.clickEditPolicy(name);
-        policies.checkPolicyTableFieldIsEmpty("Description");
-        policies.checkPolicyTableFieldIsEmpty("Topic Description");
+        policiesPage.checkStatus(name, "Draft");
+        policiesPage.clickEditPolicy(name);
+        policiesPage.fillFieldInEditPolicyPage("Name", name+"Edited");
+        policiesPage.fillFieldInEditPolicyPage("Topic Description", "Topic Description Edited");
+        policiesPage.fillFieldInEditPolicyPage("Description", "Description Edited");
+        policiesPage.openPoliciesTab();
+        policiesPage.clickEditPolicy(name);
+        policiesPage.checkPolicyTableFieldIsEmpty("Description");
+        policiesPage.checkPolicyTableFieldIsEmpty("Topic Description");
     });
 
     it("Verify if a modal window appears after returning to editing", () => {
-        policies.openPoliciesTab();
-        policies.checkStatus(name, "Draft");
-        policies.clickEditPolicy(name);
-        policies.fillFieldInEditPolicyPage("Tag", "Tag Edited");
-        policies.fillFieldInEditPolicyPage("Title", "Title Edited");
-        policies.openPoliciesTab();
-        policies.clickEditPolicy(name);
-        policies.checkModalWindowIsVisible("Apply latest changes");
-        policies.checkModalWindowIsVisible("Do you want to apply latest changes?");
-        policies.checkPolicyTableFieldIsEmpty("Description");
-        policies.checkPolicyTableFieldIsEmpty("Topic Description");
+        policiesPage.openPoliciesTab();
+        policiesPage.checkStatus(name, "Draft");
+        policiesPage.clickEditPolicy(name);
+        policiesPage.fillFieldInEditPolicyPage("Tag", "Tag Edited");
+        policiesPage.fillFieldInEditPolicyPage("Title", "Title Edited");
+        policiesPage.openPoliciesTab();
+        policiesPage.clickEditPolicy(name);
+        policiesPage.checkModalWindowIsVisible("Apply latest changes");
+        policiesPage.checkModalWindowIsVisible("Do you want to apply latest changes?");
+        policiesPage.checkPolicyTableFieldIsEmpty("Description");
+        policiesPage.checkPolicyTableFieldIsEmpty("Topic Description");
     });
 
     it("Adding new blocks on edit policy page", () => {
-        policies.checkStatus(name, "Draft");
-        policies.clickEditPolicy(name);
-        policies.waitForEditPage();
-        policies.addNewBlockByName("Action");
-        policies.addNewBlockByName("Filters Addon");
-        policies.clickSaveButton();
-        policies.openPoliciesTab();
-        policies.clickEditPolicy(name);
-        policies.checkBlockIsPresent("Block_1");
-        policies.checkBlockIsPresent("Block_2");
+        policiesPage.checkStatus(name, "Draft");
+        policiesPage.clickEditPolicy(name);
+        policiesPage.waitForEditPage();
+        policiesPage.addNewBlockByName("Action");
+        policiesPage.addNewBlockByName("Filters Addon");
+        policiesPage.clickSaveButton();
+        policiesPage.openPoliciesTab();
+        policiesPage.clickEditPolicy(name);
+        policiesPage.checkBlockIsPresent("Block_1");
+        policiesPage.checkBlockIsPresent("Block_2");
     });
 
     it("Modify Existing block and validate if changes are saved", () => {
-        policies.checkStatus(name, "Draft");
-        policies.clickEditPolicy(name);
-        policies.waitForEditPage();
-        policies.addNewBlockByName("Action");
-        policies.addNewBlockByName("Aggregate Data");
-        policies.clickOnAddedBlock("Block_1");
-        policies.addNewBlockByName("Filters Addon");
-        policies.addNewBlockByName("History");
-        policies.clickSaveButton();
-        policies.openPoliciesTab();
-        policies.clickEditPolicy(name);
-        policies.expandBlock("Block_1");
-        policies.checkBlockIsPresent("Block_3");
-        policies.checkBlockIsPresent("Block_4");
+        policiesPage.checkStatus(name, "Draft");
+        policiesPage.clickEditPolicy(name);
+        policiesPage.waitForEditPage();
+        policiesPage.addNewBlockByName("Action");
+        policiesPage.addNewBlockByName("Aggregate Data");
+        policiesPage.clickOnAddedBlock("Block_1");
+        policiesPage.addNewBlockByName("Filters Addon");
+        policiesPage.addNewBlockByName("History");
+        policiesPage.clickSaveButton();
+        policiesPage.openPoliciesTab();
+        policiesPage.clickEditPolicy(name);
+        policiesPage.expandBlock("Block_1");
+        policiesPage.checkBlockIsPresent("Block_3");
+        policiesPage.checkBlockIsPresent("Block_4");
     });
 
     it("Delete existing block and validate if changes are saved", () => {
-        policies.checkStatus(name, "Draft");
-        policies.clickEditPolicy(name);
-        policies.waitForEditPage();
-        policies.addNewBlockByName("Action");
-        policies.addNewBlockByName("Aggregate Data");
-        policies.clickOnAddedBlock("Block_1");
-        policies.clickOnDeleteBlockButton();
-        policies.clickSaveButton();
-        policies.openPoliciesTab();
-        policies.clickEditPolicy(name);
-        policies.checkBlockIsPresent("Block_2");
+        policiesPage.checkStatus(name, "Draft");
+        policiesPage.clickEditPolicy(name);
+        policiesPage.waitForEditPage();
+        policiesPage.addNewBlockByName("Action");
+        policiesPage.addNewBlockByName("Aggregate Data");
+        policiesPage.clickOnAddedBlock("Block_1");
+        policiesPage.clickOnDeleteBlockButton();
+        policiesPage.clickSaveButton();
+        policiesPage.openPoliciesTab();
+        policiesPage.clickEditPolicy(name);
+        policiesPage.checkBlockIsPresent("Block_2");
     });
 });

@@ -6,6 +6,7 @@ const PoliciesPageLocators = {
     dynamicDialog: "p-dynamicdialog",
     deleteButton: "p-button[label='Delete']",
     actionsMore: "div.btn-icon-menu",
+    editPolicy: "div.btn-icon-edit",
     createPolicyButton: 'p-button[ng-reflect-content="Create a Policy"]',
     importPolicyButton: 'p-button[ng-reflect-content="Import"]',
     inputName: "[formcontrolname='name']",
@@ -217,6 +218,10 @@ export class PoliciesPage {
 
     openPolicy(name) {
         cy.contains("td", name).siblings().eq(0).click();
+    }
+
+    openEditingPolicy(name) {
+        cy.contains(name).parent().parent().find(PoliciesPageLocators.editPolicy).click();
     }
 
     approveUserInPolicy(waitFor = "revoke") {

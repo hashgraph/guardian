@@ -29,7 +29,7 @@ context("Workflow Verra Policy", { tags: ['ui'] }, () => {
     //wait good params
     it("checks verra policy workflow", () => {
         // //Import and publish policy
-        homePage.login(SRUsername);
+        // homePage.login(SRUsername);
         // policiesPage.openPoliciesTab();
         // policiesPage.importPolicyFromIPFS("1739273276.903073085"); //iRec5
         // policiesPage.backToPoliciesList();
