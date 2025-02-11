@@ -1,53 +1,112 @@
-import {AuthenticationPage} from "../../pages/authentication";
-import {PoliciesPage} from "../../pages/policies";
-import {VerraPage} from "../../pages/verra";
-import {PPPage} from "../../pages/projectProponent";
+import { HomePage } from "../../pages/homePage";
+const homePage = new HomePage();
+
+import { PoliciesPage } from "../../pages/policiesPage";
+const policiesPage = new PoliciesPage();
+
+import { UserManagementPage } from "../../pages/userManagementPage";
+const userManagementPage = new UserManagementPage();
+
+import { UserPoliciesPage } from "../../pages/userPoliciesPage";
+const userPoliciesPage = new UserPoliciesPage();
+
+import { TokensPage } from "../../pages/tokensPage";
+const tokensPage = new TokensPage();
 
 
-const home = new AuthenticationPage();
-const policies = new PoliciesPage();
-const verra = new VerraPage();
-const projectProponent = new PPPage();
+context("Workflow Verra Policy", { tags: ['ui'] }, () => {
 
-describe("Workflow Verra Policy", {tags: '@ui'}, () => {
+    const SRUsername = Cypress.env('SRUser');
+    const userUsername = Cypress.env('User');
+    const user2Username = Cypress.env('User2');
+    const name = "Verra VM0003";
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
-        home.visit();
+        homePage.visit();
     })
 
+    //wait good params
     it("checks verra policy workflow", () => {
-        home.login("StandardRegistry");
-        policies.openPoliciesTab();
-        policies.importPolicyButton();
-        policies.importPolicyMessage("1675254414.695533713"); //Verra REDD
-        policies.publishPolicy();
-        home.logOut("StandardRegistry");
+        // //Import and publish policy
+        homePage.login(SRUsername);
+        // policiesPage.openPoliciesTab();
+        // policiesPage.importPolicyFromIPFS("1739273276.903073085"); //iRec5
+        // policiesPage.backToPoliciesList();
+        // policiesPage.checkStatus(name, "Draft");
+        // policiesPage.publishPolicy(name);
+        // policiesPage.backToPoliciesList();
+        // policiesPage.checkStatus(name, "Published");
 
-        home.login("VVB");
-        home.checkSetup("VVB");
-        verra.createGroup('VVB');
-        home.logOut("VVB");
+        // //Give permissions to user
+        // userManagementPage.openUserManagementTab();
+        // userManagementPage.assignPolicyToUser(userUsername, name);
+        // userManagementPage.openUserManagementTab();
+        // userManagementPage.assignPolicyToUser(user2Username, name);
+        // homePage.logOut();
 
-        home.login("StandardRegistry");
-        policies.openPoliciesTab();
-        policies.approveUser();
-        home.logOut("StandardRegistry");
 
-        //Project Proponent
-        home.login("ProjectProponent");
-        home.checkSetup("ProjectProponent");
-        projectProponent.createGroup('Project_Proponent');
-        projectProponent.createProject();
-        home.logOut("ProjectProponent");
+        // //Token associate
+        // homePage.login(userUsername);
+        // tokensPage.openUserTokensTab();
+        // tokensPage.associatePolicyToken(name);
+        // //Register user as PP and create project
+        // userPoliciesPage.openPoliciesTab();
+        // userPoliciesPage.openPolicy(name);
+        // userPoliciesPage.registerInPolicy("Project_Proponent");
+        // homePage.logOut();
 
-        home.login("StandardRegistry");
-        policies.openPoliciesTab();
-        policies.addVVB();
-        home.logOut("StandardRegistry");
+        // //Register user as VVB
+        // homePage.login(user2Username);
+        // userPoliciesPage.openPoliciesTab();
+        // userPoliciesPage.openPolicy(name);
+        // userPoliciesPage.registerInPolicy("VVB");
+        // homePage.logOut();
 
-        home.login("ProjectProponent");
-        projectProponent.assignPolicy();
-        home.logOut("ProjectProponent");
+        // //Token grant KYC
+        // homePage.login(SRUsername);
+        // tokensPage.openTokensTab();
+        // tokensPage.grantKYC(name, userUsername);
+        // //Approve role and add project
+        // policiesPage.openPoliciesTab();
+        // policiesPage.openPolicy(name);
+        // policiesPage.approveUserInPolicy();
+        // policiesPage.addProject();
+        // homePage.logOut();
+
+        // //Assign project
+        // homePage.login(userUsername);
+        // userPoliciesPage.openPoliciesTab();
+        // userPoliciesPage.openPolicy(name);
+        // userPoliciesPage.assignProject();
+        // homePage.logOut();
+
+        // //Approve project
+        // homePage.login(user2Username);
+        // userPoliciesPage.openPoliciesTab();
+        // userPoliciesPage.openPolicy(name);
+        // userPoliciesPage.approveProject();
+        // homePage.logOut();
+
+        // //Create report
+        // homePage.login(userUsername);
+        // userPoliciesPage.openPoliciesTab();
+        // userPoliciesPage.openPolicy(name);
+        // userPoliciesPage.createReport();
+        // homePage.logOut();
+
+        // //Verify report
+        // homePage.login(user2Username);
+        // userPoliciesPage.openPoliciesTab();
+        // userPoliciesPage.openPolicy(name);
+        // userPoliciesPage.verifyReport();
+        // homePage.logOut();
+
+        // //Approve report
+        // homePage.login(SRUsername);
+        // policiesPage.openPoliciesTab();
+        // policiesPage.openPolicy(name);
+        // policiesPage.approveReport();
+        // homePage.logOut();
     });
 });

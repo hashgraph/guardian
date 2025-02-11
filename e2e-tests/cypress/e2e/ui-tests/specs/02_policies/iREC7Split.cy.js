@@ -17,7 +17,7 @@ context("Workflow iREC 7 Policy", { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const userUsername = Cypress.env('User');
-    const name = "iRec_7_1739191908346";
+    const name = "iRec_7";
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -28,8 +28,8 @@ context("Workflow iREC 7 Policy", { tags: ['ui'] }, () => {
         //Import and publish policy
         homePage.login(SRUsername);
         policiesPage.openPoliciesTab();
-        // policiesPage.importPolicyFromIPFS("1707130249.448431277");  //iRec7
-        // policiesPage.backToPoliciesList();
+        policiesPage.importPolicyFromIPFS("1707130249.448431277");  //iRec7
+        policiesPage.backToPoliciesList();
         policiesPage.checkStatus(name, "Draft");
         policiesPage.publishPolicy(name);
         policiesPage.backToPoliciesList();
@@ -56,7 +56,8 @@ context("Workflow iREC 7 Policy", { tags: ['ui'] }, () => {
         tokensPage.grantKYC(name, userUsername);
         //Approve application
         policiesPage.openPoliciesTab();
-        policiesPage.approveUserInPolicy(name, "approvedLabel");
+        policiesPage.openPolicy(name);
+        policiesPage.approveUserInPolicy("approvedLabel");
         homePage.logOut();
 
         //Create device
@@ -69,7 +70,8 @@ context("Workflow iREC 7 Policy", { tags: ['ui'] }, () => {
         //Approve device
         homePage.login(SRUsername);
         policiesPage.openPoliciesTab();
-        policiesPage.approveDeviceInPolicy(name, "approvedLabel");
+        policiesPage.openPolicy(name);
+        policiesPage.approveDeviceInPolicy("approvedLabel");
         homePage.logOut();
 
         //Create issue request
@@ -83,7 +85,8 @@ context("Workflow iREC 7 Policy", { tags: ['ui'] }, () => {
         //Approve issue request and verify balance increase
         homePage.login(SRUsername);
         policiesPage.openPoliciesTab();
-        policiesPage.approveIssueRequestInPolicy(name, "approvedLabel");
+        policiesPage.openPolicy(name);
+        policiesPage.approveIssueRequestInPolicy("approvedLabel");
         tokensPage.openTokensTab();
         tokensPage.verifyBalance(name, userUsername, ' 2 ');
         homePage.logOut();

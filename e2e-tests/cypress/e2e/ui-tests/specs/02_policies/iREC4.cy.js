@@ -42,6 +42,7 @@ context("Workflow iREC 4 Policy", { tags: ['ui'] }, () => {
 
         //Register user as Registrant and create application
         homePage.login(userUsername);
+        userPoliciesPage.openPoliciesTab();
         userPoliciesPage.openPolicy(name);
         userPoliciesPage.registerInPolicy();
         homePage.logOut();
@@ -49,7 +50,8 @@ context("Workflow iREC 4 Policy", { tags: ['ui'] }, () => {
         //Approve application
         homePage.login(SRUsername);
         policiesPage.openPoliciesTab();
-        policiesPage.approveUserInPolicy(name);
+        policiesPage.openPolicy(name);
+        policiesPage.approveUserInPolicy();
         homePage.logOut();
 
         //Create device
@@ -62,7 +64,8 @@ context("Workflow iREC 4 Policy", { tags: ['ui'] }, () => {
         //Approve device
         homePage.login(SRUsername);
         policiesPage.openPoliciesTab();
-        policiesPage.approveDeviceInPolicy(name);
+        policiesPage.openPolicy(name);
+        policiesPage.approveDeviceInPolicy();
         homePage.logOut();
 
         //Create issue request
@@ -76,7 +79,8 @@ context("Workflow iREC 4 Policy", { tags: ['ui'] }, () => {
         //Approve issue request and verify balance increase
         homePage.login(SRUsername);
         policiesPage.openPoliciesTab();
-        policiesPage.approveIssueRequestInPolicy(name);
+        policiesPage.openPolicy(name);
+        policiesPage.approveIssueRequestInPolicy();
         tokensPage.openTokensTab();
         tokensPage.verifyBalance(name, userUsername);
         homePage.logOut();

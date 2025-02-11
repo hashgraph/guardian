@@ -18,7 +18,7 @@ context("Workflow iREC 5 Policy - with Groups(Approver/User)", { tags: ['ui'] },
     const SRUsername = Cypress.env('SRUser');
     const userUsername = Cypress.env('User');
     const user2Username = Cypress.env('User2');
-    const name = "iRec_5_1738942575774";
+    const name = "iRec_5";
 
     beforeEach(() => {
         cy.viewport(1920, 1080);

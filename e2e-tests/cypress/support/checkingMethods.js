@@ -227,7 +227,8 @@ export const getAccessToken = (username) => {
 export const waitForElement = (element, maxAttempts = 200, interval = 2000) => {
     if (maxAttempts > 0) {
         maxAttempts--;
-        cy.get('body', { log: false }).then((body) => {
+        cy.get('body').then((body) => {
+            cy.log(body.find(element).length);
             if (body.find(element).length == 0) {
                 cy.log(`Waiting for operation to complete after ${interval / 1000} seconds...`);
                 cy.wait(interval, { log: false });
@@ -244,9 +245,10 @@ export const waitForBalanceIncrease = (balance, username, maxAttempts = 200, int
     if (maxAttempts > 0) {
         maxAttempts--;
         cy.get('body', { log: false }).then((body) => {
+            cy.log(body.find(`td:contains(${balance})`));
             if (body.find(`td:contains(${balance})`).length == 0) {
-                cy.wait(interval, { log: false });
                 cy.contains("td", username).siblings().find(CommonElements.svg).click();
+                cy.wait(interval, { log: false });
                 waitForBalanceIncrease(balance, username, maxAttempts, interval);
             }
         })

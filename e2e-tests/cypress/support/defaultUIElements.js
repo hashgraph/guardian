@@ -18,7 +18,8 @@ const CommonElements = {
     tokensTab: "Tokens",
     listOfTokensTab:"List of Tokens",
     manageTokens:"Manage Tokens",
-    svg: "svg-icon"
+    svg: "svg-icon",
+    dropdownOption:'li[role="option"]',
 };
 
 export default CommonElements;

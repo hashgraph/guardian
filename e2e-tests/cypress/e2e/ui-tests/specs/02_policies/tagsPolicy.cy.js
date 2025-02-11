@@ -1,45 +1,35 @@
-import {AuthenticationPage} from "../../pages/authentication";
-import {PoliciesPage} from "../../pages/policies";
+import { HomePage } from "../../pages/homePage";
+const homePage = new HomePage();
 
-const home = new AuthenticationPage();
-const policies = new PoliciesPage();
+import { PoliciesPage } from "../../pages/policiesPage";
+const policiesPage = new PoliciesPage();
 
-describe("Tags Policy", {tags: '@ui'}, () => {
+context("Tags Policy", { tags: ['ui'] }, () => {
 
+    const SRUsername = Cypress.env('SRUser');
     const name = Math.floor(Math.random() * 999) + "testName";
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
-        home.visit();
-        home.login("StandardRegistry");
-        policies.openPoliciesTab();
-        policies.createPolicy();
-        policies.fillNewPolicyForm(name);
+        homePage.visit();
     })
 
     it("Verify if it possible to add tags", () => {
-        policies.checkStatus(name, "Draft");
-        policies.clickOnButtonOnPolicy(name, " Create Tag ");
-        policies.fillNewTagForm(name + "tag");
-        policies.checkPolicyTableContains(name + "tag");
-        policies.clickOnButtonOnPolicy(name, name + "tag");
-        policies.clickOnButtonByTextInModal(" Create Tag ");
-        policies.fillNewTagForm(name + "tag2");
-        policies.checkPolicyTagModalContains(name + "tag2");
+        homePage.login(SRUsername);
+        policiesPage.openPoliciesTab();
+        policiesPage.createPolicy();
+        policiesPage.fillNewPolicyForm(name);
+        policiesPage.backToPoliciesList();
+        policiesPage.checkStatus(name, "Draft");
+        policiesPage.createTag(name, "tag1");
+        policiesPage.createTag(name, "tag2");
     });
 
     it("Verify if it possible to delete tags", () => {
-        policies.checkStatus(name, "Draft");
-        policies.clickOnButtonOnPolicy(name, " Create Tag ");
-        policies.fillNewTagForm(name + "tag");
-        policies.checkPolicyTableContains(name + "tag");
-        policies.clickOnButtonOnPolicy(name, name + "tag");
-        policies.clickOnButtonByTextInModal(" Create Tag ");
-        policies.fillNewTagForm(name + "tag2");
-        policies.checkPolicyTagModalContains(name + "tag2");
-        policies.clickOnButtonByTextInModal(name + "tag");
-        policies.clickOnDeleteTag();
-        policies.clickOnCloseModal();
-        policies.checkPolicyTableNotContains(name + "tag");
+        homePage.login(SRUsername);
+        policiesPage.openPoliciesTab();
+        policiesPage.checkStatus(name, "Draft");
+        policiesPage.deleteTag(name, "tag1");
+        policiesPage.deleteTag(name, "tag2");
     });
 });

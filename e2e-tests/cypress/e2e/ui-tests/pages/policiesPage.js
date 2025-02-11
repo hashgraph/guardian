@@ -25,6 +25,15 @@ const PoliciesPageLocators = {
     deviceTab: "Devices",
     issueRequestsTab: "Issue Requests",
     approvedLabel: "span[title = 'Approved']",
+    createTagButton: 'span:contains("Create a Tag")',
+    inputName: 'input[formcontrolname="name"]',
+    tagsExplorer: "tags-explorer",
+    closeButton: 'span:contains("Close")',
+    deleteTagIcon: "svg-icon[svgclass='accent-color-red']",
+    projectPipelineTab: "Project Pipeline",
+    waitingForValidation: "span[title = 'Waiting for Validation']",
+    monitoringReports: "Monitoring Reports",
+    minted: "span[title = 'Minted']",
 
     // importBtn: '[label="Import"]',
     // importContinueBtn: 'p-button[label="Import"]',
@@ -136,6 +145,7 @@ export class PoliciesPage {
 
     exportPolicyAsFile(name) {
         this.openExportModal(name);
+        cy.wait(500);
         cy.get(CommonElements.dialogWindow).contains(PoliciesPageLocators.exportFileButton).click();
         cy.verifyDownload('.policy', { contains: true });
     }
@@ -146,6 +156,7 @@ export class PoliciesPage {
         cy.get(CommonElements.dialogWindow).contains(PoliciesPageLocators.exportMessageIdButton).focus().click();
         cy.window().then((win) => {
             win.navigator.clipboard.readText().then((text) => {
+                //regex numbers.numbers
                 expect(text).to.match(/\d+\.\d+/g);
             });
         });
@@ -177,9 +188,8 @@ export class PoliciesPage {
         cy.get(PoliciesPageLocators.importPolicyButton).click();
         cy.fixture(policyFileName, { encoding: null }).as("policyForImport");
         cy.get(CommonElements.dialogWindow).find(CommonElements.fileInput).selectFile("@policyForImport", { force: true });
-        cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).click();
         Checks.waitForElement(PoliciesPageLocators.asNewPolicyRadioButton);
-        cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).click();
+        cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).last().click();
         Checks.waitForElement(PoliciesPageLocators.policyBlock, undefined, 5000);
     }
 
@@ -199,23 +209,64 @@ export class PoliciesPage {
             Checks.waitForElement(PoliciesPageLocators.revokeOption);
         if (waitFor == "approvedLabel")
             Checks.waitForElement(PoliciesPageLocators.approvedLabel);
+        if (waitFor == "validationLabel")
+            Checks.waitForElement(PoliciesPageLocators.waitingForValidation);
+        if (waitFor == "minted")
+            Checks.waitForElement(PoliciesPageLocators.minted);
     }
 
-    approveUserInPolicy(name, waitFor = "revoke") {
+    openPolicy(name) {
         cy.contains("td", name).siblings().eq(0).click();
+    }
+
+    approveUserInPolicy(waitFor = "revoke") {
         this.approve(waitFor);
     }
 
-    approveDeviceInPolicy(name, waitFor = "revoke") {
-        cy.contains("td", name).siblings().eq(0).click();
+    approveDeviceInPolicy(waitFor = "revoke") {
         cy.contains(PoliciesPageLocators.deviceTab).click();
         this.approve(waitFor);
     }
 
-    approveIssueRequestInPolicy(name, waitFor = "revoke") {
-        cy.contains("td", name).siblings().eq(0).click();
+    approveIssueRequestInPolicy(waitFor = "revoke") {
         cy.contains(PoliciesPageLocators.issueRequestsTab).click();
         this.approve(waitFor);
+    }
+
+    createTag(policyName, name) {
+        cy.contains("td", policyName).siblings().find(PoliciesPageLocators.tagsExplorer).click();
+        Checks.waitForLoading();
+        cy.get('body').then((body) => {
+            if (body.find(PoliciesPageLocators.createTagButton).length == 1)
+                cy.get(PoliciesPageLocators.createTagButton).click();
+        })
+        cy.get(CommonElements.dialogWindow).last().find(PoliciesPageLocators.inputName).type(name);
+        cy.get(CommonElements.dialogWindow).last().contains(PoliciesPageLocators.createButton).click();
+        cy.get('body').then((body) => {
+            if (body.find(PoliciesPageLocators.closeButton).length == 1)
+                cy.get(PoliciesPageLocators.closeButton).click();
+        })
+        Checks.waitForLoading();
+    }
+
+    deleteTag(policyName, name) {
+        cy.contains("td", policyName).siblings().find(PoliciesPageLocators.tagsExplorer).click();
+        Checks.waitForLoading();
+        cy.get(CommonElements.dialogWindow).contains(name).click();
+        cy.get(PoliciesPageLocators.deleteTagIcon).click();
+        cy.get(PoliciesPageLocators.closeButton).click();
+        Checks.waitForLoading();
+    }
+
+    addProject(){
+        cy.contains(PoliciesPageLocators.projectPipelineTab).click();
+        this.approve("validationLabel");
+    }
+
+    approveReport(){
+        cy.contains(PoliciesPageLocators.monitoringReports).click();
+        Checks.waitForElement(PoliciesPageLocators.approveButton);
+        this.approve("minted");
     }
 
 

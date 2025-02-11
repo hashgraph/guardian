@@ -1,8 +1,8 @@
 import { HomePage } from "../../pages/homePage";
 const homepage = new HomePage();
 
-import { PoliciesPage } from "../../pages/policies";
-const policies = new PoliciesPage();
+import { PoliciesPage } from "../../pages/policiesPage";
+const policiesPage = new PoliciesPage();
 
 context("Workflow Policy Deletion", { tags: ['ui'] }, () => {
 
@@ -13,20 +13,20 @@ context("Workflow Policy Deletion", { tags: ['ui'] }, () => {
         cy.viewport(1920, 1080);
         homepage.visit();
         homepage.login(SRUsername);
-        policies.openPoliciesTab();
+        policiesPage.openPoliciesTab();
     })
 
     it("Verify if it impossible to delete dry run policy", () => {
-        policies.createPolicy();
-        policies.fillNewPolicyForm(name);
-        policies.backToPoliciesList();
-        policies.checkStatus(name, "Draft");
-        policies.startDryRun(name);
-        policies.verifyThatDeleteButtonIsNotActive(name);
-        policies.stopDryRun(name);
+        policiesPage.createPolicy();
+        policiesPage.fillNewPolicyForm(name);
+        policiesPage.backToPoliciesList();
+        policiesPage.checkStatus(name, "Draft");
+        policiesPage.startDryRun(name);
+        policiesPage.verifyThatDeleteButtonIsNotActive(name);
+        policiesPage.stopDryRun(name);
     });
 
     it("Verify if it possible to delete draft policy", () => {
-        policies.deletePolicy(name);
+        policiesPage.deletePolicy(name);
     });
 });

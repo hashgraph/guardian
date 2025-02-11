@@ -7,7 +7,7 @@ const configpage = new ConfigPage();
 context("Create User Accounts", { tags: ['ui'] }, () => {
 
     const SRName = "TestSRUI" + Math.floor(Math.random() * 9999);
-    const userName = "TestUserUI" + Math.floor(Math.random() * 9999);
+    const userName = "User2";
 
     beforeEach(() => {
         cy.viewport(1920, 1080);

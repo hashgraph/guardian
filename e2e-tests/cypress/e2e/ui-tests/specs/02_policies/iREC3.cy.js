@@ -56,7 +56,8 @@ context("Workflow iREC 3 Policy", { tags: ['ui'] }, () => {
         tokensPage.grantKYC(name, userUsername);
         //Approve application
         policiesPage.openPoliciesTab();
-        policiesPage.approveUserInPolicy(name);
+        policiesPage.openPolicy(name);
+        policiesPage.approveUserInPolicy();
         homePage.logOut();
 
         //Create device
@@ -69,7 +70,8 @@ context("Workflow iREC 3 Policy", { tags: ['ui'] }, () => {
         //Approve device
         homePage.login(SRUsername);
         policiesPage.openPoliciesTab();
-        policiesPage.approveDeviceInPolicy(name);
+        policiesPage.openPolicy(name);
+        policiesPage.approveDeviceInPolicy();
         homePage.logOut();
 
         //Create issue request
@@ -83,7 +85,8 @@ context("Workflow iREC 3 Policy", { tags: ['ui'] }, () => {
         //Approve issue request and verify balance increase
         homePage.login(SRUsername);
         policiesPage.openPoliciesTab();
-        policiesPage.approveIssueRequestInPolicy(name);
+        policiesPage.openPolicy(name);
+        policiesPage.approveIssueRequestInPolicy();
         tokensPage.openTokensTab();
         tokensPage.verifyBalance(name, userUsername);
         homePage.logOut();
