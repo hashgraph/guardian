@@ -20,6 +20,7 @@ const CommonElements = {
     manageTokens:"Manage Tokens",
     svg: "svg-icon",
     dropdownOption:'li[role="option"]',
+    textarea: "textarea",
 };
 
 export default CommonElements;

@@ -3,6 +3,7 @@ import CommonElements from "../../../support/defaultUIElements";
 
 const PoliciesPageLocators = {
     backButton: "div[title='Back']",
+    savePolicyEditing: "div.readonly-status[title='Save Policy']",
     dynamicDialog: "p-dynamicdialog",
     deleteButton: "p-button[label='Delete']",
     actionsMore: "div.btn-icon-menu",
@@ -35,6 +36,11 @@ const PoliciesPageLocators = {
     waitingForValidation: "span[title = 'Waiting for Validation']",
     monitoringReports: "Monitoring Reports",
     minted: "span[title = 'Minted']",
+    descriptionPolicy: "td.cell-description",
+    componentsBlock: `span.drag-component-name`,
+    blockItemName: (name) => `div.block-item-name:contains(${name})`,
+    expandBlockBtn: (value) => `[block-instance="${value}"] .block-expand`,
+    deleteBlockBtn: 'button[class*="delete-action"]:visible',
 
     // importBtn: '[label="Import"]',
     // importContinueBtn: 'p-button[label="Import"]',
@@ -62,8 +68,6 @@ const PoliciesPageLocators = {
     // componentsBlock: '[class^="components-group-item"] span',
     // matTypography: '.mat-typography',
     // blockItem: '.block-item',
-    // deleteBlockBtn: 'button[class*="delete-action"]',
-    // expandBlockBtn: (value) => `[block-instance="${value}"] .block-expand`,
     // dialogContainer: '.mat-dialog-container',
     // deleteTagBtn: '.delete-tag',
     // closeModalBtn: '.g-dialog-cancel-btn',
@@ -107,6 +111,7 @@ export class PoliciesPage {
     }
 
     createPolicy() {
+        Checks.waitForLoading();
         cy.get(PoliciesPageLocators.createPolicyButton).click();
     }
 
@@ -222,6 +227,7 @@ export class PoliciesPage {
 
     openEditingPolicy(name) {
         cy.contains(name).parent().parent().find(PoliciesPageLocators.editPolicy).click();
+        Checks.waitForElement(PoliciesPageLocators.policyBlock, undefined, 5000);
     }
 
     approveUserInPolicy(waitFor = "revoke") {
@@ -263,15 +269,68 @@ export class PoliciesPage {
         Checks.waitForLoading();
     }
 
-    addProject(){
+    addProject() {
         cy.contains(PoliciesPageLocators.projectPipelineTab).click();
         this.approve("validationLabel");
     }
 
-    approveReport(){
+    approveReport() {
         cy.contains(PoliciesPageLocators.monitoringReports).click();
         Checks.waitForElement(PoliciesPageLocators.approveButton);
         this.approve("minted");
+    }
+
+    editPolicyProperty(property, name) {
+        cy.wait(500)
+        if (property == "Description")
+            cy.contains("td.cellName", new RegExp("^" + property + "$", "g")).parent().find(CommonElements.textarea).clear().type(name);
+        else
+            cy.contains("td.cellName", new RegExp("^" + property + "$", "g")).parent().find(CommonElements.Input).clear().type(name);
+    }
+
+    savePolicyEditing() {
+        cy.get(PoliciesPageLocators.savePolicyEditing).click();
+    }
+
+    verifyPolicyProperty(name, property, value) {
+        if (property == "Description")
+            cy.contains("td", name).siblings(".cell-description").should('have.text', value + " ");
+    }
+
+    checkFieldsInEditPolicyIsNotEditable() {
+        cy.contains("td", new RegExp("^Name$", "g")).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
+        cy.contains("td", new RegExp("^Policy Tag$", "g")).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
+        cy.contains("td", new RegExp("^Topic Description$", "g")).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
+        cy.contains("td", new RegExp("^Description$", "g")).parent().find(CommonElements.textarea).should('have.attr', 'readonly', 'readonly');
+    }
+
+    addNewBlock(name) {
+        cy.contains(PoliciesPageLocators.componentsBlock, name).click({force: true});
+    }
+
+    checkBlockExists(name) {
+        cy.get(PoliciesPageLocators.blockItemName(name)).should("be.visible");
+    }
+
+    editBlockName(name, newName) {
+        this.clickOnBlock(name);
+        this.editPolicyProperty("Tag", newName);
+    }
+
+    clickOnBlock(name) {
+        cy.get(PoliciesPageLocators.blockItemName(name)).should('be.visible').click({force: true});
+    }
+
+    expandBlock(name) {
+        cy.get(PoliciesPageLocators.expandBlockBtn(name)).click({force: true});
+    }
+
+    checkBlockNotExist(name) {
+        cy.get(PoliciesPageLocators.blockItemName(name)).should("not.exist");
+    }
+
+    clickOnDeleteBlockButton() {
+        cy.get(PoliciesPageLocators.deleteBlockBtn).click({force: true});
     }
 
 
@@ -465,7 +524,7 @@ export class PoliciesPage {
         // cy.get("@fieldNameChild").should("be.empty");
     }
 
-    addNewBlockByName(name) {
+    addNewBlockByNameOld(name) {
         // cy.get(PoliciesPageLocators.componentsBlock).contains(name).click({ force: true });
     }
 
@@ -504,11 +563,11 @@ export class PoliciesPage {
         // cy.get(PoliciesPageLocators.blockItem).contains(name).click({ force: true });
     }
 
-    clickOnDeleteBlockButton() {
+    clickOnDeleteBlockButtonOld() {
         // cy.get(PoliciesPageLocators.deleteBlockBtn).first().click({ force: true });
     }
 
-    expandBlock(name) {
+    expandBlockOld(name) {
         // cy.get(PoliciesPageLocators.expandBlockBtn(name)).click({ force: true });
     }
 

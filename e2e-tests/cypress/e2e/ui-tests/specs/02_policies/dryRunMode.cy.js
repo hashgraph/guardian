@@ -23,6 +23,7 @@ context("Dry run Policy", { tags: ['ui'] }, () => {
         policiesPage.backToPoliciesList();
         policiesPage.checkStatus(name, "Draft");
         policiesPage.startDryRun(name);
+        policiesPage.checkStatus(name, "In Dry Run");
         policiesPage.stopDryRun(name);
     });
 });
