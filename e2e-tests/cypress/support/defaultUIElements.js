@@ -21,6 +21,8 @@ const CommonElements = {
     svg: "svg-icon",
     dropdownOption:'li[role="option"]',
     textarea: "textarea",
+    artifactsTab: "Manage Artifacts",
+    dropdown:'p-dropdown',
 };
 
 export default CommonElements;
