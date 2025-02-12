@@ -28,4 +28,9 @@ context("Import Policy", { tags: ['ui'] }, () => {
         policiesPage.backToPoliciesList();
         policiesPage.checkStatus(importedFromIPFSPolicyName, "Draft");
     });
+
+    after(() => {
+        policiesPage.deletePolicy(importedFromFilePolicyName);
+        policiesPage.deletePolicy(importedFromIPFSPolicyName);
+    });
 });

@@ -41,6 +41,16 @@ const PoliciesPageLocators = {
     blockItemName: (name) => `div.block-item-name:contains(${name})`,
     expandBlockBtn: (value) => `[block-instance="${value}"] .block-expand`,
     deleteBlockBtn: 'button[class*="delete-action"]:visible',
+    componentsContainer: ".components-container:not(:hidden)",
+    favoriteButton: ".component-btn-favorite",
+    componentBtn: ".component-btn",
+    moduleIcon: 'svg-icon[ng-reflect-src="/assets/images/icons/policy-mo"]',
+    containerJson: ".textarea-code",
+    treeContainer: ".tree-container",
+    undo: "div[title='Undo']",
+    redo: "div[title='Redo']",
+    successValidationElement: "[title='Validation Policy']",
+    errorCountElement: ".error-count",
 
     // importBtn: '[label="Import"]',
     // importContinueBtn: 'p-button[label="Import"]',
@@ -87,14 +97,7 @@ const PoliciesPageLocators = {
     // registrantLabel: 'Registrant ',
     // tokenBalance: 'td.mat-column-tokenBalance',
     // policyDeleteButtonOld: "button.policy-menu-btn-del",
-    // errorCountElement: ".error-count",
-    // successValidationElement: "[title='Validation Policy']",
     // loadingProgress: ".loading-progress",
-    // componentsContainer: ".components-container:not(:hidden)",
-    // favoriteButton: ".component-btn-favorite",
-    // componentBtn: ".component-btn",
-    // containerJson: ".textarea-code",
-    // treeContainer: ".tree-container",
     // policyEditView: "/api/v1/schemas/**",
     // moreButton: "div.btn-icon-more",
 };
@@ -108,6 +111,7 @@ export class PoliciesPage {
                 cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).click();
         })
         cy.get(CommonElements.navBar).contains(CommonElements.policiesTab).click();
+        Checks.waitForLoading();
     }
 
     createPolicy() {
@@ -326,6 +330,7 @@ export class PoliciesPage {
     }
 
     checkBlockNotExist(name) {
+        cy.wait(10000)
         cy.get(PoliciesPageLocators.blockItemName(name)).should("not.exist");
     }
 
@@ -333,11 +338,82 @@ export class PoliciesPage {
         cy.get(PoliciesPageLocators.deleteBlockBtn).click({force: true});
     }
 
+    selectToFavorites(name) {
+        cy.get(PoliciesPageLocators.componentBtn).contains(name).next(PoliciesPageLocators.favoriteButton).click();
+    }
+
+    verifyIfSearchResultContains(text) {
+        cy.wait(1000);
+        cy.get(PoliciesPageLocators.componentsContainer).contains(text).should('exist');
+    }
+
+    verifyIfSearchResultIsNotContains(text) {
+        cy.get(PoliciesPageLocators.componentsContainer).contains(text).should('not.exist');
+    }
+
+    fillSearchField(text) {
+        cy.get('input[placeholder="Search"]:not(:hidden)').clear().type(text);
+    }
+
+    openModulesInPolicy() {
+        cy.get(PoliciesPageLocators.moduleIcon).click();
+    }
+
+    verifyIfSearchResultIsEmpty() {
+        cy.get(PoliciesPageLocators.componentsContainer).as("fieldName");
+        cy.get("@fieldName").get(".components-group-body").as("fieldNameChild");
+        cy.get("@fieldNameChild").should("be.empty");
+    }
+
+    clickOnButtonByText(text) {
+        cy.contains(new RegExp("^" + text + "$", "g")).click({ force: true });
+    }
+
+    verifyIfTextExists(text) {
+        cy.contains(text).should('exist');
+    }
+
+    verifyIfContainerJsonIsDisplayed() {
+        cy.get(PoliciesPageLocators.containerJson).should('be.visible');
+    }
+
+    verifyIfTreeContainerIsDisplayed() {
+        cy.get(PoliciesPageLocators.treeContainer).should('be.visible');
+    }
+
+    undo() {
+        cy.get(PoliciesPageLocators.undo).should('have.attr', "storage-active", "true").click();
+    }
+
+    redo() {
+        cy.get(PoliciesPageLocators.redo).should('have.attr', "storage-active", "true").click();
+    }
+
+    verifyIfValidationIsSuccessful() {
+        cy.get(PoliciesPageLocators.successValidationElement).should('have.attr', 'errors-count', '0');
+    }
+
+    verifyIfValidationIsDisplayed() {
+        cy.get(PoliciesPageLocators.errorCountElement).should('be.visible');
+    }
+
+    verifyIfValidationCountContains(count) {
+        cy.get(PoliciesPageLocators.errorCountElement).should('have.text', count);
+    }
 
 
 
 
 
+
+
+
+
+
+
+    clickOnDivByText(text) {
+       // cy.contains('div.tab-header', text).click({ force: true });
+    }
 
     checkButtonInModalIsNotActive(text) {
         //cy.get(PoliciesPageLocators.dialogContainer).contains(new RegExp("^" + text + "$", "g")).should('have.css', 'cursor', 'default');
@@ -584,14 +660,6 @@ export class PoliciesPage {
         // cy.get(PoliciesPageLocators.createBtn).click();
     }
 
-    clickOnButtonByText(text) {
-        // cy.contains(new RegExp("^" + text + "$", "g")).click({ force: true });
-    }
-
-    clickOnDivByText(text) {
-        // cy.contains('div.tab-header', text).click({ force: true });
-    }
-
     clickOnDeleteTag() {
         // cy.get(PoliciesPageLocators.deleteTagBtn).click({ force: true });
     }
@@ -638,18 +706,6 @@ export class PoliciesPage {
         // cy.get(PoliciesPageLocators.dialogContainer).contains(new RegExp("^" + text + "$", "g"))
     }
 
-    verifyIfValidationIsDisplayed() {
-        // cy.get(PoliciesPageLocators.errorCountElement).should('be.visible');
-    }
-
-    verifyIfValidationCountContains(count) {
-        // cy.get(PoliciesPageLocators.errorCountElement).should('have.text', count);
-    }
-
-    verifyIfValidationIsSuccessful() {
-        // cy.get(PoliciesPageLocators.successValidationElement).should('have.attr', 'errors-count', '0');
-    }
-
     verifyIfFieldHasValidation(field) {
         // cy.get(`input[formcontrolname='${field}']`)
         //     .clear()
@@ -663,40 +719,6 @@ export class PoliciesPage {
 
     waitForLoadingProgress() {
         // cy.get(PoliciesPageLocators.loadingProgress, { timeout: 180000 }).should('not.exist');
-    }
-
-    fillSearchField(text) {
-        // cy.get('input[placeholder="Search"]:not(:hidden)').clear().type(text);
-    }
-
-    verifyIfSearchResultContains(text) {
-        // cy.get(PoliciesPageLocators.componentsContainer).contains(text).should('exist');
-    }
-
-    verifyIfSearchResultIsEmpty() {
-        // cy.get(PoliciesPageLocators.componentsContainer).as("fieldName");
-        // cy.get("@fieldName").get(".components-group-body").as("fieldNameChild");
-        // cy.get("@fieldNameChild").should("be.empty");
-    }
-
-    selectToFavorites(name) {
-        // cy.get(PoliciesPageLocators.componentBtn).contains(name).next(PoliciesPageLocators.favoriteButton).click();
-    }
-
-    verifyIfSearchResultIsNotContains(text) {
-        // cy.get(PoliciesPageLocators.componentsContainer).contains(text).should('not.exist');
-    }
-
-    verifyIfContainerJsonIsDisplayed() {
-        // cy.get(PoliciesPageLocators.containerJson).should('be.visible');
-    }
-
-    verifyIfTreeContainerIsDisplayed() {
-        // cy.get(PoliciesPageLocators.treeContainer).should('be.visible');
-    }
-
-    verifyIfTextExists(text) {
-        // cy.contains(text).should('exist');
     }
 
     waitForEditPage() {

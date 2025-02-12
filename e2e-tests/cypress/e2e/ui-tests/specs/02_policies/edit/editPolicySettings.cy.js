@@ -1,45 +1,45 @@
-import {AuthenticationPage} from "../../../pages/authentication";
-import {PoliciesPage} from "../../../pages/policies";
+import { HomePage } from "../../../pages/homePage";
+const homePage = new HomePage();
 
-const home = new AuthenticationPage();
-const policies = new PoliciesPage();
+import { PoliciesPage } from "../../../pages/policiesPage";
+const policiesPage = new PoliciesPage();
 
-describe("Edit Policy. Settings flow", {tags: '@ui'}, () => {
+context("Edit Policy. Settings flow", { tags: ['ui'] }, () => {
 
+    const SRUsername = Cypress.env('SRUser');
     const name = Math.floor(Math.random() * 999) + "testName";
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
-        home.visit();
-        home.login("StandardRegistry");
-        policies.openPoliciesTab();
-        policies.createPolicy();
-        policies.fillNewPolicyForm(name);
-        policies.openPoliciesTab();
-        policies.checkStatus(name, "Draft");
-        policies.clickEditPolicy(name);
-        policies.waitForEditPage();
-    });
-
-    afterEach(() => {
-        policies.openPoliciesTab();
-        policies.deletePolicy(name);
-        policies.checkPolicyTableNotContains(name);
+        homePage.visit();
+        homePage.login(SRUsername);
+        policiesPage.openPoliciesTab();
     });
 
     it("Verify if it possible to swith to json mode", () => {
-        policies.clickOnButtonByText("Settings");
-        policies.verifyIfTextExists("Settings");
-        policies.verifyIfTextExists("Cancel");
-        policies.verifyIfTextExists("Save");
-        policies.verifyIfTextExists("Theme");
-        policies.verifyIfTextExists("New");
-        policies.verifyIfTextExists("Copy");
-        policies.verifyIfTextExists("Import");
-        policies.verifyIfTextExists("Blocks");
-        policies.verifyIfTextExists("Syntax");
-        policies.verifyIfTextExists("Condition");
-        policies.verifyIfTextExists("Style");
-        policies.verifyIfTextExists("Description");
+        policiesPage.createPolicy();
+        policiesPage.fillNewPolicyForm(name);
+        policiesPage.backToPoliciesList();
+        policiesPage.checkStatus(name, "Draft");
+        policiesPage.openEditingPolicy(name);
+        policiesPage.clickOnButtonByText("Settings");
+        policiesPage.verifyIfTextExists("Settings");
+        policiesPage.verifyIfTextExists("Cancel");
+        policiesPage.verifyIfTextExists("Save");
+        policiesPage.verifyIfTextExists("Theme");
+        policiesPage.verifyIfTextExists("New");
+        policiesPage.verifyIfTextExists("Copy");
+        policiesPage.verifyIfTextExists("Import");
+        policiesPage.verifyIfTextExists("Blocks");
+        policiesPage.verifyIfTextExists("Syntax");
+        policiesPage.verifyIfTextExists("Condition");
+        policiesPage.verifyIfTextExists("Style");
+        policiesPage.verifyIfTextExists("Description");
+        policiesPage.clickOnButtonByText(" Cancel ");
+    });
+
+    after(() => {
+        policiesPage.backToPoliciesList();
+        policiesPage.deletePolicy(name);
     });
 });

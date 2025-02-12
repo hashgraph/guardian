@@ -26,4 +26,8 @@ context("Dry run Policy", { tags: ['ui'] }, () => {
         policiesPage.checkStatus(name, "In Dry Run");
         policiesPage.stopDryRun(name);
     });
+
+    after(() => {
+        policiesPage.deletePolicy(name);
+    });
 });

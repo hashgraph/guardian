@@ -12,11 +12,11 @@ context("Tags Policy", { tags: ['ui'] }, () => {
     beforeEach(() => {
         cy.viewport(1920, 1080);
         homePage.visit();
+        homePage.login(SRUsername);
+        policiesPage.openPoliciesTab();
     })
 
     it("Verify if it possible to add tags", () => {
-        homePage.login(SRUsername);
-        policiesPage.openPoliciesTab();
         policiesPage.createPolicy();
         policiesPage.fillNewPolicyForm(name);
         policiesPage.backToPoliciesList();
@@ -26,10 +26,13 @@ context("Tags Policy", { tags: ['ui'] }, () => {
     });
 
     it("Verify if it possible to delete tags", () => {
-        homePage.login(SRUsername);
-        policiesPage.openPoliciesTab();
         policiesPage.checkStatus(name, "Draft");
         policiesPage.deleteTag(name, "tag1");
         policiesPage.deleteTag(name, "tag2");
+    });
+
+    after(() => {
+        policiesPage.openPoliciesTab();
+        policiesPage.deletePolicy(name);
     });
 });

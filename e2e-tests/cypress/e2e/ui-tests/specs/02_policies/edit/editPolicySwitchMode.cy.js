@@ -1,39 +1,39 @@
-import {AuthenticationPage} from "../../../pages/authentication";
-import {PoliciesPage} from "../../../pages/policies";
+import { HomePage } from "../../../pages/homePage";
+const homePage = new HomePage();
 
-const home = new AuthenticationPage();
-const policies = new PoliciesPage();
+import { PoliciesPage } from "../../../pages/policiesPage";
+const policiesPage = new PoliciesPage();
 
-describe("Edit Policy. Switch mode flow", {tags: '@ui'}, () => {
+context("Edit Policy. Switch mode flow", { tags: ['ui'] }, () => {
 
+    const SRUsername = Cypress.env('SRUser');
     const name = Math.floor(Math.random() * 999) + "testName";
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
-        home.visit();
-        home.login("StandardRegistry");
-        policies.openPoliciesTab();
-        policies.createPolicy();
-        policies.fillNewPolicyForm(name);
-        policies.openPoliciesTab();
-        policies.checkStatus(name, "Draft");
-        policies.clickEditPolicy(name);
-        policies.waitForEditPage();
+        homePage.visit();
+        homePage.login(SRUsername);
+        policiesPage.openPoliciesTab();
     });
 
-    afterEach(() => {
-        policies.openPoliciesTab();
-        policies.deletePolicy(name);
-        policies.checkPolicyTableNotContains(name);
+    it("Verify if it possible to switch to json mode", () => {
+        policiesPage.createPolicy();
+        policiesPage.fillNewPolicyForm(name);
+        policiesPage.backToPoliciesList();
+        policiesPage.checkStatus(name, "Draft");
+        policiesPage.openEditingPolicy(name);
+        policiesPage.clickOnButtonByText("Tree");
+        policiesPage.clickOnButtonByText("JSON");
+        policiesPage.verifyIfContainerJsonIsDisplayed();
     });
 
-    it("Verify if it possible to swith to json mode", () => {
-        policies.clickOnButtonByText("Tree");
-        policies.clickOnButtonByText("JSON");
-        policies.verifyIfContainerJsonIsDisplayed();
+    it("Verify if it possible to switch to tree mode", () => {
+        policiesPage.openEditingPolicy(name);
+        policiesPage.verifyIfTreeContainerIsDisplayed();
     });
 
-    it("Verify if it possible to swith to tree mode", () => {
-        policies.verifyIfTreeContainerIsDisplayed();
+    after(() => {
+        policiesPage.backToPoliciesList();
+        policiesPage.deletePolicy(name);
     });
 });

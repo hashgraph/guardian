@@ -1,47 +1,48 @@
-import {AuthenticationPage} from "../../../pages/authentication";
-import {PoliciesPage} from "../../../pages/policies";
+import { HomePage } from "../../../pages/homePage";
+const homePage = new HomePage();
 
-const home = new AuthenticationPage();
-const policies = new PoliciesPage();
+import { PoliciesPage } from "../../../pages/policiesPage";
+const policiesPage = new PoliciesPage();
 
-describe("Edit Policy. Validation flow", {tags: '@ui'}, () => {
+context("Edit Policy. Validation flow", { tags: ['ui'] }, () => {
 
+    const SRUsername = Cypress.env('SRUser');
     const name = Math.floor(Math.random() * 999) + "testName";
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
-        home.visit();
-        home.login("StandardRegistry");
-        policies.openPoliciesTab();
-        policies.createPolicy();
-        policies.fillNewPolicyForm(name);
-        policies.openPoliciesTab();
-        policies.checkStatus(name, "Draft");
-        policies.clickEditPolicy(name);
-        policies.waitForEditPage();
-    });
-
-    afterEach(() => {
-        policies.openPoliciesTab();
-        policies.deletePolicy(name);
-        policies.checkPolicyTableNotContains(name);
+        homePage.visit();
+        homePage.login(SRUsername);
+        policiesPage.openPoliciesTab();
     });
 
     it("Checking for successful validation", () => {
-        policies.clickOnButtonByText("Validation");
-        policies.verifyIfValidationIsSuccessful();
+        policiesPage.createPolicy();
+        policiesPage.fillNewPolicyForm(name);
+        policiesPage.backToPoliciesList();
+        policiesPage.checkStatus(name, "Draft");
+        policiesPage.openEditingPolicy(name);
+        policiesPage.clickOnButtonByText("Validation");
+        policiesPage.verifyIfValidationIsSuccessful();
     });
 
     it("Verify that the validation is displayed successfully", () => {
-        policies.addNewBlockByName("Action");
-        policies.clickOnButtonByText("Validation");
-        policies.verifyIfValidationIsDisplayed();
+        policiesPage.openEditingPolicy(name);
+        policiesPage.addNewBlock("Action");
+        policiesPage.clickOnButtonByText("Validation");
+        policiesPage.verifyIfValidationIsDisplayed();
     });
 
     it("Verify that the validation count is working successfully", () => {
-        policies.addNewBlockByName("Action");
-        policies.addNewBlockByName("Button");
-        policies.clickOnButtonByText("Validation");
-        policies.verifyIfValidationCountContains(2);
+        policiesPage.openEditingPolicy(name);
+        policiesPage.addNewBlock("Action");
+        policiesPage.addNewBlock("Button");
+        policiesPage.clickOnButtonByText("Validation");
+        policiesPage.verifyIfValidationCountContains(2);
+    });
+
+    after(() => {
+        policiesPage.backToPoliciesList();
+        policiesPage.deletePolicy(name);
     });
 });

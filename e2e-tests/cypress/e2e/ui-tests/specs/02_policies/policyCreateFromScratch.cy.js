@@ -12,14 +12,18 @@ context("Workflow  Policy", { tags: ['ui'] }, () => {
     beforeEach(() => {
         cy.viewport(1920, 1080);
         homePage.visit();
+        homePage.login(SRUsername);
+        policiesPage.openPoliciesTab();
     })
 
     it("checks workflow", () => {
-        homePage.login(SRUsername);
-        policiesPage.openPoliciesTab();
         policiesPage.createPolicy();
         policiesPage.fillNewPolicyForm(name);
         policiesPage.backToPoliciesList();
         policiesPage.checkStatus(name, "Draft");
+    });
+
+    after(() => {
+        policiesPage.deletePolicy(name);
     });
 });

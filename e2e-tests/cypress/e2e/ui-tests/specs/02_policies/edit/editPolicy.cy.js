@@ -114,4 +114,9 @@ context("Edit Policy", { tags: ['ui'] }, () => {
         policiesPage.openEditingPolicy(name);
         policiesPage.checkBlockNotExist("Block_12");
     });
+
+    after(() => {
+        policiesPage.backToPoliciesList();
+        policiesPage.deletePolicy(name);
+    });
 });
