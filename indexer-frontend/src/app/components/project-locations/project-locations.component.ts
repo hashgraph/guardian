@@ -221,12 +221,26 @@ export class ProjectLocationsComponent {
             const shapeFeatures: any[] = [];
 
             this.geoShapes.forEach((shape) => {
-                var feature = {
-                    type: 'Feature',
-                    geometry: shape,
+                if (Array.isArray(shape)) {
+                    for (const item of shape) {
+                        var feature = {
+                            type: 'Feature',
+                            geometry: item,
+                        }
+                        
+                        shapeFeatures.push(feature);
+                        this.center = transform(this.getFeatureCenter(item), 'EPSG:4326', 'EPSG:3857');
+                    }
                 }
-                shapeFeatures.push(feature);
-                this.center = transform(this.getFeatureCenter(shape), 'EPSG:4326', 'EPSG:3857');
+                else {
+                    var feature = {
+                        type: 'Feature',
+                        geometry: shape,
+                    }
+                    
+                    shapeFeatures.push(feature);
+                    this.center = transform(this.getFeatureCenter(shape), 'EPSG:4326', 'EPSG:3857');
+                }
             });
 
             const features = new GeoJSON({
