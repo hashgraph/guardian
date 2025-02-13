@@ -163,8 +163,9 @@ export class PoliciesPage {
     exportPolicyAsMessageId(name) {
         this.openExportModal(name);
         cy.wait(500);
-        cy.get(CommonElements.dialogWindow).contains(PoliciesPageLocators.exportMessageIdButton).focus().click();
+        cy.get(CommonElements.dialogWindow).contains(PoliciesPageLocators.exportMessageIdButton).click();
         cy.window().then((win) => {
+            win.focus();
             win.navigator.clipboard.readText().then((text) => {
                 //regex numbers.numbers
                 expect(text).to.match(/\d+\.\d+/g);

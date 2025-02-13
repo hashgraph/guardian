@@ -1,21 +1,22 @@
-import {AuthenticationPage} from "../../pages/authentication";
-import {ModulesPage} from "../../pages/modules";
-import {PoliciesPage} from "../../pages/policies";
+import { ModulesPage } from "../ui-tests/pages/modulesPage";
+const modulesPage = new ModulesPage();
 
-const home = new AuthenticationPage();
-const modules = new ModulesPage();
-const policies = new PoliciesPage();
+import { HomePage } from "../ui-tests/pages/homePage";
+const homePage = new HomePage();
 
-describe("Edit Modules", {tags: '@ui'}, () => {
+context("Workflow Module Editing", { tags: ['@ui'] }, () => {
 
-    const name = Math.floor(Math.random() * 999) + "moduleName";
+    const SRUsername = Cypress.env('SRUser');
+    const moduleName = "UIModule";
+    const moduleNameIPFSImported = "ComparedModuleIPFS";
+    const moduleNameFileImported = "ComparedModuleFile";
 
+    //TBD update after Back button returned
     beforeEach(() => {
         cy.viewport(1920, 1080);
-        home.visit();
-        home.login("StandardRegistry");
-        modules.openModulesTab();
-        modules.createNewModule(name);
+        homePage.visit();
+        homePage.login(SRUsername);
+        modulesPage.openModulesTab();
     })
 
     it("Verify if it possible to edit module", () => {

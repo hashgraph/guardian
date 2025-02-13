@@ -24,6 +24,7 @@ const CommonElements = {
     artifactsTab: "Manage Artifacts",
     dropdown:'p-dropdown',
     contractsTab: 'Manage Contracts',
+    modulesTab: 'Manage Modules',
 };
 
 export default CommonElements;
