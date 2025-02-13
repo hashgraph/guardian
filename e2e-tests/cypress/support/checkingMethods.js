@@ -260,7 +260,7 @@ export const waitForLoading = (maxAttempts = 200, interval = 2000) => {
         maxAttempts--;
         cy.get('body').then((body) => {
             if (body.find("div.loading").length != 0) {
-                cy.log(`Waiting for operation with dry-run policy to complete after ${interval / 1000} seconds...`);
+                cy.log(`Waiting for operation to complete after ${interval / 1000} seconds...`);
                 cy.wait(interval);
                 waitForLoading(maxAttempts, interval);
             }

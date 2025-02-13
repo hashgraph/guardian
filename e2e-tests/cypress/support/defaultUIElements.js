@@ -23,6 +23,7 @@ const CommonElements = {
     textarea: "textarea",
     artifactsTab: "Manage Artifacts",
     dropdown:'p-dropdown',
+    contractsTab: 'Manage Contracts',
 };
 
 export default CommonElements;
