@@ -44,6 +44,75 @@
             margin-top: 0;
             padding: 16px;
         }
+
+        .table {
+            min-width: 328px !important;
+
+            &__head {
+                padding-left: 0 !important;
+                padding-bottom: 8px;
+                min-height: 0 !important;
+
+                .table-cell {
+                    padding: 8px 16px;
+                }
+            }
+
+            .table-row {
+                padding-left: 0 !important;
+                min-height: 48px !important;
+                align-items: start;
+
+                .table-cell {
+                    padding: 8px 0 0 16px !important;
+    
+                    span {
+                        font-weight: 400;
+                        font-size: 14px;
+                        line-height: 16.94px;
+                        letter-spacing: 0%;
+                        white-space: normal;
+                        word-wrap: break-word;
+                        overflow-wrap: break-word;
+                        color: var(--guardian-font-color, #23252E)
+                    }
+                }
+
+                .table-cell:last-child {
+                    padding: 5px !important;
+                    
+                    .p-button {
+                        width: 38px;
+                        height: 38px;
+                        background-color: #4169E214;
+                        border-radius: 8px;
+                        border: none;
+
+                        span {
+                            color: var(--guardian-primary-color, #4169E2);
+                        }
+                    }
+                }
+            }
+
+            .table-row:not(:last-child) {
+                border-bottom: none;
+            }
+        }
+        
+        .p-tabview .p-tabview-panels .p-tabview-panel {
+            overflow-y: auto;
+        }
+        
+        pre {
+            margin: 0;
+            padding: 0;
+            color: var(--guardian-font-color);
+        
+            span {
+                color: #009C2C;
+            }
+        }   
     }
 
     .p-tabview .p-tabview-nav li .p-tabview-nav-link {

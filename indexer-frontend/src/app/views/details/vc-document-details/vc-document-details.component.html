@@ -21,10 +21,16 @@
                                 <div class="map-sidebar">
                                     <p-tabView [activeIndex]="tabIndex" [hidden]="loading">
                                         <p-tabPanel [header]="'details.json' | transloco">
-                                            <div>1</div>
+                                            <pre [innerHTML]="geoJsonShapes"></pre>
                                         </p-tabPanel>
                                         <p-tabPanel [header]="'details.table' | transloco">
-                                            <div>2</div>
+                                            <app-table class="collection-container__table"
+                                                [loading]="loading"
+                                                [columns]="geoShapesColumns"
+                                                [data]="mapPoints"
+                                                [paginator]="false"
+                                            >
+                                            </app-table>
                                         </p-tabPanel>
                                     </p-tabView>
                                 </div>
