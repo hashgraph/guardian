@@ -66,7 +66,7 @@ export class ModulesPage {
         cy.contains(moduleName).should("exist");
     }
 
-    importNewModuleIPFS(messageId, name){
+    importNewModuleIPFS(messageId, name) {
         cy.contains(ModulesPageLocators.importButton).click();
         cy.contains(ModulesPageLocators.importIPFSButton).click();
         cy.get(ModulesPageLocators.timestampInput).type(messageId);
@@ -76,9 +76,9 @@ export class ModulesPage {
         cy.contains(name).should("exist");
     }
 
-    importNewModuleFile(fileName, name){
+    importNewModuleFile(fileName, name) {
         cy.contains(ModulesPageLocators.importButton).click();
-        cy.get(CommonElements.fileInput).selectFile('cypress/fixtures/' + fileName, {force: true});
+        cy.get(CommonElements.fileInput).selectFile('cypress/fixtures/' + fileName, { force: true });
         cy.get(ModulesPageLocators.pImportButton).click();
         Checks.waitForLoading();
         cy.contains(name).should("exist");
@@ -97,7 +97,7 @@ export class ModulesPage {
 
     openExportModal(name) {
         cy.contains("td", name).siblings().find(ModulesPageLocators.exportModule).click();
-    }    
+    }
 
     exportModuleAsFile(name) {
         this.openExportModal(name);
@@ -112,7 +112,7 @@ export class ModulesPage {
         cy.get(CommonElements.dialogWindow).contains(ModulesPageLocators.exportMessageIdButton).click();
         cy.window().then((win) => {
             win.focus();
-            win.navigator.clipboard.readText().then((text) => { 
+            win.navigator.clipboard.readText().then((text) => {
                 //regex numbers.numbers
                 expect(text).to.match(/\d+\.\d+/g);
             });
@@ -123,7 +123,7 @@ export class ModulesPage {
         cy.contains(buttonName).should('be.disabled');
     }
 
-    publishModule(moduleName){
+    publishModule(moduleName) {
         cy.contains(moduleName).parent().contains(ModulesPageLocators.publishButton).click();
         Checks.waitForLoading();
         cy.contains(moduleName).parent().contains(ModulesPageLocators.publishedStatus);
@@ -137,7 +137,7 @@ export class ModulesPage {
         cy.contains(tagName).should("exist");
     }
 
-    deleteTag(name, tagName) {        
+    deleteTag(name, tagName) {
         cy.contains(name).siblings().contains(tagName).click();
         cy.get(ModulesPageLocators.deleteTagIcon).click();
         cy.get(ModulesPageLocators.closeWindowButton).click();
@@ -160,29 +160,27 @@ export class ModulesPage {
         cy.contains(name).parent().should(($module) => {
             const draftModuleChildren = $module.get(0).childNodes;
             expect(draftModuleChildren.item(0).innerText).to.eq(name);
-            expect(draftModuleChildren.item(2).getElementsByClassName("tag-name").item(0).innerText).to.eq("Create Tag");
-            expect(draftModuleChildren.item(3).firstChild.getAttribute('ng-reflect-ng-switch')).to.eq("DRAFT");
-            expect(draftModuleChildren.item(3).getElementsByClassName("module-status").item(0).innerText).to.eq("Draft");
-            expect(draftModuleChildren.item(4).getElementsByClassName("btn-publish").item(0).innerText).to.eq("Publish");
-            const draftModuleActions = draftModuleChildren.item(5).firstChild.children;
-            expect(draftModuleActions.item(0).getAttribute('mattooltip')).to.eq("Export");
-            expect(draftModuleActions.item(1).getAttribute('mattooltip')).to.eq("Edit");
-            expect(draftModuleActions.item(2).getAttribute('mattooltip')).to.eq("Delete");
+            expect(draftModuleChildren.item(2).getElementsByTagName("button").item(0).innerText).to.eq("Create a Tag");
+            expect(draftModuleChildren.item(3).firstChild.innerText).to.eq("Draft");
+            expect(draftModuleChildren.item(4).getElementsByTagName("button").item(0).innerText).to.eq("Publish");
+            expect(draftModuleChildren.item(4).getElementsByTagName("svg-icon").item(0).getAttribute('ng-reflect-src')).to.eq("/assets/images/icons/export.sv");
+            expect(draftModuleChildren.item(4).getElementsByTagName("svg-icon").item(1).getAttribute('ng-reflect-src')).to.eq("/assets/images/icons/edit.svg");
+            expect(draftModuleChildren.item(4).getElementsByTagName("svg-icon").item(2).getAttribute('ng-reflect-src')).to.eq("/assets/images/icons/delete.sv");
+            expect(draftModuleChildren.item(4).getElementsByTagName("svg-icon").item(2).getAttribute('ng-reflect-svg-class')).to.eq("accent-color-red");
         })
     }
 
     verifyPublishedModuleDataAndActions(name) {
         cy.contains(name).parent().should(($module) => {
-             const publishedModuleChildren = $module.get(1).childNodes;
+            const publishedModuleChildren = $module.get(0).childNodes;
             expect(publishedModuleChildren.item(0).innerText).to.eq(name);
-            expect(publishedModuleChildren.item(2).getElementsByClassName("tag-name").item(0).innerText).to.eq("Create Tag");
-            expect(publishedModuleChildren.item(3).firstChild.getAttribute('ng-reflect-ng-switch')).to.eq("PUBLISHED");
-            expect(publishedModuleChildren.item(3).getElementsByClassName("module-status").item(0).innerText).to.eq("Published");
-            expect(publishedModuleChildren.item(4).children.length).to.eq(0);
-            const publishedModuleActions = publishedModuleChildren.item(5).firstChild.children;
-            expect(publishedModuleActions.item(0).getAttribute('mattooltip')).to.eq("Export");
-            expect(publishedModuleActions.item(1).getAttribute('mattooltip')).to.eq("Edit");
-            expect(publishedModuleActions.item(2).className).to.eq("btn-icon-delete-des ng-star-inserted");
+            expect(publishedModuleChildren.item(2).getElementsByTagName("button").item(0).innerText).to.eq("Create a Tag");
+            expect(publishedModuleChildren.item(3).getElementsByTagName("div").item(0).innerText).to.eq("Published");
+            expect(publishedModuleChildren.item(4).getElementsByTagName("svg-icon").item(0).getAttribute('ng-reflect-src')).to.eq("/assets/images/icons/export.sv");
+            expect(publishedModuleChildren.item(4).getElementsByTagName("svg-icon").item(1).getAttribute('ng-reflect-src')).to.eq("/assets/images/icons/edit.svg");
+            expect(publishedModuleChildren.item(4).getElementsByTagName("svg-icon").item(2).getAttribute('ng-reflect-src')).to.eq("/assets/images/icons/delete.sv");
+            expect(publishedModuleChildren.item(4).getElementsByTagName("svg-icon").item(2).getAttribute('ng-reflect-svg-class')).to.eq("disabled-color");
+            expect(publishedModuleChildren.item(4).getElementsByTagName("button").item(0).getAttribute('disabled')).exist;
         })
     }
 
