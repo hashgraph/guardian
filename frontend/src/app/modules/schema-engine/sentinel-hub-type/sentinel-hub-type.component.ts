@@ -118,7 +118,11 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
                 if (!value.from || !value.to) {
                     return;
                 }
-                this.getControlByName('time').setValue(value.from?.format('YYYY-MM-DD') + '/' + value.to?.format('YYYY-MM-DD'));
+
+                const fromDate = value.from.format ? value.from.format('YYYY-MM-DD') : moment(value.from).format('YYYY-MM-DD')
+                const toDate = value.to.format ? value.to.format('YYYY-MM-DD') : moment(value.to).format('YYYY-MM-DD')
+
+                this.getControlByName('time').setValue(fromDate + '/' + toDate);
             })
         );
 
