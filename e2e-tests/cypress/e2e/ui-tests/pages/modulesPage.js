@@ -111,7 +111,7 @@ export class ModulesPage {
         Checks.waitForLoading();
         cy.get(CommonElements.dialogWindow).contains(ModulesPageLocators.exportMessageIdButton).click();
         cy.window().then((win) => {
-            win.focus();
+            win.navigator.clipboard.focus();
             win.navigator.clipboard.readText().then((text) => {
                 //regex numbers.numbers
                 expect(text).to.match(/\d+\.\d+/g);

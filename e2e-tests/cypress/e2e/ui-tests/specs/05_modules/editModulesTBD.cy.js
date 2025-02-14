@@ -1,7 +1,7 @@
-import { ModulesPage } from "../ui-tests/pages/modulesPage";
+import { ModulesPage } from "../../pages/modulesPage";
 const modulesPage = new ModulesPage();
 
-import { HomePage } from "../ui-tests/pages/homePage";
+import { HomePage } from "../../pages/homePage";
 const homePage = new HomePage();
 
 context("Workflow Module Editing", { tags: ['@ui'] }, () => {

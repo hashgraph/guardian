@@ -25,6 +25,7 @@ const CommonElements = {
     dropdown:'p-dropdown',
     contractsTab: 'Manage Contracts',
     modulesTab: 'Manage Modules',
+    schemasTab: 'Manage Schemas',
 };
 
 export default CommonElements;

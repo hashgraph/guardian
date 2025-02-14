@@ -228,7 +228,7 @@ export const waitForElement = (element, maxAttempts = 200, interval = 2000) => {
     if (maxAttempts > 0) {
         maxAttempts--;
         cy.get('body').then((body) => {
-            cy.log(body.find(element).length);
+            cy.log(body.find(element));
             if (body.find(element).length == 0) {
                 cy.log(`Waiting for operation to complete after ${interval / 1000} seconds...`);
                 cy.wait(interval, { log: false });
@@ -238,9 +238,23 @@ export const waitForElement = (element, maxAttempts = 200, interval = 2000) => {
     }
     else
         throw new Error(`Element doesn't exist after a few attempts...`)
-
 }
-//
+
+export const waitForTaskComplete = (maxAttempts = 200, interval = 2000) => {
+    cy.wait(1000);
+    if (maxAttempts > 0) {
+        maxAttempts--;
+        cy.get('body').then((body) => {
+            cy.log(body.find("div.task-viewer"));
+            if (body.find("div.task-viewer").length != 0) {
+                cy.log(`Waiting for operation to complete after ${interval / 1000} seconds...`);
+                cy.wait(interval-1000);
+                waitForTaskComplete(maxAttempts, interval);
+            }
+        })
+    }
+}
+
 export const waitForBalanceIncrease = (balance, username, maxAttempts = 200, interval = 10000) => {
     if (maxAttempts > 0) {
         maxAttempts--;
