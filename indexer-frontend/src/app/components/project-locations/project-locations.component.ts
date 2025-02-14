@@ -113,7 +113,15 @@ const defaultStyles: any = {
     Cluster: new Style({
         image: clusterStyle,
     }),
+    MultiPoint:  new Style({
+        image: pointStyle,
+    }),
+    LineString:  new Style({
+        image: pointStyle,
+    }),
     Polygon: polygonStyle,
+    MultiLineString: polygonStyle,
+    MultiPolygon: polygonStyle,
 };
 
 const activeStyles: any = {
@@ -123,7 +131,15 @@ const activeStyles: any = {
     Cluster: new Style({
         image: selectedCluster,
     }),
+    MultiPoint:  new Style({
+        image: selectedPoint,
+    }),
+    LineString:  new Style({
+        image: selectedPoint,
+    }),
     Polygon: selectedPolygon,
+    MultiLineString: selectedPolygon,
+    MultiPolygon: selectedPolygon,
 };
 
 function styleFunction(feature: any) {
