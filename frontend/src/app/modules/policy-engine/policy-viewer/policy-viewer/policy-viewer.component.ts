@@ -200,7 +200,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.userRole = this.policyInfo.userRole;
                 this.userGroup = this.policyInfo.userGroup?.groupLabel || this.policyInfo.userGroup?.uuid;
 
-                if (this.policyInfo?.status === PolicyType.DRY_RUN) {
+                if (this.policyInfo?.status === PolicyType.DRY_RUN
+                    || this.policyInfo?.status === PolicyType.DEMO
+                ) {
                     this.loadDryRunOptions();
                 } else {
                     setTimeout(() => {
