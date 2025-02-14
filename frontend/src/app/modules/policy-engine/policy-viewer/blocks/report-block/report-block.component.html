@@ -373,14 +373,15 @@
                       {{ item.title }}
                     </div>
                     <div
-                        *ngIf="
-                                                document.document &&
-                                                document.document.comment
-                                            "
+                        *ngIf="document.document && document.document.comment"
                         class="revoke-container"
                     >
-                      <i class="pi pi-exclamation-triangle revoke-icon"></i>
-                      <b>Revoked with reason: "{{ document.document.comment }}"</b>
+                      <i class="pi pi-exclamation-triangle"></i>
+                      <b
+						[pTooltip]="'Revoked with reason: ' + document.document.comment"
+						tooltipPosition="top"
+						tooltipStyleClass="guardian-tooltip small-guardian-tooltip"
+					  >Revoked with reason: "{{ document.document.comment }}"</b>
                     </div>
                     <div class="chain-id">
                       {{ item.description }}
