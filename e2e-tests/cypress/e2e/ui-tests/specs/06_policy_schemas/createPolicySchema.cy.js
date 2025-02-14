@@ -22,7 +22,7 @@ context("Policy Schema Creation", { tags: ['ui'] }, () => {
     })
 
     it("create policy schema", () => {
-        schemaPage.createPolicySchema(schemaName);
+        schemaPage.createSchema(schemaName);
     });
 
     it("import policy schema IPFS", () => {

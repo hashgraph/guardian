@@ -30,6 +30,7 @@ const SchemaPageLocators = {
     closeWindowButton: "[ng-reflect-label='Close']",
     createButton: "[ng-reflect-label='Create']",
     createTagButton: ' Create a Tag ',
+    activateButton: 'div.btn-approve',
 
     //Inputs
     schemaNameInput: "input[formcontrolname='name']",
@@ -47,11 +48,11 @@ const SchemaPageLocators = {
     entityList: '[formcontrolname="entity"]',
     entityOption: (entityType) => `li[aria-label=${entityType}]`,
     compareSchemaName: 'div.schema-info-field-value',
+    activeStatus: "Active",
 
 
 
 
-    activateButton: 'div.btn-approve',
 
     policyChooseInput: "mat-select[role='combobox']",
     entityChoosing: 'mat-select[formcontrolname="entity"]',
@@ -59,7 +60,6 @@ const SchemaPageLocators = {
 
     policyComboboxItem: "span.mat-option-text",
     dialogContainer: "mat-dialog-container",
-    activeStatus: "Active",
     userEntity: 'mat-option[value="USER"]',
     dialogActions: 'mat-dialog-actions',
 };
@@ -83,7 +83,8 @@ export class SchemaPage {
         })
         Checks.waitForLoading();
     }
-    createPolicySchema(schemaName) {
+    
+    createSchema(schemaName) {
         cy.get(SchemaPageLocators.schemaCreateButton).click();
         cy.get(SchemaPageLocators.schemaNameInput).type(schemaName);
         cy.get(SchemaPageLocators.dialogSaveButton).click();
@@ -125,7 +126,7 @@ export class SchemaPage {
         cy.contains(name).first().parent().contains("Published").should("exist");
     }
 
-    deletePolicySchema(name) {
+    deleteSchema(name) {
         cy.contains(name).parent().find(SchemaPageLocators.menuSchemaButton).click();
         cy.get(SchemaPageLocators.deleteSchemaButton).click();
         cy.get(SchemaPageLocators.confirmDeleteButton).click();
@@ -207,6 +208,11 @@ export class SchemaPage {
         cy.contains(tagName).should("not.exist");
     }
 
+    activateSystemSchema(schemaNameForActivate) {
+        cy.contains(schemaNameForActivate).parent().find(SchemaPageLocators.activateButton).click();
+        cy.contains(schemaNameForActivate).parent().contains(SchemaPageLocators.activeStatus).should("exist");
+    }
+
 
 
 
@@ -248,27 +254,6 @@ export class SchemaPage {
         cy.wait(10000)
         cy.wait("@waitForSchemaList", { timeout: 100000 });
         cy.contains(schemaNameForDeletion).should("not.exist");
-    }
-
-    createSystemSchema(schemaName) {
-        cy.intercept(SchemaPageLocators.systemSchemasList).as(
-            "waitForSchemaList"
-        );
-        cy.contains('mat-label', 'Type').parent().parent().parent().click()
-        cy.contains(SchemaPageLocators.systemSchemaTabButton).click();
-        cy.get(SchemaPageLocators.schemaCreateButton).click();
-        cy.get(SchemaPageLocators.schemaNameInput).click().type(schemaName);
-        cy.get(SchemaPageLocators.entityChoosing).click();
-        cy.get(SchemaPageLocators.userEntity).click();
-        cy.get(SchemaPageLocators.dialogSaveButton).click();
-        cy.wait("@waitForSchemaList", { timeout: 10000 });
-        cy.contains(schemaName).should("exist");
-    }
-
-    activateSystemSchema(schemaNameForActivate) {
-        cy.contains(SchemaPageLocators.systemSchemaTabButton).click();
-        cy.contains(schemaNameForActivate).parent().find(SchemaPageLocators.activateButton).click();
-        cy.contains(schemaNameForActivate).parent().contains(SchemaPageLocators.activeStatus).should("exist");
     }
 
     activateOtherSystemSchema(schemaNameForActivate) {

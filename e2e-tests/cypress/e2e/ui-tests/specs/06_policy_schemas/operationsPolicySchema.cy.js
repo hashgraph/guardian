@@ -26,7 +26,7 @@ context("Policy Schema Operations", { tags: ['ui'] }, () => {
 
     it("delete policy schema", () => {
         schemaPage.filterByLastPolicy();
-        schemaPage.deletePolicySchema(schemaName);
+        schemaPage.deleteSchema(schemaName);
     });
 
     it("publish policy schema", () => {
