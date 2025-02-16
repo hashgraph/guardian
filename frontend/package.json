@@ -13,7 +13,7 @@
     "@angular/router": "^18.2.12",
     "@ctrl/ngx-codemirror": "^5.1.1",
     "@enonic/global-polyfill": "^1.0.0",
-    "@formulajs/formulajs": "4.4.6",
+    "@formulajs/formulajs": "4.4.9",
     "@guardian/interfaces": "file:../interfaces",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
