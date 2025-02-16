@@ -102,7 +102,7 @@ export class DocumentViewComponent implements OnInit {
             if (!this.schemaMap[type]) {
                 this.schemaMap[type] = null;
             }
-            if(!this.schemaId) {
+            if (!this.schemaId) {
                 this.schemaId = `#${type}`;
             }
         }
@@ -134,6 +134,7 @@ export class DocumentViewComponent implements OnInit {
                 })
                 .pipe(takeUntil(this.destroy$))
         )
+
         requests.push(
             this.formulasService
                 .getFormulasData({
@@ -165,6 +166,11 @@ export class DocumentViewComponent implements OnInit {
 
             this.rules = new DocumentValidators(rules);
             this.rulesResults = this.rules.validateVC(this.schemaId, this.document);
+            
+            if (formulas && !formulas.document) {
+                formulas.document = { document: this.document };
+            }
+
             this.formulas = FormulasTree.from(formulas);
             this.formulas?.setDocuments(this.document);
             this.formulasResults = this.formulas?.getFields(this.schemaId);
