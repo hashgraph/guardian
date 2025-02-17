@@ -32,7 +32,7 @@
     "@types/gulp-rename": "^2",
     "@types/node": "^22.10.10",
     "chai": "4.3.6",
-    "mocha": "^9.2.0",
+    "mocha": "^11.1.0",
     "mocha-junit-reporter": "^2.0.2",
     "nodemon": "^2.0.12",
     "tslint": "^6.1.3",
