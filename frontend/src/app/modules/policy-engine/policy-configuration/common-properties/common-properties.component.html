@@ -360,13 +360,13 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName source-elm">Output Event</td>
                             <td class="propRowCell">
-                                <p-dropdown [(ngModel)]="item.output"
-                                            [options]="getPreparedInputEvents(item)"
-                                            [disabled]="readonly"
-                                            (onChange)="onSave()"
-                                            placeholder="Select Output"
-                                            [appendTo]="'body'"
-                                >
+                                <p-dropdown
+                                    [(ngModel)]="item.output"
+                                    [options]="getOutputEvents(item)"
+                                    [disabled]="readonly"
+                                    (onChange)="onSave()"
+                                    [appendTo]="'body'"
+                                    placeholder="Select an event">
                                 </p-dropdown>
                             </td>
                         </tr>
