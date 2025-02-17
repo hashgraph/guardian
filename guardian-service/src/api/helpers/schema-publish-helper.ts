@@ -155,7 +155,8 @@ export async function saveSchemas(
 export async function publishDefsSchemas(
     defs: any,
     user: IOwner,
-    root: IRootConfig
+    root: IRootConfig,
+    schemaMap: Map<string, string> | null
 ) {
     if (!defs) {
         return;
@@ -167,7 +168,7 @@ export async function publishDefsSchemas(
         });
         if (schema && schema.status !== SchemaStatus.PUBLISHED) {
             schema = await incrementSchemaVersion(schema.iri, user);
-            await findAndPublishSchema(schema.id, schema.version, user, root, emptyNotifier());
+            await findAndPublishSchema(schema.id, schema.version, user, root, emptyNotifier(), schemaMap);
         }
     }
 }
@@ -185,7 +186,8 @@ export async function findAndPublishSchema(
     version: string,
     user: IOwner,
     root: IRootConfig,
-    notifier: INotifier
+    notifier: INotifier,
+    schemaMap: Map<string, string> | null
 ): Promise<SchemaCollection> {
     notifier.start('Load schema');
 
@@ -201,7 +203,7 @@ export async function findAndPublishSchema(
 
     notifier.completedAndStart('Publishing related schemas');
     const oldSchemaIri = item.iri;
-    await publishDefsSchemas(item.document?.$defs, user, root);
+    await publishDefsSchemas(item.document?.$defs, user, root, schemaMap);
     item = await DatabaseServer.getSchema(id);
 
     notifier.completedAndStart('Resolve topic');
@@ -220,6 +222,12 @@ export async function findAndPublishSchema(
     await updateSchemaDocument(item);
     await updateSchemaDefs(item.iri, oldSchemaIri);
     notifier.completed();
+
+    if (schemaMap) {
+        const newSchemaIri = item.iri;
+        schemaMap.set(oldSchemaIri, newSchemaIri);
+    }
+
     return item;
 }
 
