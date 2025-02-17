@@ -15,9 +15,9 @@ const filename = fileURLToPath(import.meta.url);
     about: {
         label: 'Data Transformation Addon',
         title: `Add 'Data Transformation' Addon`,
-        post: true,
+        post: false,
         get: true,
-        children: ChildrenType.Special,
+        children: ChildrenType.None,
         control: ControlType.Special,
         input: null,
         output: null,
@@ -73,7 +73,7 @@ export class DataTransformationAddon {
             return await this.getTransformedData(ref, user, parentData.data);
         }
     }
-    
+
     protected async getSources(user: PolicyUser): Promise<any[]> {
         const data = [];
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
