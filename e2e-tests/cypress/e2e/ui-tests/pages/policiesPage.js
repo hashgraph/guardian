@@ -402,6 +402,181 @@ export class PoliciesPage {
         cy.get(PoliciesPageLocators.errorCountElement).should('have.text', count);
     }
 
+    validateTypesDefault(){
+        cy.contains('Create User').click();
+        Checks.waitForLoading();
+        cy.contains('Users').click();
+        cy.contains('Virtual User 1').click();
+        Checks.waitForLoading();
+        cy.get(CommonElements.dropdown).first().click();
+        cy.contains('RoleD').click();
+        cy.contains('Next').click();
+        Checks.waitForLoading();
+        //number
+        cy.get('input').eq(0).should('have.class', 'ng-valid');
+        cy.get('input').eq(0).type('dsadsa');
+        cy.get('input').eq(0).should('have.class', 'ng-invalid');
+        cy.get('button:contains("Submit ")').should('be.disabled');
+        cy.get('input').eq(0).clear({ force: true }).type('213', { force: true });
+        cy.get('input').eq(0).should('have.class', 'ng-valid');
+        //email
+        cy.get('input').eq(1).should('have.class', 'ng-valid');
+        cy.get('input').eq(1).type('dsadsa');
+        cy.get('input').eq(1).should('have.class', 'ng-invalid');
+        cy.get('button:contains("Submit ")').should('be.disabled');
+        cy.get('input').eq(1).clear({ force: true }).type('dsadsa@dsadsa.dsadsa', { force: true });
+        cy.get('input').eq(1).should('have.class', 'ng-valid');
+        //image(IPFS)
+        cy.get('input').eq(2).should('have.class', 'ng-valid');
+        cy.get('input').eq(2).type('dsadsa');
+        cy.get('input').eq(2).should('have.class', 'ng-invalid');
+        cy.get('button:contains("Submit ")').should('be.disabled');
+        cy.get('input').eq(2).clear({ force: true }).type('ipfs://dsadsa', { force: true });
+        cy.get('input').eq(2).should('have.class', 'ng-valid');
+        //date(date)
+        cy.get('input').eq(3).type('fsdfds', { force: true });
+        cy.get('input').eq(2).click();
+        cy.get('input').eq(3).type('2025-01-03', { force: true });
+        //geojson
+        cy.get('button.guardian-button-secondary').eq(1).click();
+        cy.get('textarea').eq(0).type('[1.321,2.321]', { force: true });
+        cy.get('textarea').eq(0).should('have.class', 'ng-valid');
+
+        cy.get('button:contains("Submit ")').should('be.enabled');
+    }
+
+    validateTypesRequired(){
+        cy.contains('Create User').click();
+        Checks.waitForLoading();
+        cy.contains('Users').click();
+        cy.contains('Virtual User 2').click();
+        Checks.waitForLoading();
+        cy.get(CommonElements.dropdown).first().click();
+        cy.contains('RoleR').click();
+        cy.contains('Next').click();
+        Checks.waitForLoading();
+        //number
+        cy.get('input').eq(0).should('have.class', 'ng-invalid');
+        cy.get('input').eq(0).type('dsadsa');
+        cy.get('input').eq(0).should('have.class', 'ng-invalid');
+        cy.get('button:contains("Submit ")').should('be.disabled');
+        cy.get('input').eq(0).clear({ force: true }).type('213', { force: true });
+        cy.get('input').eq(0).should('have.class', 'ng-valid');
+        //date(date)
+        cy.get('input').eq(1).type('fsdfds', { force: true });
+        cy.get('input').eq(0).click();
+        cy.get('input').eq(1).type('2025-01-03', { force: true });
+        //email
+        cy.get('input').eq(2).should('have.class', 'ng-invalid');
+        cy.get('input').eq(2).type('dsadsa');
+        cy.get('input').eq(2).should('have.class', 'ng-invalid');
+        cy.get('button:contains("Submit ")').should('be.disabled');
+        cy.get('input').eq(2).clear({ force: true }).type('dsadsa@dsadsa.dsadsa', { force: true });
+        cy.get('input').eq(2).should('have.class', 'ng-valid');
+        //image(IPFS)
+        cy.get('input').eq(3).should('have.class', 'ng-invalid');
+        cy.get('input').eq(3).type('dsadsa');
+        cy.get('input').eq(3).should('have.class', 'ng-invalid');
+        cy.get('button:contains("Submit ")').should('be.disabled');
+        cy.get('input').eq(3).clear({ force: true }).type('ipfs://dsadsa', { force: true });
+        cy.get('input').eq(3).should('have.class', 'ng-valid');
+        //geojson
+        cy.get('textarea').eq(0).type('[1.321,2.321]', { force: true });
+        cy.get('textarea').eq(0).should('have.class', 'ng-valid');
+
+        cy.get('button:contains("Submit ")').should('be.enabled');
+    }
+
+    validateTypesMultiplie(){
+        cy.contains('Create User').click();
+        Checks.waitForLoading();
+        cy.contains('Users').click();
+        cy.contains('Virtual User 3').click();
+        Checks.waitForLoading();
+        cy.get(CommonElements.dropdown).first().click();
+        cy.contains('RoleMD').click();
+        cy.contains('Next').click();
+        Checks.waitForLoading();
+        //number
+        cy.get('button.guardian-button-secondary').eq(1).click();
+        cy.get('input').eq(0).should('have.class', 'ng-valid');
+        cy.get('input').eq(0).type('dsadsa');
+        cy.get('input').eq(0).should('have.class', 'ng-invalid');
+        cy.get('button:contains("Submit ")').should('be.disabled');
+        cy.get('input').eq(0).clear({ force: true }).type('213', { force: true });
+        cy.get('input').eq(0).should('have.class', 'ng-valid');
+        //email
+        cy.get('button.guardian-button-secondary').eq(2).click();
+        cy.get('input').eq(1).should('have.class', 'ng-valid');
+        cy.get('input').eq(1).type('dsadsa');
+        cy.get('input').eq(1).should('have.class', 'ng-invalid');
+        cy.get('button:contains("Submit ")').should('be.disabled');
+        cy.get('input').eq(1).clear({ force: true }).type('dsadsa@dsadsa.dsadsa', { force: true });
+        cy.get('input').eq(1).should('have.class', 'ng-valid');
+        //image(IPFS)
+        cy.get('button.guardian-button-secondary').eq(3).click();
+        cy.get('input').eq(2).should('have.class', 'ng-valid');
+        cy.get('input').eq(2).type('dsadsa');
+        cy.get('input').eq(2).should('have.class', 'ng-invalid');
+        cy.get('button:contains("Submit ")').should('be.disabled');
+        cy.get('input').eq(2).clear({ force: true }).type('ipfs://dsadsa', { force: true });
+        cy.get('input').eq(2).should('have.class', 'ng-valid');
+        //date(date)
+        cy.get('button.guardian-button-secondary').eq(4).click();
+        cy.get('input').eq(3).type('fsdfds', { force: true });
+        cy.get('input').eq(2).click();
+        cy.get('input').eq(3).type('2025-01-03', { force: true });
+        //geojson
+        cy.get('button.guardian-button-secondary').eq(5).click();
+        cy.get('textarea').eq(0).type('[1.321,2.321]', { force: true });
+        cy.get('textarea').eq(0).should('have.class', 'ng-valid');
+
+        cy.get('button:contains("Submit ")').should('be.enabled');
+    }
+
+    validateTypesMultiplieRequired(){
+        cy.contains('Create User').click();
+        Checks.waitForLoading();
+        cy.contains('Users').click();
+        cy.contains('Virtual User 4').click();
+        Checks.waitForLoading();
+        cy.get(CommonElements.dropdown).first().click();
+        cy.contains('RoleMR').click();
+        cy.contains('Next').click();
+        Checks.waitForLoading();
+        //number
+        cy.get('input').eq(0).should('have.class', 'ng-invalid');
+        cy.get('input').eq(0).type('dsadsa');
+        cy.get('input').eq(0).should('have.class', 'ng-invalid');
+        cy.get('button:contains("Submit ")').should('be.disabled');
+        cy.get('input').eq(0).clear({ force: true }).type('213', { force: true });
+        cy.get('input').eq(0).should('have.class', 'ng-valid');
+        //email
+        cy.get('input').eq(1).should('have.class', 'ng-invalid');
+        cy.get('input').eq(1).type('dsadsa');
+        cy.get('input').eq(1).should('have.class', 'ng-invalid');
+        cy.get('button:contains("Submit ")').should('be.disabled');
+        cy.get('input').eq(1).clear({ force: true }).type('dsadsa@dsadsa.dsadsa', { force: true });
+        cy.get('input').eq(1).should('have.class', 'ng-valid');
+        //date(date)
+        cy.get('input').eq(2).type('fsdfds', { force: true });
+        cy.get('input').eq(1).click();
+        cy.get('input').eq(2).type('2025-01-03', { force: true });
+        cy.get('input').eq(1).click();
+        //image(IPFS)
+        cy.get('input').eq(3).should('have.class', 'ng-invalid');
+        cy.get('input').eq(3).type('dsadsa', { force: true });
+        cy.get('input').eq(3).should('have.class', 'ng-invalid');
+        cy.get('button:contains("Submit ")').should('be.disabled');
+        cy.get('input').eq(3).clear({ force: true }).type('ipfs://dsadsa', { force: true });
+        cy.get('input').eq(3).should('have.class', 'ng-valid');
+        //geojson
+        cy.get('textarea').eq(0).type('[1.321,2.321]', { force: true });
+        cy.get('textarea').eq(0).should('have.class', 'ng-valid');
+
+        cy.get('button:contains("Submit ")').should('be.enabled');
+    }
+
 
 
 
