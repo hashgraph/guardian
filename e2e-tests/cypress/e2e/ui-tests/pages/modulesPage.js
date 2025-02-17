@@ -34,14 +34,14 @@ const ModulesPageLocators = {
     exportButton: '[mattooltip="Export"]',
     exportFileLabel: 'Save to file',
     exportIPFSLabel: 'Copy message identifier',
+    createFinalBtn: "div.g-dialog-actions-btn",
     tagCreationModal: 'tags-create-dialog',
     createTagButton: ' Create a Tag ',
-    createFinalBtn: "div.g-dialog-actions-btn",
     tagNameInput: '[ng-reflect-name="name"]',
+    tagDeleteButton: "div.delete-tag",
     tagDescInput: '[ng-reflect-name="description"]',
     tagsListRequest: "/api/v1/tags/",
     tagsDeleteRequest: "/api/v1/tags/*",
-    tagDeleteButton: "div.delete-tag",
     moduleEditButton: '[ng-reflect-src="/assets/images/icons/edit.svg"]',
 };
 
