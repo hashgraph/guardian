@@ -213,6 +213,12 @@ export class SchemaPage {
         cy.contains(schemaNameForActivate).parent().contains(SchemaPageLocators.activeStatus).should("exist");
     }
 
+    publishTagSchema(name) {
+        cy.contains(name).parent().find(SchemaPageLocators.publishButton).first().click();
+        Checks.waitForLoading();
+        cy.contains(name).first().parent().contains("Published").should("exist");
+    }
+
 
 
 
@@ -234,7 +240,7 @@ export class SchemaPage {
         cy.contains(schemaName).should("exist");
     }
 
-    publishTagSchema(schemaName) {
+    publishTagSchemaOld(schemaName) {
         cy.intercept(SchemaPageLocators.tagSchemasList).as(
             "waitForSchemaList"
         );
