@@ -370,7 +370,7 @@ export const BlockAbout = {
     'dataTransformationAddon': {
         'label': 'Data Transformation',
         'title': 'Add \'Data Transformation\' Addon',
-        'post': true,
+        'post': false,
         'get': true,
         'children': 'None',
         'control': 'Special',
