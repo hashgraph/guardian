@@ -53,3 +53,34 @@ textarea {
     position: relative;
     padding: 8px 0px 0px 0px;
 }
+
+.context .form-group {
+    position: relative;
+    padding: 20px 5px
+}
+
+.context .form-group label {
+    position: absolute;
+    font-size: 10px;
+    top: 14px;
+    left: 25px;
+    padding: 0 4px;
+    background: var(--color-grey-white);
+    z-index: 100;
+}
+
+.context .form-group input {
+    width: 100%;
+    height: 60px;
+    padding: 22px 10px;
+}
+
+.context ::ng-deep p-dropdown span.p-dropdown-label {
+    width: 738px;
+    padding: 22px 10px;
+    height: 60px;
+}
+
+.g-dialog-actions .g-dialog-actions-btn {
+    padding: 10px 20px
+}
