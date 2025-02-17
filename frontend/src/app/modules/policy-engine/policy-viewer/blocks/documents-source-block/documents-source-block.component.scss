@@ -74,8 +74,7 @@
             text-transform: uppercase;
         }
 
-        .mat-header-cell:first-of-type {
-        }
+        .mat-header-cell:first-of-type {}
 
         .mat-cell {
             border-bottom: none;
@@ -206,7 +205,7 @@
 }
 
 .array.text i,
-.array.text svg,{
+.array.text svg {
     position: absolute;
     right: 0;
     top: 0;
