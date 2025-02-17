@@ -30,6 +30,7 @@ export class PreviewPolicyDialog {
     public isFile?: boolean;
     public mode: string = 'new';
     public formulas!: string;
+    public title!: string;
 
     public get inValid(): boolean {
         if(!(this.policy || this.module || this.tool || this.xlsx)) {
@@ -51,6 +52,7 @@ export class PreviewPolicyDialog {
         public config: DynamicDialogConfig
     ) {
         this.toolForm = new UntypedFormGroup({});
+        this.title = this.config.data.title || 'Preview'
         if (this.config.data.policy) {
             const importFile = this.config.data.policy;
 
