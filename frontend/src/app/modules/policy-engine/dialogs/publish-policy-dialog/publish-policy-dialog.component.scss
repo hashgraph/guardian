@@ -4,6 +4,10 @@
 }
 
 .dialog-header {
+    .header-text {
+        min-width: 190px;
+    }
+
     .header-item {
         padding: 6px 12px;
         margin: 0px 16px;
@@ -13,6 +17,9 @@
         background: var(--guardian-dry-run-background);
         user-select: none;
         cursor: default;
+        max-width: 275px;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }
 
@@ -24,6 +31,10 @@
 .publish-button {
     margin-left: 15px !important;
     margin-right: 0px !important;
+}
+
+.guardian-input-container {
+    margin-bottom: 24px;
 }
 
 .form-input-container {

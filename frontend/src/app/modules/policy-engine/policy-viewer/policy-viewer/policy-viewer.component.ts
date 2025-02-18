@@ -112,12 +112,13 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         if (!this.isDryRun) {
             return;
         }
-        this.policyEngineService.getSavepointState(this.policyInfo.id).subscribe((value) => {
-            this.savePointState = value.state;
-            console.log(value);
-        }, (e) => {
-            this.savePointState = false;
-        });
+        this.policyEngineService
+            .getSavepointState(this.policyInfo.id)
+            .subscribe((value) => {
+                this.savePointState = value.state;
+            }, (e) => {
+                this.savePointState = false;
+            });
     }
 
     ngOnInit() {
@@ -200,7 +201,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.userRole = this.policyInfo.userRole;
                 this.userGroup = this.policyInfo.userGroup?.groupLabel || this.policyInfo.userGroup?.uuid;
 
-                if (this.policyInfo?.status === PolicyType.DRY_RUN) {
+                if (this.policyInfo?.status === PolicyType.DRY_RUN
+                    || this.policyInfo?.status === PolicyType.DEMO
+                ) {
                     this.loadDryRunOptions();
                 } else {
                     setTimeout(() => {
@@ -305,32 +308,32 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.policyEngineService.createSavepoint(this.policyInfo.id).subscribe(() => {
             this.loadPolicyById(this.policyId);
             this.getSavepointState();
-                                                                               }, (e) => {
-                                                                                   this.loading = false;
-                                                                               }
+        }, (e) => {
+            this.loading = false;
+        }
         );
     }
 
     public deleteSavepoint() {
         this.loading = true;
         this.policyEngineService.deleteSavepoint(this.policyInfo.id).subscribe(() => {
-                                                                                   this.loadPolicyById(this.policyId);
-                                                                               }, (e) => {
-                                                                                   this.loading = false;
-                                                                               }
+            this.loadPolicyById(this.policyId);
+        }, (e) => {
+            this.loading = false;
+        }
         );
     }
 
     public restoreSavepoint() {
         this.loading = true;
         this.policyEngineService.restoreSavepoint(this.policyInfo.id).subscribe(() => {
-                                                                                    this.policy = null;
-                                                                                    this.policyInfo = null;
-                                                                                    this.isMultipleGroups = false;
-                                                                                    this.loadPolicyById(this.policyId);
-                                                                                }, (e) => {
-                                                                                    this.loading = false;
-                                                                                }
+            this.policy = null;
+            this.policyInfo = null;
+            this.isMultipleGroups = false;
+            this.loadPolicyById(this.policyId);
+        }, (e) => {
+            this.loading = false;
+        }
         );
     }
 

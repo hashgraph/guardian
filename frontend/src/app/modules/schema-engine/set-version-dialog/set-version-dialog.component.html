@@ -1,12 +1,12 @@
-<h1 mat-dialog-title>Enter version</h1>
-<div mat-dialog-content class="content">
+<h1  class="dialog-title">Enter version</h1>
+<div class="content dialog-content">
     <div>
         <div class="form-input-container">
             <label class="form-label" htmlFor="version">* Version</label>
             <input [formControl]="versionControl" id="version" pInputText type="text"/>
         </div>
     </div>
-    <div mat-dialog-actions>
+    <div class="content dialog-actions">
         <div class="cancel-button">
             <button
                     (click)="onNoClick()"

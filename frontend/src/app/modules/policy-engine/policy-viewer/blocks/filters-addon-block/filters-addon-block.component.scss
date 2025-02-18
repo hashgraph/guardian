@@ -20,17 +20,14 @@
 
 .content {
     flex-wrap: nowrap;
-    display: flex;
-}
-
-.content {
     background: #f9fafc;
-    display: inline-block;
+    display: inline-flex;
 }
 
 .content-name {
-    display: inline-block;
+    display: inline-flex;
     margin-right: 10px;
+    align-items: center;
 }
 
 .content-select {

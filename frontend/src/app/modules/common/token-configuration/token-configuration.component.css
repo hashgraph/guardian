@@ -141,3 +141,12 @@ form {
     margin-top: 16px;
     width: 100%;
 }
+
+.key-description {
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    font-family: Roboto, sans-serif;
+    letter-spacing: .0178571429em;
+}
