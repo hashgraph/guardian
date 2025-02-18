@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { MapService } from '../../../services/map.service';
@@ -22,6 +22,10 @@ const MY_FORMATS = {
     styleUrls: ['./sentinel-hub-type.component.scss'],
 })
 export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewInit {
+    
+    @ViewChild('dateFrom') dateFrom: any
+    @ViewChild('dateTo') dateTo: any
+
     public key: string;
     subscription = new Subscription();
     @Input('formGroup') control: UntypedFormGroup;
@@ -30,9 +34,12 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
         if (!this.key) {
             return '';
         }
-
-        if (this.control.valid) {
+        
+        if (this.control.valid || this.control.disabled) {
             const value = this.control.value;
+            if (!value.bbox || !value.format || !value.layers || !value.maxcc || !value.width || !value.height || !value.time) {
+                return '';
+            }
             return `https://services.sentinel-hub.com/ogc/wms/${this.key}?REQUEST=GetMap&BBOX=${value.bbox}&FORMAT=${value.format}&LAYERS=${value.layers}&MAXCC=${value.maxcc}&WIDTH=${value.width}&HEIGHT=${value.height}&TIME=${value.time}`
         }
 
@@ -87,6 +94,7 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
         this.subscription.add(
             this.mapService.getSentinelKey().subscribe(value => {
                     this.key = value;
+                    this.cdkRef.detectChanges();
                 }
             )
         )
@@ -97,6 +105,7 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
 
             const _from = from;
             const _to = to;
+            
             if (!/(\d+)-(\d+)-(\d+)/.test(_from)) {
                 from = moment(_from, 'YYYY-MM-DD');
             }
@@ -111,6 +120,13 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
             }
             this.datePicker.patchValue({from, to});
 
+            setTimeout(() => {
+                const dateFromInput = this.dateFrom?.el.nativeElement.querySelector('input');
+                const dateToInput = this.dateTo?.el.nativeElement.querySelector('input');
+                
+                dateFromInput.value = moment(from, 'YYYY-MM-DD').format('YYYY-MM-DD');
+                dateToInput.value = moment(to, 'YYYY-MM-DD').format('YYYY-MM-DD');
+            }, 100)
         }
 
         this.subscription.add(
@@ -118,9 +134,20 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
                 if (!value.from || !value.to) {
                     return;
                 }
-                this.getControlByName('time').setValue(value.from?.format('YYYY-MM-DD') + '/' + value.to?.format('YYYY-MM-DD'));
+
+                const fromDate = value.from.format ? value.from.format('YYYY-MM-DD') : moment(value.from).format('YYYY-MM-DD')
+                const toDate = value.to.format ? value.to.format('YYYY-MM-DD') : moment(value.to).format('YYYY-MM-DD')
+
+                this.getControlByName('time').setValue(fromDate + '/' + toDate);
             })
         );
+        
+        setTimeout(() => {
+            if (this.isDisabled) {
+                this.datePicker?.disable();
+                this.control?.disable();
+            }
+        });
 
         // this.subscription.add(
         //     this.control.valueChanges.subscribe(value => this.generateImageLink(value))
