@@ -74,8 +74,7 @@
             text-transform: uppercase;
         }
 
-        .mat-header-cell:first-of-type {
-        }
+        .mat-header-cell:first-of-type {}
 
         .mat-cell {
             border-bottom: none;
@@ -145,7 +144,7 @@
 }
 
 .btn-field {
-    width: 250px;
+    // width: 250px;
     overflow: hidden;
     cursor: pointer;
     position: relative;
@@ -206,7 +205,7 @@
 }
 
 .array.text i,
-.array.text svg,{
+.array.text svg {
     position: absolute;
     right: 0;
     top: 0;
