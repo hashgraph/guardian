@@ -22,6 +22,14 @@ const ModulesPageLocators = {
     deleteTagIcon: "svg-icon[svgclass='accent-color-red']",
     closeWindowButton: "[ng-reflect-label='Close']",
     headerSelector: 'tr.row-header th',
+    moduleEditButton: '[ng-reflect-src="/assets/images/icons/edit.svg"]',
+    moduleBlock: '[class="block-item"]',
+    saveModuleEditing: "div.readonly-status[title='Save Module']",
+    backButton: "div[title='Back']",
+    componentsBlock: `span.drag-component-name`,
+    blockItemName: (name) => `div.block-item-name:contains(${name})`,
+    expandBlockBtn: (value) => `[block-instance="${value}"] .block-expand`,
+    deleteBlockBtn: 'button[class*="delete-action"]:visible',
 
 
 
@@ -42,7 +50,6 @@ const ModulesPageLocators = {
     tagDescInput: '[ng-reflect-name="description"]',
     tagsListRequest: "/api/v1/tags/",
     tagsDeleteRequest: "/api/v1/tags/*",
-    moduleEditButton: '[ng-reflect-src="/assets/images/icons/edit.svg"]',
 };
 
 export class ModulesPage {
@@ -109,9 +116,12 @@ export class ModulesPage {
     exportModuleAsMessageId(name) {
         this.openExportModal(name);
         Checks.waitForLoading();
-        cy.get(CommonElements.dialogWindow).contains(ModulesPageLocators.exportMessageIdButton).click();
         cy.window().then((win) => {
-            win.navigator.clipboard.focus();
+            win.focus();
+            cy.get(CommonElements.dialogWindow).contains(ModulesPageLocators.exportMessageIdButton).click();
+        });
+        cy.window().then((win) => {
+            win.focus();
             win.navigator.clipboard.readText().then((text) => {
                 //regex numbers.numbers
                 expect(text).to.match(/\d+\.\d+/g);
@@ -157,7 +167,7 @@ export class ModulesPage {
     }
 
     verifyDraftModuleDataAndActions(name) {
-        cy.contains(name).parent().should(($module) => {
+        cy.contains(new RegExp("^" + name + "$", "g")).parent().should(($module) => {
             const draftModuleChildren = $module.get(0).childNodes;
             expect(draftModuleChildren.item(0).innerText).to.eq(name);
             expect(draftModuleChildren.item(2).getElementsByTagName("button").item(0).innerText).to.eq("Create a Tag");
@@ -184,25 +194,80 @@ export class ModulesPage {
         })
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-    clickEditModule(name) {
-        cy.contains("td", name)
-            .siblings()
-            .find(ModulesPageLocators.moduleEditButton)
-            .click();
-        cy.wait(1000);
+    openEditingModule(name) {
+        cy.contains(name).parent().find(ModulesPageLocators.moduleEditButton).click();
+        Checks.waitForElement(ModulesPageLocators.moduleBlock, undefined, 5000);
     }
+
+    editModuleProperty(property, name) {
+        cy.wait(500)
+        if (property == "Description")
+            cy.contains("td.cellName", new RegExp("^" + property + "$", "g")).parent().find(CommonElements.textarea).clear().type(name);
+        else
+            cy.contains("td.cellName", new RegExp("^" + property + "$", "g")).parent().find(CommonElements.Input).clear().type(name);
+    }
+
+    saveModuleEditing() {
+        cy.get(ModulesPageLocators.saveModuleEditing).click();
+    }
+
+    backToModulesList() {
+        cy.get(ModulesPageLocators.backButton).click();
+    }
+
+    verifyModuleProperty(name, property, value) {
+        if (property == "Description")
+            cy.contains("td", name).siblings(".cell-description").should('have.text', value + " ");
+    }
+
+    addNewBlock(name) {
+        cy.contains(ModulesPageLocators.componentsBlock, name).click({force: true});
+    }
+
+    checkBlockExists(name) {
+        cy.get(ModulesPageLocators.blockItemName(name)).should("be.visible");
+    }
+
+    editBlockName(name, newName) {
+        this.clickOnBlock(name);
+        this.editModuleProperty("Tag", newName);
+    }
+
+    clickOnBlock(name) {
+        cy.get(ModulesPageLocators.blockItemName(name)).should('be.visible').click({force: true});
+    }
+
+    expandBlock(name) {
+        cy.get(ModulesPageLocators.expandBlockBtn(name)).click({force: true});
+    }
+
+    checkBlockNotExist(name) {
+        cy.wait(10000)
+        cy.get(ModulesPageLocators.blockItemName(name)).should("not.exist");
+    }
+
+    clickOnDeleteBlockButton() {
+        cy.get(ModulesPageLocators.deleteBlockBtn).click({force: true});
+    }
+
+    checkFieldsInEditModuleIsNotEditable() {
+        cy.contains("td", new RegExp("^Name$", "g")).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
+        cy.contains("td", new RegExp("^Topic Description$", "g")).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
+        cy.contains("td", new RegExp("^Description$", "g")).parent().find(CommonElements.textarea).should('have.attr', 'readonly', 'readonly');
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     exportFile(moduleName) {
         cy.contains(moduleName).parent().find(ModulesPageLocators.exportButton).click();

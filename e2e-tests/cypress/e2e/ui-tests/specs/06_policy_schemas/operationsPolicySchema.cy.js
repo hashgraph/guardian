@@ -18,14 +18,12 @@ context("Policy Schema Operations", { tags: ['ui'] }, () => {
         schemaPage.openSchemasTab();
         schemaPage.openSchemasSubtab("Policy");
     })
-
     it("policy schema document view", () => {
         schemaPage.filterByLastPolicy();
         schemaPage.documentView(schemaNameImportedFile);
     });
 
     it("delete policy schema", () => {
-        schemaPage.filterByLastPolicy();
         schemaPage.deleteSchema(schemaName);
     });
 

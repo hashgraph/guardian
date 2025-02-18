@@ -1,9 +1,9 @@
-import { HomePage } from "../../../pages/homePage";
+import { HomePage } from "../../pages/homePage";
 const homePage = new HomePage();
 
-import { PoliciesPage } from "../../../pages/policiesPage";
+import { PoliciesPage } from "../../pages/policiesPage";
 const policiesPage = new PoliciesPage();
-
+//TBD: 
 // context("Edit Policy. Udo/Redo flow", { tags: ['ui'] }, () => {
 
 //     const SRUsername = Cypress.env('SRUser');

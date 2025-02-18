@@ -1,7 +1,7 @@
-import { HomePage } from "../../../pages/homePage";
+import { HomePage } from "../../pages/homePage";
 const homePage = new HomePage();
 
-import { PoliciesPage } from "../../../pages/policiesPage";
+import { PoliciesPage } from "../../pages/policiesPage";
 const policiesPage = new PoliciesPage();
 
 context("Edit Policy. Validation flow", { tags: ['ui'] }, () => {

@@ -163,9 +163,12 @@ export class PoliciesPage {
     exportPolicyAsMessageId(name) {
         this.openExportModal(name);
         cy.wait(500);
-        cy.get(CommonElements.dialogWindow).contains(PoliciesPageLocators.exportMessageIdButton).click();
         cy.window().then((win) => {
-            win.navigator.clipboard.focus();
+            win.focus();
+            cy.get(CommonElements.dialogWindow).contains(PoliciesPageLocators.exportMessageIdButton).click();
+        });
+        cy.window().then((win) => {
+            win.focus();
             win.navigator.clipboard.readText().then((text) => {
                 //regex numbers.numbers
                 expect(text).to.match(/\d+\.\d+/g);
@@ -210,7 +213,7 @@ export class PoliciesPage {
         cy.get(CommonElements.dialogWindow).find(CommonElements.Input).type(messageId);
         cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).click();
         Checks.waitForElement(PoliciesPageLocators.asNewPolicyRadioButton);
-        cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).click();
+        cy.get(CommonElements.dialogWindow).last().find(PoliciesPageLocators.importButton).click();
         Checks.waitForElement(PoliciesPageLocators.policyBlock, undefined, 5000);
     }
 
@@ -310,7 +313,7 @@ export class PoliciesPage {
     }
 
     addNewBlock(name) {
-        cy.contains(PoliciesPageLocators.componentsBlock, name).click({force: true});
+        cy.contains(PoliciesPageLocators.componentsBlock, name).click({ force: true });
     }
 
     checkBlockExists(name) {
@@ -323,11 +326,11 @@ export class PoliciesPage {
     }
 
     clickOnBlock(name) {
-        cy.get(PoliciesPageLocators.blockItemName(name)).should('be.visible').click({force: true});
+        cy.get(PoliciesPageLocators.blockItemName(name)).should('be.visible').click({ force: true });
     }
 
     expandBlock(name) {
-        cy.get(PoliciesPageLocators.expandBlockBtn(name)).click({force: true});
+        cy.get(PoliciesPageLocators.expandBlockBtn(name)).click({ force: true });
     }
 
     checkBlockNotExist(name) {
@@ -336,7 +339,7 @@ export class PoliciesPage {
     }
 
     clickOnDeleteBlockButton() {
-        cy.get(PoliciesPageLocators.deleteBlockBtn).click({force: true});
+        cy.get(PoliciesPageLocators.deleteBlockBtn).click({ force: true });
     }
 
     selectToFavorites(name) {
@@ -402,7 +405,7 @@ export class PoliciesPage {
         cy.get(PoliciesPageLocators.errorCountElement).should('have.text', count);
     }
 
-    validateTypesDefault(){
+    validateTypesDefault() {
         cy.contains('Create User').click();
         Checks.waitForLoading();
         cy.contains('Users').click();
@@ -445,7 +448,7 @@ export class PoliciesPage {
         cy.get('button:contains("Submit ")').should('be.enabled');
     }
 
-    validateTypesRequired(){
+    validateTypesRequired() {
         cy.contains('Create User').click();
         Checks.waitForLoading();
         cy.contains('Users').click();
@@ -487,7 +490,7 @@ export class PoliciesPage {
         cy.get('button:contains("Submit ")').should('be.enabled');
     }
 
-    validateTypesMultiplie(){
+    validateTypesMultiplie() {
         cy.contains('Create User').click();
         Checks.waitForLoading();
         cy.contains('Users').click();
@@ -534,7 +537,7 @@ export class PoliciesPage {
         cy.get('button:contains("Submit ")').should('be.enabled');
     }
 
-    validateTypesMultiplieRequired(){
+    validateTypesMultiplieRequired() {
         cy.contains('Create User').click();
         Checks.waitForLoading();
         cy.contains('Users').click();
@@ -588,7 +591,7 @@ export class PoliciesPage {
 
 
     clickOnDivByText(text) {
-       // cy.contains('div.tab-header', text).click({ force: true });
+        // cy.contains('div.tab-header', text).click({ force: true });
     }
 
     checkButtonInModalIsNotActive(text) {

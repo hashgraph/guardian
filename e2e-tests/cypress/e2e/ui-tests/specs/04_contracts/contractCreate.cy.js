@@ -17,7 +17,7 @@ context("Workflow Contract Creation", { tags: ['ui'] }, () => {
         contractsPage.openContractsTab();
     })
 
-    //TBD Full flow with retire tokens
+    //TBD:  Full flow with retire tokens
     it("Create contracts", () => {
         contractsPage.openContractTypeTab("wipe");
         contractsPage.createContract();

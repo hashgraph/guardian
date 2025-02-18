@@ -7,8 +7,7 @@ const homePage = new HomePage();
 context("Verify Modules UI", { tags: ['@ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const moduleName = "q";
-    //const moduleName = "UIModule";
+    const moduleName = "UIModule";
     const moduleNameIPFSImported = "ComparedModuleIPFS";
 
     beforeEach(() => {

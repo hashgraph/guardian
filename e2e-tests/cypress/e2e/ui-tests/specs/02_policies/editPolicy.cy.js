@@ -1,7 +1,7 @@
-import { HomePage } from "../../../pages/homePage";
+import { HomePage } from "../../pages/homePage";
 const homePage = new HomePage();
 
-import { PoliciesPage } from "../../../pages/policiesPage";
+import { PoliciesPage } from "../../pages/policiesPage";
 const policiesPage = new PoliciesPage();
 
 context("Edit Policy", { tags: ['ui'] }, () => {
@@ -60,7 +60,7 @@ context("Edit Policy", { tags: ['ui'] }, () => {
         policiesPage.verifyPolicyProperty(name, "Description", "");
     });
 
-    //doesn't work; only after validation
+    //TBD: doesn't work; only after validation
     // it("Verify if a modal window appears after returning to editing", () => {
     //     policiesPage.openPoliciesTab();
     //     policiesPage.checkStatus(name, "Draft");

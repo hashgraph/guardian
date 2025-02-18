@@ -107,18 +107,18 @@ export class TokensPage {
 	}
 
 	deleteToken(name) {
-		cy.contains(name).parent().find('[ng-reflect-src="/assets/images/icons/delete.sv"]').click();
+		cy.contains(new RegExp("^" + name + "$", "g")).parent().find('[ng-reflect-src="/assets/images/icons/delete.sv"]').click();
 		cy.get(TokensPageLocators.tokenDeleteBtn).click();
 		Checks.waitForTaskComplete();
-		cy.contains(name).should('not.exist');
+		cy.contains(new RegExp("^" + name + "$", "g")).should('not.exist');
 	}
 
 	deleteTokenDisabled(name) {
-		cy.contains(name).parent().find('[ng-reflect-src="/assets/images/icons/delete.sv"]').click();
+		cy.contains(new RegExp("^" + name + "$", "g")).parent().find('[ng-reflect-src="/assets/images/icons/delete.sv"]').click();
 		cy.get(TokensPageLocators.tokenDeleteBtn).click();
 		Checks.waitForTaskComplete();
 		cy.contains(TokensPageLocators.adminKeyIsntSet).should('exist');
-		cy.contains(name).should('not.exist');
+		cy.contains(new RegExp("^" + name + "$", "g")).should('not.exist');
 	}
 
 	editToken(name, editname, editSymbol) {

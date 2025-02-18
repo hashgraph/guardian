@@ -7,6 +7,7 @@ const configpage = new ConfigPage();
 context("Create User Accounts", { tags: ['ui'] }, () => {
 
     const SRName = "TestSRUI" + Math.floor(Math.random() * 9999);
+    const SRUsername = Cypress.env('SRUser');
     const userName = "User2";
 
     beforeEach(() => {
@@ -23,6 +24,6 @@ context("Create User Accounts", { tags: ['ui'] }, () => {
     it("Create and registration user", () => {
         homepage.createAccount("User", userName);
         configpage.verifyUserCreated(userName);
-        configpage.hederaUserRegistration(SRName);
+        configpage.hederaUserRegistration(SRUsername);
     });
 });

@@ -60,7 +60,7 @@ context("Check logs page", { tags: ['ui'] }, () => {
         logs.verifyIfAttributeFieldIsEmpty();
     });
 
-    //datepickers don't work on logs page
+    //TBD: datepickers don't work on logs page
     // it("Verify if it possible to filter by data range", () => {
     //     logs.openDateRangePicker();
     //     logs.selectTodayDate();

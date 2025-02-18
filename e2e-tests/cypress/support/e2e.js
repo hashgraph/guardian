@@ -43,7 +43,7 @@ require('cy-verify-downloads').addCustomCommand();
 // require('./commands')
 
 //If neccessery users doesn't exist, creating them
-before(() => {
+before("Verify that default users exist", () => {
     let SRExist, SR2Exist, UserExist, SR3Exist;
     cy.request({
         method: METHOD.GET,
@@ -107,7 +107,7 @@ before(() => {
 });
 
 //If SR doesn't have hedera credentials, creating them
-before(() => {
+before("Generate hedera credentials for SR, if there're no creds", () => {
     Authorization.getAccessToken(SRUsername).then((authorization) => {
         cy.request({
             method: METHOD.GET,
@@ -166,7 +166,7 @@ before(() => {
 });
 
 //If SR2 doesn't have hedera credentials, creating them
-before(() => {
+before("Generate hedera credentials for SR2, if there're no creds", () => {
     Authorization.getAccessToken(SR2Username).then((authorization) => {
         cy.request({
             method: METHOD.GET,
@@ -224,7 +224,7 @@ before(() => {
 });
 
 //If User doesn't have hedera credentials, creating them
-before(() => {
+before("Generate hedera credentials for User, if there're no creds", () => {
     Authorization.getAccessToken(userUsername).then((authorization) => {
         cy.request({
             method: METHOD.GET,

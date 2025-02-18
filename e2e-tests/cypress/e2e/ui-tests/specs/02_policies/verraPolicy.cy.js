@@ -25,8 +25,8 @@ context("Workflow Verra Policy", { tags: ['ui'] }, () => {
         cy.viewport(1920, 1080);
         homePage.visit();
     })
-
-    //wait good params
+    
+    //TBD: wait good params
     it("checks verra policy workflow", () => {
         // //Import and publish policy
         // homePage.login(SRUsername);

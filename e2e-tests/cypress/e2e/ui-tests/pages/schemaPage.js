@@ -83,7 +83,7 @@ export class SchemaPage {
         })
         Checks.waitForLoading();
     }
-    
+
     createSchema(schemaName) {
         cy.get(SchemaPageLocators.schemaCreateButton).click();
         cy.get(SchemaPageLocators.schemaNameInput).type(schemaName);
@@ -166,10 +166,13 @@ export class SchemaPage {
     exportSchemaIPFS(name) {
         cy.contains(name).parent().find(SchemaPageLocators.menuSchemaButton).click();
         cy.get(SchemaPageLocators.schemaExportBtn).click();
-        cy.contains(SchemaPageLocators.exportIPFSButton).click();
+        cy.window().then((win) => {
+            win.focus();
+            cy.contains(SchemaPageLocators.exportIPFSButton).click();
+        });
         Checks.waitForLoading();
         cy.window().then((win) => {
-            win.navigator.clipboard.focus();
+            win.focus();
             win.navigator.clipboard.readText().then((text) => {
                 //regex numbers.numbers
                 expect(text).to.match(/\d+\.\d+/g);

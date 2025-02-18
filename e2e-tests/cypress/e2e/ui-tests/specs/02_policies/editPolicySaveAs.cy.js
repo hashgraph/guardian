@@ -1,10 +1,10 @@
-import { HomePage } from "../../../pages/homePage";
+import { HomePage } from "../../pages/homePage";
 const homePage = new HomePage();
 
-import { PoliciesPage } from "../../../pages/policiesPage";
+import { PoliciesPage } from "../../pages/policiesPage";
 const policiesPage = new PoliciesPage();
 
-//doesn't work
+//TBD: doesn't work
 // context("Edit Policy. Save As flow", { tags: ['ui'] }, () => {
 
 //     const SRUsername = Cypress.env('SRUser');
