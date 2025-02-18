@@ -904,28 +904,17 @@ export class PoliciesComponent implements OnInit {
     private importPolicyDetails(result: IImportEntityResult) {
         const { type, data, policy } = result;
         const distinctPolicies = this.getDistinctPolicy();
-        let dialogRef;
-        if (window.innerWidth <= 810) {
-            dialogRef = this.dialogService.open(PreviewPolicyDialog, {
-                header: 'Preview',
-                width: `${window.innerWidth.toString()}px`,
-                styleClass: 'custom-dialog',
-                data: {
-                    policy: policy,
-                    policies: distinctPolicies,
-                },
-            });
-        } else {
-            dialogRef = this.dialogService.open(PreviewPolicyDialog, {
-                header: 'Preview',
-                width: '800px',
-                styleClass: 'custom-dialog',
-                data: {
-                    policy: policy,
-                    policies: distinctPolicies,
-                },
-            });
-        }
+        const dialogRef = this.dialogService.open(PreviewPolicyDialog, {
+            header: 'Preview',
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
+            data: {
+                title: 'Preview',
+                policy: policy,
+                policies: distinctPolicies,
+            },
+        });
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 if (result.messageId) {
@@ -973,30 +962,16 @@ export class PoliciesComponent implements OnInit {
 
     private importExcelDetails(result: IImportEntityResult, policyId: string) {
         const { type, data, xlsx } = result;
-        let dialogRef;
-        if (window.innerWidth <= 810) {
-            const bodyStyles = window.getComputedStyle(document.body);
-            const headerHeight: number = parseInt(
-                bodyStyles.getPropertyValue('--header-height')
-            );
-            dialogRef = this.dialogService.open(PreviewPolicyDialog, {
-                header: 'Preview',
-                width: `${window.innerWidth.toString()}px`,
-                styleClass: 'custom-dialog',
-                data: {
-                    xlsx: xlsx,
-                },
-            });
-        } else {
-            dialogRef = this.dialogService.open(PreviewPolicyDialog, {
-                header: 'Preview',
-                width: '800px',
-                styleClass: 'custom-dialog',
-                data: {
-                    xlsx: xlsx,
-                },
-            });
-        }
+        const dialogRef = this.dialogService.open(PreviewPolicyDialog, {
+            header: 'Preview',
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
+            data: {
+                title: 'Preview',
+                xlsx: xlsx,
+            },
+        });
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.policyEngineService

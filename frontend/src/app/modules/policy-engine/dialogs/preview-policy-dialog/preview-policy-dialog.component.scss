@@ -73,16 +73,28 @@
             font-weight: 400;
             overflow-y: auto;
             margin-top: 10px;
+            border: 1px solid #E1E7EF;
+            border-radius: 6px;
+            overflow: hidden;
+            padding: 0;
 
             .field-array-item {
                 display: grid;
-                grid-template-columns: 175px 105px 375px;
-                border-right: 1px solid #bbb;
+                grid-template-columns: 175px 110px 410px;
+                border-bottom: 1px solid #E1E7EF;
+
+                &:last-child {
+                    border-bottom: none;
+                }
 
                 &>div {
                     white-space: break-spaces;
-                    padding: 0px 8px 12px 8px;
-                    border-left: 1px solid #bbb;
+                    padding: 12px 12px 12px 12px;
+                    border-right: 1px solid #E1E7EF;
+
+                    &:last-child {
+                        border-right: none;
+                    }
                 }
             }
 
@@ -94,6 +106,14 @@
             .error-type-error>div {
                 color: var(--color-accent-red-1, #FF432A);
             }
+        }
+
+        .error-message {
+            font-size: 12px;
+            margin-top: 8px;
+            background: #fff1f1;
+            padding: 8px;
+            border-radius: 6px;
         }
     }
 }

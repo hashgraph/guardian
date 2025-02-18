@@ -73,7 +73,6 @@ export class VCViewerDialog {
             getByUser
         } = this.dialogConfig.data;
 
-
         this.policyId = row?.policyId;
         this.documentId = row?.id;
         this.schemaId = row?.schema;
