@@ -75,9 +75,9 @@
 }
 
 .content .btn-option {
-    height: 28px;
+    height: 34px;
     box-shadow: 0 3px 6px #00000029;
-    padding: 6px 20px !important;
+    padding: 8px 20px !important;
     box-sizing: border-box;
     cursor: pointer;
     font-family: Inter, sans-serif;
@@ -88,6 +88,10 @@
     border-radius: 6px;
     text-align: center;
     position: relative;
+
+    &:hover {
+        filter: brightness(0.95);
+    }
 }
 
 .content {
