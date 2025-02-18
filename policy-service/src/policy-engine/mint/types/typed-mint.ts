@@ -1,45 +1,15 @@
-import { DatabaseServer, MintRequest, MintTransaction, NotificationHelper } from '@guardian/common';
+import { DatabaseServer, MintRequest, MintTransaction, NotificationHelper, Workers } from '@guardian/common';
+import { MintTransactionStatus, NotificationAction, TokenType } from '@guardian/interfaces';
+import { FilterObject } from '@mikro-orm/core';
+import { PolicyUtils } from '../../helpers/utils.js';
 import { IHederaCredentials } from '../../policy-user.js';
 import { TokenConfig } from '../configs/token-config.js';
 import { MintService } from '../mint-service.js';
-import { PolicyUtils } from '../../helpers/utils.js';
-import { MintTransactionStatus, NotificationAction, TokenType } from '@guardian/interfaces';
-import { FilterObject } from '@mikro-orm/core';
 
 /**
  * Typed mint
  */
 export abstract class TypedMint {
-    /**
-     * Mint request identifier
-     */
-    public readonly mintRequestId: string;
-
-    public readonly userId: string;
-
-    /**
-     * Initialize
-     * @param _mintRequest Mint request
-     * @param _root Root
-     * @param _token Token
-     * @param _db Database Server
-     * @param _ref Block ref
-     * @param _notifier Notifier
-     * @param _userId
-     */
-    protected constructor(
-        protected _mintRequest: MintRequest,
-        protected _root: IHederaCredentials,
-        protected _token: TokenConfig,
-        protected _db: DatabaseServer,
-        protected _ref?: any,
-        protected _notifier?: NotificationHelper,
-        protected _userId?: string
-    ) {
-        this.mintRequestId = this._mintRequest.id;
-        this.userId = _userId;
-    }
-
     /**
      * Init request
      * @param mintRequest Mint request
@@ -115,21 +85,33 @@ export abstract class TypedMint {
     }
 
     /**
-     * Mint tokens
-     * @param args Arguments
+     * Mint request identifier
      */
-    protected abstract mintTokens(...args): Promise<void>;
+    public readonly mintRequestId: string;
+    public readonly userId: string;
 
     /**
-     * Transfer tokens
-     * @param args Arguments
+     * Initialize
+     * @param _mintRequest Mint request
+     * @param _root Root
+     * @param _token Token
+     * @param _db Database Server
+     * @param _ref Block ref
+     * @param _notifier Notifier
+     * @param _userId
      */
-    protected abstract transferTokens(...args): Promise<void>;
-
-    /**
-     * Resolve pending transactions
-     */
-    protected abstract resolvePendingTransactions(): Promise<void>;
+    protected constructor(
+        protected _mintRequest: MintRequest,
+        protected _root: IHederaCredentials,
+        protected _token: TokenConfig,
+        protected _db: DatabaseServer,
+        protected _ref?: any,
+        protected _notifier?: NotificationHelper,
+        protected _userId?: string
+    ) {
+        this.mintRequestId = this._mintRequest.id;
+        this.userId = _userId;
+    }
 
     /**
      * Resolve pending transactions check
@@ -226,6 +208,23 @@ export abstract class TypedMint {
 
     /**
      * Mint tokens
+     * @param args Arguments
+     */
+    protected abstract mintTokens(...args): Promise<void>;
+
+    /**
+     * Transfer tokens
+     * @param args Arguments
+     */
+    protected abstract transferTokens(...args): Promise<void>;
+
+    /**
+     * Resolve pending transactions
+     */
+    protected abstract resolvePendingTransactions(): Promise<void>;
+
+    /**
+     * Mint tokens
      * @param isProgressNeeded Is progress needed
      * @param userId
      * @returns Processed
@@ -292,6 +291,11 @@ export abstract class TypedMint {
                 `Mint completed`,
                 `All ${this._token.tokenName} tokens have been minted`
             );
+
+            const workers = new Workers();
+            console.log(this._mintRequest, this._token);
+            await workers.sendExternalMintEvent(this._token);
+
             await this._notifier?.success(
                 progressResult.title,
                 progressResult.message,
