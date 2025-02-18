@@ -1481,7 +1481,7 @@ export class PolicyUtils {
     }
 
     public static getQueryExpression(queryType: QueryType, value: any): any {
-        if (!value) {
+        if (value === null || value === undefined) {
             return null;
         }
         switch (queryType) {
