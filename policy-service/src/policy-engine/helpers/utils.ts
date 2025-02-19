@@ -1380,8 +1380,8 @@ export class PolicyUtils {
                     if (isNaN(v)) {
                         return null;
                     } else {
-                        stringValue.push(String(value));
-                        numberValue.push(Number(value));
+                        stringValue.push(String(v));
+                        numberValue.push(Number(v));
                     }
                 }
                 return [stringValue, numberValue];
@@ -1445,7 +1445,6 @@ export class PolicyUtils {
             if (value.startsWith('regex:')) {
                 return [QueryType.regex, value.substring('regex'.length + 1)];
             }
-            // return [QueryType.eq, value];
         }
         return [null, value];
     }

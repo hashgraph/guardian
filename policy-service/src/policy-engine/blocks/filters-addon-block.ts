@@ -27,9 +27,9 @@ import { PolicyUser } from '../policy-user.js';
     variables: []
 })
 export class FiltersAddonBlock {
-
     private readonly previousState: { [key: string]: any } = {};
     private readonly previousFilters: { [key: string]: any } = {};
+
     /**
      * Block state
      * @private
@@ -38,6 +38,18 @@ export class FiltersAddonBlock {
         lastData: null,
         lastValue: null
     };
+
+    /**
+     * Before init callback
+     */
+    public async beforeInit(): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const documentCacheFields =
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
+        if (ref.options?.field?.startsWith('document.')) {
+            documentCacheFields.add(ref.options.field.replace('document.', ''));
+        }
+    }
 
     private addQuery(filter: any, value: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
@@ -49,15 +61,31 @@ export class FiltersAddonBlock {
         }
     }
 
-    /**
-     * Before init callback
-     */
-    public async beforeInit(): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const documentCacheFields =
-            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
-        if (ref.options?.field?.startsWith('document.')) {
-            documentCacheFields.add(ref.options.field.replace('document.', ''));
+    private checkValues(blockState: any, value: any): boolean {
+        if (Array.isArray(blockState.lastData)) {
+            const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+            const query = PolicyUtils.parseQuery(ref.options.queryType || QueryType.eq, value);
+            const itemValues = query.value;
+            if (Array.isArray(itemValues)) {
+                for (const itemValue of itemValues) {
+                    // tslint:disable-next-line:triple-equals
+                    const v = blockState.lastData.find((e: any) => e.value == itemValue)
+                    if (!v) {
+                        return false;
+                    }
+                }
+                return true;
+            } else {
+                for (const e of blockState.lastData) {
+                    // tslint:disable-next-line:triple-equals
+                    if (e.value == itemValues) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        } else {
+            return false;
         }
     }
 
@@ -74,7 +102,6 @@ export class FiltersAddonBlock {
             let filterValue: any;
             if (ref.options.type === 'dropdown') {
                 const data: any[] = await ref.getSources(user, null);
-
                 filterValue = findOptions(data[0], ref.options.optionValue);
             }
 
@@ -212,15 +239,7 @@ export class FiltersAddonBlock {
             if (!blockState.lastData) {
                 await this.getData(user);
             }
-            let itemValue: any = value;
-            if (ref.options.queryType === 'user_defined') {
-                const [, userValue] = PolicyUtils.parseFilterValue(value);
-                itemValue = userValue;
-            }
-
-            // tslint:disable-next-line:triple-equals
-            const selectItem = Array.isArray(blockState.lastData) ? blockState.lastData.find((e: any) => e.value == itemValue) : null;
-            if (selectItem) {
+            if (this.checkValues(blockState, value)) {
                 this.addQuery(filter, value);
             } else if (!ref.options.canBeEmpty) {
                 throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
