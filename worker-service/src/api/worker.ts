@@ -152,11 +152,6 @@ export class Worker extends NatsService {
     public async init(): Promise<void> {
         await super.init();
         this.channel = new MessageBrokerChannel(this.connection, 'worker');
-
-        this.connection.subscribe('update-user-balance', {
-            callback: (error, msg) => this.callbackSubscribe(error, msg)
-    });
-
         try {
             await this.ipfsClient.createClient()
         } catch (e) {
@@ -244,7 +239,7 @@ export class Worker extends NatsService {
                     balance,
                     unit: 'Hbar',
                     operatorAccountId
-                });
+                }, false);
             } catch (error) {
                 throw new Error(`Worker (${['api-gateway', 'update-user-balance'].join('.')}) send: ` + error);
             }
