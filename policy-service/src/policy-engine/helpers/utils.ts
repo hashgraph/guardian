@@ -1445,7 +1445,6 @@ export class PolicyUtils {
             if (value.startsWith('regex:')) {
                 return [QueryType.regex, value.substring('regex'.length + 1)];
             }
-            // return [QueryType.eq, value];
         }
         return [null, value];
     }
