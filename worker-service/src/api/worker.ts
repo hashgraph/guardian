@@ -1,4 +1,13 @@
-import { MessageBrokerChannel, MessageResponse, NatsService, NotificationHelper, PinoLogger, SecretManager, Users } from '@guardian/common';
+import {
+    IMessageResponse,
+    MessageBrokerChannel,
+    MessageResponse,
+    NatsService,
+    NotificationHelper,
+    PinoLogger,
+    SecretManager,
+    Users
+} from '@guardian/common';
 import { ExternalMessageEvents, GenerateUUIDv4, ISignOptions, ITask, ITaskResult, WorkerEvents, WorkerTaskType } from '@guardian/interfaces';
 import { HederaSDKHelper, NetworkOptions } from './helpers/hedera-sdk-helper.js';
 import { IpfsClientClass } from './ipfs-client-class.js';
@@ -7,6 +16,11 @@ import { HederaUtils } from './helpers/utils.js';
 import axios from 'axios';
 import process from 'process';
 
+function logMemoryUsage(label: string) {
+    const memoryUsage = process.memoryUsage();
+    console.log(`🛠 [${label}] RSS: ${(memoryUsage.rss / 1024 / 1024).toFixed(2)} MB, HeapUsed: ${(memoryUsage.heapUsed / 1024 / 1024).toFixed(2)} MB`);
+}
+
 /**
  * Sleep helper
  * @param t
@@ -14,6 +28,7 @@ import process from 'process';
 function rejectTimeout(t: number): Promise<void> {
     return new Promise((_, reject) => {
         setTimeout(() => {
+            console.log(`⏳ Timeout reached after ${t}ms`);
             reject(new Error('Timeout error'));
         }, t);
     })
@@ -139,6 +154,10 @@ export class Worker extends NatsService {
         await super.init();
         this.channel = new MessageBrokerChannel(this.connection, 'worker');
 
+        this.connection.subscribe('update-user-balance', {
+            callback: (error, msg) => this.callbackSubscribe(error, msg)
+    });
+
         try {
             await this.ipfsClient.createClient()
         } catch (e) {
@@ -146,6 +165,8 @@ export class Worker extends NatsService {
         }
 
         this.subscribe(WorkerEvents.GET_FREE_WORKERS, async (msg) => {
+            // console.log('this.replySubject worker init', this.replySubject)
+            // console.log('msg.replySubject worker init', msg.replySubject)
             if (!this.isInUse) {
                 this.publish(msg.replySubject, {
                     subject: [this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('.'),
@@ -290,7 +311,9 @@ export class Worker extends NatsService {
                     if (!task.data.payload || !task.data.payload.cid || !task.data.payload.responseType) {
                         result.error = 'Invalid CID';
                     } else {
+                        logMemoryUsage('Before IPFS File Fetch');
                         let fileContent = await this.ipfsClient.getFile(task.data.payload.cid);
+                        logMemoryUsage('After IPFS File Fetch');
                         if (fileContent instanceof Buffer) {
                             const data = await this.channel.request<any, any>(ExternalMessageEvents.IPFS_AFTER_READ_CONTENT, {
                                 responseType: !task.data.payload.responseType,
@@ -542,7 +565,6 @@ export class Worker extends NatsService {
                         operatorKey,
                         adminKey,
                     } = task.data;
-
                     client = new HederaSDKHelper(operatorId, operatorKey, null, networkOptions);
                     result.data = await client.deleteToken(
                         TokenId.fromString(tokenId),
@@ -979,10 +1001,12 @@ export class Worker extends NatsService {
     private processTaskWithTimeout(task: ITask): Promise<ITaskResult> {
         return new Promise(async (resolve, reject) => {
             try {
+                logMemoryUsage('Before Processing Task');
                 const result = await Promise.race([
                     this.processTask(task),
                     rejectTimeout(this.taskTimeout)
                 ]);
+                logMemoryUsage('After Processing Task');
                 resolve(result as ITaskResult);
             } catch (e) {
                 const error = {

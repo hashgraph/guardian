@@ -7,6 +7,7 @@ type CallbackFunction = (body: any, error?: string, code?: number) => void;
 
 class MessageError extends Error {
     public code: number;
+
     constructor(message: any, code?: number) {
         super(message);
         this.code = code;
@@ -55,25 +56,28 @@ export abstract class NatsService {
             throw new Error('Connection must set first');
         }
         this.connection.subscribe(this.replySubject, {
-            callback: async (error, msg) => {
-                if (!error) {
-                    const messageId = msg.headers.get('messageId');
-                    const fn = this.responseCallbacksMap.get(messageId);
-                    if (fn) {
-                        const message = (await this.codec.decode(msg.data)) as IMessageResponse<any>;
-                        if (!message) {
-                            fn(null)
-                        } else {
-                            fn(message.body, message.error, message.code);
-                        }
-                        this.responseCallbacksMap.delete(messageId)
-                    }
-                } else {
-                    console.error(error);
-                }
-            }
+            callback: this.callbackSubscribe
         });
     }
+
+    public callbackSubscribe = async (error, msg) => {
+        if (!error) {
+            const messageId = msg.headers.get('messageId');
+            const fn = this.responseCallbacksMap.get(messageId);
+            if (fn) {
+                const message = (await this.codec.decode(msg.data)) as IMessageResponse<any>;
+                if (!message) {
+                    fn(null);
+                } else {
+                    fn(message.body, message.error, message.code);
+                }
+                this.responseCallbacksMap.delete(messageId);
+            }
+        } else {
+            console.error(error);
+        }
+    };
+
 
     /**
      * Set connection
@@ -107,6 +111,7 @@ export abstract class NatsService {
      */
     public subscribe(subject: string, cb: Function): Subscription {
         const sub = this.connection.subscribe(subject);
+
         const fn = async (_sub: Subscription) => {
             for await (const m of _sub) {
                 try {
@@ -155,7 +160,9 @@ export abstract class NatsService {
         return Promise.race([
             this.sendMessage<T>(subject, data),
             new Promise<T>((_, reject) => {
-                setTimeout(() => { reject(new Error('Timeout exceed')) }, timeout)
+                setTimeout(() => {
+                    reject(new Error('Timeout exceed'))
+                }, timeout)
             })
         ])
     }
@@ -187,6 +194,17 @@ export abstract class NatsService {
         });
     }
 
+    getMapSizeInMB(map: Map<any, any>): number {
+        try {
+            const jsonString = JSON.stringify([...map]);
+            const bytes = new TextEncoder().encode(jsonString).length;
+            return bytes / (1024 * 1024);
+        } catch (error) {
+            console.error("Error calculating Map size:", error);
+            return 0;
+        }
+    }
+
     /**
      * Get messages
      * @param subject
@@ -194,7 +212,7 @@ export abstract class NatsService {
      * @param noRespond
      */
     public getMessages<T, A>(subject: string, cb: Function, noRespond = false): Subscription {
-        return this.connection.subscribe(subject, {
+        const sub = this.connection.subscribe(subject, {
             queue: this.messageQueueName,
             callback: async (error, msg) => {
                 try {
@@ -206,14 +224,19 @@ export abstract class NatsService {
                     }
                     // head.append('rawMessage', isRaw);
                     if (!noRespond) {
-                        msg.respond(await this.codec.encode(await cb(await this.codec.decode(msg.data), msg.headers)), { headers: head });
+                        msg.respond(await this.codec.encode(await cb(await this.codec.decode(msg.data), msg.headers)), {headers: head});
                     } else {
                         cb(await this.codec.decode(msg.data), msg.headers);
                     }
+                    console.log(`📊 Active subscriptions: ${this.responseCallbacksMap.size}`);
+
+                    console.log(`💾 Map size: ${this.getMapSizeInMB(this.responseCallbacksMap).toFixed(4)} MB`);
                 } catch (error) {
                     console.error(error);
                 }
             }
         });
+
+        return sub;
     }
 }
