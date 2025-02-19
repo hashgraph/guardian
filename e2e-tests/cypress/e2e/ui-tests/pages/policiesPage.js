@@ -138,7 +138,7 @@ export class PoliciesPage {
         cy.contains(PoliciesPageLocators.policyDeleteButton).click();
         cy.get(PoliciesPageLocators.dynamicDialog).find(PoliciesPageLocators.deleteButton).click();
         Checks.waitForElement(PoliciesPageLocators.createPolicyButton);
-        cy.contains(policyName).should("not.exist");
+        cy.contains(new RegExp("^" + policyName + "$", "g")).should("not.exist");
     }
 
     startDryRun(name) {
@@ -162,13 +162,8 @@ export class PoliciesPage {
 
     exportPolicyAsMessageId(name) {
         this.openExportModal(name);
-        cy.wait(500);
+        cy.contains(PoliciesPageLocators.exportMessageIdButton).realClick();
         cy.window().then((win) => {
-            win.focus();
-            cy.get(CommonElements.dialogWindow).contains(PoliciesPageLocators.exportMessageIdButton).click();
-        });
-        cy.window().then((win) => {
-            win.focus();
             win.navigator.clipboard.readText().then((text) => {
                 //regex numbers.numbers
                 expect(text).to.match(/\d+\.\d+/g);
@@ -243,11 +238,13 @@ export class PoliciesPage {
     }
 
     approveDeviceInPolicy(waitFor = "revoke") {
+        Checks.waitForLoading();
         cy.contains(PoliciesPageLocators.deviceTab).click();
         this.approve(waitFor);
     }
 
     approveIssueRequestInPolicy(waitFor = "revoke") {
+        Checks.waitForLoading();
         cy.contains(PoliciesPageLocators.issueRequestsTab).click();
         this.approve(waitFor);
     }

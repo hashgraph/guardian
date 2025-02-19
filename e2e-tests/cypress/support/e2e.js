@@ -15,6 +15,7 @@
 
 // Import commands.js using ES2015 syntax:
 import "./commands";
+import "cypress-real-events";
 import "./api/api-helper";
 import "cypress-mochawesome-reporter/register";
 import { METHOD } from "../support/api/api-const";

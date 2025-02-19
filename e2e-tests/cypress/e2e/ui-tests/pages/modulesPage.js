@@ -116,12 +116,8 @@ export class ModulesPage {
     exportModuleAsMessageId(name) {
         this.openExportModal(name);
         Checks.waitForLoading();
+        cy.get(CommonElements.dialogWindow).contains(ModulesPageLocators.exportMessageIdButton).realClick();
         cy.window().then((win) => {
-            win.focus();
-            cy.get(CommonElements.dialogWindow).contains(ModulesPageLocators.exportMessageIdButton).click();
-        });
-        cy.window().then((win) => {
-            win.focus();
             win.navigator.clipboard.readText().then((text) => {
                 //regex numbers.numbers
                 expect(text).to.match(/\d+\.\d+/g);
@@ -221,7 +217,7 @@ export class ModulesPage {
     }
 
     addNewBlock(name) {
-        cy.contains(ModulesPageLocators.componentsBlock, name).click({force: true});
+        cy.contains(ModulesPageLocators.componentsBlock, name).click({ force: true });
     }
 
     checkBlockExists(name) {
@@ -234,11 +230,11 @@ export class ModulesPage {
     }
 
     clickOnBlock(name) {
-        cy.get(ModulesPageLocators.blockItemName(name)).should('be.visible').click({force: true});
+        cy.get(ModulesPageLocators.blockItemName(name)).should('be.visible').click({ force: true });
     }
 
     expandBlock(name) {
-        cy.get(ModulesPageLocators.expandBlockBtn(name)).click({force: true});
+        cy.get(ModulesPageLocators.expandBlockBtn(name)).click({ force: true });
     }
 
     checkBlockNotExist(name) {
@@ -247,7 +243,7 @@ export class ModulesPage {
     }
 
     clickOnDeleteBlockButton() {
-        cy.get(ModulesPageLocators.deleteBlockBtn).click({force: true});
+        cy.get(ModulesPageLocators.deleteBlockBtn).click({ force: true });
     }
 
     checkFieldsInEditModuleIsNotEditable() {

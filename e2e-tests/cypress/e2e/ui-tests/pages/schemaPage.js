@@ -166,13 +166,8 @@ export class SchemaPage {
     exportSchemaIPFS(name) {
         cy.contains(name).parent().find(SchemaPageLocators.menuSchemaButton).click();
         cy.get(SchemaPageLocators.schemaExportBtn).click();
+        cy.contains(SchemaPageLocators.exportIPFSButton).realClick();
         cy.window().then((win) => {
-            win.focus();
-            cy.contains(SchemaPageLocators.exportIPFSButton).click();
-        });
-        Checks.waitForLoading();
-        cy.window().then((win) => {
-            win.focus();
             win.navigator.clipboard.readText().then((text) => {
                 //regex numbers.numbers
                 expect(text).to.match(/\d+\.\d+/g);

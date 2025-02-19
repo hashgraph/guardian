@@ -134,6 +134,7 @@ export class UserPoliciesPage {
     }
 
     createDeviceInPolicy() {
+        Checks.waitForLoading();
         cy.contains(UserPoliciesPageLocators.deviceTab).click();
         cy.contains(UserPoliciesPageLocators.createDeviceButton).click();
         cy.get(CommonElements.dialogWindow).find(UserPoliciesPageLocators.createButton).click();
@@ -141,6 +142,7 @@ export class UserPoliciesPage {
     }
 
     createIssueRequestInPolicy(ammount = '1') {
+        Checks.waitForLoading();
         cy.contains(UserPoliciesPageLocators.deviceTab).click();
         cy.contains(UserPoliciesPageLocators.createIssueRequestButton).click();
         cy.contains(UserPoliciesPageLocators.requiredFillDateLabel).parent().parent().find('input').type('2025-01-03', { force: true })
@@ -168,11 +170,13 @@ export class UserPoliciesPage {
     }
 
     approveDeviceInPolicy() {
+        Checks.waitForLoading();
         cy.contains(UserPoliciesPageLocators.deviceTab).click();
         this.approve()
     }
 
     approveIssueRequestInPolicy() {
+        Checks.waitForLoading();
         cy.contains(UserPoliciesPageLocators.issueRequestsTab).click();
         this.approve()
     }
@@ -187,8 +191,8 @@ export class UserPoliciesPage {
         this.approve("validationLabel");
     }
 
-    createReport(){
-        cy.get(UserPoliciesPageLocators.createReportButton).click();cy.get(UserPoliciesPageLocators.enterTextInput).then((els) => {
+    createReport() {
+        cy.get(UserPoliciesPageLocators.createReportButton).click(); cy.get(UserPoliciesPageLocators.enterTextInput).then((els) => {
             [...els].forEach((el) =>
                 cy.wrap(el).type("Test text", { force: true })
             );
@@ -227,7 +231,7 @@ export class UserPoliciesPage {
         Checks.waitForElement(UserPoliciesPageLocators.waitingForValidation);
     }
 
-    verifyReport(){
+    verifyReport() {
         cy.contains(UserPoliciesPageLocators.monitoringReports).click();
     }
 
