@@ -1330,7 +1330,11 @@ export class PolicyUtils {
     }
 
     public static getQueryFilter(key: string, value: any) {
-        const queryKey = String(key).replace('document.credentialSubject.0', 'firstCredentialSubject');
+        const queryKey = String(key)
+            .replace('document.credentialSubject.0', 'firstCredentialSubject')
+            .replace('document.verifiableCredential.0.credentialSubject.0', 'firstCredentialSubject')
+            .replace('document.verifiableCredential.0', 'firstVerifiableCredential');
+
         let queryOperation: string = '$eq';
         let queryValue: any = value;
         if (typeof value === 'object') {
