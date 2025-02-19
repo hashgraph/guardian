@@ -36,19 +36,6 @@ Promise.all([
 
     const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
 
-    setInterval(() => {
-        const memoryUsage = process.memoryUsage();
-        const stack = (memoryUsage.rss - memoryUsage.heapTotal - memoryUsage.external) / 1024 / 1024;
-        console.log({
-            service: 'worker',
-            rss: `${(memoryUsage.rss / 1024 / 1024).toFixed(2)} MB`,
-            heapTotal: `${(memoryUsage.heapTotal / 1024 / 1024).toFixed(2)} MB`,
-            heapUsed: `${(memoryUsage.heapUsed / 1024 / 1024).toFixed(2)} MB`,
-            external: `${(memoryUsage.external / 1024 / 1024).toFixed(2)} MB`,
-            stack: `${stack.toFixed(2)} MB`
-        });
-    }, 10000);
-
     await new Users().setConnection(cn).init();
     const state = new ApplicationState();
     await state.setServiceName('WORKER').setConnection(cn).init();

@@ -220,7 +220,6 @@ export abstract class NatsService {
                     } else {
                         cb(await this.codec.decode(msg.data), msg.headers);
                     }
-                    console.log(`📊 Active subscriptions: ${this.responseCallbacksMap.size}`);
                 } catch (error) {
                     console.error(error);
                 }

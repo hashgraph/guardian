@@ -16,11 +16,6 @@ import { HederaUtils } from './helpers/utils.js';
 import axios from 'axios';
 import process from 'process';
 
-function logMemoryUsage(label: string) {
-    const memoryUsage = process.memoryUsage();
-    console.log(`🛠 [${label}] RSS: ${(memoryUsage.rss / 1024 / 1024).toFixed(2)} MB, HeapUsed: ${(memoryUsage.heapUsed / 1024 / 1024).toFixed(2)} MB`);
-}
-
 /**
  * Sleep helper
  * @param t
