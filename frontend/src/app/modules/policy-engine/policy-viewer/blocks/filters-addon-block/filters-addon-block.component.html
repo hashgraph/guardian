@@ -38,6 +38,7 @@
 
         <div *ngIf="type == 'dropdown'" class="content-select">
             <p-dropdown
+                *ngIf="!(currentType === 'in' || currentType === 'not_in')"
                 autoWidth="false"
                 [(ngModel)]="currentValue"
                 [options]="options"
@@ -53,6 +54,21 @@
                     <span *ngIf="!selectedOption">Not selected</span>
                 </ng-template>
             </p-dropdown>
+            <p-multiSelect
+                *ngIf="currentType === 'in' || currentType === 'not_in'"
+                autoWidth="false"
+                [(ngModel)]="currentValue"
+                [options]="multioptions"
+                [showHeader]="false"
+                optionLabel="name"
+                optionValue="value"
+                [appendTo]="'body'"
+                (onChange)="onFilters($event)"
+                [style]="{'width':'100%', 'height': '100%'}"
+                class="w-full filter-dropdown"
+                panelStyleClass="guardian-multiselect-panel"
+            >
+            </p-multiSelect>
         </div>
         <div *ngIf="type == 'datepicker'" class="content-select">
             <p-calendar

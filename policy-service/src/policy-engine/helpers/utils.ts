@@ -1380,8 +1380,8 @@ export class PolicyUtils {
                     if (isNaN(v)) {
                         return null;
                     } else {
-                        stringValue.push(String(value));
-                        numberValue.push(Number(value));
+                        stringValue.push(String(v));
+                        numberValue.push(Number(v));
                     }
                 }
                 return [stringValue, numberValue];
