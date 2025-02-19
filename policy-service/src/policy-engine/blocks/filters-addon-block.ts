@@ -1,12 +1,12 @@
-import { DataSourceAddon } from '../helpers/decorators/data-source-addon.js';
 import { BlockActionError } from '../errors/index.js';
+import { DataSourceAddon } from '../helpers/decorators/data-source-addon.js';
 import { findOptions } from '../helpers/find-options.js';
+import { PolicyUtils, QueryType } from '../helpers/utils.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyAddonBlock } from '../policy-engine.interface.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
-import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { PolicyUtils, QueryType } from '../helpers/utils.js';
 
 /**
  * Filters addon
@@ -28,21 +28,8 @@ import { PolicyUtils, QueryType } from '../helpers/utils.js';
 })
 export class FiltersAddonBlock {
 
-    /**
-     * Before init callback
-     */
-    public async beforeInit(): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const documentCacheFields =
-            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
-        if (ref.options?.field?.startsWith('document.')) {
-            documentCacheFields.add(ref.options.field.replace('document.', ''));
-        }
-    }
-
     private readonly previousState: { [key: string]: any } = {};
     private readonly previousFilters: { [key: string]: any } = {};
-
     /**
      * Block state
      * @private
@@ -63,6 +50,18 @@ export class FiltersAddonBlock {
     }
 
     /**
+     * Before init callback
+     */
+    public async beforeInit(): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const documentCacheFields =
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
+        if (ref.options?.field?.startsWith('document.')) {
+            documentCacheFields.add(ref.options.field.replace('document.', ''));
+        }
+    }
+
+    /**
      * Get filters
      * @param user
      */
@@ -75,6 +74,7 @@ export class FiltersAddonBlock {
             let filterValue: any;
             if (ref.options.type === 'dropdown') {
                 const data: any[] = await ref.getSources(user, null);
+
                 filterValue = findOptions(data[0], ref.options.optionValue);
             }
 
@@ -92,6 +92,9 @@ export class FiltersAddonBlock {
                 this.state[user.id] = blockState;
             } else {
                 filterValue = '';
+            }
+            if (ref.options.queryType === 'user_defined') {
+                filterValue = 'eq:' + filterValue;
             }
 
             this.addQuery(filters, filterValue)

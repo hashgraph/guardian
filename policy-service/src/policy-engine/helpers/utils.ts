@@ -1,12 +1,12 @@
-import * as mathjs from 'mathjs';
-import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
-import { DidDocumentStatus, DocumentSignature, DocumentStatus, Schema, SchemaEntity, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { HederaDidDocument, IAuthUser, KeyType, NotificationHelper, Schema as SchemaCollection, Token, Topic, TopicConfig, TopicHelper, Users, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcDocumentDefinition as HVcDocument, VcSubject, VpDocumentDefinition as VpDocument, Wallet, Workers } from '@guardian/common';
+import { DidDocumentStatus, DocumentSignature, DocumentStatus, Schema, SchemaEntity, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { TokenId, TopicId } from '@hashgraph/sdk';
-import { IHederaCredentials, PolicyUser, UserCredentials } from '../policy-user.js';
+import { FilterQuery } from '@mikro-orm/core';
+import * as mathjs from 'mathjs';
 import { DocumentType } from '../interfaces/document.type.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { FilterQuery } from '@mikro-orm/core';
+import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
+import { IHederaCredentials, PolicyUser, UserCredentials } from '../policy-user.js';
 
 export enum QueryType {
     eq = 'equal',
@@ -1445,6 +1445,7 @@ export class PolicyUtils {
             if (value.startsWith('regex:')) {
                 return [QueryType.regex, value.substring('regex'.length + 1)];
             }
+            // return [QueryType.eq, value];
         }
         return [null, value];
     }
