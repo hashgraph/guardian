@@ -38,6 +38,11 @@
 
 .description {
     margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    font-family: Roboto, sans-serif;
+    letter-spacing: .0178571429em;
 }
 
 .schema-form {
@@ -71,8 +76,43 @@
     background-color: transparent !important;
     box-shadow: none !important;
     border-radius: 0 !important;
-    height: 33px !important;
+    height: 34px !important;
     box-sizing: border-box !important;
     position: relative !important;
     top: -9px !important;
+}
+
+.dialog-title {
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 32px;
+    font-family: Roboto, sans-serif;
+    letter-spacing: normal;
+    margin: 0 0 16px;
+}
+
+.dialog-actions {
+    margin: 40px;
+}
+
+::ng-deep .raised-button {
+    background-color: var(--color-grey-white, #FFF);
+    color: var(--primary-color);
+    border-radius: 20px;
+    padding: 8px 24px;
+    font-weight: bold;
+    width: 100px
+}
+
+::ng-deep .raised-button {
+    background-color: var(--primary-color);
+    color: var(--color-grey-white, #FFF);
+}
+
+::ng-deep .raised-button:hover {
+    background-color: var(--blue-100);
+}
+
+::ng-deep .raised-button:hover {
+    background-color: var(--blue-700);
 }

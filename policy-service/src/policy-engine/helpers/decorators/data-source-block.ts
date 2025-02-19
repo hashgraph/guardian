@@ -127,21 +127,22 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 const { operator, value } = this.parseFilterValue(filterValue);
                 if (operator) {
                     const filter: any = {};
-                    if (isNaN(value)) {
-                        filter[key] = {};
-                        filter[key][operator] = value;
-                    } else {
+                    const numberValue = PolicyUtils.parseQueryNumberValue(value);
+                    if (numberValue) {
                         const filter1: any = {};
                         const filter2: any = {};
                         filter1[key] = {};
-                        filter1[key][operator] = String(value);
+                        filter1[key][operator] = numberValue[0];
                         filter2[key] = {};
-                        filter2[key][operator] = Number(value);
+                        filter2[key][operator] = numberValue[1];
                         if (operator === '$ne' || operator === '$nin') {
                             filter.$and = [filter1, filter2];
                         } else {
                             filter.$or = [filter1, filter2];
                         }
+                    } else {
+                        filter[key] = {};
+                        filter[key][operator] = value;
                     }
                     return filter;
                 } else {

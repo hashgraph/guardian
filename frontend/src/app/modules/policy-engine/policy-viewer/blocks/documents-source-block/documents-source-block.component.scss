@@ -74,8 +74,7 @@
             text-transform: uppercase;
         }
 
-        .mat-header-cell:first-of-type {
-        }
+        .mat-header-cell:first-of-type {}
 
         .mat-cell {
             border-bottom: none;
@@ -145,7 +144,7 @@
 }
 
 .btn-field {
-    width: 250px;
+    // width: 250px;
     overflow: hidden;
     cursor: pointer;
     position: relative;
@@ -158,9 +157,13 @@
     border-radius: 6px;
     border: 1px solid var(--color-primary);
     background: var(--color-grey-white);
-    height: 28px;
-    padding: 6px 16px;
+    padding: 8px 16px;
     border-bottom: 1px solid var(--color-primary) !important;
+    height: 34px;
+
+    &:hover {
+        filter: brightness(0.95);
+    }
 }
 
 .btn-field span {
@@ -206,7 +209,7 @@
 }
 
 .array.text i,
-.array.text svg,{
+.array.text svg {
     position: absolute;
     right: 0;
     top: 0;

@@ -64,16 +64,19 @@
 }
 
 .content .btn-option {
-    height: 26px;
+    height: 34px;
     text-align: center;
     border-radius: 60px !important;
     position: relative;
     margin-right: 10px;
-    height: 38px;
     box-shadow: 0px 3px 6px #00000029;
     border-radius: 24px !important;
     padding: 8px 20px !important;
     box-sizing: border-box;
+
+    &:hover {
+        filter: brightness(0.95);
+    }
 }
 
 .content {
@@ -81,14 +84,7 @@
     display: flex;
 }
 
-.content-dropdown {
-    flex-wrap: nowrap;
-    display: flex;
-    border: 1px solid #eee;
-    border-radius: 4px;
-    padding: 1px;
-}
-
 .content-dropdown ::ng-deep p-dropdown .p-dropdown {
     width: 146px;
+    height: 36px !important;
 }

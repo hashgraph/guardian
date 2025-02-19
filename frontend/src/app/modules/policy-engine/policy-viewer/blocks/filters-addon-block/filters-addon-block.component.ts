@@ -24,6 +24,7 @@ export class FiltersAddonBlockComponent implements OnInit {
     uiMetaData: any;
     type: any;
     options: any;
+    multioptions: any;
     content: any;
     target: any;
     filters: any;
@@ -98,7 +99,7 @@ export class FiltersAddonBlockComponent implements OnInit {
         }
     }
 
-    private parseFilterValue(value: string): [string, string] {
+    private parseFilterValue(value: string): [string, string | string[]] {
         if (typeof value === 'string') {
             if (value.startsWith('eq:')) {
                 return ['eq', value.substring('eq'.length + 1)];
@@ -107,10 +108,10 @@ export class FiltersAddonBlockComponent implements OnInit {
                 return ['ne', value.substring('ne'.length + 1)];
             }
             if (value.startsWith('in:')) {
-                return ['in', value.substring('in'.length + 1)];
+                return ['in', value.substring('in'.length + 1).split(',')];
             }
             if (value.startsWith('nin:')) {
-                return ['nin', value.substring('nin'.length + 1)];
+                return ['nin', value.substring('nin'.length + 1).split(',')];
             }
             if (value.startsWith('gt:')) {
                 return ['gt', value.substring('gt'.length + 1)];
@@ -147,7 +148,18 @@ export class FiltersAddonBlockComponent implements OnInit {
                 this.currentValue = value;
             } else {
                 this.currentType = this.queryType || 'eq';
-                this.currentValue = data.filterValue;
+
+                if (this.currentType === 'in' || this.currentType === 'not_in') {
+                    if (Array.isArray(data.filterValue)) {
+                        this.currentValue = data.filterValue;
+                    } else if (typeof data.filterValue === 'string') {
+                        this.currentValue = (data.filterValue).split(',');
+                    } else {
+                        this.currentValue = [];
+                    }
+                } else {
+                    this.currentValue = data.filterValue;
+                }
             }
 
             if (this.type == 'unelected') {
@@ -171,6 +183,7 @@ export class FiltersAddonBlockComponent implements OnInit {
                         })
                     }
                 }
+                this.multioptions = this.options.filter((o: any) => o.value);
             }
         } else {
             this.data = null;
@@ -178,17 +191,20 @@ export class FiltersAddonBlockComponent implements OnInit {
     }
 
     onFilters(event: any) {
-        if(this.type === 'datepicker'){
-            this.currentValue = moment(this.currentValue).format('YYYY-MM-DD');
-        }
-
         this.loading = true;
+        let value = this.currentValue;
+        if (this.type === 'datepicker') {
+            value = moment(value).format('YYYY-MM-DD');
+        }
+        if(Array.isArray(value)) {
+            value = value.join(',');
+        }
         const options: any = { filterValue: null };
-        if(this.currentValue) {
+        if (value) {
             if (this.queryType === 'user_defined') {
-                options.filterValue = this.currentType + ':' + this.currentValue;
+                options.filterValue = this.currentType + ':' + value;
             } else {
-                options.filterValue = this.currentValue;
+                options.filterValue = value;
             }
         }
         this.policyEngineService
