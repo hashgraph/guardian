@@ -213,10 +213,41 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 const filters = [];
                 filters.push({
                     $set: {
-                        firstCredentialSubject: {
-                            $ifNull: [{
-                                $arrayElemAt: ['$document.credentialSubject', 0]
-                            }, null]
+                        "firstVerifiableCredential": {
+                            "$ifNull": [
+                              {
+                                "$arrayElemAt": [
+                                  "$document.verifiableCredential",
+                                  0
+                                ]
+                              },
+                              null
+                            ]
+                        }
+                    }
+                });
+                filters.push({
+                    $set: {
+                        "firstCredentialSubject": {
+                            "$ifNull": [
+                              {
+                                "$arrayElemAt": [
+                                  "$document.credentialSubject",
+                                  0
+                                ]
+                              },
+                              {
+                                "$ifNull": [
+                                  {
+                                    "$arrayElemAt": [
+                                      "$firstVerifiableCredential.credentialSubject",
+                                      0
+                                    ]
+                                  },
+                                  null
+                                ]
+                              }
+                            ]
                         }
                     }
                 });
@@ -230,7 +261,10 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                     filters.push(blockFilter);
                 }
                 filters.push({
-                    $unset: 'firstCredentialSubject'
+                    $unset: 'firstCredentialSubject',
+                });
+                filters.push({
+                    $unset: 'firstVerifiableCredential',
                 });
                 return { filters, dataType: sourceAddons[0].options.dataType };
             }
