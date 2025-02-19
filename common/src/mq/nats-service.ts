@@ -212,7 +212,7 @@ export abstract class NatsService {
      * @param noRespond
      */
     public getMessages<T, A>(subject: string, cb: Function, noRespond = false): Subscription {
-        const sub = this.connection.subscribe(subject, {
+        return this.connection.subscribe(subject, {
             queue: this.messageQueueName,
             callback: async (error, msg) => {
                 try {
@@ -236,7 +236,5 @@ export abstract class NatsService {
                 }
             }
         });
-
-        return sub;
     }
 }
