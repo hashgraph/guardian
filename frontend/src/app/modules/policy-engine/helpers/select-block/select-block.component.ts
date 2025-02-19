@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Inject, Input, Output, SimpleChanges } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
 import { RegisteredService } from '../../services/registered.service';
 import { PolicyBlock, PolicyFolder } from '../../structures';
 
@@ -13,7 +13,9 @@ type ValueType = string | PolicyBlock | null | undefined;
     templateUrl: './select-block.component.html',
     styleUrls: ['./select-block.component.scss']
 })
-export class SelectBlock {
+export class SelectBlock implements AfterViewInit {
+    private searchTimeout!: any;
+    private data?: any[];
     @Input('root') root!: PolicyFolder;
     @Input('blocks') blocks!: PolicyBlock[];
     @Input('readonly') readonly!: boolean;
@@ -22,14 +24,54 @@ export class SelectBlock {
     @Output('valueChange') valueChange = new EventEmitter<any>();
     @Output('change') change = new EventEmitter<any>();
     @Input() multiple: boolean = false;
-
     public text: string | null | undefined;
     public search: string = '';
     public searchData?: any[];
-    private searchTimeout!: any;
-    private data?: any[];
 
     constructor(private registeredService: RegisteredService) {
+    }
+
+    private getText(value: string | PolicyBlock | null | undefined): string {
+        if (value && typeof value === 'object') {
+            if (value === this.root) {
+                if (this.root.isModule) {
+                    return 'Module';
+                } else if (this.root.isTool) {
+                    return 'Tool';
+                } else {
+                    return 'Policy';
+                }
+            } else {
+                return value.localTag;
+            }
+        } if (value) {
+            return value;
+        } else {
+            return '';
+        }
+    }
+
+    private getIcon(value: PolicyBlock) {
+        if (value === this.root) {
+            if (this.root.isModule) {
+                return { icon: 'policy-module', svg: true };
+            } else if (this.root.isTool) {
+                return { icon: 'handyman', svg: false };
+            } else {
+                return { icon: 'article', svg: false };
+            }
+        } else {
+            return {
+                icon: this.registeredService.getIcon(value.blockType),
+                svg: false
+            };
+        }
+    }
+
+    ngAfterViewInit(): void {
+        setTimeout(() => {
+            this.onChange();
+        }, 100)
     }
 
     onChange() {
@@ -76,43 +118,6 @@ export class SelectBlock {
             }
             this.update();
         }, 0);
-    }
-
-    private getText(value: string | PolicyBlock | null | undefined): string {
-        if (value && typeof value === 'object') {
-            if (value === this.root) {
-                if (this.root.isModule) {
-                    return 'Module';
-                } else if (this.root.isTool) {
-                    return 'Tool';
-                } else {
-                    return 'Policy';
-                }
-            } else {
-                return value.localTag;
-            }
-        } if (value) {
-            return value;
-        } else {
-            return '';
-        }
-    }
-
-    private getIcon(value: PolicyBlock) {
-        if (value === this.root) {
-            if (this.root.isModule) {
-                return { icon: 'policy-module', svg: true };
-            } else if (this.root.isTool) {
-                return { icon: 'handyman', svg: false };
-            } else {
-                return { icon: 'article', svg: false };
-            }
-        } else {
-            return {
-                icon: this.registeredService.getIcon(value.blockType),
-                svg: false
-            };
-        }
     }
 
     public onSearch(event: any) {
