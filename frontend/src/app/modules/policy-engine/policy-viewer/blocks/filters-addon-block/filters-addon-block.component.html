@@ -36,7 +36,7 @@
             <span *ngIf="currentType === 'lte'" class="common-prefix-dropdown">Less Than or Equal</span>
         </div>
 
-        <div *ngIf="type == 'dropdown'" class="content-select">
+        <div *ngIf="type == 'dropdown'" class="content-select" [attr.valid]="valid">
             <p-dropdown
                 *ngIf="!(currentType === 'in' || currentType === 'not_in' || currentType === 'nin')"
                 autoWidth="false"
@@ -70,7 +70,7 @@
             >
             </p-multiSelect>
         </div>
-        <div *ngIf="type == 'datepicker'" class="content-select">
+        <div *ngIf="type == 'datepicker'" class="content-select" [attr.valid]="valid">
             <p-calendar
                 [style]="{'border-left': '0', 'border-radius': '0 8px 8px 0'}"
                 [(ngModel)]="currentValue"
@@ -81,7 +81,7 @@
                 dateFormat="yy-mm-dd">
             </p-calendar>
         </div>
-        <div *ngIf="type == 'input'" class="content-select">
+        <div *ngIf="type == 'input'" class="content-select" [attr.valid]="valid">
             <input class="input-filter" [(ngModel)]="currentValue" (change)="onFilters($event)">
         </div>
     </div>

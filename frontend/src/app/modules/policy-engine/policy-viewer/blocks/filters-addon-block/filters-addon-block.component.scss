@@ -38,6 +38,24 @@
     align-self: flex-end;
     flex: 1;
     height: 38px;
+
+    &[valid="false"] ::ng-deep {
+        .p-multiselect {
+            border-color: #f00;
+        }
+
+        .p-dropdown {
+            border-color: #f00;
+        }
+
+        .p-inputtext {
+            border-color: #f00;
+        }
+
+        .input-filter {
+            border-color: #f00;
+        }
+    }
 }
 
 .grouped-content {
