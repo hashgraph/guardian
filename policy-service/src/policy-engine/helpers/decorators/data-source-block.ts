@@ -213,40 +213,31 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 const filters = [];
                 filters.push({
                     $set: {
-                        "firstVerifiableCredential": {
-                            "$ifNull": [
-                              {
-                                "$arrayElemAt": [
-                                  "$document.verifiableCredential",
-                                  0
-                                ]
-                              },
-                              null
+                        firstVerifiableCredential: {
+                            $ifNull: [
+                                {
+                                    $arrayElemAt: ['$document.verifiableCredential', 0]
+                                },
+                                null
                             ]
                         }
                     }
                 });
                 filters.push({
                     $set: {
-                        "firstCredentialSubject": {
-                            "$ifNull": [
-                              {
-                                "$arrayElemAt": [
-                                  "$document.credentialSubject",
-                                  0
-                                ]
-                              },
-                              {
-                                "$ifNull": [
-                                  {
-                                    "$arrayElemAt": [
-                                      "$firstVerifiableCredential.credentialSubject",
-                                      0
+                        firstCredentialSubject: {
+                            $ifNull: [
+                                {
+                                    $arrayElemAt: ['$document.credentialSubject', 0]
+                                },
+                                {
+                                    $ifNull: [
+                                        {
+                                            $arrayElemAt: ['$firstVerifiableCredential.credentialSubject', 0]
+                                        },
+                                        null
                                     ]
-                                  },
-                                  null
-                                ]
-                              }
+                                }
                             ]
                         }
                     }
