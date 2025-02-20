@@ -24,6 +24,8 @@ BLOCK_TYPE_TIPS_VALUE[BlockType.DocumentsViewer] =
     'A block type which outputs information from the DB as grid';
 BLOCK_TYPE_TIPS_VALUE[BlockType.PaginationAddon] =
     'A block type which adds pagination to the InterfaceDocumentSourceBlock if added';
+BLOCK_TYPE_TIPS_VALUE[BlockType.DataTransformationAddon] =
+    'A block type that transforms grid data';
 BLOCK_TYPE_TIPS_VALUE[BlockType.DocumentsSourceAddon] =
     'A block for searching VC, for grid';
 BLOCK_TYPE_TIPS_VALUE[BlockType.FiltersAddon] =
