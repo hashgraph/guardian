@@ -38,6 +38,24 @@
     align-self: flex-end;
     flex: 1;
     height: 38px;
+
+    &[valid="false"] ::ng-deep {
+        .p-multiselect {
+            border-color: #f00;
+        }
+
+        .p-dropdown {
+            border-color: #f00;
+        }
+
+        .p-inputtext {
+            border-color: #f00;
+        }
+
+        .input-filter {
+            border-color: #f00;
+        }
+    }
 }
 
 .grouped-content {
@@ -81,30 +99,42 @@ p-calendar {
     margin-right: 5px;
 }
 
-::ng-deep .p-dropdown-label {
-    font-size: 14px;
-    color: #23252E;
-}
-
-::ng-deep .p-component {
+.content ::ng-deep .p-component {
     border-radius: 8px;
     outline: none;
     box-shadow: none;
 }
 
-::ng-deep .filter-dropdown .p-dropdown {
+.content ::ng-deep .filter-dropdown .p-dropdown {
     border-radius: 0 8px 8px 0;
     border-left: 0;
+
+    .p-dropdown-label {
+        font-size: 14px;
+        color: #23252E;
+        height: 36px;
+    }
 }
 
-::ng-deep .calendar-filter .p-inputtext {
+.content ::ng-deep .filter-dropdown .p-multiselect {
+    border-radius: 0 8px 8px 0;
+    border-left: 0;
+
+    .p-multiselect-label {
+        font-size: 14px;
+        color: #23252E;
+        height: 36px;
+    }
+}
+
+.content ::ng-deep .calendar-filter .p-inputtext {
     padding: 8px 8px 11px 16px;
     border-radius: 0 8px 8px 0;
     border-left: 0;
     height: 37px;
 }
 
-::ng-deep .calendar-filter .p-datepicker-trigger {
+.content ::ng-deep .calendar-filter .p-datepicker-trigger {
     position: absolute;
     top: 50%;
     right: 8px;

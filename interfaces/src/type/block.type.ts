@@ -52,4 +52,5 @@ export enum BlockType {
     NotificationBlock = 'notificationBlock',
     Tool = 'tool',
     ExtractDataBlock = 'extractDataBlock',
+    DataTransformationAddon = 'dataTransformationAddon',
 }

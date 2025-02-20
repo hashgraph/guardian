@@ -258,7 +258,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         }
     }
 
-    setGroup(item: any) {
+    setGroup(item: any, group: any) {
+        group?.toggle(false);
         this.loading = true;
         this.policyEngineService
             .setGroup(this.policyInfo.id, item ? item.uuid : null)
@@ -287,7 +288,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 });
     }
 
-    setVirtualUser(item: any) {
+    setVirtualUser(item: any, menu: any) {
+        menu?.toggle(false)
         this.loading = true;
         this.policyEngineService
             .loginVirtualUser(this.policyInfo.id, item.did)

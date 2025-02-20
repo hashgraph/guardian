@@ -1,12 +1,12 @@
-import * as mathjs from 'mathjs';
-import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
-import { DidDocumentStatus, DocumentSignature, DocumentStatus, Schema, SchemaEntity, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { HederaDidDocument, IAuthUser, KeyType, NotificationHelper, Schema as SchemaCollection, Token, Topic, TopicConfig, TopicHelper, Users, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcDocumentDefinition as HVcDocument, VcSubject, VpDocumentDefinition as VpDocument, Wallet, Workers } from '@guardian/common';
+import { DidDocumentStatus, DocumentSignature, DocumentStatus, Schema, SchemaEntity, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { TokenId, TopicId } from '@hashgraph/sdk';
-import { IHederaCredentials, PolicyUser, UserCredentials } from '../policy-user.js';
+import { FilterQuery } from '@mikro-orm/core';
+import * as mathjs from 'mathjs';
 import { DocumentType } from '../interfaces/document.type.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { FilterQuery } from '@mikro-orm/core';
+import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
+import { IHederaCredentials, PolicyUser, UserCredentials } from '../policy-user.js';
 
 export enum QueryType {
     eq = 'equal',
@@ -1330,7 +1330,11 @@ export class PolicyUtils {
     }
 
     public static getQueryFilter(key: string, value: any) {
-        const queryKey = String(key).replace('document.credentialSubject.0', 'firstCredentialSubject');
+        const queryKey = String(key)
+            .replace('document.credentialSubject.0', 'firstCredentialSubject')
+            .replace('document.verifiableCredential.0.credentialSubject.0', 'firstCredentialSubject')
+            .replace('document.verifiableCredential.0', 'firstVerifiableCredential');
+
         let queryOperation: string = '$eq';
         let queryValue: any = value;
         if (typeof value === 'object') {
@@ -1380,8 +1384,8 @@ export class PolicyUtils {
                     if (isNaN(v)) {
                         return null;
                     } else {
-                        stringValue.push(String(value));
-                        numberValue.push(Number(value));
+                        stringValue.push(String(v));
+                        numberValue.push(Number(v));
                     }
                 }
                 return [stringValue, numberValue];
