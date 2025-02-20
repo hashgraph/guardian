@@ -129,7 +129,6 @@ export abstract class NatsService {
      * @param isResponseCallback
      */
     public sendMessage<T>(subject: string, data?: unknown, isResponseCallback: boolean = true): Promise<T> {
-        console.log('isResponseCallback', isResponseCallback)
         const messageId = GenerateUUIDv4();
         return new Promise(async (resolve, reject) => {
             const head = headers();
