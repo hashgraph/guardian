@@ -41,7 +41,7 @@ export class FiltersAddonBlockComponent implements OnInit {
         { name: 'Greater Than or Equal', value: 'gte' },
         { name: 'Less Than', value: 'lt' },
         { name: 'Less Than or Equal', value: 'lte' }
-      ];
+    ];
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -190,13 +190,17 @@ export class FiltersAddonBlockComponent implements OnInit {
         }
     }
 
+    onType(event: any) {
+        this.currentValue = null;
+    }
+
     onFilters(event: any) {
         this.loading = true;
         let value = this.currentValue;
         if (this.type === 'datepicker') {
             value = moment(value).format('YYYY-MM-DD');
         }
-        if(Array.isArray(value)) {
+        if (Array.isArray(value)) {
             value = value.join(',');
         }
         const options: any = { filterValue: null };
