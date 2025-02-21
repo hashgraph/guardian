@@ -160,8 +160,10 @@ export class ToolsListComponent implements OnInit, OnDestroy {
         const dialogRef = this.dialogService.open(PreviewPolicyDialog, {
             header: 'Import tool',
             width: '720px',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
             data: {
+                title: 'Import tool',
                 tool: tool,
                 isFile: type === 'file'
             }

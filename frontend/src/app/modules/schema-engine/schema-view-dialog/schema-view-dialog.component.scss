@@ -10,29 +10,20 @@ form {
     position: relative;
 }
 
-.loading {
-    background: #fff;
-    position: absolute;
-    z-index: 99;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    top: 0;
-    display: flex;
-    align-items: center;
-    justify-items: center;
-    justify-content: center;
-    align-content: center;
+.dialog-body {
+    padding: 0px 2px 8px 2px;
+    margin-bottom: 8px;
 }
 
 .schema-header {
-    font-size: 24px;
+    font-size: 18px;
     line-height: 32px;
     display: block;
     padding: 12px;
     box-sizing: border-box;
     text-align: center;
     color: #000;
+    font-weight: 500;
 }
 
 .delimiter {
@@ -55,7 +46,7 @@ form {
 
 .field-value {
     color: #000;
-    font-size: 20px;
+    font-size: 16px;
 }
 
 .field-name {
@@ -80,20 +71,6 @@ form {
     margin-top: 3px;
 }
 
-.g-dialog-header {
-    padding: 0;
-}
-
-.g-dialog-title {
-    padding: 0 !important;
-    margin-bottom: 24px !important;
-    color: #495057 !important;
-    font-weight: 600 !important;
-    font-size: 1.25rem !important;
-    font-family: Poppins, sans-serif !important;
-    font-style: normal !important;
-}
-
 .form-input-container {
     display: flex;
     flex-direction: column;
@@ -108,28 +85,6 @@ form {
     font-style: normal;
     font-weight: 500;
     line-height: 14px;
-}
-
-:host ::ng-deep {
-    .mat-dialog-title {
-        margin-bottom: 32px;
-        color: #000;
-        font-family: Poppins;
-        font-size: 24px;
-        font-style: normal;
-        font-weight: 600;
-        line-height: normal;
-    }
-
-    .mat-form-field {
-        width: 100%;
-    }
-
-    .mat-dialog-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 16px;
-    }
 }
 
 .fields-container {
@@ -152,16 +107,28 @@ form {
     font-weight: 400;
     overflow-y: auto;
     margin-top: 10px;
+    border: 1px solid #E1E7EF;
+    border-radius: 6px;
+    overflow: hidden;
+    padding: 0;
 
     .field-array-item {
         display: grid;
-        grid-template-columns: 175px 105px 375px;
-        border-right: 1px solid #bbb;
+        grid-template-columns: 175px 110px 410px;
+        border-bottom: 1px solid #E1E7EF;
+
+        &:last-child {
+            border-bottom: none;
+        }
 
         &>div {
             white-space: break-spaces;
-            padding: 0px 8px 12px 8px;
-            border-left: 1px solid #bbb;
+            padding: 12px 12px 12px 12px;
+            border-right: 1px solid #E1E7EF;
+
+            &:last-child {
+                border-right: none;
+            }
         }
     }
 
@@ -173,12 +140,20 @@ form {
     .error-type-error>div {
         color: var(--color-accent-red-1, #FF432A);
     }
+
+    .error-message {
+        font-size: 12px;
+        margin-top: 8px;
+        background: #fff1f1;
+        padding: 8px;
+        border-radius: 6px;
+    }
 }
 
 .schema {
     padding: 5px 12px 20px 12px;
     border: 1px solid #bbb;
-    border-radius: 4px;
+    border-radius: 8px;
     margin-bottom: 8px;
 }
 
@@ -186,36 +161,8 @@ form {
     font-size: 20px;
     line-height: 32px;
     display: block;
-    padding: 12px;
+    padding: 12px 12px 12px 0px;
     box-sizing: border-box;
     color: #181818;
-}
-
-::ng-deep .p-dialog {
-    max-height: inherit;
-}
-
-::ng-deep .p-dialog-header {
-    border-radius: 10px 10px 0 0;
-}
-
-::ng-deep .full-width .p-dropdown {
-    width: 100% !important;
-}
-
-.actions {
-    display: grid;
-    justify-content: end;
-    padding-top: 20px;
-}
-
-.actions .buttons {
-    width: 22%;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 15px;
-
-    ::ng-deep .p-button {
-        border-radius: 10px;
-    }
+    font-weight: 500;
 }

@@ -12,10 +12,6 @@
     align-content: center;
 }
 
-.content-dropdown {
-    flex-wrap: nowrap;
-    display: flex;
-    border: 1px solid #eee;
-    border-radius: 4px;
-    padding: 1px;
+.content-dropdown::ng-deep .guardian-dropdown .p-dropdown {
+    height: 36px !important;
 }

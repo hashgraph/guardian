@@ -677,11 +677,9 @@ export class PolicyEngine extends NatsService {
                 schema.version,
                 user,
                 root,
-                emptyNotifier()
+                emptyNotifier(),
+                schemaMap
             );
-
-            schemaMap.set(schemaIRI, newSchema.iri);
-
             const name = newSchema.name;
             num++;
             notifier.info(`Schema ${num} (${name || '-'}) published`);

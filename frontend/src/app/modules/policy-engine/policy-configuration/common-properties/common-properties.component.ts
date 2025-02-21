@@ -163,7 +163,7 @@ export class CommonPropertiesComponent implements OnInit {
     getOutputEvents(event: PolicyEvent): string[] {
         const about = this.getAbout(event.source);
         if (about && about.output) {
-            return about.output;
+            return [{label: '', value: null}, ...about.output];
         } else {
             return [];
         }
