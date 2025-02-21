@@ -721,8 +721,10 @@
 .status-actions-dropdown {
     ::ng-deep {
         .p-dropdown {
-            height: 28px;
+            height: 30px;
             border: 1px solid var(--color-secondary);
+            outline: none !important;
+            box-shadow: none !important;
         }
 
         .p-inputtext {

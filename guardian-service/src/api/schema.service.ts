@@ -550,7 +550,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const { id, version, owner } = msg;
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator);
-                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier());
+                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier(), null);
                 return new MessageResponse(item);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -571,7 +571,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 notifier.completedAndStart('Resolve Hedera account');
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator);
-                const item = await findAndPublishSchema(id, version, owner, root, notifier);
+                const item = await findAndPublishSchema(id, version, owner, root, notifier, null);
                 notifier.result(item.id);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -1184,7 +1184,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const { id, version, owner } = msg;
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator);
-                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier());
+                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier(), null);
                 return new MessageResponse(item);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);

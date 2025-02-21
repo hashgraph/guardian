@@ -85,7 +85,7 @@ export class PolicyProgressService {
         if (block) {
             const container = this.getComponentRefById(block.containerId);
             if (container?.instance.onBlockChange) {
-                const index = container?.instance.blocks.findIndex((itm: any) => itm.id == blockId);
+                const index = container?.instance?.blocks?.findIndex((itm: any) => itm.id == blockId);
                 if (index >= 0) {
                     return true;
                 }
@@ -105,7 +105,7 @@ export class PolicyProgressService {
         if (block) {
             const container = this.getComponentRefById(block.containerId);
             if (container?.instance.onBlockChange) {
-                const index = container?.instance.blocks.findIndex((itm: any) => itm.id == blockId);
+                const index = container?.instance?.blocks?.findIndex((itm: any) => itm.id == blockId);
                 if (index >= 0) {
                     container?.instance.onBlockChange(index);
                 }

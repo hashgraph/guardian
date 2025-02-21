@@ -221,6 +221,7 @@ export async function publishSchemas(
     const schemaIRIs = schemas.map(s => s.iri);
     let num: number = 0;
     let skipped: number = 0;
+    const schemaMap = new Map<string, string>();
     for (const schemaIRI of schemaIRIs) {
         const schema = await incrementSchemaVersion(schemaIRI, owner);
         if (!schema || schema.status === SchemaStatus.PUBLISHED) {
@@ -232,7 +233,8 @@ export async function publishSchemas(
             schema.version,
             owner,
             root,
-            emptyNotifier()
+            emptyNotifier(),
+            schemaMap
         );
         if (Array.isArray(tool.config?.variables)) {
             for (const variable of tool.config?.variables) {
@@ -241,12 +243,14 @@ export async function publishSchemas(
                 }
             }
         }
-        replaceAllEntities(tool.config, SchemaFields, schemaIRI, newSchema.iri);
-        replaceAllVariables(tool.config, 'Schema', schemaIRI, newSchema.iri);
-
         const name = newSchema.name;
         num++;
         notifier.info(`Schema ${num} (${name || '-'}) published`);
+    }
+
+    for (const [oldId, newId] of schemaMap.entries()) {
+        replaceAllEntities(tool.config, SchemaFields, oldId, newId);
+        replaceAllVariables(tool.config, 'Schema', oldId, newId);
     }
 
     if (skipped) {

@@ -79,8 +79,9 @@
                                         </span>
                                         <span *ngIf="option.type == 'button'" class="col-btn"
                                               (click)="$event.stopImmediatePropagation()">
-                                            <div (click)="onButton($event, element, option)"
-                                                 class="btn-field {{ option.uiClass }}">
+                                            <div 
+                                                (click)="onButton($event, element, option)"
+                                                class="btn-field {{ option.uiClass }}">
                                                 {{ getText(element, option) }}
                                             </div>
                                         </span>
