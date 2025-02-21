@@ -92,6 +92,7 @@
         "date": "Date",
         "createdTimestamp": "Created Date",
         "modifiedTimestamp": "Modified Date",
+        "coordinates": "Coordinates",
         "filter": {
             "policy": "Policy",
             "schema": "Schema",
@@ -123,6 +124,7 @@
         "raw_data": "Raw data",
         "labels": "Labels",
         "formulas": "Formulas",
+        "table": "Table",
         "tabs": {
             "activity": "Activity"
         },
