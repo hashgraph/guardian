@@ -1,5 +1,4 @@
 import {
-    IMessageResponse,
     MessageBrokerChannel,
     MessageResponse,
     NatsService,
