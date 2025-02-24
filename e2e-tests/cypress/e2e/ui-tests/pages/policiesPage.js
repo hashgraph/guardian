@@ -237,6 +237,12 @@ export class PoliciesPage {
     approveUserInPolicy(waitFor = "revoke") {
         this.approve(waitFor);
     }
+
+    openVVBTab(){
+        Checks.waitForLoading();
+        cy.get("p:contains('VVBs')").click();
+    }
+
     openPPTab(){
         Checks.waitForLoading();
         cy.get("p:contains('Project Participants')").click();
