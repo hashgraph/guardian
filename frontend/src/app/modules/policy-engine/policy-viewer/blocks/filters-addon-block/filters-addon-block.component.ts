@@ -31,6 +31,8 @@ export class FiltersAddonBlockComponent implements OnInit {
     currentValue: any;
     currentType: string = 'eq';
     queryType: string = 'equal';
+    valid: boolean = true;
+    canBeEmpty: boolean = false;
 
     userDefinedOptions = [
         { name: 'Equal', value: 'eq' },
@@ -41,7 +43,7 @@ export class FiltersAddonBlockComponent implements OnInit {
         { name: 'Greater Than or Equal', value: 'gte' },
         { name: 'Less Than', value: 'lt' },
         { name: 'Less Than or Equal', value: 'lte' }
-      ];
+    ];
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -134,12 +136,14 @@ export class FiltersAddonBlockComponent implements OnInit {
 
     setData(data: any) {
         this.currentValue = null;
+        this.valid = true;
         if (data) {
             this.data = data.data;
             this.type = data.type;
             this.target = data.targetBlock;
             this.content = data.uiMetaData.content;
             this.filters = data.filters;
+            this.canBeEmpty = data.canBeEmpty;
 
             this.queryType = data.queryType;
             if (this.queryType === 'user_defined') {
@@ -149,7 +153,7 @@ export class FiltersAddonBlockComponent implements OnInit {
             } else {
                 this.currentType = this.queryType || 'eq';
 
-                if (this.currentType === 'in' || this.currentType === 'not_in') {
+                if (this.currentType === 'in' || this.currentType === 'not_in' || this.currentType === 'nin') {
                     if (Array.isArray(data.filterValue)) {
                         this.currentValue = data.filterValue;
                     } else if (typeof data.filterValue === 'string') {
@@ -190,17 +194,37 @@ export class FiltersAddonBlockComponent implements OnInit {
         }
     }
 
+    onType(event: any) {
+        if (this.currentType === 'in' || this.currentType === 'not_in' || this.currentType === 'nin') {
+            this.currentValue = [];
+        } else {
+            this.currentValue = '';
+        }
+        this.valid = false;
+    }
+
     onFilters(event: any) {
+        this.valid = true;
         this.loading = true;
         let value = this.currentValue;
         if (this.type === 'datepicker') {
             value = moment(value).format('YYYY-MM-DD');
         }
-        if(Array.isArray(value)) {
+        if (Array.isArray(value)) {
             value = value.join(',');
         }
         const options: any = { filterValue: null };
-        if (value) {
+        if (!value) {
+            if (this.canBeEmpty) {
+                options.filterValue = null;
+            } else {
+                if (this.queryType === 'user_defined') {
+                    options.filterValue = this.currentType + ':';
+                } else {
+                    options.filterValue = '';
+                }
+            }
+        } else {
             if (this.queryType === 'user_defined') {
                 options.filterValue = this.currentType + ':' + value;
             } else {

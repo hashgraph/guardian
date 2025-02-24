@@ -1,4 +1,4 @@
-import {BlockType} from '@guardian/interfaces'
+import { BlockType } from '@guardian/interfaces'
 
 const BlockIcons: { [type: string]: string } = {};
 
@@ -42,6 +42,7 @@ BlockIcons[BlockType.TokenConfirmationBlock] = 'key';
 BlockIcons[BlockType.ImpactAddon] = 'file';
 BlockIcons[BlockType.Calculate] = 'chart-bar';
 BlockIcons[BlockType.CustomLogicBlock] = 'chart-bar';
+BlockIcons[BlockType.DataTransformationAddon] = 'chart-bar';
 BlockIcons[BlockType.CalculateMathAddon] = 'calculator';
 BlockIcons[BlockType.CalculateMathVariables] = 'calculator';
 BlockIcons[BlockType.MessagesReportBlock] = 'chart-line';
