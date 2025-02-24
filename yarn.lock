@@ -2264,15 +2264,15 @@
     mikro-orm "6.2.2"
     reflect-metadata "0.2.2"
 
-"@mikro-orm/migrations-mongodb@6.2.2":
-  version "6.2.2"
-  resolved "https://registry.yarnpkg.com/@mikro-orm/migrations-mongodb/-/migrations-mongodb-6.2.2.tgz#c3804239f326a5252a44c8bff566cff9b30a05a2"
-  integrity sha512-pzhM974Vc62m/vz/N4Ykdxc270y/T88LYgo1owxZas0ya+lDdEAijNR+EO4ldfHNy/XrCs82MRKxhi4Qz+YaEw==
+"@mikro-orm/migrations-mongodb@6.4.7":
+  version "6.4.7"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/migrations-mongodb/-/migrations-mongodb-6.4.7.tgz#254bdd34e9a1d413789587fec42d0af870da9089"
+  integrity sha512-FFC5n2yv3sP8Vz6P6SsuzyRyP+9xc78B+ZuWIsXJcSHf56CF0Ef1/K+KUCmjKghaV4iEzAaAMGC6+SYbKw62eA==
   dependencies:
-    "@mikro-orm/mongodb" "6.2.2"
-    fs-extra "11.2.0"
-    mongodb "6.5.0"
-    umzug "3.8.0"
+    "@mikro-orm/mongodb" "6.4.7"
+    fs-extra "11.3.0"
+    mongodb "6.13.1"
+    umzug "3.8.2"
 
 "@mikro-orm/mongodb@6.2.2":
   version "6.2.2"
@@ -2282,10 +2282,25 @@
     bson "^6.4.0"
     mongodb "6.5.0"
 
+"@mikro-orm/mongodb@6.4.7":
+  version "6.4.7"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/mongodb/-/mongodb-6.4.7.tgz#adefbc7dabbcf8403194cf91eec254d7670cc6b8"
+  integrity sha512-9yC5afPeCMq2A+mi6kGSrQxTrawtmP6VsnE47Sim8JLsj7IyaZWifDcMPHwoMv/0LzXTxDnqiL918Xyje5lghw==
+  dependencies:
+    bson "^6.10.1"
+    mongodb "6.13.1"
+
 "@mongodb-js/saslprep@^1.1.5":
   version "1.1.5"
   resolved "https://registry.yarnpkg.com/@mongodb-js/saslprep/-/saslprep-1.1.5.tgz#0c48a96c8d799e81fae311b7251aa5c1dc7c6e95"
   integrity sha512-XLNOMH66KhJzUJNwT/qlMnS4WsNDWD5ASdyaSH3EtK+F4r/CFGa3jT4GNi4mfOitGvWXtdLgQJkQjxSVrio+jA==
+  dependencies:
+    sparse-bitfield "^3.0.3"
+
+"@mongodb-js/saslprep@^1.1.9":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@mongodb-js/saslprep/-/saslprep-1.2.0.tgz#4373d7a87660ea44a0a7a461ff6d8bc832733a4b"
+  integrity sha512-+ywrb0AqkfaYuhHs6LxKWgqbh3I72EpEgESCw37o+9qPx9WTCkgDm2B+eMrwehGtHBWHFU4GXvnSCNiFhhausg==
   dependencies:
     sparse-bitfield "^3.0.3"
 
@@ -5773,6 +5788,11 @@ bson@^4.0.4:
   dependencies:
     buffer "^5.6.0"
 
+bson@^6.10.1, bson@^6.10.3:
+  version "6.10.3"
+  resolved "https://registry.yarnpkg.com/bson/-/bson-6.10.3.tgz#5f9a463af6b83e264bedd08b236d1356a30eda47"
+  integrity sha512-MTxGsqgYTwfshYWTRdmZRC+M7FnG1b4y7RO7p2k3X24Wq0yv1m77Wsj0BzlPzd/IowgESfsruQCUToa7vbOpPQ==
+
 bson@^6.4.0, bson@^6.5.0:
   version "6.6.0"
   resolved "https://registry.yarnpkg.com/bson/-/bson-6.6.0.tgz#f225137eb49fe19bee4d87949a0515c05176e2ad"
@@ -8292,10 +8312,19 @@ fs-constants@^1.0.0:
   resolved "https://registry.yarnpkg.com/fs-constants/-/fs-constants-1.0.0.tgz#6be0de9be998ce16af8afc24497b9ee9b7ccd9ad"
   integrity sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==
 
-fs-extra@11.2.0, fs-extra@^11.2.0:
+fs-extra@11.2.0:
   version "11.2.0"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.2.0.tgz#e70e17dfad64232287d01929399e0ea7c86b0e5b"
   integrity sha512-PmDi3uwK5nFuXh7XDTlVnS17xJS7vW36is2+w3xcv8SVxiB4NyATf4ctkVY5bkSjX0Y4nbvZCq1/EjtEyr9ktw==
+  dependencies:
+    graceful-fs "^4.2.0"
+    jsonfile "^6.0.1"
+    universalify "^2.0.0"
+
+fs-extra@11.3.0, fs-extra@^11.2.0:
+  version "11.3.0"
+  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.3.0.tgz#0daced136bbaf65a555a326719af931adc7a314d"
+  integrity sha512-Z4XaCL6dUDHfP/jT25jJKMmtxvuwbkrD1vNSMFlo9lNLY2c5FHYSQgHPRZUjAB26TpDEoW9HCOgplrdbaPV/ew==
   dependencies:
     graceful-fs "^4.2.0"
     jsonfile "^6.0.1"
@@ -11592,6 +11621,15 @@ mongodb-connection-string-url@^3.0.0:
   dependencies:
     "@types/whatwg-url" "^11.0.2"
     whatwg-url "^13.0.0"
+
+mongodb@6.13.1:
+  version "6.13.1"
+  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-6.13.1.tgz#924319f957a22efda45a96d38c08a594fd7929fa"
+  integrity sha512-gdq40tX8StmhP6akMp1pPoEVv+9jTYFSrga/g23JxajPAQhH39ysZrHGzQCSd9PEOnuEQEdjIWqxO7ZSwC0w7Q==
+  dependencies:
+    "@mongodb-js/saslprep" "^1.1.9"
+    bson "^6.10.3"
+    mongodb-connection-string-url "^3.0.0"
 
 mongodb@6.5.0:
   version "6.5.0"
@@ -15477,10 +15515,10 @@ uint8arrays@^5.0.3, uint8arrays@^5.1.0:
   dependencies:
     multiformats "^13.0.0"
 
-umzug@3.8.0:
-  version "3.8.0"
-  resolved "https://registry.yarnpkg.com/umzug/-/umzug-3.8.0.tgz#dfe2d753141f155f30106b2b893e355fed0c645f"
-  integrity sha512-FRBvdZxllW3eUzsqG3CIfgOVChUONrKNZozNOJfvmcfBn5pMKcJjICuMMEsDLHYa/aqd7a2NtXfYEG86XHe1lQ==
+umzug@3.8.2:
+  version "3.8.2"
+  resolved "https://registry.yarnpkg.com/umzug/-/umzug-3.8.2.tgz#53c2189604d36956d7b75a89128108d0e3073a9f"
+  integrity sha512-BEWEF8OJjTYVC56GjELeHl/1XjFejrD7aHzn+HldRJTx+pL1siBrKHZC8n4K/xL3bEzVA9o++qD1tK2CpZu4KA==
   dependencies:
     "@rushstack/ts-command-line" "^4.12.2"
     emittery "^0.13.0"
