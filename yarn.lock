@@ -7479,9 +7479,9 @@ esm@^3.2.22:
   integrity sha512-U1suiZ2oDVWv4zPO56S0NcR5QriEahGtdN2OR6FiOG4WJvcjBVFB0qI4+eKoWFH483PKGuLuu6V8Z4T5g63UVA==
 
 esmock@^2.6.7:
-  version "2.6.9"
-  resolved "https://registry.yarnpkg.com/esmock/-/esmock-2.6.9.tgz#3d8fc5f277ec82f0ae1cfc579712cc19ff53d999"
-  integrity sha512-SJ5YnoWi8yuGghBrupScARmIcUh2A2a2gIfdVRtQ2MQpQo91wMWHx/fsN0ZDERLAUso1ea4Q/9CKCL88O5MEpg==
+  version "2.7.0"
+  resolved "https://registry.yarnpkg.com/esmock/-/esmock-2.7.0.tgz#6090b14ec1c78bf29f2428a63c9b9fd6e53eb7e1"
+  integrity sha512-nYSvky0rP//13eYIGJ7b1dhsaBxtS370UoDWbILo1jHlO4hrCUkp/LD3e54QVhySxAGLsufxi5A4+wUAxPUIrg==
 
 espree@^7.3.0, espree@^7.3.1:
   version "7.3.1"
