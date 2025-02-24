@@ -31,7 +31,7 @@ context("Workflow Verra Policy", { tags: ['ui'] }, () => {
         // //Import and publish policy
         // homePage.login(SRUsername);
         // policiesPage.openPoliciesTab();
-        // policiesPage.importPolicyFromIPFS("1739273276.903073085"); //iRec5
+        // policiesPage.importPolicyFromIPFS("1739273276.903073085"); //Verra
         // policiesPage.backToPoliciesList();
         // policiesPage.checkStatus(name, "Draft");
         // policiesPage.publishPolicy(name);

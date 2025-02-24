@@ -78,20 +78,24 @@ export class ModulesPage {
         cy.contains(ModulesPageLocators.importIPFSButton).click();
         cy.get(ModulesPageLocators.timestampInput).type(messageId);
         cy.get(CommonElements.dialogWindow).find(ModulesPageLocators.moduleImportButton).click();
-        cy.get(ModulesPageLocators.pImportButton).click();
+        Checks.waitForElement("div:contains('Details')")
+        cy.get(ModulesPageLocators.moduleImportButton).last().click();
         Checks.waitForLoading();
         cy.contains(name).should("exist");
     }
 
     importNewModuleFile(fileName, name) {
+        Checks.waitForLoading();
         cy.contains(ModulesPageLocators.importButton).click();
         cy.get(CommonElements.fileInput).selectFile('cypress/fixtures/' + fileName, { force: true });
-        cy.get(ModulesPageLocators.pImportButton).click();
+        Checks.waitForElement("div:contains('Details')")
+        cy.get(ModulesPageLocators.moduleImportButton).last().click();
         Checks.waitForLoading();
         cy.contains(name).should("exist");
     }
 
     deleteModule(moduleName) {
+        Checks.waitForLoading();
         cy.contains(moduleName).siblings().find(ModulesPageLocators.moduleDeleteIcon).click();
         cy.get(ModulesPageLocators.moduleDeleteButton).click();
         Checks.waitForLoading();

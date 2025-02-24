@@ -51,6 +51,7 @@ const PoliciesPageLocators = {
     redo: "div[title='Redo']",
     successValidationElement: "[title='Validation Policy']",
     errorCountElement: ".error-count",
+    nextButton: "button[label='Next']",
 
     // importBtn: '[label="Import"]',
     // importContinueBtn: 'p-button[label="Import"]',
@@ -236,6 +237,10 @@ export class PoliciesPage {
     approveUserInPolicy(waitFor = "revoke") {
         this.approve(waitFor);
     }
+    openPPTab(){
+        Checks.waitForLoading();
+        cy.get("p:contains('Project Participants')").click();
+    }
 
     approveDeviceInPolicy(waitFor = "revoke") {
         Checks.waitForLoading();
@@ -280,7 +285,8 @@ export class PoliciesPage {
     }
 
     approveReport() {
-        cy.contains(PoliciesPageLocators.monitoringReports).click();
+        Checks.waitForLoading();
+        cy.get("p:contains('Monitoring reports')").click();
         Checks.waitForElement(PoliciesPageLocators.approveButton);
         this.approve("minted");
     }
@@ -402,16 +408,35 @@ export class PoliciesPage {
         cy.get(PoliciesPageLocators.errorCountElement).should('have.text', count);
     }
 
-    validateTypesDefault() {
+    createDryRunUser() {
         cy.contains('Create User').click();
         Checks.waitForLoading();
-        cy.contains('Users').click();
-        cy.contains('Virtual User 1').click();
-        Checks.waitForLoading();
+    }
+
+    openDryRunUser(user = "1") {
+        if (user == "Administrator") {
+            cy.contains('Users').click();
+            cy.contains(user).click();
+            Checks.waitForLoading();
+        }
+        else {
+            cy.contains('Users').click();
+            cy.contains(`Virtual User ${user}`).realClick();
+            Checks.waitForLoading();
+        }
+    }
+
+    registerAs(role) {
         cy.get(CommonElements.dropdown).first().click();
-        cy.contains('RoleD').click();
-        cy.contains('Next').click();
+        cy.contains(role).click();
+        cy.get(PoliciesPageLocators.nextButton).click();
         Checks.waitForLoading();
+    }
+
+    validateTypesDefault() {
+        this.createDryRunUser();
+        this.openDryRunUser();
+        this.registerAs('RoleD');
         //number
         cy.get('input').eq(0).should('have.class', 'ng-valid');
         cy.get('input').eq(0).type('dsadsa');
@@ -446,15 +471,9 @@ export class PoliciesPage {
     }
 
     validateTypesRequired() {
-        cy.contains('Create User').click();
-        Checks.waitForLoading();
-        cy.contains('Users').click();
-        cy.contains('Virtual User 2').click();
-        Checks.waitForLoading();
-        cy.get(CommonElements.dropdown).first().click();
-        cy.contains('RoleR').click();
-        cy.contains('Next').click();
-        Checks.waitForLoading();
+        this.createDryRunUser();
+        this.openDryRunUser("2");
+        this.registerAs('RoleR');
         //number
         cy.get('input').eq(0).should('have.class', 'ng-invalid');
         cy.get('input').eq(0).type('dsadsa');
@@ -488,15 +507,9 @@ export class PoliciesPage {
     }
 
     validateTypesMultiplie() {
-        cy.contains('Create User').click();
-        Checks.waitForLoading();
-        cy.contains('Users').click();
-        cy.contains('Virtual User 3').click();
-        Checks.waitForLoading();
-        cy.get(CommonElements.dropdown).first().click();
-        cy.contains('RoleMD').click();
-        cy.contains('Next').click();
-        Checks.waitForLoading();
+        this.createDryRunUser();
+        this.openDryRunUser("3");
+        this.registerAs('RoleMD');
         //number
         cy.get('button.guardian-button-secondary').eq(1).click();
         cy.get('input').eq(0).should('have.class', 'ng-valid');
@@ -535,15 +548,9 @@ export class PoliciesPage {
     }
 
     validateTypesMultiplieRequired() {
-        cy.contains('Create User').click();
-        Checks.waitForLoading();
-        cy.contains('Users').click();
-        cy.contains('Virtual User 4').click();
-        Checks.waitForLoading();
-        cy.get(CommonElements.dropdown).first().click();
-        cy.contains('RoleMR').click();
-        cy.contains('Next').click();
-        Checks.waitForLoading();
+        this.createDryRunUser();
+        this.openDryRunUser("4");
+        this.registerAs('RoleMR');
         //number
         cy.get('input').eq(0).should('have.class', 'ng-invalid');
         cy.get('input').eq(0).type('dsadsa');
@@ -575,6 +582,11 @@ export class PoliciesPage {
         cy.get('textarea').eq(0).should('have.class', 'ng-valid');
 
         cy.get('button:contains("Submit ")').should('be.enabled');
+    }
+
+    approveProject(){
+        cy.contains("Projects").click();
+        this.approve();
     }
 
 

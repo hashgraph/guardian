@@ -5,7 +5,7 @@ const d = new Date(2022, 3, 3);
 
 const UserPoliciesPageLocators = {
     roleSelect: '[formcontrolname="roleOrGroup"]',
-    role: (roleName) => `li[aria-label=${roleName}]`,
+    role: (roleName) => `li[aria-label="${roleName}"]`,
     nextButton: "button[label='Next']",
     requestDocumentBlock: "request-document-block",
     nextButtonInApplicationRegister: "button:contains('Next ')",
@@ -22,20 +22,25 @@ const UserPoliciesPageLocators = {
     requiredFillNumberLabel: "Please make sure the field contain a valid number value",
     signButton: 'div.btn-SIGN',
     vvbName: 'div:contains(" VVB Name ")',
+    ppName: 'h1:contains("New PP")',
     newVerraProjectButton: 'button:contains(" New Project ")',
+    newProjectButton: 'button:contains(" New project ")',
     enterTextInput: '[placeholder="Please enter text here"]',
     enterNumInput: '[placeholder="123"]',
     enterEmailInput: '[placeholder="example@email.com"]',
-    chooseOptionInput: '[placeholder="Not selected"]',
-    enterPosInput: '[placeholder="[1.23,4.56]"]',
+    chooseOptionInput: '[placeholder="Not selected"] span:contains("Not selected")',
+    enterPosInputVerra: '[placeholder="[1.23,4.56]"]',
+    enterPosInput: '[id="coordinatesInput"]',
     waitingForAdded: "span[title='Waiting to be Added']",
     ddAssignName: "p-dropdown[optionlabel='name']",
     projectTab: "Projects",
     validated: "span[title='Validated']",
+    verified: "span[title='Verified']",
     approveButton: 'div.btn-approve',
     createReportButton: "button:contains(' Add Report ')",
-    monitoringReports: "Monitoring Reports",
+    monitoringReports: "p:contains('Monitoring reports')",
     waitingForValidation: "span[title = 'Waiting for Validation']",
+    waitingForVerification: "span[title = 'Waiting for Verification']",
 
     policiesList: "/api/v1/policies?pageIndex=0&pageSize=10",
     passInput: '[formcontrolname="password"]',
@@ -125,6 +130,12 @@ export class UserPoliciesPage {
             cy.get(UserPoliciesPageLocators.submitButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.divTitle);
         }
+        if (role == "Project Participant") {
+            Checks.waitForElement(UserPoliciesPageLocators.ppName);
+            cy.get(CommonElements.Input).type("PPName");
+            cy.get(UserPoliciesPageLocators.submitButton).click();
+            Checks.waitForElement(UserPoliciesPageLocators.divTitle);
+        }
         if (role == "Approvers")
             Checks.waitForElement(UserPoliciesPageLocators.signButton);
     }
@@ -159,9 +170,13 @@ export class UserPoliciesPage {
             cy.get(UserPoliciesPageLocators.signButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.signedStatus);
         }
-        else {
+        if (waitFor == "validationLabel")  {
             cy.get(UserPoliciesPageLocators.approveButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.validated);
+        }
+        if (waitFor == "Report")  {
+            //cy.get(UserPoliciesPageLocators.approveButton).click();
+            Checks.waitForElement(UserPoliciesPageLocators.verified);
         }
     }
 
@@ -192,7 +207,57 @@ export class UserPoliciesPage {
     }
 
     createReport() {
-        cy.get(UserPoliciesPageLocators.createReportButton).click(); cy.get(UserPoliciesPageLocators.enterTextInput).then((els) => {
+        cy.get("p:contains('Projects')").click();
+        cy.get(UserPoliciesPageLocators.createReportButton).click();
+        cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
+            cy.log(els.length);
+            [...els].forEach((el) => {
+                cy.wrap(el).click();
+                cy.get(CommonElements.dropdownOption).first().click();
+            });
+        });
+        cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
+            cy.log(els.length);
+            [...els].forEach((el) => {
+                cy.wrap(el).click();
+                cy.get(CommonElements.dropdownOption).first().click();
+            });
+        });
+        cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
+            cy.log(els.length);
+            [...els].forEach((el) => {
+                cy.wrap(el).click();
+                cy.get(CommonElements.dropdownOption).first().click();
+            });
+        });
+        cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
+            cy.log(els.length);
+            [...els].forEach((el) => {
+                cy.wrap(el).click();
+                cy.get(CommonElements.dropdownOption).first().click();
+            });
+        });
+        cy.get(UserPoliciesPageLocators.enterTextInput).then((els) => {
+            [...els].forEach((el) =>
+                cy.wrap(el).type("Test text", { force: true })
+            );
+        });
+        cy.get(UserPoliciesPageLocators.enterNumInput).then((els) => {
+            [...els].forEach((el) => cy.wrap(el).type("123", { force: true }));
+        });
+        cy.get('input[aria-haspopup="dialog"]').then((els) => {
+            [...els].forEach((el) =>
+                cy.wrap(el).type('2025-01-03', { force: true })
+            );
+        });
+        cy.get(UserPoliciesPageLocators.createButton).click();
+        cy.get(UserPoliciesPageLocators.monitoringReports).click();
+        Checks.waitForElement(UserPoliciesPageLocators.waitingForVerification);
+    }
+
+    createReportVerra() {
+        cy.get(UserPoliciesPageLocators.createReportButton).click(); 
+        cy.get(UserPoliciesPageLocators.enterTextInput).then((els) => {
             [...els].forEach((el) =>
                 cy.wrap(el).type("Test text", { force: true })
             );
@@ -227,12 +292,79 @@ export class UserPoliciesPage {
             });
         });
         cy.get(UserPoliciesPageLocators.createButton).click();
-        cy.contains(UserPoliciesPageLocators.monitoringReports).click();
+        cy.get(UserPoliciesPageLocators.monitoringReports).click();
         Checks.waitForElement(UserPoliciesPageLocators.waitingForValidation);
     }
 
+    assignReport(){
+        cy.get('p-dropdown[placeholder="Select"]').click();
+        cy.get(CommonElements.dropdownOption).click();
+        Checks.waitForElement(UserPoliciesPageLocators.waitingForVerification);
+    }
+
     verifyReport() {
-        cy.contains(UserPoliciesPageLocators.monitoringReports).click();
+        cy.get(UserPoliciesPageLocators.monitoringReports).click();
+        this.approve("Report");
+    }
+
+    createProject() {
+        Checks.waitForLoading();
+        cy.get("p:contains('Projects')").click();
+        Checks.waitForLoading();
+        cy.get(UserPoliciesPageLocators.newProjectButton).click();
+        cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
+            cy.log(els.length);
+            [...els].forEach((el) => {
+                cy.wrap(el).click();
+                cy.get(CommonElements.dropdownOption).first().click();
+            });
+        });
+        cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
+            cy.log(els.length);
+            [...els].forEach((el) => {
+                cy.wrap(el).click();
+                cy.get(CommonElements.dropdownOption).first().click();
+            });
+        });
+        cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
+            cy.log(els.length);
+            [...els].forEach((el) => {
+                cy.wrap(el).click();
+                cy.get(CommonElements.dropdownOption).first().click();
+            });
+        });
+        cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
+            cy.log(els.length);
+            [...els].forEach((el) => {
+                cy.wrap(el).click();
+                cy.get(CommonElements.dropdownOption).first().click();
+            });
+        });
+        cy.get(UserPoliciesPageLocators.enterTextInput).then((els) => {
+            [...els].forEach((el) =>
+                cy.wrap(el).type("Test text", { force: true })
+            );
+        });
+        cy.get(UserPoliciesPageLocators.enterNumInput).then((els) => {
+            [...els].forEach((el) => cy.wrap(el).type("1", { force: true }));
+        });
+        cy.get('input[aria-haspopup="dialog"]').then((els) => {
+            [...els].forEach((el) =>
+                cy.wrap(el).type('2025-01-03', { force: true })
+            );
+        });
+        cy.get(UserPoliciesPageLocators.enterEmailInput).then((els) => {
+            [...els].forEach((el) =>
+                cy.wrap(el).type("asd@dsa.dsa")
+            );
+        });
+        cy.get(UserPoliciesPageLocators.enterPosInput).then((els) => {
+            [...els].forEach((el) => {
+                cy.wrap(el).type("[1.23,4.56]")
+            });
+        });
+        cy.get(UserPoliciesPageLocators.createButton).click();
+        Checks.waitForElement(UserPoliciesPageLocators.waitingForValidation);
     }
 
 

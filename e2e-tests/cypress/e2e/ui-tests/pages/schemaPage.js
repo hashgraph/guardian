@@ -15,6 +15,7 @@ const SchemaPageLocators = {
     schemaImportButton: 'p-button[ng-reflect-content="Import"]',
     schemaFinalImportButton: '[ng-reflect-label="Import"]',
     pImportButton: 'p-button[label="Import"]',
+    oneMoreImportButton: "button:contains('Import')",
     publishButton: 'div:contains("Publish ")',
     deleteSchemaButton: 'button.accent-color-red',
     menuSchemaButton: 'div[ptooltip="Menu"]',
@@ -97,11 +98,10 @@ export class SchemaPage {
         cy.contains(SchemaPageLocators.importIPFSButton).click();
         cy.get(SchemaPageLocators.messageTimestampInput).type(schemaMessageId);
         cy.get(SchemaPageLocators.schemaFinalImportButton).click();
-        Checks.waitForLoading();
-        Checks.waitForElement(SchemaPageLocators.pImportButton);
+        Checks.waitForElement("div:contains('Description')");
         cy.get(CommonElements.dialogWindow).find(CommonElements.dropdown).click();
         cy.get(CommonElements.dropdownOption).eq(1).click();
-        cy.get(SchemaPageLocators.schemaFinalImportButton).click();
+        cy.get(SchemaPageLocators.oneMoreImportButton).click();
         Checks.waitForTaskComplete();
         cy.contains(schemaName).should("exist");
     }
@@ -110,10 +110,10 @@ export class SchemaPage {
         cy.get(SchemaPageLocators.schemaImportButton).click();
         cy.contains(SchemaPageLocators.importFileButton).click();
         cy.get('input[type=file]').selectFile('cypress/fixtures/' + schemaFileName, { force: true });
-        Checks.waitForElement(SchemaPageLocators.pImportButton);
+        Checks.waitForElement("div:contains('Description')");
         cy.get(CommonElements.dialogWindow).find(CommonElements.dropdown).click();
         cy.get(CommonElements.dropdownOption).eq(1).click();
-        cy.get(SchemaPageLocators.schemaFinalImportButton).click();
+        cy.get(SchemaPageLocators.oneMoreImportButton).click();
         Checks.waitForTaskComplete();
         cy.contains(schemaName).should("exist");
     }

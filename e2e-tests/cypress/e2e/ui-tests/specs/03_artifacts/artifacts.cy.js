@@ -19,15 +19,13 @@ context("Artifacts", { tags: ['ui'] }, () => {
         artifactsPage.openArtifactsTab();
     })
 
-    before("Create policy workflow for future tests", () => {
+    it("Verify if it possible to Import artifacts from file", () => {
         policiesPage.openPoliciesTab();
         policiesPage.createPolicy();
         policiesPage.fillNewPolicyForm(name);
         policiesPage.backToPoliciesList();
         policiesPage.checkStatus(name, "Draft");
-    });
-
-    it("Verify if it possible to Import artifacts from file", () => {
+        artifactsPage.openArtifactsTab();
         artifactsPage.uploadFile("artifactsImport.policy");
         artifactsPage.checkArtifactsTableContains("artifactsImport");
     });
