@@ -121,8 +121,9 @@ export class Workers extends NatsService {
      * @param task
      * @param priority
      * @param userId
+     * @param registerCallback
      */
-    public addNonRetryableTask(task: ITask, priority: number, userId?: string | null): Promise<any> {
+    public addNonRetryableTask(task: ITask, priority: number, userId?: string | null, registerCallback: boolean = true): Promise<any> {
         if (!task.data.network) {
             task.data.network = Environment.network;
         }
@@ -138,7 +139,7 @@ export class Workers extends NatsService {
         if (!task.data.localNodeProtocol) {
             task.data.localNodeProtocol = Environment.localNodeProtocol;
         }
-        return this.addTask(task, priority, false, 0, true, userId);
+        return this.addTask(task, priority, false, 0, registerCallback, userId);
     }
 
     /**
@@ -147,8 +148,9 @@ export class Workers extends NatsService {
      * @param priority
      * @param attempts
      * @param userId
+     * @param registerCallback
      */
-    public addRetryableTask(task: ITask, priority: number, attempts: number = 0, userId: string = null): Promise<any> {
+    public addRetryableTask(task: ITask, priority: number, attempts: number = 0, userId: string = null, registerCallback: boolean = true): Promise<any> {
         if (!task.data.network) {
             task.data.network = Environment.network;
         }
@@ -164,7 +166,7 @@ export class Workers extends NatsService {
         if (!task.data.localNodeProtocol) {
             task.data.localNodeProtocol = Environment.localNodeProtocol;
         }
-        return this.addTask(task, priority, true, attempts, true, userId);
+        return this.addTask(task, priority, true, attempts, registerCallback, userId);
     }
 
     /**
@@ -189,6 +191,7 @@ export class Workers extends NatsService {
             if (this.tasksCallbacks.has(data.id)) {
                 const activeTask = this.tasksCallbacks.get(data.id);
                 activeTask.callback(data.data, data.error, data.isTimeoutError);
+                this.tasksCallbacks.delete(data.id)
             }
 
         })
