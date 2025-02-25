@@ -20,17 +20,17 @@ const TokensPageLocators = {
 	tokenNameInput: '[formcontrolname="tokenName"]',
 	tokenSymbolInput: '[formcontrolname="tokenSymbol"]',
 	saveTokenBtn: "Save",
-    createTagButton: ' Create a Tag ',
-    tagNameInput: '[ng-reflect-name="name"]',
-    tagDeleteButton: "div.delete-tag",
-    tagDescInput: '[ng-reflect-name="description"]',
-    tagsListRequest: "/api/v1/tags/",
-    closeWindowButton: "[ng-reflect-label='Close']",
-    deleteTagIcon: "svg-icon[svgclass='accent-color-red']",
-    createButton: "[ng-reflect-label='Create']",
+	createTagButton: ' Create a Tag ',
+	tagNameInput: '[ng-reflect-name="name"]',
+	tagDeleteButton: "div.delete-tag",
+	tagDescInput: '[ng-reflect-name="description"]',
+	tagsListRequest: "/api/v1/tags/",
+	closeWindowButton: "[ng-reflect-label='Close']",
+	deleteTagIcon: "svg-icon[svgclass='accent-color-red']",
+	createButton: "[ng-reflect-label='Create']",
 
 
-	
+
 	importBtn: "Tokens",
 	tokensList: "/api/v1/tokens",
 	tokenName: "td.mat-column-tokenName",
@@ -66,7 +66,7 @@ export class TokensPage {
 
 	openAndRefreshUserTokensData(name, username) {
 		cy.contains("td", name).siblings().eq(4).find(CommonElements.svg).eq(0).click();
-		cy.contains("td", username).siblings().find(CommonElements.svg).click();
+		cy.contains("td", " " + username + " ").siblings().find(CommonElements.svg).click();
 	}
 
 	grantKYC(name, username) {
@@ -132,22 +132,22 @@ export class TokensPage {
 
 	editTokenDisabled(name) {
 		cy.contains(name).parent().find(TokensPageLocators.tokenEditBtnDisabled).should('exist');
-	}	
+	}
 
-    addTag(name, tagName) {
-        cy.contains(name).siblings().contains(TokensPageLocators.createTagButton).click();
-        cy.get(TokensPageLocators.tagNameInput).type(tagName);
-        cy.get(TokensPageLocators.tagDescInput).type(tagName);
-        cy.get(TokensPageLocators.createButton).click();
-        cy.contains(tagName).should("exist");
-    }
+	addTag(name, tagName) {
+		cy.contains(name).siblings().contains(TokensPageLocators.createTagButton).click();
+		cy.get(TokensPageLocators.tagNameInput).type(tagName);
+		cy.get(TokensPageLocators.tagDescInput).type(tagName);
+		cy.get(TokensPageLocators.createButton).click();
+		cy.contains(tagName).should("exist");
+	}
 
-    deleteTag(name, tagName) {
-        cy.contains(name).siblings().contains(tagName).click();
-        cy.get(TokensPageLocators.deleteTagIcon).click();
-        cy.get(TokensPageLocators.closeWindowButton).click();
-        cy.contains(tagName).should("not.exist");
-    }
+	deleteTag(name, tagName) {
+		cy.contains(name).siblings().contains(tagName).click();
+		cy.get(TokensPageLocators.deleteTagIcon).click();
+		cy.get(TokensPageLocators.closeWindowButton).click();
+		cy.contains(tagName).should("not.exist");
+	}
 
 
 
