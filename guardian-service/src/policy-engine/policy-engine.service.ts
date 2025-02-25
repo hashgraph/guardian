@@ -551,6 +551,20 @@ export class PolicyEngineService {
                 }
             });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA_CUSTOM,
+                                           async (msg: any) => {
+                                               try {
+                                                   new GuardiansService().sendPolicyMessage(PolicyEvents.MRV_DATA_CUSTOM, msg.policyId, {
+                                                       policyId: msg.policyId,
+                                                       data: msg
+                                                   });
+                                                   return new MessageResponse(true);
+                                               } catch (error) {
+                                                   await logger.error(error, ['GUARDIAN_SERVICE']);
+                                                   return new MessageError(error, error.code);
+                                               }
+                                           });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_TAG_BLOCK_MAP,
             async (msg: { policyId: string, owner: IOwner }) => {
                 try {
