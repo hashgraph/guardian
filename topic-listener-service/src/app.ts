@@ -7,28 +7,19 @@ import {
     MessageBrokerChannel,
     Migration,
     mongoForLoggingInitialization,
-    NotificationService,
     PinoLogger,
     pinoLoggerInitialization,
-    Users,
     ValidateConfiguration
 } from '@guardian/common';
-import { ListenerService } from './api/listener.js';
+import { ListenerService } from './api/listener-service.js';
 import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
 import * as process from 'process';
-import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { DEFAULT_MONGO } from '#constants';
-
-@Module({
-    providers: [
-        NotificationService,
-    ]
-})
-class AppModule { }
+import { AppModule } from './app.module.js';
 
 const channelName = (process.env.SERVICE_CHANNEL || `topic-listener.${GenerateUUIDv4().substring(26)}`).toUpperCase();
 
@@ -61,9 +52,7 @@ Promise.all([
         },
     }),
     mongoForLoggingInitialization()
-]).then(async values => {
-    // const [cn, app, loggerMongo] = values;
-    const [_, db, mqConnection, app, loggerMongo] = values;
+]).then(async ([_, db, mqConnection, app, loggerMongo]) => {
     app.listen();
 
     DatabaseServer.connectBD(db);
@@ -85,9 +74,9 @@ Promise.all([
             clearInterval(timer);
         }
 
-        await state.updateState(ApplicationStates.INITIALIZING);
-        const w = new ListenerService(channelName, logger);
-        await w.setConnection(mqConnection).init();
+        // await state.updateState(ApplicationStates.INITIALIZING);
+        // const w = new ListenerService(channelName, logger);
+        // await w.setConnection(mqConnection).init();
 
         return true;
     });
@@ -109,6 +98,20 @@ Promise.all([
     })
 
     await validator.validate();
+
+
+
+
+    //Test
+    const test = new ListenerService(channelName, logger);
+    test.setConnection(mqConnection);
+    await test.addListener({
+        topicId: '0.0.5527121',
+        name: 'test'
+    });
+    await test.init();
+
+
 }, (reason) => {
     console.log(reason);
     process.exit(0);
