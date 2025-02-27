@@ -1,4 +1,4 @@
-# 🏜 External Events
+# 🏜️ External Events
 
 ### Introduction
 
@@ -69,14 +69,16 @@ const responseToIpfsEvent = (type: string, cb: (data: Buffer) => Buffer) => {
 
 ### External events list
 
-| event                                         | type    |                  payload                  | notes                                                                                                                                                                                                                                                              |
-| --------------------------------------------- | ------- | :---------------------------------------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| externals-events.ipfs\_added\_file            | publish |                 {cid, url}                | Event is published when an IPFS file is added                                                                                                                                                                                                                      |
-| external-events.token\_minted                 | publish |       { tokenId, tokenValue, memo }       | When token is minted successfully                                                                                                                                                                                                                                  |
-| external-events.error\_logs                   | publish |        {message, type, attributes}        | When an error is sent to logger service                                                                                                                                                                                                                            |
-| external-events.block\_run\_action\_event     | publish | {blockType, blockTag, uuid ,data, result} | <p>After runAction is finished, events are called by these blocks:</p><ol><li><code>aggregateDocumentBlock</code></li><li><code>mintDocumentBlock</code></li><li><code>sendToGuardianBlock</code></li><li><code>timerBlock</code> after runAction finish</li></ol> |
-| external-events.ipfs\_before\_upload\_content | request |                 {content}                 | The base64 of the content (buffer) to be hooked and modified                                                                                                                                                                                                       |
-| external-events.ipfs\_after\_read\_content    | request |                 {content}                 | The base64 of the content (buffer) to be modified/processed                                                                                                                                                                                                        |
+| event                                          | type         |             payload            | notes                                                                                    |
+| ---------------------------------------------- | ------------ | :----------------------------: | ---------------------------------------------------------------------------------------- |
+| external-events.token\_minted                  | publish      |  { tokenId, tokenValue, memo } | Triggered when a token is successfully minted.                                           |
+| external-events.token\_mint\_complete          | publish      |         { tokenValue }         | Triggered when all tokens have been minted.                                              |
+| external-events.error\_logs                    | publish      |  { message, type, attributes } | Triggered when an error is sent to the logger service.                                   |
+| external-events.block\_event                   | publish      |        \<blockEventData>       | Represents a block external event.                                                       |
+| external-events.ipfs\_added\_file              | publish      |          { cid, url }          | Triggered when a file is added to IPFS.                                                  |
+| external-events.ipfs\_before\_upload\_content  | request      |            {content}           | The base64-encoded content (buffer) to be hooked and modified before uploading to IPFS.  |
+| external-events.ipfs\_after\_read\_content     | request      |            {content}           | The base64-encoded content (buffer) to be modified or processed after reading from IPFS. |
+| external-events.ipfs\_loaded\_file             | subscription | { taskId, fileContent, error } | Receives an event when a file load is complete.                                          |
 
 ### Example
 
