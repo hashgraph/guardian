@@ -1,0 +1,1848 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.5">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan" enabled="true">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">true</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="PROTOCOL" elementType="Argument">
+            <stringProp name="Argument.name">PROTOCOL</stringProp>
+            <stringProp name="Argument.value">http</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="OS_ADMIN_NAME" elementType="Argument">
+            <stringProp name="Argument.name">OS_ADMIN_NAME</stringProp>
+            <stringProp name="Argument.value">StandardRegistry</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="OS_ADMIN_PASS" elementType="Argument">
+            <stringProp name="Argument.name">OS_ADMIN_PASS</stringProp>
+            <stringProp name="Argument.value">test</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="OS" elementType="Argument">
+            <stringProp name="Argument.name">OS</stringProp>
+            <stringProp name="Argument.value">localhost</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="PORT" elementType="Argument">
+            <stringProp name="Argument.name">PORT</stringProp>
+<<<<<<< HEAD
+            <stringProp name="Argument.value">3002</stringProp>
+=======
+            <stringProp name="Argument.value">4200</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="PORT_OS_WS" elementType="Argument">
+            <stringProp name="Argument.name">PORT_OS_WS</stringProp>
+            <stringProp name="Argument.value">3002</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="PORT_MGS_WS" elementType="Argument">
+            <stringProp name="Argument.name">PORT_MGS_WS</stringProp>
+            <stringProp name="Argument.value">443</stringProp>
+>>>>>>> 3f627535969f492cb568e81f46ed531e7bfe1a01
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </Arguments>
+      <hashTree/>
+      <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults" enabled="true">
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+          <collectionProp name="Arguments.arguments"/>
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">${OS}</stringProp>
+        <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+        <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+        <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+        <stringProp name="HTTPSampler.path"></stringProp>
+        <stringProp name="HTTPSampler.concurrentPool">6</stringProp>
+        <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+        <stringProp name="HTTPSampler.response_timeout"></stringProp>
+      </ConfigTestElement>
+      <hashTree/>
+      <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+        <collectionProp name="HeaderManager.headers">
+          <elementProp name="Content-Type" elementType="Header">
+            <stringProp name="Header.name">Content-Type</stringProp>
+            <stringProp name="Header.value">application/json</stringProp>
+          </elementProp>
+          <elementProp name="Accept" elementType="Header">
+            <stringProp name="Header.name">Accept</stringProp>
+            <stringProp name="Header.value">application/json, text/plain, */*</stringProp>
+          </elementProp>
+        </collectionProp>
+      </HeaderManager>
+      <hashTree/>
+      <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config" enabled="true">
+        <stringProp name="delimiter">;</stringProp>
+        <stringProp name="fileEncoding"></stringProp>
+        <stringProp name="filename">userdatashort.csv</stringProp>
+        <boolProp name="ignoreFirstLine">false</boolProp>
+        <boolProp name="quotedData">false</boolProp>
+        <boolProp name="recycle">true</boolProp>
+        <stringProp name="shareMode">shareMode.group</stringProp>
+        <boolProp name="stopThread">false</boolProp>
+        <stringProp name="variableNames">sr_username,sr_pass,user_username,user_pass</stringProp>
+      </CSVDataSet>
+      <hashTree/>
+      <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="Cookie Manager" enabled="true">
+        <collectionProp name="CookieManager.cookies"/>
+        <boolProp name="CookieManager.clearEachIteration">false</boolProp>
+        <boolProp name="CookieManager.controlledByThreadGroup">false</boolProp>
+      </CookieManager>
+      <hashTree/>
+<<<<<<< HEAD
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Users creation" enabled="true">
+=======
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Create OS SR" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Register SR on open source" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+  &quot;username&quot;: &quot;${sr_username}&quot;,&#xd;
+  &quot;password&quot;: &quot;${sr_pass}&quot;,&#xd;
+  &quot;password_confirmation&quot;: &quot;${ADMIN_PASS}&quot;,&#xd;
+  &quot;role&quot;: &quot;STANDARD_REGISTRY&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${OS}</stringProp>
+          <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+          <stringProp name="HTTPSampler.protocol">${PROTOCOL_OS}</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding">utf-8</stringProp>
+          <stringProp name="HTTPSampler.path">api/v1/accounts/register</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Tenant creation" enabled="false">
+        <stringProp name="ThreadGroup.on_sample_error">stopthread</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="User creation flow" enabled="true">
+          <boolProp name="TransactionController.includeTimers">false</boolProp>
+          <boolProp name="TransactionController.parent">true</boolProp>
+        </TransactionController>
+        <hashTree>
+          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="User creation(admin side)" enabled="true">
+            <boolProp name="TransactionController.includeTimers">false</boolProp>
+            <boolProp name="TransactionController.parent">false</boolProp>
+          </TransactionController>
+          <hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login by Admin" enabled="true">
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&#xd;
+  &quot;username&quot;: &quot;${ADMIN_NAME}&quot;,&#xd;
+  &quot;password&quot;: &quot;${ADMIN_PASS}&quot;,&#xd;
+  &quot;tenantId&quot;: null&#xd;
+}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain"></stringProp>
+              <stringProp name="HTTPSampler.port"></stringProp>
+              <stringProp name="HTTPSampler.protocol"></stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">api/v1/accounts/login</stringProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Refresh Token" enabled="true">
+                <stringProp name="JSONPostProcessor.referenceNames">adminRefreshToken</stringProp>
+                <stringProp name="JSONPostProcessor.jsonPathExprs">$.refreshToken</stringProp>
+                <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+              </JSONPostProcessor>
+              <hashTree/>
+            </hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get Admin Access Token" enabled="true">
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&#xd;
+  &quot;refreshToken&quot;: &quot;${adminRefreshToken}&quot;&#xd;
+}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain"></stringProp>
+              <stringProp name="HTTPSampler.port"></stringProp>
+              <stringProp name="HTTPSampler.protocol"></stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">api/v1/accounts/access-token</stringProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Access Token" enabled="true">
+                <stringProp name="JSONPostProcessor.referenceNames">adminAccessToken</stringProp>
+                <stringProp name="JSONPostProcessor.jsonPathExprs">$.accessToken</stringProp>
+                <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+              </JSONPostProcessor>
+              <hashTree/>
+            </hashTree>
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Admin auth" enabled="true">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="authorization" elementType="Header">
+                  <stringProp name="Header.name">authorization</stringProp>
+                  <stringProp name="Header.value">Bearer ${adminAccessToken}</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Create new tenant" enabled="true">
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&#xd;
+  &quot;tenantName&quot;: &quot;${TENANT_NAME}&quot;,&#xd;
+  &quot;network&quot;: &quot;testnet&quot;&#xd;
+}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain"></stringProp>
+              <stringProp name="HTTPSampler.port"></stringProp>
+              <stringProp name="HTTPSampler.protocol"></stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">api/v1/tenants/user</stringProp>
+              <stringProp name="HTTPSampler.method">PUT</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract tenant id" enabled="true">
+                <stringProp name="JSONPostProcessor.referenceNames">tenantId</stringProp>
+                <stringProp name="JSONPostProcessor.jsonPathExprs">$.id</stringProp>
+                <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+              </JSONPostProcessor>
+              <hashTree/>
+            </hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Setup ipfs" enabled="true">
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&#xd;
+  &quot;ipfsSettings&quot;: {&#xd;
+    &quot;provider&quot;: &quot;local&quot;&#xd;
+  }&#xd;
+}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain"></stringProp>
+              <stringProp name="HTTPSampler.port"></stringProp>
+              <stringProp name="HTTPSampler.protocol"></stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">api/v1/settings/tenant/${tenantId}</stringProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Users creation" enabled="false">
+>>>>>>> 3f627535969f492cb568e81f46ed531e7bfe1a01
+        <stringProp name="ThreadGroup.on_sample_error">stopthread</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="User creation flow" enabled="true">
+          <boolProp name="TransactionController.includeTimers">false</boolProp>
+          <boolProp name="TransactionController.parent">false</boolProp>
+        </TransactionController>
+        <hashTree>
+          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="User creation(SR side)" enabled="true">
+            <boolProp name="TransactionController.includeTimers">false</boolProp>
+            <boolProp name="TransactionController.parent">false</boolProp>
+          </TransactionController>
+          <hashTree>
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Generate sr hedera data" enabled="true">
+              <boolProp name="TransactionController.parent">false</boolProp>
+              <boolProp name="TransactionController.includeTimers">false</boolProp>
+            </TransactionController>
+            <hashTree>
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Register SR" enabled="true">
+                <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                  <collectionProp name="Arguments.arguments">
+                    <elementProp name="" elementType="HTTPArgument">
+                      <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                      <stringProp name="Argument.value">{&#xd;
+  &quot;username&quot;: &quot;${sr_username}&quot;,&#xd;
+  &quot;password&quot;: &quot;test&quot;,&#xd;
+  &quot;password_confirmation&quot;: &quot;test&quot;,&#xd;
+  &quot;role&quot;: &quot;STANDARD_REGISTRY&quot;&#xd;
+}</stringProp>
+                      <stringProp name="Argument.metadata">=</stringProp>
+                    </elementProp>
+                  </collectionProp>
+                </elementProp>
+                <stringProp name="HTTPSampler.domain"></stringProp>
+                <stringProp name="HTTPSampler.port"></stringProp>
+                <stringProp name="HTTPSampler.protocol"></stringProp>
+                <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                <stringProp name="HTTPSampler.path">/accounts/register</stringProp>
+                <stringProp name="HTTPSampler.method">POST</stringProp>
+                <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              </HTTPSamplerProxy>
+              <hashTree/>
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login by SR" enabled="true">
+                <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                  <collectionProp name="Arguments.arguments">
+                    <elementProp name="" elementType="HTTPArgument">
+                      <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                      <stringProp name="Argument.value">{&#xd;
+  &quot;username&quot;: &quot;${sr_username}&quot;,&#xd;
+  &quot;password&quot;: &quot;test&quot;&#xd;
+}</stringProp>
+                      <stringProp name="Argument.metadata">=</stringProp>
+                    </elementProp>
+                  </collectionProp>
+                </elementProp>
+                <stringProp name="HTTPSampler.domain"></stringProp>
+                <stringProp name="HTTPSampler.port"></stringProp>
+                <stringProp name="HTTPSampler.protocol"></stringProp>
+                <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                <stringProp name="HTTPSampler.path">/accounts/login</stringProp>
+                <stringProp name="HTTPSampler.method">POST</stringProp>
+                <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              </HTTPSamplerProxy>
+              <hashTree>
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract OS SR Refresh Token" enabled="true">
+                  <stringProp name="JSONPostProcessor.referenceNames">OSSRRefreshToken</stringProp>
+                  <stringProp name="JSONPostProcessor.jsonPathExprs">$.refreshToken</stringProp>
+                  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                </JSONPostProcessor>
+                <hashTree/>
+              </hashTree>
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get Access Token" enabled="true">
+                <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                  <collectionProp name="Arguments.arguments">
+                    <elementProp name="" elementType="HTTPArgument">
+                      <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                      <stringProp name="Argument.value">{&#xd;
+  &quot;refreshToken&quot;: &quot;${OSSRRefreshToken}&quot;&#xd;
+}</stringProp>
+                      <stringProp name="Argument.metadata">=</stringProp>
+                    </elementProp>
+                  </collectionProp>
+                </elementProp>
+                <stringProp name="HTTPSampler.domain"></stringProp>
+                <stringProp name="HTTPSampler.port"></stringProp>
+                <stringProp name="HTTPSampler.protocol"></stringProp>
+                <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                <stringProp name="HTTPSampler.path">/accounts/access-token</stringProp>
+                <stringProp name="HTTPSampler.method">POST</stringProp>
+                <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              </HTTPSamplerProxy>
+              <hashTree>
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Access Token" enabled="true">
+                  <stringProp name="JSONPostProcessor.referenceNames">OSSRAccessToken</stringProp>
+                  <stringProp name="JSONPostProcessor.jsonPathExprs">$.accessToken</stringProp>
+                  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                </JSONPostProcessor>
+                <hashTree/>
+              </hashTree>
+              <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="SR auth" enabled="true">
+                <collectionProp name="HeaderManager.headers">
+                  <elementProp name="authorization" elementType="Header">
+                    <stringProp name="Header.name">authorization</stringProp>
+                    <stringProp name="Header.value">Bearer ${OSSRAccessToken}</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </HeaderManager>
+              <hashTree/>
+              <eu.luminis.jmeter.wssampler.OpenWebSocketSampler guiclass="eu.luminis.jmeter.wssampler.OpenWebSocketSamplerGui" testclass="eu.luminis.jmeter.wssampler.OpenWebSocketSampler" testname="WS open for sr key gen" enabled="true">
+                <boolProp name="TLS">false</boolProp>
+<<<<<<< HEAD
+                <stringProp name="server">${OS}</stringProp>
+                <stringProp name="port">${PORT}</stringProp>
+=======
+                <stringProp name="server">localhost</stringProp>
+                <stringProp name="port">${PORT_OS_WS}</stringProp>
+>>>>>>> 3f627535969f492cb568e81f46ed531e7bfe1a01
+                <stringProp name="path">/ws/?token=${OSSRAccessToken}</stringProp>
+                <stringProp name="connectTimeout">300000</stringProp>
+                <stringProp name="readTimeout">10000</stringProp>
+              </eu.luminis.jmeter.wssampler.OpenWebSocketSampler>
+              <hashTree/>
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Generate sr keys" enabled="true">
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+                  <collectionProp name="Arguments.arguments"/>
+                </elementProp>
+                <stringProp name="HTTPSampler.domain"></stringProp>
+                <stringProp name="HTTPSampler.port"></stringProp>
+                <stringProp name="HTTPSampler.protocol"></stringProp>
+                <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                <stringProp name="HTTPSampler.path">/demo/push/random-key</stringProp>
+                <stringProp name="HTTPSampler.method">GET</stringProp>
+                <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              </HTTPSamplerProxy>
+              <hashTree>
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Task Id" enabled="true">
+                  <stringProp name="JSONPostProcessor.referenceNames">taskIdSRKeys</stringProp>
+                  <stringProp name="JSONPostProcessor.jsonPathExprs">$.taskId</stringProp>
+                  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                </JSONPostProcessor>
+                <hashTree/>
+              </hashTree>
+              <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While sr key gen" enabled="true">
+                <stringProp name="WhileController.condition">${__javaScript(&quot;${operationStatusSR}&quot; != &quot;Operation completed&quot;,)}</stringProp>
+              </WhileController>
+              <hashTree>
+                <eu.luminis.jmeter.wssampler.PingPongSampler guiclass="eu.luminis.jmeter.wssampler.PingPongSamplerGui" testclass="eu.luminis.jmeter.wssampler.PingPongSampler" testname="WS PP sr key gen" enabled="true">
+                  <stringProp name="type">Pong</stringProp>
+                  <stringProp name="readTimeout">6000</stringProp>
+                </eu.luminis.jmeter.wssampler.PingPongSampler>
+                <hashTree/>
+                <eu.luminis.jmeter.wssampler.SingleReadWebSocketSampler guiclass="eu.luminis.jmeter.wssampler.SingleReadWebSocketSamplerGui" testclass="eu.luminis.jmeter.wssampler.SingleReadWebSocketSampler" testname="WS read sr key gen result" enabled="true">
+                  <boolProp name="TLS">false</boolProp>
+                  <stringProp name="server"></stringProp>
+                  <stringProp name="port">80</stringProp>
+                  <stringProp name="path"></stringProp>
+                  <stringProp name="connectTimeout">20000</stringProp>
+                  <stringProp name="dataType">Text</stringProp>
+                  <boolProp name="createNewConnection">false</boolProp>
+                  <stringProp name="readTimeout">40000</stringProp>
+                  <boolProp name="optional">true</boolProp>
+                </eu.luminis.jmeter.wssampler.SingleReadWebSocketSampler>
+                <hashTree>
+                  <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Get status sr key gen" enabled="true">
+                    <stringProp name="JSONPostProcessor.referenceNames">operationStatusSR</stringProp>
+                    <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.message</stringProp>
+                    <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+                  </JSONPostProcessor>
+                  <hashTree/>
+                  <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Get sr key gen error" enabled="true">
+                    <stringProp name="JSONPostProcessor.referenceNames">srKeyGenError</stringProp>
+                    <stringProp name="JSONPostProcessor.jsonPathExprs">$..error.code</stringProp>
+                    <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+                    <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                  </JSONPostProcessor>
+                  <hashTree/>
+                  <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+                    <collectionProp name="Asserion.test_strings">
+                      <stringProp name="1023286998">NOT_FOUND</stringProp>
+                    </collectionProp>
+                    <stringProp name="Assertion.custom_message"></stringProp>
+                    <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+                    <boolProp name="Assertion.assume_success">false</boolProp>
+                    <intProp name="Assertion.test_type">8</intProp>
+                    <stringProp name="Assertion.scope">variable</stringProp>
+                    <stringProp name="Scope.variable">srKeyGenError</stringProp>
+                  </ResponseAssertion>
+                  <hashTree/>
+                </hashTree>
+              </hashTree>
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get sr keys" enabled="true">
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+                  <collectionProp name="Arguments.arguments"/>
+                </elementProp>
+                <stringProp name="HTTPSampler.domain"></stringProp>
+                <stringProp name="HTTPSampler.port"></stringProp>
+                <stringProp name="HTTPSampler.protocol"></stringProp>
+                <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                <stringProp name="HTTPSampler.path">/tasks/${taskIdSRKeys}</stringProp>
+                <stringProp name="HTTPSampler.method">GET</stringProp>
+                <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              </HTTPSamplerProxy>
+              <hashTree>
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract sr id" enabled="true">
+                  <stringProp name="JSONPostProcessor.referenceNames">sr_hedera_id</stringProp>
+                  <stringProp name="JSONPostProcessor.jsonPathExprs">$.result.id</stringProp>
+                  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                </JSONPostProcessor>
+                <hashTree/>
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract sr key" enabled="true">
+                  <stringProp name="JSONPostProcessor.referenceNames">sr_hedera_key</stringProp>
+                  <stringProp name="JSONPostProcessor.jsonPathExprs">$.result.key</stringProp>
+                  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                </JSONPostProcessor>
+                <hashTree/>
+              </hashTree>
+            </hashTree>
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Link SR" enabled="true">
+              <boolProp name="TransactionController.parent">false</boolProp>
+              <boolProp name="TransactionController.includeTimers">false</boolProp>
+            </TransactionController>
+            <hashTree>
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login by SR" enabled="true">
+                <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                  <collectionProp name="Arguments.arguments">
+                    <elementProp name="" elementType="HTTPArgument">
+                      <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                      <stringProp name="Argument.value">{&#xd;
+  &quot;username&quot;:&quot;${sr_username}&quot;,&#xd;
+  &quot;password&quot;: &quot;test&quot;&#xd;
+}</stringProp>
+                      <stringProp name="Argument.metadata">=</stringProp>
+                    </elementProp>
+                  </collectionProp>
+                </elementProp>
+                <stringProp name="HTTPSampler.domain"></stringProp>
+                <stringProp name="HTTPSampler.port"></stringProp>
+                <stringProp name="HTTPSampler.protocol"></stringProp>
+                <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                <stringProp name="HTTPSampler.path">/accounts/login</stringProp>
+                <stringProp name="HTTPSampler.method">POST</stringProp>
+                <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              </HTTPSamplerProxy>
+              <hashTree>
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Refresh Token" enabled="true">
+                  <stringProp name="JSONPostProcessor.referenceNames">SRRefreshToken</stringProp>
+                  <stringProp name="JSONPostProcessor.jsonPathExprs">$.refreshToken</stringProp>
+                  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                </JSONPostProcessor>
+                <hashTree/>
+              </hashTree>
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get SR Access Token" enabled="true">
+                <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                  <collectionProp name="Arguments.arguments">
+                    <elementProp name="" elementType="HTTPArgument">
+                      <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                      <stringProp name="Argument.value">{&#xd;
+  &quot;refreshToken&quot;: &quot;${SRRefreshToken}&quot;&#xd;
+}</stringProp>
+                      <stringProp name="Argument.metadata">=</stringProp>
+                    </elementProp>
+                  </collectionProp>
+                </elementProp>
+                <stringProp name="HTTPSampler.domain"></stringProp>
+                <stringProp name="HTTPSampler.port"></stringProp>
+                <stringProp name="HTTPSampler.protocol"></stringProp>
+                <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                <stringProp name="HTTPSampler.path">/accounts/access-token</stringProp>
+                <stringProp name="HTTPSampler.method">POST</stringProp>
+                <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              </HTTPSamplerProxy>
+              <hashTree>
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Access Token" enabled="true">
+                  <stringProp name="JSONPostProcessor.referenceNames">SRAccessToken</stringProp>
+                  <stringProp name="JSONPostProcessor.jsonPathExprs">$.accessToken</stringProp>
+                  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                </JSONPostProcessor>
+                <hashTree/>
+              </hashTree>
+              <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="SR auth" enabled="true">
+                <collectionProp name="HeaderManager.headers">
+                  <elementProp name="authorization" elementType="Header">
+                    <stringProp name="Header.name">authorization</stringProp>
+                    <stringProp name="Header.value">Bearer ${SRAccessToken}</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </HeaderManager>
+              <hashTree/>
+              <eu.luminis.jmeter.wssampler.OpenWebSocketSampler guiclass="eu.luminis.jmeter.wssampler.OpenWebSocketSamplerGui" testclass="eu.luminis.jmeter.wssampler.OpenWebSocketSampler" testname="WS open for sr link" enabled="true">
+<<<<<<< HEAD
+                <boolProp name="TLS">false</boolProp>
+                <stringProp name="server">${OS}</stringProp>
+                <stringProp name="port">${PORT}</stringProp>
+=======
+                <boolProp name="TLS">true</boolProp>
+                <stringProp name="server">dev.guardianservice.app</stringProp>
+                <stringProp name="port">${PORT_MGS_WS}</stringProp>
+>>>>>>> 3f627535969f492cb568e81f46ed531e7bfe1a01
+                <stringProp name="path">/ws/?token=${SRAccessToken}</stringProp>
+                <stringProp name="connectTimeout">300000</stringProp>
+                <stringProp name="readTimeout">6000</stringProp>
+              </eu.luminis.jmeter.wssampler.OpenWebSocketSampler>
+              <hashTree/>
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Link SR profile" enabled="true">
+                <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                  <collectionProp name="Arguments.arguments">
+                    <elementProp name="" elementType="HTTPArgument">
+                      <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                      <stringProp name="Argument.value">{&#xd;
+  &quot;hederaAccountId&quot;: &quot;${sr_hedera_id}&quot;,&#xd;
+  &quot;hederaAccountKey&quot;: &quot;${sr_hedera_key}&quot;,&#xd;
+  &quot;secret&quot;: &quot;&quot;,&#xd;
+  &quot;vcDocument&quot;: {&#xd;
+    &quot;geography&quot;: &quot;a&quot;,&#xd;
+    &quot;law&quot;: &quot;a&quot;,&#xd;
+    &quot;tags&quot;: &quot;a&quot;,&#xd;
+    &quot;type&quot;: &quot;StandardRegistry&quot;,&#xd;
+    &quot;@context&quot;: []&#xd;
+  }&#xd;
+}</stringProp>
+                      <stringProp name="Argument.metadata">=</stringProp>
+                    </elementProp>
+                  </collectionProp>
+                </elementProp>
+                <stringProp name="HTTPSampler.domain"></stringProp>
+                <stringProp name="HTTPSampler.port"></stringProp>
+                <stringProp name="HTTPSampler.protocol"></stringProp>
+                <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                <stringProp name="HTTPSampler.path">/profiles/push/${sr_username}</stringProp>
+                <stringProp name="HTTPSampler.method">PUT</stringProp>
+                <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              </HTTPSamplerProxy>
+              <hashTree>
+                <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="SR auth" enabled="true">
+                  <collectionProp name="HeaderManager.headers">
+                    <elementProp name="authorization" elementType="Header">
+                      <stringProp name="Header.name">authorization</stringProp>
+                      <stringProp name="Header.value">Bearer ${SRAccessToken}</stringProp>
+                    </elementProp>
+                  </collectionProp>
+                </HeaderManager>
+                <hashTree/>
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Task Id" enabled="true">
+                  <stringProp name="JSONPostProcessor.referenceNames">taskIdSRLink</stringProp>
+                  <stringProp name="JSONPostProcessor.jsonPathExprs">$.taskId</stringProp>
+                  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                </JSONPostProcessor>
+                <hashTree/>
+              </hashTree>
+              <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While sr link" enabled="true">
+                <stringProp name="WhileController.condition">${__javaScript(&quot;${messageTypeSR}&quot; != &quot;SUCCESS&quot;,)}</stringProp>
+              </WhileController>
+              <hashTree>
+                <eu.luminis.jmeter.wssampler.PingPongSampler guiclass="eu.luminis.jmeter.wssampler.PingPongSamplerGui" testclass="eu.luminis.jmeter.wssampler.PingPongSampler" testname="WS PP sr link" enabled="true">
+                  <stringProp name="type">Pong</stringProp>
+                  <stringProp name="readTimeout">6000</stringProp>
+                </eu.luminis.jmeter.wssampler.PingPongSampler>
+                <hashTree/>
+                <eu.luminis.jmeter.wssampler.SingleReadWebSocketSampler guiclass="eu.luminis.jmeter.wssampler.SingleReadWebSocketSamplerGui" testclass="eu.luminis.jmeter.wssampler.SingleReadWebSocketSampler" testname="WS read sr link result" enabled="true">
+                  <boolProp name="TLS">false</boolProp>
+                  <stringProp name="server"></stringProp>
+                  <stringProp name="port">80</stringProp>
+                  <stringProp name="path"></stringProp>
+                  <stringProp name="connectTimeout">20000</stringProp>
+                  <stringProp name="dataType">Text</stringProp>
+                  <boolProp name="createNewConnection">false</boolProp>
+                  <stringProp name="readTimeout">40000</stringProp>
+                  <boolProp name="optional">true</boolProp>
+                </eu.luminis.jmeter.wssampler.SingleReadWebSocketSampler>
+                <hashTree>
+                  <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Get sr link result" enabled="true">
+                    <stringProp name="JSONPostProcessor.referenceNames">messageTypeSR</stringProp>
+                    <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.type</stringProp>
+                    <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+                  </JSONPostProcessor>
+                  <hashTree/>
+                  <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Get sr link error" enabled="true">
+                    <stringProp name="JSONPostProcessor.referenceNames">srLinkError</stringProp>
+                    <stringProp name="JSONPostProcessor.jsonPathExprs">$..error.code</stringProp>
+                    <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+                    <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                  </JSONPostProcessor>
+                  <hashTree/>
+                  <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+                    <collectionProp name="Asserion.test_strings">
+                      <stringProp name="1023286998">NOT_FOUND</stringProp>
+                    </collectionProp>
+                    <stringProp name="Assertion.custom_message"></stringProp>
+                    <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+                    <boolProp name="Assertion.assume_success">false</boolProp>
+                    <intProp name="Assertion.test_type">8</intProp>
+                    <stringProp name="Assertion.scope">variable</stringProp>
+                    <stringProp name="Scope.variable">srLinkError</stringProp>
+                  </ResponseAssertion>
+                  <hashTree/>
+                </hashTree>
+              </hashTree>
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Verify link" enabled="true">
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+                  <collectionProp name="Arguments.arguments"/>
+                </elementProp>
+                <stringProp name="HTTPSampler.domain"></stringProp>
+                <stringProp name="HTTPSampler.port"></stringProp>
+                <stringProp name="HTTPSampler.protocol"></stringProp>
+                <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                <stringProp name="HTTPSampler.path">/tasks/${taskIdSRLink}</stringProp>
+                <stringProp name="HTTPSampler.method">GET</stringProp>
+                <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              </HTTPSamplerProxy>
+              <hashTree>
+                <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="SR auth" enabled="true">
+                  <collectionProp name="HeaderManager.headers">
+                    <elementProp name="authorization" elementType="Header">
+                      <stringProp name="Header.name">authorization</stringProp>
+                      <stringProp name="Header.value">Bearer ${SRAccessToken}</stringProp>
+                    </elementProp>
+                  </collectionProp>
+                </HeaderManager>
+                <hashTree/>
+                <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="SR link result compare" enabled="true">
+                  <stringProp name="JSON_PATH">$.result</stringProp>
+                  <stringProp name="EXPECTED_VALUE"></stringProp>
+                  <boolProp name="JSONVALIDATION">false</boolProp>
+                  <boolProp name="EXPECT_NULL">false</boolProp>
+                  <boolProp name="INVERT">false</boolProp>
+                  <boolProp name="ISREGEX">true</boolProp>
+                </JSONPathAssertion>
+                <hashTree/>
+              </hashTree>
+            </hashTree>
+          </hashTree>
+          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="User creation(user side)" enabled="true">
+            <boolProp name="TransactionController.includeTimers">false</boolProp>
+            <boolProp name="TransactionController.parent">false</boolProp>
+          </TransactionController>
+          <hashTree>
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Generate user hedera data" enabled="true">
+              <boolProp name="TransactionController.parent">false</boolProp>
+              <boolProp name="TransactionController.includeTimers">false</boolProp>
+            </TransactionController>
+            <hashTree>
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Register user" enabled="true">
+                <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                  <collectionProp name="Arguments.arguments">
+                    <elementProp name="" elementType="HTTPArgument">
+                      <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                      <stringProp name="Argument.value">{&#xd;
+  &quot;username&quot;: &quot;${user_username}&quot;,&#xd;
+  &quot;password&quot;: &quot;test&quot;,&#xd;
+  &quot;password_confirmation&quot;: &quot;test&quot;,&#xd;
+  &quot;role&quot;: &quot;USER&quot;&#xd;
+}</stringProp>
+                      <stringProp name="Argument.metadata">=</stringProp>
+                    </elementProp>
+                  </collectionProp>
+                </elementProp>
+                <stringProp name="HTTPSampler.domain"></stringProp>
+                <stringProp name="HTTPSampler.port"></stringProp>
+                <stringProp name="HTTPSampler.protocol"></stringProp>
+                <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                <stringProp name="HTTPSampler.path">/accounts/register</stringProp>
+                <stringProp name="HTTPSampler.method">POST</stringProp>
+                <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              </HTTPSamplerProxy>
+              <hashTree>
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Refresh Token" enabled="true">
+                  <stringProp name="JSONPostProcessor.referenceNames">SRRefreshToken</stringProp>
+                  <stringProp name="JSONPostProcessor.jsonPathExprs">$.refreshToken</stringProp>
+                  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                </JSONPostProcessor>
+                <hashTree/>
+              </hashTree>
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login by SR OS" enabled="true">
+                <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                  <collectionProp name="Arguments.arguments">
+                    <elementProp name="" elementType="HTTPArgument">
+                      <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                      <stringProp name="Argument.value">{&#xd;
+  &quot;username&quot;: &quot;${sr_username}&quot;,&#xd;
+  &quot;password&quot;: &quot;test&quot;&#xd;
+}</stringProp>
+                      <stringProp name="Argument.metadata">=</stringProp>
+                    </elementProp>
+                  </collectionProp>
+                </elementProp>
+                <stringProp name="HTTPSampler.domain"></stringProp>
+                <stringProp name="HTTPSampler.port"></stringProp>
+                <stringProp name="HTTPSampler.protocol"></stringProp>
+                <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                <stringProp name="HTTPSampler.path">/accounts/login</stringProp>
+                <stringProp name="HTTPSampler.method">POST</stringProp>
+                <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              </HTTPSamplerProxy>
+              <hashTree>
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract OS SR Refresh Token" enabled="true">
+                  <stringProp name="JSONPostProcessor.referenceNames">OSSRRefreshToken</stringProp>
+                  <stringProp name="JSONPostProcessor.jsonPathExprs">$.refreshToken</stringProp>
+                  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                </JSONPostProcessor>
+                <hashTree/>
+              </hashTree>
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get Access Token" enabled="true">
+                <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                  <collectionProp name="Arguments.arguments">
+                    <elementProp name="" elementType="HTTPArgument">
+                      <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                      <stringProp name="Argument.value">{&#xd;
+  &quot;refreshToken&quot;: &quot;${OSSRRefreshToken}&quot;&#xd;
+}</stringProp>
+                      <stringProp name="Argument.metadata">=</stringProp>
+                    </elementProp>
+                  </collectionProp>
+                </elementProp>
+                <stringProp name="HTTPSampler.domain"></stringProp>
+                <stringProp name="HTTPSampler.port"></stringProp>
+                <stringProp name="HTTPSampler.protocol"></stringProp>
+                <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                <stringProp name="HTTPSampler.path">/accounts/access-token</stringProp>
+                <stringProp name="HTTPSampler.method">POST</stringProp>
+                <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              </HTTPSamplerProxy>
+              <hashTree>
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Access Token" enabled="true">
+                  <stringProp name="JSONPostProcessor.referenceNames">OSSRAccessToken</stringProp>
+                  <stringProp name="JSONPostProcessor.jsonPathExprs">$.accessToken</stringProp>
+                  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                </JSONPostProcessor>
+                <hashTree/>
+              </hashTree>
+              <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="OSSR auth" enabled="true">
+                <collectionProp name="HeaderManager.headers">
+                  <elementProp name="authorization" elementType="Header">
+                    <stringProp name="Header.name">authorization</stringProp>
+                    <stringProp name="Header.value">Bearer ${OSSRAccessToken}</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </HeaderManager>
+              <hashTree/>
+              <eu.luminis.jmeter.wssampler.OpenWebSocketSampler guiclass="eu.luminis.jmeter.wssampler.OpenWebSocketSamplerGui" testclass="eu.luminis.jmeter.wssampler.OpenWebSocketSampler" testname="WS open for user key gen" enabled="true">
+                <boolProp name="TLS">false</boolProp>
+<<<<<<< HEAD
+                <stringProp name="server">${OS}</stringProp>
+                <stringProp name="port">${PORT}</stringProp>
+=======
+                <stringProp name="server">localhost</stringProp>
+                <stringProp name="port">${PORT_OS_WS}</stringProp>
+>>>>>>> 3f627535969f492cb568e81f46ed531e7bfe1a01
+                <stringProp name="path">/ws/?token=${OSSRAccessToken}</stringProp>
+                <stringProp name="connectTimeout">300000</stringProp>
+                <stringProp name="readTimeout">6000</stringProp>
+              </eu.luminis.jmeter.wssampler.OpenWebSocketSampler>
+              <hashTree/>
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Generate user keys" enabled="true">
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+                  <collectionProp name="Arguments.arguments"/>
+                </elementProp>
+                <stringProp name="HTTPSampler.domain"></stringProp>
+                <stringProp name="HTTPSampler.port"></stringProp>
+                <stringProp name="HTTPSampler.protocol"></stringProp>
+                <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                <stringProp name="HTTPSampler.path">/demo/push/random-key</stringProp>
+                <stringProp name="HTTPSampler.method">GET</stringProp>
+                <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              </HTTPSamplerProxy>
+              <hashTree>
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Task Id" enabled="true">
+                  <stringProp name="JSONPostProcessor.referenceNames">taskIdUserKeys</stringProp>
+                  <stringProp name="JSONPostProcessor.jsonPathExprs">$.taskId</stringProp>
+                  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                </JSONPostProcessor>
+                <hashTree/>
+              </hashTree>
+              <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While user key gen" enabled="true">
+                <stringProp name="WhileController.condition">${__javaScript(&quot;${operationStatusUser}&quot; != &quot;Operation completed&quot;,)}</stringProp>
+              </WhileController>
+              <hashTree>
+                <eu.luminis.jmeter.wssampler.PingPongSampler guiclass="eu.luminis.jmeter.wssampler.PingPongSamplerGui" testclass="eu.luminis.jmeter.wssampler.PingPongSampler" testname="WS PP user key gen" enabled="true">
+                  <stringProp name="type">Pong</stringProp>
+                  <stringProp name="readTimeout">6000</stringProp>
+                </eu.luminis.jmeter.wssampler.PingPongSampler>
+                <hashTree/>
+                <eu.luminis.jmeter.wssampler.SingleReadWebSocketSampler guiclass="eu.luminis.jmeter.wssampler.SingleReadWebSocketSamplerGui" testclass="eu.luminis.jmeter.wssampler.SingleReadWebSocketSampler" testname="WS read user key gen result" enabled="true">
+                  <boolProp name="TLS">false</boolProp>
+                  <stringProp name="server"></stringProp>
+                  <stringProp name="port">80</stringProp>
+                  <stringProp name="path"></stringProp>
+                  <stringProp name="connectTimeout">20000</stringProp>
+                  <stringProp name="dataType">Text</stringProp>
+                  <boolProp name="createNewConnection">false</boolProp>
+                  <stringProp name="readTimeout">40000</stringProp>
+                  <boolProp name="optional">true</boolProp>
+                </eu.luminis.jmeter.wssampler.SingleReadWebSocketSampler>
+                <hashTree>
+                  <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Get status user key gen" enabled="true">
+                    <stringProp name="JSONPostProcessor.referenceNames">operationStatusUser</stringProp>
+                    <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.message</stringProp>
+                    <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+                  </JSONPostProcessor>
+                  <hashTree/>
+                  <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Get user key gen error" enabled="true">
+                    <stringProp name="JSONPostProcessor.referenceNames">userKeyGenError</stringProp>
+                    <stringProp name="JSONPostProcessor.jsonPathExprs">$..error.code</stringProp>
+                    <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+                    <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                  </JSONPostProcessor>
+                  <hashTree/>
+                  <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+                    <collectionProp name="Asserion.test_strings">
+                      <stringProp name="1023286998">NOT_FOUND</stringProp>
+                    </collectionProp>
+                    <stringProp name="Assertion.custom_message"></stringProp>
+                    <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+                    <boolProp name="Assertion.assume_success">false</boolProp>
+                    <intProp name="Assertion.test_type">8</intProp>
+                    <stringProp name="Assertion.scope">variable</stringProp>
+                    <stringProp name="Scope.variable">userKeyGenError</stringProp>
+                  </ResponseAssertion>
+                  <hashTree/>
+                </hashTree>
+              </hashTree>
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get user keys" enabled="true">
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+                  <collectionProp name="Arguments.arguments"/>
+                </elementProp>
+                <stringProp name="HTTPSampler.domain"></stringProp>
+                <stringProp name="HTTPSampler.port"></stringProp>
+                <stringProp name="HTTPSampler.protocol"></stringProp>
+                <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                <stringProp name="HTTPSampler.path">/tasks/${taskIdUserKeys}</stringProp>
+                <stringProp name="HTTPSampler.method">GET</stringProp>
+                <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              </HTTPSamplerProxy>
+              <hashTree>
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract user id" enabled="true">
+                  <stringProp name="JSONPostProcessor.referenceNames">user_hedera_id</stringProp>
+                  <stringProp name="JSONPostProcessor.jsonPathExprs">$.result.id</stringProp>
+                  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                </JSONPostProcessor>
+                <hashTree/>
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract user key" enabled="true">
+                  <stringProp name="JSONPostProcessor.referenceNames">user_hedera_key</stringProp>
+                  <stringProp name="JSONPostProcessor.jsonPathExprs">$.result.key</stringProp>
+                  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                </JSONPostProcessor>
+                <hashTree/>
+              </hashTree>
+            </hashTree>
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Link user" enabled="true">
+              <boolProp name="TransactionController.parent">false</boolProp>
+              <boolProp name="TransactionController.includeTimers">false</boolProp>
+            </TransactionController>
+            <hashTree>
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login by user" enabled="true">
+                <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                  <collectionProp name="Arguments.arguments">
+                    <elementProp name="" elementType="HTTPArgument">
+                      <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                      <stringProp name="Argument.value">{&#xd;
+  &quot;username&quot;:&quot;${user_username}&quot;,&#xd;
+  &quot;password&quot;:&quot;test&quot;&#xd;
+}</stringProp>
+                      <stringProp name="Argument.metadata">=</stringProp>
+                    </elementProp>
+                  </collectionProp>
+                </elementProp>
+                <stringProp name="HTTPSampler.domain"></stringProp>
+                <stringProp name="HTTPSampler.port"></stringProp>
+                <stringProp name="HTTPSampler.protocol"></stringProp>
+                <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                <stringProp name="HTTPSampler.path">/accounts/login</stringProp>
+                <stringProp name="HTTPSampler.method">POST</stringProp>
+                <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              </HTTPSamplerProxy>
+              <hashTree>
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Refresh Token" enabled="true">
+                  <stringProp name="JSONPostProcessor.referenceNames">userRefreshToken</stringProp>
+                  <stringProp name="JSONPostProcessor.jsonPathExprs">$.refreshToken</stringProp>
+                  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                </JSONPostProcessor>
+                <hashTree/>
+              </hashTree>
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get User Access Token" enabled="true">
+                <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                  <collectionProp name="Arguments.arguments">
+                    <elementProp name="" elementType="HTTPArgument">
+                      <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                      <stringProp name="Argument.value">{&#xd;
+  &quot;refreshToken&quot;: &quot;${userRefreshToken}&quot;&#xd;
+}</stringProp>
+                      <stringProp name="Argument.metadata">=</stringProp>
+                    </elementProp>
+                  </collectionProp>
+                </elementProp>
+                <stringProp name="HTTPSampler.domain"></stringProp>
+                <stringProp name="HTTPSampler.port"></stringProp>
+                <stringProp name="HTTPSampler.protocol"></stringProp>
+                <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                <stringProp name="HTTPSampler.path">/accounts/access-token</stringProp>
+                <stringProp name="HTTPSampler.method">POST</stringProp>
+                <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              </HTTPSamplerProxy>
+              <hashTree>
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Access Token" enabled="true">
+                  <stringProp name="JSONPostProcessor.referenceNames">userAccessToken</stringProp>
+                  <stringProp name="JSONPostProcessor.jsonPathExprs">$.accessToken</stringProp>
+                  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                </JSONPostProcessor>
+                <hashTree/>
+              </hashTree>
+              <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="User auth" enabled="true">
+                <collectionProp name="HeaderManager.headers">
+                  <elementProp name="authorization" elementType="Header">
+                    <stringProp name="Header.name">authorization</stringProp>
+                    <stringProp name="Header.value">Bearer ${userAccessToken}</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </HeaderManager>
+              <hashTree/>
+              <eu.luminis.jmeter.wssampler.OpenWebSocketSampler guiclass="eu.luminis.jmeter.wssampler.OpenWebSocketSamplerGui" testclass="eu.luminis.jmeter.wssampler.OpenWebSocketSampler" testname="WS open for user link" enabled="true">
+<<<<<<< HEAD
+                <boolProp name="TLS">false</boolProp>
+                <stringProp name="server">${OS}</stringProp>
+                <stringProp name="port">${PORT}</stringProp>
+=======
+                <boolProp name="TLS">true</boolProp>
+                <stringProp name="server">dev.guardianservice.app</stringProp>
+                <stringProp name="port">${PORT_MGS_WS}</stringProp>
+>>>>>>> 3f627535969f492cb568e81f46ed531e7bfe1a01
+                <stringProp name="path">/ws/?token=${userAccessToken}</stringProp>
+                <stringProp name="connectTimeout">300000</stringProp>
+                <stringProp name="readTimeout">10000</stringProp>
+              </eu.luminis.jmeter.wssampler.OpenWebSocketSampler>
+              <hashTree/>
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get SR DID" enabled="true">
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+                  <collectionProp name="Arguments.arguments"/>
+                </elementProp>
+                <stringProp name="HTTPSampler.domain"></stringProp>
+                <stringProp name="HTTPSampler.port"></stringProp>
+                <stringProp name="HTTPSampler.protocol"></stringProp>
+                <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                <stringProp name="HTTPSampler.path">/accounts/standard-registries</stringProp>
+                <stringProp name="HTTPSampler.method">GET</stringProp>
+                <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              </HTTPSamplerProxy>
+              <hashTree>
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract srs did" enabled="true">
+                  <stringProp name="JSONPostProcessor.referenceNames">srsDid</stringProp>
+                  <stringProp name="JSONPostProcessor.jsonPathExprs">$</stringProp>
+                  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                </JSONPostProcessor>
+                <hashTree/>
+                <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Save SR did" enabled="true">
+                  <stringProp name="scriptLanguage">javascript</stringProp>
+                  <stringProp name="parameters"></stringProp>
+                  <stringProp name="filename"></stringProp>
+                  <stringProp name="cacheKey">true</stringProp>
+                  <stringProp name="script">var obj = JSON.parse(vars.get(&quot;srsDid&quot;))
+var srDid = &quot;default&quot;
+for(var i = 0; i&lt; obj.length; i++) {
+    	if(obj[i].username==&quot;${sr_username}&quot;){
+        srDid=obj[i].did}
+}
+vars.put(&apos;srDid&apos;, srDid)</stringProp>
+                </JSR223PostProcessor>
+                <hashTree/>
+              </hashTree>
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Link user profile" enabled="true">
+                <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                  <collectionProp name="Arguments.arguments">
+                    <elementProp name="" elementType="HTTPArgument">
+                      <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                      <stringProp name="Argument.value">{&#xd;
+  &quot;hederaAccountId&quot;: &quot;${user_hedera_id}&quot;,&#xd;
+  &quot;hederaAccountKey&quot;: &quot;${user_hedera_key}&quot;,&#xd;
+  &quot;secret&quot;: &quot;&quot;,&#xd;
+  &quot;parent&quot;: &quot;${srDid}&quot;&#xd;
+}</stringProp>
+                      <stringProp name="Argument.metadata">=</stringProp>
+                    </elementProp>
+                  </collectionProp>
+                </elementProp>
+                <stringProp name="HTTPSampler.domain"></stringProp>
+                <stringProp name="HTTPSampler.port"></stringProp>
+                <stringProp name="HTTPSampler.protocol"></stringProp>
+                <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                <stringProp name="HTTPSampler.path">/profiles/push/${user_username}</stringProp>
+                <stringProp name="HTTPSampler.method">PUT</stringProp>
+                <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              </HTTPSamplerProxy>
+              <hashTree>
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Task Id" enabled="true">
+                  <stringProp name="JSONPostProcessor.referenceNames">taskIdUserLink</stringProp>
+                  <stringProp name="JSONPostProcessor.jsonPathExprs">$.taskId</stringProp>
+                  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                </JSONPostProcessor>
+                <hashTree/>
+              </hashTree>
+              <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While user link" enabled="true">
+                <stringProp name="WhileController.condition">${__javaScript(&quot;${messageTypeUser}&quot; != &quot;SUCCESS&quot;,)}</stringProp>
+              </WhileController>
+              <hashTree>
+                <eu.luminis.jmeter.wssampler.PingPongSampler guiclass="eu.luminis.jmeter.wssampler.PingPongSamplerGui" testclass="eu.luminis.jmeter.wssampler.PingPongSampler" testname="WS PP user link" enabled="true">
+                  <stringProp name="type">Pong</stringProp>
+                  <stringProp name="readTimeout">6000</stringProp>
+                </eu.luminis.jmeter.wssampler.PingPongSampler>
+                <hashTree/>
+                <eu.luminis.jmeter.wssampler.SingleReadWebSocketSampler guiclass="eu.luminis.jmeter.wssampler.SingleReadWebSocketSamplerGui" testclass="eu.luminis.jmeter.wssampler.SingleReadWebSocketSampler" testname="WS read user link result" enabled="true">
+                  <boolProp name="TLS">false</boolProp>
+                  <stringProp name="server"></stringProp>
+                  <stringProp name="port">80</stringProp>
+                  <stringProp name="path"></stringProp>
+                  <stringProp name="connectTimeout">20000</stringProp>
+                  <stringProp name="dataType">Text</stringProp>
+                  <boolProp name="createNewConnection">false</boolProp>
+                  <stringProp name="readTimeout">40000</stringProp>
+                  <boolProp name="optional">true</boolProp>
+                </eu.luminis.jmeter.wssampler.SingleReadWebSocketSampler>
+                <hashTree>
+                  <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Get user link result" enabled="true">
+                    <stringProp name="JSONPostProcessor.referenceNames">messageTypeUser</stringProp>
+                    <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.type</stringProp>
+                    <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+                  </JSONPostProcessor>
+                  <hashTree/>
+                  <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Get user link error" enabled="true">
+                    <stringProp name="JSONPostProcessor.referenceNames">userLinkError</stringProp>
+                    <stringProp name="JSONPostProcessor.jsonPathExprs">$..error.code</stringProp>
+                    <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+                    <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                  </JSONPostProcessor>
+                  <hashTree/>
+                  <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+                    <collectionProp name="Asserion.test_strings">
+                      <stringProp name="1023286998">NOT_FOUND</stringProp>
+                    </collectionProp>
+                    <stringProp name="Assertion.custom_message"></stringProp>
+                    <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+                    <boolProp name="Assertion.assume_success">false</boolProp>
+                    <intProp name="Assertion.test_type">8</intProp>
+                    <stringProp name="Assertion.scope">variable</stringProp>
+                    <stringProp name="Scope.variable">userLinkError</stringProp>
+                  </ResponseAssertion>
+                  <hashTree/>
+                </hashTree>
+              </hashTree>
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Verify link" enabled="true">
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+                  <collectionProp name="Arguments.arguments"/>
+                </elementProp>
+                <stringProp name="HTTPSampler.domain"></stringProp>
+                <stringProp name="HTTPSampler.port"></stringProp>
+                <stringProp name="HTTPSampler.protocol"></stringProp>
+                <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                <stringProp name="HTTPSampler.path">/tasks/${taskIdUserLink}</stringProp>
+                <stringProp name="HTTPSampler.method">GET</stringProp>
+                <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              </HTTPSamplerProxy>
+              <hashTree>
+                <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="User link result compare" enabled="true">
+                  <stringProp name="JSON_PATH">$.result</stringProp>
+                  <stringProp name="EXPECTED_VALUE"></stringProp>
+                  <boolProp name="JSONVALIDATION">false</boolProp>
+                  <boolProp name="EXPECT_NULL">false</boolProp>
+                  <boolProp name="INVERT">false</boolProp>
+                  <boolProp name="ISREGEX">true</boolProp>
+                </JSONPathAssertion>
+                <hashTree/>
+              </hashTree>
+            </hashTree>
+          </hashTree>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Policy workflow" enabled="false">
+        <stringProp name="ThreadGroup.on_sample_error">stopthread</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config" enabled="true">
+          <stringProp name="delimiter">;</stringProp>
+          <stringProp name="fileEncoding"></stringProp>
+          <stringProp name="filename">userdatashort.csv</stringProp>
+          <boolProp name="ignoreFirstLine">false</boolProp>
+          <boolProp name="quotedData">false</boolProp>
+          <boolProp name="recycle">true</boolProp>
+          <stringProp name="shareMode">shareMode.all</stringProp>
+          <boolProp name="stopThread">false</boolProp>
+          <stringProp name="variableNames">sr_username,sr_pass,user_username,user_pass</stringProp>
+        </CSVDataSet>
+        <hashTree/>
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Policy import and dry run" enabled="true">
+          <boolProp name="TransactionController.parent">false</boolProp>
+          <boolProp name="TransactionController.includeTimers">false</boolProp>
+        </TransactionController>
+        <hashTree>
+          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests for Import" enabled="true">
+            <boolProp name="TransactionController.parent">false</boolProp>
+            <boolProp name="TransactionController.includeTimers">false</boolProp>
+          </TransactionController>
+          <hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login by SR" enabled="true">
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&#xd;
+  &quot;username&quot;:&quot;${sr_username}&quot;,&#xd;
+  &quot;password&quot;: &quot;test&quot;&#xd;
+}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain"></stringProp>
+              <stringProp name="HTTPSampler.port"></stringProp>
+              <stringProp name="HTTPSampler.protocol"></stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">/accounts/login</stringProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Refresh Token" enabled="true">
+                <stringProp name="JSONPostProcessor.referenceNames">SRRefreshToken</stringProp>
+                <stringProp name="JSONPostProcessor.jsonPathExprs">$.refreshToken</stringProp>
+                <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+              </JSONPostProcessor>
+              <hashTree/>
+            </hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get SR Access Token" enabled="true">
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&#xd;
+  &quot;refreshToken&quot;: &quot;${SRRefreshToken}&quot;&#xd;
+}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain"></stringProp>
+              <stringProp name="HTTPSampler.port"></stringProp>
+              <stringProp name="HTTPSampler.protocol"></stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">/accounts/access-token</stringProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Access Token" enabled="true">
+                <stringProp name="JSONPostProcessor.referenceNames">SRAccessToken</stringProp>
+                <stringProp name="JSONPostProcessor.jsonPathExprs">$.accessToken</stringProp>
+                <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+              </JSONPostProcessor>
+              <hashTree/>
+            </hashTree>
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="SR auth" enabled="true">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="authorization" elementType="Header">
+                  <stringProp name="Header.name">authorization</stringProp>
+                  <stringProp name="Header.value">Bearer ${SRAccessToken}</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
+            <hashTree/>
+            <eu.luminis.jmeter.wssampler.OpenWebSocketSampler guiclass="eu.luminis.jmeter.wssampler.OpenWebSocketSamplerGui" testclass="eu.luminis.jmeter.wssampler.OpenWebSocketSampler" testname="WS open for policy import" enabled="true">
+<<<<<<< HEAD
+              <boolProp name="TLS">false</boolProp>
+              <stringProp name="server">${OS}</stringProp>
+              <stringProp name="port">${PORT}</stringProp>
+=======
+              <boolProp name="TLS">true</boolProp>
+              <stringProp name="server">dev.guardianservice.app</stringProp>
+              <stringProp name="port">${PORT_MGS_WS}</stringProp>
+>>>>>>> 3f627535969f492cb568e81f46ed531e7bfe1a01
+              <stringProp name="path">/ws/?token=${SRAccessToken}</stringProp>
+              <stringProp name="connectTimeout">300000</stringProp>
+              <stringProp name="readTimeout">6000</stringProp>
+            </eu.luminis.jmeter.wssampler.OpenWebSocketSampler>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Import Policy" enabled="true">
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&#xd;
+<<<<<<< HEAD
+  &quot;messageId&quot;: &quot;1707126011.005978889&quot;&#xd;
+=======
+  &quot;messageId&quot;: &quot;1719317583.251104003&quot;&#xd;
+>>>>>>> 3f627535969f492cb568e81f46ed531e7bfe1a01
+}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain"></stringProp>
+              <stringProp name="HTTPSampler.port"></stringProp>
+              <stringProp name="HTTPSampler.protocol"></stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">/policies/push/import/message</stringProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Task Id" enabled="true">
+                <stringProp name="JSONPostProcessor.referenceNames">taskIdImportPolicy</stringProp>
+                <stringProp name="JSONPostProcessor.jsonPathExprs">$.taskId</stringProp>
+                <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+              </JSONPostProcessor>
+              <hashTree/>
+            </hashTree>
+            <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While policy importing" enabled="true">
+              <stringProp name="WhileController.condition">${__javaScript(&quot;${importStatusPolicy}&quot; != &quot;SUCCESS&quot;,)}</stringProp>
+            </WhileController>
+            <hashTree>
+              <eu.luminis.jmeter.wssampler.PingPongSampler guiclass="eu.luminis.jmeter.wssampler.PingPongSamplerGui" testclass="eu.luminis.jmeter.wssampler.PingPongSampler" testname="WS PP policy import" enabled="true">
+                <stringProp name="type">Pong</stringProp>
+                <stringProp name="readTimeout">6000</stringProp>
+              </eu.luminis.jmeter.wssampler.PingPongSampler>
+              <hashTree/>
+              <eu.luminis.jmeter.wssampler.SingleReadWebSocketSampler guiclass="eu.luminis.jmeter.wssampler.SingleReadWebSocketSamplerGui" testclass="eu.luminis.jmeter.wssampler.SingleReadWebSocketSampler" testname="WS read policy import result" enabled="true">
+                <boolProp name="TLS">false</boolProp>
+                <stringProp name="server"></stringProp>
+                <stringProp name="port">80</stringProp>
+                <stringProp name="path"></stringProp>
+                <stringProp name="connectTimeout">20000</stringProp>
+                <stringProp name="dataType">Text</stringProp>
+                <boolProp name="createNewConnection">false</boolProp>
+                <stringProp name="readTimeout">40000</stringProp>
+                <boolProp name="optional">true</boolProp>
+              </eu.luminis.jmeter.wssampler.SingleReadWebSocketSampler>
+              <hashTree>
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Get policy import result" enabled="true">
+                  <stringProp name="JSONPostProcessor.referenceNames">importStatusPolicy</stringProp>
+                  <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.type</stringProp>
+                  <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+                  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                </JSONPostProcessor>
+                <hashTree/>
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Get import policy error" enabled="true">
+                  <stringProp name="JSONPostProcessor.referenceNames">importPolicyError</stringProp>
+                  <stringProp name="JSONPostProcessor.jsonPathExprs">$..error.code</stringProp>
+                  <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+                  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+                </JSONPostProcessor>
+                <hashTree/>
+                <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+                  <collectionProp name="Asserion.test_strings">
+                    <stringProp name="1023286998">NOT_FOUND</stringProp>
+                  </collectionProp>
+                  <stringProp name="Assertion.custom_message"></stringProp>
+                  <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+                  <boolProp name="Assertion.assume_success">false</boolProp>
+                  <intProp name="Assertion.test_type">8</intProp>
+                  <stringProp name="Assertion.scope">variable</stringProp>
+                  <stringProp name="Scope.variable">importPolicyError</stringProp>
+                </ResponseAssertion>
+                <hashTree/>
+              </hashTree>
+            </hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get policy id" enabled="true">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+                <collectionProp name="Arguments.arguments"/>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain"></stringProp>
+              <stringProp name="HTTPSampler.port"></stringProp>
+              <stringProp name="HTTPSampler.protocol"></stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">/tasks/${taskIdImportPolicy}</stringProp>
+              <stringProp name="HTTPSampler.method">GET</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract policy id" enabled="true">
+                <stringProp name="JSONPostProcessor.referenceNames">policyId</stringProp>
+                <stringProp name="JSONPostProcessor.jsonPathExprs">$.result.policyId</stringProp>
+                <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+              </JSONPostProcessor>
+              <hashTree/>
+            </hashTree>
+          </hashTree>
+          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests for DryRun" enabled="true">
+            <boolProp name="TransactionController.parent">false</boolProp>
+            <boolProp name="TransactionController.includeTimers">false</boolProp>
+          </TransactionController>
+          <hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login by SR" enabled="true">
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&#xd;
+  &quot;username&quot;:&quot;${sr_username}&quot;,&#xd;
+  &quot;password&quot;:&quot;${sr_pass}&quot;&#xd;
+}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain"></stringProp>
+              <stringProp name="HTTPSampler.port"></stringProp>
+              <stringProp name="HTTPSampler.protocol"></stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">/accounts/login</stringProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Refresh Token" enabled="true">
+                <stringProp name="JSONPostProcessor.referenceNames">SRRefreshToken</stringProp>
+                <stringProp name="JSONPostProcessor.jsonPathExprs">$.refreshToken</stringProp>
+                <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+              </JSONPostProcessor>
+              <hashTree/>
+            </hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get SR Access Token" enabled="true">
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&#xd;
+  &quot;refreshToken&quot;: &quot;${SRRefreshToken}&quot;&#xd;
+}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain"></stringProp>
+              <stringProp name="HTTPSampler.port"></stringProp>
+              <stringProp name="HTTPSampler.protocol"></stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">/accounts/access-token</stringProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Access Token" enabled="true">
+                <stringProp name="JSONPostProcessor.referenceNames">SRAccessToken</stringProp>
+                <stringProp name="JSONPostProcessor.jsonPathExprs">$.accessToken</stringProp>
+                <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+              </JSONPostProcessor>
+              <hashTree/>
+            </hashTree>
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="SR auth" enabled="true">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="authorization" elementType="Header">
+                  <stringProp name="Header.name">authorization</stringProp>
+                  <stringProp name="Header.value">Bearer ${SRAccessToken}</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Dry Run Policy" enabled="true">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+                <collectionProp name="Arguments.arguments"/>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain"></stringProp>
+              <stringProp name="HTTPSampler.port"></stringProp>
+              <stringProp name="HTTPSampler.protocol"></stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">/policies/${policyId}/dry-run</stringProp>
+              <stringProp name="HTTPSampler.method">PUT</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+                <collectionProp name="Asserion.test_strings">
+                  <stringProp name="49586">200</stringProp>
+                </collectionProp>
+                <stringProp name="Assertion.custom_message"></stringProp>
+                <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+                <boolProp name="Assertion.assume_success">false</boolProp>
+                <intProp name="Assertion.test_type">8</intProp>
+              </ResponseAssertion>
+              <hashTree/>
+            </hashTree>
+          </hashTree>
+        </hashTree>
+      </hashTree>
+      <DebugPostProcessor guiclass="TestBeanGUI" testclass="DebugPostProcessor" testname="Debug PostProcessor" enabled="true">
+        <boolProp name="displayJMeterProperties">false</boolProp>
+        <boolProp name="displayJMeterVariables">true</boolProp>
+        <boolProp name="displaySamplerProperties">false</boolProp>
+        <boolProp name="displaySystemProperties">false</boolProp>
+      </DebugPostProcessor>
+      <hashTree/>
+      <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="false">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename">C:\Projects\testpt\PTtest\results_dry\result.csv</stringProp>
+      </ResultCollector>
+      <hashTree/>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
