@@ -12,6 +12,8 @@
 
 <div *ngIf="type == 'dropdown'" class="content-dropdown">
     <p-dropdown
+        class="guardian-dropdown"
+        panelStyleClass="guardian-dropdown-panel"
         [(ngModel)]="currentValue"
         [options]="options"
         optionLabel="name"

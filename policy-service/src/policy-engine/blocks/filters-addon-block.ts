@@ -1,12 +1,12 @@
-import { DataSourceAddon } from '../helpers/decorators/data-source-addon.js';
 import { BlockActionError } from '../errors/index.js';
+import { DataSourceAddon } from '../helpers/decorators/data-source-addon.js';
 import { findOptions } from '../helpers/find-options.js';
+import { PolicyUtils, QueryType } from '../helpers/utils.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyAddonBlock } from '../policy-engine.interface.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
-import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { PolicyUtils, QueryType } from '../helpers/utils.js';
 
 /**
  * Filters addon
@@ -27,6 +27,17 @@ import { PolicyUtils, QueryType } from '../helpers/utils.js';
     variables: []
 })
 export class FiltersAddonBlock {
+    private readonly previousState: { [key: string]: any } = {};
+    private readonly previousFilters: { [key: string]: any } = {};
+
+    /**
+     * Block state
+     * @private
+     */
+    private readonly state: { [key: string]: any } = {
+        lastData: null,
+        lastValue: null
+    };
 
     /**
      * Before init callback
@@ -40,18 +51,6 @@ export class FiltersAddonBlock {
         }
     }
 
-    private readonly previousState: { [key: string]: any } = {};
-    private readonly previousFilters: { [key: string]: any } = {};
-
-    /**
-     * Block state
-     * @private
-     */
-    private readonly state: { [key: string]: any } = {
-        lastData: null,
-        lastValue: null
-    };
-
     private addQuery(filter: any, value: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const query = PolicyUtils.parseQuery(ref.options.queryType || QueryType.eq, value);
@@ -59,6 +58,34 @@ export class FiltersAddonBlock {
             filter[ref.options.field] = query.expression;
         } else {
             throw new BlockActionError(`Unknown filter type: ${filter.type}`, ref.blockType, ref.uuid);
+        }
+    }
+
+    private checkValues(blockState: any, value: any): boolean {
+        if (Array.isArray(blockState.lastData)) {
+            const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+            const query = PolicyUtils.parseQuery(ref.options.queryType || QueryType.eq, value);
+            const itemValues = query.value;
+            if (Array.isArray(itemValues)) {
+                for (const itemValue of itemValues) {
+                    // tslint:disable-next-line:triple-equals
+                    const v = blockState.lastData.find((e: any) => e.value == itemValue)
+                    if (!v) {
+                        return false;
+                    }
+                }
+                return true;
+            } else {
+                for (const e of blockState.lastData) {
+                    // tslint:disable-next-line:triple-equals
+                    if (e.value == itemValues) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        } else {
+            return false;
         }
     }
 
@@ -92,6 +119,9 @@ export class FiltersAddonBlock {
                 this.state[user.id] = blockState;
             } else {
                 filterValue = '';
+            }
+            if (ref.options.queryType === 'user_defined') {
+                filterValue = 'eq:' + filterValue;
             }
 
             this.addQuery(filters, filterValue)
@@ -209,15 +239,7 @@ export class FiltersAddonBlock {
             if (!blockState.lastData) {
                 await this.getData(user);
             }
-            let itemValue: any = value;
-            if (ref.options.queryType === 'user_defined') {
-                const [, userValue] = PolicyUtils.parseFilterValue(value);
-                itemValue = userValue;
-            }
-
-            // tslint:disable-next-line:triple-equals
-            const selectItem = Array.isArray(blockState.lastData) ? blockState.lastData.find((e: any) => e.value == itemValue) : null;
-            if (selectItem) {
+            if (this.checkValues(blockState, value)) {
                 this.addQuery(filter, value);
             } else if (!ref.options.canBeEmpty) {
                 throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)

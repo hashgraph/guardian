@@ -1,11 +1,19 @@
-import { MessageBrokerChannel, MessageResponse, NatsService, NotificationHelper, PinoLogger, SecretManager, Users } from '@guardian/common';
+import {
+    MessageBrokerChannel,
+    MessageResponse,
+    NatsService,
+    NotificationHelper,
+    PinoLogger,
+    SecretManager,
+    Users
+} from '@guardian/common';
 import { ExternalMessageEvents, GenerateUUIDv4, ISignOptions, ITask, ITaskResult, WorkerEvents, WorkerTaskType } from '@guardian/interfaces';
+import { HederaSDKHelper, NetworkOptions } from './helpers/hedera-sdk-helper.js';
+import { IpfsClientClass } from './ipfs-client-class.js';
 import { AccountId, ContractFunctionParameters, ContractId, PrivateKey, TokenId } from '@hashgraph/sdk';
+import { HederaUtils } from './helpers/utils.js';
 import axios from 'axios';
 import process from 'process';
-import { HederaSDKHelper, NetworkOptions } from './helpers/hedera-sdk-helper.js';
-import { HederaUtils } from './helpers/utils.js';
-import { IpfsClientClass } from './ipfs-client-class.js';
 
 /**
  * Sleep helper
@@ -33,33 +41,78 @@ function getAnalytycsHeaders() {
  */
 export class Worker extends NatsService {
     /**
+     * Message queue name
+     */
+    public messageQueueName = 'workers-queue';
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'workers-queue-reply-' + GenerateUUIDv4();
+
+    /**
      * Old channel
      * @private
      */
     private channel: MessageBrokerChannel;
+
     /**
      * Ipfs client
      */
     private ipfsClient: IpfsClientClass;
+
     /**
      * Current task ID
      */
     private currentTaskId: string;
+
+    /**
+     * Worker in use
+     * @private
+     */
+    private _isInUse: boolean = false;
+
+    /**
+     * Worker in use getter
+     * @private
+     */
+    private get isInUse(): boolean {
+        return this._isInUse;
+    }
+
+    /**
+     * Worker in use setter
+     * @private
+     */
+    private set isInUse(v: boolean) {
+        this._isInUse = v;
+    }
+
     /**
      * Minimum priority
      * @private
      */
     private readonly minPriority: number;
+
     /**
      * Maximum priority
      * @private
      */
     private readonly maxPriority: number;
+
     /**
      * Task timeout
      * @private
      */
     private readonly taskTimeout: number;
+
+    /**
+     * Worker ID
+     * @private
+     */
+    //private readonly workerID: string;
+
     /**
      * Analytics Service
      * @private
@@ -88,32 +141,104 @@ export class Worker extends NatsService {
     }
 
     /**
-     * Worker in use
-     * @private
+     * Initialize worker
      */
-    private _isInUse: boolean = false;
+    public async init(): Promise<void> {
+        await super.init();
+        this.channel = new MessageBrokerChannel(this.connection, 'worker');
+        try {
+            await this.ipfsClient.createClient()
+        } catch (e) {
+            this.logger.error(`Could not create IPFS client instance. ${e.message}`, [this.workerID, 'WORKER'])
+        }
 
-    /**
-     * Worker in use getter
-     * @private
-     */
-    private get isInUse(): boolean {
-        return this._isInUse;
+        this.subscribe(WorkerEvents.GET_FREE_WORKERS, async (msg) => {
+            if (!this.isInUse) {
+                this.publish(msg.replySubject, {
+                    subject: [this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('.'),
+                    minPriority: this.minPriority,
+                    maxPriority: this.maxPriority
+                })
+            }
+        });
+
+        const runTask = async (task) => {
+            this.isInUse = true;
+            this.currentTaskId = task.id;
+
+            this.logger.info(`Task started: ${task.id}, ${task.type}`, [this.workerID, 'WORKER']);
+
+            const result = await this.processTaskWithTimeout(task);
+
+            try {
+                // await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('-'), result);
+                if (result?.error) {
+                    this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [this.workerID, 'WORKER']);
+                } else {
+                    this.logger.info(`Task completed: ${this.currentTaskId}`, [this.workerID, 'WORKER']);
+                }
+            } catch (error) {
+                this.logger.error(error.message, [this.workerID, 'WORKER']);
+                this.clearState();
+
+            }
+
+            const completeTask = async (data) => {
+                await this.publish(WorkerEvents.TASK_COMPLETE, data)
+            }
+            await completeTask(result);
+            await this.publish(WorkerEvents.WORKER_READY);
+            this.isInUse = false;
+        }
+
+        this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('.'), async (task) => {
+            if (!this.isInUse) {
+                runTask(task);
+
+                return new MessageResponse({
+                    result: true
+                })
+            }
+            return new MessageResponse({
+                result: false
+            })
+        })
+
+        this.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
+            try {
+                const ipfsStorageApiKey = msg?.ipfsStorageApiKey;
+                if (!ipfsStorageApiKey) {
+                    throw new Error('Ipfs storage api key setting is empty');
+                }
+                const [w3cKey, w3cProof] = ipfsStorageApiKey.split(';');
+                const ipfsClient = new IpfsClientClass(
+                    w3cKey,
+                    w3cProof
+                );
+                await ipfsClient.createClient();
+                this.w3cKey = w3cKey;
+                this.w3cProof = w3cProof;
+                this.ipfsClient = ipfsClient;
+                const secretManager = SecretManager.New();
+                await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY: ipfsStorageApiKey });
+            } catch (error) {
+                this.logger.error(`Update settings error, ${error.message}`, ['WORKER']);
+            }
+        });
+
+        HederaSDKHelper.setTransactionResponseCallback(async (operatorAccountId: string) => {
+            try {
+                const balance = await HederaSDKHelper.balanceRest(operatorAccountId);
+                await this.sendMessage('update-user-balance', {
+                    balance,
+                    unit: 'Hbar',
+                    operatorAccountId
+                }, false);
+            } catch (error) {
+                throw new Error(`Worker (${['api-gateway', 'update-user-balance'].join('.')}) send: ` + error);
+            }
+        })
     }
-
-    /**
-     * Worker in use setter
-     * @private
-     */
-    private set isInUse(v: boolean) {
-        this._isInUse = v;
-    }
-
-    /**
-     * Worker ID
-     * @private
-     */
-    //private readonly workerID: string;
 
     /**
      * Clear states
@@ -282,7 +407,6 @@ export class Worker extends NatsService {
                     client = new HederaSDKHelper(operatorId, operatorKey, dryRun, networkOptions);
                     const { topicId, buffer, submitKey, memo } = task.data;
                     result.data = await client.submitMessage(topicId, buffer, submitKey, memo, signOptions);
-                    client.destroy();
                     break;
                 }
 
@@ -425,7 +549,6 @@ export class Worker extends NatsService {
                         operatorKey,
                         adminKey,
                     } = task.data;
-
                     client = new HederaSDKHelper(operatorId, operatorKey, null, networkOptions);
                     result.data = await client.deleteToken(
                         TokenId.fromString(tokenId),
@@ -879,115 +1002,4 @@ export class Worker extends NatsService {
             }
         })
     }
-
-    /**
-     * Initialize worker
-     */
-    public async init(): Promise<void> {
-        await super.init();
-        this.channel = new MessageBrokerChannel(this.connection, 'worker');
-
-        try {
-            await this.ipfsClient.createClient()
-        } catch (e) {
-            this.logger.error(`Could not create IPFS client instance. ${e.message}`, [this.workerID, 'WORKER'])
-        }
-
-        this.subscribe(WorkerEvents.GET_FREE_WORKERS, async (msg) => {
-            if (!this.isInUse) {
-                this.publish(msg.replySubject, {
-                    subject: [this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('.'),
-                    minPriority: this.minPriority,
-                    maxPriority: this.maxPriority
-                })
-            }
-        });
-
-        const runTask = async (task) => {
-            this.isInUse = true;
-            this.currentTaskId = task.id;
-
-            this.logger.info(`Task started: ${task.id}, ${task.type}`, [this.workerID, 'WORKER']);
-
-            const result = await this.processTaskWithTimeout(task);
-
-            try {
-                // await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('-'), result);
-                if (result?.error) {
-                    this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [this.workerID, 'WORKER']);
-                } else {
-                    this.logger.info(`Task completed: ${this.currentTaskId}`, [this.workerID, 'WORKER']);
-                }
-            } catch (error) {
-                this.logger.error(error.message, [this.workerID, 'WORKER']);
-                this.clearState();
-
-            }
-
-            const completeTask = async (data) => {
-                await this.publish(WorkerEvents.TASK_COMPLETE, data)
-            }
-            await completeTask(result);
-            await this.publish(WorkerEvents.WORKER_READY);
-            this.isInUse = false;
-        }
-
-        this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('.'), async (task) => {
-            if (!this.isInUse) {
-                runTask(task);
-
-                return new MessageResponse({
-                    result: true
-                })
-            }
-            return new MessageResponse({
-                result: false
-            })
-        })
-
-        this.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
-            try {
-                const ipfsStorageApiKey = msg?.ipfsStorageApiKey;
-                if (!ipfsStorageApiKey) {
-                    throw new Error('Ipfs storage api key setting is empty');
-                }
-                const [w3cKey, w3cProof] = ipfsStorageApiKey.split(';');
-                const ipfsClient = new IpfsClientClass(
-                    w3cKey,
-                    w3cProof
-                );
-                await ipfsClient.createClient();
-                this.w3cKey = w3cKey;
-                this.w3cProof = w3cProof;
-                this.ipfsClient = ipfsClient;
-                const secretManager = SecretManager.New();
-                await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY: ipfsStorageApiKey });
-            } catch (error) {
-                this.logger.error(`Update settings error, ${error.message}`, ['WORKER']);
-            }
-        });
-
-        HederaSDKHelper.setTransactionResponseCallback(async (operatorAccountId: string) => {
-            try {
-                const balance = await HederaSDKHelper.balanceRest(operatorAccountId);
-                await this.sendMessage('update-user-balance', {
-                    balance,
-                    unit: 'Hbar',
-                    operatorAccountId
-                });
-            } catch (error) {
-                throw new Error(`Worker (${['api-gateway', 'update-user-balance'].join('.')}) send: ` + error);
-            }
-        })
-    }
-
-    /**
-     * Message queue name
-     */
-    public messageQueueName = 'workers-queue';
-    /**
-     * Reply subject
-     * @private
-     */
-    public replySubject = 'workers-queue-reply-' + GenerateUUIDv4();
 }

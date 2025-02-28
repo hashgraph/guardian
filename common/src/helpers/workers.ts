@@ -1,5 +1,5 @@
-import { ExternalMessageEvents, GenerateUUIDv4, HederaResponseCode, IActiveTask, ITask, QueueEvents, TimeoutError, WorkerEvents } from '@guardian/interfaces';
 import { Singleton } from '../decorators/singleton.js';
+import { ExternalMessageEvents, GenerateUUIDv4, HederaResponseCode, IActiveTask, ITask, QueueEvents, TimeoutError, WorkerEvents } from '@guardian/interfaces';
 import { Environment } from '../hedera-modules/index.js';
 import { NatsService } from '../mq/index.js';
 
@@ -71,34 +71,27 @@ export const NON_RETRYABLE_HEDERA_ERRORS = [
 @Singleton
 export class Workers extends NatsService {
     /**
-     * Check error message for retryable
-     * @param error Error
-     * @returns Is not retryable
-     */
-    public static isNotRetryableError(error: any) {
-        return typeof error === 'string'
-            && NON_RETRYABLE_HEDERA_ERRORS.some(code => error.indexOf(code) !== -1);
-    }
-
-    /**
      * Tasks sended to work
      * @private
      */
     private readonly tasksCallbacks: Map<string, IActiveTask> = new Map();
-    /**
-     * Queue
-     * @private
-     */
-    private readonly queue: Set<ITask> = new Set();
+
     /**
      * Message queue name
      */
     public messageQueueName = 'workers-service-' + GenerateUUIDv4();
+
     /**
      * Reply subject
      * @private
      */
     public replySubject = this.messageQueueName + `-reply-${GenerateUUIDv4()}`;
+
+    /**
+     * Queue
+     * @private
+     */
+    private readonly queue: Set<ITask> = new Set();
 
     /**
      * Max Repetitions
@@ -111,6 +104,97 @@ export class Workers extends NatsService {
             return new TimeoutError(error);
         }
         return error;
+    }
+
+    /**
+     * Check error message for retryable
+     * @param error Error
+     * @returns Is not retryable
+     */
+    public static isNotRetryableError(error: any) {
+        return typeof error === 'string'
+            && NON_RETRYABLE_HEDERA_ERRORS.some(code => error.indexOf(code) !== -1);
+    }
+
+    /**
+     * Add non retryable task
+     * @param task
+     * @param priority
+     * @param userId
+     * @param registerCallback
+     */
+    public addNonRetryableTask(task: ITask, priority: number, userId?: string | null, registerCallback: boolean = true): Promise<any> {
+        if (!task.data.network) {
+            task.data.network = Environment.network;
+        }
+        if (!task.data.nodes) {
+            task.data.nodes = Environment.nodes;
+        }
+        if (!task.data.mirrorNodes) {
+            task.data.mirrorNodes = Environment.mirrorNodes;
+        }
+        if (!task.data.localNodeAddress) {
+            task.data.localNodeAddress = Environment.localNodeAddress;
+        }
+        if (!task.data.localNodeProtocol) {
+            task.data.localNodeProtocol = Environment.localNodeProtocol;
+        }
+        return this.addTask(task, priority, false, 0, registerCallback, userId);
+    }
+
+    /**
+     * Add retryable task
+     * @param task
+     * @param priority
+     * @param attempts
+     * @param userId
+     * @param registerCallback
+     */
+    public addRetryableTask(task: ITask, priority: number, attempts: number = 0, userId: string = null, registerCallback: boolean = true): Promise<any> {
+        if (!task.data.network) {
+            task.data.network = Environment.network;
+        }
+        if (!task.data.nodes) {
+            task.data.nodes = Environment.nodes;
+        }
+        if (!task.data.mirrorNodes) {
+            task.data.mirrorNodes = Environment.mirrorNodes;
+        }
+        if (!task.data.localNodeAddress) {
+            task.data.localNodeAddress = Environment.localNodeAddress;
+        }
+        if (!task.data.localNodeProtocol) {
+            task.data.localNodeProtocol = Environment.localNodeProtocol;
+        }
+        return this.addTask(task, priority, true, attempts, registerCallback, userId);
+    }
+
+    /**
+     * Init listeners
+     */
+    public initListeners() {
+        this.subscribe(WorkerEvents.WORKER_READY, async () => {
+            await this.searchAndUpdateTasks();
+        });
+
+        setInterval(async () => {
+            await this.searchAndUpdateTasks();
+        }, 1000);
+
+        this.subscribe(QueueEvents.TASK_COMPLETE, async (data: any) => {
+            if (!data.id) {
+                throw new Error('Message without id');
+            }
+            if (data.error) {
+                console.error(data);
+            }
+            if (this.tasksCallbacks.has(data.id)) {
+                const activeTask = this.tasksCallbacks.get(data.id);
+                activeTask.callback(data.data, data.error, data.isTimeoutError);
+                this.tasksCallbacks.delete(data.id)
+            }
+
+        })
     }
 
     /**
@@ -210,84 +294,6 @@ export class Workers extends NatsService {
             } else {
                 resolve(null);
             }
-        })
-    }
-
-    /**
-     * Add non retryable task
-     * @param task
-     * @param priority
-     * @param userId
-     */
-    public addNonRetryableTask(task: ITask, priority: number, userId?: string | null): Promise<any> {
-        if (!task.data.network) {
-            task.data.network = Environment.network;
-        }
-        if (!task.data.nodes) {
-            task.data.nodes = Environment.nodes;
-        }
-        if (!task.data.mirrorNodes) {
-            task.data.mirrorNodes = Environment.mirrorNodes;
-        }
-        if (!task.data.localNodeAddress) {
-            task.data.localNodeAddress = Environment.localNodeAddress;
-        }
-        if (!task.data.localNodeProtocol) {
-            task.data.localNodeProtocol = Environment.localNodeProtocol;
-        }
-        return this.addTask(task, priority, false, 0, true, userId);
-    }
-
-    /**
-     * Add retryable task
-     * @param task
-     * @param priority
-     * @param attempts
-     * @param userId
-     */
-    public addRetryableTask(task: ITask, priority: number, attempts: number = 0, userId: string = null): Promise<any> {
-        if (!task.data.network) {
-            task.data.network = Environment.network;
-        }
-        if (!task.data.nodes) {
-            task.data.nodes = Environment.nodes;
-        }
-        if (!task.data.mirrorNodes) {
-            task.data.mirrorNodes = Environment.mirrorNodes;
-        }
-        if (!task.data.localNodeAddress) {
-            task.data.localNodeAddress = Environment.localNodeAddress;
-        }
-        if (!task.data.localNodeProtocol) {
-            task.data.localNodeProtocol = Environment.localNodeProtocol;
-        }
-        return this.addTask(task, priority, true, attempts, true, userId);
-    }
-
-    /**
-     * Init listeners
-     */
-    public initListeners() {
-        this.subscribe(WorkerEvents.WORKER_READY, async () => {
-            await this.searchAndUpdateTasks();
-        });
-
-        setInterval(async () => {
-            await this.searchAndUpdateTasks();
-        }, 1000);
-
-        this.subscribe(QueueEvents.TASK_COMPLETE, async (data: any) => {
-            if (!data.id) {
-                throw new Error('Message without id');
-            }
-            if (data.error) {
-                console.error(data);
-            }
-            if (this.tasksCallbacks.has(data.id)) {
-                const activeTask = this.tasksCallbacks.get(data.id);
-                activeTask.callback(data.data, data.error, data.isTimeoutError);
-            }
-
         })
     }
 

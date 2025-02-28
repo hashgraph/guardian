@@ -200,7 +200,7 @@ export class PolicyEngineService {
 
         PolicyComponentsUtils.ExternalEventFn = async (...args: any[]) => {
             try {
-                this.channel.sendMessage(ExternalMessageEvents.BLOCK_EVENTS, args);
+                this.channel.sendMessage(ExternalMessageEvents.BLOCK_EVENTS, args, false);
             } catch (error) {
                 console.error(error);
             }

@@ -154,16 +154,16 @@ export class SchemaItem {
     public readonly type = 'schema';
 
     private _value: any;
-    private _schema: Schema;
-    private _field: SchemaField;
+    private _schema: Schema | null;
+    private _field: SchemaField | null;
     private _type: string | undefined;
     private _path: string | undefined;
 
-    constructor(schema: Schema, field: SchemaField) {
+    constructor(schema: Schema | null, field: SchemaField | null) {
         this._schema = schema;
         this._field = field;
-        this._type = schema.type;
-        this._path = field.path;
+        this._type = schema?.type;
+        this._path = field?.path;
     }
 
     public get name() {
@@ -192,6 +192,10 @@ export class SchemaItem {
             }
         }
     }
+
+    public static empty() {
+        return new SchemaItem(null, null);
+    }
 }
 
 export class FormulaItem {
@@ -206,7 +210,7 @@ export class FormulaItem {
 
     private _schemaLink: { schema: string, path: string } | null;
     private _formulaLink: { formula: string, variable: string } | null;
-    private _parent: FormulaTree;
+    private _parent: FormulaTree | null;
 
     private _relationshipItems: FormulaItem[];
     private _parentItems: FormulaItem[];
@@ -240,9 +244,11 @@ export class FormulaItem {
             }
         }
 
+        this._parent = null;
         this._relationshipItems = [];
         this._parentItems = [];
         this._linkItem = null;
+        this._linkEntity = null;
     }
 
     public get value() {
@@ -330,6 +336,8 @@ export class FormulaItem {
                 if (field) {
                     this._linkItem = new SchemaItem(schema, field);
                 }
+            } else {
+                this._linkItem = SchemaItem.empty();
             }
         }
     }
@@ -400,6 +408,8 @@ export class FormulaTree {
         this.description = formula.description || '';
 
         this._links = new Map<string, Map<string, FormulaItem[]>>();
+        this._items = [];
+        this._files = [];
         this.parse(formula?.config?.formulas);
         this.parseFiles(formula?.config?.files);
     }
@@ -502,6 +512,7 @@ export class FormulasTree {
 
     constructor() {
         this._links = new Map<string, Map<string, FormulaItem[]>>();
+        this.items = [];
     }
 
     public setFormulas(formulas: IFormula[]) {

@@ -142,7 +142,7 @@ a[disabled="true"] {
     user-select: none;
     cursor: pointer;
     height: 220px;
-    margin-top: 80px;
+    margin-top: 56px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -512,14 +512,14 @@ a.open-vp {
 }
 
 .revoke-container {
+    margin-top: 8px;
     font-family: Inter;
     color: red;
-}
 
-.revoke-container .revoke-icon {
-    position: absolute;
-    left: 16px;
-    top: 37px;
+    b {
+        margin-left: 4px;
+        white-space: normal;
+    }
 }
 
 .multiple-documents-container {
