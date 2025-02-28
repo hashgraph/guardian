@@ -12,6 +12,7 @@ export class EventCanvas {
     private top: any;
     private left: any;
     private width: any;
+    private maxWidth: any;
 
     constructor(
         container: HTMLElement,
@@ -28,6 +29,7 @@ export class EventCanvas {
         this.top = box.top;
         this.left = box.left;
         this.width = box.width;
+        this.maxWidth = box.width;
 
         try {
             this.parent = parent;
@@ -56,9 +58,10 @@ export class EventCanvas {
             this.canvas.style.top = '0px';
             this.canvas.style.left = '0px';
             const box = this.parent.getBoundingClientRect();
-            this.canvas.style.width = `${box.width}px`;
+            const width = Math.max(box.width, this.maxWidth);
+            this.canvas.style.width = `${width}px`;
             this.canvas.style.height = `${box.height}px`;
-            this.canvas.width = box.width;
+            this.canvas.width = width;
             this.canvas.height = box.height;
             this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
             this.box = this.canvas.getBoundingClientRect();
@@ -75,11 +78,19 @@ export class EventCanvas {
         if (!this.valid) {
             return;
         }
+        this.maxWidth = 0;
         for (let index = 0; index < renderLine.length; index++) {
             const line = renderLine[index];
+            this.maxWidth = Math.max(this.maxWidth, line.width);
             line.index = index + 1;
             this.drawData(line);
         }
+
+        const box = this.parent.getBoundingClientRect();
+        const width = Math.max(box.width, this.maxWidth);
+        this.canvas.style.width = `${width}px`;
+        this.canvas.width = width;
+
         const data = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height).data;
         this.lastImage = {
             context: this.context,
@@ -95,6 +106,7 @@ export class EventCanvas {
             return;
         }
         this.lastImage.context.clearRect(0, 0, this.lastImage.width, this.lastImage.height);
+        this.maxWidth = this.width;
         for (const line of this.lastImage.lines) {
             const selected = this.lastImage.index == line.index;
             this.drawArrow(line, line.dash, selected);
@@ -188,7 +200,7 @@ export class EventCanvas {
     }
 
     public clampPosition(position: any): any {
-        if(position.x > this.width - 175) {
+        if (position.x > this.width - 175) {
             position.x = this.width - 175;
         }
         return position;

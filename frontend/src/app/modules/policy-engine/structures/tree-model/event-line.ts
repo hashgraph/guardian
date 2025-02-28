@@ -19,6 +19,7 @@ export class BlocLine {
     public actor!: string;
     public input!: string;
     public output!: string;
+    public width!: number;
 
     public selectedStart: boolean;
     public selectedEnd: boolean;
@@ -53,6 +54,7 @@ export class BlocLine {
                     this.end.bottom.x, this.end.bottom.y
                 ];
             }
+            this.width = this.start.top.x;
         } else {
             if (!offset) {
                 offset = this.minOffset;
@@ -64,6 +66,7 @@ export class BlocLine {
                 offset, this.end.right.y - yOffset,
                 this.end.right.x, this.end.right.y - yOffset
             ];
+            this.width = offset;
         }
     }
 
