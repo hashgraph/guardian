@@ -45,14 +45,13 @@ export class DataTransformationConfigComponent implements OnInit {
 
     editExpression($event: MouseEvent) {
         const dialogRef = this.dialog.open(CodeEditorDialogComponent, {
+            showHeader: false,
             width: '80%',
+            styleClass: 'guardian-dialog',
             data: {
                 expression: this.properties.expression,
                 readonly: this.readonly
-            },
-            styleClass: 'g-dialog',
-            modal: true,
-            closable: false,
+            }
         })
         dialogRef.onClose.subscribe(result => {
             if (result) {

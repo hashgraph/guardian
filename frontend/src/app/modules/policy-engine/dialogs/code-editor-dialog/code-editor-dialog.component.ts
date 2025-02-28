@@ -1,5 +1,5 @@
-import {AfterContentInit, Component, Inject, OnInit} from '@angular/core';
-import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
+import { AfterContentInit, Component, Inject, OnInit } from '@angular/core';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 /**
  * Export schema dialog.
@@ -10,7 +10,7 @@ import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
     styleUrls: ['./code-editor-dialog.component.scss']
 })
 export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
-    codeMirrorOptions: any = {
+    public codeMirrorOptions: any = {
         theme: 'default',
         mode: 'javascript',
         styleActiveLine: true,
@@ -26,12 +26,10 @@ export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
         readonly: false,
         autoFocus: true
     };
-
-    expression!: string;
-
-    initDialog = false;
-
-    data: any
+    public expression!: string;
+    public initDialog = false;
+    public loading = true;
+    public data: any
 
     constructor(
         private dialogRef: DynamicDialogRef,
@@ -41,6 +39,8 @@ export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
     }
 
     ngOnInit() {
+        this.initDialog = false;
+        this.loading = true;
         if (this.data.mode) {
             this.codeMirrorOptions.mode = this.data.mode;
         }
@@ -51,17 +51,19 @@ export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
     ngAfterContentInit() {
         setTimeout(() => {
             this.initDialog = true;
+            setTimeout(() => {
+                this.loading = false;
+            }, 1000);
         }, 100);
-
     }
 
-    onSave(): void {
+    public onSave(): void {
         this.dialogRef.close({
             expression: this.expression
         });
     }
 
-    onClose(): void {
+    public onClose(): void {
         this.dialogRef.close(null);
     }
 }

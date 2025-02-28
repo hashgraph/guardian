@@ -1,6 +1,6 @@
-import {Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef} from '@angular/core';
-import {BlockErrorActions, GenerateUUIDv4} from '@guardian/interfaces';
-import {RegisteredService} from '../../services/registered.service';
+import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
+import { BlockErrorActions, GenerateUUIDv4 } from '@guardian/interfaces';
+import { RegisteredService } from '../../services/registered.service';
 import {
     IBlockAbout,
     PolicyEvent,
@@ -19,7 +19,7 @@ import {
     styleUrls: ['./common-properties.component.scss']
 })
 export class CommonPropertiesComponent implements OnInit {
-    @ViewChild('configContainer', {read: ViewContainerRef}) configContainer!: ViewContainerRef;
+    @ViewChild('configContainer', { read: ViewContainerRef }) configContainer!: ViewContainerRef;
 
     @Input('block') currentBlock!: PolicyItem;
     @Input('module') module!: PolicyFolder;
@@ -163,7 +163,7 @@ export class CommonPropertiesComponent implements OnInit {
     getOutputEvents(event: PolicyEvent): string[] {
         const about = this.getAbout(event.source);
         if (about && about.output) {
-            return [{label: '', value: null}, ...about.output];
+            return [{ label: '', value: null }, ...about.output];
         } else {
             return [];
         }
@@ -255,7 +255,7 @@ export class CommonPropertiesComponent implements OnInit {
     getPreparedInputEvents(item: PolicyEvent): { label: string, value: string }[] {
         const inputEvents = this.getInputEvents(item);
 
-        return [{label: 'None', value: ''}, ...inputEvents.map(event => ({label: event, value: event}))];
+        return [{ label: 'None', value: '' }, ...inputEvents.map(event => ({ label: event, value: event }))];
     }
 }
 
