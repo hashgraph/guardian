@@ -68,6 +68,20 @@ export class SelectBlock implements AfterViewInit {
         }
     }
 
+    private getFullText(): string {
+        if (this.multiple) {
+            if (this.value) {
+                return (this.value as ValueType[])
+                    .map((item: ValueType) => this.getText(item))
+                    .join(', ')
+            } else {
+                return '';
+            }
+        } else {
+            return this.getText(this.value as ValueType);
+        }
+    }
+
     ngAfterViewInit(): void {
         setTimeout(() => {
             this.onChange();
@@ -75,29 +89,13 @@ export class SelectBlock implements AfterViewInit {
     }
 
     onChange() {
-        this.text = this.multiple
-            ? (this.value as ValueType[])
-                  ?.map((item: ValueType) =>
-                      this.getText(item)
-                  )
-                  .join(', ')
-            : this.getText(
-                  this.value as ValueType
-              );
+        this.text = this.getFullText();
         this.valueChange.emit(this.value);
         this.change.emit();
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        this.text = this.multiple
-            ? (this.value as any[])
-                  ?.map((item: ValueType) =>
-                      this.getText(item)
-                  )
-                  .join(', ')
-            : this.getText(
-                  this.value as ValueType
-              );
+        this.text = this.getFullText();
         setTimeout(() => {
             this.data = [];
             if (this.blocks) {
@@ -133,6 +131,11 @@ export class SelectBlock implements AfterViewInit {
             this.searchData = this.data?.filter(item => item.search.indexOf(search) !== -1);
         } else {
             this.searchData = this.data;
+        }
+        if (this.searchData) {
+            for (const item of this.searchData) {
+                item.id = item.value.id;
+            }
         }
     }
 }
