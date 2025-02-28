@@ -303,7 +303,7 @@ export abstract class TypedMint {
 
         const workers = new Workers();
         try {
-            await workers.sendExternalMintEvent(this._token);
+            workers.sendExternalMintEvent(this._token);
         } catch (e) {
             console.error(e.message);
         }
