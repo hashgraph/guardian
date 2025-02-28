@@ -10,20 +10,26 @@ import { BaseEntity } from '@guardian/common';
 @Index({ name: 'id_idx', properties: ['topicId', 'name'] })
 export class TopicListener extends BaseEntity {
     /**
-     * Name
+     * Topic ID
      */
     @Property()
     topicId: string;
 
     /**
-     * Description
+     * Name
      */
     @Property({ nullable: true })
     name?: string;
 
     /**
-     * Owner
+     * Index
      */
     @Property()
-    index: number;
+    searchIndex: number;
+
+    /**
+     * Index
+     */
+    @Property()
+    sendIndex: number;
 }

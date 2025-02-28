@@ -1,3 +1,4 @@
+import { DatabaseServer } from '@guardian/common';
 import { TopicListener as ListenerCollection } from '../entity/index.js';
 import { ListenerEvents, TopicInfo, TopicMessage } from '../interface/index.js';
 import { ListenerService } from './listener-service.js';
@@ -8,7 +9,6 @@ export class Listener {
     public readonly id: string;
     public readonly name: string;
     public readonly topicId: string;
-    public readonly index: number;
 
     private readonly channel: ListenerService;
 
@@ -18,6 +18,9 @@ export class Listener {
     private _messages: Message[];
     private _lock: boolean;
 
+    private _searchIndex: number;
+    private _sendIndex: number;
+
     constructor(
         channel: ListenerService,
         listener: ListenerCollection
@@ -25,7 +28,10 @@ export class Listener {
         this.id = listener.id.toString();
         this.name = listener.name || this.id;
         this.topicId = listener.topicId;
-        this.index = listener.index;
+
+        const _index = Math.min(listener.searchIndex, listener.sendIndex);
+        this._searchIndex = _index;
+        this._sendIndex = _index;
 
         this.channel = channel;
 
@@ -34,17 +40,24 @@ export class Listener {
     }
 
     public async search(): Promise<void> {
-        const data = await this.getMessages(this.topicId, this.index);
+        const data = await this.getMessages(this.topicId, this._searchIndex);
         if (data && data.messages.length) {
-            this.saveMessages(data.messages);
+            await this.saveMessages(data.messages);
         }
         this.push();
     }
 
-    public saveMessages(messages: TopicMessage[]): void {
+    public async saveMessages(messages: TopicMessage[]): Promise<void> {
         for (const message of messages) {
             this.addMessages(message);
         }
+        await (new DatabaseServer()).update(
+            ListenerCollection,
+            { id: this.id },
+            {
+                searchIndex: this._searchIndex
+            }
+        );
     }
 
     public addMessages(message: TopicMessage): void {
@@ -60,6 +73,7 @@ export class Listener {
         const item = new Message();
         item.addChunk(message);
         this._messages.push(item);
+        this._searchIndex = message.sequence_number;
     }
 
     public async getMessages(topicId: string, lastNumber: number): Promise<TopicInfo | null> {
@@ -99,12 +113,7 @@ export class Listener {
             this._lock = true;
             let next = this.next();
             while (next) {
-                await this.channel.publish(ListenerEvents.GET_LISTENER_MESSAGE, next.data);
-
-                console.log('--- publish ---');
-                console.log(next.data);
-                console.log('---');
-
+                await this.sendMessage(next);
                 this._messages.shift();
                 next = this.next();
             }
@@ -114,9 +123,22 @@ export class Listener {
         }
     }
 
+    private async sendMessage(message: Message) {
+        this._sendIndex = message.index;
+        await this.channel.publish(`${ListenerEvents.GET_LISTENER_MESSAGE}.${this.name}`, message.data);
+        await (new DatabaseServer()).update(
+            ListenerCollection,
+            { id: this.id },
+            {
+                sendIndex: this._sendIndex
+            }
+        );
+    }
+
     private next(): Message | null {
-        if (this._messages.length && this._messages[0].status === 'COMPRESSED') {
-            return this._messages[0];
+        const first = this._messages[0];
+        if (first && first.status === 'COMPRESSED') {
+            return first;
         } else {
             return null;
         }

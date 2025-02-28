@@ -1,4 +1,5 @@
 export interface IListenerOptions {
-    name?: string;
     topicId: string;
+    name?: string;
+    index?: number;
 }

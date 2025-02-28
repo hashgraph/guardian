@@ -5,9 +5,11 @@ export class Message {
     public status: 'COMPRESSING' | 'COMPRESSED';
     public data: string | null;
     public chunkId: string | null;
+    public index: number;
 
     constructor() {
         this.messages = [];
+        this.index = -1;
     }
 
     public static getChunkId(message: TopicMessage): string | null {
@@ -46,6 +48,7 @@ export class Message {
 
     public compressMessages() {
         const first = this.messages[0];
+        this.index = first.sequenceNumber;
         this.chunkId = first.chunkId;
         if (first.chunkTotal === this.messages.length) {
             this.status = 'COMPRESSED';

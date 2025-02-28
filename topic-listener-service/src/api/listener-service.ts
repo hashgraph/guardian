@@ -57,13 +57,18 @@ export class ListenerService extends NatsService {
         if (options.name && this.map.has(options.name)) {
             return options.name;
         }
+        let index = -1;
+        if (options.index !== undefined && isFinite(options.index) && options.index > -1) {
+            index = options.index;
+        }
         const row = await dataBaseServer.save(ListenerCollection,
             dataBaseServer.create(
                 ListenerCollection,
                 {
                     topicId: options.topicId,
                     name: options.name,
-                    index: -1
+                    searchIndex: index,
+                    sendIndex: index
                 },
             ));
         const listener = new Listener(this, row);
