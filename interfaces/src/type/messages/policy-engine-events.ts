@@ -3,6 +3,7 @@
  */
 export enum PolicyEngineEvents {
     RECEIVE_EXTERNAL_DATA = 'policy-engine-event-receive-external-data',
+    RECEIVE_EXTERNAL_DATA_CUSTOM = 'policy-engine-event-recieve-external-data-custom',
     POLICY_IMPORT_FILE = 'policy-engine-event-policy-import-file',
     POLICY_IMPORT_FILE_ASYNC = 'policy-engine-event-policy-import-file-async',
     POLICY_IMPORT_MESSAGE = 'policy-engine-event-policy-import-message',

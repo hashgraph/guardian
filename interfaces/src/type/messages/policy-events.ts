@@ -22,6 +22,7 @@ export enum PolicyEvents {
     GET_BLOCK_PARENTS = 'policy-event-get-block-parents',
     BLOCK_UPDATE_BROADCAST = 'policy-event-block-update-broadcast',
     MRV_DATA = 'policy-event-mrv-data',
+    MRV_DATA_CUSTOM = 'policy-event-mrv-data-custom',
     GET_BLOCK_ABOUT = 'policy-event-get-block-about',
     CHECK_IF_ALIVE = 'check-if-alive',
     CREATE_VIRTUAL_USER = 'policy-event-create-virtual-user',
