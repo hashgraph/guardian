@@ -293,8 +293,12 @@ export abstract class TypedMint {
             );
 
             const workers = new Workers();
-            console.log(this._mintRequest, this._token);
-            await workers.sendExternalMintEvent(this._token);
+
+            try {
+                await workers.sendExternalMintEvent(this._token);
+            } catch (e) {
+                console.error(e.message);
+            }
 
             await this._notifier?.success(
                 progressResult.title,
