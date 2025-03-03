@@ -116,8 +116,8 @@
                       <boolProp name="HTTPArgument.always_encode">false</boolProp>
                       <stringProp name="Argument.value">{&#xd;
   &quot;username&quot;: &quot;${sr_username}&quot;,&#xd;
-  &quot;password&quot;: &quot;test&quot;,&#xd;
-  &quot;password_confirmation&quot;: &quot;test&quot;,&#xd;
+  &quot;password&quot;: &quot;${PASS}&quot;,&#xd;
+  &quot;password_confirmation&quot;: &quot;${PASS}&quot;,&#xd;
   &quot;role&quot;: &quot;STANDARD_REGISTRY&quot;&#xd;
 }</stringProp>
                       <stringProp name="Argument.metadata">=</stringProp>
@@ -147,7 +147,7 @@
                       <boolProp name="HTTPArgument.always_encode">false</boolProp>
                       <stringProp name="Argument.value">{&#xd;
   &quot;username&quot;: &quot;${sr_username}&quot;,&#xd;
-  &quot;password&quot;: &quot;test&quot;&#xd;
+  &quot;password&quot;: &quot;${PASS}&quot;&#xd;
 }</stringProp>
                       <stringProp name="Argument.metadata">=</stringProp>
                     </elementProp>
@@ -513,21 +513,21 @@ if (result!=&quot;&quot;)
             <boolProp name="TransactionController.parent">false</boolProp>
           </TransactionController>
           <hashTree>
-            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Register and generate SR hedera creds" enabled="true">
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Register and generate PP hedera creds" enabled="true">
               <boolProp name="TransactionController.parent">true</boolProp>
             </TransactionController>
             <hashTree>
-              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Register user" enabled="true">
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Register PP" enabled="true">
                 <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
                 <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
                   <collectionProp name="Arguments.arguments">
                     <elementProp name="" elementType="HTTPArgument">
                       <boolProp name="HTTPArgument.always_encode">false</boolProp>
                       <stringProp name="Argument.value">{&#xd;
-  &quot;username&quot;: &quot;${sr_username}&quot;,&#xd;
-  &quot;password&quot;: &quot;test&quot;,&#xd;
-  &quot;password_confirmation&quot;: &quot;test&quot;,&#xd;
-  &quot;role&quot;: &quot;STANDARD_REGISTRY&quot;&#xd;
+  &quot;username&quot;: &quot;${pp_username}&quot;,&#xd;
+  &quot;password&quot;: &quot;${PASS}&quot;,&#xd;
+  &quot;password_confirmation&quot;: &quot;${PASS}&quot;,&#xd;
+  &quot;role&quot;: &quot;USER&quot;&#xd;
 }</stringProp>
                       <stringProp name="Argument.metadata">=</stringProp>
                     </elementProp>
@@ -555,8 +555,8 @@ if (result!=&quot;&quot;)
                     <elementProp name="" elementType="HTTPArgument">
                       <boolProp name="HTTPArgument.always_encode">false</boolProp>
                       <stringProp name="Argument.value">{&#xd;
-  &quot;username&quot;: &quot;${sr_username}&quot;,&#xd;
-  &quot;password&quot;: &quot;test&quot;&#xd;
+  &quot;username&quot;: &quot;${pp_username}&quot;,&#xd;
+  &quot;password&quot;: &quot;${PASS}&quot;&#xd;
 }</stringProp>
                       <stringProp name="Argument.metadata">=</stringProp>
                     </elementProp>
@@ -577,7 +577,7 @@ if (result!=&quot;&quot;)
                 <stringProp name="HTTPSampler.response_timeout"></stringProp>
               </HTTPSamplerProxy>
               <hashTree>
-                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract SR Refresh Token" enabled="true">
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract user Refresh Token" enabled="true">
                   <stringProp name="JSONPostProcessor.referenceNames">SRRefreshToken</stringProp>
                   <stringProp name="JSONPostProcessor.jsonPathExprs">$.refreshToken</stringProp>
                   <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
@@ -585,7 +585,7 @@ if (result!=&quot;&quot;)
                 </JSONPostProcessor>
                 <hashTree/>
               </hashTree>
-              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get Access Token" enabled="true">
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get user Access Token" enabled="true">
                 <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
                 <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
                   <collectionProp name="Arguments.arguments">
@@ -613,7 +613,7 @@ if (result!=&quot;&quot;)
                 <stringProp name="HTTPSampler.response_timeout"></stringProp>
               </HTTPSamplerProxy>
               <hashTree>
-                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract SR Access Token" enabled="true">
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract user Access Token" enabled="true">
                   <stringProp name="JSONPostProcessor.referenceNames">SRAccessToken</stringProp>
                   <stringProp name="JSONPostProcessor.jsonPathExprs">$.accessToken</stringProp>
                   <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
@@ -712,7 +712,7 @@ if (result!=&quot;&quot;)
                   <hashTree/>
                 </hashTree>
               </hashTree>
-              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get SR keys" enabled="true">
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get user keys" enabled="true">
                 <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
                   <collectionProp name="Arguments.arguments"/>
                 </elementProp>
@@ -731,14 +731,14 @@ if (result!=&quot;&quot;)
                 <stringProp name="HTTPSampler.response_timeout"></stringProp>
               </HTTPSamplerProxy>
               <hashTree>
-                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract SR id" enabled="true">
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract user id" enabled="true">
                   <stringProp name="JSONPostProcessor.referenceNames">sr_hedera_id</stringProp>
                   <stringProp name="JSONPostProcessor.jsonPathExprs">$.result.id</stringProp>
                   <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
                   <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
                 </JSONPostProcessor>
                 <hashTree/>
-                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract SR key" enabled="true">
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract user key" enabled="true">
                   <stringProp name="JSONPostProcessor.referenceNames">sr_hedera_key</stringProp>
                   <stringProp name="JSONPostProcessor.jsonPathExprs">$.result.key</stringProp>
                   <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
@@ -747,7 +747,7 @@ if (result!=&quot;&quot;)
                 <hashTree/>
               </hashTree>
             </hashTree>
-            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Link user" enabled="true">
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Link PP" enabled="true">
               <boolProp name="TransactionController.parent">true</boolProp>
             </TransactionController>
             <hashTree>
@@ -922,7 +922,7 @@ if (result!=&quot;&quot;)
             <boolProp name="TransactionController.parent">false</boolProp>
           </TransactionController>
           <hashTree>
-            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Register and generate SR hedera creds" enabled="true">
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Register and generate VVB hedera creds" enabled="true">
               <boolProp name="TransactionController.parent">true</boolProp>
             </TransactionController>
             <hashTree>
@@ -933,10 +933,10 @@ if (result!=&quot;&quot;)
                     <elementProp name="" elementType="HTTPArgument">
                       <boolProp name="HTTPArgument.always_encode">false</boolProp>
                       <stringProp name="Argument.value">{&#xd;
-  &quot;username&quot;: &quot;${sr_username}&quot;,&#xd;
-  &quot;password&quot;: &quot;test&quot;,&#xd;
-  &quot;password_confirmation&quot;: &quot;test&quot;,&#xd;
-  &quot;role&quot;: &quot;STANDARD_REGISTRY&quot;&#xd;
+  &quot;username&quot;: &quot;${vvb_username}&quot;,&#xd;
+  &quot;password&quot;: &quot;${PASS}&quot;,&#xd;
+  &quot;password_confirmation&quot;: &quot;${PASS}&quot;,&#xd;
+  &quot;role&quot;: &quot;USER&quot;&#xd;
 }</stringProp>
                       <stringProp name="Argument.metadata">=</stringProp>
                     </elementProp>
@@ -964,8 +964,8 @@ if (result!=&quot;&quot;)
                     <elementProp name="" elementType="HTTPArgument">
                       <boolProp name="HTTPArgument.always_encode">false</boolProp>
                       <stringProp name="Argument.value">{&#xd;
-  &quot;username&quot;: &quot;${sr_username}&quot;,&#xd;
-  &quot;password&quot;: &quot;test&quot;&#xd;
+  &quot;username&quot;: &quot;${vvb_username}&quot;,&#xd;
+  &quot;password&quot;: &quot;${PASS}&quot;&#xd;
 }</stringProp>
                       <stringProp name="Argument.metadata">=</stringProp>
                     </elementProp>
@@ -986,7 +986,7 @@ if (result!=&quot;&quot;)
                 <stringProp name="HTTPSampler.response_timeout"></stringProp>
               </HTTPSamplerProxy>
               <hashTree>
-                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract SR Refresh Token" enabled="true">
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract user Refresh Token" enabled="true">
                   <stringProp name="JSONPostProcessor.referenceNames">SRRefreshToken</stringProp>
                   <stringProp name="JSONPostProcessor.jsonPathExprs">$.refreshToken</stringProp>
                   <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
@@ -994,7 +994,7 @@ if (result!=&quot;&quot;)
                 </JSONPostProcessor>
                 <hashTree/>
               </hashTree>
-              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get Access Token" enabled="true">
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get user Access Token" enabled="true">
                 <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
                 <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
                   <collectionProp name="Arguments.arguments">
@@ -1022,7 +1022,7 @@ if (result!=&quot;&quot;)
                 <stringProp name="HTTPSampler.response_timeout"></stringProp>
               </HTTPSamplerProxy>
               <hashTree>
-                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract SR Access Token" enabled="true">
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract user Access Token" enabled="true">
                   <stringProp name="JSONPostProcessor.referenceNames">SRAccessToken</stringProp>
                   <stringProp name="JSONPostProcessor.jsonPathExprs">$.accessToken</stringProp>
                   <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
@@ -1121,7 +1121,7 @@ if (result!=&quot;&quot;)
                   <hashTree/>
                 </hashTree>
               </hashTree>
-              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get SR keys" enabled="true">
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get user keys" enabled="true">
                 <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
                   <collectionProp name="Arguments.arguments"/>
                 </elementProp>
@@ -1140,14 +1140,14 @@ if (result!=&quot;&quot;)
                 <stringProp name="HTTPSampler.response_timeout"></stringProp>
               </HTTPSamplerProxy>
               <hashTree>
-                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract SR id" enabled="true">
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract user id" enabled="true">
                   <stringProp name="JSONPostProcessor.referenceNames">sr_hedera_id</stringProp>
                   <stringProp name="JSONPostProcessor.jsonPathExprs">$.result.id</stringProp>
                   <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
                   <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
                 </JSONPostProcessor>
                 <hashTree/>
-                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract SR key" enabled="true">
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract user key" enabled="true">
                   <stringProp name="JSONPostProcessor.referenceNames">sr_hedera_key</stringProp>
                   <stringProp name="JSONPostProcessor.jsonPathExprs">$.result.key</stringProp>
                   <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
@@ -1156,7 +1156,7 @@ if (result!=&quot;&quot;)
                 <hashTree/>
               </hashTree>
             </hashTree>
-            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Link user" enabled="true">
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Link VVB" enabled="true">
               <boolProp name="TransactionController.parent">true</boolProp>
             </TransactionController>
             <hashTree>
