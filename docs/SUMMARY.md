@@ -179,6 +179,7 @@
     * [📁 Versioning and Deprecation Policy](guardian/standard-registry/policies/versioning-and-deprecation-policy/README.md)
       * [ℹ️ Policy Versioning & Deprecation Policy](guardian/standard-registry/policies/versioning-and-deprecation-policy/policy-versioning-and-deprecation-policy.md)
       * [ℹ️ API Versioning & Deprecation Policy](guardian/standard-registry/policies/versioning-and-deprecation-policy/api-versioning-and-deprecation-policy.md)
+      * [ℹ️ Internal APIs Versioning & Deprecation Policy](guardian/standard-registry/policies/versioning-and-deprecation-policy/internal-apis-versioning-and-deprecation-policy.md)
     * [🔩 Policy Creation](guardian/standard-registry/policies/policy-creation/README.md)
       * [🔄 Available Policy Workflow Blocks](guardian/standard-registry/policies/policy-creation/introduction/README.md)
         * [InterfaceContainerBlock](guardian/standard-registry/policies/policy-creation/introduction/container-workflow-block.md)
