@@ -565,6 +565,16 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Receive external data
+     * @param data
+     * @param policyId
+     * @param blockTag
+     */
+    public async receiveExternalDataCustom(data: any, policyId: string, blockTag: string): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA_CUSTOM, { data, policyId, blockTag });
+    }
+
+    /**
      * Get block about information
      */
     public async blockAbout() {

@@ -456,15 +456,14 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
 
     onEditExpression() {
         const dialogRef = this.dialog.open(CodeEditorDialogComponent, {
+            showHeader: false,
             width: '80%',
+            styleClass: 'guardian-dialog',
             data: {
                 mode: 'json',
                 expression: this.field.expression.value,
                 readonly: this.readonly
-            },
-            styleClass: 'g-dialog',
-            modal: true,
-            closable: false,
+            }
         })
         dialogRef.onClose.subscribe(result => {
             if (result) {

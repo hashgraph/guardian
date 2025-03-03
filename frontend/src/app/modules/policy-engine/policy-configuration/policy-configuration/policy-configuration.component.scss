@@ -390,6 +390,7 @@
     .wizard-btn {
         color: var(--pc-wizard-color);
         padding-top: 10px;
+
         svg-icon {
             height: 20px;
         }
@@ -696,7 +697,8 @@
             top: 0px;
             right: 0px;
 
-            i, svg {
+            i,
+            svg {
                 top: 3px;
                 right: 6px;
                 cursor: pointer;
@@ -886,7 +888,8 @@
                     background: var(--pc-tabs-hover-color);
                 }
 
-                i, svg {
+                i,
+                svg {
                     position: absolute;
                     left: 4px;
                     top: 5px;
@@ -987,7 +990,8 @@
                 background: var(--pc-tabs-hover-color);
             }
 
-            i, svg {
+            i,
+            svg {
                 font-size: 22px;
             }
         }
@@ -1069,7 +1073,8 @@
             cursor: pointer;
             user-select: none;
 
-            i, svg {
+            i,
+            svg {
                 position: absolute;
                 //left: -1px;
                 top: 1px;
@@ -1231,6 +1236,15 @@
                 box-sizing: border-box;
                 padding: 2px;
                 font-size: 12px;
+
+                p-dropdown,
+                select-schema {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    bottom: 0;
+                    right: 0;
+                }
             }
 
             .propRowCell:has(.remove-prop) {
@@ -1347,7 +1361,8 @@
             width: 100%;
             min-width: 175px;
 
-            i, svg {
+            i,
+            svg {
                 position: absolute;
                 left: 1px;
                 top: -1px;
@@ -1381,7 +1396,8 @@
             color: var(--pc-del-color);
             cursor: pointer;
 
-            i, svg {
+            i,
+            svg {
                 font-size: 20px;
             }
 
@@ -1396,7 +1412,8 @@
             color: #e30101;
             cursor: pointer;
 
-            i, svg {
+            i,
+            svg {
                 font-size: 20px;
             }
 
@@ -1536,7 +1553,7 @@
         .prop-icon-output-event i,
         .prop-icon-input-event i,
         .prop-icon-output-event svg,
-        .prop-icon-input-event svg{
+        .prop-icon-input-event svg {
             position: relative !important;
             font-size: 18px !important;
             top: 0px;
