@@ -1,11 +1,22 @@
 import { TopicMessage } from '../interface/index.js';
 
+export interface ITopicMessage {
+    sequenceNumber: number;
+    message: string;
+    topicId: string;
+    consensusTimestamp: string;
+    owner: string;
+}
+
 export class Message {
     public messages: any[];
     public status: 'COMPRESSING' | 'COMPRESSED';
     public data: string | null;
     public chunkId: string | null;
     public index: number;
+    public topicId: string;
+    public consensusTimestamp: string;
+    public owner: string;
 
     constructor() {
         this.messages = [];
@@ -50,6 +61,12 @@ export class Message {
         const first = this.messages[0];
         this.index = first.sequenceNumber;
         this.chunkId = first.chunkId;
+
+        this.topicId = first.topicId;
+        this.consensusTimestamp = first.consensusTimestamp;
+        this.owner = first.owner;
+
+
         if (first.chunkTotal === this.messages.length) {
             this.status = 'COMPRESSED';
             this.data = this.compressData();
@@ -72,6 +89,16 @@ export class Message {
             return data;
         } catch (error) {
             return null;
+        }
+    }
+
+    public toJson(): ITopicMessage {
+        return {
+            sequenceNumber: this.index,
+            message: this.data,
+            topicId: this.topicId,
+            consensusTimestamp: this.consensusTimestamp,
+            owner: this.owner,
         }
     }
 }

@@ -1,44 +1,52 @@
-import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { GenerateUUIDv4, IListenerOptions, ListenerEvents } from '@guardian/interfaces';
+import { NatsConnection, Subscription } from 'nats';
+import { Singleton } from '../decorators/singleton.js';
+import { NatsService } from '../mq/index.js';
 
 export interface ITopicMessage {
-    chunk_info: {
-        initial_transaction_id: {
-            account_id: string;
-            nonce: number;
-            scheduled: boolean;
-            transaction_valid_start: string;
-        };
-        number: number;
-        total: number;
-    };
-    consensus_timestamp: string;
+    sequenceNumber: number;
     message: string;
-    payer_account_id: string;
-    running_hash: string;
-    running_hash_version: number;
-    sequence_number: number;
-    topic_id: string;
+    topicId: string;
+    consensusTimestamp: string;
+    owner: string;
 }
 
-export type ListenerCallback = (data: ITopicMessage) => Promise<boolean>;
+export type ListenerCallback = (data: ITopicMessage) => Promise<boolean> | boolean;
+export type ErrorCallback = (error: Error) => Promise<void> | void;
+
+@Singleton
+export class TopicListenerService extends NatsService {
+    /**
+     * Message queue name
+     */
+    public messageQueueName = `topic-listener-service-${GenerateUUIDv4()}`;
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = `topic-listener-service-reply-${GenerateUUIDv4()}`;
+}
 
 export class TopicListener {
+    private static readonly channel = new TopicListenerService();
+
     private readonly topicId: string;
 
     private _name: string;
-    private _startTimestamp: string | null;
     private _startNumber: number | null;
+    private _listenerId: string | null;
+    private _subscription: Subscription;
 
     private _observable: ListenerCallback | null;
+    private _error: ErrorCallback | null;
 
     constructor(topicId: string) {
         this.topicId = topicId;
 
         this._startNumber = null;
-        this._startTimestamp = null;
         this._observable = null;
-
-        this._name = GenerateUUIDv4();
+        this._listenerId = null;
     }
 
     public setListenerName(name: string): TopicListener {
@@ -48,66 +56,118 @@ export class TopicListener {
         return this;
     }
 
-    public setStartMessage(consensusTimestamp: string): TopicListener
-    public setStartMessage(sequenceNumber: number): TopicListener
-    public setStartMessage(arg: number | string): TopicListener {
-        if (typeof arg === 'number') {
-            if (isFinite(arg) && arg > 0) {
-                this._startNumber = arg;
+    public setStartMessage(sequenceNumber: number): TopicListener {
+        if (typeof sequenceNumber === 'number') {
+            if (isFinite(sequenceNumber) && sequenceNumber > -2) {
+                this._startNumber = sequenceNumber;
             } else {
-                throw new Error('Invalid arguments');
+                throw new Error('Invalid arguments 1');
             }
-        } else if (typeof arg === 'string') {
-            this._startTimestamp = arg;
         } else {
-            throw new Error('Invalid arguments');
+            throw new Error('Invalid arguments 2');
         }
         return this;
     }
 
-    public subscribe(callback: ListenerCallback): TopicListener {
+    public subscribe(
+        callback: ListenerCallback,
+        error?: ErrorCallback
+    ): TopicListener {
         if (typeof callback === 'function') {
             if (this._observable) {
                 throw new Error('Observable already exists');
             } else {
-                this._observable = callback
-                this._start();
+                this._observable = callback;
+                this._error = error;
+                this._start().then();
             }
         } else {
-            throw new Error('Invalid arguments');
+            throw new Error('Invalid arguments 3');
         }
         return this;
     }
 
-    public close(): TopicListener {
+    public async close(): Promise<TopicListener> {
         if (this._observable) {
             this._observable = null;
-            this._close();
+            await this._close();
         }
         return this;
     }
 
-    private async send(message: ITopicMessage) {
-        if (!this._observable) {
-            return;
-        }
-        if (this._startNumber) {
-            return;
-        }
-        if (this._startTimestamp) {
-            return;
-        }
-        const result = await this._observable(message);
-        if(result) {
-            
+    private async sendData(message: ITopicMessage): Promise<boolean> {
+        try {
+            if (!this._observable || !message) {
+                return false;
+            }
+
+            const index = message.sequenceNumber;
+            if (index > this._startNumber) {
+                this._startNumber = index;
+                await this._observable(message);
+            }
+
+            await TopicListener.channel.publish(`${ListenerEvents.CONFIRM_LISTENER_MESSAGE}.${this._listenerId}`, index);
+
+            return true;
+        } catch (error) {
+            return false;
         }
     }
 
-    private _start(): void {
-
+    private async sendError(error: any): Promise<void> {
+        try {
+            if (this._error) {
+                await this._error(error);
+            }
+        } catch (e) {
+            console.error(e);
+        }
     }
 
-    private _close(): void {
+    private async _start(): Promise<void> {
+        try {
+            const options: IListenerOptions = {
+                topicId: this.topicId
+            };
+            if (this._name) {
+                options.name = this._name;
+            }
+            if (this._startNumber) {
+                options.index = this._startNumber;
+            }
+            const result = await TopicListener.channel
+                .sendMessage<{ result: string | null } | null>(ListenerEvents.ADD_TOPIC_LISTENER, options);
+            this._listenerId = result?.result || null;
 
+            if (!this._listenerId) {
+                await this.sendError(new Error(`Failed to create listener (${this.topicId})`));
+                return;
+            }
+
+            this._subscription = TopicListener.channel
+                .subscribe(`${ListenerEvents.GET_LISTENER_MESSAGE}.${this._listenerId}`, async (msg: any) => {
+                    await this.sendData(msg);
+                });
+        } catch (error) {
+            await this.sendError(error);
+        }
+    }
+
+    private async _close(): Promise<void> {
+        if (this._listenerId) {
+            await TopicListener.channel
+                .publish(ListenerEvents.REMOVE_TOPIC_LISTENER, this._listenerId);
+            this._listenerId = null;
+        }
+        if (this._subscription) {
+            this._subscription.unsubscribe();
+            this._subscription = null;
+        }
+    }
+
+    public static async init(connection: NatsConnection): Promise<boolean> {
+        await TopicListener.channel.setConnection(connection).init();
+        return true;
     }
 }

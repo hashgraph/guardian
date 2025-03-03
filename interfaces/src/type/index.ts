@@ -1,7 +1,7 @@
+export * from './messages/index.js';
 export * from './application-states.type.js';
 export * from './approve-status.type.js';
 export * from './artifact.type.js';
-export * from './auth-events.js';
 export * from './block-error-actions.js';
 export * from './block.type.js';
 export * from './config.type.js';
@@ -13,7 +13,6 @@ export * from './hedera-response-code.type.js';
 export * from './icon.type.js';
 export * from './import.type.js';
 export * from './log.type.js';
-export * from './messages/index.js';
 export * from './module-status.type.js';
 export * from './notification-action.type.js';
 export * from './notification.type.js';

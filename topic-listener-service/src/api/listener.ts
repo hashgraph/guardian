@@ -1,8 +1,10 @@
 import { DatabaseServer } from '@guardian/common';
 import { TopicListener as ListenerCollection } from '../entity/index.js';
-import { ListenerEvents, TopicInfo, TopicMessage } from '../interface/index.js';
+import { TopicInfo, TopicMessage } from '../interface/index.js';
 import { ListenerService } from './listener-service.js';
 import { Message } from './message.js';
+import { ListenerEvents } from '@guardian/interfaces';
+import { Subscription } from 'nats';
 import axios from 'axios';
 
 export class Listener {
@@ -16,10 +18,10 @@ export class Listener {
     public static readonly MIRROR_NODE_URL: string = 'https://testnet.mirrornode.hedera.com/api/v1/';
 
     private _messages: Message[];
-    private _lock: boolean;
 
     private _searchIndex: number;
     private _sendIndex: number;
+    private _subscription: Subscription;
 
     constructor(
         channel: ListenerService,
@@ -36,7 +38,34 @@ export class Listener {
         this.channel = channel;
 
         this._messages = [];
-        this._lock = false;
+    }
+
+    public init() {
+        this._subscription = this.channel
+            .subscribe(`${ListenerEvents.CONFIRM_LISTENER_MESSAGE}.${this.name}`, async (index: number) => {
+                await this.confirmData(index);
+            });
+    }
+
+    public close() {
+        if (this._subscription) {
+            this._subscription.unsubscribe();
+            this._subscription = null;
+        }
+    }
+
+    public async restart(index: number): Promise<boolean> {
+        this._searchIndex = index;
+        this._sendIndex = index;
+        await (new DatabaseServer()).update(
+            ListenerCollection,
+            { id: this.id },
+            {
+                searchIndex: this._searchIndex,
+                sendIndex: this._sendIndex
+            }
+        );
+        return true;
     }
 
     public async search(): Promise<void> {
@@ -107,32 +136,34 @@ export class Listener {
 
     public async push() {
         try {
-            if (this._lock) {
-                return;
+            const message = this.next();
+            if (message) {
+                await this.channel
+                    .publish(`${ListenerEvents.GET_LISTENER_MESSAGE}.${this.name}`, message.toJson());
             }
-            this._lock = true;
-            let next = this.next();
-            while (next) {
-                await this.sendMessage(next);
-                this._messages.shift();
-                next = this.next();
-            }
-            this._lock = false;
         } catch (error) {
-            this._lock = false;
+            console.log('push', error);
         }
     }
 
-    private async sendMessage(message: Message) {
-        this._sendIndex = message.index;
-        await this.channel.publish(`${ListenerEvents.GET_LISTENER_MESSAGE}.${this.name}`, message.data);
-        await (new DatabaseServer()).update(
-            ListenerCollection,
-            { id: this.id },
-            {
-                sendIndex: this._sendIndex
+    public async confirmData(index: number): Promise<void> {
+        try {
+            if (typeof index !== 'number') {
+                return;
             }
-        );
+            this._sendIndex = index;
+            await (new DatabaseServer()).update(
+                ListenerCollection,
+                { id: this.id },
+                {
+                    sendIndex: this._sendIndex
+                }
+            );
+            this._messages = this._messages.filter((m) => m.index > index);
+            this.push();
+        } catch (error) {
+            console.log('confirm', error);
+        }
     }
 
     private next(): Message | null {

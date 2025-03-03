@@ -1,7 +1,7 @@
-import {NatsConnection, headers, Subscription} from 'nats';
-import {GenerateUUIDv4} from '@guardian/interfaces';
-import {ZipCodec} from './zip-codec.js';
-import {IMessageResponse} from '../models/index.js';
+import { NatsConnection, headers, Subscription } from 'nats';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { ZipCodec } from './zip-codec.js';
+import { IMessageResponse } from '../models/index.js';
 
 type CallbackFunction = (body: any, error?: string, code?: number) => void;
 
@@ -163,7 +163,7 @@ export abstract class NatsService {
             this.sendMessage<T>(subject, data),
             new Promise<T>((_, reject) => {
                 setTimeout(() => {
-                    reject(new Error('Timeout exceed'))
+                    reject(new Error(`Timeout exceed (${subject})`))
                 }, timeout)
             })
         ])
@@ -215,7 +215,7 @@ export abstract class NatsService {
                     }
                     // head.append('rawMessage', isRaw);
                     if (!noRespond) {
-                        msg.respond(await this.codec.encode(await cb(await this.codec.decode(msg.data), msg.headers)), {headers: head});
+                        msg.respond(await this.codec.encode(await cb(await this.codec.decode(msg.data), msg.headers)), { headers: head });
                     } else {
                         cb(await this.codec.decode(msg.data), msg.headers);
                     }

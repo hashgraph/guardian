@@ -73,11 +73,9 @@ Promise.all([
         if (timer) {
             clearInterval(timer);
         }
-
-        // await state.updateState(ApplicationStates.INITIALIZING);
-        // const w = new ListenerService(channelName, logger);
-        // await w.setConnection(mqConnection).init();
-
+        await state.updateState(ApplicationStates.INITIALIZING);
+        const listenerService = new ListenerService(channelName, logger);
+        await listenerService.setConnection(mqConnection).init();
         return true;
     });
 
@@ -98,20 +96,6 @@ Promise.all([
     })
 
     await validator.validate();
-
-
-
-
-    //Test
-    const test = new ListenerService(channelName, logger);
-    test.setConnection(mqConnection);
-    await test.addListener({
-        topicId: '0.0.5527121',
-        name: 'test'
-    });
-    await test.init();
-
-
 }, (reason) => {
     console.log(reason);
     process.exit(0);
