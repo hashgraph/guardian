@@ -571,7 +571,7 @@
     * [🛠️ Monitoring Tools](guardian/standard-registry/external-events/monitoring-tools/README.md)
       * [⛏️ Application-events module](guardian/standard-registry/external-events/monitoring-tools/application-events-module.md)
     * [⚙️ Send Data using the External Data APIs](guardian/standard-registry/external-events/send-data-using-the-external-data-apis/README.md)
-      * [Sends Data from External Source](guardian/standard-registry/external-events/send-data-using-the-external-data-apis/sends-data-from-external-source.md)
+      * [Sends Data from an External Source](guardian/standard-registry/external-events/send-data-using-the-external-data-apis/sends-data-from-an-external-source.md)
   * [📱 Mobile Support for Data Interface](guardian/standard-registry/mobile-support-for-data-interface/README.md)
     * [📱 Mobile operation for the Standard Registry](guardian/standard-registry/mobile-support-for-data-interface/mobile-operation-for-the-standard-registry.md)
   * [🛠️ Standard Registry Operations](guardian/standard-registry/standard-registry-operations/README.md)
