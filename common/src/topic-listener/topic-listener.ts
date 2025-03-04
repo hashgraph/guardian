@@ -61,28 +61,28 @@ export class TopicListener {
             if (isFinite(sequenceNumber) && sequenceNumber > -2) {
                 this._startNumber = sequenceNumber;
             } else {
-                throw new Error('Invalid arguments 1');
+                throw new Error('Invalid arguments');
             }
         } else {
-            throw new Error('Invalid arguments 2');
+            throw new Error('Invalid arguments');
         }
         return this;
     }
 
-    public subscribe(
+    public async subscribe(
         callback: ListenerCallback,
         error?: ErrorCallback
-    ): TopicListener {
+    ): Promise<TopicListener> {
         if (typeof callback === 'function') {
             if (this._observable) {
                 throw new Error('Observable already exists');
             } else {
                 this._observable = callback;
                 this._error = error;
-                this._start().then();
+                await this._start();
             }
         } else {
-            throw new Error('Invalid arguments 3');
+            throw new Error('Invalid arguments');
         }
         return this;
     }
