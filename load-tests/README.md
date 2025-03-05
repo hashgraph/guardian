@@ -1,54 +1,48 @@
 # MGS performance testing
 
 ## Description
-There are tests with full workflow for IREC-7 policy:
-- Create tenant
+There are tests with few workflows:
+### Flow for mint tokens in Dry Run and Publish mode for iRec-3 policy:
 - Create users
 - Create standard registries
 - Provide hedera credentials 
-- Import policy
-- Publish policy
-- Associate token
+- Import policies
+- Dry-run/Publish policies
+- Assign policy to users
+- Associate tokens
 - Grant KYC
-- Choose role
+- Choose roles
 - Create and approve application
 - Create and approve device
 - Create and approve issue
 - Verify balance increase
 
-short workflow for IREC-7 policy:
+### Flow for mint tokens in Dry Run and Publish mode for CDM policy:
+- Create project participants
+- Create validation and verification bodies
+- Create standard registries
+- Provide hedera credentials 
 - Import policy
-- Publish policy
-- Associate token
+- Dry-run/Publish policies
+- Assign policy to users
+- Associate tokens
 - Grant KYC
-- Choose role
-- Create and approve application
-- Create and approve device
-- Create and approve issue
+- Choose roles
+- Create and approve applications
+- Create and approve projects
+- Create and approve reports
 - Verify balance increase
 
-view workflow for IREC-7 policy:
-- Create and approve issue
-- Verify balance increase
-- Policy list viewing and verifying
-- Token list viewing and verifying
-- Profile viewing and verifying
-
-dry workflow for IREC-7 policy:
-- Import policy
-- Publish policy
-- Dry run policy
 
 
 ## Navigation
 
 - [Software requirements](#software-requirements)
 - [Installation](#installation)
-- [Usage Short Flow](#usage-short-flow)
-- [Usage Full Flow](#usage-full-flow)
+- [Usage Flows](#usage-flows)
 
 ## Software requirements
-- Download apache-jmeter-5.5
+- Download apache-jmeter-5.6.3
 
 - Download and install plugins
 
@@ -57,172 +51,56 @@ dry workflow for IREC-7 policy:
 
 ## Installation
 
-1. Clone the repo
+1. Download apache-jmeter-5.6.3 from official site
 
-   ```shell
-   git clone https://github.com/EnvisionBlockchain/managed-guardian-service
-   ```
+2. Download and install JMeter Plugins Manager. More details:https://jmeter-plugins.org/wiki/PluginsManager/
 
-2. Change the tree for "performance-testing"
+3. Install "Custom Thread Groups" plugin by JMeter Plugins Manager. There is should be found by UI in Apache JMeter: Options->Plugins Managers->Available Plugins
 
-3. Download apache-jmeter-5.5 from official site
+4. Install "WebSocket Samplers by Peter Doornbch" plugin by JMeter Plugins Manager. There is should be found by UI in Apache JMeter: Options->Plugins Managers->Available Plugins
 
-4. Download and install JMeter Plugins Manager. More details:https://jmeter-plugins.org/wiki/PluginsManager/
 
-5. Install "Custom Thread Groups" plugin by JMeter Plugins Manager. There is should be found by UI in Apache JMeter: Options->Plugins Managers->Available Plugins
-
-6. Install "WebSocket Samplers by Peter Doornbch" plugin by JMeter Plugins Manager. There is should be found by UI in Apache JMeter: Options->Plugins Managers->Available Plugins
-
-7. Change Guardian's port number in "User Defined Variables". If Open Source project built by docker - need to enter 3000, for case when project built by yarn - need to enter 4200.
-
-## Usage Short Flow
+## Usage Flows 
 ### Pre-requests
-1. Open Apache-jmeter: execute {path-to-apache-jmeter}/bin/ApacheJMeter.jar
+1. Open Apache-jmeter: execute path-to-apache-jmeter/bin/ApacheJMeter.jar file
 
-3. Open test for short flow: File-Open-{path-to-repo}/PT/ShortFlow.jmx
+2. Open any flow: File->Open->path-to-repo/load-tests/*.jmx
 
-4. Some operations requires hedera tokens. In case with low balance on hedera account to execute tests correctly need to change hedera account on Guardian Open Sourse. To fix INSUFFICIENT_PAYER_BALANCE error change hedera account on Guardian Open Sourse:
-- Login on Guardian Open Sourse
-- Click on Administration
-- Click on Settings
-- Fill new variables(Hedera key, id, IPFS)
+3. Balance on hedera account which provided in .env.guardian settings on Open Source. 
+- Publish: ~25 HBar for iRec-3 and ~960 for CDM; for one thread.
+- Dry Run: ~5 HBar for iRec-3 and CDM; for one thread.
+
+4. Setup INITIAL_BALANCE="5" and INITIAL_STANDARD_REGISTRY_BALANCE="20" properties  in .env.guardian on Open Source for iRec; and INITIAL_BALANCE="5" and INITIAL_STANDARD_REGISTRY_BALANCE="950" for CDM.
+
+5. Setup ACCESS_TOKEN_UPDATE_INTERVAL=6000000 property in .env.auth settings on Open Source
+
+6. Provide filepath to .csv and folders with report's results in "CSV Data Set Config" and "Aggregate Report" elements
 
 ### Configure tests options
-1. To configure thread options(number of users, ramp-up time) need to change same properties on "Policy workflow" thread group. For example, 10 users and 150 seconds ramp-up time: test will create 10 policies and mint 10 tokens for each policy. Each user will start for 15(150\10) seconds later than previous user.
+1. To configure thread options(number of users, ramp-up time) need to change the properties on "Policy workflow" thread group. For example, 10 users and 150 seconds ramp-up time: test will create 10 policies and mint tokens for each policy. Each user will start for 15(15 = 150 \ 10) seconds later than previous user.
 
-2. There is limit of number of users. To increase max number need to add usernames and passwords to userdatashort.csv file. Limit number equals number of rows in this .csv.
+2. There is limit of number of users. To increase max number need to add usernames and passwords to userdatashort.csv file. Current limit is 1000 users.
 
-3. To debug test need to turn on "Debug PostProcessor"(allows to read variables), "Summary Report" and "View Results Tree"(allows to read list of executed requests).
-After the step, need to click on "Summary Report" to see results(requests, response, bodies and headers, variables). "View Results Tree" shows some metrics and general information about execution.
+3. To debug flow need to turn on "Debug PostProcessor"(allows to read variables), "Summary Report" and "View Results Tree"(allows to read list of executed requests).
+After this step, need to click on "Summary Report" to see results(requests, responses, bodies and headers, variables). "View Results Tree" shows some metrics and general information about execution.
 
-4. To pre-configure test for report generation need to turn on "Aggregate Report".
+4. To pre-configure flow for report generation need to turn on "Aggregate Report".
 
 ### Run tests by UI
-1. To first run need to prepare enviroment: run "Tenant creation" and "Users creation".
 
-2. After previous step, clear all reports, turn on "Policy workflow".
+1. To first run need to prepare enviroment: run "Create OS users" with number of threads equal to the number of "Policy Workflow" threads.
 
-3. Click on "Start" button
+2. After previous step, clear all reports, turn off "Create OS users". Turn on "Policy workflow".
+
+3. Click on "Start" button and wait for the test run to complete.
 
 4. Generate and analyze report.
 
 ### Report Generation
+Available only if "Aggregate Report" element is active.
+
 1. Click Tools-Generate HTML Report
 
-2. Check that {path-to-repo}/results_short/report is empty.
+2. Fill inputs and generate report. User properties file can be find in apache-jmeter-5.6.3/bin folder; results file same with "Filename" property in "Aggregate report" element; output folder must be emtpy.
 
-3. Fill "Results file"({path-to-repo}/results_short/result.csv), "Output directory"({path-to-repo}/results/report), "user.properties file({path-to-apache-jmeter}/bin/user.properties)" and generate report.
-
-4. Open 
-{path-to-repo}/results_short/report/index.html
-
-## Usage Full Flow
-### Pre-requests
-1. Open Apache-jmeter: execute {path-to-apache-jmeter}/bin/ApacheJMeter.jar
-
-2. Open test for full flow: File-Open-{path-to-repo}/PT/FullFlow.jmx
-
-4. Some operations requires hedera tokens. In case with low balance on hedera account to execute tests correctly need to change hedera account on Guardian Open Sourse. To fix INSUFFICIENT_PAYER_BALANCE error change hedera account on Guardian Open Sourse:
-- Login by Guardian Open Sourse
-- Click on Administration
-- Click on Settings
-- Fill new variables(Hedera key, id, IPFS)
-
-### Configure tests options
-1. To configure thread options(number of users, ramp-up time) need to change same properties on "Full flow for N users" thread group. For example, 10 users and 150 seconds ramp-up time: test will create 10 SRs, 10 users, 10 policies and mint 10 tokens for each policy. Each user will start for 15(150\10) seconds later than previous user.
-
-2. There is limit of number of users. To increase max number need to add usernames and passwords to userdata.csv file. Limit number equals number of rows in this .csv.
-
-3. To debug test need to turn on "Debug PostProcessor"(allows to read variables), "Summary Report" and "View Results Tree"(allows to read list of executed requests).
-After the step, need to click on "Summary Report" to see results(requests, response, bodies and headers, variables). "View Results Tree" shows some metrics and general information about execution.
-
-4. To pre-configure test for report generation need to turn on "Aggregate Report".
-
-### Run tests by UI
-1. Turn on "Flow for tenant creation", "Full flow for N users" and "Flow for tenant deletion".
-
-2. Click on "Start" button
-
-### Report Generation
-1. Click Tools-Generate HTML Report
-
-2. Check that {path-to-repo}/results/report is empty.
-
-3. Fill "Results file"({path-to-repo}/results/result.csv), "Output directory"({path-to-repo}/results/report), "user.properties file({path-to-apache-jmeter}/bin/user.properties)" and generate report.
-
-4. Open 
-{path-to-repo}/results/report/index.html
-
-## Usage View Flow
-### Pre-requests
-1. Open Apache-jmeter: execute {path-to-apache-jmeter}/bin/ApacheJMeter.jar
-
-2. Open test for full flow: File-Open-{path-to-repo}/PT/ViewFlow.jmx
-
-4. Some operations requires hedera tokens. In case with low balance on hedera account to execute tests correctly need to change hedera account on Guardian Open Sourse. To fix INSUFFICIENT_PAYER_BALANCE error change hedera account on Guardian Open Sourse:
-- Login by Guardian Open Sourse
-- Click on Administration
-- Click on Settings
-- Fill new variables(Hedera key, id, IPFS)
-
-### Configure tests options
-1. To configure thread options(number of users, ramp-up time) need to change same properties on "View Flow" thread group. For example, 10 users and 150 seconds ramp-up time: test will mint 10 tokens and view lists and profiles for each user. Each user will start for 15(150\10) seconds later than previous user.
-
-2. There is limit of number of users. To increase max number need to add usernames and passwords to userdata.csv file. Limit number equals number of rows in this .csv.
-
-3. To debug test need to turn on "Debug PostProcessor"(allows to read variables), "Summary Report" and "View Results Tree"(allows to read list of executed requests).
-After the step, need to click on "Summary Report" to see results(requests, response, bodies and headers, variables). "View Results Tree" shows some metrics and general information about execution.
-
-4. To pre-configure test for report generation need to turn on "Aggregate Report".
-
-### Run tests by UI
-1. Turn on "View Flow".
-
-2. Click on "Start" button
-
-### Report Generation
-1. Click Tools-Generate HTML Report
-
-2. Check that {path-to-repo}/results/report is empty.
-
-3. Fill "Results file"({path-to-repo}/results/result.csv), "Output directory"({path-to-repo}/results/report), "user.properties file({path-to-apache-jmeter}/bin/user.properties)" and generate report.
-
-4. Open 
-{path-to-repo}/results/report/index.html
-
-## Usage Dry run Flow
-### Pre-requests
-1. Open Apache-jmeter: execute {path-to-apache-jmeter}/bin/ApacheJMeter.jar
-
-2. Open test for full flow: File-Open-{path-to-repo}/PT/FullFlow.jmx
-
-4. Some operations requires hedera tokens. In case with low balance on hedera account to execute tests correctly need to change hedera account on Guardian Open Sourse. To fix INSUFFICIENT_PAYER_BALANCE error change hedera account on Guardian Open Sourse:
-- Login by Guardian Open Sourse
-- Click on Administration
-- Click on Settings
-- Fill new variables(Hedera key, id, IPFS)
-
-### Configure tests options
-1. To configure thread options(number of users, ramp-up time) need to change same properties on "Full flow for N users" thread group. For example, 10 users and 150 seconds ramp-up time: test will create 10 SRs, 10 users, 10 policies and move it to "Dry Run" status. Each user will start for 15(150\10) seconds later than previous user.
-
-2. There is limit of number of users. To increase max number need to add usernames and passwords to userdata.csv file. Limit number equals number of rows in this .csv.
-
-3. To debug test need to turn on "Debug PostProcessor"(allows to read variables), "Summary Report" and "View Results Tree"(allows to read list of executed requests).
-After the step, need to click on "Summary Report" to see results(requests, response, bodies and headers, variables). "View Results Tree" shows some metrics and general information about execution.
-
-4. To pre-configure test for report generation need to turn on "Aggregate Report".
-
-### Run tests by UI
-1. Turn on "Policy workflow".
-
-2. Click on "Start" button
-
-### Report Generation
-1. Click Tools-Generate HTML Report
-
-2. Check that {path-to-repo}/results/report is empty.
-
-3. Fill "Results file"({path-to-repo}/results/result.csv), "Output directory"({path-to-repo}/results/report), "user.properties file({path-to-apache-jmeter}/bin/user.properties)" and generate report.
-
-4. Open 
-{path-to-repo}/results/report/index.html
+3. Open */report/index.html
