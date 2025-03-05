@@ -604,7 +604,7 @@ if (result!=&quot;&quot;)
             <boolProp name="TransactionController.includeTimers">true</boolProp>
           </TransactionController>
           <hashTree>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Create Dry Run PP">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Create Dry Run PP" enabled="true">
               <stringProp name="HTTPSampler.path">/policies/${policyId}/dry-run/user</stringProp>
               <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
               <stringProp name="HTTPSampler.method">POST</stringProp>
