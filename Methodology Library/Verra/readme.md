@@ -11,7 +11,10 @@ Methodologies often refer to modules or tools, which include specific methodolog
 - VM0041
 - VM0042
 - VM0044
-- VerraARR
+- VM0003
+- VM0047
+- VM0048
+- VMR0006
 - PWRM0001
 - PWRM0002
 
@@ -19,7 +22,7 @@ Methodologies often refer to modules or tools, which include specific methodolog
 
 | Policy | Company Name | ETA |
 |---|---|---:|
-| VMR0006 | Envision |July 31st|
+| VM0042 V2.1 | Envision |March 31st|
 
 **Following are the Testnet and Mainnet timestamps for CDM Methodologies**
 
