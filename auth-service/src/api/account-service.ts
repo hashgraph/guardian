@@ -58,7 +58,7 @@ export class AccountService extends NatsService {
                         throw new Error('Token expired');
                     }
 
-                    const user = await UserUtils.getUser({ username: decryptedToken.username }, UserProp.REQUIRED);
+                    const user = await UserUtils.getUser({ username: decryptedToken.username}, UserProp.REQUIRED);
                     return new MessageResponse(user);
                 } catch (error) {
                     return new MessageError(error);
@@ -326,7 +326,7 @@ export class AccountService extends NatsService {
                             if (await UserPassword.verifyPasswordV2(user, password)) {
                                 const userAccessTokenService = await UserAccessTokenService.New();
                                 const token = userAccessTokenService.generateRefreshToken(user);
-                                user.refreshToken = token.id;
+                                user.refreshToken = token.token;
 
                                 await new DatabaseServer().save(User, user);
                                 return new MessageResponse({
@@ -393,7 +393,7 @@ export class AccountService extends NatsService {
                 }
 
                 const user = await new DatabaseServer().findOne(User, {
-                    refreshToken: decryptedToken.id,
+                    refreshToken,
                     username: decryptedToken.name,
                     template: { $ne: true }
                 });
