@@ -2,16 +2,19 @@
     *ngIf="!multiple"
     dataKey="id" 
     [(ngModel)]="value"
+    optionValue="value"
     [options]="searchData"
     [disabled]="readonly"
     [filter]="false"
     filterPlaceholder="Search..."
-    placeholder="Select"
+    placeholder="Select..."
     (onChange)="onChange()"
-    [appendTo]="'body'"
+    appendTo="body"
+    class="guardian-dropdown" 
+    panelStyleClass="guardian-dropdown-panel"
 >
     <ng-template pTemplate="selectedItem" let-item>
-        <span class="custom">{{ item ? item.name : 'Select' }}</span>
+        <span class="custom">{{ item ? item.name : 'Select...' }}</span>
     </ng-template>
     <ng-template pTemplate="header">
         <div class="components-search">
@@ -42,13 +45,16 @@
     *ngIf="multiple"
     dataKey="id" 
     [(ngModel)]="value"
+    optionValue="value"
     [options]="searchData"
     [disabled]="readonly"
     [filter]="false"
     [displaySelectedLabel]="false"
     placeholder="Select"
     (onChange)="onChange()"
-    [appendTo]="'body'"
+    appendTo="body"
+    class="guardian-multiselect"
+    panelStyleClass="guardian-multiselect-panel policy-select-block" 
 >
     <ng-template pTemplate="header">
         <div class="components-search">
