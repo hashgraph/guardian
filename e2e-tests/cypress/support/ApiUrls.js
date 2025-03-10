@@ -1,5 +1,6 @@
 const API = {
-    ApiServer: "http://localhost:" + Cypress.env("portApi") + "/",
+    ApiServer: `http://localhost:${Cypress.env("portApi")}/`,
+    ApiIndexer: `http://localhost:${Cypress.env("portIndexer")}/`,
 
     //Accounts
     Accounts: "accounts/",
@@ -165,5 +166,29 @@ const API = {
     Assign: "assign/",
     Test: "test/",
     Start: "start/",
+
+    //Indexer
+    IndexerRegistries: "entities/registries/",
+    IndexerUsers: "entities/registry-users/",
+
+    IndexerDIDs: "entities/did-documents/",
+    IndexerVCs: "entities/vc-documents/",
+    IndexerVPs: "entities/vp-documents/",
+    IndexerStatisticVCs: "entities/statistic-documents/",
+    IndexerLabelVPs: "entities/label-documents/",
+    
+    IndexerPolicies: "entities/policies/",
+    IndexerTools: "entities/tools/",
+    IndexerModules: "entities/modules/",
+    IndexerSchemas: "entities/schemas/",
+    IndexerTokens: "entities/tokens/",
+    IndexerRoles: "entities/roles/",
+    IndexerStatistics: "entities/statistics/",
+    IndexerLabels: "entities/labels/",
+    IndexerFormulas: "entities/formulas/",
+    
+    IndexerNFTs: "entities/nfts/",
+    IndexerTopics: "entities/topics/",
+    IndexerContracts: "entities/contracts/",
 };
 export default API;
