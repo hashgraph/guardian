@@ -60,21 +60,34 @@ There are tests with few workflows:
 4. Install "WebSocket Samplers by Peter Doornbch" plugin by JMeter Plugins Manager. There is should be found by UI in Apache JMeter: Options->Plugins Managers->Available Plugins
 
 
-## Usage Flows 
-### Pre-requests
-1. Open Apache-jmeter: execute path-to-apache-jmeter/bin/ApacheJMeter.jar file
+## Usage Test Flows 
 
-2. Open any flow: File->Open->path-to-repo/load-tests/*.jmx
-
-3. Balance on hedera account which provided in .env.guardian settings on Open Source. 
+### Pre-requests(UI)
+1. Balance on hedera account which provided in .env.guardian settings on Open Source. 
 - Publish: ~25 HBar for iRec-3 and ~960 for CDM; for one thread.
 - Dry Run: ~5 HBar for iRec-3 and CDM; for one thread.
 
-4. Setup INITIAL_BALANCE="5" and INITIAL_STANDARD_REGISTRY_BALANCE="20" properties  in .env.guardian on Open Source for iRec; and INITIAL_BALANCE="5" and INITIAL_STANDARD_REGISTRY_BALANCE="950" for CDM.
+2. Setup INITIAL_BALANCE="5" and INITIAL_STANDARD_REGISTRY_BALANCE="20" properties  in .env.guardian on Open Source for iRec; and INITIAL_BALANCE="5" and INITIAL_STANDARD_REGISTRY_BALANCE="950" for CDM.
 
-5. Setup ACCESS_TOKEN_UPDATE_INTERVAL=6000000 property in .env.auth settings on Open Source
+3. Setup ACCESS_TOKEN_UPDATE_INTERVAL=6000000 property in .env.auth settings on Open Source
 
-6. Provide filepath to .csv and folders with report's results in "CSV Data Set Config" and "Aggregate Report" elements
+4. Provide filepath to .csv and folders with report's results in "CSV Data Set Config" and "Aggregate Report" elements.
+
+### Run tests by CLI(recommended)
+
+1. Make sure all listeners are disabled in the test flow.
+
+2. Run command from load-tests folder:
+
+```jmeter -n -t flowFile.jmx -l logsFile.jtl -e -o reportFolder```
+
+3. Analyze report.
+
+### Pre-requests(UI)
+
+1. Open Apache-jmeter: execute path-to-apache-jmeter/bin/ApacheJMeter.jar file
+
+2. Open any flow: File->Open->path-to-repo/load-tests/*.jmx
 
 ### Configure tests options
 1. To configure thread options(number of users, ramp-up time) need to change the properties on "Policy workflow" thread group. For example, 10 users and 150 seconds ramp-up time: test will create 10 policies and mint tokens for each policy. Each user will start for 15(15 = 150 \ 10) seconds later than previous user.
@@ -94,7 +107,7 @@ After this step, need to click on "Summary Report" to see results(requests, resp
 
 3. Click on "Start" button and wait for the test run to complete.
 
-4. Generate and analyze report.
+4. Analyze logs and reports.
 
 ### Report Generation
 Available only if "Aggregate Report" element is active.

@@ -34,7 +34,7 @@
         </collectionProp>
       </Arguments>
       <hashTree/>
-      <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults" enabled="true">
+      <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults">
         <stringProp name="HTTPSampler.domain">${OS}</stringProp>
         <stringProp name="HTTPSampler.port">${PORT}</stringProp>
         <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
@@ -57,7 +57,7 @@
         </collectionProp>
       </HeaderManager>
       <hashTree/>
-      <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config" enabled="true">
+      <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config">
         <stringProp name="delimiter">;</stringProp>
         <stringProp name="fileEncoding"></stringProp>
         <stringProp name="filename">C:/Projects/guardian/load-tests/usersIRecDryRun.csv</stringProp>
@@ -86,7 +86,7 @@
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Register SR on open source" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Register SR on open source">
           <stringProp name="HTTPSampler.contentEncoding">utf-8</stringProp>
           <stringProp name="HTTPSampler.path">/accounts/register</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
@@ -121,16 +121,16 @@
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="User creation flow">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests for user creation flow">
           <boolProp name="TransactionController.includeTimers">false</boolProp>
         </TransactionController>
         <hashTree>
-          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Register and generate SR hedera creds">
+          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests for register and generate SR hedera creds">
             <boolProp name="TransactionController.parent">true</boolProp>
             <boolProp name="TransactionController.includeTimers">true</boolProp>
           </TransactionController>
           <hashTree>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login by SR" enabled="true">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login by SR">
               <stringProp name="HTTPSampler.path">/accounts/login</stringProp>
               <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
               <stringProp name="HTTPSampler.method">POST</stringProp>
@@ -158,7 +158,7 @@
               </JSONPostProcessor>
               <hashTree/>
             </hashTree>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get Access Token" enabled="true">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get Access Token">
               <stringProp name="HTTPSampler.path">/accounts/access-token</stringProp>
               <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
               <stringProp name="HTTPSampler.method">POST</stringProp>
@@ -194,7 +194,7 @@
               </collectionProp>
             </HeaderManager>
             <hashTree/>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Generate SR keys" enabled="true">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Generate SR keys">
               <stringProp name="HTTPSampler.path">/demo/push/random-key</stringProp>
               <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
               <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -205,7 +205,7 @@
               </elementProp>
             </HTTPSamplerProxy>
             <hashTree>
-              <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract SR key gen task id" enabled="true">
+              <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract SR key gen task id">
                 <stringProp name="JSONPostProcessor.referenceNames">taskIdSRKeys</stringProp>
                 <stringProp name="JSONPostProcessor.jsonPathExprs">$.taskId</stringProp>
                 <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
@@ -213,15 +213,15 @@
               </JSONPostProcessor>
               <hashTree/>
             </hashTree>
-            <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While sr key gen(without WS)" enabled="true">
+            <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While sr key gen(without WS)">
               <stringProp name="WhileController.condition">${__javaScript(&quot;${operationStatusSR}&quot; != &quot;DONE&quot;,)}</stringProp>
             </WhileController>
             <hashTree>
-              <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer" enabled="true">
+              <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer">
                 <stringProp name="ConstantTimer.delay">3000</stringProp>
               </ConstantTimer>
               <hashTree/>
-              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get SR key gen result" enabled="true">
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get SR key gen result">
                 <stringProp name="HTTPSampler.path">/tasks/${taskIdSRKeys}</stringProp>
                 <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
                 <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -232,14 +232,14 @@
                 </elementProp>
               </HTTPSamplerProxy>
               <hashTree>
-                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Get status SR key gen" enabled="true">
+                <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Get status SR key gen">
                   <stringProp name="JSONPostProcessor.referenceNames">operationStatusSR</stringProp>
                   <stringProp name="JSONPostProcessor.jsonPathExprs">$.result</stringProp>
                   <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
                 </JSONPostProcessor>
                 <hashTree/>
-                <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="SR key gen result update" enabled="true">
-                  <stringProp name="scriptLanguage">javascript</stringProp>
+                <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="SR key gen result update">
+                  <stringProp name="scriptLanguage">groovy</stringProp>
                   <stringProp name="parameters"></stringProp>
                   <stringProp name="filename"></stringProp>
                   <stringProp name="cacheKey">true</stringProp>
@@ -249,7 +249,7 @@ if (result!=&quot;&quot;)
 	vars.put(&apos;operationStatusSR&apos;, &apos;DONE&apos;)</stringProp>
                 </JSR223PostProcessor>
                 <hashTree/>
-                <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Getting error while SR key gen" enabled="true">
+                <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Getting error while SR key gen">
                   <stringProp name="JSON_PATH">$..error.code</stringProp>
                   <stringProp name="EXPECTED_VALUE"></stringProp>
                   <boolProp name="JSONVALIDATION">false</boolProp>
@@ -287,7 +287,7 @@ if (result!=&quot;&quot;)
               <hashTree/>
             </hashTree>
           </hashTree>
-          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Link SR">
+          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests for link SR">
             <boolProp name="TransactionController.parent">true</boolProp>
             <boolProp name="TransactionController.includeTimers">true</boolProp>
           </TransactionController>
@@ -433,7 +433,7 @@ if (result!=&quot;&quot;)
             </hashTree>
           </hashTree>
         </hashTree>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests for Import">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests for Import" enabled="true">
           <boolProp name="TransactionController.parent">true</boolProp>
           <boolProp name="TransactionController.includeTimers">true</boolProp>
         </TransactionController>
@@ -541,7 +541,7 @@ if (result!=&quot;&quot;)
             <hashTree/>
           </hashTree>
         </hashTree>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests for DryRun">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests for DryRun" enabled="true">
           <boolProp name="TransactionController.parent">true</boolProp>
           <boolProp name="TransactionController.includeTimers">true</boolProp>
         </TransactionController>
@@ -586,11 +586,11 @@ if (result!=&quot;&quot;)
             <hashTree/>
           </hashTree>
         </hashTree>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests for Mint">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests for Mint" enabled="true">
           <boolProp name="TransactionController.includeTimers">false</boolProp>
         </TransactionController>
         <hashTree>
-          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="SR auth">
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="SR auth" enabled="true">
             <collectionProp name="HeaderManager.headers">
               <elementProp name="authorization" elementType="Header">
                 <stringProp name="Header.name">authorization</stringProp>
@@ -599,12 +599,12 @@ if (result!=&quot;&quot;)
             </collectionProp>
           </HeaderManager>
           <hashTree/>
-          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests For Application Create">
+          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests for Application Create" enabled="true">
             <boolProp name="TransactionController.parent">true</boolProp>
             <boolProp name="TransactionController.includeTimers">true</boolProp>
           </TransactionController>
           <hashTree>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Create Dry Run User">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Create Dry Run User" enabled="true">
               <stringProp name="HTTPSampler.path">/policies/${policyId}/dry-run/user</stringProp>
               <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
               <stringProp name="HTTPSampler.method">POST</stringProp>
@@ -680,7 +680,7 @@ vars.put(&apos;adminDID&apos;, adminData.did)</stringProp>
               </elementProp>
             </HTTPSamplerProxy>
             <hashTree/>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Create application">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Create application" enabled="true">
               <stringProp name="HTTPSampler.path">/policies/${policyId}/tag/create_application/blocks</stringProp>
               <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
               <stringProp name="HTTPSampler.method">POST</stringProp>
@@ -704,15 +704,15 @@ vars.put(&apos;adminDID&apos;, adminData.did)</stringProp>
               </elementProp>
             </HTTPSamplerProxy>
             <hashTree/>
-            <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While application creating">
+            <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While application creating" enabled="true">
               <stringProp name="WhileController.condition">${__javaScript(&quot;${title}&quot; != &quot;Submitted for Approval&quot;,)}</stringProp>
             </WhileController>
             <hashTree>
-              <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer">
+              <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer" enabled="true">
                 <stringProp name="ConstantTimer.delay">3000</stringProp>
               </ConstantTimer>
               <hashTree/>
-              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get application creation status">
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get application creation status" enabled="true">
                 <stringProp name="HTTPSampler.path">/policies/${policyId}/tag/registrants_workflow_steps/blocks</stringProp>
                 <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
                 <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -733,7 +733,7 @@ vars.put(&apos;adminDID&apos;, adminData.did)</stringProp>
               </hashTree>
             </hashTree>
           </hashTree>
-          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests For Application Approve">
+          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests for Application Approve" enabled="true">
             <boolProp name="TransactionController.parent">true</boolProp>
             <boolProp name="TransactionController.includeTimers">true</boolProp>
           </TransactionController>
@@ -807,15 +807,15 @@ vars.put(&apos;appDataBody&apos;, JSON.stringify({
               </JSR223PreProcessor>
               <hashTree/>
             </hashTree>
-            <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While approve waiting">
+            <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While approve waiting" enabled="true">
               <stringProp name="WhileController.condition">${__javaScript(&quot;${ApplicationApproveStatus}&quot; != &quot;Approved&quot;,)}</stringProp>
             </WhileController>
             <hashTree>
-              <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer">
+              <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer" enabled="true">
                 <stringProp name="ConstantTimer.delay">3000</stringProp>
               </ConstantTimer>
               <hashTree/>
-              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get app approve result">
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get app approve result" enabled="true">
                 <stringProp name="HTTPSampler.path">/policies/${policyId}/tag/registrants_grid/blocks</stringProp>
                 <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
                 <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -836,7 +836,7 @@ vars.put(&apos;appDataBody&apos;, JSON.stringify({
               </hashTree>
             </hashTree>
           </hashTree>
-          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests For Device Create">
+          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests for Device Create" enabled="true">
             <boolProp name="TransactionController.parent">true</boolProp>
             <boolProp name="TransactionController.includeTimers">true</boolProp>
           </TransactionController>
@@ -895,7 +895,7 @@ vars.put(&apos;device_schema_type&apos;, schema.type)</stringProp>
               </JSR223PostProcessor>
               <hashTree/>
             </hashTree>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Create device">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Create device" enabled="true">
               <stringProp name="HTTPSampler.path">/policies/${policyId}/tag/create_device_form/blocks</stringProp>
               <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
               <stringProp name="HTTPSampler.method">POST</stringProp>
@@ -1026,11 +1026,11 @@ vars.put(&apos;device_body&apos;, JSON.stringify(body));</stringProp>
               </JSR223PreProcessor>
               <hashTree/>
             </hashTree>
-            <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While device creation">
+            <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While device creation" enabled="true">
               <stringProp name="WhileController.condition">${__javaScript(&quot;${devCreationStatus}&quot; != &quot;Waiting for approval&quot;,)}</stringProp>
             </WhileController>
             <hashTree>
-              <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer">
+              <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer" enabled="true">
                 <stringProp name="ConstantTimer.delay">3000</stringProp>
               </ConstantTimer>
               <hashTree/>
@@ -1055,7 +1055,7 @@ vars.put(&apos;device_body&apos;, JSON.stringify(body));</stringProp>
               </hashTree>
             </hashTree>
           </hashTree>
-          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests For Device Approve">
+          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests for Device Approve" enabled="true">
             <boolProp name="TransactionController.parent">true</boolProp>
             <boolProp name="TransactionController.includeTimers">true</boolProp>
           </TransactionController>
@@ -1079,7 +1079,7 @@ vars.put(&apos;device_body&apos;, JSON.stringify(body));</stringProp>
               </elementProp>
             </HTTPSamplerProxy>
             <hashTree/>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get devices">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get devices" enabled="true">
               <stringProp name="HTTPSampler.path">/policies/${policyId}/tag/approve_devices_grid/blocks</stringProp>
               <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
               <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -1140,11 +1140,11 @@ vars.put(&apos;device_row_body&apos;, JSON.stringify({
               </JSR223PreProcessor>
               <hashTree/>
             </hashTree>
-            <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While device approve">
+            <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While device approve" enabled="true">
               <stringProp name="WhileController.condition">${__javaScript(&quot;${devApproveStatus}&quot; != &quot;Approved&quot;,)}</stringProp>
             </WhileController>
             <hashTree>
-              <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer">
+              <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer" enabled="true">
                 <stringProp name="ConstantTimer.delay">3000</stringProp>
               </ConstantTimer>
               <hashTree/>
@@ -1169,7 +1169,7 @@ vars.put(&apos;device_row_body&apos;, JSON.stringify({
               </hashTree>
             </hashTree>
           </hashTree>
-          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests For Issue Request Create">
+          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests for Issue Request Create" enabled="true">
             <boolProp name="TransactionController.parent">true</boolProp>
             <boolProp name="TransactionController.includeTimers">true</boolProp>
           </TransactionController>
@@ -1377,11 +1377,11 @@ vars.put(&apos;issue_body&apos;, JSON.stringify(body));
               </JSR223PreProcessor>
               <hashTree/>
             </hashTree>
-            <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While issue request creation">
+            <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While issue request creation" enabled="true">
               <stringProp name="WhileController.condition">${__javaScript(&quot;${IRCreationStatus}&quot; != &quot;Waiting for approval&quot;,)}</stringProp>
             </WhileController>
             <hashTree>
-              <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer">
+              <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer" enabled="true">
                 <stringProp name="ConstantTimer.delay">3000</stringProp>
               </ConstantTimer>
               <hashTree/>
@@ -1406,7 +1406,7 @@ vars.put(&apos;issue_body&apos;, JSON.stringify(body));
               </hashTree>
             </hashTree>
           </hashTree>
-          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests For Issue Request Approve">
+          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests for Issue Request Approve" enabled="true">
             <boolProp name="TransactionController.parent">true</boolProp>
             <boolProp name="TransactionController.includeTimers">true</boolProp>
           </TransactionController>
@@ -1491,11 +1491,11 @@ vars.put(&apos;issue_row_body&apos;, JSON.stringify({
               </JSR223PreProcessor>
               <hashTree/>
             </hashTree>
-            <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While issue request approve">
+            <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While issue request approve" enabled="true">
               <stringProp name="WhileController.condition">${__javaScript(&quot;${IRApproveStatus}&quot; != &quot;Minted&quot;,)}</stringProp>
             </WhileController>
             <hashTree>
-              <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer">
+              <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer" enabled="true">
                 <stringProp name="ConstantTimer.delay">3000</stringProp>
               </ConstantTimer>
               <hashTree/>
@@ -1520,20 +1520,20 @@ vars.put(&apos;issue_row_body&apos;, JSON.stringify({
               </hashTree>
             </hashTree>
           </hashTree>
-          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests For Balance Verify">
+          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Requests for Balance Verify" enabled="true">
             <boolProp name="TransactionController.parent">true</boolProp>
             <boolProp name="TransactionController.includeTimers">true</boolProp>
           </TransactionController>
           <hashTree>
-            <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While Report is verifying">
+            <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While Report is verifying" enabled="true">
               <stringProp name="WhileController.condition">${__javaScript(&quot;${balance}&quot; != &quot;10&quot;,)}</stringProp>
             </WhileController>
             <hashTree>
-              <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer">
+              <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer" enabled="true">
                 <stringProp name="ConstantTimer.delay">3000</stringProp>
               </ConstantTimer>
               <hashTree/>
-              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get Balance">
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get Balance" enabled="true">
                 <stringProp name="HTTPSampler.path">/policies/${policyId}/tag/vp_grid/blocks</stringProp>
                 <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
                 <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -1556,7 +1556,7 @@ vars.put(&apos;issue_row_body&apos;, JSON.stringify({
           </hashTree>
         </hashTree>
       </hashTree>
-      <DebugPostProcessor guiclass="TestBeanGUI" testclass="DebugPostProcessor" testname="Debug PostProcessor" enabled="true">
+      <DebugPostProcessor guiclass="TestBeanGUI" testclass="DebugPostProcessor" testname="Debug PostProcessor">
         <boolProp name="displayJMeterProperties">false</boolProp>
         <boolProp name="displayJMeterVariables">true</boolProp>
         <boolProp name="displaySamplerProperties">false</boolProp>
@@ -1653,7 +1653,7 @@ vars.put(&apos;issue_row_body&apos;, JSON.stringify({
             <dataType>true</dataType>
             <encoding>false</encoding>
             <assertions>true</assertions>
-            <subresults>true</subresults>
+            <subresults>false</subresults>
             <responseData>false</responseData>
             <samplerData>false</samplerData>
             <xml>false</xml>
