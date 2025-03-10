@@ -1,4 +1,12 @@
-import { MessageBrokerChannel, MessageResponse, NatsService, NotificationHelper, PinoLogger, SecretManager, Users } from '@guardian/common';
+import {
+    MessageBrokerChannel,
+    MessageResponse,
+    NatsService,
+    NotificationHelper,
+    PinoLogger,
+    SecretManager,
+    Users
+} from '@guardian/common';
 import { ExternalMessageEvents, GenerateUUIDv4, ISignOptions, ITask, ITaskResult, WorkerEvents, WorkerTaskType } from '@guardian/interfaces';
 import { HederaSDKHelper, NetworkOptions } from './helpers/hedera-sdk-helper.js';
 import { IpfsClientClass } from './ipfs-client-class.js';
@@ -138,7 +146,6 @@ export class Worker extends NatsService {
     public async init(): Promise<void> {
         await super.init();
         this.channel = new MessageBrokerChannel(this.connection, 'worker');
-
         try {
             await this.ipfsClient.createClient()
         } catch (e) {
@@ -226,7 +233,7 @@ export class Worker extends NatsService {
                     balance,
                     unit: 'Hbar',
                     operatorAccountId
-                });
+                }, false);
             } catch (error) {
                 throw new Error(`Worker (${['api-gateway', 'update-user-balance'].join('.')}) send: ` + error);
             }
@@ -542,7 +549,6 @@ export class Worker extends NatsService {
                         operatorKey,
                         adminKey,
                     } = task.data;
-
                     client = new HederaSDKHelper(operatorId, operatorKey, null, networkOptions);
                     result.data = await client.deleteToken(
                         TokenId.fromString(tokenId),

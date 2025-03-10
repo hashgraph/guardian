@@ -4,7 +4,7 @@ import { PaginatorModule } from 'primeng/paginator';
 import { TranslocoModule } from '@jsverse/transloco';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ButtonModule } from 'primeng/button';
-import { DatePipe, NgStyle, NgTemplateOutlet } from '@angular/common';
+import { CommonModule, DatePipe, NgStyle, NgTemplateOutlet } from '@angular/common';
 import { PaginatorComponent } from '@components/paginator/paginator.component';
 import { TagModule } from 'primeng/tag';
 import { RouterModule } from '@angular/router';
@@ -44,6 +44,7 @@ export interface ButtonColumn extends BaseColumn {
     callback: (row: any) => void;
     field?: string;
     btn_label: string;
+    icon?: string;
 }
 
 export interface HederaTimestampColumn extends BaseColumn {
@@ -56,6 +57,7 @@ export interface HederaTimestampColumn extends BaseColumn {
     selector: 'app-table',
     standalone: true,
     imports: [
+        CommonModule,
         TableModule,
         PaginatorModule,
         TranslocoModule,

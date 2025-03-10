@@ -108,7 +108,7 @@ export type PolicyActionMap = Map<string, Map<PolicyInputEventType, EventCallbac
  */
 export function updateBlockEvent(blocks: string[], user: PolicyUser): void {
     const type = 'update';
-    new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, data: [blocks, user.toJson()] });
+    new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, data: [blocks, user.toJson()] }, false);
 }
 
 /**
@@ -118,7 +118,7 @@ export function updateBlockEvent(blocks: string[], user: PolicyUser): void {
  */
 export function errorBlockEvent(blockType: string, message: any, user: PolicyUser): void {
     const type = 'error';
-    new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, data: [blockType, message, user.toJson()] });
+    new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, data: [blockType, message, user.toJson()] }, false);
 }
 
 /**
@@ -128,7 +128,7 @@ export function errorBlockEvent(blockType: string, message: any, user: PolicyUse
  */
 export function infoBlockEvent(user: PolicyUser, policy: Policy): void {
     const type = 'update-user';
-    new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, data: [user.toJson(), policy] });
+    new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, data: [user.toJson(), policy] }, false);
 }
 
 /**
@@ -138,7 +138,7 @@ export function infoBlockEvent(user: PolicyUser, policy: Policy): void {
  */
 export function externalBlockEvent(event: ExternalEvent<any>): void {
     const type = 'external';
-    new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, data: [event] });
+    new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, data: [event] }, false);
 }
 
 /**

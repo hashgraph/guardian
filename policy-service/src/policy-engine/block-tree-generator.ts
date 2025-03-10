@@ -1,13 +1,13 @@
-import { IPolicyBlock, IPolicyInstance, IPolicyInterfaceBlock, IPolicyNavigationStep } from './policy-engine.interface.js';
-import { PolicyComponentsUtils } from './policy-components-utils.js';
-import { GenerateUUIDv4, IUser, PolicyEvents } from '@guardian/interfaces';
 import { DataBaseHelper, DatabaseServer, MessageError, MessageResponse, NatsService, PinoLogger, Policy, Singleton, Users } from '@guardian/common';
-import { PolicyUser } from './policy-user.js';
-import { PolicyValidator } from '../policy-engine/block-validators/index.js'
+import { GenerateUUIDv4, IUser, PolicyEvents } from '@guardian/interfaces';
 import { headers } from 'nats';
+import { Inject } from '../helpers/decorators/inject.js';
+import { PolicyValidator } from '../policy-engine/block-validators/index.js';
 import { ComponentsService } from './helpers/components-service.js';
+import { PolicyComponentsUtils } from './policy-components-utils.js';
+import { IPolicyBlock, IPolicyInstance, IPolicyInterfaceBlock, IPolicyNavigationStep } from './policy-engine.interface.js';
+import { PolicyUser } from './policy-user.js';
 import { RecordUtils } from './record-utils.js';
-import { Inject } from '../helpers/decorators/inject.js'
 
 /**
  * Block tree generator
@@ -15,28 +15,25 @@ import { Inject } from '../helpers/decorators/inject.js'
 @Singleton
 export class BlockTreeGenerator extends NatsService {
     /**
+     * Policy models map
+     * @private
+     */
+    private readonly models: Map<string, IPolicyBlock> = new Map();
+    /**
      * Users helper
      * @private
      */
     @Inject()
     declare private users: Users;
-
     /**
      * Message queue name
      */
     public messageQueueName = 'block-tree-generator-queue';
-
     /**
      * Reply subject
      * @private
      */
     public replySubject = 'block-tree-generator-reply-' + GenerateUUIDv4();
-
-    /**
-     * Policy models map
-     * @private
-     */
-    private readonly models: Map<string, IPolicyBlock> = new Map();
 
     /**
      * Get user
@@ -241,6 +238,20 @@ export class BlockTreeGenerator extends NatsService {
                 if (block.policyId === policyId) {
                     await (block as any).receiveData(data);
                 }
+            }
+            return new MessageResponse({});
+        });
+
+        this.getPolicyMessages(PolicyEvents.MRV_DATA_CUSTOM, policyId, async (msg: any) => {
+            const { data } = msg;
+
+            // <-- Record
+            await RecordUtils.RecordExternalData(policyId, data.data);
+            // Record -->
+
+            const block = PolicyComponentsUtils.GetBlockByTag(policyId, data.blockTag);
+            if (block && (block.policyId === policyId)) {
+                await (block as any).receiveData(data.data);
             }
             return new MessageResponse({});
         });

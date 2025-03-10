@@ -225,34 +225,78 @@ export class SynchronizationProjects extends SynchronizationTask {
             }
             case 'MultiPoint':
             case 'LineString': {
+                // for (const point of item.coordinates) {
+                //     this.addCoordinates(
+                //         storage,
+                //         { type: 'Point', coordinates: point },
+                //         projectId
+                //     );
+                // }
+
+                let coordinatesCount = item.coordinates.length;
+                const sumCoordinates: number[] = [0, 0];
                 for (const point of item.coordinates) {
-                    this.addCoordinates(
-                        storage,
-                        { type: 'Point', coordinates: point },
-                        projectId
-                    );
+                    sumCoordinates[0] += point[0];
+                    sumCoordinates[1] += point[1];
                 }
+                const centerCoordinate: number[] = [sumCoordinates[0] / coordinatesCount, sumCoordinates[1] / coordinatesCount];
+                storage.push({
+                    coordinates: `${centerCoordinate[0].toString(10)}|${centerCoordinate[1].toString(10)}`,
+                    projectId,
+                })
                 break;
             }
             case 'Polygon':
             case 'MultiLineString': {
-                for (const line of item.coordinates) {
-                    this.addCoordinates(
-                        storage,
-                        { type: 'MultiPoint', coordinates: line },
-                        projectId
-                    );
+                // for (const line of item.coordinates) {
+                //     this.addCoordinates(
+                //         storage,
+                //         { type: 'MultiPoint', coordinates: line },
+                //         projectId
+                //     );
+                // }
+
+                let coordinatesCount = 0;
+                const sumCoordinates: number[] = [0, 0];
+                for (const multiPoint of item.coordinates) {
+                    for (const point of multiPoint) {
+                        sumCoordinates[0] += point[0];
+                        sumCoordinates[1] += point[1];
+                    }
+                    coordinatesCount += multiPoint.length;
                 }
+                const centerCoordinate: number[] = [sumCoordinates[0] / coordinatesCount, sumCoordinates[1] / coordinatesCount];
+                storage.push({
+                    coordinates: `${centerCoordinate[0].toString(10)}|${centerCoordinate[1].toString(10)}`,
+                    projectId,
+                })
                 break;
             }
             case 'MultiPolygon': {
+                // for (const polygon of item.coordinates) {
+                //     this.addCoordinates(
+                //         storage,
+                //         { type: 'Polygon', coordinates: polygon },
+                //         projectId
+                //     );
+                // }
+
+                let coordinatesCount = 0;
+                const sumCoordinates: number[] = [0, 0];
                 for (const polygon of item.coordinates) {
-                    this.addCoordinates(
-                        storage,
-                        { type: 'Polygon', coordinates: polygon },
-                        projectId
-                    );
+                    for (const multiPoint of polygon) {
+                        for (const point of multiPoint) {
+                            sumCoordinates[0] += point[0];
+                            sumCoordinates[1] += point[1];
+                        }
+                        coordinatesCount += multiPoint.length;
+                    }
                 }
+                const centerCoordinate: number[] = [sumCoordinates[0] / coordinatesCount, sumCoordinates[1] / coordinatesCount];
+                storage.push({
+                    coordinates: `${centerCoordinate[0].toString(10)}|${centerCoordinate[1].toString(10)}`,
+                    projectId,
+                })
                 break;
             }
             default:
