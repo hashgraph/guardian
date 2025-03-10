@@ -497,4 +497,11 @@ export class DocumentsSourceBlockComponent implements OnInit {
             this.statusDetailed = this.statusDetailed === element ? null : element;
         }
     }
+
+    getClass(type: string): string {
+        if(type === 'text') {
+            return 'text-container';
+        }
+        return ''
+    }
 }
