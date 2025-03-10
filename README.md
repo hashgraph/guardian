@@ -249,13 +249,13 @@ The following list outlines various Docker Compose configurations for different 
 
 | Configuration | Description | Command to Run |
 |---------------|-------------|----------------|
-| Guardian (Demo Mode) | Guardian using pre-built images | `docker-compose up -d --build` |
+| Guardian (Demo Mode) | Guardian using pre-built images | `docker-compose up -d --build --pull always` |
 | Guardian Build (Demo Mode) | Builds Guardian from source code | `docker-compose -f docker-compose-build.yml up -d --build` |
-| Production Guardian | Guardian using pre-built images, no demo mode | `docker-compose -f docker-compose-production.yml up -d --build` |
+| Production Guardian | Guardian using pre-built images, no demo mode | `docker-compose -f docker-compose-production.yml up -d --build --pull always` |
 | Production Guardian Build | Builds Guardian from source code, no demo mode | `docker-compose -f docker-compose-production-build.yml up -d --build` |
-| Indexer | Indexer using pre-built images | `docker-compose -f docker-compose-indexer.yml up -d --build` |
+| Indexer | Indexer using pre-built images | `docker-compose -f docker-compose-indexer.yml up -d --build --pull always` |
 | Indexer Build | Builds Indexer from source code | `docker-compose -f docker-compose-indexer-build.yml up -d --build` |
-| Analytics Service | Analytics Service using pre-built images | `docker-compose -f docker-compose-analytics.yml up -d --build` |
+| Analytics Service | Analytics Service using pre-built images | `docker-compose -f docker-compose-analytics.yml up -d --build --pull always` |
 | Analytics Service Build | Builds Analytics Service from source code | `docker-compose -f docker-compose-analytics-build.yml up -d --build` |
 
 To proceed:
@@ -267,7 +267,7 @@ To proceed:
 For example, to run the standard Guardian in demo mode:
 
 ```shell
-docker-compose up -d --build
+docker-compose up -d --build --pull always
 ```
 
 This will start the containers in detached mode (-d) and build them if necessary.
