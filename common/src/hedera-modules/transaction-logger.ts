@@ -131,6 +131,8 @@ export class TransactionLogger extends NatsService {
             }
         } catch (error) {
             this.log(['MESSAGE', 'ERROR'], null, name, [id, error.message]);
+        } finally {
+            delete this.map[id]
         }
     }
 
@@ -188,6 +190,8 @@ export class TransactionLogger extends NatsService {
             }
         } catch (error) {
             this.log(['TRANSACTION', 'ERROR'], null, transactionName, [id, error.message]);
+        } finally {
+            delete this.map[id]
         }
     }
 
