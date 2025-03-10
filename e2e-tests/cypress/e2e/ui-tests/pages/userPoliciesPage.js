@@ -142,6 +142,7 @@ export class UserPoliciesPage {
 
     openPolicy(name) {
         cy.contains("td", name).siblings().eq(0).click();
+        Checks.waitForLoading();
     }
 
     createDeviceInPolicy() {
@@ -175,7 +176,7 @@ export class UserPoliciesPage {
             Checks.waitForElement(UserPoliciesPageLocators.validated);
         }
         if (waitFor == "Report")  {
-            //cy.get(UserPoliciesPageLocators.approveButton).click();
+            cy.get(UserPoliciesPageLocators.approveButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.verified);
         }
     }

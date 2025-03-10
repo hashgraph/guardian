@@ -99,8 +99,11 @@ export class SchemaPage {
         cy.get(SchemaPageLocators.messageTimestampInput).type(schemaMessageId);
         cy.get(SchemaPageLocators.schemaFinalImportButton).click();
         Checks.waitForElement("div:contains('Description')");
-        cy.get(CommonElements.dialogWindow).find(CommonElements.dropdown).click();
-        cy.get(CommonElements.dropdownOption).eq(1).click();
+        cy.get(CommonElements.dialogWindow).last().find(CommonElements.dropdown).click();
+        cy.screenshot();
+        cy.get(CommonElements.dropdownOption).eq(1).focus();
+        cy.screenshot();
+        cy.get(CommonElements.dropdownOption).eq(1).realClick();
         cy.get(SchemaPageLocators.oneMoreImportButton).click();
         Checks.waitForTaskComplete();
         cy.contains(schemaName).should("exist");

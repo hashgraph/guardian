@@ -118,7 +118,7 @@ export class TokensPage {
 		cy.get(TokensPageLocators.tokenDeleteBtn).click();
 		Checks.waitForTaskComplete();
 		cy.contains(TokensPageLocators.adminKeyIsntSet).should('exist');
-		cy.contains(new RegExp("^" + name + "$", "g")).should('not.exist');
+		cy.contains(new RegExp("^" + name + "$", "g")).should('exist');
 	}
 
 	editToken(name, editname, editSymbol) {

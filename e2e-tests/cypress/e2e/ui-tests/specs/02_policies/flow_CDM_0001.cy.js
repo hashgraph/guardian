@@ -27,52 +27,52 @@ context("Workflow CDM ACM 0001 Policy", { tags: ['ui'] }, () => {
     })
 
     it("checks verra policy workflow", () => {
-        // //Import and publish policy
-        // homePage.login(SRUsername);
-        // policiesPage.openPoliciesTab();
-        // policiesPage.importPolicyFromIPFS("1719335230.464978003"); //CDM ACM0001
-        // policiesPage.backToPoliciesList();
-        // policiesPage.checkStatus(name, "Draft");
-        // policiesPage.publishPolicy(name);
-        // policiesPage.backToPoliciesList();
-        // policiesPage.checkStatus(name, "Published");
+        //Import and publish policy
+        homePage.login(SRUsername);
+        policiesPage.openPoliciesTab();
+        policiesPage.importPolicyFromIPFS("1719335230.464978003"); //CDM ACM0001
+        policiesPage.backToPoliciesList();
+        policiesPage.checkStatus(name, "Draft");
+        policiesPage.publishPolicy(name);
+        policiesPage.backToPoliciesList();
+        policiesPage.checkStatus(name, "Published");
 
-        // //Give permissions to user
-        // userManagementPage.openUserManagementTab();
-        // userManagementPage.assignPolicyToUser(userUsername, name);
-        // userManagementPage.openUserManagementTab();
-        // userManagementPage.assignPolicyToUser(user2Username, name);
-        // homePage.logOut();
+        //Give permissions to user
+        userManagementPage.openUserManagementTab();
+        userManagementPage.assignPolicyToUser(userUsername, name);
+        userManagementPage.openUserManagementTab();
+        userManagementPage.assignPolicyToUser(user2Username, name);
+        homePage.logOut();
 
 
-        // //Token associate
-        // homePage.login(userUsername);
-        // tokensPage.openUserTokensTab();
-        // tokensPage.associatePolicyToken(name);
-        // //Register user as PP and create project
-        // userPoliciesPage.openPoliciesTab();
-        // userPoliciesPage.openPolicy(name);
-        // userPoliciesPage.registerInPolicy("Project Participant");
-        // homePage.logOut();
+        //Token associate
+        homePage.login(userUsername);
+        tokensPage.openUserTokensTab();
+        tokensPage.associatePolicyToken(name);
+        //Register user as PP and create project
+        userPoliciesPage.openPoliciesTab();
+        userPoliciesPage.openPolicy(name);
+        userPoliciesPage.registerInPolicy("Project Participant");
+        homePage.logOut();
 
-        // //Register user as VVB
-        // homePage.login(user2Username);
-        // userPoliciesPage.openPoliciesTab();
-        // userPoliciesPage.openPolicy(name);
-        // userPoliciesPage.registerInPolicy("VVB");
-        // homePage.logOut();
+        //Register user as VVB
+        homePage.login(user2Username);
+        userPoliciesPage.openPoliciesTab();
+        userPoliciesPage.openPolicy(name);
+        userPoliciesPage.registerInPolicy("VVB");
+        homePage.logOut();
 
-        // //Token grant KYC
-        // homePage.login(SRUsername);
-        // tokensPage.openTokensTab();
-        // tokensPage.grantKYC(name, userUsername);
-        // //Approve roles and add project
-        // policiesPage.openPoliciesTab();
-        // policiesPage.openPolicy(name);
-        // policiesPage.approveUserInPolicy();
-        // policiesPage.openVVBTab();
-        // policiesPage.approveUserInPolicy();
-        // homePage.logOut();
+        //Token grant KYC
+        homePage.login(SRUsername);
+        tokensPage.openTokensTab();
+        tokensPage.grantKYC(name, userUsername);
+        //Approve roles and add project
+        policiesPage.openPoliciesTab();
+        policiesPage.openPolicy(name);
+        policiesPage.approveUserInPolicy();
+        policiesPage.openVVBTab();
+        policiesPage.approveUserInPolicy();
+        homePage.logOut();
 
         //Create project
         homePage.login(userUsername);

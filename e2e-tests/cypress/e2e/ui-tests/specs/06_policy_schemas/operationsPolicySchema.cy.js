@@ -18,6 +18,7 @@ context("Policy Schema Operations", { tags: ['ui'] }, () => {
         schemaPage.openSchemasTab();
         schemaPage.openSchemasSubtab("Policy");
     })
+
     it("policy schema document view", () => {
         schemaPage.filterByLastPolicy();
         schemaPage.documentView(schemaNameImportedFile);
@@ -34,7 +35,7 @@ context("Policy Schema Operations", { tags: ['ui'] }, () => {
     it("Export by File", () => {
         schemaPage.exportSchemaFile(schemaNameImportedFile);
     });
-    
+
     it("Export by IPFS", () => {
         schemaPage.exportSchemaIPFS(schemaNameImportedIPFS);
     });

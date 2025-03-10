@@ -127,7 +127,8 @@ export class PoliciesPage {
     }
 
     backToPoliciesList() {
-        cy.get(PoliciesPageLocators.backButton).click();
+        Checks.waitForLoading();
+        cy.get(PoliciesPageLocators.backButton).click({ force: true });
     }
 
     checkStatus(name, status) {

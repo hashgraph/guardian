@@ -237,7 +237,7 @@ export const waitForElement = (element, maxAttempts = 200, interval = 2000) => {
         })
     }
     else
-        throw new Error(`Element doesn't exist after a few attempts...`)
+        throw new Error(`${element} doesn't exist after a few attempts...`)
 }
 
 export const waitForTaskComplete = (maxAttempts = 200, interval = 2000) => {
