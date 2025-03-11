@@ -1,11 +1,12 @@
 <p-dropdown
     [(ngModel)]="value"
     [disabled]="disabled"
-    placeholder="Select a schema"
     [options]="schemas"
+    class="schema-select"
+    placeholder="Select a schema"
     optionLabel="displayName"
     optionValue="value"
-    [appendTo]="'body'"
+    appendTo="body"
     (ngModelChange)="onChange()"
 >
     <ng-template let-item pTemplate="item">

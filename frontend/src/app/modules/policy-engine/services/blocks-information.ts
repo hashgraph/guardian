@@ -51,6 +51,7 @@ import { RequestAddonConfigComponent } from '../policy-configuration/blocks/docu
 import { BlockGroup, BlockHeaders, IBlockSetting, PolicyBlock } from '../structures';
 import { BlockType } from '@guardian/interfaces';
 import BlockIcons from './block-icons';
+import { DataTransformationConfigComponent } from '../policy-configuration/blocks/calculate/data-transformation-config/data-transformation-config.component';
 
 const Container: IBlockSetting = {
     type: BlockType.Container,
@@ -516,6 +517,15 @@ const PaginationAddon: IBlockSetting = {
     property: null,
 }
 
+const DataTransformationAddon: IBlockSetting = {
+    type: BlockType.DataTransformationAddon,
+    icon: BlockIcons[BlockType.DataTransformationAddon],
+    group: BlockGroup.UnGrouped,
+    header: BlockHeaders.Addons,
+    factory: null,
+    property: DataTransformationConfigComponent,
+}
+
 const HistoryAddon: IBlockSetting = {
     type: BlockType.HistoryAddon,
     icon: BlockIcons[BlockType.HistoryAddon],
@@ -760,4 +770,5 @@ export default [
     ButtonBlockAddon,
     DropdownBlockAddon,
     RequestBlockAddon,
+    DataTransformationAddon
 ];

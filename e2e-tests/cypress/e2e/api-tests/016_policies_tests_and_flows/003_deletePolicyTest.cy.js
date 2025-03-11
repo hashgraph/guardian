@@ -19,7 +19,7 @@ context("Delete policy test", { tags: ['policies', 'secondPool', 'all'] }, () =>
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 response.body.forEach(element => {
-                    if (element.name == "iRec_2") {
+                    if (element.name == "iRecDRF") {
                         policyId = element.id
                     }
                 })

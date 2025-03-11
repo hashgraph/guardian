@@ -1,13 +1,15 @@
-import { DatabaseServer, Formula, FormulaImportExport, FormulaMessage, MessageAction, MessageServer, TopicConfig, VcDocument } from '@guardian/common';
+import { DatabaseServer, Formula, FormulaImportExport, FormulaMessage, MessageAction, MessageServer, TopicConfig, VcDocument, VpDocument } from '@guardian/common';
 import { EntityStatus, IOwner, IRootConfig } from '@guardian/interfaces';
 import { INotifier } from '../../helpers/notifier.js';
 
-async function findRelationships(target: VcDocument): Promise<VcDocument[]> {
+type IDocument = VcDocument | VpDocument;
+
+async function findRelationships(target: IDocument): Promise<IDocument[]> {
     if (!target) {
         return [];
     }
 
-    const prevRelationships = new Map<string, VcDocument>();
+    const prevRelationships = new Map<string, IDocument>();
     prevRelationships.set(target.messageId, target);
 
     await addRelationships(target, prevRelationships);
@@ -15,7 +17,7 @@ async function findRelationships(target: VcDocument): Promise<VcDocument[]> {
     return Array.from(prevRelationships.values());
 }
 
-async function addRelationships(doc: VcDocument, relationships: Map<string, VcDocument>) {
+async function addRelationships(doc: IDocument, relationships: Map<string, IDocument>) {
     if (doc && doc.relationships) {
         for (const id of doc.relationships) {
             await addRelationship(id, relationships);
@@ -23,7 +25,7 @@ async function addRelationships(doc: VcDocument, relationships: Map<string, VcDo
     }
 }
 
-async function addRelationship(messageId: string, relationships: Map<string, VcDocument>) {
+async function addRelationship(messageId: string, relationships: Map<string, IDocument>) {
     if (!messageId || relationships.has(messageId)) {
         return;
     }
@@ -48,18 +50,24 @@ export async function getFormulasData(
     const { policyId, documentId, parentId } = option;
 
     const result: {
-        document: VcDocument | null,
-        relationships: VcDocument[]
+        document: IDocument | null,
+        relationships: IDocument[]
     } = {
         document: null,
         relationships: []
     }
 
     if (documentId) {
-        const doc = await DatabaseServer.getVCById(documentId);
-        if (doc) {
-            result.document = doc;
-            result.relationships = await findRelationships(doc);
+        const vc = await DatabaseServer.getVCById(documentId);
+        if (vc) {
+            result.document = vc;
+            result.relationships = await findRelationships(vc);
+        } else {
+            const vp = await DatabaseServer.getVPById(documentId);
+            if (vp) {
+                result.document = vp;
+                result.relationships = await findRelationships(vp);
+            }
         }
     }
 

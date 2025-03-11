@@ -1,103 +1,108 @@
-<div class="g-dialog-content">
-    <div class="g-dialog-header">
-        <div class="g-dialog-title">
-            Schema Import Preview
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">Schema Import Preview</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div *ngIf="loading" class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+    </div>
+
+    <div class="field" *ngIf="schemaType === 'policy'">
+        <div class="field-header">Policy</div>
+        <div>
+            <div class="form-group" [ngClass]="{ 'form-invalid': !topicId }" style="min-width: 383px">
+                <p-dropdown
+                    id="policyDropdown"
+                    [(ngModel)]="topicId"
+                    [options]="policies"
+                    optionLabel="name"
+                    optionValue="topicId"
+                    placeholder="Select a policy"
+                    class="guardian-dropdown"
+                    [ngClass]="{ 'dropdown-invalid': !topicId }">
+                </p-dropdown>
+            </div>
         </div>
     </div>
-    <div class="g-dialog-body">
-        <div class="context">
-            <div *ngIf="loading" class="loading">
-                <div class="preloader-image preloader-image-l-size"></div>
+    <div class="field" *ngIf="schemaType === 'tool'">
+        <div class="field-header">Tool</div>
+        <div>
+            <div class="form-group" [ngClass]="{ 'form-invalid': !topicId }" style="min-width: 383px">
+                <p-dropdown
+                    id="toolDropdown"
+                    [(ngModel)]="topicId"
+                    [options]="tools"
+                    optionLabel="name"
+                    optionValue="topicId"
+                    placeholder="Select a tool"
+                    class="guardian-dropdown"
+                    [ngClass]="{ 'dropdown-invalid': !topicId }">
+                </p-dropdown>
             </div>
+        </div>
+    </div>
 
-            <div class="field" *ngIf="schemaType === 'policy'">
-                <div class="field-header">Policy</div>
-                <div>
-                    <div class="form-group" [ngClass]="{ 'form-invalid': !topicId }" style="min-width: 383px">
-                        <label for="policyDropdown" class="form-label">* Policy</label>
-                        <p-dropdown
-                            id="policyDropdown"
-                            [(ngModel)]="topicId"
-                            [options]="policies"
-                            optionLabel="name"
-                            optionValue="topicId"
-                            placeholder="Select a policy"
-                            class="full-width"
-                            [ngClass]="{ 'dropdown-invalid': !topicId }">
-                        </p-dropdown>
-                    </div>
-                </div>
-            </div>
-            <div class="field" *ngIf="schemaType === 'tool'">
-                <div class="field-header">Tool</div>
-                <div>
-                    <div class="form-group" [ngClass]="{ 'form-invalid': !topicId }" style="min-width: 383px">
-                        <label for="toolDropdown" class="form-label">* Tool</label>
-                        <p-dropdown
-                            id="toolDropdown"
-                            [(ngModel)]="topicId"
-                            [options]="tools"
-                            optionLabel="name"
-                            optionValue="topicId"
-                            placeholder="Select a tool"
-                            class="full-width"
-                            [ngClass]="{ 'dropdown-invalid': !topicId }">
-                        </p-dropdown>
-                    </div>
-                </div>
-            </div>
+    <div class="field-header">Schemas</div>
+    <div *ngFor="let schema of schemas">
+        <div class="schema">
+            <div class="schema-header">{{ schema.name }}</div>
 
-            <div class="field-header">Schemas</div>
-            <div *ngFor="let schema of schemas">
-                <div class="schema">
-                    <div class="schema-header">{{ schema.name }}</div>
-
-                    <div class="version-container">
-                        <div class="version-container">
-                            <div *ngIf="schema.version" class="field">
-                                <div class="field-name">Version</div>
-                                <div class="field-value">
-                                    {{ schema.version }}
-                                </div>
-                            </div>
-                            <app-new-versions
-                                class="version-container__new-versions"
-                                type="schema"
-                                (onClick)="onNewVersionClick($event)"
-                                [newVersions]="schema.newVersions"
-                            ></app-new-versions>
+            <div class="version-container">
+                <div class="version-container">
+                    <div *ngIf="schema.version" class="field">
+                        <div class="field-name">Version</div>
+                        <div class="field-value">
+                            {{ schema.version }}
                         </div>
                     </div>
-
-                    <div *ngIf="schema.description" class="field-last">
-                        <div class="field-name">Description</div>
-                        <div class="field-value">{{ schema.description }}</div>
-                    </div>
+                    <app-new-versions
+                        class="version-container__new-versions"
+                        type="schema"
+                        (onClick)="onNewVersionClick($event)"
+                        [newVersions]="schema.newVersions"
+                    ></app-new-versions>
                 </div>
             </div>
 
-            <div *ngIf="errors?.length" class="fields-container">
-                <div class="field-header">Warning & Errors</div>
-                <div class="field-array">
-                    <div *ngFor="let error of errors" class="field-array-item error-type-{{error.type}}">
-                        <div>{{ error.worksheet }}</div>
-                        <div>{{ error.__path }}</div>
-                        <div>{{ error.text }}</div>
-                    </div>
+            <div *ngIf="schema.description" class="field-last">
+                <div class="field-name">Description</div>
+                <div class="field-value">{{ schema.description }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="errors?.length" class="fields-container">
+        <div class="field-header">Warning & Errors</div>
+        <div class="field-array">
+            <div *ngFor="let error of errors" class="field-array-item error-type-{{error.type}}">
+                <div>{{ error.worksheet }}</div>
+                <div>{{ error.__path }}</div>
+                <div>
+                    <div>{{ error.text }}</div>
+                    <div 
+                        *ngIf="error.message && error.message !== error.text"
+                        class="error-message">{{ error.message }}</div>
                 </div>
             </div>
         </div>
     </div>
-    <div mat-dialog-actions>
-        <div class="cancel-button">
-            <p-button
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button cancel-button">
+            <button
                 (click)="onClose()"
-                label="Cancel"
-                [outlined]=true
-            ></p-button>
+                class="guardian-button guardian-button-secondary">Close</button>
         </div>
-        <div>
-            <p-button (click)="onImport()" [disabled]="!topicId" label="Import"></p-button>
+        <div class="dialog-button">
+            <button
+                (click)="onImport()"
+                [disabled]="!topicId"
+                class="guardian-button guardian-button-primary">Import</button>
         </div>
     </div>
 </div>

@@ -38,7 +38,7 @@
         <div *ngIf="item.vpDocument" class="header card-block">
           <div class="card-info">
             <h3>Verifiable Presentation</h3>
-            <i class="pi pi-check-circle"></i>
+            <i class="pi pi-check-circle" style="color: #00d048"></i>
             <span class="vertical-devider"></span>
             <button (click)="openVPDocument(item.vpDocument)" class="p-button-outlined" icon="pi pi-file"
                     label="VP File"
@@ -373,14 +373,15 @@
                       {{ item.title }}
                     </div>
                     <div
-                        *ngIf="
-                                                document.document &&
-                                                document.document.comment
-                                            "
+                        *ngIf="document.document && document.document.comment"
                         class="revoke-container"
                     >
-                      <i class="pi pi-exclamation-triangle revoke-icon"></i>
-                      <b>Revoked with reason: "{{ document.document.comment }}"</b>
+                      <i class="pi pi-exclamation-triangle"></i>
+                      <b
+						[pTooltip]="'Revoked with reason: ' + document.document.comment"
+						tooltipPosition="top"
+						tooltipStyleClass="guardian-tooltip small-guardian-tooltip"
+					  >Revoked with reason: "{{ document.document.comment }}"</b>
                     </div>
                     <div class="chain-id">
                       {{ item.description }}

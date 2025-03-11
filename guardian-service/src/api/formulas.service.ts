@@ -10,7 +10,7 @@ import {
     PolicyImportExport,
     Users
 } from '@guardian/common';
-import { EntityStatus, IOwner, MessageAPI, PolicyType, SchemaStatus } from '@guardian/interfaces';
+import { EntityStatus, IOwner, MessageAPI, PolicyType, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
 import { getFormulasData, publishFormula } from './helpers/formulas-helpers.js';
 import { emptyNotifier } from '../helpers/notifier.js';
 
@@ -332,7 +332,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const { schemas, toolSchemas } = await PolicyImportExport.fastLoadSchemas(policy);
-                const all = [].concat(schemas, toolSchemas);
+                const all = [].concat(schemas, toolSchemas).filter((s)=>s.entity !== SchemaEntity.NONE);
 
                 const formulas = await DatabaseServer.getFormulas({
                     id: { $ne: formulaId },
