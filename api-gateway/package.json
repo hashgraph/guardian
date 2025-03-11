@@ -8,7 +8,7 @@
         "@guardian/interfaces": "^3.1.0",
         "@nestjs/common": "^9.4.1",
         "@nestjs/core": "^9.4.1",
-        "@nestjs/microservices": "^9.4.1",
+        "@nestjs/microservices": "^11.0.11",
         "@nestjs/platform-express": "^9.4.2",
         "@nestjs/platform-fastify": "^9.4.2",
         "@nestjs/swagger": "^6.3.0",
