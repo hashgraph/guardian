@@ -22,7 +22,7 @@
         "@nestjs/common": "^9.4.1",
         "@nestjs/core": "^9.4.1",
         "@nestjs/microservices": "^9.4.1",
-        "cron": "^2.0.0",
+        "cron": "^4.1.0",
         "deep-equal": "^2.0.5",
         "dotenv": "^16.0.0",
         "express": "^4.17.1",
