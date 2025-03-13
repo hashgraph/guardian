@@ -190,5 +190,8 @@ const API = {
     IndexerNFTs: "entities/nfts/",
     IndexerTopics: "entities/topics/",
     IndexerContracts: "entities/contracts/",
+
+    //Worker tasks
+    WorkerTasks: "worker-tasks/",
 };
 export default API;
