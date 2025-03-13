@@ -23,6 +23,60 @@ context("Tags", { tags: ['tags', 'thirdPool', 'all'] }, () => {
         })
     })
 
+    it("Create new tag(module) without auth token - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Tags,
+            body: {
+                name: tagName,
+                description: tagName,
+                entity: "Module",
+                target: moduleId,
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Create new tag(module) with invalid auth token - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Tags,
+            body: {
+                name: tagName,
+                description: tagName,
+                entity: "Module",
+                target: moduleId,
+            },
+            headers: {
+                authorization: "Bearer wqe",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Create new tag(module) with empty auth token - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Tags,
+            body: {
+                name: tagName,
+                description: tagName,
+                entity: "Module",
+                target: moduleId,
+            },
+            headers: {
+                authorization: "",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
     it("Create new tag(module)", { tags: ['smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
@@ -44,17 +98,65 @@ context("Tags", { tags: ['tags', 'thirdPool', 'all'] }, () => {
         });
     })
 
+    it("Get module tag without auth token - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Tags + "search",
+            body: {
+                entity: "Module",
+                targets: [moduleId]
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Get module tag with invalid auth token - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Tags + "search",
+            body: {
+                entity: "Module",
+                targets: [moduleId]
+            },
+            headers: {
+                authorization: "Bearer wqe",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Get module tag with empty auth token - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Tags + "search",
+            body: {
+                entity: "Module",
+                targets: [moduleId]
+            },
+            headers: {
+                authorization: "",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
     it("Get module tag", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
                 url: API.ApiServer + API.Tags + "search",
-                headers: {
-                    authorization,
-                },
                 body: {
                     entity: "Module",
                     targets: [moduleId]
+                },
+                headers: {
+                    authorization,
                 },
                 timeout: 200000
             }).then((response) => {
@@ -63,6 +165,42 @@ context("Tags", { tags: ['tags', 'thirdPool', 'all'] }, () => {
             });
         })
     })
+
+    it("Delete module tag without auth token - Negative", () => {
+        cy.request({
+            method: 'DELETE',
+            url: API.ApiServer + API.Tags + tagId,
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Delete module tag with invalid auth token - Negative", () => {
+        cy.request({
+            method: 'DELETE',
+            url: API.ApiServer + API.Tags + tagId,
+            headers: {
+                authorization: "Bearer wqe",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Delete module tag with empty auth token - Negative", () => {
+        cy.request({
+            method: 'DELETE',
+            url: API.ApiServer + API.Tags + tagId,
+            headers: {
+                authorization: "",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
 
     it("Delete module tag", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
