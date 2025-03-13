@@ -78,6 +78,7 @@ const API = {
 
     //Settings
     SettingsEnv: "settings/environment",
+    SettingsAbout: "settings/about",
 
     //External
     External: "external",
