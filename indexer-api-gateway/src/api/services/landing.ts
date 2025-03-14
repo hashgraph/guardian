@@ -1,9 +1,10 @@
-import { Controller, HttpCode, HttpStatus, Get } from '@nestjs/common';
-import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Controller, HttpCode, HttpStatus, Get, Post, Param, Body, Query } from '@nestjs/common';
+import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { IndexerMessageAPI } from '@indexer/common';
 import { ApiClient } from '../api-client.js';
-import { ProjectCoordinatesDTO, LandingAnalyticsDTO, InternalServerErrorDTO } from '#dto';
-import { DataLoadingProgress } from '@indexer/interfaces';
+import { ProjectCoordinatesDTO, LandingAnalyticsDTO, InternalServerErrorDTO, SetLoadingPriorityDTO } from '#dto';
+import { DataLoadingProgress, DataPriorityLoadingProgress } from '@indexer/interfaces';
+import { ApiPaginatedRequest, ApiPaginatedResponse } from '#decorators';
 
 @Controller('landing')
 @ApiTags('landing')
@@ -69,6 +70,72 @@ export class LandingApi extends ApiClient {
         return await this.send(
             IndexerMessageAPI.GET_DATA_LOADING_PROGRESS,
             {}
+        );
+    }
+
+    @ApiOperation({
+        summary: 'Get data priority loading progress',
+        description: 'Returns priority data loading',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Get('/data-priority-loading-progress')
+    @ApiPaginatedRequest
+    @ApiPaginatedResponse('PriorityQueue', DataPriorityLoadingProgress)
+    @HttpCode(HttpStatus.OK)
+    async getDataPriorityLoadingProgress(
+        @Query('pageIndex') pageIndex?: string,
+        @Query('pageSize') pageSize?: string,
+        @Query('orderField') orderField?: string,
+        @Query('orderDir') orderDir?: string,
+        @Query('topicId') topicId?: string
+    ): Promise<DataPriorityLoadingProgress> {
+        return await this.send(
+            IndexerMessageAPI.GET_DATA_PRIORITY_LOADING_PROGRESS,
+            {
+                pageIndex,
+                pageSize,
+                orderField,
+                orderDir,
+                topicId,
+            }
+        );
+    }
+
+    @ApiOperation({
+        summary: 'Get data priority loading progress',
+        description: 'Returns priority data loading',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Post('/data-priority-loading-progress')
+    @ApiBody({
+        description: 'Topic Id',
+        required: true,
+        type: SetLoadingPriorityDTO,
+        examples: {
+            Priority: {
+                value: '0.0.1'
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Data priority loading progress result',
+        type: [DataPriorityLoadingProgress],
+    })
+    @HttpCode(HttpStatus.OK)
+    async setDataPriorityLoadingProgress(
+        @Body() priorityData: SetLoadingPriorityDTO
+    ): Promise<DataPriorityLoadingProgress> {
+        const topicId = priorityData.topicId;
+
+        return await this.send(
+            IndexerMessageAPI.SET_DATA_PRIORITY_LOADING_PROGRESS,
+            { topicId }
         );
     }
 }

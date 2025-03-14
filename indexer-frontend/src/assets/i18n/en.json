@@ -41,6 +41,7 @@
         "label_documents": "Label Documents (VPs)",
         "dids": "Decentralized Identifiers (DIDs)",
         "others": "Others",
+        "priority_queue": "Priority Update Queue",
         "search_placeholder": "Search by keyword",
         "statistics": "Statistics",
         "labels": "Labels",

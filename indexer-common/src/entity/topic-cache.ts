@@ -28,4 +28,7 @@ export class TopicCache implements RawTopic {
 
     @Property()
     hasNext: boolean;
+
+    @Property({ nullable: true })
+    priorityDate?: Date | null;
 }
