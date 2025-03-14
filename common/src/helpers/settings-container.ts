@@ -61,7 +61,7 @@ export class SettingsContainerOLD extends NatsService {
 
             if (!this._settings[setting] && process.env[setting]) {
                 await this.setGlobalApplicationKey(setting,  process.env[setting]);
-                await new PinoLogger().info(`${setting} was set from environment`, ['GUARDIAN_SERVICE']);
+                await new PinoLogger().info(`${setting} was set from environment`, ['GUARDIAN_SERVICE', user]);
             }
         }
 
@@ -77,7 +77,7 @@ export class SettingsContainerOLD extends NatsService {
 
             if (!this._settings[setting] && process.env[setting]) {
                 await this.setGlobalApplicationKey(setting,  process.env[setting]);
-                await new PinoLogger().info(`${setting} was set from environment`, ['GUARDIAN_SERVICE']);
+                await new PinoLogger().info(`${setting} was set from environment`, ['GUARDIAN_SERVICE', user]);
             }
         }
     }

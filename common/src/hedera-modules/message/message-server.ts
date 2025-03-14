@@ -694,7 +694,7 @@ export class MessageServer {
             }
         }, 10);
 
-        new PinoLogger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE']);
+        new PinoLogger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE', user]);
         const result: Message[] = [];
         for (const message of messages) {
             try {
