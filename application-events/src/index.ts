@@ -37,6 +37,7 @@ app.get('/', (req, res) => {
 app.use(webhookRoutes);
 app.use(eventRoutes);
 
+// @ts-ignore
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument!));
 
 // tslint:disable-next-line:handle-callback-err
