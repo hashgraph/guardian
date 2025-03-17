@@ -197,5 +197,8 @@ const API = {
 
     //Themes
     Themes: "themes/",
+
+    //Branding
+    Branding: "branding/",
 };
 export default API;
