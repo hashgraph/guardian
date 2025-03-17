@@ -52,6 +52,12 @@
     "home": {
         "header": "Indexer"
     },
+    "priority_queue": {
+        "open_priority_queue": "Open Priority Update Queue",
+        "search_placeholder": "Search by Topic ID",
+        "enter_topic_id": "Enter Topic ID",
+        "add_to_queue": "Add Topic ID to Priority Update Queue"
+    },
     "filter": {
         "placeholder": "placeholder",
         "clear": "clear",
@@ -94,6 +100,8 @@
         "createdTimestamp": "Created Date",
         "modifiedTimestamp": "Modified Date",
         "coordinates": "Coordinates",
+        "prioritize": "Prioritize",
+        "send_to_priority": "Send to Priority Update Queue",
         "filter": {
             "policy": "Policy",
             "schema": "Schema",
