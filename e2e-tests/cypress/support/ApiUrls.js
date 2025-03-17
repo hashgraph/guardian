@@ -194,5 +194,8 @@ const API = {
 
     //Worker tasks
     WorkerTasks: "worker-tasks/",
+
+    //Themes
+    Themes: "themes/",
 };
 export default API;
