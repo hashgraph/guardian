@@ -14,3 +14,4 @@ export * from './search-policy.interface.js';
 export * from './formulas.interface.js';
 export * from './network-explorer-settings.interface.js';
 export * from './data-loading-progress.interface.js';
+export * from './data-priority-loading-progress.interface.js';

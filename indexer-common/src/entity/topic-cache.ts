@@ -7,6 +7,8 @@ import { ObjectId } from '@mikro-orm/mongodb';
 @Index({ name: 'status', properties: ['status'] })
 @Index({ name: 'last_update', properties: ['lastUpdate'] })
 @Index({ name: 'has_next', properties: ['hasNext'] })
+@Index({ name: 'priority_date', properties: ['priorityDate'] })
+@Index({ name: 'priority_status_date', properties: ['priorityStatusDate'] })
 export class TopicCache implements RawTopic {
     @PrimaryKey()
     _id: ObjectId;
@@ -28,7 +30,13 @@ export class TopicCache implements RawTopic {
 
     @Property()
     hasNext: boolean;
-
+    
     @Property({ nullable: true })
     priorityDate?: Date | null;
+
+    @Property({ nullable: true })
+    priorityStatus?: string;
+
+    @Property({ nullable: true })
+    priorityStatusDate?: Date | null;
 }

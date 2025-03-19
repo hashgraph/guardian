@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsArray, IsString } from 'class-validator';
 
 export class SetLoadingPriorityDTO {
     @ApiProperty({
-        description: 'Topic Id',
-        example: '0.0.1',
+        description: 'Topic Ids',
+        example: ['0.0.1'],
     })
-    @IsString()
-    topicId: string;
+    @IsArray()
+    topicIds: string[];
 }

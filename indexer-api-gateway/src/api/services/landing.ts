@@ -90,7 +90,8 @@ export class LandingApi extends ApiClient {
         @Query('pageSize') pageSize?: string,
         @Query('orderField') orderField?: string,
         @Query('orderDir') orderDir?: string,
-        @Query('topicId') topicId?: string
+        @Query('topicId') topicId?: string,
+        @Query('topicIds') topicIds?: string[],
     ): Promise<DataPriorityLoadingProgress> {
         return await this.send(
             IndexerMessageAPI.GET_DATA_PRIORITY_LOADING_PROGRESS,
@@ -100,6 +101,7 @@ export class LandingApi extends ApiClient {
                 orderField,
                 orderDir,
                 topicId,
+                topicIds,
             }
         );
     }
@@ -114,7 +116,7 @@ export class LandingApi extends ApiClient {
     })
     @Post('/data-priority-loading-progress')
     @ApiBody({
-        description: 'Topic Id',
+        description: 'Topic Ids',
         required: true,
         type: SetLoadingPriorityDTO,
         examples: {
@@ -131,11 +133,11 @@ export class LandingApi extends ApiClient {
     async setDataPriorityLoadingProgress(
         @Body() priorityData: SetLoadingPriorityDTO
     ): Promise<DataPriorityLoadingProgress> {
-        const topicId = priorityData.topicId;
+        const topicIds = priorityData.topicIds;
 
         return await this.send(
             IndexerMessageAPI.SET_DATA_PRIORITY_LOADING_PROGRESS,
-            { topicId }
+            { topicIds }
         );
     }
 }

@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { API_BASE_URL } from './api';
-import { DataLoadingProgress, LandingAnalytics, ProjectCoordinates } from '@indexer/interfaces';
+import { DataLoadingProgress, DataPriorityLoadingProgress, LandingAnalytics, Page, PageFilters, ProjectCoordinates } from '@indexer/interfaces';
 import { interval, Observable, startWith, Subject, Subscription, switchMap } from 'rxjs';
+import { ApiUtils } from './utils';
 
 @Injectable()
 export class LandingService {
@@ -44,6 +45,20 @@ export class LandingService {
     public getDataLoadingProgress(): Observable<DataLoadingProgress> {
         return this.http.get<DataLoadingProgress>(
             `${this.url}/data-loading-progress`
+        );
+    }
+
+    public getDataPriorityLoadingProgress(filters: PageFilters): Observable<Page<DataPriorityLoadingProgress>> {
+        const options = ApiUtils.getOptions(filters);
+        return this.http.get<DataPriorityLoadingProgress>(
+            `${this.url}/data-priority-loading-progress`,
+            options
+        ) as any;
+    }
+
+    public setDataPriorityLoadingProgress(topicIds: string[]): Observable<any> {
+        return this.http.post<DataPriorityLoadingProgress>(
+            `${this.url}/data-priority-loading-progress`, { topicIds }
         );
     }
 }

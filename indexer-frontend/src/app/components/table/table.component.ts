@@ -9,12 +9,14 @@ import { PaginatorComponent } from '@components/paginator/paginator.component';
 import { TagModule } from 'primeng/tag';
 import { RouterModule } from '@angular/router';
 import { HederaExplorer, HederaType } from '@components/hedera-explorer/hedera-explorer.component';
+import { CheckboxModule } from 'primeng/checkbox';
 
 export enum ColumnType {
     TEXT = 'text',
     BUTTON = 'button',
     CHIP = 'chip',
     HEDERA = 'hedera',
+    CHECK_BOX = 'check_box',
 }
 
 export interface BaseColumn {
@@ -53,6 +55,14 @@ export interface HederaTimestampColumn extends BaseColumn {
     hederaType: HederaType;
 }
 
+export interface CheckBoxColumn extends BaseColumn {
+    type: ColumnType.CHECK_BOX;
+    checkGroup: any[];
+    checkField: string,
+    disabled: (item: any) => boolean;
+    callback: (checkField: string, checkGroup: string[]) => void;
+}
+
 @Component({
     selector: 'app-table',
     standalone: true,
@@ -69,13 +79,14 @@ export interface HederaTimestampColumn extends BaseColumn {
         HederaExplorer,
         DatePipe,
         TagModule,
+        CheckboxModule,
         RouterModule,
     ],
     templateUrl: './table.component.html',
     styleUrl: './table.component.scss',
 })
 export class TableComponent {
-    @Input() columns!: TextColumn[] | ButtonColumn[] | ChipColumn[] | HederaTimestampColumn[];
+    @Input() columns!: TextColumn[] | ButtonColumn[] | ChipColumn[] | HederaTimestampColumn[] | CheckBoxColumn[];
     @Input() data!: any[];
     @Input() pageIndex: number = 0;
     @Input() pageSize: number = 5;

@@ -49,6 +49,10 @@
         <div class="table-head__cell table-cell" [style.width]="column.width">
             {{column.title | transloco}} </div>
         }
+        @case ('check_box') {
+        <div class="table-head__cell table-cell" [style.width]="column.width">
+            {{column.title | transloco}} </div>
+        }
         }
         }
     </div>
@@ -86,6 +90,9 @@
                     <hedera-explorer [params]="getFieldValue(column.field, item)" [type]="column.hederaType">
                         {{ getFieldValue(column.field, item) }}
                     </hedera-explorer>
+                    }
+                    @case ('check_box') {
+                        <p-checkbox [name]="getFieldValue(column.checkField, item)" [value]="getFieldValue(column.checkField, item)" [disabled]="column.disabled(item)" [(ngModel)]="column.checkGroup" (onChange)="column.callback(column.checkField, $event.checked)" />
                     }
                     }
                 </div>

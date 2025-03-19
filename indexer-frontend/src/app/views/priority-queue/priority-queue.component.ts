@@ -9,10 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { LoadingComponent } from '@components/loading/loading.component';
 import { TranslocoModule } from '@jsverse/transloco';
-import { EntitiesService } from '@services/entities.service';
-import { FiltersService } from '@services/filters.service';
 import { PaginatorModule } from 'primeng/paginator';
 import { ChipsModule } from 'primeng/chips';
 import { ColumnType, TableComponent } from '@components/table/table.component';
@@ -21,8 +18,8 @@ import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
 import { BaseGridComponent, Filter } from '@views/collections/base-grid/base-grid.component';
 import { LandingService } from '@services/landing.service';
-import { IconField, IconFieldModule } from 'primeng/iconfield';
-import { InputIcon, InputIconModule } from 'primeng/inputicon';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 import { ButtonModule } from 'primeng/button';
 
 @Component({
@@ -58,7 +55,7 @@ export class PriorityQueueComponent extends BaseGridComponent {
     columns: any[] = [
         {
             type: ColumnType.TEXT,
-            field: 'priorityDate',
+            field: 'priorityStatusDate',
             title: 'grid.date',
         },
         {
@@ -69,6 +66,11 @@ export class PriorityQueueComponent extends BaseGridComponent {
                 field: 'topicId',
                 url: '/topics',
             },
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'priorityStatus',
+            title: 'grid.status',
         },
     ];
 
@@ -110,7 +112,7 @@ export class PriorityQueueComponent extends BaseGridComponent {
     public priorityControl = new FormControl<string>('');
     public setPriorityDataLoading() {
         if (this.priorityControl.value) {
-            this.landingService.setDataPriorityLoadingProgress(this.priorityControl.value).subscribe(data => {
+            this.landingService.setDataPriorityLoadingProgress([this.priorityControl.value]).subscribe(data => {
                 if (!data) {
                     console.log("Topic not found!")
                 } else {
