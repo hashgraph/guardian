@@ -38,27 +38,27 @@ export class MigrationConfigDTO {
     /**
      * Schemas
      */
-    @ApiProperty({ type: 'object' })
+    @ApiProperty({ type: 'object', additionalProperties: { type: 'string' }  })
     schemas: { [key: string]: string };
     /**
      * Groups
      */
-    @ApiProperty({ type: 'object' })
+    @ApiProperty({ type: 'object', additionalProperties: { type: 'string' } })
     groups: { [key: string]: string };
     /**
      * Roles
      */
-    @ApiProperty({ type: 'object' })
+    @ApiProperty({ type: 'object', additionalProperties: { type: 'string' } })
     roles: { [key: string]: string };
     /**
      * Blocks
      */
-    @ApiProperty({ type: 'object' })
+    @ApiProperty({ type: 'object', additionalProperties: { type: 'string' } })
     blocks: { [key: string]: string };
     /**
      * Tokens
      */
-    @ApiProperty({ type: 'object' })
+    @ApiProperty({ type: 'object', additionalProperties: { type: 'string' } })
     tokens: { [key: string]: string };
     /**
      * Migrate state
@@ -73,7 +73,7 @@ export class MigrationConfigDTO {
     /**
      * Edited VCs
      */
-    @ApiProperty({ type: 'object' })
+    @ApiProperty({ type: 'object', additionalProperties: { type: 'string' } })
     editedVCs: { [key: string]: any };
     /**
      * Retire contract identifier

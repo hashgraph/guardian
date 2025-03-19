@@ -40,19 +40,27 @@ export class VcDTO {
     type: string[];
 
     @ApiProperty({
-        type: 'object',
+        type: 'array',
         isArray: true,
-        required: true
+        items: {
+            type: 'object',
+            additionalProperties: true,
+        },
     })
     credentialSubject: any | any[];
 
-    @ApiProperty({ type: 'object', required: true })
+    @ApiProperty({
+        oneOf: [
+            { type: 'string' },
+            { type: 'object', additionalProperties: true }
+        ]
+    })
     issuer: any | string;
 
     @ApiProperty({ type: 'string', required: true })
     issuanceDate: string;
 
-    @ApiProperty({ type: 'object', nullable: true })
+    @ApiProperty({ type: () => ProofDTO, nullable: true })
     proof?: ProofDTO;
 }
 
@@ -76,13 +84,12 @@ export class VpDTO {
     type: string[];
 
     @ApiProperty({
-        type: 'object',
-        isArray: true
+        type: 'array',
     })
     verifiableCredential: any[];
 
     @ApiProperty({
-        type: 'object',
+        type: () => ProofDTO,
     })
     proof?: ProofDTO;
 }

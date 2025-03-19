@@ -107,7 +107,8 @@ export class TagDTO {
     localTarget: string;
 
     @ApiProperty({
-        type: 'object'
+        type: 'object',
+        additionalProperties: true
     })
     document?: any;
 }
