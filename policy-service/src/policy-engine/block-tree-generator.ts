@@ -8,6 +8,7 @@ import { PolicyComponentsUtils } from './policy-components-utils.js';
 import { IPolicyBlock, IPolicyInstance, IPolicyInterfaceBlock, IPolicyNavigationStep } from './policy-engine.interface.js';
 import { PolicyUser } from './policy-user.js';
 import { RecordUtils } from './record-utils.js';
+import { PolicyRestore } from './db-restore/index.js';
 
 /**
  * Block tree generator
@@ -333,6 +334,15 @@ export class BlockTreeGenerator extends NatsService {
         });
     }
 
+    /**
+     * Init restore
+     */
+    async initPolicyRestore(policyId: string): Promise<void> {
+        const controller = new PolicyRestore(policyId);
+        await controller.init();
+        await controller.save();
+    }
+
     public async destroyModel(policyId: string, logger: PinoLogger): Promise<void> {
         try {
             await RecordUtils.DestroyRecording(policyId);
@@ -387,6 +397,7 @@ export class BlockTreeGenerator extends NatsService {
             }
             await this.initPolicyEvents(policyId, rootInstance, policy);
             await this.initRecordEvents(policyId);
+            await this.initPolicyRestore(policyId);
 
             await PolicyComponentsUtils.RegisterNavigation(policyId, policy.policyNavigation);
 
