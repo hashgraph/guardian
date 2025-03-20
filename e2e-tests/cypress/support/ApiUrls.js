@@ -200,5 +200,13 @@ const API = {
 
     //Branding
     Branding: "branding/",
+    
+
+    //Notifications
+    Notifications: "notifications/",
+    NewNotifications: "notifications/new/",
+    Progresses: "notifications/progresses/",
+    ReadAll: "notifications/read/all/",
+    DeleteNotification: "notifications/delete/",
 };
 export default API;
