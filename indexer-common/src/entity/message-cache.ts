@@ -54,4 +54,7 @@ export class MessageCache implements RawMessage {
 
     // @Property({ version: true })
     // version: number;
+
+    @Property({ nullable: true })
+    priorityDate?: Date | null;
 }

@@ -39,6 +39,7 @@ export class MessageService {
             } else {
                 row.status = MessageStatus.UNSUPPORTED;
             }
+            row.priorityDate = null;
             await em.flush();
         } catch (error) {
             await LogService.error(error, 'update message');
@@ -51,17 +52,33 @@ export class MessageService {
             {
                 type: 'Message',
                 $or: [
+                    { priorityDate: { $ne: null } },
                     { status: MessageStatus.LOADING, lastUpdate: { $lt: delay } },
                     { status: MessageStatus.COMPRESSED }
                 ]
             },
             {
+                orderBy: [
+                    { priorityDate: 'DESC' }
+                ],
                 limit: 50
                 // fields: ['id', 'data', 'topicId', 'consensusTimestamp'],
             }
         )
-        const index = Math.min(Math.floor(Math.random() * rows.length), rows.length - 1);
-        const row = rows[index];
+
+        
+
+        if (!rows || rows.length <= 0) {
+            return null;
+        }
+
+        let row: any;
+        if (rows[0].priorityDate) {
+            row = rows[0]
+        } else {
+            const index = Math.min(Math.floor(Math.random() * rows.length), rows.length - 1);
+            row = rows[index];
+        }
 
         if (!row) {
             return null;
@@ -70,6 +87,7 @@ export class MessageService {
         const count = await em.nativeUpdate(MessageCache, {
             _id: row._id,
             $or: [
+                { priorityDate: { $ne: null } },
                 { status: MessageStatus.LOADING, lastUpdate: { $lt: delay } },
                 { status: MessageStatus.COMPRESSED }
             ]
@@ -113,6 +131,7 @@ export class MessageService {
                         row.lastUpdate = Date.now();
                         em.persist(row);
                         ref.status = MessageStatus.LOADED;
+                        ref.priorityDate = null;
                         await em.flush();
                     }
                 } else {

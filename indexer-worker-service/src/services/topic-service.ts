@@ -6,7 +6,7 @@ import { Parser } from '../utils/parser.js';
 import { HederaService } from '../loaders/hedera-service.js';
 import { DataBaseHelper, Job, MessageCache, TopicCache, TopicMessage, Utils } from '@indexer/common';
 import { TokenService } from './token-service.js';
-import { MessageStatus } from '@indexer/interfaces';
+import { MessageStatus, PriorityStatus } from '@indexer/interfaces';
 
 export class TopicService {
     public static CYCLE_TIME: number = 0;
@@ -21,9 +21,9 @@ export class TopicService {
             }
 
             const data = await HederaService.getMessages(row.topicId, row.messages);
-
+            
             if (data && data.messages.length) {
-                const rowMessages = await TopicService.saveMessages(data.messages);
+                const rowMessages = await TopicService.saveMessages(data.messages, row.priorityDate);
                 if (rowMessages) {
                     const compressed = await TopicService.compressMessages(rowMessages);
                     await MessageService.saveImmediately(compressed);
@@ -31,9 +31,16 @@ export class TopicService {
                     await em.nativeUpdate(TopicCache, { topicId: row.topicId }, {
                         messages: data.messages[data.messages.length - 1].sequence_number,
                         lastUpdate: Date.now(),
-                        hasNext: !!data.links.next
+                        hasNext: !!data.links.next,
+                        priorityDate: !!data.links.next ? row.priorityDate : null,
+                        priorityStatus: !!data.links.next ? PriorityStatus.RUNNING : PriorityStatus.FINISHED,
                     });
                 }
+            } else if (row.priorityDate) {
+                await em.nativeUpdate(TopicCache, { topicId: row.topicId }, {
+                    priorityDate: null,
+                    priorityStatus: PriorityStatus.FINISHED,
+                });
             }
 
         } catch (error) {
@@ -51,7 +58,10 @@ export class TopicService {
                     status: MessageStatus.NONE,
                     lastUpdate: 0,
                     messages: 0,
-                    hasNext: false
+                    hasNext: false,
+                    priorityDate: null,
+                    priorityStatus: PriorityStatus.NONE,
+                    priorityStatusDate: null,
                 }));
                 return true;
             } else {
@@ -73,19 +83,34 @@ export class TopicService {
 
     private static async randomTopic(em: MongoEntityManager<MongoDriver>): Promise<TopicCache> {
         const delay = Date.now() - TopicService.CYCLE_TIME;
+
         const rows = await em.find(TopicCache,
             {
                 $or: [
+                    { priorityDate: { $ne: null } },
                     { lastUpdate: { $lt: delay } },
                     { hasNext: true }
                 ]
             },
             {
+                orderBy: [
+                    { priorityDate: 'DESC' },
+                ],
                 limit: 50
             }
-        )
-        const index = Math.min(Math.floor(Math.random() * rows.length), rows.length - 1);
-        const row = rows[index];
+        );
+
+        if (!rows || rows.length <= 0) {
+            return null;
+        }
+
+        let row: any;
+        if (rows[0].priorityDate) {
+            row = rows[0]
+        } else {
+            const index = Math.min(Math.floor(Math.random() * rows.length), rows.length - 1);
+            row = rows[index];
+        }
 
         if (!row) {
             return null;
@@ -95,13 +120,14 @@ export class TopicService {
         const count = await em.nativeUpdate(TopicCache, {
             topicId: row.topicId,
             $or: [
+                { priorityDate: { $ne: null } },
                 { lastUpdate: { $lt: delay } },
                 { hasNext: true }
             ]
         }, {
             messages: row.messages,
             lastUpdate: now,
-            hasNext: false
+            hasNext: false,
         });
 
         if (count) {
@@ -116,12 +142,12 @@ export class TopicService {
         // await em.flush();
     }
 
-    public static async saveMessages(messages: TopicMessage[]): Promise<MessageCache[]> {
+    public static async saveMessages(messages: TopicMessage[], priorityDate?: Date): Promise<MessageCache[]> {
         try {
             const em = DataBaseHelper.getEntityManager();
             const rows = [];
             for (const message of messages) {
-                const item = TopicService.createMessageCache(message);
+                const item = TopicService.createMessageCache(message, priorityDate);
                 const row = await TopicService.insertMessage(item, em);
                 if (!row) {
                     return;
@@ -180,7 +206,7 @@ export class TopicService {
         return { topics, tokens };
     }
 
-    private static createMessageCache(message: TopicMessage): RequiredEntityData<MessageCache> {
+    private static createMessageCache(message: TopicMessage, priorityDate?: Date): RequiredEntityData<MessageCache> {
         const item: RequiredEntityData<MessageCache> = {};
         item.consensusTimestamp = message.consensus_timestamp;
         item.topicId = message.topic_id;
@@ -188,6 +214,7 @@ export class TopicService {
         item.sequenceNumber = message.sequence_number;
         item.owner = message.payer_account_id;
         item.lastUpdate = 0;
+        item.priorityDate = priorityDate ? priorityDate : null;
         if (message?.chunk_info?.initial_transaction_id) {
             item.chunkId = message.chunk_info.initial_transaction_id.transaction_valid_start;
             item.chunkNumber = message.chunk_info.number;
@@ -206,6 +233,7 @@ export class TopicService {
             item.status = MessageStatus.COMPRESSED;
             item.data = TopicService.compressData(item.message);
         }
+
         return item;
     }
 
