@@ -9,7 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { TranslocoModule } from '@jsverse/transloco';
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
 import { PaginatorModule } from 'primeng/paginator';
 import { ChipsModule } from 'primeng/chips';
 import { ColumnType, TableComponent } from '@components/table/table.component';
@@ -59,6 +59,7 @@ export class PriorityQueueComponent extends BaseGridComponent {
             type: ColumnType.TEXT,
             field: 'priorityStatusDate',
             title: 'grid.date',
+            sort: true,
             formatValue: (date: any) => {
                 if (date) {
                     return new Date(date).toLocaleString();
@@ -71,6 +72,7 @@ export class PriorityQueueComponent extends BaseGridComponent {
             type: ColumnType.TEXT,
             field: 'topicId',
             title: 'grid.topic_id',
+            sort: true,
             link: {
                 field: 'topicId',
                 url: '/topics',
@@ -81,11 +83,12 @@ export class PriorityQueueComponent extends BaseGridComponent {
             field: 'priorityStatus',
             title: 'grid.status',
             width: '100px',
+            sort: true,
             severity: (row: any) => {
                 switch (row.priorityStatus) {
                     case PriorityStatus.SCHEDULED:
                         return 'secondary'
-            
+
                     case PriorityStatus.RUNNING:
                         return 'info'
 
@@ -101,6 +104,7 @@ export class PriorityQueueComponent extends BaseGridComponent {
             type: ColumnType.TEXT,
             field: 'lastUpdate',
             title: 'grid.lastUpdate',
+            sort: true,
             formatValue: (lastUpdate: any) => {
                 if (lastUpdate) {
                     return new Date(lastUpdate).toLocaleString();
@@ -112,14 +116,15 @@ export class PriorityQueueComponent extends BaseGridComponent {
     ];
 
     topicIdSearch = new Filter({
-                        label: 'grid.filter.topic_id',
-                        type: 'input',
-                        field: 'topicId',
-                    })
+        label: 'grid.filter.topic_id',
+        type: 'input',
+        field: 'topicId',
+    })
 
     constructor(
         private landingService: LandingService,
         private messageService: MessageService,
+        private translocoService: TranslocoService,
         route: ActivatedRoute,
         router: Router
     ) {
@@ -146,13 +151,13 @@ export class PriorityQueueComponent extends BaseGridComponent {
 
     protected override loadFilters(): void {
     }
-    
+
     public priorityControl = new FormControl<string>('');
     public setPriorityDataLoading() {
         if (this.priorityControl.value) {
             this.landingService.setDataPriorityLoadingProgress([this.priorityControl.value]).subscribe(data => {
                 if (!data) {
-                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'This topic ID not found or already in queue. Please try again.', life: 123000 });
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: this.translocoService.translate('priority_queue.add_to_queue_error'), life: 3000 });
                 } else {
                     location.reload();
                 }

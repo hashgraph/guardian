@@ -10,7 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { BaseGridComponent, Filter } from '../base-grid/base-grid.component';
-import { TranslocoModule } from '@jsverse/transloco';
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
 import { EntitiesService } from '@services/entities.service';
 import { PaginatorModule } from 'primeng/paginator';
 import { ChipsModule } from 'primeng/chips';
@@ -20,7 +20,8 @@ import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
 import { HederaType } from '@components/hedera-explorer/hedera-explorer.component';
 import { LandingService } from '@services/landing.service';
-import { Registry } from '@indexer/interfaces';
+import { PriorityStatus, Registry } from '@indexer/interfaces';
+import { MessageService } from 'primeng/api';
 
 @Component({
     selector: 'registries',
@@ -64,6 +65,12 @@ export class RegistriesComponent extends BaseGridComponent {
             width: '108px',
             disabled: (item: any) => this.alreadyExistPriorities.find(value => value == item.options.registrantTopicId),
             callback: this.onPrioritizeCheck.bind(this),
+            getTooltip: (item: any) => {
+                if (this.alreadyExistPriorities.find(value => value == item.options.registrantTopicId)) {
+                    return this.translocoService.translate('priority_queue.already_in_queue');
+                }
+                return '';
+            }
         },
         {
             type: ColumnType.HEDERA,
@@ -138,6 +145,8 @@ export class RegistriesComponent extends BaseGridComponent {
     constructor(
         private entitiesService: EntitiesService,
         private landingService: LandingService,
+        private messageService: MessageService,
+        private translocoService: TranslocoService,
         private cdr: ChangeDetectorRef,
         route: ActivatedRoute,
         router: Router
@@ -185,14 +194,17 @@ export class RegistriesComponent extends BaseGridComponent {
         });
     }
 
-    protected loadFilters(): void {}
+    protected loadFilters(): void { }
 
     private onDataLoaded(data: Registry[]): void {
         const topicIds = data.map(item => item.options.registrantTopicId);
-        
+
         this.landingService.getDataPriorityLoadingProgress({ topicIds: topicIds }).subscribe({
             next: (result) => {
-                this.alreadyExistPriorities = result.items.map(item => item.topicId);
+                this.alreadyExistPriorities = result.items
+                    .filter(item => item.priorityStatus != PriorityStatus.FINISHED)
+                    .map(item => item.topicId);
+
                 this.onPrioritizeCheck('options.registrantTopicId', this.alreadyExistPriorities);
                 this.cdr.detectChanges();
             },
@@ -207,7 +219,7 @@ export class RegistriesComponent extends BaseGridComponent {
         if (this.priorityChecked && this.priorityChecked.length > 0) {
             this.landingService.setDataPriorityLoadingProgress(this.priorityChecked).subscribe(data => {
                 if (!data) {
-                    console.log("Topic not found!")
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: this.translocoService.translate('priority_queue.add_to_queue_error'), life: 3000 });
                 } else {
                     location.reload();
                 }
@@ -217,7 +229,7 @@ export class RegistriesComponent extends BaseGridComponent {
 
     public onPrioritizeCheck(checkField: string, value: string[]) {
         this.priorityChecked = value.filter(item => !this.alreadyExistPriorities.some(existItem => item === existItem));
-        
+
         this.columns.forEach(column => {
             if (column.checkField == checkField) {
                 column.checkGroup = value;

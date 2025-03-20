@@ -10,6 +10,7 @@ import { TagModule } from 'primeng/tag';
 import { RouterModule } from '@angular/router';
 import { HederaExplorer, HederaType } from '@components/hedera-explorer/hedera-explorer.component';
 import { CheckboxModule } from 'primeng/checkbox';
+import { TooltipModule } from 'primeng/tooltip';
 
 export enum ColumnType {
     TEXT = 'text',
@@ -62,6 +63,7 @@ export interface CheckBoxColumn extends BaseColumn {
     checkField: string,
     disabled: (item: any) => boolean;
     callback: (checkField: string, checkGroup: string[]) => void;
+    getTooltip?: (item: any) => string;
 }
 
 @Component({
@@ -74,13 +76,12 @@ export interface CheckBoxColumn extends BaseColumn {
         TranslocoModule,
         ProgressSpinnerModule,
         ButtonModule,
-        NgStyle,
         NgTemplateOutlet,
         PaginatorComponent,
         HederaExplorer,
-        DatePipe,
         TagModule,
         CheckboxModule,
+        TooltipModule,
         RouterModule,
     ],
     templateUrl: './table.component.html',
