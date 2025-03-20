@@ -21,6 +21,8 @@ import { LandingService } from '@services/landing.service';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { ButtonModule } from 'primeng/button';
+import { MessageService } from 'primeng/api';
+import { PriorityStatus } from '@indexer/interfaces';
 
 @Component({
     selector: 'priority-queue',
@@ -57,6 +59,13 @@ export class PriorityQueueComponent extends BaseGridComponent {
             type: ColumnType.TEXT,
             field: 'priorityStatusDate',
             title: 'grid.date',
+            formatValue: (date: any) => {
+                if (date) {
+                    return new Date(date).toLocaleString();
+                }
+
+                return '';
+            }
         },
         {
             type: ColumnType.TEXT,
@@ -68,9 +77,37 @@ export class PriorityQueueComponent extends BaseGridComponent {
             },
         },
         {
-            type: ColumnType.TEXT,
+            type: ColumnType.CHIP,
             field: 'priorityStatus',
             title: 'grid.status',
+            width: '100px',
+            severity: (row: any) => {
+                switch (row.priorityStatus) {
+                    case PriorityStatus.SCHEDULED:
+                        return 'secondary'
+            
+                    case PriorityStatus.RUNNING:
+                        return 'info'
+
+                    case PriorityStatus.FINISHED:
+                        return 'success'
+
+                    default:
+                        return 'secondary'
+                }
+            }
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'lastUpdate',
+            title: 'grid.lastUpdate',
+            formatValue: (lastUpdate: any) => {
+                if (lastUpdate) {
+                    return new Date(lastUpdate).toLocaleString();
+                }
+
+                return '';
+            }
         },
     ];
 
@@ -82,6 +119,7 @@ export class PriorityQueueComponent extends BaseGridComponent {
 
     constructor(
         private landingService: LandingService,
+        private messageService: MessageService,
         route: ActivatedRoute,
         router: Router
     ) {
@@ -114,7 +152,7 @@ export class PriorityQueueComponent extends BaseGridComponent {
         if (this.priorityControl.value) {
             this.landingService.setDataPriorityLoadingProgress([this.priorityControl.value]).subscribe(data => {
                 if (!data) {
-                    console.log("Topic not found!")
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'This topic ID not found or already in queue. Please try again.', life: 123000 });
                 } else {
                     location.reload();
                 }

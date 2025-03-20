@@ -3,7 +3,7 @@
  */
 export enum PriorityStatus {
     NONE = '',
-    SCHEDULED = 'SCHEDULED',
-    RUNNING = 'RUNNING',
-    COMPLETED = 'COMPLETED',
+    SCHEDULED = 'Scheduled',
+    RUNNING = 'Running',
+    FINISHED = 'Finished',
 }

@@ -102,6 +102,7 @@
         "coordinates": "Coordinates",
         "prioritize": "Prioritize",
         "send_to_priority": "Send to Priority Update Queue",
+        "lastUpdate": "Last Update",
         "filter": {
             "policy": "Policy",
             "schema": "Schema",

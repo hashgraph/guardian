@@ -38,6 +38,7 @@ export interface TextColumn extends BaseColumn {
 export interface ChipColumn extends BaseColumn {
     type: ColumnType.CHIP;
     field: string;
+    severity?: (row: any) => "success" | "secondary" | "info" | "warning" | "danger" | "contrast" | undefined;
     sort?: boolean;
 }
 

@@ -81,7 +81,7 @@
                     }
                     }
                     @case ('chip') {
-                    <p-tag [value]="getFieldValue(column.field, item)" severity="secondary" />
+                    <p-tag [value]="getFieldValue(column.field, item)" [severity]="column?.severity(item) || 'secondary'" />
                     }
                     @case ('button') {
                     <p-button [label]="column.btn_label | transloco" [icon]="column.icon" (onClick)="column.callback(item)" />

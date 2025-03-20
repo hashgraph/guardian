@@ -20,4 +20,12 @@ export class DataPriorityLoadingProgress {
      * Priority status
      */
     priorityStatus: PriorityStatus;
+    /**
+     * Last update
+     */
+    lastUpdate: number;
+    /**
+     * Has next message
+     */
+    hasNext: boolean;
 }
