@@ -55,4 +55,13 @@ export class TokenCache implements RawToken {
 
     @Property({ nullable: true })
     decimals?: string;
+    
+    @Property({ nullable: true })
+    priorityDate?: Date | null;
+
+    @Property({ nullable: true })
+    priorityStatus?: string;
+
+    @Property({ nullable: true })
+    priorityStatusDate?: Date | null;
 }

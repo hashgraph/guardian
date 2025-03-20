@@ -155,7 +155,7 @@ export class PriorityQueueComponent extends BaseGridComponent {
     public priorityControl = new FormControl<string>('');
     public setPriorityDataLoading() {
         if (this.priorityControl.value) {
-            this.landingService.setDataPriorityLoadingProgress([this.priorityControl.value]).subscribe(data => {
+            this.landingService.setDataPriorityLoadingProgressTopics([this.priorityControl.value]).subscribe(data => {
                 if (!data) {
                     this.messageService.add({ severity: 'error', summary: 'Error', detail: this.translocoService.translate('priority_queue.add_to_queue_error'), life: 3000 });
                 } else {

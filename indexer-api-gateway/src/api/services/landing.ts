@@ -81,7 +81,7 @@ export class LandingApi extends ApiClient {
         description: 'Internal server error',
         type: InternalServerErrorDTO
     })
-    @Get('/data-priority-loading-progress')
+    @Get('/data-priority-topics')
     @ApiPaginatedRequest
     @ApiPaginatedResponse('PriorityQueue', DataPriorityLoadingProgress)
     @HttpCode(HttpStatus.OK)
@@ -114,7 +114,7 @@ export class LandingApi extends ApiClient {
         description: 'Internal server error',
         type: InternalServerErrorDTO
     })
-    @Post('/data-priority-loading-progress')
+    @Post('/data-priority-topics')
     @ApiBody({
         description: 'Topic Ids',
         required: true,
@@ -130,14 +130,49 @@ export class LandingApi extends ApiClient {
         type: [DataPriorityLoadingProgress],
     })
     @HttpCode(HttpStatus.OK)
-    async setDataPriorityLoadingProgress(
+    async setDataPriorityLoadingProgressTopics(
         @Body() priorityData: SetLoadingPriorityDTO
     ): Promise<DataPriorityLoadingProgress> {
-        const topicIds = priorityData.topicIds;
+        const topicIds = priorityData.ids;
 
         return await this.send(
-            IndexerMessageAPI.SET_DATA_PRIORITY_LOADING_PROGRESS,
+            IndexerMessageAPI.SET_DATA_PRIORITY_LOADING_PROGRESS_TOPICS,
             { topicIds }
+        );
+    }
+
+    @ApiOperation({
+        summary: 'Get data priority loading progress',
+        description: 'Returns priority data loading',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Post('/data-priority-tokens')
+    @ApiBody({
+        description: 'Topic Ids',
+        required: true,
+        type: SetLoadingPriorityDTO,
+        examples: {
+            Priority: {
+                value: '0.0.1'
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Data priority loading progress result',
+        type: [DataPriorityLoadingProgress],
+    })
+    @HttpCode(HttpStatus.OK)
+    async setDataPriorityLoadingProgressTokens(
+        @Body() priorityData: SetLoadingPriorityDTO
+    ): Promise<DataPriorityLoadingProgress> {
+        const tokenIds = priorityData.ids;
+
+        return await this.send(
+            IndexerMessageAPI.SET_DATA_PRIORITY_LOADING_PROGRESS_TOKENS,
+            { tokenIds }
         );
     }
 }

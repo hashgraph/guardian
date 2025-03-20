@@ -51,14 +51,20 @@ export class LandingService {
     public getDataPriorityLoadingProgress(filters: PageFilters): Observable<Page<DataPriorityLoadingProgress>> {
         const options = ApiUtils.getOptions(filters);
         return this.http.get<DataPriorityLoadingProgress>(
-            `${this.url}/data-priority-loading-progress`,
+            `${this.url}/data-priority-topics`,
             options
         ) as any;
     }
 
-    public setDataPriorityLoadingProgress(topicIds: string[]): Observable<any> {
+    public setDataPriorityLoadingProgressTopics(topicIds: string[]): Observable<any> {
         return this.http.post<DataPriorityLoadingProgress>(
-            `${this.url}/data-priority-loading-progress`, { topicIds }
+            `${this.url}/data-priority-topics`, { ids: topicIds }
+        );
+    }
+
+    public setDataPriorityLoadingProgressTokens(tokenIds: string[]): Observable<any> {
+        return this.http.post<DataPriorityLoadingProgress>(
+            `${this.url}/data-priority-tokens`, { tokenIds }
         );
     }
 }

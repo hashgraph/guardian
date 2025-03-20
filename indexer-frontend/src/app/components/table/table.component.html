@@ -81,7 +81,7 @@
                     }
                     }
                     @case ('chip') {
-                    <p-tag [value]="getFieldValue(column.field, item)" [severity]="column?.severity(item) || 'secondary'" />
+                    <p-tag [value]="getFieldValue(column.field, item)" [severity]="column?.severity?.(item) || 'secondary'" />
                     }
                     @case ('button') {
                     <p-button [label]="column.btn_label | transloco" [icon]="column.icon" (onClick)="column.callback(item)" />
@@ -98,7 +98,7 @@
                             [disabled]="column.disabled(item)"
                             [(ngModel)]="column.checkGroup"
                             (onChange)="column.callback(column.checkField, $event.checked)"
-                            [pTooltip]="column?.getTooltip(item) || ''" 
+                            [pTooltip]="column?.getTooltip?.(item) || ''" 
                         />
                     }
                     }

@@ -187,29 +187,29 @@ export class PoliciesComponent extends BaseGridComponent {
             },
         });
     }
-    
-        private onDataLoaded(data: Policy[]): void {
-            const topicIds = data.map(item => item.options.instanceTopicId);
-            
-            this.landingService.getDataPriorityLoadingProgress({ topicIds: topicIds }).subscribe({
-                next: (result) => {
-                                this.alreadyExistPriorities = result.items
-                                    .filter(item => item.priorityStatus != PriorityStatus.FINISHED)
-                                    .map(item => item.topicId);
 
-                    this.onPrioritizeCheck('options.instanceTopicId', this.alreadyExistPriorities);
-                    this.cdr.detectChanges();
-                },
-                error: ({ message }) => {
-                    this.loadingData = false;
-                    console.error(message);
-                },
-            });
-        }
+    private onDataLoaded(data: Policy[]): void {
+        const topicIds = data.map(item => item.options.instanceTopicId);
+
+        this.landingService.getDataPriorityLoadingProgress({ topicIds: topicIds }).subscribe({
+            next: (result) => {
+                this.alreadyExistPriorities = result.items
+                    .filter(item => item.priorityStatus != PriorityStatus.FINISHED)
+                    .map(item => item.topicId);
+
+                this.onPrioritizeCheck('options.instanceTopicId', this.alreadyExistPriorities);
+                this.cdr.detectChanges();
+            },
+            error: ({ message }) => {
+                this.loadingData = false;
+                console.error(message);
+            },
+        });
+    }
 
     public setPriorityDataLoading() {
         if (this.priorityChecked && this.priorityChecked.length > 0) {
-            this.landingService.setDataPriorityLoadingProgress(this.priorityChecked).subscribe(data => {
+            this.landingService.setDataPriorityLoadingProgressTopics(this.priorityChecked).subscribe(data => {
                 if (!data) {
                     this.messageService.add({ severity: 'error', summary: 'Error', detail: this.translocoService.translate('priority_queue.add_to_queue_error'), life: 3000 });
                 } else {
@@ -221,7 +221,7 @@ export class PoliciesComponent extends BaseGridComponent {
 
     public onPrioritizeCheck(checkField: string, value: string[]) {
         this.priorityChecked = value.filter(item => !this.alreadyExistPriorities.some(existItem => item === existItem));
-        
+
         this.columns.forEach(column => {
             if (column.checkField == checkField) {
                 column.checkGroup = value;

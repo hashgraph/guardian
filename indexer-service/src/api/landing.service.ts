@@ -11,6 +11,7 @@ import {
     MessageCache,
     MessageError,
     TopicCache,
+    TokenCache,
 } from '@indexer/common';
 import {
     DataLoadingProgress,
@@ -138,8 +139,8 @@ export class LandingService {
         }
     }
 
-    @MessagePattern(IndexerMessageAPI.SET_DATA_PRIORITY_LOADING_PROGRESS)
-    async setPriorityDataLoadingObjects(
+    @MessagePattern(IndexerMessageAPI.SET_DATA_PRIORITY_LOADING_PROGRESS_TOPICS)
+    async setPriorityDataLoadingTopics(
         @Payload() msg: { topicIds: string[] }
     ) {
         try {
@@ -158,6 +159,37 @@ export class LandingService {
             }
 
             await em.nativeUpdate(TopicCache, { topicId: { $in: topicIds } }, {
+                priorityDate: new Date(),
+                priorityStatus: PriorityStatus.SCHEDULED,
+                priorityStatusDate: new Date(),
+            });
+            
+            return new MessageResponse(true);
+        } catch (error) {
+            return new MessageError(error);
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.SET_DATA_PRIORITY_LOADING_PROGRESS_TOKENS)
+    async setPriorityDataLoadingTokens(
+        @Payload() msg: { tokenIds: string[] }
+    ) {
+        try {
+            const { tokenIds } = msg;
+            const em = DataBaseHelper.getEntityManager();
+
+            const row = (await em.findOne(
+                TokenCache,
+                {
+                    tokenId: { $in: tokenIds }
+                },
+            ))
+
+            if (!row || !!row.priorityDate) {
+                return new MessageResponse(false);
+            }
+
+            await em.nativeUpdate(TokenCache, { tokenId: { $in: tokenIds } }, {
                 priorityDate: new Date(),
                 priorityStatus: PriorityStatus.SCHEDULED,
                 priorityStatusDate: new Date(),

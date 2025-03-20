@@ -7,5 +7,5 @@ export class SetLoadingPriorityDTO {
         example: ['0.0.1'],
     })
     @IsArray()
-    topicIds: string[];
+    ids: string[];
 }
