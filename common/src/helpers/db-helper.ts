@@ -55,7 +55,7 @@ export const COMMON_CONNECTION_CONFIG: ICommonConnectionConfig = {
 /**
  * Database helper
  */
-export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper<T>  {
+export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper<T> {
 
     /**
      * System fields
@@ -325,11 +325,10 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
             [MAP_DOCUMENT_AGGREGATION_FILTERS.HISTORY]: [
                 {
                     $lookup: {
-                        from: `${
-                            dryRun
-                                ? 'dry_run'
-                                : 'document_state'
-                        }`,
+                        from: `${dryRun
+                            ? 'dry_run'
+                            : 'document_state'
+                            }`,
                         localField: 'id',
                         foreignField: 'documentId',
                         pipeline: [
@@ -625,7 +624,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
     public async findOne(filters: FilterQuery<T> | string | ObjectId | null, options: FindOneOptions<object> = {}): Promise<T | null> {
         let query: FilterQuery<T>;
 
-        if(!filters) {
+        if (!filters) {
             return null
         }
 
@@ -691,7 +690,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
 
     @CreateRequestContext(() => DataBaseHelper.orm)
     public async saveMany(
-        entities:Partial<T>[],
+        entities: Partial<T>[],
         filter?: FilterObject<T>
     ): Promise<T[]> {
         const repository = this._em.getRepository(this.entityClass);
@@ -699,7 +698,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
         let existingEntityByFilter;
         let existingEntitiesById: T[] = [];
 
-        if(filter) {
+        if (filter) {
             existingEntityByFilter = await repository.findOne(filter);
         } else {
             const ids = entities.map(entity => entity.id || entity._id).filter(id => id);
@@ -724,7 +723,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
             if (entityToUpdateOrCreate) {
                 for (const systemFileField of DataBaseHelper._systemFileFields) {
                     if (entity[systemFileField]) {
-                       delete entity[systemFileField]
+                        delete entity[systemFileField]
                     }
                 }
 
@@ -803,7 +802,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
         const bulkOps = [];
         const updatedDocuments = [];
 
-        if(filter) {
+        if (filter) {
             existingEntityByFilter = await repository.find(filter);
         } else {
             const ids = entities.map(entity => entity.id || entity._id).filter(id => id);
@@ -821,10 +820,10 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
 
             let entitiesToUpdate = existingEntityByFilter
 
-            if(!entitiesToUpdate) {
+            if (!entitiesToUpdate) {
                 const existingEntityById = existingEntitiesById.find((existingEntity: T) => existingEntity.id === entity.id)
 
-                if(existingEntityById) {
+                if (existingEntityById) {
                     entitiesToUpdate = [existingEntityById]
                 } else {
                     entitiesToUpdate = []
@@ -876,5 +875,46 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
             amount--;
         }
         await this._em.flush();
+    }
+
+    /**
+     * Create a lot of data
+     * @param data Data
+     * @param amount Amount
+     */
+    @CreateRequestContext(() => DataBaseHelper.orm)
+    public async insertMany(entities: T[]): Promise<void> {
+        const repository: MongoEntityRepository<T> = this._em.getRepository(this.entityClass);
+        for (const entity of entities) {
+            this._em.persist(repository.create(entity as RequiredEntityData<T>));
+        }
+        await this._em.flush();
+    }
+
+    @CreateRequestContext(() => DataBaseHelper.orm)
+    public async updateByKey(
+        entities: T[],
+        keyField: string
+    ): Promise<T[]> {
+        const repository = this._em.getRepository(this.entityClass);
+        const filter: any = {};
+        const result: T[] = [];
+        for (const entity of entities) {
+            filter[keyField] = entity[keyField];
+            const entityToUpdate = await repository.findOne(filter);
+            for (const systemFileField of DataBaseHelper._systemFileFields) {
+                if (entity[systemFileField]) {
+                    entity[systemFileField] = entityToUpdate[systemFileField];
+                }
+            }
+            wrap(entityToUpdate)
+                .assign(
+                    { ...entity, updateDate: new Date() } as EntityData<T>,
+                    { mergeObjectProperties: false }
+                );
+            result.push(entityToUpdate);
+        }
+        await this._em.flush();
+        return result;
     }
 }

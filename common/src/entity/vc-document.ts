@@ -22,6 +22,7 @@ import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers/index.js';
 import ObjGet from 'lodash.get';
 import ObjSet from 'lodash.set';
+import crypto from 'crypto';
 
 /**
  * VC documents collection
@@ -192,6 +193,24 @@ export class VcDocument extends BaseEntity implements IVCDocument {
     messageIds?: string[];
 
     /**
+     * Restore ID
+     */
+    @Property({ nullable: true })
+    _restoreId?: string;
+
+    /**
+     * Properties Hash
+     */
+    @Property({ nullable: true })
+    _propHash?: string;
+
+    /**
+     * Document Hash
+     */
+    @Property({ nullable: true })
+    _docHash?: string;
+
+    /**
      * Document defaults
      */
     @BeforeCreate()
@@ -202,46 +221,85 @@ export class VcDocument extends BaseEntity implements IVCDocument {
         this.option.status = this.option.status || ApproveStatus.NEW;
     }
 
+    private _createDocument(document: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            try {
+                const fileStream = DataBaseHelper.gridFS.openUploadStream(GenerateUUIDv4());
+                this.documentFileId = fileStream.id;
+                fileStream.write(document);
+                fileStream.end(() => resolve());
+            } catch (error) {
+                reject(error)
+            }
+        });
+    }
+
+    private _createFieldCache(fields?: string[]): any {
+        if (fields) {
+            const newDocument: any = {};
+            for (const field of fields) {
+                const fieldValue = ObjGet(this.document, field)
+                if (
+                    typeof fieldValue === 'number' ||
+                    (
+                        typeof fieldValue === 'string' &&
+                        fieldValue.length < (+process.env.DOCUMENT_CACHE_FIELD_LIMIT || 100)
+                    )
+                ) {
+                    ObjSet(newDocument, field, fieldValue);
+                }
+            }
+            return newDocument;
+        } else {
+            return null;
+        }
+    }
+
     /**
      * Create document
      */
     @BeforeCreate()
     async createDocument() {
-        await new Promise<void>((resolve, reject) => {
-            try {
-                if (this.document) {
-                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                        GenerateUUIDv4()
-                    );
-                    this.documentFileId = fileStream.id;
-                    fileStream.write(JSON.stringify(this.document));
-                    if (this.documentFields) {
-                        const newDocument: any = {};
-                        for (const field of this.documentFields) {
-                            const fieldValue = ObjGet(this.document, field)
-                            if (
-                                (typeof fieldValue === 'string' &&
-                                    fieldValue.length <
-                                        (+process.env
-                                            .DOCUMENT_CACHE_FIELD_LIMIT ||
-                                            100)) ||
-                                typeof fieldValue === 'number'
-                            ) {
-                                ObjSet(newDocument, field, fieldValue);
-                            }
-                        }
-                        this.document = newDocument;
-                    } else {
-                        delete this.document;
-                    }
-                    fileStream.end(() => resolve());
-                } else {
-                    resolve();
-                }
-            } catch (error) {
-                reject(error)
+        if (this.document) {
+            const document = JSON.stringify(this.document);
+            await this._createDocument(document);
+            this.document = this._createFieldCache(this.documentFields);
+            if (!this.document) {
+                delete this.document;
             }
-        });
+            this._docHash = crypto
+                .createHash('md5')
+                .update(document)
+                .digest('hex');
+        } else {
+            this._docHash = '';
+        }
+        const prop: any = {};
+        prop.accounts = this.accounts;
+        prop.assignedTo = this.assignedTo;
+        prop.assignedToGroup = this.assignedToGroup;
+        prop.comment = this.comment;
+        prop.group = this.group;
+        prop.hash = this.hash;
+        prop.hederaStatus = this.hederaStatus;
+        prop.messageHash = this.messageHash;
+        prop.messageId = this.messageId;
+        prop.messageIds = this.messageIds;
+        prop.option = this.option;
+        prop.owner = this.owner;
+        prop.type = this.type;
+        prop.topicId = this.topicId;
+        prop.tokens = this.tokens;
+        prop.tag = this.tag;
+        prop.signature = this.signature;
+        prop.schema = this.schema;
+        prop.relationships = this.relationships;
+        prop.processingStatus = this.processingStatus;
+        prop.policyId = this.policyId;
+        this._propHash = crypto
+            .createHash('md5')
+            .update(JSON.stringify(prop))
+            .digest('hex');
     }
 
     /**
@@ -249,14 +307,12 @@ export class VcDocument extends BaseEntity implements IVCDocument {
      */
     @BeforeUpdate()
     async updateDocument() {
-        if (this.document) {
-            if (this.documentFileId) {
-                DataBaseHelper.gridFS
-                    .delete(this.documentFileId)
-                    .catch(console.error);
-            }
-            await this.createDocument();
+        if (this.document && this.documentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.documentFileId)
+                .catch(console.error);
         }
+        await this.createDocument();
     }
 
     /**

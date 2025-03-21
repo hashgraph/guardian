@@ -1,6 +1,7 @@
 import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
 import { BaseEntity } from '../models/index.js';
-import { EntityStatus, GenerateUUIDv4, IFormula, IFormulaConfig } from '@guardian/interfaces';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { ObjectId } from '@mikro-orm/mongodb';
 
 /**
  * Policy Diff
@@ -47,16 +48,23 @@ export class PolicyDiff extends BaseEntity {
     diffTopicId?: string;
 
     /**
-     * VC
-     */
-    @Property({ nullable: true })
-    vcCollectionId?: any;
-
-    /**
      * Last Update
      */
     @Property({ nullable: true })
     lastUpdate?: Date;
+
+
+    /**
+     * VC
+     */
+    @Property({ nullable: true })
+    file?: any;
+
+    /**
+     * VC
+     */
+    @Property({ nullable: true })
+    fileId?: ObjectId;
 
     /**
      * Set defaults
