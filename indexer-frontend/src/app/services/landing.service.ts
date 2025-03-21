@@ -55,16 +55,22 @@ export class LandingService {
             options
         ) as any;
     }
-
+    
     public setDataPriorityLoadingProgressTopics(topicIds: string[]): Observable<any> {
         return this.http.post<DataPriorityLoadingProgress>(
             `${this.url}/data-priority-topics`, { ids: topicIds }
         );
     }
 
+    public setDataPriorityLoadingProgressPolicy(topicIds: string[]): Observable<any> {
+        return this.http.post<DataPriorityLoadingProgress>(
+            `${this.url}/data-priority-policy`, { ids: topicIds }
+        );
+    }
+
     public setDataPriorityLoadingProgressTokens(tokenIds: string[]): Observable<any> {
         return this.http.post<DataPriorityLoadingProgress>(
-            `${this.url}/data-priority-tokens`, { tokenIds }
+            `${this.url}/data-priority-tokens`, { ids: tokenIds }
         );
     }
 }

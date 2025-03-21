@@ -191,11 +191,11 @@ export class PoliciesComponent extends BaseGridComponent {
     private onDataLoaded(data: Policy[]): void {
         const topicIds = data.map(item => item.options.instanceTopicId);
 
-        this.landingService.getDataPriorityLoadingProgress({ topicIds: topicIds }).subscribe({
+        this.landingService.getDataPriorityLoadingProgress({ entityIds: topicIds }).subscribe({
             next: (result) => {
                 this.alreadyExistPriorities = result.items
                     .filter(item => item.priorityStatus != PriorityStatus.FINISHED)
-                    .map(item => item.topicId);
+                    .map(item => item.entityId);
 
                 this.onPrioritizeCheck('options.instanceTopicId', this.alreadyExistPriorities);
                 this.cdr.detectChanges();
@@ -209,7 +209,7 @@ export class PoliciesComponent extends BaseGridComponent {
 
     public setPriorityDataLoading() {
         if (this.priorityChecked && this.priorityChecked.length > 0) {
-            this.landingService.setDataPriorityLoadingProgressTopics(this.priorityChecked).subscribe(data => {
+            this.landingService.setDataPriorityLoadingProgressPolicy(this.priorityChecked).subscribe(data => {
                 if (!data) {
                     this.messageService.add({ severity: 'error', summary: 'Error', detail: this.translocoService.translate('priority_queue.add_to_queue_error'), life: 3000 });
                 } else {

@@ -9,6 +9,7 @@ import { ObjectId } from '@mikro-orm/mongodb';
 @Index({ name: 'has_next', properties: ['hasNext'] })
 @Index({ name: 'priority_date', properties: ['priorityDate'] })
 @Index({ name: 'priority_status_date', properties: ['priorityStatusDate'] })
+@Index({ name: 'priority_date_and_topic_id', properties: ['priorityDate', 'topicId'] })
 export class TopicCache implements RawTopic {
     @PrimaryKey()
     _id: ObjectId;

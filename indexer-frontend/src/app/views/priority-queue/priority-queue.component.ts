@@ -70,11 +70,11 @@ export class PriorityQueueComponent extends BaseGridComponent {
         },
         {
             type: ColumnType.TEXT,
-            field: 'topicId',
-            title: 'grid.topic_id',
+            field: 'entityId',
+            title: 'grid.entity_id',
             sort: true,
             link: {
-                field: 'topicId',
+                field: 'entityId',
                 url: '/topics',
             },
         },
@@ -102,12 +102,12 @@ export class PriorityQueueComponent extends BaseGridComponent {
         },
         {
             type: ColumnType.TEXT,
-            field: 'lastUpdate',
+            field: 'priorityStatusDate',
             title: 'grid.lastUpdate',
             sort: true,
-            formatValue: (lastUpdate: any) => {
-                if (lastUpdate) {
-                    return new Date(lastUpdate).toLocaleString();
+            formatValue: (priorityStatusDate: any) => {
+                if (priorityStatusDate) {
+                    return new Date(priorityStatusDate).toLocaleString();
                 }
 
                 return '';
@@ -118,7 +118,7 @@ export class PriorityQueueComponent extends BaseGridComponent {
     topicIdSearch = new Filter({
         label: 'grid.filter.topic_id',
         type: 'input',
-        field: 'topicId',
+        field: 'entityId',
     })
 
     constructor(
@@ -135,6 +135,7 @@ export class PriorityQueueComponent extends BaseGridComponent {
     protected loadData(): void {
         const filters = this.getFilters();
         this.loadingData = true;
+        
         this.landingService.getDataPriorityLoadingProgress(filters).subscribe({
             next: (result) => {
                 this.setResult(result);

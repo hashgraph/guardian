@@ -7,8 +7,8 @@ import { ObjectId } from '@mikro-orm/mongodb';
 @Index({ name: 'chunk_id', properties: ['chunkId'] })
 @Index({ name: 'type', properties: ['type'] })
 @Index({ name: 'status', properties: ['status'] })
-// @Index({ name: 'last_update', properties: ['lastUpdate'] })
-// @Index({ name: 'status_and_last_update', properties: ['status', 'lastUpdate'] })
+@Index({ name: 'priority_date', properties: ['priorityDate'] })
+@Index({ name: 'priority_date_and_topic_id', properties: ['priorityDate', 'topicId'] })
 export class MessageCache implements RawMessage {
     @PrimaryKey()
     _id: ObjectId;

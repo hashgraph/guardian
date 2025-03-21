@@ -7,7 +7,7 @@ export class DataPriorityLoadingProgress {
     /**
      * Topic Id
      */
-    topicId: string;
+    entityId: string;
     /**
      * Added to priority queue date
      */

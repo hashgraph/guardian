@@ -18,6 +18,7 @@ import {
     DataPriorityLoadingProgress,
     LandingAnalytics as IAnalytics,
     ProjectCoordinates as IProjectCoordinates,
+    MessageType,
     Page,
     PageFilters,
     PriorityStatus,
@@ -93,34 +94,120 @@ export class LandingService {
         try {
             const options = parsePageParams(msg);
 
-            const { topicId, topicIds } = msg;
+            const { entityId, entityIds } = msg;
+
+            const ids = [];
+
+            if (entityId) {
+                ids.push(entityId)
+            }
+
+            if (entityIds) {
+                ids.push(...entityIds.split(','))
+            }
 
             const em = DataBaseHelper.getEntityManager();
 
-            const filter: any = {
-                $or: [
-                    { priorityStatusDate: { $ne: null } }
-                ]
+            const aggregate: any[] = [
+                {
+                    $project: {
+                        type: "Token",
+                        _id: "$_id",
+                        entityId: "$tokenId",
+                        priorityDate: "$priorityDate",
+                        priorityStatus: "$priorityStatus",
+                        priorityStatusDate: "$priorityStatusDate"
+                    }
+                },
+                {
+                    $unionWith: {
+                        coll: "topic_cache",
+                        pipeline: [
+                            {
+                                $project: {
+                                    type: "Topic",
+                                    _id: "$_id",
+                                    entityId: "$topicId",
+                                    priorityDate: "$priorityDate",
+                                    priorityStatus: "$priorityStatus",
+                                    priorityStatusDate: "$priorityStatusDate"
+                                }
+                            }
+                        ]
+                    }
+                },
+            ];
+
+            if (ids && ids.length > 0) {
+                aggregate.push(
+                    {
+                        $match:
+                        {
+                            entityId: { $in: ids },
+                            priorityStatusDate: { $ne: null }
+                        }
+                    }
+                )
+            } else {
+                aggregate.push(
+                    {
+                        $match:
+                        {
+                            priorityStatusDate: { $ne: null }
+                        }
+                    }
+                )
+            }
+
+            if (options.orderBy) {
+                aggregate.push(
+                    {
+                        $sort: options.aggregateOrderBy
+                    }
+                )
+            }
+
+            if (options.limit) {
+                aggregate.push(
+                    {
+                        $limit: options.limit
+                    }
+                )
+            }
+
+            if (options.offset) {
+                aggregate.push(
+                    {
+                        $skip: options.offset
+                    }
+                )
+            }
+
+            const rows = await em.aggregate(TokenCache, aggregate);
+
+            const topicFilter: any = {
+                priorityStatusDate: { $ne: null }
             };
-
-            if (topicId) {
-                filter.topicId = topicId;
+            const tokenFilter: any = {
+                priorityStatusDate: { $ne: null }
+            };
+            if (ids && ids.length > 0) {
+                topicFilter.topicId = { $in: ids }
+                tokenFilter.tokenId = { $in: ids }
             }
 
-            const topicIdsMapped = topicIds?.split(',');
-            if (Array.isArray(topicIdsMapped) && topicIdsMapped.length > 0) {
-                filter.topicId = { $in: topicIdsMapped };
-            }
-
-            const [rows, count] = await em.findAndCount(
+            const topicCount = await em.count(
                 TopicCache,
-                filter,
-                options
+                topicFilter
+            );
+            const tokenCount = await em.count(
+                TokenCache,
+                tokenFilter
             );
 
             const result = {
-                items: rows?.map((item: TopicCache) => { return {
-                    topicId: item.topicId,
+                items: rows?.map((item: any) => { return {
+                    entityId: item.entityId,
                     priorityDate: item.priorityDate,
                     priorityStatusDate: item.priorityStatusDate,
                     priorityStatus: item.priorityStatus as PriorityStatus,
@@ -129,10 +216,10 @@ export class LandingService {
                 } }) || [],
                 pageIndex: options.offset / options.limit,
                 pageSize: options.limit,
-                total: count,
+                total: topicCount + tokenCount,
                 order: options.orderBy,
             };
-
+            
             return new MessageResponse<Page<DataPriorityLoadingProgress>>(result);
         } catch (error) {
             return new MessageError(error);
@@ -147,24 +234,88 @@ export class LandingService {
             const { topicIds } = msg;
             const em = DataBaseHelper.getEntityManager();
 
-            const row = (await em.findOne(
-                TopicCache,
-                {
-                    topicId: { $in: topicIds }
+            const topicResult = await em.nativeUpdate(TopicCache, {
+                    topicId: { $in: topicIds },
+                    priorityDate: { $eq: null }
                 },
-            ))
+                {
+                    priorityDate: new Date(),
+                    priorityStatus: PriorityStatus.SCHEDULED,
+                    priorityStatusDate: new Date(),
+                }
+            );
 
-            if (!row || !!row.priorityDate) {
-                return new MessageResponse(false);
-            }
+            const messageResult = await em.nativeUpdate(MessageCache, {
+                    topicId: { $in: topicIds },
+                    priorityDate: { $eq: null }
+                },
+                {
+                    priorityDate: new Date(),
+                }
+            );
 
-            await em.nativeUpdate(TopicCache, { topicId: { $in: topicIds } }, {
+            return new MessageResponse((topicResult + messageResult) != 0);
+        } catch (error) {
+            return new MessageError(error);
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.SET_DATA_PRIORITY_LOADING_PROGRESS_POLICY)
+    async setPriorityDataLoadingPolicies(
+        @Payload() msg: { policyTopicIds: string[] }
+    ) {
+        try {
+            const { policyTopicIds } = msg;
+            const em = DataBaseHelper.getEntityManager();
+
+            const row = await em.find(
+                Message,
+                {
+                    type: MessageType.INSTANCE_POLICY,
+                    'options.instanceTopicId': { $in: policyTopicIds }
+                } as any,
+            )
+            
+            const topicIds = new Set<string>();
+            const tokenIds = new Set<string>();
+
+            row.forEach(item => {
+                if (item.analytics) {
+                    if (item.analytics.dynamicTopics) {
+                        item.analytics.dynamicTopics.forEach(id => {
+                            topicIds.add(id)
+                        });
+                    }
+                    if (item.analytics.tokens) {
+                        item.analytics.tokens.forEach(id => {
+                            tokenIds.add(id)
+                        });
+                    }
+                }
+            });
+
+            const topicResult = await em.nativeUpdate(TopicCache, { topicId: { $in: Array.from(topicIds) }, priorityDate: { $eq: null } }, {
                 priorityDate: new Date(),
                 priorityStatus: PriorityStatus.SCHEDULED,
                 priorityStatusDate: new Date(),
             });
-            
-            return new MessageResponse(true);
+
+            const tokenResult = await em.nativeUpdate(TokenCache, { tokenId: { $in: Array.from(tokenIds) }, priorityDate: { $eq: null } }, {
+                priorityDate: new Date(),
+                priorityStatus: PriorityStatus.SCHEDULED,
+                priorityStatusDate: new Date(),
+            });
+
+            const messageResult = await em.nativeUpdate(MessageCache, {
+                    topicId: { $in: Array.from(topicIds) },
+                    priorityDate: { $eq: null }
+                },
+                {
+                    priorityDate: new Date(),
+                }
+            );
+
+            return new MessageResponse((topicResult + tokenResult + messageResult) != 0);
         } catch (error) {
             return new MessageError(error);
         }
@@ -178,24 +329,18 @@ export class LandingService {
             const { tokenIds } = msg;
             const em = DataBaseHelper.getEntityManager();
 
-            const row = (await em.findOne(
-                TokenCache,
-                {
-                    tokenId: { $in: tokenIds }
+            const result = await em.nativeUpdate(TokenCache, {
+                    tokenId: { $in: tokenIds },
+                    priorityDate: { $eq: null }
                 },
-            ))
+                {
+                    priorityDate: new Date(),
+                    priorityStatus: PriorityStatus.SCHEDULED,
+                    priorityStatusDate: new Date(),
+                }
+            );
 
-            if (!row || !!row.priorityDate) {
-                return new MessageResponse(false);
-            }
-
-            await em.nativeUpdate(TokenCache, { tokenId: { $in: tokenIds } }, {
-                priorityDate: new Date(),
-                priorityStatus: PriorityStatus.SCHEDULED,
-                priorityStatusDate: new Date(),
-            });
-            
-            return new MessageResponse(true);
+            return new MessageResponse(result != 0);
         } catch (error) {
             return new MessageError(error);
         }

@@ -210,6 +210,8 @@ export class SynchronizationPolicy extends SynchronizationTask {
                 analytics.vpCount = analytics.vpCount + documents.vp;
             }
         }
+
+        analytics.dynamicTopics = Array.from(topics);
     }
 
     private findNFTs(

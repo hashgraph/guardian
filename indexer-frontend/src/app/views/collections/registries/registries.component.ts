@@ -199,11 +199,11 @@ export class RegistriesComponent extends BaseGridComponent {
     private onDataLoaded(data: Registry[]): void {
         const topicIds = data.map(item => item.options.registrantTopicId);
 
-        this.landingService.getDataPriorityLoadingProgress({ topicIds: topicIds }).subscribe({
+        this.landingService.getDataPriorityLoadingProgress({ entityIds: topicIds }).subscribe({
             next: (result) => {
                 this.alreadyExistPriorities = result.items
                     .filter(item => item.priorityStatus != PriorityStatus.FINISHED)
-                    .map(item => item.topicId);
+                    .map(item => item.entityId);
 
                 this.onPrioritizeCheck('options.registrantTopicId', this.alreadyExistPriorities);
                 this.cdr.detectChanges();

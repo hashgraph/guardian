@@ -7,6 +7,9 @@ import { ObjectId } from '@mikro-orm/mongodb';
 @Index({ name: 'status', properties: ['status'] })
 @Index({ name: 'last_update', properties: ['lastUpdate'] })
 @Index({ name: 'has_next', properties: ['hasNext'] })
+@Index({ name: 'priority_date', properties: ['priorityDate'] })
+@Index({ name: 'priority_status_date', properties: ['priorityStatusDate'] })
+@Index({ name: 'priority_date_and_token_id', properties: ['priorityDate', 'tokenId'] })
 export class TokenCache implements RawToken {
     @PrimaryKey()
     _id: ObjectId;

@@ -105,6 +105,7 @@
         "prioritize": "Prioritize",
         "send_to_priority": "Send to Priority Update Queue",
         "lastUpdate": "Last Update",
+        "entity_id": "Entity Id",
         "filter": {
             "policy": "Policy",
             "schema": "Schema",

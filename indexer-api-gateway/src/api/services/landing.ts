@@ -90,8 +90,8 @@ export class LandingApi extends ApiClient {
         @Query('pageSize') pageSize?: string,
         @Query('orderField') orderField?: string,
         @Query('orderDir') orderDir?: string,
-        @Query('topicId') topicId?: string,
-        @Query('topicIds') topicIds?: string[],
+        @Query('entityId') entityId?: string,
+        @Query('entityIds') entityIds?: string[],
     ): Promise<DataPriorityLoadingProgress> {
         return await this.send(
             IndexerMessageAPI.GET_DATA_PRIORITY_LOADING_PROGRESS,
@@ -100,8 +100,8 @@ export class LandingApi extends ApiClient {
                 pageSize,
                 orderField,
                 orderDir,
-                topicId,
-                topicIds,
+                entityId,
+                entityIds,
             }
         );
     }
@@ -138,6 +138,41 @@ export class LandingApi extends ApiClient {
         return await this.send(
             IndexerMessageAPI.SET_DATA_PRIORITY_LOADING_PROGRESS_TOPICS,
             { topicIds }
+        );
+    }
+
+    @ApiOperation({
+        summary: 'Get data priority loading progress',
+        description: 'Returns priority data loading',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Post('/data-priority-policy')
+    @ApiBody({
+        description: 'Topic Ids',
+        required: true,
+        type: SetLoadingPriorityDTO,
+        examples: {
+            Priority: {
+                value: '0.0.1'
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Data priority loading progress result',
+        type: [DataPriorityLoadingProgress],
+    })
+    @HttpCode(HttpStatus.OK)
+    async setDataPriorityLoadingProgressPolicies(
+        @Body() priorityData: SetLoadingPriorityDTO
+    ): Promise<DataPriorityLoadingProgress> {
+        const policyTopicIds = priorityData.ids;
+
+        return await this.send(
+            IndexerMessageAPI.SET_DATA_PRIORITY_LOADING_PROGRESS_POLICY,
+            { policyTopicIds }
         );
     }
 
