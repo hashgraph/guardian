@@ -68,8 +68,12 @@ export class TokenService {
                 }
                 await em.nativeUpdate(TokenCache, { tokenId: row.tokenId }, data);
             } else if (data.type === 'FUNGIBLE_COMMON') {
+                data.priorityDate = null;
+                data.priorityStatus = PriorityStatus.FINISHED;
                 await em.nativeUpdate(TokenCache, { tokenId: row.tokenId }, data);
             } else {
+                data.priorityDate = null;
+                data.priorityStatus = PriorityStatus.FINISHED;
                 await em.nativeUpdate(TokenCache, { tokenId: row.tokenId }, data);
             }
         } catch (error) {
