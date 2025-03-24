@@ -207,6 +207,7 @@ export class LandingService {
 
             const result = {
                 items: rows?.map((item: any) => { return {
+                    type: item.type,
                     entityId: item.entityId,
                     priorityDate: item.priorityDate,
                     priorityStatusDate: item.priorityStatusDate,

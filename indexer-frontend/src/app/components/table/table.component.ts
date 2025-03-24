@@ -32,6 +32,7 @@ export interface TextColumn extends BaseColumn {
     link?: {
         field: string;
         url: string;
+        getUrl?: (item: any) => string;
     };
     formatValue: (value: any) => string;
 }
@@ -161,6 +162,8 @@ export class TableComponent {
             return [column.link.url];
         } else if (column.link?.url) {
             return [column.link.url, this.getFieldValue(column.link.field, obj)];
+        } else if (column.link?.getUrl) {
+            return [column.link?.getUrl(obj), this.getFieldValue(column.link.field, obj)];
         }
         return [];
     }

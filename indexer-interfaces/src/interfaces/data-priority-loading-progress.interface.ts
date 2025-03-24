@@ -5,6 +5,10 @@ import { PriorityStatus } from "../types";
  */
 export class DataPriorityLoadingProgress {
     /**
+     * Entity type
+     */
+    type: 'Topic' | 'Token';
+    /**
      * Topic Id
      */
     entityId: string;

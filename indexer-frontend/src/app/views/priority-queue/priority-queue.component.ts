@@ -23,6 +23,7 @@ import { InputIconModule } from 'primeng/inputicon';
 import { ButtonModule } from 'primeng/button';
 import { MessageService } from 'primeng/api';
 import { PriorityStatus } from '@indexer/interfaces';
+import { catchError, of, switchMap } from 'rxjs';
 
 @Component({
     selector: 'priority-queue',
@@ -75,8 +76,22 @@ export class PriorityQueueComponent extends BaseGridComponent {
             sort: true,
             link: {
                 field: 'entityId',
-                url: '/topics',
+                getUrl: (item: any) => {
+                    if (item.type === 'Topic')
+                        return '/topics'
+
+                    if (item.type === 'Token')
+                        return '/tokens'
+
+                    return null;
+                }
             },
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'type',
+            title: 'grid.entity_type',
+            sort: true,
         },
         {
             type: ColumnType.CHIP,
@@ -121,6 +136,8 @@ export class PriorityQueueComponent extends BaseGridComponent {
         field: 'entityId',
     })
 
+    priorityControl = new FormControl<string>('');
+
     constructor(
         private landingService: LandingService,
         private messageService: MessageService,
@@ -135,7 +152,11 @@ export class PriorityQueueComponent extends BaseGridComponent {
     protected loadData(): void {
         const filters = this.getFilters();
         this.loadingData = true;
-        
+
+        if (filters['entityId']) {
+            filters['entityId'] = filters['entityId'].trim();
+        }
+
         this.landingService.getDataPriorityLoadingProgress(filters).subscribe({
             next: (result) => {
                 this.setResult(result);
@@ -153,13 +174,27 @@ export class PriorityQueueComponent extends BaseGridComponent {
     protected override loadFilters(): void {
     }
 
-    public priorityControl = new FormControl<string>('');
+    public onChangePriorityControl(value: any) {
+    }
+
     public setPriorityDataLoading() {
         if (this.priorityControl.value) {
-            this.landingService.setDataPriorityLoadingProgressTopics([this.priorityControl.value]).subscribe(data => {
-                if (!data) {
-                    this.messageService.add({ severity: 'error', summary: 'Error', detail: this.translocoService.translate('priority_queue.add_to_queue_error'), life: 3000 });
-                } else {
+            const searchValue = this.priorityControl.value.trim();
+
+            this.landingService.setDataPriorityLoadingProgressPolicy([searchValue]).pipe(
+                switchMap(data => data ? of(data) : this.landingService.setDataPriorityLoadingProgressTopics([searchValue])),
+                switchMap(data => data ? of(data) : this.landingService.setDataPriorityLoadingProgressTokens([searchValue])),
+                catchError(() => {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: this.translocoService.translate('priority_queue.add_to_queue_error'),
+                        life: 3000
+                    });
+                    return of(null);
+                })
+            ).subscribe(data => {
+                if (data) {
                     location.reload();
                 }
             });
