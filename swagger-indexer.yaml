@@ -2544,7 +2544,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_1
-  /landing/data-priority-loading-progress:
+  /landing/data-priority-topics:
     get:
       operationId: LandingApi_getDataPriorityLoadingProgress
       summary: Get data priority loading progress
@@ -2585,12 +2585,12 @@ paths:
               description: Descending ordering
           schema:
             type: string
-        - name: topicId
+        - name: entityId
           required: true
           in: query
           schema:
             type: string
-        - name: topicIds
+        - name: entityIds
           required: true
           in: query
           schema:
@@ -2618,7 +2618,71 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_1
     post:
-      operationId: LandingApi_setDataPriorityLoadingProgress
+      operationId: LandingApi_setDataPriorityLoadingProgressTopics
+      summary: Get data priority loading progress
+      description: Returns priority data loading
+      parameters: []
+      requestBody:
+        required: true
+        description: Topic Ids
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetLoadingPriorityDTO'
+            examples:
+              Priority:
+                value: 0.0.1
+      responses:
+        '200':
+          description: Data priority loading progress result
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DataPriorityLoadingProgress'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_1
+  /landing/data-priority-policy:
+    post:
+      operationId: LandingApi_setDataPriorityLoadingProgressPolicies
+      summary: Get data priority loading progress
+      description: Returns priority data loading
+      parameters: []
+      requestBody:
+        required: true
+        description: Topic Ids
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetLoadingPriorityDTO'
+            examples:
+              Priority:
+                value: 0.0.1
+      responses:
+        '200':
+          description: Data priority loading progress result
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DataPriorityLoadingProgress'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_1
+  /landing/data-priority-tokens:
+    post:
+      operationId: LandingApi_setDataPriorityLoadingProgressTokens
       summary: Get data priority loading progress
       description: Returns priority data loading
       parameters: []
@@ -8075,7 +8139,7 @@ components:
     SetLoadingPriorityDTO:
       type: object
       properties:
-        topicIds:
+        ids:
           description: Topic Ids
           example:
             - 0.0.1
@@ -8083,7 +8147,7 @@ components:
           items:
             type: string
       required:
-        - topicIds
+        - ids
     SearchPolicyBlocksDTO:
       type: object
       properties:
