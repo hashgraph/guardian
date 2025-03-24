@@ -106,6 +106,7 @@
         "send_to_priority": "Send to Priority Update Queue",
         "lastUpdate": "Last Update",
         "entity_id": "Entity Id",
+        "entity_type": "Entity Type",
         "filter": {
             "policy": "Policy",
             "schema": "Schema",
