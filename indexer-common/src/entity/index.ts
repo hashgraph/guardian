@@ -7,4 +7,3 @@ export * from './nft-cache.js';
 export * from './analytics.js';
 export * from './project-coordinates.js';
 export * from './synchronization-task.js';
-export * from './priority-queue.js';
