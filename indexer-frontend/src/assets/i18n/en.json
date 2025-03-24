@@ -58,6 +58,7 @@
         "enter_topic_id": "Enter Topic ID",
         "add_to_queue": "Add Topic ID to Priority Update Queue",
         "already_in_queue": "Already in Priority Update Queue",
+        "add_to_queue_success": "Added to priority queue.",
         "add_to_queue_error": "This topic ID not found or already in queue. Please try again."
     },
     "filter": {

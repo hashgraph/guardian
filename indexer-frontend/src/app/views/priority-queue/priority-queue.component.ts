@@ -195,7 +195,14 @@ export class PriorityQueueComponent extends BaseGridComponent {
                 })
             ).subscribe(data => {
                 if (data) {
-                    location.reload();
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Success',
+                        detail: this.translocoService.translate('priority_queue.add_to_queue_success'),
+                        life: 3000
+                    });
+
+                    setTimeout(() => location.reload(), 1000)
                 } else {
                     this.messageService.add({
                         severity: 'error',
