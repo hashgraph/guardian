@@ -260,7 +260,9 @@ export class NotificationService {
             const dataBaseServer = new DatabaseServer();
 
             const notification = await dataBaseServer.findOne(Notification, msg);
+
             const notificationsToDelete = await dataBaseServer.find(Notification, {
+                userId: msg.userId,
                 $or: [
                     {
                         createDate: { $lt: notification.createDate },
@@ -270,6 +272,7 @@ export class NotificationService {
                     },
                 ],
             });
+
             await dataBaseServer.remove(Notification, notificationsToDelete);
             for (const notificationToDelete of notificationsToDelete) {
                 await this.deleteNotificationWS(notificationToDelete);

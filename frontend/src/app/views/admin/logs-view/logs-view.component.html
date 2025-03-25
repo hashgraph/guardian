@@ -67,9 +67,14 @@
                         </div>
                     </ng-template>
                 </p-dropdown>
-                <p-calendar [formControl]="dateRangeForm" [maxDate]="currentDate" [placeholder]="'Enter date range'"
-                            [showIcon]="true" [showTime]="true" dateFormat="mm/dd/yy"
-                            selectionMode="range"></p-calendar>
+                <p-calendar
+                    [formControl]="dateRangeForm"
+                    [placeholder]="'Enter date range'"
+                    [showIcon]="true"
+                    [showTime]="true"
+                    dateFormat="mm/dd/yy"
+                    selectionMode="range">
+                </p-calendar>
             </div>
         </form>
       <div class="flex flex-column-gap-8" style="flex-wrap: wrap; row-gap: 8px;">
