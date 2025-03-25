@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Indexer. Get methodologies", { tags: ['indexer', 'firstPool', 'all'] }, () => {
+context("Indexer. Get methodologies", { tags: ['indexer', 'firstPool'] }, () => {
 
     it("Get list of Policies", () => {
         cy.request({

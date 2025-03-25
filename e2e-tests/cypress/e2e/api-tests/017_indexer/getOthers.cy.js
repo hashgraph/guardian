@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Indexer. Get other", { tags: ['indexer', 'firstPool', 'all'] }, () => {
+context("Indexer. Get other", { tags: ['indexer', 'firstPool'] }, () => {
 
     it("Get list of NFTs", () => {
         cy.request({

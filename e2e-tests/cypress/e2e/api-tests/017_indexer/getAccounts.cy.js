@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Indexer. Get accounts", { tags: ['indexer', 'firstPool', 'all'] }, () => {
+context("Indexer. Get accounts", { tags: ['indexer', 'firstPool'] }, () => {
 
     it("Get list of registries", () => {
         cy.request({
