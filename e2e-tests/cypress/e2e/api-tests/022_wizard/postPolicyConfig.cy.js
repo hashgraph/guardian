@@ -20,7 +20,7 @@ context("Create Policy by Wizard", { tags: ['notifications', 'firstPool', 'all']
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 response.body.forEach(element => {
-                    if (element.name == "wizardPolicyAsync") {
+                    if (element.name == "wizardPolicy") {
                         policyId = element.id
                     }
                 })
