@@ -118,7 +118,7 @@ const API = {
     GetIssues: "tag/issue_requests_grid(evident)/blocks",
     ApproveIssueRequestsBtn: "tag/approve_issue_requests_btn/blocks",
     CreateIssue: "tag/create_issue_request_form/blocks",
-    Categories: "methodologies/categories",
+    Categories: "methodologies/categories/",
 
     //Records
     Record: "record/",
@@ -167,6 +167,7 @@ const API = {
     Assign: "assign/",
     Test: "test/",
     Start: "start/",
+    Config: "config/",
 
     //Indexer
     IndexerRegistries: "entities/registries/",
@@ -200,7 +201,6 @@ const API = {
 
     //Branding
     Branding: "branding/",
-    
 
     //Notifications
     Notifications: "notifications/",
@@ -208,5 +208,10 @@ const API = {
     Progresses: "notifications/progresses/",
     ReadAll: "notifications/read/all/",
     DeleteNotification: "notifications/delete/",
+
+    //Wizard
+    WizardPolicy: "wizard/policy/",
+    WizardPolicyAsync: "wizard/push/policy/",
+    Wizard: "wizard/",
 };
 export default API;
