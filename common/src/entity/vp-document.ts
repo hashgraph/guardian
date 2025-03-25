@@ -1,6 +1,6 @@
 import { DocumentSignature, DocumentStatus, GenerateUUIDv4, IVP, IVPDocument } from '@guardian/interfaces';
 import { Entity, Property, Enum, BeforeCreate, BeforeUpdate, OnLoad, AfterDelete, AfterUpdate, AfterCreate } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { RestoreEntity } from '../models/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers/index.js';
 import ObjGet from 'lodash.get';
@@ -10,7 +10,7 @@ import ObjSet from 'lodash.set';
  * VP documents collection
  */
 @Entity()
-export class VpDocument extends BaseEntity implements IVPDocument {
+export class VpDocument extends RestoreEntity implements IVPDocument {
     /**
      * Document owner
      */
@@ -149,46 +149,77 @@ export class VpDocument extends BaseEntity implements IVPDocument {
         this.signature = this.signature || DocumentSignature.NEW;
     }
 
+
+
+    private _createDocument(document: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            try {
+                const fileStream = DataBaseHelper.gridFS.openUploadStream(GenerateUUIDv4());
+                this.documentFileId = fileStream.id;
+                fileStream.write(document);
+                fileStream.end(() => resolve());
+            } catch (error) {
+                reject(error)
+            }
+        });
+    }
+
+    private _createFieldCache(fields?: string[]): any {
+        if (fields) {
+            const newDocument: any = {};
+            for (const field of fields) {
+                const fieldValue = ObjGet(this.document, field)
+                if (
+                    typeof fieldValue === 'number' ||
+                    (
+                        typeof fieldValue === 'string' &&
+                        fieldValue.length < (+process.env.DOCUMENT_CACHE_FIELD_LIMIT || 100)
+                    )
+                ) {
+                    ObjSet(newDocument, field, fieldValue);
+                }
+            }
+            return newDocument;
+        } else {
+            return null;
+        }
+    }
+
     /**
      * Create document
      */
     @BeforeCreate()
     async createDocument() {
-        await new Promise<void>((resolve, reject) => {
-            try {
-                if (this.document) {
-                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                        GenerateUUIDv4()
-                    );
-                    this.documentFileId = fileStream.id;
-                    fileStream.write(JSON.stringify(this.document));
-                    if (this.documentFields) {
-                        const newDocument: any = {};
-                        for (const field of this.documentFields) {
-                            const fieldValue = ObjGet(this.document, field)
-                            if (
-                                (typeof fieldValue === 'string' &&
-                                    fieldValue.length <
-                                    (+process.env
-                                        .DOCUMENT_CACHE_FIELD_LIMIT ||
-                                        100)) ||
-                                typeof fieldValue === 'number'
-                            ) {
-                                ObjSet(newDocument, field, fieldValue);
-                            }
-                        }
-                        this.document = newDocument;
-                    } else {
-                        delete this.document;
-                    }
-                    fileStream.end(() => resolve());
-                } else {
-                    resolve();
-                }
-            } catch (error) {
-                reject(error)
+        if (this.document) {
+            const document = JSON.stringify(this.document);
+            await this._createDocument(document);
+            this.document = this._createFieldCache(this.documentFields);
+            if (!this.document) {
+                delete this.document;
             }
-        });
+            this._updateDocHash(document);
+        } else {
+            this._updateDocHash('');
+        }
+        const prop: any = {};
+        prop.owner = this.owner;
+        prop.hash = this.hash;
+        prop.type = this.type;
+        prop.signature = this.signature;
+        prop.status = this.status;
+        prop.tag = this.tag;
+        prop.messageHash = this.messageHash;
+        prop.messageId = this.messageId;
+        prop.messageIds = this.messageIds;
+        prop.comment = this.comment;
+        prop.amount = this.amount;
+        prop.serials = this.serials;
+        prop.tokenId = this.tokenId;
+        prop.option = this.option;
+        prop.relationships = this.relationships;
+        prop.topicId = this.topicId;
+        prop.policyId = this.policyId;
+        this._updatePropHash(prop);
     }
 
     /**
@@ -196,14 +227,12 @@ export class VpDocument extends BaseEntity implements IVPDocument {
      */
     @BeforeUpdate()
     async updateDocument() {
-        if (this.document) {
-            if (this.documentFileId) {
-                DataBaseHelper.gridFS
-                    .delete(this.documentFileId)
-                    .catch(console.error);
-            }
-            await this.createDocument();
+        if (this.document && this.documentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.documentFileId)
+                .catch(console.error);
         }
+        await this.createDocument();
     }
 
     /**

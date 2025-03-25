@@ -135,7 +135,7 @@ export class TagsManagerBlock {
                     const didDocument = await userCred.loadDidDocument(ref);
 
                     const vcHelper = new VcHelper();
-                    let credentialSubject: any = { ...tag.document } || {};
+                    let credentialSubject: any = { ...tag.document };
                     credentialSubject.id = user.did;
                     const tagSchema = await DatabaseServer.getSchema({ iri: `#${credentialSubject.type}` });
                     if (

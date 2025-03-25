@@ -1,6 +1,7 @@
-import { Row, DiffActionType } from './../index.js';
+import { RestoreEntity } from '@guardian/common';
+import { DiffActionType } from './../index.js';
 
-export interface IDiffAction<T extends Row> {
+export interface IDiffAction<T extends RestoreEntity> {
     type: DiffActionType;
     id: string;
     data: T;

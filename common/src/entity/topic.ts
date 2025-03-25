@@ -1,13 +1,13 @@
 import { TopicType } from '@guardian/interfaces';
-import { Entity, Property, Enum, Unique } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { BeforeCreate, BeforeUpdate, Entity, Property, Enum, Unique } from '@mikro-orm/core';
+import { RestoreEntity } from '../models/index.js';
 
 /**
  * Topics collection
  */
 @Entity()
 @Unique({ properties: ['topicId'], options: { partialFilterExpression: { topicId: { $type: 'string' } } } })
-export class Topic extends BaseEntity {
+export class Topic extends RestoreEntity {
     /**
      * Topic id
      */
@@ -67,4 +67,25 @@ export class Topic extends BaseEntity {
      */
     @Property({ nullable: true })
     targetUUID?: string;
+
+    /**
+     * Create document
+     */
+    @BeforeCreate()
+    @BeforeUpdate()
+    async createDocument() {
+        const prop: any = {};
+        prop.topicId = this.topicId;
+        prop.name = this.name;
+        prop.description = this.description;
+        prop.owner = this.owner;
+        prop.type = this.type;
+        prop.parent = this.parent;
+        prop.policyId = this.policyId;
+        prop.policyUUID = this.policyUUID;
+        prop.targetId = this.targetId;
+        prop.targetUUID = this.targetUUID;
+        this._updatePropHash(prop);
+        this._updateDocHash('');
+    }
 }

@@ -8,7 +8,7 @@ import { PolicyComponentsUtils } from './policy-components-utils.js';
 import { IPolicyBlock, IPolicyInstance, IPolicyInterfaceBlock, IPolicyNavigationStep } from './policy-engine.interface.js';
 import { PolicyUser } from './policy-user.js';
 import { RecordUtils } from './record-utils.js';
-import { PolicyRestore } from './db-restore/index.js';
+import { PolicyBackup, PolicyRestore } from './db-restore/index.js';
 
 /**
  * Block tree generator
@@ -338,18 +338,30 @@ export class BlockTreeGenerator extends NatsService {
      * Init restore
      */
     async initPolicyRestore(policyId: string): Promise<void> {
-        const controller = new PolicyRestore(policyId);
+        const controller = new PolicyBackup(policyId);
         await controller.init();
         await controller.save();
-    }
 
-    public async destroyModel(policyId: string, logger: PinoLogger): Promise<void> {
-        try {
-            await RecordUtils.DestroyRecording(policyId);
-            await RecordUtils.DestroyRunning(policyId);
-        } catch (error) {
-            await logger.error(`Error destroy policy ${error}`, ['POLICY', policyId.toString()]);
-        }
+        const controller1 = new PolicyRestore(policyId);
+        await controller1.restore(
+            `VERSION: 1.0.0
+DATE: 2025-03-20T14:47:44.523Z
+TYPE: backup
+COLLECTION: VC
+SIZE: 1
+HASH: 13bdf609edd917a554d22d4571f06100
+{"type":"Set","id":"67c1db24ed765be4723f4d1f","data":{"owner":"did:hedera:testnet:9W9hXhmAFy1WAiQKNy7xozGEMXwPMwuc1p5YUgvGQGsL_0.0.5463437","hash":"GKPmVXpNYf4BeKSd1kuuQxKP1ViTqiC17bkZriJHjRrN","type":"POLICY","policyId":"67b72b3e42a26886c86a4e92","hederaStatus":"NEW","signature":0,"option":{"status":"NEW"},"document":"eyJpZCI6InVybjp1dWlkOmI5NTYyMzgyLWFlZjMtNDkwNC05ZTVhLWM2ZDI5OWVkY2Y2OCIsInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiaXNzdWVyIjoiZGlkOmhlZGVyYTp0ZXN0bmV0OjlXOWhYaG1BRnkxV0FpUUtOeTd4b3pHRU1Yd1BNd3VjMXA1WVVndkdRR3NMXzAuMC41NDYzNDM3IiwiaXNzdWFuY2VEYXRlIjoiMjAyNS0wMi0yOFQxNTo0OTo1Ni4wMzFaIiwiQGNvbnRleHQiOlsiaHR0cHM6Ly93d3cudzMub3JnLzIwMTgvY3JlZGVudGlhbHMvdjEiLCJpcGZzOi8vYmFma3JlaWRleHl4cHhqZXJ5anBvYjJzbXZzaGpieWlzYzQ0cXd6Nnh3amE0b3lzNXFvaXFmbmJ0aWEiXSwiY3JlZGVudGlhbFN1YmplY3QiOlt7Im5hbWUiOiJpUmVjXzRfMTczOTg4ODMyMzg2NiIsImRlc2NyaXB0aW9uIjoiaVJlYyBEZXNjcmlwdGlvbiIsInRvcGljRGVzY3JpcHRpb24iOiJpUmVjIERlc2NyaXB0aW9uIiwidmVyc2lvbiI6IjEuMC4wIiwicG9saWN5VGFnIjoiVGFnXzE3NDAwNTcyNzc1MTEiLCJvd25lciI6ImRpZDpoZWRlcmE6dGVzdG5ldDo5VzloWGhtQUZ5MVdBaVFLTnk3eG96R0VNWHdQTXd1YzFwNVlVZ3ZHUUdzTF8wLjAuNTQ2MzQzNyIsImNpZCI6ImJhZmtyZWlnZGszbnNueDRsaTdrb2hldWpibGE3NDZ3d3dheHR2a2VzcW83cG9rcG83cml1b2pibWc0IiwidXJsIjoiaXBmczovL2JhZmtyZWlnZGszbnNueDRsaTdrb2hldWpibGE3NDZ3d3dheHR2a2VzcW83cG9rcG83cml1b2pibWc0IiwidXVpZCI6IjgxZjcxYTkzLWMzZDUtNDY1Yy1iZDgzLTAwYzAxNTRiZTNmMiIsIm9wZXJhdGlvbiI6IlBVQkxJU0giLCJAY29udGV4dCI6WyJpcGZzOi8vYmFma3JlaWRleHl4cHhqZXJ5anBvYjJzbXZzaGpieWlzYzQ0cXd6Nnh3amE0b3lzNXFvaXFmbmJ0aWEiXSwiaWQiOiJ1cm46dXVpZDoxNzQwNzU3Nzg2LjcyMzExNzAwMCIsInR5cGUiOiJQb2xpY3kifV0sInByb29mIjp7InR5cGUiOiJFZDI1NTE5U2lnbmF0dXJlMjAxOCIsImNyZWF0ZWQiOiIyMDI1LTAyLTI4VDE1OjQ5OjU2WiIsInZlcmlmaWNhdGlvbk1ldGhvZCI6ImRpZDpoZWRlcmE6dGVzdG5ldDo5VzloWGhtQUZ5MVdBaVFLTnk3eG96R0VNWHdQTXd1YzFwNVlVZ3ZHUUdzTF8wLjAuNTQ2MzQzNyNkaWQtcm9vdC1rZXkiLCJwcm9vZlB1cnBvc2UiOiJhc3NlcnRpb25NZXRob2QiLCJqd3MiOiJleUpoYkdjaU9pSkZaRVJUUVNJc0ltSTJOQ0k2Wm1Gc2MyVXNJbU55YVhRaU9sc2lZalkwSWwxOS4uOXFsMnA4bUpDVnBDcmR0U0FGZ2xVSU5fN2h6TS1LY1BPUW5yZ0VrN0xROE44TWlTNFFRaGo0Sk5raDFDaVpXTmtnbjhMMXBBX2txQkZTajdYNUR5QncifX0="}}`
+        );
+        await controller1.restore(
+            `VERSION: 1.0.0
+DATE: 2025-03-20T14:55:33.739Z
+TYPE: diff
+COLLECTION: VC
+SIZE: 2
+HASH: 62615523b7a53856018d1c5a7e41ffe3
+{"type":"Create","id":"67dc2c1aa610b71a49735495","data":{"owner":"did:hedera:testnet:GRE6dwt1nnfmi46SGmjf1yYbJ3HHp6xwDjgfHszYcGgL_0.0.5463437","hash":"7DVKbL35MxifZo4UMKdAmDoMGLNL599KwTSk6hVjSLoV","hederaStatus":"NEW","signature":0,"type":"user-role","policyId":"67b72b3e42a26886c86a4e92","tag":"choose_role","schema":"#UserRole","messageId":"1742482456.271357000","topicId":"0.0.5638398","relationships":null,"group":null,"option":{"status":"NEW"},"document":"eyJpZCI6InVybjp1dWlkOjk2NjEyMjE2LTY0OTEtNGMyNy05ZGFmLWRlOTg0OWUyY2UwOCIsInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiaXNzdWVyIjoiZGlkOmhlZGVyYTp0ZXN0bmV0OkdSRTZkd3Qxbm5mbWk0NlNHbWpmMXlZYkozSEhwNnh3RGpnZkhzelljR2dMXzAuMC41NDYzNDM3IiwiaXNzdWFuY2VEYXRlIjoiMjAyNS0wMy0yMFQxNDo1NDowOC45NzZaIiwiQGNvbnRleHQiOlsiaHR0cHM6Ly93d3cudzMub3JnLzIwMTgvY3JlZGVudGlhbHMvdjEiLCJpcGZzOi8vYmFma3JlaWRxenhqcXlqYzVsbWlhNWV1cGQ0d2JwbXJhMmt2eHAzdndrM2xreGhmNHlhb3M3NzVhYWEiXSwiY3JlZGVudGlhbFN1YmplY3QiOlt7InJvbGUiOiJSZWdpc3RyYW50IiwidXNlcklkIjoiZGlkOmhlZGVyYTp0ZXN0bmV0OkdSRTZkd3Qxbm5mbWk0NlNHbWpmMXlZYkozSEhwNnh3RGpnZkhzelljR2dMXzAuMC41NDYzNDM3IiwicG9saWN5SWQiOiI2N2I3MmIzZTQyYTI2ODg2Yzg2YTRlOTIiLCJncm91cE93bmVyIjoiZGlkOmhlZGVyYTp0ZXN0bmV0OkdSRTZkd3Qxbm5mbWk0NlNHbWpmMXlZYkozSEhwNnh3RGpnZkhzelljR2dMXzAuMC41NDYzNDM3IiwiZ3JvdXBOYW1lIjoiUmVnaXN0cmFudCIsIkBjb250ZXh0IjpbImlwZnM6Ly9iYWZrcmVpZHF6eGpxeWpjNWxtaWE1ZXVwZDR3YnBtcmEya3Z4cDN2d2szbGt4aGY0eWFvczc3NWFhYSJdLCJpZCI6InVybjp1dWlkOjk2NjEyMjE2LTY0OTEtNGMyNy05ZGFmLWRlOTg0OWUyY2UwOCIsInR5cGUiOiJVc2VyUm9sZSJ9XSwicHJvb2YiOnsidHlwZSI6IkVkMjU1MTlTaWduYXR1cmUyMDE4IiwiY3JlYXRlZCI6IjIwMjUtMDMtMjBUMTQ6NTQ6MDlaIiwidmVyaWZpY2F0aW9uTWV0aG9kIjoiZGlkOmhlZGVyYTp0ZXN0bmV0OkdSRTZkd3Qxbm5mbWk0NlNHbWpmMXlZYkozSEhwNnh3RGpnZkhzelljR2dMXzAuMC41NDYzNDM3I2RpZC1yb290LWtleSIsInByb29mUHVycG9zZSI6ImFzc2VydGlvbk1ldGhvZCIsImp3cyI6ImV5SmhiR2NpT2lKRlpFUlRRU0lzSW1JMk5DSTZabUZzYzJVc0ltTnlhWFFpT2xzaVlqWTBJbDE5Li5UNFpWZ1JNR1Iyc3JJeDFWUHRkdVdVNjhFSEZZbThBWkVNaUREM0lPY0psZmlQUmFhX045QktNNE9lV0FsQ0E1Y25sa3hTTWU5eTk3Tm1PSmhQRmdEZyJ9fQ=="}}
+{"type":"Create","id":"67dc2c35a610b71a497354a2","data":{"owner":"did:hedera:testnet:GRE6dwt1nnfmi46SGmjf1yYbJ3HHp6xwDjgfHszYcGgL_0.0.5463437","hash":"5NYE5Yup8f4c5ciUqu4rqa44T7hzTipnr7zBwDLiR35o","document":"eyJpZCI6InVybjp1dWlkOmY4NWI5MDI3LTdmYWUtNDkxZC1iMTlkLTA1OWIyYzRhODQyZSIsInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiaXNzdWVyIjoiZGlkOmhlZGVyYTp0ZXN0bmV0OkdSRTZkd3Qxbm5mbWk0NlNHbWpmMXlZYkozSEhwNnh3RGpnZkhzelljR2dMXzAuMC41NDYzNDM3IiwiaXNzdWFuY2VEYXRlIjoiMjAyNS0wMy0yMFQxNDo1NDoyNi4yNzBaIiwiQGNvbnRleHQiOlsiaHR0cHM6Ly93d3cudzMub3JnLzIwMTgvY3JlZGVudGlhbHMvdjEiLCJpcGZzOi8vYmFma3JlaWZzYmdmanNzaHk2enJlN2VqZm94MnVuaTVuM2JjZGZtdWthY3M2NWFxMmkzNHpqbWJ2dGEiXSwiY3JlZGVudGlhbFN1YmplY3QiOlt7ImZpZWxkMSI6eyJ0eXBlIjoiZTYyNDM3MTgtMzU3Yy00NWM3LTkyODYtNzAwNWRkYWIxN2EyJjEuMC4wIiwiQGNvbnRleHQiOlsiaXBmczovL2JhZmtyZWlmc2JnZmpzc2h5NnpyZTdlamZveDJ1bmk1bjNiY2RmbXVrYWNzNjVhcTJpMzR6am1idnRhIl19LCJmaWVsZDIiOnsidHlwZSI6IjdhNDM5YzAwLTYzM2ItNDljNy05Zjg4LTMwMmE5NTFmYTIzYSYxLjAuMCIsIkBjb250ZXh0IjpbImlwZnM6Ly9iYWZrcmVpZnNiZ2Zqc3NoeTZ6cmU3ZWpmb3gydW5pNW4zYmNkZm11a2FjczY1YXEyaTM0emptYnZ0YSJdfSwiZmllbGQzIjp7InR5cGUiOiIwZDVjZWQ5Yy04M2IwLTRmMGItYTY0MS05OTk4NjA4MWNlNTAmMS4wLjAiLCJAY29udGV4dCI6WyJpcGZzOi8vYmFma3JlaWZzYmdmanNzaHk2enJlN2VqZm94MnVuaTVuM2JjZGZtdWthY3M2NWFxMmkzNHpqbWJ2dGEiXX0sInBvbGljeUlkIjoiNjdiNzJiM2U0MmEyNjg4NmM4NmE0ZTkyIiwiQGNvbnRleHQiOlsiaXBmczovL2JhZmtyZWlmc2JnZmpzc2h5NnpyZTdlamZveDJ1bmk1bjNiY2RmbXVrYWNzNjVhcTJpMzR6am1idnRhIl0sImlkIjoiZGlkOmhlZGVyYTp0ZXN0bmV0OkdSRTZkd3Qxbm5mbWk0NlNHbWpmMXlZYkozSEhwNnh3RGpnZkhzelljR2dMXzAuMC41NDYzNDM3IiwidHlwZSI6IjFmZGE4ZDg0LTcwODEtNGY3NS1iODk5LWY3NjVhZGVlNzVmZiYxLjAuMCJ9XSwicHJvb2YiOnsidHlwZSI6IkVkMjU1MTlTaWduYXR1cmUyMDE4IiwiY3JlYXRlZCI6IjIwMjUtMDMtMjBUMTQ6NTQ6MjZaIiwidmVyaWZpY2F0aW9uTWV0aG9kIjoiZGlkOmhlZGVyYTp0ZXN0bmV0OkdSRTZkd3Qxbm5mbWk0NlNHbWpmMXlZYkozSEhwNnh3RGpnZkhzelljR2dMXzAuMC41NDYzNDM3I2RpZC1yb290LWtleSIsInByb29mUHVycG9zZSI6ImFzc2VydGlvbk1ldGhvZCIsImp3cyI6ImV5SmhiR2NpT2lKRlpFUlRRU0lzSW1JMk5DSTZabUZzYzJVc0ltTnlhWFFpT2xzaVlqWTBJbDE5Li5BVUdzc1RCa0NVYXlSemZMZjloT09oT0syWjlsblJlTllJNlhqRHgtSzlVLTMwaXJQcnItMnlTNGxGR2FDbzg5VWRGMElyc1JwTC1ZMGtXSDlfRlREdyJ9fQ==","documentFields":["id","credentialSubject.id","credentialSubject.0.id","credentialSubject.0.field1.field0","credentialSubject.0.field2.field0","credentialSubject.0.field4.field0","credentialSubject.0.field4.field1","credentialSubject.0.field4.field4","credentialSubject.0.field4.field5","credentialSubject.0.field4.field7","credentialSubject.0.field6","credentialSubject.0.field8","credentialSubject.0.field7","issuanceDate","credentialSubject.0.ref","verifiableCredential.1.credentialSubject.0.date","verifiableCredential.1.credentialSubject.0.tokenId","verifiableCredential.0.credentialSubject.0.field1","credentialSubject.0.field3.field0"],"hederaStatus":"ISSUE","signature":0,"type":"registrant","policyId":"67b72b3e42a26886c86a4e92","tag":"create_application(db)","option":{"status":"Waiting for approval"},"schema":"#1fda8d84-7081-4f75-b899-f765adee75ff&1.0.0","messageId":"1742482484.539181000","topicId":"0.0.5752131","relationships":null,"accounts":{"default":"0.0.5096739"},"group":"947fef67-655a-4aee-81b1-da172dd814ab","messageHash":"29VbFZV9gBAejKRvfQEnkyu4RUb1YTc8jAnsRPXeed5d","messageIds":["1742482484.539181000"]}}`
+        );
     }
 
     /**
@@ -412,26 +424,18 @@ export class BlockTreeGenerator extends NatsService {
         }
     }
 
-    /**
-     * Generate policy instance from config
-     * @param policy
-     */
-    public async destroy(policy: Policy | string): Promise<void>;
-
-    public async destroy(arg: any): Promise<void> {
-        let policy: Policy;
-        if (typeof arg === 'string') {
-            policy = await DatabaseServer.getPolicyById(arg);
-        } else {
-            policy = arg;
-        }
-        if (policy) {
-            const policyId = policy.id.toString()
-            this.models.delete(policyId);
+    public async destroyModel(policyId: string, logger: PinoLogger): Promise<void> {
+        try {
+            await RecordUtils.DestroyRecording(policyId);
+            await RecordUtils.DestroyRunning(policyId);
             await PolicyComponentsUtils.UnregisterBlocks(policyId);
             await PolicyComponentsUtils.UnregisterPolicy(policyId);
+            this.models.delete(policyId);
+        } catch (error) {
+            await logger.error(`Error destroy policy ${error}`, ['POLICY', policyId.toString()]);
         }
     }
+
 
     /**
      * Regenerate IDs

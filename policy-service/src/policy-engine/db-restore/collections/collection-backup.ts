@@ -1,13 +1,14 @@
 import { FindCursor } from "mongodb";
-import { DiffActionType, ICollectionDiff, IDiffAction, Row } from '../index.js';
+import { RestoreEntity } from "@guardian/common";
+import { DiffActionType, ICollectionDiff, IDiffAction } from '../index.js';
 import crypto from "crypto";
 
-interface DiffResult<T extends Row> {
+interface DiffResult<T extends RestoreEntity> {
     backup: ICollectionDiff<T>;
     diff: ICollectionDiff<T>;
 }
 
-export abstract class CollectionBackup<T extends Row> {
+export abstract class CollectionBackup<T extends RestoreEntity> {
     protected readonly policyId: string;
 
     constructor(policyId: string) {
@@ -154,8 +155,34 @@ export abstract class CollectionBackup<T extends Row> {
         }
     }
 
-    protected compare(oldValue: any, newValue: any): boolean {
+    protected compareValue(oldValue: any, newValue: any): boolean {
         return oldValue === newValue;
+    }
+
+    protected compareData(newVc: T, oldVc?: T): any {
+        let diff: any;
+        if (oldVc) {
+            const list = new Set<string>();
+            for (const key of Object.keys(newVc)) {
+                list.add(key);
+            }
+            for (const key of Object.keys(oldVc)) {
+                list.add(key);
+            }
+            diff = {};
+            for (const key of list) {
+                if (!this.compareValue(newVc[key], oldVc[key])) {
+                    diff[key] = newVc[key];
+                }
+            }
+        } else {
+            diff = newVc;
+        }
+        delete diff._id;
+        delete diff.id;
+        delete diff.createDate;
+        delete diff.updateDate;
+        return diff;
     }
 
     protected abstract actionHash(hash: string, action: IDiffAction<T>, row?: T): string;

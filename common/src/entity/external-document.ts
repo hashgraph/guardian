@@ -1,11 +1,11 @@
-import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { BeforeCreate, BeforeUpdate, Entity, Property } from '@mikro-orm/core';
+import { RestoreEntity } from '../models/index.js';
 
 /**
  * Artifact collection
  */
 @Entity()
-export class ExternalDocument extends BaseEntity {
+export class ExternalDocument extends RestoreEntity {
     /**
      * Block UUID
      */
@@ -106,12 +106,32 @@ export class ExternalDocument extends BaseEntity {
     status?: string;
 
     /**
-     * Default document values
+     * Create document
      */
     @BeforeCreate()
-    setDefaults() {
+    @BeforeUpdate()
+    async createDocument() {
         this.lastMessage = this.lastMessage || '';
         this.lastUpdate = this.lastUpdate || '';
         this.active = this.active || false;
+        const prop: any = {};
+        prop.blockId = this.blockId;
+        prop.policyId = this.policyId;
+        prop.owner = this.owner;
+        prop.documentTopicId = this.documentTopicId;
+        prop.policyTopicId = this.policyTopicId;
+        prop.instanceTopicId = this.instanceTopicId;
+        prop.documentMessage = this.documentMessage;
+        prop.policyMessage = this.policyMessage;
+        prop.policyInstanceMessage = this.policyInstanceMessage;
+        prop.schemas = this.schemas;
+        prop.schema = this.schema;
+        prop.schemaId = this.schemaId;
+        prop.active = this.active;
+        prop.lastMessage = this.lastMessage;
+        prop.lastUpdate = this.lastUpdate;
+        prop.status = this.status;
+        this._updatePropHash(prop);
+        this._updateDocHash('');
     }
 }

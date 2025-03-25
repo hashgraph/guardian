@@ -1,12 +1,12 @@
-import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { BeforeCreate, Entity, Property, BeforeUpdate } from '@mikro-orm/core';
+import { RestoreEntity } from '../models/index.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 /**
  * Tags collection
  */
 @Entity()
-export class Tag extends BaseEntity {
+export class Tag extends RestoreEntity {
     /**
      * Tag id
      */
@@ -101,13 +101,36 @@ export class Tag extends BaseEntity {
     date: string;
 
     /**
-     * Set policy defaults
+     * Create document
      */
     @BeforeCreate()
-    setDefaults() {
+    @BeforeUpdate()
+    async createDocument() {
         this.uuid = this.uuid || GenerateUUIDv4();
         this.status = this.status || 'Draft';
         this.operation = this.operation || 'Create';
         this.date = this.date || (new Date()).toISOString();
+        const prop: any = {};
+        prop.uuid = this.uuid;
+        prop.name = this.name;
+        prop.description = this.description;
+        prop.owner = this.owner;
+        prop.entity = this.entity;
+        prop.target = this.target;
+        prop.localTarget = this.localTarget;
+        prop.status = this.status;
+        prop.operation = this.operation;
+        prop.topicId = this.topicId;
+        prop.messageId = this.messageId;
+        prop.policyId = this.policyId;
+        prop.uri = this.uri;
+        prop.date = this.date;
+        this._updatePropHash(prop);
+        if (this.document) {
+            const document = JSON.stringify(this.document);
+            this._updateDocHash(document);
+        } else {
+            this._updateDocHash('');
+        }
     }
 }

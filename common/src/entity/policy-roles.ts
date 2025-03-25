@@ -1,12 +1,12 @@
-import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { BeforeCreate, BeforeUpdate, Entity, Property } from '@mikro-orm/core';
+import { RestoreEntity } from '../models/index.js';
 import { GroupAccessType, GroupRelationshipType } from '@guardian/interfaces';
 
 /**
  * PolicyRoles collection
  */
 @Entity()
-export class PolicyRoles extends BaseEntity {
+export class PolicyRoles extends RestoreEntity {
     /**
      * Group UUID
      */
@@ -86,10 +86,27 @@ export class PolicyRoles extends BaseEntity {
     userId?: string;
 
     /**
-     * Default document values
+     * Create document
      */
     @BeforeCreate()
-    setDefaults() {
+    @BeforeUpdate()
+    async createDocument() {
         this.active = this.active === false ? false : true;
+        const prop: any = {};
+        prop.uuid = this.uuid;
+        prop.policyId = this.policyId;
+        prop.username = this.username;
+        prop.did = this.did;
+        prop.owner = this.owner;
+        prop.role = this.role;
+        prop.groupName = this.groupName;
+        prop.groupLabel = this.groupLabel;
+        prop.groupRelationshipType = this.groupRelationshipType;
+        prop.groupAccessType = this.groupAccessType;
+        prop.active = this.active;
+        prop.messageId = this.messageId;
+        prop.userId = this.userId;
+        this._updatePropHash(prop);
+        this._updateDocHash('');
     }
 }

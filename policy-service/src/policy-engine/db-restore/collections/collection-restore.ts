@@ -1,8 +1,8 @@
-import { FindCursor } from "mongodb";
-import { DiffActionType, ICollectionDiff, IDiffAction, IPolicyDiff, Row } from '../index.js';
+import { RestoreEntity } from '@guardian/common';
+import { DiffActionType, ICollectionDiff, IDiffAction } from '../index.js';
 import crypto from "crypto";
 
-export abstract class CollectionRestore<T extends Row> {
+export abstract class CollectionRestore<T extends RestoreEntity> {
     protected readonly policyId: string;
 
     constructor(policyId: string) {

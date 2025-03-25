@@ -1,11 +1,11 @@
-import { Entity, Property } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { Entity, Property, BeforeCreate, BeforeUpdate } from '@mikro-orm/core';
+import { RestoreEntity } from '../models/index.js';
 
 /**
  * Block state
  */
 @Entity()
-export class BlockState extends BaseEntity {
+export class BlockState extends RestoreEntity {
     /**
      * Policy id
      */
@@ -20,8 +20,8 @@ export class BlockState extends BaseEntity {
      * @type {string}
      */
     @Property({
-                  nullable: true
-              })
+        nullable: true
+    })
     savedState?: string;
 
     /**
@@ -38,4 +38,18 @@ export class BlockState extends BaseEntity {
      */
     @Property({ nullable: true })
     blockState?: string;
+
+    /**
+     * Create document
+     */
+    @BeforeCreate()
+    @BeforeUpdate()
+    async createDocument() {
+        const prop: any = {};
+        prop.blockId = this.blockId;
+        prop.savedState = this.savedState;
+        prop.policyId = this.policyId;
+        this._updatePropHash(prop);
+        this._updateDocHash(this.blockState);
+    }
 }

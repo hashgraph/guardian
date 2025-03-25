@@ -1,4 +1,19 @@
-import { ICollectionDiff, IDiffAction, IPolicyDiff, Row, VC, VcCollectionBackup } from './index.js';
+import {
+    ApprovalDocument,
+    BlockState,
+    DidDocument,
+    DocumentState,
+    ExternalDocument,
+    MultiDocuments,
+    PolicyRoles,
+    RestoreEntity,
+    Tag,
+    Token,
+    Topic,
+    VcDocument,
+    VpDocument
+} from '@guardian/common';
+import { ICollectionDiff, IDiffAction, IPolicyDiff } from './index.js';
 
 enum FileHeaders {
     NEW_LINE = '\n',
@@ -27,23 +42,127 @@ export class FileHelper {
             throw Error('Invalid type');
         }
 
-        //VC
-        const vcCollectionName = FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
+        //VcDocument
+        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
         const vcCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
         const vcCollectionStart = index;
         const vcCollectionEnd = index + vcCollectionSize + 1;
-        const vcCollection = FileHelper._decryptCollection<VC>(lines, vcCollectionStart, vcCollectionEnd);
+        const vcCollection = FileHelper._decryptCollection<VcDocument>(lines, vcCollectionStart, vcCollectionEnd);
+        index = vcCollectionEnd;
+
+        //VpDocument
+        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
+        const vpCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
+        const vpCollectionStart = index;
+        const vpCollectionEnd = index + vpCollectionSize + 1;
+        const vpCollection = FileHelper._decryptCollection<VpDocument>(lines, vpCollectionStart, vpCollectionEnd);
+        index = vpCollectionEnd;
+
+        //DidDocument
+        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
+        const didCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
+        const didCollectionStart = index;
+        const didCollectionEnd = index + didCollectionSize + 1;
+        const didCollection = FileHelper._decryptCollection<DidDocument>(lines, didCollectionStart, didCollectionEnd);
+        index = didCollectionEnd;
+
+        //BlockState
+        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
+        const stateCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
+        const stateCollectionStart = index;
+        const stateCollectionEnd = index + stateCollectionSize + 1;
+        const stateCollection = FileHelper._decryptCollection<BlockState>(lines, stateCollectionStart, stateCollectionEnd);
+        index = stateCollectionEnd;
+
+        //PolicyRoles
+        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
+        const roleCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
+        const roleCollectionStart = index;
+        const roleCollectionEnd = index + roleCollectionSize + 1;
+        const roleCollection = FileHelper._decryptCollection<PolicyRoles>(lines, roleCollectionStart, roleCollectionEnd);
+        index = roleCollectionEnd;
+
+        //MultiDocuments
+        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
+        const multiDocCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
+        const multiDocCollectionStart = index;
+        const multiDocCollectionEnd = index + multiDocCollectionSize + 1;
+        const multiDocCollection = FileHelper._decryptCollection<MultiDocuments>(lines, multiDocCollectionStart, multiDocCollectionEnd);
+        index = multiDocCollectionEnd;
+
+        //Token
+        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
+        const tokenCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
+        const tokenCollectionStart = index;
+        const tokenCollectionEnd = index + tokenCollectionSize + 1;
+        const tokenCollection = FileHelper._decryptCollection<Token>(lines, tokenCollectionStart, tokenCollectionEnd);
+        index = tokenCollectionEnd;
+
+        //Tag
+        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
+        const tagCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
+        const tagCollectionStart = index;
+        const tagCollectionEnd = index + tagCollectionSize + 1;
+        const tagCollection = FileHelper._decryptCollection<Tag>(lines, tagCollectionStart, tagCollectionEnd);
+        index = tagCollectionEnd;
+
+        //DocumentState
+        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
+        const docStateCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
+        const docStateCollectionStart = index;
+        const docStateCollectionEnd = index + docStateCollectionSize + 1;
+        const docStateCollection = FileHelper._decryptCollection<DocumentState>(lines, docStateCollectionStart, docStateCollectionEnd);
+        index = docStateCollectionEnd;
+
+        //Topic
+        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
+        const topicCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
+        const topicCollectionStart = index;
+        const topicCollectionEnd = index + topicCollectionSize + 1;
+        const topicCollection = FileHelper._decryptCollection<Topic>(lines, topicCollectionStart, topicCollectionEnd);
+        index = topicCollectionEnd;
+
+        //ExternalDocument
+        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
+        const externalDocCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
+        const externalDocCollectionStart = index;
+        const externalDocCollectionEnd = index + externalDocCollectionSize + 1;
+        const externalDocCollection = FileHelper._decryptCollection<ExternalDocument>(lines, externalDocCollectionStart, externalDocCollectionEnd);
+        index = externalDocCollectionEnd;
+
+        //ApprovalDocument
+        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
+        const approveCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
+        const approveCollectionStart = index;
+        const approveCollectionEnd = index + approveCollectionSize + 1;
+        const approveCollection = FileHelper._decryptCollection<ApprovalDocument>(lines, approveCollectionStart, approveCollectionEnd);
+        index = approveCollectionEnd;
 
         const diff: IPolicyDiff = {
             type,
             lastUpdate,
-            vcCollection
+            vcCollection,
+            vpCollection,
+            didCollection,
+            stateCollection,
+            roleCollection,
+            multiDocCollection,
+            tokenCollection,
+            tagCollection,
+            docStateCollection,
+            topicCollection,
+            externalDocCollection,
+            approveCollection,
         }
 
         return diff
     }
 
-    private static _decryptCollection<T extends Row>(lines: string[], start: number, end: number): ICollectionDiff<T> {
+    private static _decryptCollection<T extends RestoreEntity>(
+        lines: string[],
+        start: number,
+        end: number
+    ): ICollectionDiff<T> {
         const hash = FileHelper._readString(FileHeaders.HASH, lines[start++]);
         const actions: IDiffAction<T>[] = [];
         for (let index = start; index < end; index++) {
@@ -60,7 +179,7 @@ export class FileHelper {
         return diff;
     }
 
-    private static _decryptAction<T extends Row>(line: string): IDiffAction<T> {
+    private static _decryptAction<T extends RestoreEntity>(line: string): IDiffAction<T> {
         if (line) {
             return JSON.parse(line);
         } else {
@@ -99,16 +218,70 @@ export class FileHelper {
         result += FileHelper._writeDate(FileHeaders.DATE, diff.lastUpdate);
         result += FileHelper._writeString(FileHeaders.TYPE, diff.type);
 
-
-        //VC
-        result += FileHelper._writeString(FileHeaders.COLLECTION, 'VC');
+        //VcDocument
+        result += FileHelper._writeString(FileHeaders.COLLECTION, 'VcDocument');
         result += FileHelper._writeNumber(FileHeaders.SIZE, diff.vcCollection.actions.length);
         result += FileHelper._encryptCollection(diff.vcCollection);
+
+        //VpDocument
+        result += FileHelper._writeString(FileHeaders.COLLECTION, 'VpDocument');
+        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.vpCollection.actions.length);
+        result += FileHelper._encryptCollection(diff.vpCollection);
+
+        //DidDocument
+        result += FileHelper._writeString(FileHeaders.COLLECTION, 'DidDocument');
+        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.didCollection.actions.length);
+        result += FileHelper._encryptCollection(diff.didCollection);
+
+        //BlockState
+        result += FileHelper._writeString(FileHeaders.COLLECTION, 'BlockState');
+        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.stateCollection.actions.length);
+        result += FileHelper._encryptCollection(diff.stateCollection);
+
+        //PolicyRoles
+        result += FileHelper._writeString(FileHeaders.COLLECTION, 'PolicyRoles');
+        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.roleCollection.actions.length);
+        result += FileHelper._encryptCollection(diff.roleCollection);
+
+        //MultiDocuments
+        result += FileHelper._writeString(FileHeaders.COLLECTION, 'MultiDocuments');
+        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.multiDocCollection.actions.length);
+        result += FileHelper._encryptCollection(diff.multiDocCollection);
+
+        //Token
+        result += FileHelper._writeString(FileHeaders.COLLECTION, 'Token');
+        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.tokenCollection.actions.length);
+        result += FileHelper._encryptCollection(diff.tokenCollection);
+
+        //Tag
+        result += FileHelper._writeString(FileHeaders.COLLECTION, 'Tag');
+        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.tagCollection.actions.length);
+        result += FileHelper._encryptCollection(diff.tagCollection);
+
+        //DocumentState
+        result += FileHelper._writeString(FileHeaders.COLLECTION, 'DocumentState');
+        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.docStateCollection.actions.length);
+        result += FileHelper._encryptCollection(diff.docStateCollection);
+
+        //Topic
+        result += FileHelper._writeString(FileHeaders.COLLECTION, 'Topic');
+        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.topicCollection.actions.length);
+        result += FileHelper._encryptCollection(diff.topicCollection);
+
+        //ExternalDocument
+        result += FileHelper._writeString(FileHeaders.COLLECTION, 'ExternalDocument');
+        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.externalDocCollection.actions.length);
+        result += FileHelper._encryptCollection(diff.externalDocCollection);
+
+        //ApprovalDocument
+        result += FileHelper._writeString(FileHeaders.COLLECTION, 'ApprovalDocument');
+        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.approveCollection.actions.length);
+        result += FileHelper._encryptCollection(diff.approveCollection);
 
         return result;
     }
 
-    public static _encryptCollection<T extends Row>(collection: ICollectionDiff<T>): string {
+    public static _encryptCollection<T extends RestoreEntity>(collection: ICollectionDiff<T>): string {
         let result = '';
         result += FileHelper._writeString(FileHeaders.HASH, collection.hash);
         for (const action of collection.actions) {
@@ -117,7 +290,7 @@ export class FileHelper {
         return result;
     }
 
-    public static _encryptAction<T extends Row>(action: IDiffAction<T>): string {
+    public static _encryptAction<T extends RestoreEntity>(action: IDiffAction<T>): string {
         if (action) {
             return JSON.stringify(action) + FileHeaders.NEW_LINE;
         } else {

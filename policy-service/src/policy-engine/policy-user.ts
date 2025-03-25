@@ -355,6 +355,7 @@ export class UserCredentials {
     ): Promise<void> {
         const walletToken = this._did;
         const keys = document.getPrivateKeys();
+        row.policyId = ref.policyId;
         row.verificationMethods = {};
         for (const item of keys) {
             const { id, type, key } = item;

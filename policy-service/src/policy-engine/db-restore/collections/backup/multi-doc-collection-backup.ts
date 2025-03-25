@@ -1,0 +1,74 @@
+import { DataBaseHelper, MultiDocuments } from "@guardian/common";
+import { FindCursor } from "mongodb";
+import { CollectionBackup } from "../collection-backup.js";
+import { IDiffAction } from "../../interfaces/action.interface.js";
+
+export class MultiDocCollectionBackup extends CollectionBackup<MultiDocuments> {
+    private readonly collectionName: string = 'MultiDocuments';
+
+    protected override async findDocument(row: MultiDocuments): Promise<MultiDocuments> {
+        const vcCollection = DataBaseHelper.orm.em.getCollection(this.collectionName);
+        const vcRow = await vcCollection.findOne<any>({ policyId: this.policyId, _id: row._id });
+        return vcRow;
+    }
+
+    protected override findDocuments(lastUpdate?: Date): FindCursor<MultiDocuments> {
+        const vcCollection = DataBaseHelper.orm.em.getCollection(this.collectionName);
+        const vcRows = vcCollection.find<any>({ policyId: this.policyId });
+        return vcRows;
+    }
+
+    protected override findDeletedDocuments(): FindCursor<MultiDocuments> {
+        const vcCollection = DataBaseHelper.orm.em.getCollection(this.collectionName);
+        const vcRows = vcCollection.find<any>({ policyId: this.policyId, t: 1 });
+        return vcRows;
+    }
+
+    protected override createBackupData(row: MultiDocuments): any {
+        return {
+            _propHash: row._propHash,
+            _docHash: row._docHash
+        }
+    }
+
+    protected override createDiffData(newVc: MultiDocuments, oldVc?: MultiDocuments): any {
+        let diff: any = this.compareData(newVc, oldVc);
+        delete diff.documentFileId;
+        return diff;
+    }
+
+    protected override checkDocument(newVc: MultiDocuments, oldVc: MultiDocuments): boolean {
+        return (newVc._docHash !== oldVc._docHash) || (newVc._propHash !== oldVc._propHash);
+    }
+
+    protected override needLoadFile(newVc: MultiDocuments, oldVc?: MultiDocuments): boolean {
+        return (!oldVc) || (newVc._docHash !== oldVc._docHash);
+    }
+
+    protected override async loadFile(row: MultiDocuments, i: number = 0): Promise<any> {
+        try {
+            if (i > 10) {
+                console.error('Load file error');
+                return row;
+            }
+            if (row.documentFileId) {
+                const buffer = await DataBaseHelper.loadFile(row.documentFileId);
+                if (buffer) {
+                    (row as any).document = buffer.toString('base64');
+                }
+            }
+            return row;
+        } catch (error) {
+            const newRow = await this.findDocument(row);
+            return await this.loadFile(newRow, i + 1);
+        }
+    }
+
+    protected override actionHash(hash: string, action: IDiffAction<MultiDocuments>, row?: MultiDocuments): string {
+        if (row) {
+            return this.sumHash(hash, action.type, action.id, row._propHash, row._docHash);
+        } else {
+            return this.sumHash(hash, action.type, action.id);
+        }
+    }
+}

@@ -1,12 +1,38 @@
 import { DataBaseHelper, Policy, PolicyDiff } from '@guardian/common';
-import { IPolicyDiff, VcCollectionBackup } from './index.js';
+import { IPolicyDiff } from './index.js';
 import { ObjectId } from 'mongodb';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { FileHelper } from './file-helper.js';
+import {
+    VcCollectionBackup,
+    VpCollectionBackup,
+    DidCollectionBackup,
+    StateCollectionBackup,
+    RoleCollectionBackup,
+    MultiDocCollectionBackup,
+    TokenCollectionBackup,
+    TagCollectionBackup,
+    DocStateCollectionBackup,
+    TopicCollectionBackup,
+    ExternalCollectionBackup,
+    ApproveCollectionBackup
+} from './collections/index.js';
 
 export class PolicyBackup {
     private readonly policyId: string;
     private readonly vcBackup: VcCollectionBackup;
+    private readonly vpBackup: VpCollectionBackup;
+    private readonly didBackup: DidCollectionBackup;
+    private readonly stateBackup: StateCollectionBackup;
+    private readonly roleBackup: RoleCollectionBackup;
+    private readonly multiDocBackup: MultiDocCollectionBackup;
+    private readonly tokenBackup: TokenCollectionBackup;
+    private readonly tagBackup: TagCollectionBackup;
+    private readonly docStateBackup: DocStateCollectionBackup;
+    private readonly topicBackup: TopicCollectionBackup;
+    private readonly externalDocBackup: ExternalCollectionBackup;
+    private readonly approveBackup: ApproveCollectionBackup;
+
     private lastDiff: PolicyDiff | null;
 
     constructor(policyId: string) {
@@ -14,6 +40,17 @@ export class PolicyBackup {
         this.lastDiff = null;
 
         this.vcBackup = new VcCollectionBackup(this.policyId);
+        this.vpBackup = new VpCollectionBackup(this.policyId);
+        this.didBackup = new DidCollectionBackup(this.policyId);
+        this.stateBackup = new StateCollectionBackup(this.policyId);
+        this.roleBackup = new RoleCollectionBackup(this.policyId);
+        this.multiDocBackup = new MultiDocCollectionBackup(this.policyId);
+        this.tokenBackup = new TokenCollectionBackup(this.policyId);
+        this.tagBackup = new TagCollectionBackup(this.policyId);
+        this.docStateBackup = new DocStateCollectionBackup(this.policyId);
+        this.topicBackup = new TopicCollectionBackup(this.policyId);
+        this.externalDocBackup = new ExternalCollectionBackup(this.policyId);
+        this.approveBackup = new ApproveCollectionBackup(this.policyId);
     }
 
     public async init(): Promise<void> {
@@ -46,15 +83,48 @@ export class PolicyBackup {
         console.log('-- _createFullBackup')
         const lastUpdate = new Date();
         const vcResult = await this.vcBackup.createCollectionBackup();
+        const vpResult = await this.vpBackup.createCollectionBackup();
+        const didResult = await this.didBackup.createCollectionBackup();
+        const stateResult = await this.stateBackup.createCollectionBackup();
+        const roleResult = await this.roleBackup.createCollectionBackup();
+        const multiDocResult = await this.multiDocBackup.createCollectionBackup();
+        const tokenResult = await this.tokenBackup.createCollectionBackup();
+        const tagResult = await this.tagBackup.createCollectionBackup();
+        const docStateResult = await this.docStateBackup.createCollectionBackup();
+        const topicResult = await this.topicBackup.createCollectionBackup();
+        const externalDocResult = await this.externalDocBackup.createCollectionBackup();
+        const approveResult = await this.approveBackup.createCollectionBackup();
         const backup: IPolicyDiff = {
             type: 'backup',
             lastUpdate,
-            vcCollection: vcResult.backup
+            vcCollection: vcResult.backup,
+            vpCollection: vpResult.backup,
+            didCollection: didResult.backup,
+            stateCollection: stateResult.backup,
+            roleCollection: roleResult.backup,
+            multiDocCollection: multiDocResult.backup,
+            tokenCollection: tokenResult.backup,
+            tagCollection: tagResult.backup,
+            docStateCollection: docStateResult.backup,
+            topicCollection: topicResult.backup,
+            externalDocCollection: externalDocResult.backup,
+            approveCollection: approveResult.backup
         }
         const diff: IPolicyDiff = {
             type: 'backup',
             lastUpdate,
-            vcCollection: vcResult.diff
+            vcCollection: vcResult.diff,
+            vpCollection: vpResult.diff,
+            didCollection: didResult.diff,
+            stateCollection: stateResult.diff,
+            roleCollection: roleResult.diff,
+            multiDocCollection: multiDocResult.diff,
+            tokenCollection: tokenResult.diff,
+            tagCollection: tagResult.diff,
+            docStateCollection: docStateResult.diff,
+            topicCollection: topicResult.diff,
+            externalDocCollection: externalDocResult.diff,
+            approveCollection: approveResult.diff
         }
         console.log(JSON.stringify(backup))
         console.log(JSON.stringify(diff))
@@ -65,15 +135,48 @@ export class PolicyBackup {
         console.log('-- _createDiff')
         const lastUpdate = new Date();
         const vcResult = await this.vcBackup.createCollectionDiff(oldDiff.vcCollection, lastUpdate);
+        const vpResult = await this.vpBackup.createCollectionDiff(oldDiff.vpCollection, lastUpdate);
+        const didResult = await this.didBackup.createCollectionDiff(oldDiff.didCollection, lastUpdate);
+        const stateResult = await this.stateBackup.createCollectionDiff(oldDiff.stateCollection, lastUpdate);
+        const roleResult = await this.roleBackup.createCollectionDiff(oldDiff.roleCollection, lastUpdate);
+        const multiDocResult = await this.multiDocBackup.createCollectionDiff(oldDiff.multiDocCollection, lastUpdate);
+        const tokenResult = await this.tokenBackup.createCollectionDiff(oldDiff.tokenCollection, lastUpdate);
+        const tagResult = await this.tagBackup.createCollectionDiff(oldDiff.tagCollection, lastUpdate);
+        const docStateResult = await this.docStateBackup.createCollectionDiff(oldDiff.docStateCollection, lastUpdate);
+        const topicResult = await this.topicBackup.createCollectionDiff(oldDiff.topicCollection, lastUpdate);
+        const externalDocResult = await this.externalDocBackup.createCollectionDiff(oldDiff.externalDocCollection, lastUpdate);
+        const approveResult = await this.approveBackup.createCollectionDiff(oldDiff.approveCollection, lastUpdate);
         const backup: IPolicyDiff = {
             type: 'backup',
             lastUpdate,
-            vcCollection: vcResult.backup
+            vcCollection: vcResult.backup,
+            vpCollection: vpResult.backup,
+            didCollection: didResult.backup,
+            stateCollection: stateResult.backup,
+            roleCollection: roleResult.backup,
+            multiDocCollection: multiDocResult.backup,
+            tokenCollection: tokenResult.backup,
+            tagCollection: tagResult.backup,
+            docStateCollection: docStateResult.backup,
+            topicCollection: topicResult.backup,
+            externalDocCollection: externalDocResult.backup,
+            approveCollection: approveResult.backup
         }
         const diff: IPolicyDiff = {
             type: 'diff',
             lastUpdate,
-            vcCollection: vcResult.diff
+            vcCollection: vcResult.diff,
+            vpCollection: vpResult.diff,
+            didCollection: didResult.diff,
+            stateCollection: stateResult.diff,
+            roleCollection: roleResult.diff,
+            multiDocCollection: multiDocResult.diff,
+            tokenCollection: tokenResult.diff,
+            tagCollection: tagResult.diff,
+            docStateCollection: docStateResult.diff,
+            topicCollection: topicResult.diff,
+            externalDocCollection: externalDocResult.diff,
+            approveCollection: approveResult.diff
         }
         console.log(JSON.stringify(backup))
         console.log(JSON.stringify(diff))

@@ -17,18 +17,17 @@ import {
     AfterUpdate,
     AfterCreate,
 } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { RestoreEntity } from '../models/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers/index.js';
 import ObjGet from 'lodash.get';
 import ObjSet from 'lodash.set';
-import crypto from 'crypto';
 
 /**
  * VC documents collection
  */
 @Entity()
-export class VcDocument extends BaseEntity implements IVCDocument {
+export class VcDocument extends RestoreEntity implements IVCDocument {
     /**
      * Document owner
      */
@@ -193,24 +192,6 @@ export class VcDocument extends BaseEntity implements IVCDocument {
     messageIds?: string[];
 
     /**
-     * Restore ID
-     */
-    @Property({ nullable: true })
-    _restoreId?: string;
-
-    /**
-     * Properties Hash
-     */
-    @Property({ nullable: true })
-    _propHash?: string;
-
-    /**
-     * Document Hash
-     */
-    @Property({ nullable: true })
-    _docHash?: string;
-
-    /**
      * Document defaults
      */
     @BeforeCreate()
@@ -267,12 +248,9 @@ export class VcDocument extends BaseEntity implements IVCDocument {
             if (!this.document) {
                 delete this.document;
             }
-            this._docHash = crypto
-                .createHash('md5')
-                .update(document)
-                .digest('hex');
+            this._updateDocHash(document);
         } else {
-            this._docHash = '';
+            this._updateDocHash('');
         }
         const prop: any = {};
         prop.accounts = this.accounts;
@@ -296,10 +274,7 @@ export class VcDocument extends BaseEntity implements IVCDocument {
         prop.relationships = this.relationships;
         prop.processingStatus = this.processingStatus;
         prop.policyId = this.policyId;
-        this._propHash = crypto
-            .createHash('md5')
-            .update(JSON.stringify(prop))
-            .digest('hex');
+        this._updatePropHash(prop);
     }
 
     /**
