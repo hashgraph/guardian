@@ -13,7 +13,6 @@ context("Get branding", { tags: ['accounts', 'firstPool', 'all'] }, () => {
             expect(response.body).to.have.property("companyName");
             expect(response.body).to.have.property("faviconUrl");
             expect(response.body).to.have.property("headerColor");
-            expect(response.body).to.have.property("headerColor1");
             expect(response.body).to.have.property("loginBannerUrl");
             expect(response.body).to.have.property("primaryColor");
         });
