@@ -73,4 +73,10 @@ export class LandingService {
             `${this.url}/data-priority-tokens`, { ids: tokenIds }
         );
     }
+
+    public setDataPriorityLoadingProgressAny(topicId: string): Observable<any> {
+        return this.http.post<DataPriorityLoadingProgress>(
+            `${this.url}/data-priority-any/${topicId}`, {}
+        );
+    }
 }

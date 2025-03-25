@@ -6,7 +6,7 @@ import { Parser } from '../utils/parser.js';
 import { HederaService } from '../loaders/hedera-service.js';
 import { DataBaseHelper, Job, MessageCache, TopicCache, TopicMessage, Utils } from '@indexer/common';
 import { TokenService } from './token-service.js';
-import { MessageStatus, PriorityStatus } from '@indexer/interfaces';
+import { MessageStatus, PriorityOptions, PriorityStatus } from '@indexer/interfaces';
 
 export class TopicService {
     public static CYCLE_TIME: number = 0;
@@ -27,7 +27,11 @@ export class TopicService {
                 if (rowMessages) {
                     const compressed = await TopicService.compressMessages(rowMessages);
                     await MessageService.saveImmediately(compressed);
-                    await TopicService.saveRelationships(compressed);
+                    await TopicService.saveRelationships(compressed, {
+                        priorityDate: row.priorityDate || null,
+                        priorityStatus: row.priorityStatus as PriorityStatus || PriorityStatus.NONE,
+                        priorityStatusDate: row.priorityStatusDate || null,
+                    });
                     await em.nativeUpdate(TopicCache, { topicId: row.topicId }, {
                         messages: data.messages[data.messages.length - 1].sequence_number,
                         lastUpdate: Date.now(),
@@ -48,7 +52,7 @@ export class TopicService {
         }
     }
 
-    public static async addTopic(topicId: string): Promise<boolean> {
+    public static async addTopic(topicId: string, priorityOptions?: PriorityOptions): Promise<boolean> {
         try {
             const em = DataBaseHelper.getEntityManager();
             const old = await em.findOne(TopicCache, { topicId });
@@ -59,9 +63,9 @@ export class TopicService {
                     lastUpdate: 0,
                     messages: 0,
                     hasNext: false,
-                    priorityDate: null,
-                    priorityStatus: PriorityStatus.NONE,
-                    priorityStatusDate: null,
+                    priorityDate: priorityOptions?.priorityDate || null,
+                    priorityStatus: priorityOptions?.priorityStatus || PriorityStatus.NONE,
+                    priorityStatusDate: priorityOptions?.priorityStatusDate || null,
                 }));
                 return true;
             } else {
@@ -73,10 +77,10 @@ export class TopicService {
         }
     }
 
-    public static async addTopics(topicIds: Iterable<string>): Promise<void> {
+    public static async addTopics(topicIds: Iterable<string>, priorityOptions?: PriorityOptions): Promise<void> {
         for (const topicId of topicIds) {
             if (topicId && typeof topicId === 'string' && Utils.isTopic(topicId)) {
-                await TopicService.addTopic(topicId);
+                await TopicService.addTopic(topicId, priorityOptions);
             }
         }
     }
@@ -175,10 +179,10 @@ export class TopicService {
         }
     }
 
-    public static async saveRelationships(messages: MessageCache[]) {
+    public static async saveRelationships(messages: MessageCache[], priorityOptions?: PriorityOptions) {
         try {
             const { topics, tokens } = TopicService.findRelationships(messages);
-            await TopicService.addTopics(topics);
+            await TopicService.addTopics(topics, priorityOptions);
             await TokenService.addTokens(tokens);
         } catch (error) {
             await LogService.error(error, 'Save relationships');

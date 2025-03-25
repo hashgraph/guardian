@@ -1,5 +1,5 @@
 import { Controller, HttpCode, HttpStatus, Get, Post, Param, Body, Query } from '@nestjs/common';
-import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { IndexerMessageAPI } from '@indexer/common';
 import { ApiClient } from '../api-client.js';
 import { ProjectCoordinatesDTO, LandingAnalyticsDTO, InternalServerErrorDTO, SetLoadingPriorityDTO } from '#dto';
@@ -208,6 +208,36 @@ export class LandingApi extends ApiClient {
         return await this.send(
             IndexerMessageAPI.SET_DATA_PRIORITY_LOADING_PROGRESS_TOKENS,
             { tokenIds }
+        );
+    }
+
+    @ApiOperation({
+        summary: 'Get data priority loading progress',
+        description: 'Returns priority data loading',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Post('/data-priority-any/:entityId')
+    @ApiParam({
+        name: 'entityId',
+        type: String,
+        description: 'Entity id',
+        required: true,
+        example: '0.0.1'
+    })
+    @ApiOkResponse({
+        description: 'Data priority loading progress result',
+        type: [DataPriorityLoadingProgress],
+    })
+    @HttpCode(HttpStatus.OK)
+    async setDataPriorityLoadingProgressAny(
+        @Param('entityId') entityId: string,
+    ): Promise<DataPriorityLoadingProgress> {
+        return await this.send(
+            IndexerMessageAPI.SET_DATA_PRIORITY_LOADING_PROGRESS_ANY,
+            { entityId }
         );
     }
 }

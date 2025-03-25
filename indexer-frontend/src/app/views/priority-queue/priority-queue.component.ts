@@ -181,19 +181,7 @@ export class PriorityQueueComponent extends BaseGridComponent {
         if (this.priorityControl.value) {
             const searchValue = this.priorityControl.value.trim();
 
-            this.landingService.setDataPriorityLoadingProgressPolicy([searchValue]).pipe(
-                switchMap(data => data ? of(data) : this.landingService.setDataPriorityLoadingProgressTopics([searchValue])),
-                switchMap(data => data ? of(data) : this.landingService.setDataPriorityLoadingProgressTokens([searchValue])),
-                catchError(() => {
-                    this.messageService.add({
-                        severity: 'error',
-                        summary: 'Error',
-                        detail: this.translocoService.translate('priority_queue.add_to_queue_error'),
-                        life: 3000
-                    });
-                    return of(null);
-                })
-            ).subscribe(data => {
+            this.landingService.setDataPriorityLoadingProgressAny(searchValue).subscribe(data => {
                 if (data) {
                     this.messageService.add({
                         severity: 'success',
@@ -211,7 +199,7 @@ export class PriorityQueueComponent extends BaseGridComponent {
                         life: 3000
                     });
                 }
-            });
+            })
         }
     }
 }
