@@ -31,7 +31,7 @@ export class TopicCache implements RawTopic {
 
     @Property()
     hasNext: boolean;
-    
+
     @Property({ nullable: true })
     priorityDate?: Date | null;
 
@@ -40,4 +40,7 @@ export class TopicCache implements RawTopic {
 
     @Property({ nullable: true })
     priorityStatusDate?: Date | null;
+
+    @Property({ nullable: true })
+    priorityTimestamp?: number;
 }

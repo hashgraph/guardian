@@ -27,7 +27,7 @@ import {
 } from '@indexer/interfaces';
 import { parsePageParams } from '../utils/parse-page-params.js';
 import axios from 'axios';
-   
+
 @Controller()
 export class LoadingQueueService {
 
@@ -36,7 +36,7 @@ export class LoadingQueueService {
     public static async init() {
         LoadingQueueService.mirrorNodeUrl = Environment.mirrorNode;
     }
-    
+
     @MessagePattern(IndexerMessageAPI.GET_DATA_LOADING_PROGRESS)
     async getDataLoadingProgress(): Promise<AnyResponse<DataLoadingProgress>> {
         try {
@@ -48,7 +48,7 @@ export class LoadingQueueService {
                     loaded: true,
                 } as any
             )) as any;
-            
+
             const total = (await em.count(
                 MessageCache,
                 {
@@ -88,10 +88,11 @@ export class LoadingQueueService {
                     $project: {
                         type: "Token",
                         _id: "$_id",
-                        entityId: "$tokenId",
+                        entityIds: ["$tokenId"],
                         priorityDate: "$priorityDate",
                         priorityStatus: "$priorityStatus",
-                        priorityStatusDate: "$priorityStatusDate"
+                        priorityStatusDate: "$priorityStatusDate",
+                        priorityTimestamp: "$priorityTimestamp",
                     }
                 },
                 {
@@ -99,15 +100,36 @@ export class LoadingQueueService {
                         coll: "topic_cache",
                         pipeline: [
                             {
-                                $project: {
-                                    type: "Topic",
-                                    _id: "$_id",
-                                    entityId: "$topicId",
-                                    priorityDate: "$priorityDate",
-                                    priorityStatus: "$priorityStatus",
-                                    priorityStatusDate: "$priorityStatusDate"
+                                $group: {
+                                    _id: "$priorityTimestamp",
+                                    entityIds: { $addToSet: "$topicId" },
+                                    statuses: { $addToSet: "$priorityStatus" },
+                                    firstDoc: { $first: "$$ROOT" }
                                 }
-                            }
+                            },
+                            {
+                                $project: {
+                                    type: { $literal: "Topic" },
+                                    _id: "$firstDoc._id",
+                                    entityIds: 1,
+                                    priorityDate: "$firstDoc.priorityDate",
+                                    priorityStatus: {
+                                        $cond: {
+                                            if: { $in: ["Running", "$statuses"] },
+                                            then: "Running",
+                                            else: {
+                                                $cond: {
+                                                    if: { $setEquals: ["$statuses", ["Scheduled"]] },
+                                                    then: "Scheduled",
+                                                    else: "Finished"
+                                                }
+                                            }
+                                        },
+                                    },
+                                    priorityStatusDate: "$firstDoc.priorityStatusDate",
+                                        priorityTimestamp: "$_id"
+                                    }
+                                }
                         ]
                     }
                 },
@@ -118,7 +140,7 @@ export class LoadingQueueService {
                     {
                         $match:
                         {
-                            entityId: { $in: ids },
+                            entityIds: { $in: ids },
                             priorityStatusDate: { $ne: null }
                         }
                     }
@@ -128,7 +150,8 @@ export class LoadingQueueService {
                     {
                         $match:
                         {
-                            priorityStatusDate: { $ne: null }
+                            priorityStatusDate: { $ne: null },
+                            priorityTimestamp: { $ne: null }
                         }
                     }
                 )
@@ -180,22 +203,25 @@ export class LoadingQueueService {
                 tokenFilter
             );
 
+
             const result = {
-                items: rows?.map((item: any) => { return {
-                    type: item.type,
-                    entityId: item.entityId,
-                    priorityDate: item.priorityDate,
-                    priorityStatusDate: item.priorityStatusDate,
-                    priorityStatus: item.priorityStatus as PriorityStatus,
-                    lastUpdate: item.lastUpdate,
-                    hasNext: item.hasNext
-                } }) || [],
+                items: rows?.map((item: any) => {
+                    return {
+                        type: item.type,
+                        entityId: item.entityIds[0],
+                        priorityDate: item.priorityDate,
+                        priorityStatusDate: item.priorityStatusDate,
+                        priorityStatus: item.priorityStatus as PriorityStatus,
+                        lastUpdate: item.lastUpdate,
+                        hasNext: item.hasNext
+                    }
+                }) || [],
                 pageIndex: options.offset / options.limit,
                 pageSize: options.limit,
                 total: topicCount + tokenCount,
                 order: options.orderBy,
             };
-            
+
             return new MessageResponse<Page<DataPriorityLoadingProgress>>(result);
         } catch (error) {
             return new MessageError(error);
@@ -211,20 +237,21 @@ export class LoadingQueueService {
             const em = DataBaseHelper.getEntityManager();
 
             const topicResult = await em.nativeUpdate(TopicCache, {
-                    topicId: { $in: topicIds },
-                    priorityDate: { $eq: null }
-                },
+                topicId: { $in: topicIds },
+                priorityDate: { $eq: null }
+            },
                 {
                     priorityDate: new Date(),
                     priorityStatus: PriorityStatus.SCHEDULED,
                     priorityStatusDate: new Date(),
+                    priorityTimestamp: Date.parse(new Date().toString()),
                 }
             );
 
             const messageResult = await em.nativeUpdate(MessageCache, {
-                    topicId: { $in: topicIds },
-                    priorityDate: { $eq: null }
-                },
+                topicId: { $in: topicIds },
+                priorityDate: { $eq: null }
+            },
                 {
                     priorityDate: new Date(),
                 }
@@ -251,7 +278,7 @@ export class LoadingQueueService {
                     'options.instanceTopicId': { $in: policyTopicIds }
                 } as any,
             )
-            
+
             const topicIds = new Set<string>();
             const tokenIds = new Set<string>();
 
@@ -274,18 +301,20 @@ export class LoadingQueueService {
                 priorityDate: new Date(),
                 priorityStatus: PriorityStatus.SCHEDULED,
                 priorityStatusDate: new Date(),
+                priorityTimestamp: Date.parse(new Date().toString()),
             });
 
             const tokenResult = await em.nativeUpdate(TokenCache, { tokenId: { $in: Array.from(tokenIds) }, priorityDate: { $eq: null } }, {
                 priorityDate: new Date(),
                 priorityStatus: PriorityStatus.SCHEDULED,
                 priorityStatusDate: new Date(),
+                priorityTimestamp: Date.parse(new Date().toString()),
             });
 
             const messageResult = await em.nativeUpdate(MessageCache, {
-                    topicId: { $in: Array.from(topicIds) },
-                    priorityDate: { $eq: null }
-                },
+                topicId: { $in: Array.from(topicIds) },
+                priorityDate: { $eq: null }
+            },
                 {
                     priorityDate: new Date(),
                 }
@@ -306,13 +335,14 @@ export class LoadingQueueService {
             const em = DataBaseHelper.getEntityManager();
 
             const result = await em.nativeUpdate(TokenCache, {
-                    tokenId: { $in: tokenIds },
-                    priorityDate: { $eq: null }
-                },
+                tokenId: { $in: tokenIds },
+                priorityDate: { $eq: null }
+            },
                 {
                     priorityDate: new Date(),
                     priorityStatus: PriorityStatus.SCHEDULED,
                     priorityStatusDate: new Date(),
+                    priorityTimestamp: Date.parse(new Date().toString()),
                 }
             );
 
@@ -333,16 +363,16 @@ export class LoadingQueueService {
             if (cacheResult?.body) {
                 return cacheResult;
             }
-            
+
             const parentIds = new Set<string>();
             const hederaResult = await this.trySetPriorityFromHedera(entityId, parentIds);
 
             if (hederaResult) {
                 return hederaResult;
             }
-            
+
             return new MessageResponse(false);
-            
+
         } catch (error) {
             return new MessageError(error);
         }
@@ -373,8 +403,8 @@ export class LoadingQueueService {
 
     private async trySetPriorityFromHedera(entityId: string, parentIds: Set<string>, depth: number = 0) {
         if (depth >= 10) {
-          console.log("Recursion limit reached: ", depth);
-          return new MessageResponse(false);
+            console.log("Recursion limit reached: ", depth);
+            return new MessageResponse(false);
         }
 
         if (parentIds.has(entityId)) {
@@ -399,17 +429,17 @@ export class LoadingQueueService {
             if (topicInfo && Array.isArray(topicInfo.messages) && topicInfo.messages.length > 0) {
                 for (const data of topicInfo.messages) {
                     const message = this.parseMessage(data);
-            
+
                     if (message && message.type == 'Topic' && message.parentId) {
                         const cacheResult = await this.trySetPriorityFromCache(message.parentId);
-                        
+
                         if (cacheResult?.body) {
                             return cacheResult;
                         }
-                        
+
                         return await this.trySetPriorityFromHedera(message.parentId, parentIds, depth + 1);
                     }
-                }             
+                }
             } else {
                 return new MessageResponse(false);
             }

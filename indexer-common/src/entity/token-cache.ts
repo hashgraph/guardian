@@ -67,4 +67,7 @@ export class TokenCache implements RawToken {
 
     @Property({ nullable: true })
     priorityStatusDate?: Date | null;
+
+    @Property({ nullable: true })
+    priorityTimestamp?: number;
 }
