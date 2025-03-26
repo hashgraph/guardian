@@ -211,5 +211,6 @@ export class DocumentValidatorBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
             documents: ExternalDocuments(event?.data?.data)
         }));
+        ref.backup();
     }
 }

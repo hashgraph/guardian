@@ -37,6 +37,10 @@ export abstract class RestoreEntity extends BaseEntity {
         } else {
             this._docHash = '';
         }
-
     }
+
+    /**
+     * Save delete cache
+     */
+    abstract deleteCache(): Promise<void>
 }

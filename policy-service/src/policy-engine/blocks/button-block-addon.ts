@@ -131,5 +131,6 @@ export class ButtonBlockAddon {
                 };
             }
         );
+        ref.backup();
     }
 }

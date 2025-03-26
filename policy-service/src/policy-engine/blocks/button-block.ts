@@ -67,5 +67,6 @@ export class ButtonBlock {
             button: blockData.tag,
             documents: ExternalDocuments(blockData.document)
         }));
+        ref.backup();
     }
 }

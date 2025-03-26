@@ -175,5 +175,7 @@ export class SwitchBlock {
             conditions: tags,
             documents: ExternalDocuments(docs),
         }));
+
+        ref.backup();
     }
 }

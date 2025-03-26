@@ -136,7 +136,13 @@ export class MultiSignBlock {
                 throw new BlockActionError('The document has already been signed', ref.blockType, ref.uuid);
             }
         } else {
-            await ref.databaseServer.setMultiSigStatus(ref.uuid, documentId, user.group, DocumentStatus.NEW);
+            await ref.databaseServer.setMultiSigStatus(
+                ref.uuid,
+                ref.policyId,
+                documentId,
+                user.group,
+                DocumentStatus.NEW
+            );
         }
         const documentStatus = await ref.databaseServer.getMultiSignStatus(ref.uuid, documentId, user.id);
         if (documentStatus) {
@@ -159,6 +165,7 @@ export class MultiSignBlock {
 
         await ref.databaseServer.setMultiSigDocument(
             ref.uuid,
+            ref.policyId,
             documentId,
             user,
             status === DocumentStatus.SIGNED ? DocumentStatus.SIGNED : DocumentStatus.DECLINED,
@@ -174,6 +181,7 @@ export class MultiSignBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
             documents: ExternalDocuments(document)
         }));
+        ref.backup();
     }
 
     /**
@@ -246,7 +254,13 @@ export class MultiSignBlock {
             vpDocument.relationships = sourceDoc.messageId ? [sourceDoc.messageId] : null;
             await ref.databaseServer.saveVP(vpDocument);
 
-            await ref.databaseServer.setMultiSigStatus(ref.uuid, documentId, currentUser.group, DocumentStatus.SIGNED);
+            await ref.databaseServer.setMultiSigStatus(
+                ref.uuid,
+                ref.policyId,
+                documentId,
+                currentUser.group,
+                DocumentStatus.SIGNED
+            );
 
             const state: IPolicyEventState = { data: sourceDoc };
             ref.triggerEvents(PolicyOutputEventType.SignatureQuorumReachedEvent, currentUser, state);
@@ -257,7 +271,13 @@ export class MultiSignBlock {
                 })
             );
         } else if (declined >= declinedThreshold) {
-            await ref.databaseServer.setMultiSigStatus(ref.uuid, documentId, currentUser.group, DocumentStatus.DECLINED);
+            await ref.databaseServer.setMultiSigStatus(
+                ref.uuid,
+                ref.policyId,
+                documentId,
+                currentUser.group,
+                DocumentStatus.DECLINED
+            );
 
             const state: IPolicyEventState = { data: sourceDoc };
             ref.triggerEvents(PolicyOutputEventType.SignatureSetInsufficientEvent, currentUser, state);
@@ -338,6 +358,7 @@ export class MultiSignBlock {
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, null, null);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.DeleteMember, ref, user, null));
         }
+        ref.backup();
     }
 
     /**

@@ -1,6 +1,8 @@
-import { BeforeCreate, BeforeUpdate, Entity, Property } from '@mikro-orm/core';
+import { AfterDelete, BeforeCreate, BeforeUpdate, Entity, Property } from '@mikro-orm/core';
 import { RestoreEntity } from '../models/index.js';
 import { GroupAccessType, GroupRelationshipType } from '@guardian/interfaces';
+import { DataBaseHelper } from '../helpers/db-helper.js';
+import { DeleteCache } from './delete-cache.js';
 
 /**
  * PolicyRoles collection
@@ -108,5 +110,21 @@ export class PolicyRoles extends RestoreEntity {
         prop.userId = this.userId;
         this._updatePropHash(prop);
         this._updateDocHash('');
+    }
+
+    /**
+     * Save delete cache
+     */
+    @AfterDelete()
+    override async deleteCache() {
+        try {
+            new DataBaseHelper(DeleteCache).save({
+                rowId: this._id?.toString(),
+                policyId: this.policyId,
+                collection: 'PolicyRoles',
+            })
+        } catch (error) {
+            console.error(error);
+        }
     }
 }

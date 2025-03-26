@@ -91,6 +91,7 @@ export class AggregateBlock {
         } else {
             await this.popDocuments(ref, docs);
         }
+        ref.backup();
     }
 
     /**
@@ -164,6 +165,7 @@ export class AggregateBlock {
                 documents
             );
         }
+        ref.backup();
     }
     /**
      * Send cron documents
@@ -284,6 +286,7 @@ export class AggregateBlock {
                 documents: ExternalDocuments(rawEntities)
             }));
         }
+        ref.backup();
     }
 
     /**

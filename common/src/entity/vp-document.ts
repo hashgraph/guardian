@@ -5,6 +5,7 @@ import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers/index.js';
 import ObjGet from 'lodash.get';
 import ObjSet from 'lodash.set';
+import { DeleteCache } from './delete-cache.js';
 
 /**
  * VP documents collection
@@ -264,6 +265,22 @@ export class VpDocument extends RestoreEntity implements IVPDocument {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
                 .catch(console.error);
+        }
+    }
+
+    /**
+     * Save delete cache
+     */
+    @AfterDelete()
+    override async deleteCache() {
+        try {
+            new DataBaseHelper(DeleteCache).save({
+                rowId: this._id?.toString(),
+                policyId: this.policyId,
+                collection: 'VpDocument',
+            })
+        } catch (error) {
+            console.error(error);
         }
     }
 }

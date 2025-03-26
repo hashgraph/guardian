@@ -231,5 +231,7 @@ export class TokenConfirmationBlock {
             };
             await ref.saveState();
         }
+
+        ref.backup();
     }
 }

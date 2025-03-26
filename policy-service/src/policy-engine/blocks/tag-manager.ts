@@ -265,6 +265,7 @@ export class TagsManagerBlock {
                 throw new BlockActionError(`Operation is unknown`, ref.blockType, ref.uuid);
             }
         }
+        ref.backup();
     }
 
     /**
@@ -399,5 +400,4 @@ export class TagsManagerBlock {
 
         await ref.databaseServer.updateTags(tagObjects)
     }
-
 }

@@ -280,6 +280,7 @@ export class CreateTokenBlock {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
+        ref.backup();
 
         return {};
     }
@@ -336,5 +337,6 @@ export class CreateTokenBlock {
         PolicyComponentsUtils.ExternalEventFn(
             new ExternalEvent(ExternalEventType.Run, ref, user, null)
         );
+        ref.backup();
     }
 }

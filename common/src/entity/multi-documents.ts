@@ -12,6 +12,7 @@ import { RestoreEntity } from '../models/index.js';
 import { GenerateUUIDv4, IVC } from '@guardian/interfaces';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers/index.js';
+import { DeleteCache } from './delete-cache.js';
 
 /**
  * MultiDocuments collection
@@ -71,6 +72,15 @@ export class MultiDocuments extends RestoreEntity {
      */
     @Property({ nullable: true })
     documentFileId?: ObjectId;
+
+    /**
+     * Policy id
+     */
+    @Property({
+        nullable: true,
+        index: true
+    })
+    policyId?: string;
 
     private _createDocument(document: string): Promise<void> {
         return new Promise<void>((resolve, reject) => {
@@ -151,6 +161,22 @@ export class MultiDocuments extends RestoreEntity {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
                 .catch(console.error);
+        }
+    }
+
+    /**
+     * Save delete cache
+     */
+    @AfterDelete()
+    override async deleteCache() {
+        try {
+            new DataBaseHelper(DeleteCache).save({
+                rowId: this._id?.toString(),
+                policyId: this.policyId,
+                collection: 'MultiDocuments',
+            })
+        } catch (error) {
+            console.error(error);
         }
     }
 }

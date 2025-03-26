@@ -124,5 +124,6 @@ export class DropdownBlockAddon {
                 };
             }
         );
+        ref.backup();
     }
 }

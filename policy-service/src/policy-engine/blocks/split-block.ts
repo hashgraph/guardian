@@ -297,5 +297,7 @@ export class SplitBlock {
         } else {
             await this.addDocs(ref, event.user, [docs]);
         }
+
+        ref.backup();
     }
 }

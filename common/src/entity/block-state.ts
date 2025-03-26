@@ -1,5 +1,7 @@
-import { Entity, Property, BeforeCreate, BeforeUpdate } from '@mikro-orm/core';
+import { Entity, Property, BeforeCreate, BeforeUpdate, AfterDelete } from '@mikro-orm/core';
 import { RestoreEntity } from '../models/index.js';
+import { DeleteCache } from './delete-cache.js';
+import { DataBaseHelper } from '../helpers/db-helper.js';
 
 /**
  * Block state
@@ -51,5 +53,21 @@ export class BlockState extends RestoreEntity {
         prop.policyId = this.policyId;
         this._updatePropHash(prop);
         this._updateDocHash(this.blockState);
+    }
+
+    /**
+     * Save delete cache
+     */
+    @AfterDelete()
+    override async deleteCache() {
+        try {
+            new DataBaseHelper(DeleteCache).save({
+                rowId: this._id?.toString(),
+                policyId: this.policyId,
+                collection: 'BlockState',
+            })
+        } catch (error) {
+            console.error(error);
+        }
     }
 }

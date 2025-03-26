@@ -257,6 +257,8 @@ export class RequestVcDocumentBlockAddon {
                 return state;
             }
         );
+
+        ref.backup();
     }
 
     /**

@@ -1,6 +1,7 @@
 import { RestoreEntity } from '@guardian/common';
 import { DiffActionType, ICollectionDiff, IDiffAction } from '../index.js';
 import crypto from "crypto";
+import { ObjectId } from '@mikro-orm/mongodb';
 
 export abstract class CollectionRestore<T extends RestoreEntity> {
     protected readonly policyId: string;
@@ -9,7 +10,7 @@ export abstract class CollectionRestore<T extends RestoreEntity> {
         this.policyId = policyId;
     }
 
-    public async restoreBackup(backup: ICollectionDiff<T>): Promise<boolean> {
+    public async restoreBackup(backup: ICollectionDiff<T>): Promise<ICollectionDiff<T>> {
         await this.clearCollection();
 
         let hash = '';
@@ -25,17 +26,31 @@ export abstract class CollectionRestore<T extends RestoreEntity> {
 
         console.log(backup.hash, hash)
 
-        return backup.hash === hash;
+        if (backup.hash === hash) {
+            return {
+                hash,
+                fullHash: hash,
+                actions: []
+            }
+        } else {
+            return null;
+        }
     }
 
-    public async restoreDiff(diff: ICollectionDiff<T>): Promise<void> {
+    public async restoreDiff(
+        diff: ICollectionDiff<T>,
+        oldCollectionDiff: ICollectionDiff<T>,
+    ): Promise<ICollectionDiff<T>> {
 
         const insertRows: T[] = [];
         const updateRows: T[] = [];
         const deleteRows: T[] = [];
 
+        let hash = '';
         for (const action of diff.actions) {
             const row = this.createRow(action.data);
+            row._id = new ObjectId(action.id);
+            row.id = action.id;
             row._restoreId = action.id;
 
             if (action.type === DiffActionType.Delete) {
@@ -45,11 +60,27 @@ export abstract class CollectionRestore<T extends RestoreEntity> {
             } else {
                 insertRows.push(row);
             }
+
+            hash = this.actionHash(hash, action);
         }
+        const fullHash = hash ? this.sumHash(oldCollectionDiff.fullHash, hash) : oldCollectionDiff.fullHash;
 
         await this.insertDocuments(insertRows);
         await this.updateDocuments(updateRows);
         await this.deleteDocuments(deleteRows);
+
+        if (
+            diff.hash === hash &&
+            diff.fullHash === fullHash
+        ) {
+            return {
+                hash,
+                fullHash,
+                actions: []
+            }
+        } else {
+            return null;
+        }
     }
 
     protected sumHash(...hash: string[]): string {

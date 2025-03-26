@@ -487,6 +487,7 @@ export class ReportBlock {
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
                 value
             }));
+            ref.backup();
         } catch (error) {
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }

@@ -1,6 +1,7 @@
 import {
     ApprovalDocument,
     BlockState,
+    DataBaseHelper,
     DidDocument,
     DocumentState,
     ExternalDocument,
@@ -14,6 +15,9 @@ import {
     VpDocument
 } from '@guardian/common';
 import { ICollectionDiff, IDiffAction, IPolicyDiff } from './index.js';
+import { ObjectId } from '@mikro-orm/mongodb';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
+import JSZip from 'jszip';
 
 enum FileHeaders {
     NEW_LINE = '\n',
@@ -26,6 +30,59 @@ enum FileHeaders {
 }
 
 export class FileHelper {
+    public static readonly FileName: string = 'diff'
+
+    public static async zipFile(file: string): Promise<ArrayBuffer> {
+        const zip = new JSZip();
+        zip.file(FileHelper.FileName, file);
+        const buffer = await zip.generateAsync({
+            type: 'arraybuffer',
+            compression: 'DEFLATE',
+            compressionOptions: {
+                level: 3
+            }
+        });
+        return buffer;
+    }
+
+    public static async unZipFile(buffer: any): Promise<string> {
+        const zip = new JSZip();
+        const content = await zip.loadAsync(buffer);
+        if (!content.files[FileHelper.FileName] || content.files[FileHelper.FileName].dir) {
+            throw new Error('Zip file is not a diff');
+        }
+        const file = await content.files[FileHelper.FileName].async('string');
+        return file;
+    }
+
+    public static async loadFile(id: ObjectId): Promise<IPolicyDiff | null> {
+        if (!id) {
+            return null;
+        }
+        const buffer = await DataBaseHelper.loadFile(id);
+        if (!buffer) {
+            return null;
+        }
+        const file = buffer.toString();
+        const diff = FileHelper.decryptFile(file);
+        return diff;
+    }
+
+    public static async saveFile(diff: IPolicyDiff): Promise<ObjectId> {
+        const file = FileHelper.encryptFile(diff);
+        const buffer = Buffer.from(file);
+        const id = await DataBaseHelper.saveFile(GenerateUUIDv4(), buffer);
+        return id;
+    }
+
+    public static async deleteFile(id: ObjectId): Promise<void> {
+        if (id) {
+            DataBaseHelper.gridFS
+                .delete(id)
+                .catch(console.error);
+        }
+    }
+
     public static decryptFile(file: string): IPolicyDiff {
         const lines = file.split(FileHeaders.NEW_LINE);
 
@@ -164,6 +221,7 @@ export class FileHelper {
         end: number
     ): ICollectionDiff<T> {
         const hash = FileHelper._readString(FileHeaders.HASH, lines[start++]);
+        const fullHash = FileHelper._readString(FileHeaders.HASH, lines[start++]);
         const actions: IDiffAction<T>[] = [];
         for (let index = start; index < end; index++) {
             const action = FileHelper._decryptAction<T>(lines[index]);
@@ -174,6 +232,7 @@ export class FileHelper {
         }
         const diff: ICollectionDiff<T> = {
             hash,
+            fullHash,
             actions
         }
         return diff;
@@ -284,6 +343,7 @@ export class FileHelper {
     public static _encryptCollection<T extends RestoreEntity>(collection: ICollectionDiff<T>): string {
         let result = '';
         result += FileHelper._writeString(FileHeaders.HASH, collection.hash);
+        result += FileHelper._writeString(FileHeaders.HASH, collection.fullHash);
         for (const action of collection.actions) {
             result += FileHelper._encryptAction<T>(action);
         }

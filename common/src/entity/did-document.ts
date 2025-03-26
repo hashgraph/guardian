@@ -5,9 +5,12 @@ import {
     Property,
     Enum,
     BeforeCreate,
-    BeforeUpdate
+    BeforeUpdate,
+    AfterDelete
 } from '@mikro-orm/core';
 import { RestoreEntity } from '../models/index.js';
+import { DeleteCache } from './delete-cache.js';
+import { DataBaseHelper } from '../helpers/db-helper.js';
 
 /**
  * DID document
@@ -126,5 +129,21 @@ export class DidDocument extends RestoreEntity implements IDidObject {
         prop.verificationMethods = this.verificationMethods;
         prop.policyId = this.policyId;
         this._updatePropHash(prop);
+    }
+
+    /**
+     * Save delete cache
+     */
+    @AfterDelete()
+    override async deleteCache() {
+        try {
+            new DataBaseHelper(DeleteCache).save({
+                rowId: this._id?.toString(),
+                policyId: this.policyId,
+                collection: 'DidDocument',
+            })
+        } catch (error) {
+            console.error(error);
+        }
     }
 }

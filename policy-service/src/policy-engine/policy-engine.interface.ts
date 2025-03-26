@@ -287,6 +287,11 @@ export interface IPolicyBlock {
     ): void;
 
     /**
+     * Create backup
+     */
+    backup(): void
+
+    /**
      * Save block state
      */
     saveState(): Promise<void>;

@@ -15,19 +15,19 @@ export class ApproveCollectionRestore extends CollectionRestore<ApprovalDocument
     }
 
     protected override async insertDocuments(rows: ApprovalDocument[]): Promise<void> {
-        const vcCollection = new DataBaseHelper(ApprovalDocument);
-        await vcCollection.insertMany(rows as ApprovalDocument[]);
+        const collection = new DataBaseHelper(ApprovalDocument);
+        await collection.insertMany(rows as ApprovalDocument[]);
     }
 
     protected override async updateDocuments(rows: ApprovalDocument[]): Promise<void> {
-        const vcCollection = new DataBaseHelper(ApprovalDocument);
-        await vcCollection.updateByKey(rows as ApprovalDocument[], '_restoreId');
+        const collection = new DataBaseHelper(ApprovalDocument);
+        await collection.updateByKey(rows as ApprovalDocument[], '_restoreId');
     }
 
     protected override async deleteDocuments(rows: ApprovalDocument[]): Promise<void> {
         const ids: string[] = rows.map(r => r._restoreId);
-        const vcCollection = new DataBaseHelper(ApprovalDocument);
-        await vcCollection.delete({ _restoreId: { $in: ids } });
+        const collection = new DataBaseHelper(ApprovalDocument);
+        await collection.delete({ _restoreId: { $in: ids } });
     }
 
     protected override createRow(data: ApprovalDocument): ApprovalDocument {

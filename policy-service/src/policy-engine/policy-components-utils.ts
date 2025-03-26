@@ -30,6 +30,7 @@ import { ExternalEvent } from './interfaces/external-event.js';
 import { BlockTreeGenerator } from './block-tree-generator.js';
 import { PolicyNavigationMap } from './interfaces/block-state.js';
 import { ComponentsService } from './helpers/components-service.js';
+import { PolicyBackupService, PolicyRestoreService } from './restore-service.js';
 
 /**
  * Policy tag helper
@@ -304,6 +305,21 @@ export class PolicyComponentsUtils {
         string,
         Map<string, Function[]>
     > = new Map();
+
+    /**
+     * Backup Controllers
+     * policyId -> PolicyBackup
+     * @private
+     */
+    private static readonly BackupControllers: Map<string, PolicyBackupService> = new Map();
+
+    /**
+     * Restore Controllers
+     * policyId -> PolicyRestore
+     * @private
+     */
+    private static readonly RestoreControllers: Map<string, PolicyRestoreService> = new Map();
+
 
     /**
      * Get document cache fields
@@ -1418,5 +1434,47 @@ export class PolicyComponentsUtils {
             return userFull.setCurrentGroup(group);
         }
         return null;
+    }
+
+    /**
+     * Register Backup Controller
+     * @param policyId
+     */
+    public static RegisterBackup(policyId: string, controller: PolicyBackupService) {
+        PolicyComponentsUtils.BackupControllers.set(policyId, controller);
+    }
+
+    /**
+     * Register Restore Controller
+     * @param policyId
+     */
+    public static RegisterRestore(policyId: string, controller: PolicyRestoreService) {
+        PolicyComponentsUtils.RestoreControllers.set(policyId, controller);
+    }
+
+    /**
+     * Unregister Backup Controller
+     * @param policyId
+     */
+    public static UnregisterBackup(policyId: string) {
+        PolicyComponentsUtils.BackupControllers.delete(policyId);
+    }
+
+    /**
+     * Unregister Restore Controller
+     * @param policyId
+     */
+    public static UnregisterRestore(policyId: string) {
+        PolicyComponentsUtils.RestoreControllers.delete(policyId);
+    }
+
+    /**
+     * Create new diff
+     * @param policyId
+     */
+    public static backup(policyId: string) {
+        if (PolicyComponentsUtils.BackupControllers.has(policyId)) {
+            PolicyComponentsUtils.BackupControllers.get(policyId).backup();
+        }
     }
 }

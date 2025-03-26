@@ -1,4 +1,4 @@
-import { PolicyDiff } from '@guardian/common';
+import { DataBaseHelper, DatabaseServer, Policy, PolicyDiff } from '@guardian/common';
 import { IPolicyDiff } from './index.js';
 import { FileHelper } from './file-helper.js';
 import {
@@ -53,6 +53,12 @@ export class PolicyRestore {
 
     public async init(): Promise<void> {
         console.log('-- init')
+        const policy = await DatabaseServer.getPolicyById(this.policyId);
+        if (policy) {
+            await this._loadBackup(policy);
+        } else {
+            throw Error('Invalid policy');
+        }
     }
 
     public async restore(file: string): Promise<void> {
@@ -68,35 +74,94 @@ export class PolicyRestore {
 
     private async _restoreBackup(backup: IPolicyDiff): Promise<void> {
         console.log('-- _restoreBackup');
+        const oldDiff = this.lastDiff.file;
 
-        await this.vcRestore.restoreBackup(backup.vcCollection);
-        await this.vpRestore.restoreBackup(backup.vpCollection);
-        await this.didRestore.restoreBackup(backup.didCollection);
-        await this.stateRestore.restoreBackup(backup.stateCollection);
-        await this.roleRestore.restoreBackup(backup.roleCollection);
-        await this.multiDocRestore.restoreBackup(backup.multiDocCollection);
-        await this.tokenRestore.restoreBackup(backup.tokenCollection);
-        await this.tagRestore.restoreBackup(backup.tagCollection);
-        await this.docStateRestore.restoreBackup(backup.docStateCollection);
-        await this.topicRestore.restoreBackup(backup.topicCollection);
-        await this.externalDocRestore.restoreBackup(backup.externalDocCollection);
-        await this.approveRestore.restoreBackup(backup.approveCollection);
+        oldDiff.vcCollection = await this.vcRestore.restoreBackup(backup.vcCollection);
+        oldDiff.vpCollection = await this.vpRestore.restoreBackup(backup.vpCollection);
+        oldDiff.didCollection = await this.didRestore.restoreBackup(backup.didCollection);
+        oldDiff.stateCollection = await this.stateRestore.restoreBackup(backup.stateCollection);
+        oldDiff.roleCollection = await this.roleRestore.restoreBackup(backup.roleCollection);
+        oldDiff.multiDocCollection = await this.multiDocRestore.restoreBackup(backup.multiDocCollection);
+        oldDiff.tokenCollection = await this.tokenRestore.restoreBackup(backup.tokenCollection);
+        oldDiff.tagCollection = await this.tagRestore.restoreBackup(backup.tagCollection);
+        oldDiff.docStateCollection = await this.docStateRestore.restoreBackup(backup.docStateCollection);
+        oldDiff.topicCollection = await this.topicRestore.restoreBackup(backup.topicCollection);
+        oldDiff.externalDocCollection = await this.externalDocRestore.restoreBackup(backup.externalDocCollection);
+        oldDiff.approveCollection = await this.approveRestore.restoreBackup(backup.approveCollection);
+
+        await this._saveBackup(oldDiff);
     }
 
     private async _restoreDiff(diff: IPolicyDiff): Promise<void> {
         console.log('-- _restoreDiff');
+        const oldDiff = this.lastDiff.file;
 
-        await this.vcRestore.restoreDiff(diff.vcCollection);
-        await this.vpRestore.restoreDiff(diff.vpCollection);
-        await this.didRestore.restoreDiff(diff.didCollection);
-        await this.stateRestore.restoreDiff(diff.stateCollection);
-        await this.roleRestore.restoreDiff(diff.roleCollection);
-        await this.multiDocRestore.restoreDiff(diff.multiDocCollection);
-        await this.tokenRestore.restoreDiff(diff.tokenCollection);
-        await this.tagRestore.restoreDiff(diff.tagCollection);
-        await this.docStateRestore.restoreDiff(diff.docStateCollection);
-        await this.topicRestore.restoreDiff(diff.topicCollection);
-        await this.externalDocRestore.restoreDiff(diff.externalDocCollection);
-        await this.approveRestore.restoreDiff(diff.approveCollection);
+        oldDiff.vcCollection = await this.vcRestore.restoreDiff(diff.vcCollection, oldDiff.vcCollection);
+        oldDiff.vpCollection = await this.vpRestore.restoreDiff(diff.vpCollection, oldDiff.vpCollection);
+        oldDiff.didCollection = await this.didRestore.restoreDiff(diff.didCollection, oldDiff.didCollection);
+        oldDiff.stateCollection = await this.stateRestore.restoreDiff(diff.stateCollection, oldDiff.stateCollection);
+        oldDiff.roleCollection = await this.roleRestore.restoreDiff(diff.roleCollection, oldDiff.roleCollection);
+        oldDiff.multiDocCollection = await this.multiDocRestore.restoreDiff(diff.multiDocCollection, oldDiff.multiDocCollection);
+        oldDiff.tokenCollection = await this.tokenRestore.restoreDiff(diff.tokenCollection, oldDiff.tokenCollection);
+        oldDiff.tagCollection = await this.tagRestore.restoreDiff(diff.tagCollection, oldDiff.tagCollection);
+        oldDiff.docStateCollection = await this.docStateRestore.restoreDiff(diff.docStateCollection, oldDiff.docStateCollection);
+        oldDiff.topicCollection = await this.topicRestore.restoreDiff(diff.topicCollection, oldDiff.topicCollection);
+        oldDiff.externalDocCollection = await this.externalDocRestore.restoreDiff(diff.externalDocCollection, oldDiff.externalDocCollection);
+        oldDiff.approveCollection = await this.approveRestore.restoreDiff(diff.approveCollection, oldDiff.approveCollection);
+
+        await this._saveBackup(oldDiff);
+    }
+
+    private async _loadBackup(policy: Policy) {
+        const collection = DataBaseHelper.orm.em.getCollection<PolicyDiff>('PolicyDiff');
+        let row = await collection.findOne<PolicyDiff>({ policyId: this.policyId });
+        if (!row) {
+            const record = await collection.insertOne({
+                policyId: this.policyId,
+                policyTopicId: policy.topicId,
+                instanceTopicId: policy.instanceTopicId,
+                diffTopicId: '',
+                type: 'restore',
+                valid: true
+            } as any);
+            row = await collection.findOne<PolicyDiff>({ _id: record.insertedId });
+        }
+        if (row?.fileId) {
+            row.file = await FileHelper.loadFile(row.fileId);
+        }
+        this.lastDiff = row;
+        console.log('-- _loadBackup')
+        console.log(JSON.stringify(this.lastDiff))
+    }
+
+    private async _saveBackup(backup: IPolicyDiff) {
+        const valid = (
+            !!backup.vcCollection &&
+            !!backup.vpCollection &&
+            !!backup.didCollection &&
+            !!backup.stateCollection &&
+            !!backup.roleCollection &&
+            !!backup.multiDocCollection &&
+            !!backup.tokenCollection &&
+            !!backup.tagCollection &&
+            !!backup.docStateCollection &&
+            !!backup.topicCollection &&
+            !!backup.externalDocCollection &&
+            !!backup.approveCollection
+        )
+
+        const fileId = await FileHelper.saveFile(backup);
+        const lastUpdate = backup.lastUpdate;
+        const collection = DataBaseHelper.orm.em.getCollection<PolicyDiff>('PolicyDiff');
+        collection.updateOne(
+            { _id: this.lastDiff._id },
+            { $set: { lastUpdate, fileId, valid } }
+        )
+        await FileHelper.deleteFile(this.lastDiff.fileId);
+
+        this.lastDiff.fileId = fileId;
+        this.lastDiff.lastUpdate = lastUpdate;
+        this.lastDiff.file = backup;
+        this.lastDiff.valid = valid;
     }
 }

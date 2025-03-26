@@ -150,6 +150,7 @@ export class MessagesReportBlock {
                 await ref.setShortCache<string>(this.USER_REPORT_STATUS, null, user);
                 throw Error('Invalid MessageId/HASH');
             }
+            ref.backup();
         } catch (error) {
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }

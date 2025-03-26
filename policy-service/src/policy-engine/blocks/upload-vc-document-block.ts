@@ -202,6 +202,8 @@ export class UploadVcDocumentBlock {
                 documents: ExternalDocuments(retArray)
             }));
 
+            ref.backup();
+
             return {
                 verified: retArray,
                 invalid: badArray

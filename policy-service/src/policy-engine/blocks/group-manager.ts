@@ -194,9 +194,10 @@ export class GroupManagerBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
             action: blockData?.action
         }));
+        let result: any;
         if (blockData.action === 'invite') {
             const invitation = await this.createInvite(ref, user, blockData.group, blockData.role);
-            return { invitation };
+            result = { invitation };
         }
         if (blockData.action === 'delete') {
             await this.deleteMember(
@@ -206,7 +207,9 @@ export class GroupManagerBlock {
                 blockData.user,
                 blockData.message
             );
-            return { deleted: true };
+            result = { deleted: true };
         }
+        ref.backup();
+        return result;
     }
 }

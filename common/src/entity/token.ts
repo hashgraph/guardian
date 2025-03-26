@@ -1,6 +1,8 @@
 import { IToken, TokenType } from '@guardian/interfaces';
-import { Entity, Property, Unique, BeforeCreate, BeforeUpdate } from '@mikro-orm/core';
+import { Entity, Property, Unique, BeforeCreate, BeforeUpdate, AfterDelete } from '@mikro-orm/core';
 import { RestoreEntity } from '../models/index.js';
+import { DataBaseHelper } from '../helpers/db-helper.js';
+import { DeleteCache } from './delete-cache.js';
 
 /**
  * Tokens collection
@@ -143,5 +145,21 @@ export class Token extends RestoreEntity implements IToken {
         prop.wipeContractId = this.wipeContractId;
         this._updatePropHash(prop);
         this._updateDocHash('');
+    }
+
+    /**
+     * Save delete cache
+     */
+    @AfterDelete()
+    override async deleteCache() {
+        try {
+            new DataBaseHelper(DeleteCache).save({
+                rowId: this._id?.toString(),
+                policyId: this.policyId,
+                collection: 'Token',
+            })
+        } catch (error) {
+            console.error(error);
+        }
     }
 }

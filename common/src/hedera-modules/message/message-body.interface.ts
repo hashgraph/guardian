@@ -739,3 +739,42 @@ export interface LabelDocumentMessageBody extends MessageBody {
      */
     definition: string;
 }
+
+
+/**
+ * Policy diff message body
+ */
+export interface PolicyDiffMessageBody extends MessageBody {
+    /**
+     * UUID
+     */
+    uuid: string;
+    /**
+     * Owner
+     */
+    owner: string;
+    /**
+     * Diff type
+     */
+    diffType: string;
+    /**
+     * Diff index
+     */
+    diffIndex: number;
+    /**
+     * Topic id
+     */
+    policyTopicId: string;
+    /**
+     * Instance topic ID
+     */
+    instanceTopicId: string;
+    /**
+     * CID
+     */
+    cid: string;
+    /**
+     * URI
+     */
+    uri: string;
+}

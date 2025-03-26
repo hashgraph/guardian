@@ -187,5 +187,6 @@ export class ExternalDataBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             documents: ExternalDocuments(doc)
         }));
+        ref.backup();
     }
 }

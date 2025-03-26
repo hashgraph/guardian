@@ -237,6 +237,7 @@ export class RevocationBlock {
                 await ref.databaseServer.saveDocumentState({
                     documentId: prevDocument.id,
                     document: prevDocument,
+                    policyId: ref.policyId
                 });
             }
         }
@@ -244,6 +245,7 @@ export class RevocationBlock {
         const state: IPolicyEventState = {
             data: documents,
         };
+
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state);
         ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
 
@@ -252,5 +254,6 @@ export class RevocationBlock {
                 documents: ExternalDocuments(documents),
             })
         );
+        ref.backup();
     }
 }

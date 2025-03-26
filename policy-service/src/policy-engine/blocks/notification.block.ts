@@ -327,5 +327,6 @@ export class NotificationBlock {
                 documents: ExternalDocuments(event.data?.data),
             })
         );
+        ref.backup();
     }
 }

@@ -15,19 +15,19 @@ export class DocStateCollectionRestore extends CollectionRestore<DocumentState> 
     }
 
     protected override async insertDocuments(rows: DocumentState[]): Promise<void> {
-        const vcCollection = new DataBaseHelper(DocumentState);
-        await vcCollection.insertMany(rows as DocumentState[]);
+        const collection = new DataBaseHelper(DocumentState);
+        await collection.insertMany(rows as DocumentState[]);
     }
 
     protected override async updateDocuments(rows: DocumentState[]): Promise<void> {
-        const vcCollection = new DataBaseHelper(DocumentState);
-        await vcCollection.updateByKey(rows as DocumentState[], '_restoreId');
+        const collection = new DataBaseHelper(DocumentState);
+        await collection.updateByKey(rows as DocumentState[], '_restoreId');
     }
 
     protected override async deleteDocuments(rows: DocumentState[]): Promise<void> {
         const ids: string[] = rows.map(r => r._restoreId);
-        const vcCollection = new DataBaseHelper(DocumentState);
-        await vcCollection.delete({ _restoreId: { $in: ids } });
+        const collection = new DataBaseHelper(DocumentState);
+        await collection.delete({ _restoreId: { $in: ids } });
     }
 
     protected override createRow(data: DocumentState): DocumentState {

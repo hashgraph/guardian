@@ -15,19 +15,19 @@ export class TokenCollectionRestore extends CollectionRestore<Token> {
     }
 
     protected override async insertDocuments(rows: Token[]): Promise<void> {
-        const vcCollection = new DataBaseHelper(Token);
-        await vcCollection.insertMany(rows as Token[]);
+        const collection = new DataBaseHelper(Token);
+        await collection.insertMany(rows as Token[]);
     }
 
     protected override async updateDocuments(rows: Token[]): Promise<void> {
-        const vcCollection = new DataBaseHelper(Token);
-        await vcCollection.updateByKey(rows as Token[], '_restoreId');
+        const collection = new DataBaseHelper(Token);
+        await collection.updateByKey(rows as Token[], '_restoreId');
     }
 
     protected override async deleteDocuments(rows: Token[]): Promise<void> {
         const ids: string[] = rows.map(r => r._restoreId);
-        const vcCollection = new DataBaseHelper(Token);
-        await vcCollection.delete({ _restoreId: { $in: ids } });
+        const collection = new DataBaseHelper(Token);
+        await collection.delete({ _restoreId: { $in: ids } });
     }
 
     protected override createRow(data: Token): Token {

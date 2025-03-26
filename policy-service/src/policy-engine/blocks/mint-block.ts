@@ -477,5 +477,6 @@ export class MintBlock {
             documents: ExternalDocuments(docs),
             result: ExternalDocuments(vp),
         }));
+        ref.backup();
     }
 }

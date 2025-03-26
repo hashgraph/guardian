@@ -148,5 +148,6 @@ export class ReassigningBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             documents: ExternalDocuments(result)
         }));
+        ref.backup();
     }
 }

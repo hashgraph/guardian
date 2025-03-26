@@ -1,5 +1,7 @@
-import { Entity, Property, BeforeCreate, BeforeUpdate } from '@mikro-orm/core';
+import { Entity, Property, BeforeCreate, BeforeUpdate, AfterDelete } from '@mikro-orm/core';
 import { RestoreEntity } from '../models/index.js';
+import { DeleteCache } from './delete-cache.js';
+import { DataBaseHelper } from '../helpers/db-helper.js';
 
 /**
  * Document state
@@ -19,6 +21,15 @@ export class DocumentState extends RestoreEntity {
     document?: any;
 
     /**
+     * Policy id
+     */
+    @Property({
+        nullable: true,
+        index: true
+    })
+    policyId?: string;
+
+    /**
      * Create document
      */
     @BeforeCreate()
@@ -32,6 +43,22 @@ export class DocumentState extends RestoreEntity {
             this._updateDocHash(document);
         } else {
             this._updateDocHash('');
+        }
+    }
+
+    /**
+     * Save delete cache
+     */
+    @AfterDelete()
+    override async deleteCache() {
+        try {
+            new DataBaseHelper(DeleteCache).save({
+                rowId: this._id?.toString(),
+                policyId: this.policyId,
+                collection: 'DocumentState',
+            })
+        } catch (error) {
+            console.error(error);
         }
     }
 }

@@ -1,5 +1,7 @@
-import { BeforeCreate, BeforeUpdate, Entity, Property } from '@mikro-orm/core';
+import { AfterDelete, BeforeCreate, BeforeUpdate, Entity, Property } from '@mikro-orm/core';
 import { RestoreEntity } from '../models/index.js';
+import { DataBaseHelper } from '../helpers/db-helper.js';
+import { DeleteCache } from './delete-cache.js';
 
 /**
  * Artifact collection
@@ -133,5 +135,21 @@ export class ExternalDocument extends RestoreEntity {
         prop.status = this.status;
         this._updatePropHash(prop);
         this._updateDocHash('');
+    }
+
+    /**
+     * Save delete cache
+     */
+    @AfterDelete()
+    override async deleteCache() {
+        try {
+            new DataBaseHelper(DeleteCache).save({
+                rowId: this._id?.toString(),
+                policyId: this.policyId,
+                collection: 'ExternalDocument',
+            })
+        } catch (error) {
+            console.error(error);
+        }
     }
 }

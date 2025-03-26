@@ -15,19 +15,19 @@ export class TagCollectionRestore extends CollectionRestore<Tag> {
     }
 
     protected override async insertDocuments(rows: Tag[]): Promise<void> {
-        const vcCollection = new DataBaseHelper(Tag);
-        await vcCollection.insertMany(rows as Tag[]);
+        const collection = new DataBaseHelper(Tag);
+        await collection.insertMany(rows as Tag[]);
     }
 
     protected override async updateDocuments(rows: Tag[]): Promise<void> {
-        const vcCollection = new DataBaseHelper(Tag);
-        await vcCollection.updateByKey(rows as Tag[], '_restoreId');
+        const collection = new DataBaseHelper(Tag);
+        await collection.updateByKey(rows as Tag[], '_restoreId');
     }
 
     protected override async deleteDocuments(rows: Tag[]): Promise<void> {
         const ids: string[] = rows.map(r => r._restoreId);
-        const vcCollection = new DataBaseHelper(Tag);
-        await vcCollection.delete({ _restoreId: { $in: ids } });
+        const collection = new DataBaseHelper(Tag);
+        await collection.delete({ _restoreId: { $in: ids } });
     }
 
     protected override createRow(data: Tag): Tag {

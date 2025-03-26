@@ -3552,6 +3552,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async setMultiSigDocument(
         uuid: string,
+        policyId: string,
         documentId: string,
         user: { id: string, did: string, group: string, username: string },
         status: string,
@@ -3559,6 +3560,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
     ): Promise<MultiDocuments> {
         const doc = this.create(MultiDocuments, {
             uuid,
+            policyId,
             documentId,
             status,
             document,
@@ -3582,6 +3584,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async setMultiSigStatus(
         uuid: string,
+        policyId: string,
         documentId: string,
         group: string,
         status: string
@@ -3598,6 +3601,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         } else {
             item = this.create(MultiDocuments, {
                 uuid,
+                policyId,
                 documentId,
                 status,
                 document: null,

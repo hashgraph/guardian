@@ -252,6 +252,7 @@ export class RequestVcDocumentBlock {
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
                 documents: ExternalDocuments(item)
             }));
+            ref.backup();
 
             return item;
         } catch (error) {

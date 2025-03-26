@@ -176,7 +176,8 @@ export class SendToGuardianBlock {
         if (!ref.options.skipSaveState) {
             await ref.databaseServer.saveDocumentState({
                 documentId: old.id,
-                document: old
+                document: old,
+                policyId: ref.policyId
             });
         }
         return old;
@@ -563,5 +564,7 @@ export class SendToGuardianBlock {
             type: (ref.options.dataSource || ref.options.dataType),
             documents: ExternalDocuments(event.data?.data),
         }));
+
+        ref.backup();
     }
 }

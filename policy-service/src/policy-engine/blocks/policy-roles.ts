@@ -447,6 +447,7 @@ export class PolicyRolesBlock {
             group: group.uuid,
             role: group.role
         }));
+        ref.backup();
 
         return true;
     }

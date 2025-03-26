@@ -188,7 +188,8 @@ export class RevokeBlock {
                 await ref.databaseServer.updateVC(prevDocument);
                 await ref.databaseServer.saveDocumentState({
                     documentId: prevDocument.id,
-                    document: prevDocument
+                    document: prevDocument,
+                    policyId: ref.policyId
                 });
             }
         }
@@ -196,11 +197,14 @@ export class RevokeBlock {
         const state: IPolicyEventState = {
             data: documents
         };
+
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state);
         ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
             documents: ExternalDocuments(documents),
         }));
+
+        ref.backup();
     }
 }

@@ -1,4 +1,4 @@
-import { DataBaseHelper, Policy, PolicyDiff } from '@guardian/common';
+import { DataBaseHelper, DatabaseServer, Policy, PolicyDiff } from '@guardian/common';
 import { IPolicyDiff } from './index.js';
 import { ObjectId } from 'mongodb';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
@@ -55,28 +55,35 @@ export class PolicyBackup {
 
     public async init(): Promise<void> {
         console.log('-- init')
-
-        const policyCollection = DataBaseHelper.orm.em.getCollection<Policy>('Policy');
-        const policy = await policyCollection.findOne<any>({ _id: new ObjectId(this.policyId) });
+        const policy = await DatabaseServer.getPolicyById(this.policyId);
         if (policy) {
             await this._loadBackup(policy);
         } else {
-            // throw Error('Invalid policy');
-            console.log('-- Invalid policy')
-            return;
+            throw Error('Invalid policy');
         }
     }
 
-    public async save(full = false): Promise<void> {
+    public async create(full = false): Promise<{ backup: IPolicyDiff, diff: IPolicyDiff }> {
         if (this.lastDiff.file && !full) {
-            const { backup, diff } = await this._createDiff(this.lastDiff.file);
-            await this._sendDiff(diff);
-            await this._saveBackup(backup)
+            return await this._createDiff(this.lastDiff.file);
         } else {
-            const { backup, diff } = await this._createFullBackup();
-            await this._sendDiff(diff);
-            await this._saveBackup(backup);
+            return await this._createFullBackup();
         }
+    }
+
+    public async save(backup: IPolicyDiff) {
+        const fileId = await FileHelper.saveFile(backup);
+        const lastUpdate = backup.lastUpdate;
+        const collection = DataBaseHelper.orm.em.getCollection<PolicyDiff>('PolicyDiff');
+        collection.updateOne(
+            { _id: this.lastDiff._id },
+            { $set: { lastUpdate, fileId } }
+        )
+        await FileHelper.deleteFile(this.lastDiff.fileId);
+
+        this.lastDiff.fileId = fileId;
+        this.lastDiff.lastUpdate = lastUpdate;
+        this.lastDiff.file = backup;
     }
 
     private async _createFullBackup(): Promise<{ backup: IPolicyDiff, diff: IPolicyDiff }> {
@@ -196,54 +203,10 @@ export class PolicyBackup {
             row = await collection.findOne<PolicyDiff>({ _id: record.insertedId });
         }
         if (row?.fileId) {
-            row.file = await this._loadFile(row.fileId);
+            row.file = await FileHelper.loadFile(row.fileId);
         }
         this.lastDiff = row;
         console.log('-- _loadBackup')
         console.log(JSON.stringify(this.lastDiff))
-    }
-
-    private async _saveBackup(backup: IPolicyDiff) {
-        const fileId = await this._saveFile(backup);
-        const lastUpdate = backup.lastUpdate;
-        const collection = DataBaseHelper.orm.em.getCollection<PolicyDiff>('PolicyDiff');
-        collection.updateOne(
-            { _id: this.lastDiff._id },
-            { $set: { lastUpdate, fileId } }
-        )
-        await this._deleteFile(this.lastDiff.fileId);
-
-        this.lastDiff.fileId = fileId;
-        this.lastDiff.lastUpdate = lastUpdate;
-        this.lastDiff.file = backup;
-    }
-
-    private async _loadFile(id: ObjectId): Promise<IPolicyDiff | null> {
-        if (!id) {
-            return null;
-        }
-        const buffer = await DataBaseHelper.loadFile(id);
-        if (!buffer) {
-            return null;
-        }
-        const file = buffer.toString();
-        const diff = FileHelper.decryptFile(file);
-        return diff;
-    }
-
-    private async _saveFile(diff: IPolicyDiff): Promise<ObjectId> {
-        const file = FileHelper.encryptFile(diff);
-        const buffer = Buffer.from(file);
-        const id = await DataBaseHelper.saveFile(GenerateUUIDv4(), buffer);
-        return id;
-    }
-
-    private async _deleteFile(id: ObjectId): Promise<void> {
-    }
-
-    private async _sendDiff(diff: IPolicyDiff) {
-        console.log('-- _sendDiff')
-        const file = FileHelper.encryptFile(diff);
-        console.log(file)
     }
 }

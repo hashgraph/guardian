@@ -15,19 +15,19 @@ export class TopicCollectionRestore extends CollectionRestore<Topic> {
     }
 
     protected override async insertDocuments(rows: Topic[]): Promise<void> {
-        const vcCollection = new DataBaseHelper(Topic);
-        await vcCollection.insertMany(rows as Topic[]);
+        const collection = new DataBaseHelper(Topic);
+        await collection.insertMany(rows as Topic[]);
     }
 
     protected override async updateDocuments(rows: Topic[]): Promise<void> {
-        const vcCollection = new DataBaseHelper(Topic);
-        await vcCollection.updateByKey(rows as Topic[], '_restoreId');
+        const collection = new DataBaseHelper(Topic);
+        await collection.updateByKey(rows as Topic[], '_restoreId');
     }
 
     protected override async deleteDocuments(rows: Topic[]): Promise<void> {
         const ids: string[] = rows.map(r => r._restoreId);
-        const vcCollection = new DataBaseHelper(Topic);
-        await vcCollection.delete({ _restoreId: { $in: ids } });
+        const collection = new DataBaseHelper(Topic);
+        await collection.delete({ _restoreId: { $in: ids } });
     }
 
     protected override createRow(data: Topic): Topic {

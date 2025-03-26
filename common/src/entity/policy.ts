@@ -228,6 +228,12 @@ export class Policy extends BaseEntity {
     discontinuedDate?: Date;
 
     /**
+     * TopicId
+     */
+    @Property({ nullable: true })
+    diffTopicId?: string;
+
+    /**
      * Set policy defaults
      */
     @BeforeCreate()

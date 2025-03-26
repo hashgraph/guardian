@@ -1,6 +1,8 @@
 import { TopicType } from '@guardian/interfaces';
-import { BeforeCreate, BeforeUpdate, Entity, Property, Enum, Unique } from '@mikro-orm/core';
+import { BeforeCreate, BeforeUpdate, Entity, Property, Enum, Unique, AfterDelete } from '@mikro-orm/core';
 import { RestoreEntity } from '../models/index.js';
+import { DataBaseHelper } from '../helpers/db-helper.js';
+import { DeleteCache } from './delete-cache.js';
 
 /**
  * Topics collection
@@ -87,5 +89,21 @@ export class Topic extends RestoreEntity {
         prop.targetUUID = this.targetUUID;
         this._updatePropHash(prop);
         this._updateDocHash('');
+    }
+
+    /**
+     * Save delete cache
+     */
+    @AfterDelete()
+    override async deleteCache() {
+        try {
+            new DataBaseHelper(DeleteCache).save({
+                rowId: this._id?.toString(),
+                policyId: this.policyId,
+                collection: 'Topic',
+            })
+        } catch (error) {
+            console.error(error);
+        }
     }
 }

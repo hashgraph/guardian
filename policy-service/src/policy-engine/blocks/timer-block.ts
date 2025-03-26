@@ -225,6 +225,7 @@ export class TimerBlock {
 
         ref.triggerEvents<string[]>(PolicyOutputEventType.TimerEvent, null, map);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.TickCron, ref, null, null));
+        ref.backup();
     }
 
     /**
@@ -248,6 +249,7 @@ export class TimerBlock {
         ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
+        ref.backup();
     }
 
     /**
@@ -266,6 +268,7 @@ export class TimerBlock {
             ref.log(`start scheduler for: ${id}`);
         }
         await ref.saveState();
+        ref.backup();
     }
 
     /**
@@ -284,5 +287,6 @@ export class TimerBlock {
             ref.log(`stop scheduler for: ${id}`);
         }
         await ref.saveState();
+        ref.backup();
     }
 }

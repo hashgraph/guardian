@@ -174,5 +174,6 @@ export class HttpRequestBlock {
                 documents: ExternalDocuments(item)
             })
         );
+        ref.backup();
     }
 }

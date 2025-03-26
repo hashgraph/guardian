@@ -724,6 +724,14 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             /**
+             * Create backup
+             * @protected
+             */
+            protected backup(): void {
+                PolicyComponentsUtils.backup(this.policyId);
+            }
+
+            /**
              * Get Cache
              * @param {string} name - variable name
              * @param {PolicyUser | string} [user] - user DID

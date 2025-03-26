@@ -1,6 +1,8 @@
-import { BeforeCreate, Entity, Property, BeforeUpdate } from '@mikro-orm/core';
+import { BeforeCreate, Entity, Property, BeforeUpdate, AfterDelete } from '@mikro-orm/core';
 import { RestoreEntity } from '../models/index.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { DataBaseHelper } from '../helpers/db-helper.js';
+import { DeleteCache } from './delete-cache.js';
 
 /**
  * Tags collection
@@ -131,6 +133,22 @@ export class Tag extends RestoreEntity {
             this._updateDocHash(document);
         } else {
             this._updateDocHash('');
+        }
+    }
+
+    /**
+     * Save delete cache
+     */
+    @AfterDelete()
+    override async deleteCache() {
+        try {
+            new DataBaseHelper(DeleteCache).save({
+                rowId: this._id?.toString(),
+                policyId: this.policyId,
+                collection: 'Tag',
+            })
+        } catch (error) {
+            console.error(error);
         }
     }
 }

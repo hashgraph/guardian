@@ -105,6 +105,7 @@ export class CustomLogicBlock {
                 }));
             }
             await this.execute(event.data, event.user, triggerEvents);
+            ref.backup();
         } catch (error) {
             ref.error(PolicyUtils.getErrorMessage(error));
         }

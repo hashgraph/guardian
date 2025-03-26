@@ -53,7 +53,6 @@ export class PolicyDiff extends BaseEntity {
     @Property({ nullable: true })
     lastUpdate?: Date;
 
-
     /**
      * VC
      */
@@ -65,6 +64,18 @@ export class PolicyDiff extends BaseEntity {
      */
     @Property({ nullable: true })
     fileId?: ObjectId;
+
+    /**
+     * Type
+     */
+    @Property({ nullable: true })
+    type?: 'restore' | 'backup';
+
+    /**
+     * Type
+     */
+    @Property({ nullable: true })
+    valid?: boolean;
 
     /**
      * Set defaults

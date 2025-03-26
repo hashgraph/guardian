@@ -16,6 +16,8 @@ import { ICollectionDiff } from './../index.js';
 
 export interface IPolicyDiff {
     type?: 'backup' | 'diff';
+    messageId?: string;
+    index?: number;
     lastUpdate?: Date;
     vcCollection?: ICollectionDiff<VcDocument>;
     vpCollection?: ICollectionDiff<VpDocument>;

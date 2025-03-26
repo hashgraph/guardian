@@ -15,19 +15,19 @@ export class MultiDocCollectionRestore extends CollectionRestore<MultiDocuments>
     }
 
     protected override async insertDocuments(rows: MultiDocuments[]): Promise<void> {
-        const vcCollection = new DataBaseHelper(MultiDocuments);
-        await vcCollection.insertMany(rows as MultiDocuments[]);
+        const collection = new DataBaseHelper(MultiDocuments);
+        await collection.insertMany(rows as MultiDocuments[]);
     }
 
     protected override async updateDocuments(rows: MultiDocuments[]): Promise<void> {
-        const vcCollection = new DataBaseHelper(MultiDocuments);
-        await vcCollection.updateByKey(rows as MultiDocuments[], '_restoreId');
+        const collection = new DataBaseHelper(MultiDocuments);
+        await collection.updateByKey(rows as MultiDocuments[], '_restoreId');
     }
 
     protected override async deleteDocuments(rows: MultiDocuments[]): Promise<void> {
         const ids: string[] = rows.map(r => r._restoreId);
-        const vcCollection = new DataBaseHelper(MultiDocuments);
-        await vcCollection.delete({ _restoreId: { $in: ids } });
+        const collection = new DataBaseHelper(MultiDocuments);
+        await collection.delete({ _restoreId: { $in: ids } });
     }
 
     protected override createRow(data: MultiDocuments): MultiDocuments {

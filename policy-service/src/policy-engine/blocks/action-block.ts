@@ -134,6 +134,7 @@ export class InterfaceDocumentActionBlock {
             action: ref.options.type,
             documents: ExternalDocuments(document)
         }));
+        ref.backup();
 
         return result;
     }

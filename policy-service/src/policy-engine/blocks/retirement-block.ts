@@ -257,5 +257,7 @@ export class RetirementBlock {
             documents: ExternalDocuments(docs),
             result: ExternalDocuments(vp),
         }));
+
+        ref.backup();
     }
 }

@@ -136,5 +136,7 @@ export class TokenActionBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event.user, {
             action: ref.options.action
         }));
+
+        ref.backup();
     }
 }

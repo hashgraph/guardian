@@ -634,6 +634,7 @@ export class ExternalTopicBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             documents: ExternalDocuments(result)
         }));
+        ref.backup();
     }
 
     /**
@@ -885,6 +886,7 @@ export class ExternalTopicBlock {
                     throw new BlockActionError('Invalid operation', ref.blockType, ref.uuid);
                 }
             }
+            ref.backup();
         } catch (error) {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
             throw new BlockActionError(error, ref.blockType, ref.uuid);

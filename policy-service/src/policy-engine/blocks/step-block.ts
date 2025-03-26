@@ -116,6 +116,8 @@ export class InterfaceStepBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Step, ref, user, {
             index: blockState?.index
         }));
+
+        ref.backup();
     }
 
     /**
@@ -144,6 +146,8 @@ export class InterfaceStepBlock {
                 ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
             }
         }
+
+        ref.backup();
     }
 
     /**

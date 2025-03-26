@@ -15,19 +15,19 @@ export class StateCollectionRestore extends CollectionRestore<BlockState> {
     }
 
     protected override async insertDocuments(rows: BlockState[]): Promise<void> {
-        const vcCollection = new DataBaseHelper(BlockState);
-        await vcCollection.insertMany(rows as BlockState[]);
+        const collection = new DataBaseHelper(BlockState);
+        await collection.insertMany(rows as BlockState[]);
     }
 
     protected override async updateDocuments(rows: BlockState[]): Promise<void> {
-        const vcCollection = new DataBaseHelper(BlockState);
-        await vcCollection.updateByKey(rows as BlockState[], '_restoreId');
+        const collection = new DataBaseHelper(BlockState);
+        await collection.updateByKey(rows as BlockState[], '_restoreId');
     }
 
     protected override async deleteDocuments(rows: BlockState[]): Promise<void> {
         const ids: string[] = rows.map(r => r._restoreId);
-        const vcCollection = new DataBaseHelper(BlockState);
-        await vcCollection.delete({ _restoreId: { $in: ids } });
+        const collection = new DataBaseHelper(BlockState);
+        await collection.delete({ _restoreId: { $in: ids } });
     }
 
     protected override createRow(data: BlockState): BlockState {

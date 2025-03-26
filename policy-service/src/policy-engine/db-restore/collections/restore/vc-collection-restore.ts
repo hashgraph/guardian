@@ -15,19 +15,19 @@ export class VcCollectionRestore extends CollectionRestore<VcDocument> {
     }
 
     protected override async insertDocuments(rows: VcDocument[]): Promise<void> {
-        const vcCollection = new DataBaseHelper(VcDocument);
-        await vcCollection.insertMany(rows as VcDocument[]);
+        const collection = new DataBaseHelper(VcDocument);
+        await collection.insertMany(rows as VcDocument[]);
     }
 
     protected override async updateDocuments(rows: VcDocument[]): Promise<void> {
-        const vcCollection = new DataBaseHelper(VcDocument);
-        await vcCollection.updateByKey(rows as VcDocument[], '_restoreId');
+        const collection = new DataBaseHelper(VcDocument);
+        await collection.updateByKey(rows as VcDocument[], '_restoreId');
     }
 
     protected override async deleteDocuments(rows: VcDocument[]): Promise<void> {
         const ids: string[] = rows.map(r => r._restoreId);
-        const vcCollection = new DataBaseHelper(VcDocument);
-        await vcCollection.delete({ _restoreId: { $in: ids } });
+        const collection = new DataBaseHelper(VcDocument);
+        await collection.delete({ _restoreId: { $in: ids } });
     }
 
     protected override createRow(data: VcDocument): VcDocument {
