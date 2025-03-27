@@ -4936,10 +4936,11 @@ paths:
             type: string
       requestBody:
         required: true
+        description: Options.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PolicyDTO'
+              $ref: '#/components/schemas/PolicyVersionDTO'
       responses:
         '200':
           description: Successful operation.
@@ -4979,11 +4980,11 @@ paths:
             type: string
       requestBody:
         required: true
-        description: Policy configuration.
+        description: Options.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PolicyDTO'
+              $ref: '#/components/schemas/PolicyVersionDTO'
       responses:
         '200':
           description: Successful operation.
@@ -12109,6 +12110,7 @@ paths:
               - PUBLISH
               - DISCONTINUED
               - DEMO
+              - VIEW
             type: string
       responses:
         '200':
@@ -13683,6 +13685,40 @@ paths:
       tags: *ref_30
       security:
         - bearer: []
+  /external-policies:
+    post:
+      operationId: ExternalPoliciesApi_createExternalPolicy
+      summary: Creates a new external policy.
+      description: Creates a new external policy.
+      parameters: []
+      requestBody:
+        required: true
+        description: Configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalPolicyDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalPolicyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags:
+        - external-policies
+      security:
+        - bearer: []
   /policy-labels:
     post:
       operationId: PolicyLabelsApi_createPolicyLabel
@@ -14799,6 +14835,7 @@ components:
             - PUBLISH
             - DISCONTINUED
             - DEMO
+            - VIEW
           example: DRAFT
         creator:
           type: string
@@ -15085,6 +15122,7 @@ components:
             - PUBLISH
             - DISCONTINUED
             - DEMO
+            - VIEW
           example: DRAFT
         owner:
           type: string
@@ -16484,6 +16522,21 @@ components:
         - policies
         - isValid
         - errors
+    PolicyVersionDTO:
+      type: object
+      properties:
+        policyVersion:
+          type: string
+          example: 1.0.0
+        policyAvailability:
+          type: string
+          enum:
+            - Private
+            - Public
+          example: private
+      required:
+        - policyVersion
+        - policyAvailability
     PolicyValidationDTO:
       type: object
       properties:
@@ -17515,6 +17568,10 @@ components:
             - POLICIES_POLICY_REVIEW
             - POLICIES_POLICY_EXECUTE
             - POLICIES_POLICY_MANAGE
+            - POLICIES_EXTERNAL_POLICY_READ
+            - POLICIES_EXTERNAL_POLICY_CREATE
+            - POLICIES_EXTERNAL_POLICY_UPDATE
+            - POLICIES_EXTERNAL_POLICY_DELETE
             - SCHEMAS_SCHEMA_READ
             - SCHEMAS_SCHEMA_CREATE
             - SCHEMAS_SCHEMA_UPDATE
@@ -17637,6 +17694,7 @@ components:
             - RULE
             - LABEL
             - FORMULA
+            - EXTERNAL_POLICY
           example: POLICY
         action:
           type: string
@@ -17973,6 +18031,64 @@ components:
         parentId:
           type: string
           example: '000000000000000000000001'
+    ExternalPolicyDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '000000000000000000000001'
+        uuid:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        name:
+          type: string
+          example: Policy name
+        description:
+          type: string
+          example: Description
+        version:
+          type: string
+          example: 1.0.0
+        topicId:
+          type: string
+          example: 0.0.1
+        instanceTopicId:
+          type: string
+          example: 0.0.1
+        messageId:
+          type: string
+          example: '0000000000.000000001'
+        policyTag:
+          type: string
+          example: Tag
+        creator:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        status:
+          type: string
+          enum:
+            - NEW
+            - APPROVED
+            - REJECTED
+          example: NEW
+      required:
+        - id
+        - uuid
+        - name
+        - description
+        - version
+        - topicId
+        - instanceTopicId
+        - messageId
+        - policyTag
+        - creator
+        - owner
+        - status
     PolicyLabelDTO:
       type: object
       properties:
