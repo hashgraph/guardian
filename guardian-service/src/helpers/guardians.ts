@@ -110,6 +110,7 @@ export class GuardiansService extends NatsService {
             }),
             new Promise<T>((resolve, reject) => {
                 setTimeout(() => {
+                    this.responseCallbacksMap.delete(messageId);
                     reject(new MessageError('Block Timeout', 504));
                 }, awaitInterval)
             }),
