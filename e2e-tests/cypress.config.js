@@ -7,6 +7,7 @@ module.exports = defineConfig({
     defaultCommandTimeout: 10000,
     e2e: {
         experimentalRunAllSpecs: true,
+        experimentalSessionAndOrigin: true,
         reporter: 'cypress-multi-reporters',
         reporterOptions: {
             configFile: 'reporter-config.js',
@@ -18,7 +19,6 @@ module.exports = defineConfig({
             on('task', {
                 checkFile(partialName) {
                     const fs = require('fs');
-                    const path = require('path');
                     const files = fs.readdirSync(config.env.downloadFolder);
                     const matchingFiles = files.filter(file => file.includes(partialName));
                     return matchingFiles.length > 0;

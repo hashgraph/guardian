@@ -95,7 +95,6 @@ export class GuardiansService extends NatsService {
 
         return Promise.race([
             new Promise<T>(async (resolve, reject) => {
-                console.log('this.responseCallbacksMap.size1', this.responseCallbacksMap.size)
                 this.responseCallbacksMap.set(messageId, (body: T, error?: string, code?: number) => {
                     if (error) {
                         reject(new MessageError(error, code));

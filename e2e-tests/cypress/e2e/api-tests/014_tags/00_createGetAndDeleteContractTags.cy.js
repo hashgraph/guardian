@@ -21,10 +21,64 @@ context("Tags", { tags: ['tags', 'thirdPool', 'all'] }, () => {
                     type: "RETIRE"
                 }
             }).then((response) => {
-                contractId = response.body.at(0).id;    
+                contractId = response.body.at(0).id;
             })
         })
     })
+
+    it("Create new tag(contract) without auth token - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Tags,
+            body: {
+                name: tagName,
+                description: tagName,
+                entity: "Contract",
+                target: contractId,
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Create new tag(contract) with invalid auth token - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Tags,
+            body: {
+                name: tagName,
+                description: tagName,
+                entity: "Contract",
+                target: contractId,
+            },
+            headers: {
+                authorization: "Bearer wqe",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Create new tag(contract) with empty auth token - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Tags,
+            body: {
+                name: tagName,
+                description: tagName,
+                entity: "Contract",
+                target: contractId,
+            },
+            headers: {
+                authorization: "",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
 
     it("Create new tag(contract)", { tags: ['smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -52,12 +106,12 @@ context("Tags", { tags: ['tags', 'thirdPool', 'all'] }, () => {
             cy.request({
                 method: METHOD.POST,
                 url: API.ApiServer + API.Tags + "search",
-                headers: {
-                    authorization,
-                },
                 body: {
                     entity: "Contract",
                     targets: [contractId]
+                },
+                headers: {
+                    authorization,
                 },
                 timeout: 200000
             }).then((response) => {
@@ -66,6 +120,90 @@ context("Tags", { tags: ['tags', 'thirdPool', 'all'] }, () => {
             });
         })
     })
+
+    it("Get contract tag without auth token - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Tags + "search",
+            body: {
+                entity: "Contract",
+                targets: [contractId]
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Get contract tag with invalid auth token - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Tags + "search",
+            body: {
+                entity: "Contract",
+                targets: [contractId]
+            },
+            headers: {
+                authorization: "Bearer wqe",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Get contract tag with empty auth token - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Tags + "search",
+            body: {
+                entity: "Contract",
+                targets: [contractId]
+            },
+            headers: {
+                authorization: "",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Delete contract tag without auth token - Negative", () => {
+        cy.request({
+            method: 'DELETE',
+            url: API.ApiServer + API.Tags + tagId,
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Delete contract tag with invalid auth token - Negative", () => {
+        cy.request({
+            method: 'DELETE',
+            url: API.ApiServer + API.Tags + tagId,
+            headers: {
+                authorization: "Bearer wqe",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Delete contract tag with empty auth token - Negative", () => {
+        cy.request({
+            method: 'DELETE',
+            url: API.ApiServer + API.Tags + tagId,
+            headers: {
+                authorization: "",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
 
     it("Delete contract tag", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
