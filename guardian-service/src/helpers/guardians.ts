@@ -95,6 +95,7 @@ export class GuardiansService extends NatsService {
 
         return Promise.race([
             new Promise<T>(async (resolve, reject) => {
+                console.log('this.responseCallbacksMap.size1', this.responseCallbacksMap.size)
                 this.responseCallbacksMap.set(messageId, (body: T, error?: string, code?: number) => {
                     if (error) {
                         reject(new MessageError(error, code));
@@ -110,6 +111,7 @@ export class GuardiansService extends NatsService {
             }),
             new Promise<T>((resolve, reject) => {
                 setTimeout(() => {
+                    this.responseCallbacksMap.delete(messageId);
                     reject(new MessageError('Block Timeout', 504));
                 }, awaitInterval)
             }),
