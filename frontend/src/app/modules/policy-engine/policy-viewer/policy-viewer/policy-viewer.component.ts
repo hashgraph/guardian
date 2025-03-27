@@ -1,7 +1,7 @@
 import { HttpResponse } from '@angular/common/http';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IUser, PolicyType, UserPermissions } from '@guardian/interfaces';
+import { IUser, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
 import { forkJoin, interval, Subscription } from 'rxjs';
 import { audit } from 'rxjs/operators';
@@ -74,8 +74,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         return (
             this.policyInfo &&
             (
-                this.policyInfo.status === PolicyType.DRY_RUN ||
-                this.policyInfo.status === PolicyType.DEMO
+                this.policyInfo.status === PolicyStatus.DRY_RUN ||
+                this.policyInfo.status === PolicyStatus.DEMO
             )
         );
     }
@@ -201,8 +201,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.userRole = this.policyInfo.userRole;
                 this.userGroup = this.policyInfo.userGroup?.groupLabel || this.policyInfo.userGroup?.uuid;
 
-                if (this.policyInfo?.status === PolicyType.DRY_RUN
-                    || this.policyInfo?.status === PolicyType.DEMO
+                if (this.policyInfo?.status === PolicyStatus.DRY_RUN
+                    || this.policyInfo?.status === PolicyStatus.DEMO
                 ) {
                     this.loadDryRunOptions();
                 } else {

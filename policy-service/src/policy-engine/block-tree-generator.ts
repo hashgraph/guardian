@@ -1,5 +1,5 @@
-import { DataBaseHelper, DatabaseServer, MessageError, MessageResponse, NatsService, PinoLogger, Policy, Singleton, Users } from '@guardian/common';
-import { GenerateUUIDv4, IUser, PolicyEvents, PolicyType } from '@guardian/interfaces';
+import { DataBaseHelper, MessageError, MessageResponse, NatsService, PinoLogger, Policy, Singleton, Users } from '@guardian/common';
+import { GenerateUUIDv4, IUser, PolicyAvailability, PolicyEvents, PolicyStatus } from '@guardian/interfaces';
 import { headers } from 'nats';
 import { Inject } from '../helpers/decorators/inject.js';
 import { PolicyValidator } from '../policy-engine/block-validators/index.js';
@@ -339,12 +339,15 @@ export class BlockTreeGenerator extends NatsService {
      */
     async initPolicyRestore(policyId: string, policy: Policy): Promise<void> {
         try {
-            if (policy.status === PolicyType.PUBLISH && policy.diffTopicId) {
+            if (
+                policy.status === PolicyStatus.PUBLISH &&
+                policy.availability === PolicyAvailability.PUBLIC
+            ) {
                 const service = new PolicyBackupService(policyId, policy);
                 await service.init();
                 PolicyComponentsUtils.RegisterBackup(policyId, service);
             }
-            if (policy.status === PolicyType.DEMO && policy.diffTopicId) {
+            if (policy.status === PolicyStatus.VIEW) {
                 const service = new PolicyRestoreService(policyId, policy);
                 await service.init();
                 PolicyComponentsUtils.RegisterRestore(policyId, service);

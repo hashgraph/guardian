@@ -1,6 +1,6 @@
 import { ApiResponse } from './helpers/api-response.js';
 import { BinaryMessageResponse, DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyStatistic, PolicyStatisticImportExport, StatisticAssessmentMessage, StatisticMessage, Users } from '@guardian/common';
-import { EntityStatus, IOwner, MessageAPI, PolicyType, Schema, SchemaEntity } from '@guardian/interfaces';
+import { EntityStatus, IOwner, MessageAPI, PolicyStatus, Schema, SchemaEntity } from '@guardian/interfaces';
 import { publishSchema } from './helpers/index.js';
 import { findRelationships, generateSchema, generateVcDocument, getOrCreateTopic, publishConfig, uniqueDocuments } from './helpers/policy-statistics-helpers.js';
 
@@ -29,7 +29,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
 
                 const policyId = definition.policyId;
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                if (!policy || policy.status !== PolicyStatus.PUBLISH) {
                     return new MessageError('Item does not exist.');
                 }
 
@@ -160,7 +160,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
 
                 const policyId = item.policyId;
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                if (!policy || !policy.topicId || policy.status !== PolicyType.PUBLISH) {
+                if (!policy || !policy.topicId || policy.status !== PolicyStatus.PUBLISH) {
                     return new MessageError('Item does not exist.');
                 }
 
@@ -659,7 +659,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                if (!policy || policy.status !== PolicyStatus.PUBLISH) {
                     return new MessageError('Item does not exist.');
                 }
 

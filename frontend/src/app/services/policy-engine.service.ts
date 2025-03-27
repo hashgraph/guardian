@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { MigrationConfig, PolicyToolMetadata } from '@guardian/interfaces';
+import { MigrationConfig, PolicyAvailability, PolicyToolMetadata } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
 import { headersV2 } from '../constants';
 import { API_BASE_URL } from './api';
@@ -46,8 +46,11 @@ export class PolicyEngineService {
         return this.http.put<any>(`${this.url}/${policyId}`, policy);
     }
 
-    public publish(policyId: string, policyVersion: string): Observable<any> {
-        return this.http.put<any>(`${this.url}/${policyId}/publish`, { policyVersion });
+    public publish(
+        policyId: string, 
+        options: { policyVersion: string, policyAvailability: PolicyAvailability }
+    ): Observable<any> {
+        return this.http.put<any>(`${this.url}/${policyId}/publish`, options);
     }
 
     public dryRun(policyId: string): Observable<any> {
@@ -62,8 +65,11 @@ export class PolicyEngineService {
         return this.http.put<any>(`${this.url}/${policyId}/draft`, null);
     }
 
-    public pushPublish(policyId: string, policyVersion: string): Observable<{ taskId: string, expectation: number }> {
-        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${policyId}/publish`, { policyVersion });
+    public pushPublish(
+        policyId: string, 
+        options: { policyVersion: string, policyAvailability: PolicyAvailability }
+    ): Observable<{ taskId: string, expectation: number }> {
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${policyId}/publish`, options);
     }
 
     public pushDelete(policyId: string): Observable<{ taskId: string, expectation: number }> {

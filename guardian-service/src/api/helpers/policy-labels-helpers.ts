@@ -18,7 +18,7 @@ import {
     IPolicyLabelConfig,
     IStepDocument,
     NavItemType,
-    PolicyType,
+    PolicyStatus,
     Schema,
     SchemaCategory,
     SchemaHelper,
@@ -42,7 +42,7 @@ export async function getOrCreateTopic(item: PolicyLabel): Promise<TopicConfig> 
     }
 
     const policy = await DatabaseServer.getPolicyById(item.policyId);
-    if (!policy || policy.status !== PolicyType.PUBLISH) {
+    if (!policy || policy.status !== PolicyStatus.PUBLISH) {
         throw Error('Item does not exist.');
     }
 

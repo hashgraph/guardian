@@ -33,7 +33,7 @@ import {
     Workers,
     entities
 } from '@guardian/common';
-import { ApplicationStates, PolicyEvents, PolicyType, WorkerTaskType } from '@guardian/interfaces';
+import { ApplicationStates, PolicyEvents, PolicyStatus, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
 import { ipfsAPI } from './api/ipfs.service.js';
 import { artifactAPI } from './api/artifact.service.js';
@@ -69,6 +69,7 @@ import { setDefaultSchema } from './api/helpers/default-schemas.js';
 import { policyLabelsAPI } from './api/policy-labels.service.js';
 import { initMathjs } from './utils/formula.js';
 import { formulasAPI } from './api/formulas.service.js';
+import { externalPoliciesAPI } from './api/external-policies.service.js';
 
 export const obj = {};
 
@@ -176,6 +177,7 @@ Promise.all([
         await schemaRulesAPI(logger);
         await policyLabelsAPI(logger);
         await formulasAPI(logger);
+        await externalPoliciesAPI(logger);
     } catch (error) {
         console.error(error.message);
         process.exit(0);
@@ -367,10 +369,10 @@ Promise.all([
             const date = new Date();
             const policiesToDiscontunie = await dataBaseServer.find(Policy, {
                 discontinuedDate: { $lte: date },
-                status: PolicyType.PUBLISH
+                status: PolicyStatus.PUBLISH
             });
             await dataBaseServer.update(Policy, null, policiesToDiscontunie.map(policy => {
-                policy.status = PolicyType.DISCONTINUED;
+                policy.status = PolicyStatus.DISCONTINUED;
                 return policy;
             }));
             await Promise.all(policiesToDiscontunie.map(policy =>

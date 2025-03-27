@@ -1,4 +1,4 @@
-import { ExportMessageDTO, PoliciesValidationDTO, PolicyDTO, PolicyPreviewDTO, PolicyValidationDTO } from '#middlewares';
+import { ExportMessageDTO, PoliciesValidationDTO, PolicyDTO, PolicyPreviewDTO, PolicyValidationDTO, PolicyVersionDTO } from '#middlewares';
 import { IAuthUser, NatsService } from '@guardian/common';
 import { DocumentType, GenerateUUIDv4, IOwner, MigrationConfig, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
 import { Singleton } from '../helpers/decorators/singleton.js';
@@ -165,11 +165,11 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      */
     public async publishPolicy(
-        model: any,
+        options: PolicyVersionDTO,
         owner: IOwner,
         policyId: string
     ): Promise<PoliciesValidationDTO> {
-        return await this.sendMessage(PolicyEngineEvents.PUBLISH_POLICIES, { model, owner, policyId });
+        return await this.sendMessage(PolicyEngineEvents.PUBLISH_POLICIES, { options, owner, policyId });
     }
 
     /**
@@ -180,12 +180,12 @@ export class PolicyEngine extends NatsService {
      * @param task
      */
     public async publishPolicyAsync(
-        model: any,
+        options: PolicyVersionDTO,
         owner: IOwner,
         policyId: string,
         task: NewTask
     ): Promise<NewTask> {
-        return await this.sendMessage(PolicyEngineEvents.PUBLISH_POLICIES_ASYNC, { model, owner, policyId, task });
+        return await this.sendMessage(PolicyEngineEvents.PUBLISH_POLICIES_ASYNC, { options, owner, policyId, task });
     }
 
     /**

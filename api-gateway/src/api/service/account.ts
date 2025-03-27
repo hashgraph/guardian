@@ -1,5 +1,5 @@
 import { IAuthUser, NotificationHelper, PinoLogger } from '@guardian/common';
-import { Permissions, PolicyType, SchemaEntity, UserRole } from '@guardian/interfaces';
+import { Permissions, PolicyStatus, SchemaEntity, UserRole } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -321,7 +321,7 @@ export class AccountApi {
                     const { policies } = await engineService.getPolicies(
                         {
                             filters: {
-                                status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] }
+                                status: { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] }
                             },
                             userDid: did
                         },

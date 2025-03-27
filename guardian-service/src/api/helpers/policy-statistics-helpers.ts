@@ -1,5 +1,5 @@
 import { DatabaseServer, PolicyStatistic, SchemaConverterUtils, TopicConfig, TopicHelper, Users, VcDocument, VcHelper } from '@guardian/common';
-import { GenerateUUIDv4, IOwner, IStatisticConfig, PolicyType, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IOwner, IStatisticConfig, PolicyStatus, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
 import { generateSchemaContext } from './schema-publish-helper.js';
 
 export async function addPrevRelationships(doc: VcDocument, relationships: Set<string>) {
@@ -210,7 +210,7 @@ export async function getOrCreateTopic(item: PolicyStatistic): Promise<TopicConf
     }
 
     const policy = await DatabaseServer.getPolicyById(item.policyId);
-    if (!policy || policy.status !== PolicyType.PUBLISH) {
+    if (!policy || policy.status !== PolicyStatus.PUBLISH) {
         throw Error('Item does not exist.');
     }
 

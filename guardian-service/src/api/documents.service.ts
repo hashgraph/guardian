@@ -1,4 +1,4 @@
-import { IDidObject, IVCDocument, MessageAPI, PolicyType, } from '@guardian/interfaces';
+import { IDidObject, IVCDocument, MessageAPI, PolicyStatus, } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { DatabaseServer, DidDocument, MessageError, MessageResponse, Policy, VcDocument, VpDocument } from '@guardian/common';
 import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
@@ -79,7 +79,7 @@ export async function documentsAPI(
             if (filters?.policyOwner) {
                 const policies = await dataBaseServer.find(Policy, {
                     owner: filters.policyOwner,
-                    status: PolicyType.PUBLISH
+                    status: PolicyStatus.PUBLISH
                 }, {
                     fields: ['id', 'owner']
                 });

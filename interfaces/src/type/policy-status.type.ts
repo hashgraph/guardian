@@ -1,11 +1,12 @@
 /**
- * Policy type
+ * Policy status
  */
-export enum PolicyType {
+export enum PolicyStatus {
     DRY_RUN = 'DRY-RUN',
     DRAFT = 'DRAFT',
     PUBLISH_ERROR = 'PUBLISH_ERROR',
     PUBLISH = 'PUBLISH',
     DISCONTINUED = 'DISCONTINUED',
-    DEMO = 'DEMO'
+    DEMO = 'DEMO',
+    VIEW = 'VIEW'
 }

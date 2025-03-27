@@ -53,7 +53,8 @@ import {
     SchemaRuleOptionsDTO,
     FormulasOptionsDTO,
     FormulasDataDTO,
-    FormulaRelationshipsDTO
+    FormulaRelationshipsDTO,
+    ExternalPolicyDTO
 } from '#middlewares';
 
 /**
@@ -3611,4 +3612,24 @@ export class Guardians extends NatsService {
     public async publishFormula(formulaId: string, owner: IOwner): Promise<FormulaDTO> {
         return await this.sendMessage(MessageAPI.PUBLISH_FORMULA, { formulaId, owner });
     }
+
+
+
+
+
+
+
+    
+    /**
+     * Create external policy
+     *
+     * @param externalPolicy
+     * @param owner
+     *
+     * @returns policy
+     */
+    public async createExternalPolicy(externalPolicy: ExternalPolicyDTO, owner: IOwner): Promise<ExternalPolicyDTO> {
+        return await this.sendMessage(MessageAPI.CREATE_EXTERNAL_POLICY, { externalPolicy, owner });
+    }
+
 }

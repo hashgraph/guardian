@@ -17,6 +17,14 @@ export class PublishPolicyDialog {
         Validators.required,
         Validators.pattern(/^[\d]+([\\.][\d]+){0,2}$/),
     ]);
+    public types = [{
+        label: 'Private',
+        value: 'private'
+    }, {
+        label: 'Public',
+        value: 'public'
+    }];
+    public currentType = 'private';
 
     constructor(
         public ref: DynamicDialogRef,
@@ -35,7 +43,10 @@ export class PublishPolicyDialog {
 
     public onSubmit(): void {
         if (!this.isPublishDisabled) {
-            this.ref.close(this.versionControl.value);
+            this.ref.close({
+                policyVersion: this.versionControl.value,
+                policyAvailability: this.currentType
+            });
         }
     }
 

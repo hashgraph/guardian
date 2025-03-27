@@ -19,6 +19,23 @@
             </div>
         </div>
         <div>
+            <div class="guardian-input-container">
+                <label class="form-label" htmlFor="version">* Availability</label>
+                <p-dropdown
+                    formControlName="policy"
+                    [(ngModel)]="currentType"
+                    [options]="types"
+                    [showClear]="false"
+                    optionLabel="label" 
+                    optionValue="value"
+                    class="guardian-dropdown"
+                    appendTo="body"
+                    placeholder="Not selected"
+                    panelStyleClass="guardian-dropdown-panel">
+                </p-dropdown>
+            </div>
+        </div>
+        <div>
             <div class="form-input-container">
                 <label class="form-label" htmlFor="version">Policy Tests</label>
                 <ng-container *ngIf="policy?.tests?.length; else elseTemplate">

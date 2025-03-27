@@ -1,7 +1,7 @@
 import { Auth, AuthUser } from '#auth';
 import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache } from '#helpers';
-import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyTestDTO, PolicyValidationDTO, RunningDetailsDTO, ServiceUnavailableErrorDTO, TaskDTO } from '#middlewares';
+import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyTestDTO, PolicyValidationDTO, PolicyVersionDTO, RunningDetailsDTO, ServiceUnavailableErrorDTO, TaskDTO } from '#middlewares';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyHelper, TaskAction, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
@@ -588,6 +588,10 @@ export class PolicyApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiBody({
+        description: 'Options.',
+        type: PolicyVersionDTO,
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PoliciesValidationDTO
@@ -601,7 +605,7 @@ export class PolicyApi {
     async publishPolicy(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: PolicyDTO,
+        @Body() body: PolicyVersionDTO,
         @Req() req
     ): Promise<PoliciesValidationDTO> {
         try {
@@ -638,8 +642,8 @@ export class PolicyApi {
         example: Examples.DB_ID
     })
     @ApiBody({
-        description: 'Policy configuration.',
-        type: PolicyDTO,
+        description: 'Options.',
+        type: PolicyVersionDTO,
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -654,7 +658,7 @@ export class PolicyApi {
     async publishPolicyAsync(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: PolicyDTO,
+        @Body() body: PolicyVersionDTO,
         @Req() req
     ): Promise<TaskDTO> {
         const taskManager = new TaskManager();

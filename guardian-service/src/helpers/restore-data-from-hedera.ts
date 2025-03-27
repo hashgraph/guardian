@@ -39,7 +39,7 @@ import {
     DidDocumentStatus,
     EntityOwner,
     ISchema,
-    PolicyType,
+    PolicyStatus,
     SchemaCategory,
     SchemaEntity,
     SchemaStatus,
@@ -414,7 +414,7 @@ export class RestoreDataFromHedera {
                 policyObject.instanceTopicId = policy.instanceTopicId;
                 policyObject.synchronizationTopicId =
                     policy.synchronizationTopicId;
-                policyObject.status = PolicyType.PUBLISH;
+                policyObject.status = PolicyStatus.PUBLISH;
                 policyObject.topicId = policyTopicId;
 
                 if (!policyObject.instanceTopicId) {

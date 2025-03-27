@@ -1,4 +1,4 @@
-import { ContractType } from '@guardian/interfaces';
+import { ContractType, MultiPolicyType } from '@guardian/interfaces';
 import { MessageStatus } from './message.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
@@ -353,7 +353,7 @@ export interface SynchronizationMessageBody extends MessageBody {
     /**
      * Policy Type
      */
-    policyType?: string,
+    policyType?: MultiPolicyType,
     /**
      * Message Id
      */

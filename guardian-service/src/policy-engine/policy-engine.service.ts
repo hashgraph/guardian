@@ -25,7 +25,7 @@ import {
     VcHelper,
     XlsxToJson
 } from '@guardian/common';
-import { DocumentCategoryType, DocumentType, EntityOwner, ExternalMessageEvents, GenerateUUIDv4, IOwner, PolicyEngineEvents, PolicyEvents, PolicyHelper, PolicyTestStatus, PolicyType, Schema, SchemaField, TopicType } from '@guardian/interfaces';
+import { DocumentCategoryType, DocumentType, EntityOwner, ExternalMessageEvents, GenerateUUIDv4, IOwner, PolicyEngineEvents, PolicyEvents, PolicyHelper, PolicyTestStatus, PolicyStatus, Schema, SchemaField, TopicType, PolicyAvailability } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { NatsConnection } from 'nats';
 import { HashComparator } from '../analytics/index.js';
@@ -552,18 +552,18 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA_CUSTOM,
-                                           async (msg: any) => {
-                                               try {
-                                                   new GuardiansService().sendPolicyMessage(PolicyEvents.MRV_DATA_CUSTOM, msg.policyId, {
-                                                       policyId: msg.policyId,
-                                                       data: msg
-                                                   });
-                                                   return new MessageResponse(true);
-                                               } catch (error) {
-                                                   await logger.error(error, ['GUARDIAN_SERVICE']);
-                                                   return new MessageError(error, error.code);
-                                               }
-                                           });
+            async (msg: any) => {
+                try {
+                    new GuardiansService().sendPolicyMessage(PolicyEvents.MRV_DATA_CUSTOM, msg.policyId, {
+                        policyId: msg.policyId,
+                        data: msg
+                    });
+                    return new MessageResponse(true);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error, error.code);
+                }
+            });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_TAG_BLOCK_MAP,
             async (msg: { policyId: string, owner: IOwner }) => {
@@ -581,9 +581,9 @@ export class PolicyEngineService {
                         id: policyId,
                         status: {
                             $in: [
-                                PolicyType.DRY_RUN,
-                                PolicyType.PUBLISH,
-                                PolicyType.DISCONTINUED,
+                                PolicyStatus.DRY_RUN,
+                                PolicyStatus.PUBLISH,
+                                PolicyStatus.DISCONTINUED,
                             ],
                         },
                     });
@@ -912,7 +912,7 @@ export class PolicyEngineService {
                 RunFunctionAsync(async () => {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'delete');
-                    if (policy.status === PolicyType.DEMO) {
+                    if (policy.status === PolicyStatus.DEMO) {
                         notifier.result(await this.policyEngine.deleteDemoPolicy(policy, owner, notifier, logger));
                     } else {
                         notifier.result(await this.policyEngine.deletePolicy(policy, owner, notifier, logger));
@@ -930,7 +930,7 @@ export class PolicyEngineService {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'update');
 
-                    if (policy.status !== PolicyType.DRAFT) {
+                    if (policy.status !== PolicyStatus.DRAFT) {
                         throw new Error('Policy is not in draft status.');
                     }
                     let result = await DatabaseServer.updatePolicyConfig(policyId, model);
@@ -943,13 +943,19 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.PUBLISH_POLICIES,
-            async (msg: { policyId: string, model: any, owner: IOwner }): Promise<IMessageResponse<any>> => {
+            async (msg: {
+                policyId: string,
+                options: {
+                    policyVersion: string,
+                    policyAvailability: PolicyAvailability
+                }, owner: IOwner
+            }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { model, policyId, owner } = msg;
-                    if (!model || !model.policyVersion) {
+                    const { options, policyId, owner } = msg;
+                    if (!options || !options.policyVersion) {
                         throw new Error('Policy version in body is empty');
                     }
-                    const result = await this.policyEngine.validateAndPublishPolicy(model, policyId, owner, emptyNotifier(), logger);
+                    const result = await this.policyEngine.validateAndPublishPolicy(options, policyId, owner, emptyNotifier(), logger);
                     return new MessageResponse({
                         isValid: result.isValid,
                         errors: result.errors,
@@ -961,15 +967,23 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.PUBLISH_POLICIES_ASYNC,
-            async (msg: { policyId: string, model: any, owner: IOwner, task: any }): Promise<IMessageResponse<any>> => {
-                const { model, policyId, owner, task } = msg;
+            async (msg: {
+                policyId: string,
+                options: {
+                    policyVersion: string,
+                    policyAvailability: PolicyAvailability
+                },
+                owner: IOwner,
+                task: any
+            }): Promise<IMessageResponse<any>> => {
+                const { options, policyId, owner, task } = msg;
                 const notifier = await initNotifier(task);
 
                 RunFunctionAsync(async () => {
-                    if (!model || !model.policyVersion) {
+                    if (!options || !options.policyVersion) {
                         throw new Error('Policy version in body is empty');
                     }
-                    const result = await this.policyEngine.validateAndPublishPolicy(model, policyId, owner, notifier, logger);
+                    const result = await this.policyEngine.validateAndPublishPolicy(options, policyId, owner, notifier, logger);
                     notifier.result(result);
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -990,19 +1004,19 @@ export class PolicyEngineService {
                     if (!model.config) {
                         throw new Error('The policy is empty');
                     }
-                    if (model.status === PolicyType.PUBLISH) {
+                    if (model.status === PolicyStatus.PUBLISH) {
                         throw new Error(`Policy published`);
                     }
-                    if (model.status === PolicyType.DISCONTINUED) {
+                    if (model.status === PolicyStatus.DISCONTINUED) {
                         throw new Error(`Policy is discontinued`);
                     }
-                    if (model.status === PolicyType.DRY_RUN) {
+                    if (model.status === PolicyStatus.DRY_RUN) {
                         throw new Error(`Policy already in Dry Run`);
                     }
-                    if (model.status === PolicyType.PUBLISH_ERROR) {
+                    if (model.status === PolicyStatus.PUBLISH_ERROR) {
                         throw new Error(`Failed policy cannot be started in dry run mode`);
                     }
-                    if (model.status === PolicyType.DEMO) {
+                    if (model.status === PolicyStatus.DEMO) {
                         throw new Error(`Policy imported in demo mode`);
                     }
 
@@ -1031,7 +1045,7 @@ export class PolicyEngineService {
                     const model = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(model, owner, 'discontinue');
 
-                    if (model.status !== PolicyType.PUBLISH) {
+                    if (model.status !== PolicyStatus.PUBLISH) {
                         throw new Error(`Policy is not published`);
                     }
 
@@ -1048,7 +1062,7 @@ export class PolicyEngineService {
                         model.discontinuedDate = _date;
                         message = new PolicyMessage(MessageType.Policy, MessageAction.DeferredDiscontinuePolicy);
                     } else {
-                        model.status = PolicyType.DISCONTINUED;
+                        model.status = PolicyStatus.DISCONTINUED;
                         model.discontinuedDate = new Date();
                         message = new PolicyMessage(MessageType.Policy, MessageAction.DiscontinuePolicy);
                     }
@@ -1079,20 +1093,20 @@ export class PolicyEngineService {
                     if (!model.config) {
                         throw new Error('The policy is empty');
                     }
-                    if (model.status === PolicyType.PUBLISH) {
+                    if (model.status === PolicyStatus.PUBLISH) {
                         throw new Error(`Policy published`);
                     }
-                    if (model.status === PolicyType.DISCONTINUED) {
+                    if (model.status === PolicyStatus.DISCONTINUED) {
                         throw new Error(`Policy is discontinued`);
                     }
-                    if (model.status === PolicyType.DRAFT) {
+                    if (model.status === PolicyStatus.DRAFT) {
                         throw new Error(`Policy already in draft`);
                     }
-                    if (model.status === PolicyType.DEMO) {
+                    if (model.status === PolicyStatus.DEMO) {
                         throw new Error(`Policy imported in demo mode`);
                     }
 
-                    model.status = PolicyType.DRAFT;
+                    model.status = PolicyStatus.DRAFT;
                     model.version = '';
 
                     let retVal = await DatabaseServer.updatePolicy(model);
@@ -1738,30 +1752,30 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_SAVEPOINT,
-                                           async (msg: {policyId: string, owner: IOwner}) => {
-                                               try {
-                                                   const {policyId, owner} = msg;
-                                                   const policy = await DatabaseServer.getPolicyById(policyId);
-                                                   await this.policyEngine.accessPolicy(policy, owner, 'read');
-                                                   if (!policy.config) {
-                                                       throw new Error('The policy is empty');
-                                                   }
-                                                   if (!PolicyHelper.isDryRunMode(policy)) {
-                                                       throw new Error(`Policy is not in Dry Run`);
-                                                   }
+            async (msg: { policyId: string, owner: IOwner }) => {
+                try {
+                    const { policyId, owner } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+                    if (!policy.config) {
+                        throw new Error('The policy is empty');
+                    }
+                    if (!PolicyHelper.isDryRunMode(policy)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
 
-                                                   const state = await DatabaseServer.getSavepointSate(policyId);
-                                                   // const users = await DatabaseServer.getVirtualUsers(policyId);
-                                                   // await DatabaseServer.setVirtualUser(policyId, users[0]?.did);
-                                                   // const filters = await this.policyEngine.addAccessFilters({}, owner);
-                                                   // const policies = (await DatabaseServer.getListOfPolicies(filters));
-                                                   console.log('Restore savepoint');
-                                                   return new MessageResponse({state});
-                                               } catch (error) {
-                                                   await logger.error(error, ['GUARDIAN_SERVICE']);
-                                                   return new MessageError(error);
-                                               }
-                                           });
+                    const state = await DatabaseServer.getSavepointSate(policyId);
+                    // const users = await DatabaseServer.getVirtualUsers(policyId);
+                    // await DatabaseServer.setVirtualUser(policyId, users[0]?.did);
+                    // const filters = await this.policyEngine.addAccessFilters({}, owner);
+                    // const policies = (await DatabaseServer.getListOfPolicies(filters));
+                    console.log('Restore savepoint');
+                    return new MessageResponse({ state });
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_VIRTUAL_DOCUMENTS,
             async (msg: {
@@ -1861,8 +1875,8 @@ export class PolicyEngineService {
                         id: policyId,
                         status: {
                             $in: [
-                                PolicyType.DRY_RUN,
-                                PolicyType.DEMO
+                                PolicyStatus.DRY_RUN,
+                                PolicyStatus.DEMO
                             ]
                         }
                     });
@@ -1889,8 +1903,8 @@ export class PolicyEngineService {
                         id: policyId,
                         status: {
                             $in: [
-                                PolicyType.DRY_RUN,
-                                PolicyType.DEMO
+                                PolicyStatus.DRY_RUN,
+                                PolicyStatus.DEMO
                             ]
                         }
                     });
@@ -1913,10 +1927,10 @@ export class PolicyEngineService {
                         id: policyId,
                         status: {
                             $in: [
-                                PolicyType.DRY_RUN,
-                                PolicyType.PUBLISH,
-                                PolicyType.DISCONTINUED,
-                                PolicyType.DEMO
+                                PolicyStatus.DRY_RUN,
+                                PolicyStatus.PUBLISH,
+                                PolicyStatus.DISCONTINUED,
+                                PolicyStatus.DEMO
                             ]
                         },
                     });

@@ -1,4 +1,4 @@
-import { BlockType, GenerateUUIDv4, GroupRelationshipType, PolicyType, Schema, Token, } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, GroupRelationshipType, PolicyStatus, Schema, Token, } from '@guardian/interfaces';
 import { PolicyRole } from './policy-role.model';
 import { PolicyGroup } from './policy-group.model';
 import { PolicyToken } from './policy-token.model';
@@ -101,11 +101,11 @@ export class PolicyTemplate {
         this.buildPolicy(policy);
         this.buildBlock(policy.config);
 
-        this.isDraft = this.status === PolicyType.DRAFT;
-        this.isPublished = this.status === PolicyType.PUBLISH || this.status === PolicyType.DISCONTINUED;
-        this.isDryRun = this.status === PolicyType.DRY_RUN;
-        this.isPublishError = this.status === PolicyType.PUBLISH_ERROR;
-        this.isDemo = this.status === PolicyType.DEMO;
+        this.isDraft = this.status === PolicyStatus.DRAFT;
+        this.isPublished = this.status === PolicyStatus.PUBLISH || this.status === PolicyStatus.DISCONTINUED;
+        this.isDryRun = this.status === PolicyStatus.DRY_RUN;
+        this.isPublishError = this.status === PolicyStatus.PUBLISH_ERROR;
+        this.isDemo = this.status === PolicyStatus.DEMO;
         this.readonly = this.isPublished || this.isDryRun || this.isPublishError || this.isDemo;
         this.isRun = this.isDryRun || this.isPublished || this.isDemo
     }

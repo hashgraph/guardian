@@ -1,7 +1,7 @@
 import { PolicyBlockDefaultOptions } from '../../helpers/policy-block-default-options.js';
 import { BlockCacheType, EventConfig } from '../../interfaces/index.js';
 import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '../../interfaces/block-options.js';
-import { PolicyHelper, PolicyRole, PolicyType } from '@guardian/interfaces';
+import { PolicyHelper, PolicyRole, PolicyStatus } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '../../policy-engine.interface.js';
 import { PolicyComponentsUtils } from '../../policy-components-utils.js';
 import { IPolicyEvent, PolicyLink } from '../../interfaces/policy-event.js';
@@ -357,7 +357,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param {IPolicyEvent} event
              */
             public async runAction(event: IPolicyEvent<any>): Promise<any> {
-                if (this.policyInstance.status === PolicyType.DISCONTINUED) {
+                if (this.policyInstance.status === PolicyStatus.DISCONTINUED) {
                     return;
                 }
                 const parent = this.parent as any;

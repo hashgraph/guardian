@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, IStatistic, PolicyType, UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, IStatistic, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
@@ -155,7 +155,7 @@ export class StatisticDefinitionsComponent implements OnInit {
             this.user = new UserPermissions(profile);
             this.owner = this.user.did;
             this.allPolicies = policies || [];
-            this.allPolicies = this.allPolicies.filter((p) => p.status === PolicyType.PUBLISH);
+            this.allPolicies = this.allPolicies.filter((p) => p.status === PolicyStatus.PUBLISH);
             this.allPolicies.unshift({
                 name: 'All',
                 instanceTopicId: null

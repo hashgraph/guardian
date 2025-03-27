@@ -35,7 +35,7 @@ import {
     getVCField
 } from '@guardian/common';
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { IOwner, MessageAPI, PolicyType, UserRole, WorkerTaskType } from '@guardian/interfaces';
+import { IOwner, MessageAPI, PolicyStatus, UserRole, WorkerTaskType } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import process from 'process';
@@ -695,7 +695,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const policyModels: PolicySearchModel[] = [];
-                const policies = await DatabaseServer.getPolicies({ status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] } });
+                const policies = await DatabaseServer.getPolicies({ status: { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] } });
                 for (const row of policies) {
                     try {
                         const model = new PolicySearchModel(row);

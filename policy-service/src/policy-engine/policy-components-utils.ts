@@ -8,7 +8,7 @@ import {
     PolicyOutputEventType,
     PolicyTagMap
 } from './interfaces/index.js';
-import { BlockType, GenerateUUIDv4, ModuleStatus, PolicyEvents, PolicyHelper, PolicyType } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, ModuleStatus, PolicyEvents, PolicyHelper, PolicyStatus } from '@guardian/interfaces';
 import {
     AnyBlockType,
     IPolicyBlock,
@@ -1162,7 +1162,7 @@ export class PolicyComponentsUtils {
             }
 
             result.userGroups = groups;
-            if (policy.status === PolicyType.PUBLISH || policy.status === PolicyType.DISCONTINUED) {
+            if (policy.status === PolicyStatus.PUBLISH || policy.status === PolicyStatus.DISCONTINUED) {
                 const multiPolicy = await DatabaseServer.getMultiPolicy(
                     policy.instanceTopicId,
                     did

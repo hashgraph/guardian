@@ -1,4 +1,4 @@
-import { BlockType, ConfigType, EntityStatus, GenerateUUIDv4, IFormula, IOwner, IRootConfig, ModuleStatus, PolicyTestStatus, PolicyToolMetadata, PolicyType, SchemaCategory, SchemaEntity, TagType, TopicType } from '@guardian/interfaces';
+import { BlockType, ConfigType, EntityStatus, GenerateUUIDv4, IFormula, IOwner, IRootConfig, ModuleStatus, PolicyTestStatus, PolicyToolMetadata, PolicyStatus, SchemaCategory, SchemaEntity, TagType, TopicType } from '@guardian/interfaces';
 import { DatabaseServer, IPolicyComponents, PinoLogger, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, PolicyTool, RecordImportExport, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Tag, Token, Topic, TopicConfig, TopicHelper, Users, Formula, FormulaImportExport } from '@guardian/common';
 import { ImportArtifactResult, ImportTokenMap, ImportTokenResult, ImportToolMap, ImportToolResults, ImportSchemaMap, ImportSchemaResult, importArtifactsByFiles, importSubTools, importTokensByFiles, publishSystemSchemas, importTag, SchemaImportExportHelper } from '../../api/helpers/index.js';
 import { PolicyConverterUtils } from '../policy-converter-utils.js';
@@ -128,7 +128,7 @@ export class PolicyImport {
         policy.uuid = GenerateUUIDv4();
         policy.creator = user.creator;
         policy.owner = user.owner;
-        policy.status = this.demo ? PolicyType.DEMO : PolicyType.DRAFT;
+        policy.status = this.demo ? PolicyStatus.DEMO : PolicyStatus.DRAFT;
         policy.instanceTopicId = null;
         policy.synchronizationTopicId = null;
         policy.name = additionalPolicyConfig?.name || policy.name;

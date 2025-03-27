@@ -4,6 +4,7 @@ import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { SynchronizationMessageBody } from './message-body.interface.js';
 import { MultiPolicy } from '../../entity/index.js';
+import { MultiPolicyType } from '@guardian/interfaces';
 
 /**
  * Synchronization message
@@ -24,7 +25,7 @@ export class SynchronizationMessage extends Message {
     /**
      * Policy Type
      */
-    public policyType: string;
+    public policyType: MultiPolicyType;
     /**
      * Message Id
      */

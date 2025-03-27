@@ -8,7 +8,7 @@ import { IPolicyEvent } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { PolicyType } from '@guardian/interfaces';
+import { PolicyStatus } from '@guardian/interfaces';
 
 /**
  * Timer block
@@ -71,7 +71,7 @@ export class TimerBlock {
      */
     afterInit() {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        if (ref.policyInstance.status !== PolicyType.DISCONTINUED) {
+        if (ref.policyInstance.status !== PolicyStatus.DISCONTINUED) {
             this.startCron(ref);
         }
     }

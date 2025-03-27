@@ -1,6 +1,6 @@
 import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsBoolean, IsNumber, IsObject, IsOptional, IsString } from 'class-validator';
-import { PolicyType, PolicyTestStatus } from '@guardian/interfaces';
+import { PolicyAvailability, PolicyStatus, PolicyTestStatus } from '@guardian/interfaces';
 import { Examples } from '../examples.js';
 import { ValidationErrorsDTO } from './blocks.js';
 
@@ -157,12 +157,12 @@ export class PolicyDTO {
 
     @ApiProperty({
         type: 'string',
-        enum: PolicyType,
-        example: PolicyType.DRAFT
+        enum: PolicyStatus,
+        example: PolicyStatus.DRAFT
     })
     @IsOptional()
     @IsString()
-    status?: PolicyType;
+    status?: PolicyStatus;
 
     @ApiProperty({
         type: 'string',
@@ -481,4 +481,23 @@ export class PolicyCategoryDTO {
     })
     @IsString()
     type: string;
+}
+
+export class PolicyVersionDTO {
+    @ApiProperty({
+        type: 'string',
+        required: true,
+        example: '1.0.0'
+    })
+    @IsString()
+    policyVersion: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: true,
+        enum: PolicyAvailability,
+        example: 'private'
+    })
+    @IsString()
+    policyAvailability: PolicyAvailability;
 }

@@ -3,8 +3,9 @@ import { Router } from '@angular/router';
 import {
     ContractType,
     IUser,
+    PolicyAvailability,
     PolicyHelper,
-    PolicyType,
+    PolicyStatus,
     Schema,
     SchemaHelper,
     TagType,
@@ -28,11 +29,8 @@ import { WizardMode, WizardService } from 'src/app/modules/policy-engine/service
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { SearchPolicyDialog } from '../../analytics/search-policy-dialog/search-policy-dialog.component';
-import { mobileDialog } from 'src/app/utils/mobile-utils';
 import { DialogService } from 'primeng/dynamicdialog';
-import {
-    SuggestionsConfigurationComponent
-} from '../../../views/suggestions-configuration/suggestions-configuration.component';
+import { SuggestionsConfigurationComponent } from '../../../views/suggestions-configuration/suggestions-configuration.component';
 import { DeletePolicyDialogComponent } from '../dialogs/delete-policy-dialog/delete-policy-dialog.component';
 import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
 import { DiscontinuePolicy } from '../dialogs/discontinue-policy/discontinue-policy.component';
@@ -273,17 +271,17 @@ export class PoliciesComponent implements OnInit {
 
     public checkMigrationStatus(status: string): boolean {
         return (
-            status === PolicyType.PUBLISH ||
-            status === PolicyType.DRY_RUN ||
-            status === PolicyType.DEMO ||
-            status === PolicyType.DISCONTINUED
+            status === PolicyStatus.PUBLISH ||
+            status === PolicyStatus.DRY_RUN ||
+            status === PolicyStatus.DEMO ||
+            status === PolicyStatus.DISCONTINUED
         )
     }
 
     public showInstance(policy: any): string | null {
         switch (policy.status) {
-            case PolicyType.PUBLISH:
-            case PolicyType.DISCONTINUED: {
+            case PolicyStatus.PUBLISH:
+            case PolicyStatus.DISCONTINUED: {
                 if (this.user.POLICIES_POLICY_MANAGE) {
                     return 'Open';
                 } else if (this.user.POLICIES_POLICY_EXECUTE) {
@@ -292,14 +290,14 @@ export class PoliciesComponent implements OnInit {
                     return null;
                 }
             }
-            case PolicyType.DRY_RUN: {
+            case PolicyStatus.DRY_RUN: {
                 if (this.user.POLICIES_POLICY_UPDATE) {
                     return 'Dry run';
                 } else {
                     return null;
                 }
             }
-            case PolicyType.DEMO: {
+            case PolicyStatus.DEMO: {
                 if (this.user.POLICIES_POLICY_UPDATE) {
                     return 'Demo';
                 } else {
@@ -314,17 +312,17 @@ export class PoliciesComponent implements OnInit {
 
     public checkMultiPolicyStatus(status: string): boolean {
         return (
-            status === PolicyType.PUBLISH ||
-            status === PolicyType.DISCONTINUED
+            status === PolicyStatus.PUBLISH ||
+            status === PolicyStatus.DISCONTINUED
         )
     }
 
     public showStatus(policy: any): boolean {
         return (
-            policy.status === PolicyType.DRAFT ||
-            policy.status === PolicyType.DRY_RUN ||
-            policy.status === PolicyType.PUBLISH_ERROR ||
-            policy.status === PolicyType.PUBLISH
+            policy.status === PolicyStatus.DRAFT ||
+            policy.status === PolicyStatus.DRY_RUN ||
+            policy.status === PolicyStatus.PUBLISH_ERROR ||
+            policy.status === PolicyStatus.PUBLISH
         )
     }
 
@@ -334,14 +332,14 @@ export class PoliciesComponent implements OnInit {
 
     public getColor(status: string, expired: boolean = false) {
         switch (status) {
-            case PolicyType.DRAFT:
+            case PolicyStatus.DRAFT:
                 return 'grey';
-            case PolicyType.DRY_RUN:
+            case PolicyStatus.DRY_RUN:
                 return 'grey';
-            case PolicyType.DISCONTINUED:
-            case PolicyType.PUBLISH_ERROR:
+            case PolicyStatus.DISCONTINUED:
+            case PolicyStatus.PUBLISH_ERROR:
                 return 'red';
-            case PolicyType.PUBLISH:
+            case PolicyStatus.PUBLISH:
                 return expired ? 'yellow' : 'green';
             default:
                 return 'grey';
@@ -350,15 +348,15 @@ export class PoliciesComponent implements OnInit {
 
     public getLabelStatus(status: string, expired: boolean = false) {
         switch (status) {
-            case PolicyType.DRAFT:
+            case PolicyStatus.DRAFT:
                 return 'Draft';
-            case PolicyType.DRY_RUN:
+            case PolicyStatus.DRY_RUN:
                 return 'Dry Run';
-            case PolicyType.PUBLISH_ERROR:
+            case PolicyStatus.PUBLISH_ERROR:
                 return 'Publish Error';
-            case PolicyType.PUBLISH:
+            case PolicyStatus.PUBLISH:
                 return `Published${expired ? '*' : ''}`;
-            case PolicyType.DISCONTINUED:
+            case PolicyStatus.DISCONTINUED:
                 return `Discontinued`;
             default:
                 return 'Incorrect status';
@@ -366,35 +364,35 @@ export class PoliciesComponent implements OnInit {
     }
 
     public getStatusName(policy: any): string {
-        if (policy.status === PolicyType.DRAFT) {
+        if (policy.status === PolicyStatus.DRAFT) {
             return 'Draft';
         }
-        if (policy.status === PolicyType.DRY_RUN) {
+        if (policy.status === PolicyStatus.DRY_RUN) {
             return 'In Dry Run';
         }
-        if (policy.status === PolicyType.PUBLISH) {
+        if (policy.status === PolicyStatus.PUBLISH) {
             return `Published${!!policy.discontinuedDate ? '*' : ''}`;
         }
-        if (policy.status === PolicyType.DISCONTINUED) {
+        if (policy.status === PolicyStatus.DISCONTINUED) {
             return 'Discontinued';
         }
-        if (policy.status === PolicyType.PUBLISH_ERROR) {
+        if (policy.status === PolicyStatus.PUBLISH_ERROR) {
             return 'Not published';
         }
-        if (policy.status === PolicyType.DEMO) {
+        if (policy.status === PolicyStatus.DEMO) {
             return 'Demo';
         }
         return 'Not published';
     }
 
     public getStatusOptions(policy: any) {
-        if (policy.status === PolicyType.DRAFT) {
+        if (policy.status === PolicyStatus.DRAFT) {
             return this.publishMenuOption;
         }
-        if (policy.status === PolicyType.DRY_RUN) {
+        if (policy.status === PolicyStatus.DRY_RUN) {
             return this.draftMenuOption;
         }
-        if (policy.status === PolicyType.PUBLISH) {
+        if (policy.status === PolicyStatus.PUBLISH) {
             return this.publishedMenuOption;
         } else {
             return this.publishErrorMenuOption;
@@ -435,9 +433,9 @@ export class PoliciesComponent implements OnInit {
                     new MenuButton({
                         visible: true,
                         disabled: !(
-                            policy.status === PolicyType.DRAFT ||
-                            policy.status === PolicyType.DRY_RUN ||
-                            policy.status === PolicyType.DEMO
+                            policy.status === PolicyStatus.DRAFT ||
+                            policy.status === PolicyStatus.DRY_RUN ||
+                            policy.status === PolicyStatus.DEMO
                         ),
                         tooltip: 'Attach test file',
                         icon: 'add-test',
@@ -472,7 +470,7 @@ export class PoliciesComponent implements OnInit {
                     }),
                     new MenuButton({
                         visible: this.user.POLICIES_POLICY_UPDATE && this.user.SCHEMAS_SCHEMA_UPDATE,
-                        disabled: policy.status !== PolicyType.DRAFT,
+                        disabled: policy.status !== PolicyStatus.DRAFT,
                         tooltip: 'Import schemas from Excel',
                         icon: 'import-xls',
                         click: () => this.importFromExcel(policy)
@@ -521,8 +519,8 @@ export class PoliciesComponent implements OnInit {
                     new MenuButton({
                         visible: this.user.POLICIES_POLICY_DELETE,
                         disabled: !(
-                            policy.status === PolicyType.DRAFT ||
-                            policy.status === PolicyType.DEMO
+                            policy.status === PolicyStatus.DRAFT ||
+                            policy.status === PolicyStatus.DEMO
                         ),
                         tooltip: 'Delete Policy',
                         icon: 'delete',
@@ -750,16 +748,19 @@ export class PoliciesComponent implements OnInit {
                 policy: item
             }
         });
-        dialogRef.onClose.subscribe(async (version) => {
-            if (version) {
-                this.publish(element, version);
+        dialogRef.onClose.subscribe(async (options) => {
+            if (options) {
+                this.publish(element, options);
             }
         });
     }
 
-    private publish(element: any, version: string) {
+    private publish(
+        element: any,
+        options: { policyVersion: string, policyAvailability: PolicyAvailability }
+    ) {
         this.loading = true;
-        this.policyEngineService.pushPublish(element.id, version).subscribe(
+        this.policyEngineService.pushPublish(element.id, options).subscribe(
             (result) => {
                 const { taskId, expectation } = result;
                 this.router.navigate(['task', taskId], {
@@ -1370,13 +1371,13 @@ export class PoliciesComponent implements OnInit {
 
     public onChangeStatus(event: any, policy: any): void {
         switch (policy.status) {
-            case PolicyType.DRAFT:
+            case PolicyStatus.DRAFT:
                 this.onPublishAction(event, policy);
                 break;
-            case PolicyType.DRY_RUN:
+            case PolicyStatus.DRY_RUN:
                 this.onDryRunAction(event, policy);
                 break;
-            case PolicyType.PUBLISH:
+            case PolicyStatus.PUBLISH:
                 this.onPublishedAction(event, policy);
                 break;
             default:

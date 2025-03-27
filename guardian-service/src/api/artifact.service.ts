@@ -1,6 +1,6 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { DatabaseServer, getArtifactExtention, getArtifactType, MessageError, MessageResponse, PinoLogger } from '@guardian/common';
-import { IOwner, MessageAPI, ModuleStatus, PolicyType } from '@guardian/interfaces';
+import { IOwner, MessageAPI, ModuleStatus, PolicyStatus } from '@guardian/interfaces';
 
 export async function getParent(parentId: string) {
     if (!parentId) {
@@ -57,7 +57,7 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
 
             const category: string = parent.type;
             if (parent.type === 'policy') {
-                if (parent.item.status !== PolicyType.DRAFT) {
+                if (parent.item.status !== PolicyStatus.DRAFT) {
                     throw new Error('There is no appropriate policy or policy is not in DRAFT status');
                 }
             } else if (parent.type === 'tool') {
@@ -264,7 +264,7 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
                 const parent = await getParent(parentId);
                 if (parent) {
                     if (parent.type === 'policy') {
-                        if (parent.item.status !== PolicyType.DRAFT) {
+                        if (parent.item.status !== PolicyStatus.DRAFT) {
                             throw new Error('There is no appropriate policy or policy is not in DRAFT status');
                         }
                     } else if (parent.type === 'tool') {

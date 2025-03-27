@@ -1,5 +1,5 @@
 import { IAuthUser, PinoLogger } from '@guardian/common';
-import { AssignedEntityType, Permissions, PolicyType, UserPermissions } from '@guardian/interfaces';
+import { AssignedEntityType, Permissions, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import {
     Body,
     Controller,
@@ -588,7 +588,7 @@ export class PermissionsApi {
     @ApiQuery({
         name: 'status',
         type: String,
-        enum: PolicyType,
+        enum: PolicyStatus,
         description: 'Filter by status',
         required: false,
         example: 'Active'

@@ -16,7 +16,7 @@ import {
     Schema as SchemaCollection,
     RunFunctionAsync,
 } from '@guardian/common';
-import { EntityStatus, IOwner, LabelValidators, MessageAPI, PolicyType, Schema, SchemaStatus } from '@guardian/interfaces';
+import { EntityStatus, IOwner, LabelValidators, MessageAPI, PolicyStatus, Schema, SchemaStatus } from '@guardian/interfaces';
 import { findRelationships, generateSchema, generateVpDocument, getOrCreateTopic, publishLabelConfig } from './helpers/policy-labels-helpers.js';
 import { publishSchemas, saveSchemas } from './helpers/index.js';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
@@ -98,7 +98,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
 
                 const policyId = label.policyId;
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                if (!policy || policy.status !== PolicyStatus.PUBLISH) {
                     return new MessageError('Item does not exist.');
                 }
 
@@ -218,7 +218,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 }
                 const policyId = item.policyId;
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                if (!policy || policy.status !== PolicyStatus.PUBLISH) {
                     return new MessageError('Item does not exist.');
                 }
                 const { schemas, toolSchemas } = await PolicyImportExport.loadAllSchemas(policy);
@@ -429,7 +429,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                if (!policy || policy.status !== PolicyStatus.PUBLISH) {
                     return new MessageError('Item does not exist.');
                 }
 

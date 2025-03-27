@@ -1,4 +1,4 @@
-import { AssignedEntityType, GenerateUUIDv4, IVC, MintTransactionStatus, PolicyTestStatus, PolicyType, SchemaEntity, TokenType, TopicType } from '@guardian/interfaces';
+import { AssignedEntityType, GenerateUUIDv4, IVC, MintTransactionStatus, PolicyTestStatus, PolicyStatus, SchemaEntity, TokenType, TopicType } from '@guardian/interfaces';
 import { TopicId } from '@hashgraph/sdk';
 import { FilterObject, FilterQuery, FindAllOptions, MikroORM } from '@mikro-orm/core';
 import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
@@ -48,7 +48,8 @@ import {
     Topic as TopicCollection,
     VcDocument as VcDocumentCollection,
     VpDocument,
-    VpDocument as VpDocumentCollection
+    VpDocument as VpDocumentCollection,
+    ExternalPolicy
 } from '../entity/index.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { Theme } from '../entity/theme.js';
@@ -565,6 +566,65 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async removeFormula(formula: Formula): Promise<void> {
         return await new DataBaseHelper(Formula).remove(formula);
+    }
+
+    /**
+     * Create ExternalPolicy
+     * @param externalPolicy
+     */
+    public static async createExternalPolicy(
+        externalPolicy: FilterObject<ExternalPolicy>
+    ): Promise<ExternalPolicy> {
+        const item = new DataBaseHelper(ExternalPolicy).create(externalPolicy);
+        return await new DataBaseHelper(ExternalPolicy).save(item);
+    }
+
+    /**
+     * Get ExternalPolicies
+     * @param filters
+     * @param options
+     */
+    public static async getExternalPoliciesAndCount(
+        filters?: FilterObject<ExternalPolicy>,
+        options?: FindOptions<unknown>
+    ): Promise<[ExternalPolicy[], number]> {
+        return await new DataBaseHelper(ExternalPolicy).findAndCount(filters, options);
+    }
+
+    /**
+     * Get ExternalPolicies
+     * @param filters
+     * @param options
+     */
+    public static async getExternalPolicies(
+        filters?: FilterObject<ExternalPolicy>,
+        options?: unknown
+    ): Promise<ExternalPolicy[]> {
+        return await new DataBaseHelper(ExternalPolicy).find(filters, options);
+    }
+
+    /**
+     * Get ExternalPolicy By ID
+     * @param id
+     */
+    public static async getExternalPolicyById(id: string): Promise<ExternalPolicy | null> {
+        return await new DataBaseHelper(ExternalPolicy).findOne(id);
+    }
+
+    /**
+     * Update ExternalPolicy
+     * @param externalPolicy
+     */
+    public static async updateExternalPolicy(externalPolicy: ExternalPolicy): Promise<ExternalPolicy> {
+        return await new DataBaseHelper(ExternalPolicy).update(externalPolicy);
+    }
+
+    /**
+     * Delete ExternalPolicy
+     * @param externalPolicy
+     */
+    public static async removeExternalPolicy(externalPolicy: ExternalPolicy): Promise<void> {
+        return await new DataBaseHelper(ExternalPolicy).remove(externalPolicy);
     }
 
     /**
@@ -2055,7 +2115,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getPublishPolicies(): Promise<Policy[]> {
         return await new DataBaseHelper(Policy).find({
-            status: { $eq: PolicyType.PUBLISH }
+            status: { $eq: PolicyStatus.PUBLISH }
         });
     }
 
