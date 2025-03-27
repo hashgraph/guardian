@@ -74,6 +74,7 @@ export class GuardiansService extends NatsService {
             }),
             new Promise<T>((resolve, reject) => {
                 setTimeout(() => {
+                    this.responseCallbacksMap.delete(messageId);
                     resolve(null);
                 }, awaitInterval)
             }),
