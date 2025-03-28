@@ -3,8 +3,9 @@ import { RequiredEntityData } from '@mikro-orm/core';
 import { Parser } from '../utils/parser.js';
 import { IPFSService } from '../loaders/ipfs-service.js';
 import { LogService } from './log-service.js';
-import { DataBaseHelper, Job, MessageCache, Message } from '@indexer/common';
-import { MessageStatus } from '@indexer/interfaces';
+import { DataBaseHelper, Job, MessageCache, Message, IndexerMessageAPI } from '@indexer/common';
+import { MessageStatus, PriorityStatus } from '@indexer/interfaces';
+import { ChannelService } from 'api/channel.service.js';
 
 export interface IFile {
     id?: ObjectId;
@@ -14,6 +15,7 @@ export interface IFile {
 
 export class MessageService {
     public static CYCLE_TIME: number = 0;
+    public static CHANNEL: ChannelService | null;
 
     public static async updateMessage(job: Job) {
         try {
@@ -40,9 +42,17 @@ export class MessageService {
                 row.status = MessageStatus.UNSUPPORTED;
             }
             row.priorityDate = null;
+            row.priorityStatus = PriorityStatus.FINISHED;
             await em.flush();
+            MessageService.onMessageFinished(row);
         } catch (error) {
             await LogService.error(error, 'update message');
+        }
+    }
+    
+    public static onMessageFinished(row: MessageCache) {
+        if (MessageService.CHANNEL && row.priorityTimestamp) {
+            MessageService.CHANNEL.publicMessage(IndexerMessageAPI.ON_PRIORITY_DATA_LOADED, row.priorityTimestamp);
         }
     }
 

@@ -16,4 +16,8 @@ export class PriorityOptions {
      * Priority Status Date
      */
     priorityStatusDate?: Date;
+    /**
+     * Priority timestamp
+     */
+    priorityTimestamp?: number;
 }

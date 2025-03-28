@@ -1,12 +1,14 @@
 import { EntityData, MongoDriver, MongoEntityManager } from '@mikro-orm/mongodb';
 import { LogService } from './log-service.js';
 import { HederaService } from '../loaders/hedera-service.js';
-import { DataBaseHelper, Job, NftCache, NFT, TokenCache, Utils } from '@indexer/common';
+import { DataBaseHelper, Job, NftCache, NFT, TokenCache, Utils, IndexerMessageAPI } from '@indexer/common';
 import { TopicService } from './topic-service.js';
 import { PriorityStatus } from '@indexer/interfaces';
+import { ChannelService } from 'api/channel.service.js';
 
 export class TokenService {
     public static CYCLE_TIME: number = 0;
+    public static CHANNEL: ChannelService | null;
 
     public static async updateToken(job: Job) {
         try {
@@ -76,8 +78,16 @@ export class TokenService {
                 data.priorityStatus = PriorityStatus.FINISHED;
                 await em.nativeUpdate(TokenCache, { tokenId: row.tokenId }, data);
             }
+            TokenService.onTokenFinished(data);
         } catch (error) {
             await LogService.error(error, 'update token');
+        }
+    }
+        
+    public static onTokenFinished(row: any) {
+        if (TokenService.CHANNEL && row.priorityTimestamp) {
+            
+            TokenService.CHANNEL.publicMessage(IndexerMessageAPI.ON_PRIORITY_DATA_LOADED, row.priorityTimestamp);
         }
     }
 
