@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, AfterViewChecked, QueryList, ViewChildren, ElementRef} from '@angular/core';
 import {Router} from '@angular/router';
 import {AbstractControl, UntypedFormControl, UntypedFormGroup, ValidationErrors, Validators,} from '@angular/forms';
 import {AuthService} from '../../services/auth.service';
@@ -29,7 +29,7 @@ import {ChangePasswordComponent} from './change-password/change-password.compone
     templateUrl: './login.component.html',
     styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent implements OnInit, OnDestroy {
+export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
     testUsers$: Observable<any[]>;
     private readonly destroy$ = new Subject<void>();
     loading: boolean = false;
@@ -59,6 +59,9 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     isMgsMode: boolean = true;
     wrongNameOrPassword: boolean = false;
+
+    @ViewChildren('usernameRef') usernameRefs!: QueryList<ElementRef>;
+    isOverflowingMap: { [index: number]: boolean } = {};
 
     constructor(
         public authState: AuthStateService,
@@ -99,6 +102,13 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.loginForm.valueChanges.subscribe(() => {
             this.wrongNameOrPassword = false;
         })
+    }
+
+    ngAfterViewChecked(): void {
+        this.usernameRefs?.forEach((ref, index) => {
+            const el = ref.nativeElement;
+            this.isOverflowingMap[index] = el.scrollWidth > el.clientWidth;
+        });
     }
 
     ngOnDestroy(): void {
