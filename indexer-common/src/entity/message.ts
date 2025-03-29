@@ -82,6 +82,9 @@ export class Message implements IMessage {
     };
 
     @Property({ nullable: true })
+    analyticsUpdate?: number;
+
+    @Property({ nullable: true })
     files: string[];
 
     @Property({ nullable: true })

@@ -27,6 +27,7 @@ import {
 } from '@indexer/interfaces';
 import { parsePageParams } from '../utils/parse-page-params.js';
 import axios from 'axios';
+import { AnalyticsTask } from '../helpers/analytics-task.js';
 
 @Controller()
 export class LoadingQueueService {
@@ -88,11 +89,18 @@ export class LoadingQueueService {
                     $project: {
                         type: "Token",
                         _id: "$_id",
-                        entityIds: ["$tokenId"],
+                        entityId: "$tokenId",
                         priorityDate: "$priorityDate",
                         priorityStatus: "$priorityStatus",
                         priorityStatusDate: "$priorityStatusDate",
                         priorityTimestamp: "$priorityTimestamp",
+                        __filters: {
+                            $cond: {
+                                if: { $in: ["$tokenId", ids] },
+                                then: 1,
+                                else: 0,
+                            }
+                        }
                     }
                 },
                 {
@@ -100,58 +108,72 @@ export class LoadingQueueService {
                         coll: "topic_cache",
                         pipeline: [
                             {
-                                $group: {
-                                    _id: "$priorityTimestamp",
-                                    entityIds: { $addToSet: "$topicId" },
-                                    statuses: { $addToSet: "$priorityStatus" },
-                                    firstDoc: { $first: "$$ROOT" }
-                                }
-                            },
-                            {
                                 $project: {
-                                    type: { $literal: "Topic" },
-                                    _id: "$firstDoc._id",
-                                    entityIds: 1,
-                                    priorityDate: "$firstDoc.priorityDate",
-                                    priorityStatus: {
+                                    type: "Topic",
+                                    _id: "$_id",
+                                    entityId: "$topicId",
+                                    priorityDate: "$priorityDate",
+                                    priorityStatus: "$priorityStatus",
+                                    priorityStatusDate: "$priorityStatusDate",
+                                    priorityTimestamp: "$priorityTimestamp",
+                                    __filters: {
                                         $cond: {
-                                            if: { $in: ["Running", "$statuses"] },
-                                            then: "Running",
-                                            else: {
-                                                $cond: {
-                                                    if: { $setEquals: ["$statuses", ["Scheduled"]] },
-                                                    then: "Scheduled",
-                                                    else: "Finished"
-                                                }
-                                            }
-                                        },
-                                    },
-                                    priorityStatusDate: "$firstDoc.priorityStatusDate",
-                                        priorityTimestamp: "$_id"
+                                            if: { $in: ["$topicId", ids] },
+                                            then: 1,
+                                            else: 0,
+                                        }
                                     }
                                 }
+                            }
                         ]
                     }
                 },
+                {
+                    $match:
+                    {
+                        priorityTimestamp: { $ne: null }
+                    }
+                },
+                {
+                    $group:
+                    {
+                        _id: "$priorityTimestamp",
+                        entityIds: { $addToSet: "$entityId" },
+                        statuses: { $addToSet: "$priorityStatus" },
+                        priorityDate: { $first: "$priorityDate" },
+                        priorityStatusDate: { $first: "$priorityStatusDate" },
+                        priorityTimestamp: { $first: "$priorityTimestamp" },
+                        __filters: { $max: "$__filters" }
+                    }
+                },
+                {
+                    $project: {
+                        entityIds: "$entityIds",
+                        statuses: "$statuses",
+                        priorityDate: "$priorityDate",
+                        priorityStatusDate: "$priorityStatusDate",
+                        priorityTimestamp: "$priorityTimestamp",
+                        priorityStatus: {
+                            $switch: {
+                                branches: [
+                                    { case: { $in: ["Running", "$statuses"] }, then: "Running" },
+                                    { case: { $in: ["Scheduled", "$statuses"] }, then: "Scheduled" },
+                                ],
+                                default: "Finished"
+                            }
+                        },
+                        __filters: "$__filters"
+                    }
+                }
             ];
+
 
             if (ids && ids.length > 0) {
                 aggregate.push(
                     {
                         $match:
                         {
-                            entityIds: { $in: ids },
-                            priorityStatusDate: { $ne: null }
-                        }
-                    }
-                )
-            } else {
-                aggregate.push(
-                    {
-                        $match:
-                        {
-                            priorityStatusDate: { $ne: null },
-                            priorityTimestamp: { $ne: null }
+                            __filters: 1
                         }
                     }
                 )
@@ -184,31 +206,39 @@ export class LoadingQueueService {
             const rows = await em.aggregate(TokenCache, aggregate);
 
             const topicFilter: any = {
-                priorityStatusDate: { $ne: null }
+                priorityTimestamp: { $ne: null }
             };
             const tokenFilter: any = {
-                priorityStatusDate: { $ne: null }
+                priorityTimestamp: { $ne: null }
             };
             if (ids && ids.length > 0) {
                 topicFilter.topicId = { $in: ids }
                 tokenFilter.tokenId = { $in: ids }
             }
 
-            const topicCount = await em.count(
-                TopicCache,
+            const topicCount = (await em.getCollection("TopicCache").distinct(
+                "priorityTimestamp",
                 topicFilter
-            );
-            const tokenCount = await em.count(
-                TokenCache,
-                tokenFilter
-            );
+            ));
+            const tokenCount = (await em.getCollection("TokenCache").distinct(
+                "priorityTimestamp",
+                topicFilter
+            ));
 
+            const total = new Set<number>();
+
+            topicCount.forEach(timestamp => {
+                total.add(timestamp);
+            });
+            tokenCount.forEach(timestamp => {
+                total.add(timestamp);
+            });
 
             const result = {
                 items: rows?.map((item: any) => {
                     return {
                         type: item.type,
-                        entityId: item.entityIds[0],
+                        entityId: item.entityIds,
                         priorityDate: item.priorityDate,
                         priorityStatusDate: item.priorityStatusDate,
                         priorityStatus: item.priorityStatus as PriorityStatus,
@@ -218,7 +248,7 @@ export class LoadingQueueService {
                 }) || [],
                 pageIndex: options.offset / options.limit,
                 pageSize: options.limit,
-                total: topicCount + tokenCount,
+                total: total.size,
                 order: options.orderBy,
             };
 
@@ -244,7 +274,7 @@ export class LoadingQueueService {
                     priorityDate: new Date(),
                     priorityStatus: PriorityStatus.SCHEDULED,
                     priorityStatusDate: new Date(),
-                    priorityTimestamp: Date.parse(new Date().toString()),
+                    priorityTimestamp: Date.now(),
                 }
             );
 
@@ -301,14 +331,14 @@ export class LoadingQueueService {
                 priorityDate: new Date(),
                 priorityStatus: PriorityStatus.SCHEDULED,
                 priorityStatusDate: new Date(),
-                priorityTimestamp: Date.parse(new Date().toString()),
+                priorityTimestamp: Date.now(),
             });
 
             const tokenResult = await em.nativeUpdate(TokenCache, { tokenId: { $in: Array.from(tokenIds) }, priorityDate: { $eq: null } }, {
                 priorityDate: new Date(),
                 priorityStatus: PriorityStatus.SCHEDULED,
                 priorityStatusDate: new Date(),
-                priorityTimestamp: Date.parse(new Date().toString()),
+                priorityTimestamp: Date.now(),
             });
 
             const messageResult = await em.nativeUpdate(MessageCache, {
@@ -342,7 +372,7 @@ export class LoadingQueueService {
                     priorityDate: new Date(),
                     priorityStatus: PriorityStatus.SCHEDULED,
                     priorityStatusDate: new Date(),
-                    priorityTimestamp: Date.parse(new Date().toString()),
+                    priorityTimestamp: Date.now(),
                 }
             );
 
@@ -375,6 +405,33 @@ export class LoadingQueueService {
 
         } catch (error) {
             return new MessageError(error);
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.ON_PRIORITY_DATA_LOADED)
+    async onPriorityDataLoaded(
+        timestamp: number
+    ) {
+        try {
+            const em = DataBaseHelper.getEntityManager();
+
+            const filter = {
+                priorityTimestamp: timestamp,
+                priorityStatus: { $ne: PriorityStatus.FINISHED },
+            }
+
+            const topicCount = await em.count(TopicCache, filter);
+            const tokenCount = await em.count(TokenCache, filter);
+            const messageCount = await em.count(MessageCache, filter);
+
+            console.log(topicCount, tokenCount, messageCount);
+            
+            if (topicCount + tokenCount + messageCount <= 0) {
+                AnalyticsTask.onAddEvent(timestamp);
+            }
+
+        } catch (error) {
+
         }
     }
 
