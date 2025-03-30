@@ -101,6 +101,7 @@ export class SynchronizationPolicy extends SynchronizationTask {
                 tokenMap,
                 fileMap
             );
+            row.analyticsUpdate = Date.now();
             em.persist(row);
         }
         console.log(`Sync Policies: flush`)

@@ -14,6 +14,7 @@ import { SettingsService } from './api/settings.service.js';
 import { LoadingQueueService } from './api/loading-queue.service.js';
 import { SynchronizationAll } from './helpers/synchronizers/index.js';
 import { fixtures } from './helpers/fixtures.js';
+import { AnalyticsTask } from './helpers/analytics-task.js';
 
 const channelName = (
     process.env.SERVICE_CHANNEL || `indexer-service.${Utils.GenerateUUIDv4(26)}`
@@ -144,6 +145,11 @@ Promise.all([
          * Sync tasks
          */
         SynchronizationAll.createAllTasks();
+
+        /**
+         * Analytic task
+         */
+        AnalyticsTask.create();
     },
     (reason) => {
         console.log(reason);

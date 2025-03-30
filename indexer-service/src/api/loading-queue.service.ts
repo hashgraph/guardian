@@ -423,8 +423,6 @@ export class LoadingQueueService {
             const topicCount = await em.count(TopicCache, filter);
             const tokenCount = await em.count(TokenCache, filter);
             const messageCount = await em.count(MessageCache, filter);
-
-            console.log(topicCount, tokenCount, messageCount);
             
             if (topicCount + tokenCount + messageCount <= 0) {
                 AnalyticsTask.onAddEvent(timestamp);
