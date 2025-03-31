@@ -1,5 +1,5 @@
 import { Singleton } from '../decorators/singleton.js';
-import { GenerateUUIDv4, HederaResponseCode, IActiveTask, ITask, QueueEvents, TimeoutError, WorkerEvents, } from '@guardian/interfaces';
+import { ExternalMessageEvents, GenerateUUIDv4, HederaResponseCode, IActiveTask, ITask, QueueEvents, TimeoutError, WorkerEvents } from '@guardian/interfaces';
 import { Environment } from '../hedera-modules/index.js';
 import { NatsService } from '../mq/index.js';
 
@@ -295,6 +295,19 @@ export class Workers extends NatsService {
                 resolve(null);
             }
         })
+    }
+
+    /**
+     * External mint event
+     * @param data
+     * @return {any}
+     */
+    public async sendExternalMintEvent(data: any): Promise<void> {
+        try {
+            await this.sendMessage<any>(ExternalMessageEvents.TOKEN_MINT_COMPLETE, data);
+        } catch (e) {
+            console.error(e.message)
+        }
     }
 
     /**

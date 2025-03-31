@@ -58,7 +58,7 @@ export class AccountService extends NatsService {
                         throw new Error('Token expired');
                     }
 
-                    const user = await UserUtils.getUser({ username: decryptedToken.username}, UserProp.REQUIRED);
+                    const user = await UserUtils.getUser({ username: decryptedToken.username }, UserProp.REQUIRED);
                     return new MessageResponse(user);
                 } catch (error) {
                     return new MessageError(error);
@@ -326,7 +326,10 @@ export class AccountService extends NatsService {
                             if (await UserPassword.verifyPasswordV2(user, password)) {
                                 const userAccessTokenService = await UserAccessTokenService.New();
                                 const token = userAccessTokenService.generateRefreshToken(user);
-                                user.refreshToken = token.token;
+                                if (!Array.isArray(user.refreshToken)) {
+                                  user.refreshToken = [];
+                                }
+                                user.refreshToken.push(token.id);
 
                                 await new DatabaseServer().save(User, user);
                                 return new MessageResponse({
@@ -365,7 +368,10 @@ export class AccountService extends NatsService {
                     user.password = passwordDigest.password;
                     user.salt = passwordDigest.salt;
                     user.passwordVersion = passwordDigest.passwordVersion;
-                    user.refreshToken = token.id;
+                    if (!Array.isArray(user.refreshToken)) {
+                      user.refreshToken = [];
+                    }
+                    user.refreshToken.push(token.id);
 
                     await new DatabaseServer().save(User, user);
 
@@ -393,7 +399,7 @@ export class AccountService extends NatsService {
                 }
 
                 const user = await new DatabaseServer().findOne(User, {
-                    refreshToken,
+                    refreshToken: decryptedToken.id,
                     username: decryptedToken.name,
                     template: { $ne: true }
                 });

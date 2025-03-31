@@ -145,6 +145,10 @@ VC details has the following tabs:
 
 ![](<../../.gitbook/assets/8 (16).png>)
 
+<figure><img src="../../.gitbook/assets/image (801).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../.gitbook/assets/image (802).png" alt=""><figcaption></figcaption></figure>
+
 * History - document history since it was created.
 * Relationships - document relationships with links to policy, roles, schemas, standard registry, other documents.
 
