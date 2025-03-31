@@ -753,6 +753,7 @@
     * [GCCM001 v.4 Methodology for Renewable Energy Generation Projects Supplying Electricity to Grid](guardian/demo-guide/carbon-offsets/gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md)
     * [Landfill Gas Destruction and Beneficial Use Projects, Version 2.0](guardian/demo-guide/carbon-offsets/landfill-gas-destruction-and-beneficial-use-projects-version-2.0.md)
     * [Climate Action Reserve’s U.S. Landfill Protocol Version 6.0](guardian/demo-guide/carbon-offsets/climate-action-reserves-u.s.-landfill-protocol-version-6.0.md)
+    * [VM0042 Improved Agricultural Land Management, v2.1](guardian/demo-guide/carbon-offsets/vm0042-improved-agricultural-land-management-v2.1.md)
   * [🏭 Carbon Emissions](guardian/demo-guide/carbon-emissions/README.md)
     * [🏡 Remote Work GHG Policy](guardian/demo-guide/carbon-emissions/remote-work-ghg-policy/README.md)
       * [📖 Introduction to Remote Work GHG](guardian/demo-guide/carbon-emissions/remote-work-ghg-policy/introduction-to-remote-work-ghg.md)
