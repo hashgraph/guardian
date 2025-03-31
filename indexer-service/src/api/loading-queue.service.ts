@@ -226,7 +226,7 @@ export class LoadingQueueService {
             priorityTimestamp: number
         }
     ) {
-        setTimeout(() =>  this.updatePriorityQueue(msg.priorityTimestamp).then(), 30000)
+        setTimeout(() =>  this.updatePriorityQueue(msg.priorityTimestamp).then(), 10000)
     }
 
     private async updatePriorityQueue(priorityTimestamp: number) {
@@ -247,7 +247,7 @@ export class LoadingQueueService {
             let isFinished = true;
     
             topics.forEach(item => {
-                if (item.priorityStatus === PriorityStatus.RUNNING) {
+                if (item.priorityStatus === PriorityStatus.RUNNING || item.priorityStatus === PriorityStatus.FINISHED) {
                     status = PriorityStatus.RUNNING;
                 }
                 if (item.priorityStatus !== PriorityStatus.FINISHED) {
@@ -256,7 +256,7 @@ export class LoadingQueueService {
             });
     
             tokens.forEach(item => {
-                if (item.priorityStatus === PriorityStatus.RUNNING) {
+                if (item.priorityStatus === PriorityStatus.RUNNING || item.priorityStatus === PriorityStatus.FINISHED) {
                     status = PriorityStatus.RUNNING;
                 }
                 if (item.priorityStatus !== PriorityStatus.FINISHED) {
@@ -265,7 +265,7 @@ export class LoadingQueueService {
             });
     
             messages.forEach(item => {
-                if (item.priorityStatus === PriorityStatus.RUNNING) {
+                if (item.priorityStatus === PriorityStatus.RUNNING || item.priorityStatus === PriorityStatus.FINISHED) {
                     status = PriorityStatus.RUNNING;
                 }
                 if (item.priorityStatus !== PriorityStatus.FINISHED) {
@@ -526,13 +526,14 @@ export class LoadingQueueService {
     }
 
     private async checkQueue(entityId: string) {
-        const em = DataBaseHelper.getEntityManager();
+        return true;
+        // const em = DataBaseHelper.getEntityManager();
 
-        const row = await em.findOne(PriorityQueue, {
-            entityId
-        });
+        // const row = await em.findOne(PriorityQueue, {
+        //     entityId
+        // });
 
-        return !row || row.priorityStatus === PriorityStatus.FINISHED;
+        // return !row || row.priorityStatus === PriorityStatus.FINISHED;
     }
 
     private parseMessage(row: any): any {

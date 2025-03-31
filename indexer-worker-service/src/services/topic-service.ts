@@ -31,10 +31,11 @@ export class TopicService {
                     priorityStatusDate: row.priorityStatusDate,
                     priorityTimestamp: row.priorityTimestamp
                 }
+                
                 const rowMessages = await TopicService.saveMessages(data.messages, priorityOptions);
                 if (rowMessages) {
                     const compressed = await TopicService.compressMessages(rowMessages);
-                    await MessageService.saveImmediately(compressed);
+                    await MessageService.saveImmediately(compressed, priorityOptions);
                     await TopicService.saveRelationships(compressed, priorityOptions);
                     await em.nativeUpdate(TopicCache, { topicId: row.topicId }, {
                         messages: data.messages[data.messages.length - 1].sequence_number,

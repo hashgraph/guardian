@@ -4,7 +4,7 @@ import { Parser } from '../utils/parser.js';
 import { IPFSService } from '../loaders/ipfs-service.js';
 import { LogService } from './log-service.js';
 import { DataBaseHelper, Job, MessageCache, Message, IndexerMessageAPI } from '@indexer/common';
-import { MessageStatus, PriorityStatus } from '@indexer/interfaces';
+import { MessageStatus, PriorityOptions, PriorityStatus } from '@indexer/interfaces';
 import { ChannelService } from 'api/channel.service.js';
 
 export interface IFile {
@@ -129,7 +129,7 @@ export class MessageService {
         }
     }
 
-    public static async saveImmediately(rows: MessageCache[]): Promise<void> {
+    public static async saveImmediately(rows: MessageCache[], priorityOptions?: PriorityOptions): Promise<void> {
         const em = DataBaseHelper.getEntityManager();
         for (const message of rows) {
             try {
@@ -144,6 +144,9 @@ export class MessageService {
                         em.persist(row);
                         ref.status = MessageStatus.LOADED;
                         ref.priorityDate = null;
+                        ref.priorityStatus = PriorityStatus.FINISHED;
+                        ref.priorityStatusDate = priorityOptions.priorityStatusDate;
+                        ref.priorityTimestamp = priorityOptions.priorityTimestamp;
                         await em.flush();
                     }
                 } else {
