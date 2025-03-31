@@ -130,7 +130,6 @@ export class AnalyticsTask {
         const messageCacheCollection = em.getCollection<MessageCache>('MessageCache');
         
         const messageCache = messageCacheCollection.find({
-            type: MessageType.VC_DOCUMENT,
             priorityTimestamp
         });
             
