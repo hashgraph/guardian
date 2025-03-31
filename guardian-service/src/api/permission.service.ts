@@ -20,8 +20,8 @@ import {
     Token, DatabaseServer,
 } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, MessageAPI, Schema, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
-import { publishSystemSchema } from './helpers/index.js';
 import { emptyNotifier } from '../helpers/notifier.js';
+import { publishSystemSchema } from '../helpers/import-helpers/index.js';
 
 async function getSchema(
     entity: SchemaEntity,

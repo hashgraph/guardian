@@ -1,8 +1,9 @@
 import { ApiResponse } from './helpers/api-response.js';
 import { BinaryMessageResponse, DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyStatistic, PolicyStatisticImportExport, StatisticAssessmentMessage, StatisticMessage, Users } from '@guardian/common';
 import { EntityStatus, IOwner, MessageAPI, PolicyStatus, Schema, SchemaEntity } from '@guardian/interfaces';
-import { publishSchema } from './helpers/index.js';
+
 import { findRelationships, generateSchema, generateVcDocument, getOrCreateTopic, publishConfig, uniqueDocuments } from './helpers/policy-statistics-helpers.js';
+import { publishSchema } from '../helpers/import-helpers/index.js';
 
 /**
  * Connect to the message broker methods of working with statistics.

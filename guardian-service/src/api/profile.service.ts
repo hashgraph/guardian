@@ -31,11 +31,11 @@ import {
 } from '@guardian/common';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { RestoreDataFromHedera } from '../helpers/restore-data-from-hedera.js';
-import { publishSystemSchema } from './helpers/schema-publish-helper.js';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { serDefaultRole } from './permission.service.js';
+import { publishSystemSchema } from '../helpers/import-helpers/index.js';
 
 interface IFireblocksConfig {
     fireBlocksVaultId: string;

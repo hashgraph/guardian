@@ -18,8 +18,8 @@ import {
 } from '@guardian/common';
 import { EntityStatus, IOwner, LabelValidators, MessageAPI, PolicyStatus, Schema, SchemaStatus } from '@guardian/interfaces';
 import { findRelationships, generateSchema, generateVpDocument, getOrCreateTopic, publishLabelConfig } from './helpers/policy-labels-helpers.js';
-import { publishSchemas, saveSchemas } from './helpers/index.js';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
+import { publishSchemas, saveSchemas } from '../helpers/import-helpers/index.js';
 
 async function publishPolicyLabel(
     item: PolicyLabel,

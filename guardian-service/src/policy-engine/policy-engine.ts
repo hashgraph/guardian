@@ -1,4 +1,23 @@
-import { AccessType, AssignedEntityType, EntityStatus, GenerateUUIDv4, IOwner, IRootConfig, ModelHelper, NotificationAction, PolicyEvents, PolicyToolMetadata, PolicyStatus, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TagType, TopicType, PolicyAvailability } from '@guardian/interfaces';
+import {
+    AccessType,
+    AssignedEntityType,
+    EntityStatus,
+    GenerateUUIDv4,
+    IOwner,
+    IRootConfig,
+    ModelHelper,
+    NotificationAction,
+    PolicyEvents,
+    PolicyToolMetadata,
+    PolicyStatus,
+    Schema,
+    SchemaEntity,
+    SchemaHelper,
+    SchemaStatus,
+    TagType,
+    TopicType,
+    PolicyAvailability
+} from '@guardian/interfaces';
 import {
     Artifact,
     DatabaseServer,
@@ -17,7 +36,8 @@ import {
     PolicyMessage,
     replaceAllEntities,
     replaceAllVariables,
-    replaceArtifactProperties, Schema as SchemaCollection,
+    replaceArtifactProperties,
+    Schema as SchemaCollection,
     SchemaFields,
     Singleton,
     SynchronizationMessage,
@@ -30,21 +50,29 @@ import {
     Users,
     VcHelper,
 } from '@guardian/common';
-import { PolicyImportExportHelper } from './helpers/policy-import-export-helper.js';
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy-converter-utils.js';
 import { emptyNotifier, INotifier } from '../helpers/notifier.js';
 import { ISerializedErrors } from './policy-validation-results-container.js';
 import { PolicyServiceChannelsContainer } from '../helpers/policy-service-channels-container.js';
 import { PolicyValidator } from '../policy-engine/block-validators/index.js';
-import { publishPolicyTags } from '../api/tag.service.js';
-import { importTag } from '../api/helpers/tag-import-export-helper.js';
 import { createHederaToken } from '../api/token.service.js';
 import { GuardiansService } from '../helpers/guardians.js';
-import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '../api/helpers/schema-publish-helper.js';
-import { deleteDemoSchema, deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '../api/helpers/schema-helper.js';
 import { AISuggestionsService } from '../helpers/ai-suggestions.js';
 import { FilterObject } from '@mikro-orm/core';
 import { publishFormula } from '../api/helpers/formulas-helpers.js';
+import {
+    deleteDemoSchema,
+    deleteSchema,
+    findAndDryRunSchema,
+    findAndPublishSchema,
+    ImportMode,
+    importTag,
+    incrementSchemaVersion,
+    PolicyImportExportHelper,
+    publishPolicyTags,
+    publishSystemSchemas,
+    sendSchemaMessage
+} from '@helpers/import-helpers/index.js';
 
 /**
  * Result of publishing
@@ -530,9 +558,9 @@ export class PolicyEngine extends NatsService {
             user,
             null,
             logger,
+            ImportMode.COMMON,
             data,
             null,
-            false,
             notifier
         );
     }
@@ -1296,7 +1324,7 @@ export class PolicyEngine extends NatsService {
         user: IOwner,
         hederaAccount: IRootConfig,
         logger: PinoLogger,
-        policyFormat: PolicyFormat = false,
+        mode: ImportMode = ImportMode.COMMON,
         versionOfTopicId: string = null,
         metadata: PolicyToolMetadata = null,
         notifier: INotifier = emptyNotifier()
@@ -1312,8 +1340,8 @@ export class PolicyEngine extends NatsService {
     }> {
         notifier.start('Load from IPFS');
         const messageServer = new MessageServer(
-            hederaAccount.hederaAccountId, 
-            hederaAccount.hederaAccountKey, 
+            hederaAccount.hederaAccountId,
+            hederaAccount.hederaAccountKey,
             hederaAccount.signOptions
         );
         const message = await messageServer.getMessage<PolicyMessage>(messageId);
@@ -1358,9 +1386,9 @@ export class PolicyEngine extends NatsService {
             user,
             versionOfTopicId,
             logger,
+            mode,
             null,
             metadata,
-            demo,
             notifier
         );
     }

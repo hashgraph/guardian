@@ -40,6 +40,7 @@ import { PolicyDataImportExport } from './helpers/policy-data/policy-data-import
 import { PolicyComponentsUtils } from './policy-components-utils.js';
 import { PolicyEngine } from './policy-engine.js';
 import { IPolicyUser } from './policy-user.js';
+import { getSchemaCategory, ImportMode, importSubTools, PolicyImportExportHelper, previewToolByMessage, SchemaImportExportHelper } from '../helpers/import-helpers/index.js';
 
 /**
  * PolicyEngineChannel
@@ -1237,9 +1238,10 @@ export class PolicyEngineService {
                         owner,
                         versionOfTopicId,
                         logger,
+                        demo ? ImportMode.DEMO : ImportMode.COMMON,
                         null,
                         metadata,
-                        demo
+                        null,
                     );
                     if (result?.errors?.length) {
                         const message = PolicyImportExportHelper.errorsMessage(result.errors);
@@ -1281,9 +1283,9 @@ export class PolicyEngineService {
                         owner,
                         versionOfTopicId,
                         logger,
+                        demo ? ImportMode.DEMO : ImportMode.COMMON,
                         null,
                         metadata,
-                        demo,
                         notifier
                     );
                     if (result?.errors?.length) {
@@ -1361,7 +1363,16 @@ export class PolicyEngineService {
                     }
                     const root = await this.users.getHederaAccount(owner.creator);
                     const result = await this.policyEngine
-                        .importPolicyMessage(messageId, owner, root, versionOfTopicId, logger, metadata, demo);
+                        .importPolicyMessage(
+                            messageId,
+                            owner,
+                            root,
+                            logger,
+                            demo ? ImportMode.DEMO : ImportMode.COMMON,
+                            versionOfTopicId,
+                            null,
+                            metadata
+                        );
                     if (result?.errors?.length) {
                         const message = PolicyImportExportHelper.errorsMessage(result.errors);
                         await logger.warn(message, ['GUARDIAN_SERVICE']);
@@ -1398,7 +1409,16 @@ export class PolicyEngineService {
                         const root = await this.users.getHederaAccount(owner.creator);
                         notifier.completed();
                         const result = await this.policyEngine
-                            .importPolicyMessage(messageId, owner, root, versionOfTopicId, logger, metadata, demo, notifier);
+                            .importPolicyMessage(
+                                messageId,
+                                owner,
+                                root,
+                                logger,
+                                demo ? ImportMode.DEMO : ImportMode.COMMON,
+                                versionOfTopicId,
+                                metadata,
+                                notifier
+                            );
                         if (result?.errors?.length) {
                             const message = PolicyImportExportHelper.errorsMessage(result.errors);
                             notifier.error(message);

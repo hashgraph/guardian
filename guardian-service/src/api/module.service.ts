@@ -4,7 +4,7 @@ import { GenerateUUIDv4, IOwner, MessageAPI, ModuleStatus, SchemaCategory, TagTy
 import { emptyNotifier, INotifier } from '../helpers/notifier.js';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
 import { ModuleValidator } from '../policy-engine/block-validators/module-validator.js';
-import { importTag } from './helpers/tag-import-export-helper.js';
+import { importTag } from '../helpers/import-helpers/index.js';
 
 /**
  * Check and update config file

@@ -1,6 +1,6 @@
 import { DatabaseServer, PolicyStatistic, SchemaConverterUtils, TopicConfig, TopicHelper, Users, VcDocument, VcHelper } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, IStatisticConfig, PolicyStatus, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
-import { generateSchemaContext } from './schema-publish-helper.js';
+import { generateSchemaContext } from '../../helpers/import-helpers/index.js';
 
 export async function addPrevRelationships(doc: VcDocument, relationships: Set<string>) {
     if (doc && doc.relationships) {

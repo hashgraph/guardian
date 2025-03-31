@@ -26,7 +26,7 @@ import {
     TopicType
 } from '@guardian/interfaces';
 import { generateSchema as generateStatisticSchema } from './policy-statistics-helpers.js';
-import { generateSchemaContext } from './schema-publish-helper.js';
+import { generateSchemaContext } from '../../helpers/import-helpers/index.js';
 
 export function publishLabelConfig(data?: IPolicyLabelConfig): IPolicyLabelConfig {
     return data;
