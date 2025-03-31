@@ -13715,8 +13715,155 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags:
+      tags: &ref_31
         - external-policies
+      security:
+        - bearer: []
+    get:
+      operationId: ExternalPoliciesApi_getPolicyLabels
+      summary: Return a list of all external policies.
+      description: Returns all external policies.
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          example: 20
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExternalPolicyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_31
+      security:
+        - bearer: []
+  /external-policies/preview:
+    post:
+      operationId: ExternalPoliciesApi_previewExternalPolicy
+      summary: Policy preview from IPFS.
+      description: Previews the policy from IPFS without loading it into the local DB.
+      parameters: []
+      requestBody:
+        required: true
+        description: Message.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportMessageDTO'
+      responses:
+        '200':
+          description: Policy preview.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyPreviewDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_31
+      security:
+        - bearer: []
+  /external-policies/import:
+    post:
+      operationId: ExternalPoliciesApi_importExternalPolicy
+      summary: Policy import from IPFS.
+      description: Imports the policy from IPFS without loading it into the local DB.
+      parameters: []
+      requestBody:
+        required: true
+        description: Message.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportMessageDTO'
+      responses:
+        '200':
+          description: Policy.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalPolicyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_31
+      security:
+        - bearer: []
+  /external-policies/push/{policyId}/approve:
+    put:
+      operationId: ExternalPoliciesApi_approveExternalPolicyAsync
+      summary: Approves policy.
+      description: Approves policy for the specified policy ID.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyLabelDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_31
       security:
         - bearer: []
   /policy-labels:
@@ -13749,7 +13896,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_31
+      tags: &ref_32
         - policy-labels
       security:
         - bearer: []
@@ -13805,7 +13952,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_31
+      tags: *ref_32
       security:
         - bearer: []
   /policy-labels/{definitionId}:
@@ -13838,7 +13985,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_31
+      tags: *ref_32
       security:
         - bearer: []
     put:
@@ -13877,7 +14024,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_31
+      tags: *ref_32
       security:
         - bearer: []
     delete:
@@ -13909,7 +14056,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_31
+      tags: *ref_32
       security:
         - bearer: []
   /policy-labels/{definitionId}/publish:
@@ -13942,7 +14089,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_31
+      tags: *ref_32
       security:
         - bearer: []
   /policy-labels/push/{definitionId}/publish:
@@ -13975,7 +14122,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_31
+      tags: *ref_32
       security:
         - bearer: []
   /policy-labels/{definitionId}/relationships:
@@ -14008,7 +14155,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_31
+      tags: *ref_32
       security:
         - bearer: []
   /policy-labels/{policyId}/import/file:
@@ -14048,7 +14195,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_31
+      tags: *ref_32
       security:
         - bearer: []
   /policy-labels/{definitionId}/export/file:
@@ -14077,7 +14224,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_31
+      tags: *ref_32
       security:
         - bearer: []
   /policy-labels/import/file/preview:
@@ -14110,7 +14257,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_31
+      tags: *ref_32
       security:
         - bearer: []
   /policy-labels/components:
@@ -14139,7 +14286,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_31
+      tags: *ref_32
       security:
         - bearer: []
   /policy-labels/{definitionId}/tokens:
@@ -14195,7 +14342,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_31
+      tags: *ref_32
       security:
         - bearer: []
   /policy-labels/{definitionId}/tokens/{documentId}:
@@ -14242,7 +14389,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_31
+      tags: *ref_32
       security:
         - bearer: []
   /policy-labels/{definitionId}/documents:
@@ -14282,7 +14429,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_31
+      tags: *ref_32
       security:
         - bearer: []
     get:
@@ -14337,7 +14484,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_31
+      tags: *ref_32
       security:
         - bearer: []
   /policy-labels/{definitionId}/documents/{documentId}:
@@ -14377,7 +14524,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_31
+      tags: *ref_32
       security:
         - bearer: []
   /policy-labels/{definitionId}/documents/{documentId}/relationships:
@@ -14417,7 +14564,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_31
+      tags: *ref_32
       security:
         - bearer: []
   /worker-tasks:
@@ -14466,7 +14613,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_32
+      tags: &ref_33
         - worker-tasks
       security:
         - bearer: []
@@ -14489,7 +14636,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_32
+      tags: *ref_33
       security:
         - bearer: []
   /worker-tasks/delete/{taskId}:
@@ -14518,7 +14665,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_32
+      tags: *ref_33
       security:
         - bearer: []
 info:
@@ -15004,19 +15151,19 @@ components:
           example: username
         role:
           type: string
-          enum: &ref_41
+          enum: &ref_42
             - STANDARD_REGISTRY
             - USER
             - AUDITOR
           example: USER
         permissionsGroup:
-          example: &ref_42
+          example: &ref_43
             - {}
           type: array
           items:
             type: string
         permissions:
-          example: &ref_43
+          example: &ref_44
             - POLICIES_POLICY_READ
           type: array
           items:
@@ -15202,35 +15349,35 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: &ref_33
+          oneOf: &ref_34
             - type: string
             - type: number
-          enum: &ref_34
+          enum: &ref_35
             - 0
             - 1
           example: 0
         eventsLvl:
-          oneOf: &ref_35
+          oneOf: &ref_36
             - type: string
             - type: number
-          enum: &ref_36
+          enum: &ref_37
             - 0
             - 1
           example: 0
         propLvl:
-          oneOf: &ref_37
+          oneOf: &ref_38
             - type: string
             - type: number
-          enum: &ref_38
+          enum: &ref_39
             - 0
             - 1
             - 2
           example: 0
         childrenLvl:
-          oneOf: &ref_39
+          oneOf: &ref_40
             - type: string
             - type: number
-          enum: &ref_40
+          enum: &ref_41
             - 0
             - 1
             - 2
@@ -15294,20 +15441,20 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: *ref_33
-          enum: *ref_34
+          oneOf: *ref_34
+          enum: *ref_35
           example: 0
         eventsLvl:
-          oneOf: *ref_35
-          enum: *ref_36
+          oneOf: *ref_36
+          enum: *ref_37
           example: 0
         propLvl:
-          oneOf: *ref_37
-          enum: *ref_38
+          oneOf: *ref_38
+          enum: *ref_39
           example: 0
         childrenLvl:
-          oneOf: *ref_39
-          enum: *ref_40
+          oneOf: *ref_40
+          enum: *ref_41
           example: 0
         moduleId1:
           type: string
@@ -15421,20 +15568,20 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: *ref_33
-          enum: *ref_34
+          oneOf: *ref_34
+          enum: *ref_35
           example: 0
         eventsLvl:
-          oneOf: *ref_35
-          enum: *ref_36
+          oneOf: *ref_36
+          enum: *ref_37
           example: 0
         propLvl:
-          oneOf: *ref_37
-          enum: *ref_38
+          oneOf: *ref_38
+          enum: *ref_39
           example: 0
         childrenLvl:
-          oneOf: *ref_39
-          enum: *ref_40
+          oneOf: *ref_40
+          enum: *ref_41
           example: 0
         documentId1:
           type: string
@@ -15469,20 +15616,20 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: *ref_33
-          enum: *ref_34
+          oneOf: *ref_34
+          enum: *ref_35
           example: 0
         eventsLvl:
-          oneOf: *ref_35
-          enum: *ref_36
+          oneOf: *ref_36
+          enum: *ref_37
           example: 0
         propLvl:
-          oneOf: *ref_37
-          enum: *ref_38
+          oneOf: *ref_38
+          enum: *ref_39
           example: 0
         childrenLvl:
-          oneOf: *ref_39
-          enum: *ref_40
+          oneOf: *ref_40
+          enum: *ref_41
           example: 0
         toolId1:
           type: string
@@ -15963,6 +16110,7 @@ components:
             - UNPUBLISHED
             - ERROR
             - DEMO
+            - VIEW
           example: DRAFT
         topicId:
           type: string
@@ -16233,15 +16381,15 @@ components:
           example: username
         role:
           type: string
-          enum: *ref_41
+          enum: *ref_42
           example: USER
         permissionsGroup:
-          example: *ref_42
+          example: *ref_43
           type: array
           items:
             type: string
         permissions:
-          example: *ref_43
+          example: *ref_44
           type: array
           items:
             type: string
@@ -17545,7 +17693,7 @@ components:
             #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
         permissions:
           type: string
-          enum: &ref_44
+          enum: &ref_45
             - ANALYTIC_POLICY_READ
             - ANALYTIC_MODULE_READ
             - ANALYTIC_TOOL_READ
@@ -17624,7 +17772,7 @@ components:
       properties:
         name:
           type: string
-          enum: *ref_44
+          enum: *ref_45
           example: ANALYTIC_POLICY_READ
         category:
           type: string
