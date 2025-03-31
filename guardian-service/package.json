@@ -16,13 +16,13 @@
     "image-size": "1.0.2"
   },
   "dependencies": {
-    "@guardian/common": "^3.1.0",
-    "@guardian/interfaces": "^3.1.0",
+    "@guardian/common": "^3.1.1",
+    "@guardian/interfaces": "^3.1.1",
     "@mikro-orm/core": "6.2.2",
     "@mikro-orm/mongodb": "6.2.2",
-    "@nestjs/common": "^9.4.1",
-    "@nestjs/core": "^9.4.1",
-    "@nestjs/microservices": "^9.4.1",
+    "@nestjs/common": "^11.0.11",
+    "@nestjs/core": "^11.0.11",
+    "@nestjs/microservices": "^11.0.11",
     "@formulajs/formulajs": "4.4.6",
     "mathjs": "^13.1.1",
     "bson": "^6.5.0",
