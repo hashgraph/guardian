@@ -2,7 +2,7 @@ import * as process from 'process';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ClientsModule, MicroserviceOptions, Transport, } from '@nestjs/microservices';
-import { COMMON_CONNECTION_CONFIG, DataBaseHelper, entities, GenerateTLSOptionsNats, Migration, Utils } from '@indexer/common';
+import { COMMON_CONNECTION_CONFIG, DataBaseHelper, entities, Environment, GenerateTLSOptionsNats, Migration, Utils } from '@indexer/common';
 import { ChannelService } from './api/channel.service.js';
 import { LogService } from './_dev/api/log.service.js';
 import { SearchService } from './api/search.service.js';
@@ -11,8 +11,10 @@ import { FiltersService } from './api/filters.service.js';
 import { LandingService } from './api/landing.service.js';
 import { AnalyticsService } from './api/analytics.service.js';
 import { SettingsService } from './api/settings.service.js';
+import { LoadingQueueService } from './api/loading-queue.service.js';
 import { SynchronizationAll } from './helpers/synchronizers/index.js';
 import { fixtures } from './helpers/fixtures.js';
+import { AnalyticsTask } from './helpers/analytics-task.js';
 
 const channelName = (
     process.env.SERVICE_CHANNEL || `indexer-service.${Utils.GenerateUUIDv4(26)}`
@@ -81,6 +83,7 @@ async function updateIndexes() {
         LandingService,
         AnalyticsService,
         SettingsService,
+        LoadingQueueService,
     ],
 })
 class AppModule { }
@@ -129,10 +132,24 @@ Promise.all([
          * Listen
          */
         app.listen();
+        
+        try {
+            Environment.setNetwork(process.env.HEDERA_NET);
+        } catch (error) {
+            throw new Error('Worker not configured')
+        }
+
+        await LoadingQueueService.init();
+        
         /**
          * Sync tasks
          */
         SynchronizationAll.createAllTasks();
+
+        /**
+         * Analytic task
+         */
+        AnalyticsTask.create();
     },
     (reason) => {
         console.log(reason);
