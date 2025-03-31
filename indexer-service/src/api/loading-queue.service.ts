@@ -154,7 +154,7 @@ export class LoadingQueueService {
             policyTopicIds.forEach(async id => {
                 const priorityTimestamp = Date.now();
                 if (await this.checkQueue(id)) {
-                    const topicResult = await this.addPolicy(id, priorityTimestamp);
+                    const topicResult = await this.addInstancePolicy(id, priorityTimestamp);
 
                     if (topicResult) {
                         await this.createQueue(id, priorityTimestamp, 'Topic');
@@ -324,6 +324,9 @@ export class LoadingQueueService {
         },
             {
                 priorityDate: new Date(),
+                priorityStatus: PriorityStatus.SCHEDULED,
+                priorityStatusDate: new Date(),
+                priorityTimestamp
             }
         );
 
@@ -349,6 +352,38 @@ export class LoadingQueueService {
     }
 
     private async addPolicy(policyId: string, priorityTimestamp: number = Date.now()) {
+        const em = DataBaseHelper.getEntityManager();
+
+        const row = await em.find(
+            Message,
+            {
+                type: MessageType.TOPIC,
+                'options.childId': policyId,
+                'options.messageType': 'POLICY_TOPIC'
+            } as any,
+        )
+
+        if (row) {
+            const policyInstances = await em.find(
+                Message,
+                {
+                    type: MessageType.INSTANCE_POLICY,
+                    topicId: policyId,
+                } as any,
+            )
+            
+            let policyInstancesResult = false;
+            policyInstances.forEach(async item => {
+                policyInstancesResult ||= await this.addInstancePolicy(item.options.instanceTopicId, priorityTimestamp);
+            });
+
+            return policyInstancesResult;
+        }
+
+        return false;
+    }
+
+    private async addInstancePolicy(policyId: string, priorityTimestamp: number = Date.now()) {
         const em = DataBaseHelper.getEntityManager();
 
         const priorityDate = new Date();
@@ -399,6 +434,9 @@ export class LoadingQueueService {
         },
             {
                 priorityDate: new Date(),
+                priorityTimestamp,
+                priorityStatusDate: priorityDate,
+                priorityStatus: PriorityStatus.SCHEDULED,
             }
         );
 
@@ -407,6 +445,10 @@ export class LoadingQueueService {
 
     private async addEntity(entityId: string, priorityTimestamp: number = Date.now()) {
         if (await this.addPolicy(entityId, priorityTimestamp)) {
+            return true;
+        }
+
+        if (await this.addInstancePolicy(entityId, priorityTimestamp)) {
             return true;
         }
 
