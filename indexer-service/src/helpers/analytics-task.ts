@@ -43,15 +43,23 @@ export class AnalyticsTask {
         this.isSyncRunning.set(this.synchronizationPolicy.name, false);
     }
 
-    public static create() {
+    public static async create() {
         AnalyticsTask.EVENTS_SET = new Set<number>();
         AnalyticsTask.EVENTS_QUEUE = [];
 
-        // todo setup queue from db
+        const em = DataBaseHelper.getEntityManager();
+        const queue = await em.find(PriorityQueue, {
+            priorityStatus: PriorityStatus.ANALYTICS
+        });
+
+        queue.forEach(item => {
+            AnalyticsTask.EVENTS_QUEUE.push(item.priorityTimestamp);
+        });
+
         (new AnalyticsTask()).start();
     }
 
-    public start() { 
+    public start() {
         const taskExecution = async () => {
             try {
                 console.log('Analytic job started');
@@ -60,7 +68,7 @@ export class AnalyticsTask {
                 console.error('Analytic synchronization failed:', error);
             }
         };
-        
+
         this._job = new CronJob(AnalyticsTask.MASK, taskExecution);
         this._job.start();
 
@@ -82,14 +90,14 @@ export class AnalyticsTask {
         if (AnalyticsTask.EVENTS_QUEUE.length > 0 &&
             !this.isSyncRunning.get(this.synchronizationVCs.name) &&
             !this.isSyncRunning.get(this.synchronizationVPs.name) &&
-                !this.isSyncRunning.get(this.synchronizationPolicy.name)) {
-            
+            !this.isSyncRunning.get(this.synchronizationPolicy.name)) {
+
             const timestamp = AnalyticsTask.EVENTS_QUEUE.shift();
             AnalyticsTask.EVENTS_SET.delete(timestamp);
 
             console.log(`Processing event (timestamp): ${timestamp}`);
 
-            this.updateVCsAnalytics(timestamp);
+            await this.updateVCsAnalytics(timestamp);
 
             // await this.runTask(this.synchronizationVCs);
             await this.runTask(this.synchronizationVPs);
@@ -101,6 +109,7 @@ export class AnalyticsTask {
             }, {
                 priorityStatus: PriorityStatus.FINISHED
             });
+            
             console.log(`Analytics synchronization finished!`);
 
         } else if (AnalyticsTask.EVENTS_QUEUE.length > 0) {
@@ -128,11 +137,11 @@ export class AnalyticsTask {
     private async updateVCsAnalytics(priorityTimestamp: number): Promise<void> {
         const em = DataBaseHelper.getEntityManager();
         const messageCacheCollection = em.getCollection<MessageCache>('MessageCache');
-        
+
         const messageCache = messageCacheCollection.find({
             priorityTimestamp
         });
-            
+
         const consensusTimestamps = new Set<string>();
 
         while (await messageCache.hasNext()) {
@@ -177,7 +186,7 @@ export class AnalyticsTask {
 
         const policies = messageCollection.find({
             type: MessageType.INSTANCE_POLICY,
-            'options.instanceTopicId': { $in: Array.from(topicIds) }
+            consensusTimestamp: { $in: Array.from(consensusTimestamps) }
         });
         
         while (await policies.hasNext()) {
@@ -190,7 +199,7 @@ export class AnalyticsTask {
         const topics = messageCollection.find({
             type: MessageType.TOPIC,
             action: MessageAction.CreateTopic,
-            'options.parentId': { $in: Array.from(topicIds) }
+            consensusTimestamp: { $in: Array.from(consensusTimestamps) }
         });
 
         while (await topics.hasNext()) {
@@ -199,7 +208,7 @@ export class AnalyticsTask {
                 topicMap.set(topic.topicId, topic);
             }
         }
-        
+
         const schemas = messageCollection.find({
             type: MessageType.SCHEMA,
             files: { $in: Array.from(schemaContextCIDs) }
@@ -248,6 +257,7 @@ export class AnalyticsTask {
         let policyMessage = policyMap.get(document.topicId);
         if (!policyMessage) {
             const projectTopic = topicMap.get(document.topicId);
+            
             if (projectTopic) {
                 policyMessage = policyMap.get(projectTopic.options.parentId);
             }
@@ -305,7 +315,7 @@ export class AnalyticsTask {
         }
         return null;
     }
-    
+
     private getContext(documentFile: any): any {
         let contexts = documentFile['@context'];
         contexts = Array.isArray(contexts) ? contexts : [contexts];

@@ -1,4 +1,5 @@
 import { DataBaseHelper } from '@indexer/common';
+import { ObjectId } from '@mikro-orm/mongodb';
 
 export async function loadFiles(ids: Set<string>, buffer: false): Promise<Map<string, string>>
 export async function loadFiles(ids: Set<string>, buffer: true): Promise<Map<string, Buffer>>
@@ -77,23 +78,18 @@ export async function fastLoadFiles(ids: Set<string>): Promise<Map<string, strin
     const allFiles = filesCollection.find({ filename: {$in: Array.from(ids)} } );
     while (await allFiles.hasNext()) {
         const file = await allFiles.next();
-        if (ids.has(file.filename)) {
-            const fileId = file._id.toString();
-            fileMap.set(file.filename, fileId);
-            chunkMap.set(fileId, []);
-            fileIds.add(fileId);
-        }
+        const fileId = file._id.toString();
+        fileMap.set(file.filename, fileId);
+        chunkMap.set(fileId, []);
+        fileIds.add(fileId);
     }
 
-    const allChunks = chunksCollection.find({ files_id: {$in: Array.from(fileIds)} });
+    const allChunks = chunksCollection.find({ files_id: {$in: Array.from(fileIds).map(id => new ObjectId(id))} });
     while (await allChunks.hasNext()) {
         const chunk = await allChunks.next();
         const fileId = chunk.files_id.toString();
-        if (chunkMap.has(fileId)) {
-            chunkMap.get(fileId)[chunk.n] = Buffer.from(chunk.data.toString('base64'), 'base64');
-        }
+        chunkMap.get(fileId)[chunk.n] = Buffer.from(chunk.data.toString('base64'), 'base64');
     }
-
     const result = new Map<string, string>();
 
     for (const [filename, fileId] of fileMap.entries()) {

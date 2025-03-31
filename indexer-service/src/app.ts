@@ -149,7 +149,7 @@ Promise.all([
         /**
          * Analytic task
          */
-        AnalyticsTask.create();
+        await AnalyticsTask.create();
     },
     (reason) => {
         console.log(reason);
