@@ -354,3 +354,7 @@ tr.revoked td:not(.mat-column-history) {
 ::ng-deep .p-datatable-tbody .pi {
     font-size: 0.75rem;
 }
+
+.text-container {
+    overflow: hidden;
+}

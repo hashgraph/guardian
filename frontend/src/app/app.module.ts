@@ -114,7 +114,6 @@ import { AISearchService } from './services/ai-search.service';
 import { DndModule } from 'ngx-drag-drop';
 import { PasswordModule } from 'primeng/password';
 import { RegisterDialogComponent } from './views/login/register-dialogs/register-dialog/register-dialog.component';
-import { TermsConditionsComponent } from './views/login/register-dialogs/terms-conditions-dialog/terms-conditions.component';
 import { AccountTypeSelectorDialogComponent } from './views/login/register-dialogs/account-type-selector-dialog/account-type-selector-dialog.component';
 import { ForgotPasswordDialogComponent } from './views/login/forgot-password-dialog/forgot-password-dialog.component';
 import { MultiSelectModule } from 'primeng/multiselect';
@@ -166,7 +165,6 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         SearchResultCardComponent,
         ListOfTokensUserComponent,
         RegisterDialogComponent,
-        TermsConditionsComponent,
         AccountTypeSelectorDialogComponent,
         ForgotPasswordDialogComponent,
         OnlyForDemoDirective,

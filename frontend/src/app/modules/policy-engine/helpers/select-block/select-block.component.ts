@@ -134,7 +134,11 @@ export class SelectBlock implements AfterViewInit {
         }
         if (this.searchData) {
             for (const item of this.searchData) {
-                item.id = item.value.id;
+                if (typeof item.value === 'object') {
+                    item.id = item.value.id;
+                } else {
+                    item.id = item.value;
+                }
             }
         }
     }
