@@ -1,8 +1,9 @@
-import { GenerateUUIDv4, IOwner, IRootConfig, ISchema, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
-import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
-import { INotifier } from '../../helpers/notifier.js';
-import { importTag } from '../../api/helpers/tag-import-export-helper.js';
+import { GenerateUUIDv4, IOwner, IRootConfig, ISchema, ModelHelper, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
+import { DatabaseServer, MessageAction, MessageServer, MessageType, PinoLogger, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { FilterObject } from '@mikro-orm/core';
+import { INotifier } from '../../helpers/notifier.js';
+import { importTag } from './tag-import-helper.js';
+import { checkForCircularDependency, loadSchema } from './load-helper.js';
 
 /**
  * Only unique
@@ -12,17 +13,6 @@ import { FilterObject } from '@mikro-orm/core';
  */
 export function onlyUnique(value: any, index: any, self: any): boolean {
     return self.indexOf(value) === index;
-}
-
-/**
- * Check circular dependency in schema
- * @param schema Schema
- * @returns Does circular dependency exists
- */
-export function checkForCircularDependency(schema: ISchema): boolean {
-    return schema.document?.$defs && schema.document.$id
-        ? Object.keys(schema.document.$defs).includes(schema.document.$id)
-        : false;
 }
 
 /**
@@ -378,22 +368,22 @@ export async function createSchema(
     schemaObject.iri = schemaObject.iri || `${schemaObject.uuid}`;
     schemaObject.codeVersion = SchemaConverterUtils.VERSION;
     const errorsCount = await DatabaseServer.getSchemasCount({
-            iri: {
-                $eq: schemaObject.iri,
+        iri: {
+            $eq: schemaObject.iri,
+        },
+        $or: [
+            {
+                topicId: {
+                    $ne: schemaObject.topicId,
+                },
             },
-            $or: [
-                {
-                    topicId: {
-                        $ne: schemaObject.topicId,
-                    },
+            {
+                uuid: {
+                    $ne: schemaObject.uuid,
                 },
-                {
-                    uuid: {
-                        $ne: schemaObject.uuid,
-                    },
-                },
-            ],
-        } as FilterObject<SchemaCollection>,
+            },
+        ],
+    } as FilterObject<SchemaCollection>,
     );
     if (errorsCount > 0) {
         throw new Error('Schema identifier already exist');
@@ -477,4 +467,64 @@ export async function deleteDemoSchema(
 
     notifier.info(`Delete schema ${item.name}`);
     await DatabaseServer.deleteSchemas(item.id);
+}
+
+
+/**
+ * Prepare schema for preview
+ * @param messageIds
+ * @param notifier
+ * @param logger
+ */
+export async function prepareSchemaPreview(
+    messageIds: string[],
+    notifier: INotifier,
+    logger: PinoLogger
+): Promise<any[]> {
+    notifier.start('Load schema file');
+    const schemas = [];
+    for (const messageId of messageIds) {
+        const schema = await loadSchema(messageId, logger);
+        schemas.push(schema);
+    }
+
+    notifier.completedAndStart('Parse schema');
+    const messageServer = new MessageServer(null, null);
+    const uniqueTopics = schemas.map(res => res.topicId).filter(onlyUnique);
+    const anotherSchemas: SchemaMessage[] = [];
+    for (const topicId of uniqueTopics) {
+        const anotherVersions = await messageServer.getMessages<SchemaMessage>(
+            topicId,
+            MessageType.Schema,
+            MessageAction.PublishSchema
+        );
+        for (const ver of anotherVersions) {
+            anotherSchemas.push(ver);
+        }
+    }
+
+    notifier.completedAndStart('Verifying');
+    for (const schema of schemas) {
+        if (!schema.version) {
+            continue;
+        }
+        const newVersions = [];
+        const topicMessages = anotherSchemas.filter(item => item.uuid === schema.uuid);
+        for (const topicMessage of topicMessages) {
+            if (
+                topicMessage.version &&
+                ModelHelper.versionCompare(topicMessage.version, schema.version) === 1
+            ) {
+                newVersions.push({
+                    messageId: topicMessage.getId(),
+                    version: topicMessage.version
+                });
+            }
+        }
+        if (newVersions && newVersions.length !== 0) {
+            schema.newVersions = newVersions.reverse();
+        }
+    }
+    notifier.completed();
+    return schemas;
 }

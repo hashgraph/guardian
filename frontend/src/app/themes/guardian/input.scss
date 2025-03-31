@@ -58,6 +58,18 @@
             box-shadow: none;
         }
     }
+
+    .guardian-input-readonly {
+        height: 40px;
+        border-radius: 8px;
+        outline: none;
+        border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
+        font-family: Inter;
+        font-size: 14px;
+        font-weight: 400;
+        color: #000;
+        padding: 10px 16px;
+    }
 }
 
 .guardian-input {

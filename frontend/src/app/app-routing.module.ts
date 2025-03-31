@@ -59,6 +59,7 @@ import { PolicyLabelDocumentsComponent } from './modules/statistics/policy-label
 import { PolicyLabelDocumentViewComponent } from './modules/statistics/policy-labels/policy-label-document-view/policy-label-document-view.component';
 import { FormulasComponent } from './modules/formulas/formulas/formulas.component';
 import { FormulaConfigurationComponent } from './modules/formulas/formula-configuration/formula-configuration.component';
+import { ExternalPolicyComponent } from './modules/policy-engine/external-policies/external-policies.component';
 
 
 @Injectable({
@@ -702,6 +703,26 @@ const routes: Routes = [
             ]
         }
     },
+
+
+
+    {
+        path: 'external-policies',
+        component: ExternalPolicyComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.POLICIES_EXTERNAL_POLICY_READ
+            ]
+        }
+    },
+
+
+
 
     { path: '', component: HomeComponent },
     { path: 'info', component: InfoComponent },

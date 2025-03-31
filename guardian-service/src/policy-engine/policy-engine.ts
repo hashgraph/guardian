@@ -31,7 +31,7 @@ import {
     VcHelper,
 } from '@guardian/common';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper.js';
-import { PolicyConverterUtils } from './policy-converter-utils.js';
+import { PolicyConverterUtils } from '../helpers/import-helpers/policy-converter-utils.js';
 import { emptyNotifier, INotifier } from '../helpers/notifier.js';
 import { ISerializedErrors } from './policy-validation-results-container.js';
 import { PolicyServiceChannelsContainer } from '../helpers/policy-service-channels-container.js';
@@ -1295,10 +1295,10 @@ export class PolicyEngine extends NatsService {
         messageId: string,
         user: IOwner,
         hederaAccount: IRootConfig,
-        versionOfTopicId: string,
         logger: PinoLogger,
+        policyFormat: PolicyFormat = false,
+        versionOfTopicId: string = null,
         metadata: PolicyToolMetadata = null,
-        demo: boolean = false,
         notifier: INotifier = emptyNotifier()
     ): Promise<{
         /**
@@ -1311,7 +1311,11 @@ export class PolicyEngine extends NatsService {
         errors: any[];
     }> {
         notifier.start('Load from IPFS');
-        const messageServer = new MessageServer(hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey, hederaAccount.signOptions);
+        const messageServer = new MessageServer(
+            hederaAccount.hederaAccountId, 
+            hederaAccount.hederaAccountKey, 
+            hederaAccount.signOptions
+        );
         const message = await messageServer.getMessage<PolicyMessage>(messageId);
         if (message.type !== MessageType.InstancePolicy) {
             throw new Error('Invalid Message Type');

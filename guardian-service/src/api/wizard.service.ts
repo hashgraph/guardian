@@ -3,9 +3,9 @@ import { DatabaseServer, MessageError, MessageResponse, PinoLogger, Policy, RunF
 import { IOwner, IWizardConfig, MessageAPI, SchemaCategory } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { PolicyEngine } from '../policy-engine/policy-engine.js';
-import { SchemaImportExportHelper } from './helpers/schema-import-export-helper.js';
 import { PolicyWizardHelper } from './helpers/policy-wizard-helper.js';
 import { FilterObject } from '@mikro-orm/core';
+import { SchemaImportExportHelper } from '../helpers/import-helpers/index.js'
 
 /**
  * Create existing policy schemas

@@ -3,8 +3,8 @@ import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { Controller } from '@nestjs/common';
 import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, JsonToXlsx, MessageError, MessageResponse, PinoLogger, RunFunctionAsync, Schema as SchemaCollection, Users, XlsxToJson } from '@guardian/common';
 import { IOwner, ISchema, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
-import { checkForCircularDependency, copySchemaAsync, createSchemaAndArtifacts, deleteSchema, findAndPublishSchema, getPageOptions, getSchemaCategory, getSchemaTarget, importSubTools, importTagsByFiles, prepareSchemaPreview, previewToolByMessage, SchemaImportExportHelper, updateSchemaDefs, updateToolConfig } from './helpers/index.js';
-import { PolicyImportExportHelper } from '../policy-engine/helpers/policy-import-export-helper.js';
+import { checkForCircularDependency, copySchemaAsync, createSchemaAndArtifacts, deleteSchema, findAndPublishSchema, getSchemaCategory, getSchemaTarget, importSubTools, importTagsByFiles, PolicyImportExportHelper, prepareSchemaPreview, previewToolByMessage, SchemaImportExportHelper, updateSchemaDefs, updateToolConfig } from '../helpers/import-helpers/index.js'
+import { getPageOptions } from './helpers/index.js';
 import { readFile } from 'fs/promises';
 import path from 'path';
 import process from 'process';
@@ -128,11 +128,11 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 if (msg.type) {
                     if (msg.owner) {
                         const iri = `#${msg.type}`;
-                        const schema = await DatabaseServer.getSchema({iri, owner: msg.owner});
+                        const schema = await DatabaseServer.getSchema({ iri, owner: msg.owner });
                         return new MessageResponse(schema);
                     } else {
                         const iri = `#${msg.type}`;
-                        const schema = await DatabaseServer.getSchema({iri});
+                        const schema = await DatabaseServer.getSchema({ iri });
                         return new MessageResponse(schema);
                     }
                 }

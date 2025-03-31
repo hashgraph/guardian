@@ -1,74 +1,9 @@
-import { DatabaseServer, IToolComponents, MessageAction, MessageServer, MessageType, PolicyTool, replaceAllEntities, replaceAllVariables, SchemaFields, TagMessage, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
-import { BlockType, GenerateUUIDv4, IOwner, IRootConfig, ModuleStatus, PolicyToolMetadata, SchemaCategory, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, IOwner, IRootConfig, ModuleStatus, PolicyToolMetadata, SchemaCategory, SchemaStatus, TagType, TopicType } from "@guardian/interfaces";
+import { DatabaseServer, IToolComponents, MessageAction, MessageServer, MessageType, PolicyTool, replaceAllEntities, replaceAllVariables, SchemaFields, TagMessage, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from "@guardian/common";
+import { importTag } from "./tag-import-helper.js";
+import { SchemaImportExportHelper } from "./schema-import-helper.js";
 import { INotifier } from '../../helpers/notifier.js';
-import { importTag } from './tag-import-export-helper.js';
-import { SchemaImportExportHelper } from './schema-import-export-helper.js';
-
-/**
- * Import tool mapping
- */
-export interface ImportToolMap {
-    oldMessageId: string;
-    messageId: string;
-    oldHash: string;
-    newHash?: string;
-}
-
-/**
- * Import Result
- */
-export interface ImportToolResult {
-    /**
-     * Tool
-     */
-    tool: PolicyTool;
-    /**
-     * Errors
-     */
-    errors: any[];
-}
-
-/**
- * Import Results
- */
-export interface ImportToolResults {
-    /**
-     * Tool
-     */
-    tools: PolicyTool[];
-    /**
-     * Errors
-     */
-    errors: any[];
-}
-
-/**
- * Replace config
- * @param tool
- * @param schemasMap
- */
-export async function replaceConfig(
-    tool: PolicyTool,
-    schemasMap: any[],
-    tools: ImportToolMap[]
-) {
-    if (await DatabaseServer.getTool({ name: tool.name })) {
-        tool.name = tool.name + '_' + Date.now();
-    }
-
-    for (const item of schemasMap) {
-        replaceAllEntities(tool.config, SchemaFields, item.oldIRI, item.newIRI);
-        replaceAllVariables(tool.config, 'Schema', item.oldIRI, item.newIRI);
-    }
-
-    for (const item of tools) {
-        if (!item.newHash || !item.messageId) {
-            continue;
-        }
-        replaceAllEntities(tool.config, ['messageId'], item.oldMessageId, item.messageId);
-        replaceAllEntities(tool.config, ['hash'], item.oldHash, item.newHash);
-    }
-}
+import { ImportToolMap, ImportToolResult, ImportToolResults } from "./tool-import.interface.js";
 
 /**
  * Import tools by messages
@@ -124,41 +59,6 @@ export async function importSubTools(
     };
 }
 
-/**
- * Import tool by message
- * @param owner
- * @param messages
- * @param notifier
- */
-export async function previewToolByMessage(messageId: string): Promise<IToolComponents> {
-    const oldTool = await DatabaseServer.getTool({ messageId });
-    if (oldTool) {
-        const subSchemas = await DatabaseServer.getSchemas({ topicId: oldTool.topicId });
-        return {
-            tool: oldTool,
-            schemas: subSchemas,
-            tags: [],
-            tools: []
-        }
-    }
-
-    messageId = messageId.trim();
-    const message = await MessageServer.getMessage<ToolMessage>(messageId);
-    if (!message) {
-        throw new Error('Invalid Message');
-    }
-    if (message.type !== MessageType.Tool) {
-        throw new Error('Invalid Message Type');
-    }
-    if (message.action !== MessageAction.PublishTool) {
-        throw new Error('Invalid Message Action');
-    }
-    if (!message.document) {
-        throw new Error('File in body is empty');
-    }
-
-    return await ToolImportExport.parseZipFile(message.document);
-}
 
 /**
  * Import tool by message
@@ -296,34 +196,63 @@ export async function importToolByMessage(
 }
 
 /**
- * Convert errors to string
- * @param errors
+ * Check and update config file
+ * @param tool
+ *
+ * @returns tool
  */
-export function importToolErrors(errors: any[]): string {
-    const schemas: string[] = [];
-    const tools: string[] = [];
-    const others: string[] = []
-    for (const e of errors) {
-        if (e.type === 'schema') {
-            schemas.push(e.name);
-        } else if (e.type === 'tool') {
-            tools.push(e.name);
-        } else {
-            others.push(e.name);
+export async function updateToolConfig(tool: PolicyTool): Promise<PolicyTool> {
+    tool.config = tool.config || {};
+    tool.config.permissions = tool.config.permissions || [];
+    tool.config.children = tool.config.children || [];
+    tool.config.events = tool.config.events || [];
+    tool.config.artifacts = tool.config.artifacts || [];
+    tool.config.variables = tool.config.variables || [];
+    tool.config.inputEvents = tool.config.inputEvents || [];
+    tool.config.outputEvents = tool.config.outputEvents || [];
+    tool.config.innerEvents = tool.config.innerEvents || [];
+
+    const toolIds = new Set<string>()
+    findSubTools(tool.config, toolIds, true);
+    const tools = await DatabaseServer.getTools({
+        status: ModuleStatus.PUBLISHED,
+        messageId: { $in: Array.from(toolIds.values()) }
+    }, { fields: ['name', 'topicId', 'messageId', 'tools'] });
+    const list = [];
+    for (const row of tools) {
+        list.push({
+            name: row.name,
+            topicId: row.topicId,
+            messageId: row.messageId
+        })
+        if (row.tools) {
+            for (const subTool of row.tools) {
+                list.push(subTool);
+            }
         }
     }
-    let message: string = 'Failed to import components:';
-    if (schemas.length) {
-        message += ` schemas: ${JSON.stringify(schemas)};`
-    }
-    if (tools.length) {
-        message += ` tools: ${JSON.stringify(tools)};`
-    }
-    if (others.length) {
-        message += ` others: ${JSON.stringify(others)};`
-    }
-    return message;
+    tool.tools = list;
+
+    return tool;
 }
+
+export function findSubTools(block: any, result: Set<string>, isRoot: boolean = false) {
+    if (!block) {
+        return;
+    }
+    if (block.blockType === BlockType.Tool && !isRoot) {
+        if (block.messageId && typeof block.messageId === 'string') {
+            result.add(block.messageId);
+        }
+    } else {
+        if (Array.isArray(block.children)) {
+            for (const child of block.children) {
+                findSubTools(child, result);
+            }
+        }
+    }
+}
+
 
 /**
  * Import tool by file
@@ -488,60 +417,97 @@ export async function importToolByFile(
     };
 }
 
-export function findSubTools(block: any, result: Set<string>, isRoot: boolean = false) {
-    if (!block) {
-        return;
+
+/**
+ * Convert errors to string
+ * @param errors
+ */
+export function importToolErrors(errors: any[]): string {
+    const schemas: string[] = [];
+    const tools: string[] = [];
+    const others: string[] = []
+    for (const e of errors) {
+        if (e.type === 'schema') {
+            schemas.push(e.name);
+        } else if (e.type === 'tool') {
+            tools.push(e.name);
+        } else {
+            others.push(e.name);
+        }
     }
-    if (block.blockType === BlockType.Tool && !isRoot) {
-        if (block.messageId && typeof block.messageId === 'string') {
-            result.add(block.messageId);
+    let message: string = 'Failed to import components:';
+    if (schemas.length) {
+        message += ` schemas: ${JSON.stringify(schemas)};`
+    }
+    if (tools.length) {
+        message += ` tools: ${JSON.stringify(tools)};`
+    }
+    if (others.length) {
+        message += ` others: ${JSON.stringify(others)};`
+    }
+    return message;
+}
+
+/**
+ * Replace config
+ * @param tool
+ * @param schemasMap
+ */
+export async function replaceConfig(
+    tool: PolicyTool,
+    schemasMap: any[],
+    tools: ImportToolMap[]
+) {
+    if (await DatabaseServer.getTool({ name: tool.name })) {
+        tool.name = tool.name + '_' + Date.now();
+    }
+
+    for (const item of schemasMap) {
+        replaceAllEntities(tool.config, SchemaFields, item.oldIRI, item.newIRI);
+        replaceAllVariables(tool.config, 'Schema', item.oldIRI, item.newIRI);
+    }
+
+    for (const item of tools) {
+        if (!item.newHash || !item.messageId) {
+            continue;
         }
-    } else {
-        if (Array.isArray(block.children)) {
-            for (const child of block.children) {
-                findSubTools(child, result);
-            }
-        }
+        replaceAllEntities(tool.config, ['messageId'], item.oldMessageId, item.messageId);
+        replaceAllEntities(tool.config, ['hash'], item.oldHash, item.newHash);
     }
 }
 
 /**
- * Check and update config file
- * @param tool
- *
- * @returns tool
+ * Import tool by message
+ * @param owner
+ * @param messages
+ * @param notifier
  */
-export async function updateToolConfig(tool: PolicyTool): Promise<PolicyTool> {
-    tool.config = tool.config || {};
-    tool.config.permissions = tool.config.permissions || [];
-    tool.config.children = tool.config.children || [];
-    tool.config.events = tool.config.events || [];
-    tool.config.artifacts = tool.config.artifacts || [];
-    tool.config.variables = tool.config.variables || [];
-    tool.config.inputEvents = tool.config.inputEvents || [];
-    tool.config.outputEvents = tool.config.outputEvents || [];
-    tool.config.innerEvents = tool.config.innerEvents || [];
-
-    const toolIds = new Set<string>()
-    findSubTools(tool.config, toolIds, true);
-    const tools = await DatabaseServer.getTools({
-        status: ModuleStatus.PUBLISHED,
-        messageId: { $in: Array.from(toolIds.values()) }
-    }, { fields: ['name', 'topicId', 'messageId', 'tools'] });
-    const list = [];
-    for (const row of tools) {
-        list.push({
-            name: row.name,
-            topicId: row.topicId,
-            messageId: row.messageId
-        })
-        if (row.tools) {
-            for (const subTool of row.tools) {
-                list.push(subTool);
-            }
+export async function previewToolByMessage(messageId: string): Promise<IToolComponents> {
+    const oldTool = await DatabaseServer.getTool({ messageId });
+    if (oldTool) {
+        const subSchemas = await DatabaseServer.getSchemas({ topicId: oldTool.topicId });
+        return {
+            tool: oldTool,
+            schemas: subSchemas,
+            tags: [],
+            tools: []
         }
     }
-    tool.tools = list;
 
-    return tool;
+    messageId = messageId.trim();
+    const message = await MessageServer.getMessage<ToolMessage>(messageId);
+    if (!message) {
+        throw new Error('Invalid Message');
+    }
+    if (message.type !== MessageType.Tool) {
+        throw new Error('Invalid Message Type');
+    }
+    if (message.action !== MessageAction.PublishTool) {
+        throw new Error('Invalid Message Action');
+    }
+    if (!message.document) {
+        throw new Error('File in body is empty');
+    }
+
+    return await ToolImportExport.parseZipFile(message.document);
 }

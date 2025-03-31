@@ -2,15 +2,12 @@ import { ApiResponse } from '../api/helpers/api-response.js';
 import { BinaryMessageResponse, DatabaseServer, Hashing, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, PinoLogger, PolicyTool, replaceAllEntities, replaceAllVariables, RunFunctionAsync, SchemaFields, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { IOwner, IRootConfig, MessageAPI, ModuleStatus, SchemaStatus, TopicType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
-import { findAndPublishSchema } from '../api/helpers/schema-publish-helper.js';
-import { deleteSchema, incrementSchemaVersion } from '../api/helpers/schema-helper.js';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
 import { ToolValidator } from '../policy-engine/block-validators/tool-validator.js';
-import { PolicyConverterUtils } from '../policy-engine/policy-converter-utils.js';
-import { importToolByFile, importToolByMessage, importToolErrors, updateToolConfig } from './helpers/index.js';
+import { PolicyConverterUtils } from '../helpers/import-helpers/policy-converter-utils.js';
 import * as crypto from 'crypto';
-import { publishToolTags } from './tag.service.js';
 import { FilterObject } from '@mikro-orm/core';
+import { deleteSchema, findAndPublishSchema, importToolByFile, importToolByMessage, importToolErrors, incrementSchemaVersion, publishToolTags, updateToolConfig } from '../helpers/import-helpers/index.js'
 
 /**
  * Sha256

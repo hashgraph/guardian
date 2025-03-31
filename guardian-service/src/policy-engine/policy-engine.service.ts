@@ -29,7 +29,6 @@ import { DocumentCategoryType, DocumentType, EntityOwner, ExternalMessageEvents,
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { NatsConnection } from 'nats';
 import { HashComparator } from '../analytics/index.js';
-import { getSchemaCategory, importSubTools, previewToolByMessage, SchemaImportExportHelper } from '../api/helpers/index.js';
 import { compareResults, getDetails } from '../api/record.service.js';
 import { Inject } from '../helpers/decorators/inject.js';
 import { GuardiansService } from '../helpers/guardians.js';
@@ -38,7 +37,6 @@ import { BlockAboutString } from './block-about.js';
 import { PolicyDataMigrator } from './helpers/policy-data-migrator.js';
 import { PolicyDataLoader, VcDocumentLoader, VpDocumentLoader } from './helpers/policy-data/loaders/index.js';
 import { PolicyDataImportExport } from './helpers/policy-data/policy-data-import-export.js';
-import { PolicyImportExportHelper } from './helpers/policy-import-export-helper.js';
 import { PolicyComponentsUtils } from './policy-components-utils.js';
 import { PolicyEngine } from './policy-engine.js';
 import { IPolicyUser } from './policy-user.js';

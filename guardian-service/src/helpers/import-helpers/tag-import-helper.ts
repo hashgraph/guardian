@@ -1,12 +1,13 @@
 import { DatabaseServer, Tag } from '@guardian/common';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { ImportSchemaResult } from './schema-import.interface.js';
+import { INotifier } from '../../helpers/notifier.js';
 
 /**
  * Import tags
  * @param tags
  * @param map - Map<OldLocalId, NewLocalId> | NewLocalId
  */
-
 export async function importTag(
     tags: Tag[],
     newIds?: Map<string, string> | string
@@ -51,4 +52,25 @@ export async function importTag(
         tag.date = tag.date || (new Date()).toISOString();
         await DatabaseServer.createTag(tag);
     }
+}
+
+/**
+ * Import tags by files
+ * @param result
+ * @param files
+ * @param topicId
+ */
+export async function importTagsByFiles(
+    result: ImportSchemaResult,
+    files: Tag[],
+    notifier: INotifier
+): Promise<ImportSchemaResult> {
+    const { schemasMap } = result;
+    const idMap: Map<string, string> = new Map();
+    for (const item of schemasMap) {
+        idMap.set(item.oldID, item.newID);
+        idMap.set(item.oldMessageID, item.newID);
+    }
+    await importTag(files, idMap);
+    return result;
 }

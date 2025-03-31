@@ -54,7 +54,8 @@ import {
     FormulasOptionsDTO,
     FormulasDataDTO,
     FormulaRelationshipsDTO,
-    ExternalPolicyDTO
+    ExternalPolicyDTO,
+    PolicyPreviewDTO
 } from '#middlewares';
 
 /**
@@ -3619,7 +3620,7 @@ export class Guardians extends NatsService {
 
 
 
-    
+
     /**
      * Create external policy
      *
@@ -3632,4 +3633,64 @@ export class Guardians extends NatsService {
         return await this.sendMessage(MessageAPI.CREATE_EXTERNAL_POLICY, { externalPolicy, owner });
     }
 
+    /**
+     * Return external policies
+     *
+     * @param filters
+     * @param owner
+     *
+     * @returns {ResponseAndCount<PolicyLabelDTO>}
+     */
+    public async getExternalPolicies(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<PolicyLabelDTO>> {
+        return await this.sendMessage(MessageAPI.GET_EXTERNAL_POLICIES, { filters, owner });
+    }
+
+    /**
+     * Return external policy
+     *
+     * @param messageId
+     * @param owner
+     *
+     * @returns {PolicyPreviewDTO}
+     */
+    public async previewExternalPolicy(messageId: string, owner: IOwner): Promise<PolicyPreviewDTO> {
+        return await this.sendMessage(MessageAPI.PREVIEW_EXTERNAL_POLICY, { messageId, owner });
+    }
+
+    /**
+     * Return external policy
+     *
+     * @param messageId
+     * @param owner
+     *
+     * @returns {ExternalPolicyDTO}
+     */
+    public async importExternalPolicy(messageId: string, owner: IOwner): Promise<ExternalPolicyDTO> {
+        return await this.sendMessage(MessageAPI.IMPORT_EXTERNAL_POLICY, { messageId, owner });
+    }
+
+    /**
+     * Get external policy
+     *
+     * @param policyId
+     * @param owner
+     * @returns {ExternalPolicyDTO}
+     */
+    public async getExternalPolicyById(policyId: string, owner: IOwner): Promise<ExternalPolicyDTO> {
+        return await this.sendMessage(MessageAPI.GET_EXTERNAL_POLICY, { policyId, owner });
+    }
+
+    /**
+     * Async approve external policy
+     * @param policyId
+     * @param owner
+     * @param task
+     */
+    public async approveExternalPolicyAsync(
+        policyId: string,
+        owner: IOwner,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.APPROVE_EXTERNAL_POLICY_ASYNC, { policyId, owner, task });
+    }
 }

@@ -2,8 +2,8 @@ import { ApiResponse } from '../api/helpers/api-response.js';
 import { ArrayMessageResponse, DatabaseServer, KeyType, MessageError, MessageResponse, PinoLogger, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, OrderDirection, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
-import { publishTokenTags } from './tag.service.js';
 import { FilterObject } from '@mikro-orm/core';
+import { publishTokenTags } from '../helpers/import-helpers/index.js'
 
 /**
  * Create token in Hedera network
@@ -834,12 +834,12 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                     }
                 }, 20);
 
-                const [tokens, count] = await dataBaseServer.findAndCount(Token,user.parent
+                const [tokens, count] = await dataBaseServer.findAndCount(Token, user.parent
                     ? {
-                         $or: [
-                             { owner: { $eq: user.parent } },
-                             { owner: { $exists: false } }
-                         ]
+                        $or: [
+                            { owner: { $eq: user.parent } },
+                            { owner: { $exists: false } }
+                        ]
                     } as FilterObject<Token>
                     : {}
                 );
@@ -946,7 +946,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
      * @returns {any[], number} - tokens and count
      */
     ApiResponse(MessageAPI.GET_TOKENS_PAGE_V2,
-        async (msg: {fields: string[], owner: IOwner, pageIndex: any, pageSize: any }): Promise<any> => {
+        async (msg: { fields: string[], owner: IOwner, pageIndex: any, pageSize: any }): Promise<any> => {
             const { fields, owner, pageIndex, pageSize } = msg;
 
             const options =
