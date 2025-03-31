@@ -1,6 +1,7 @@
 const optionKey = "option";
 import { METHOD } from "../support/api/api-const";
 import API from "../support/ApiUrls";
+import CommonElements from "../support/defaultUIElements";
 
 export const whileWipeRequestCreating = (dataToCompare, request, attempts) => {
     if (attempts < 100) {
@@ -221,4 +222,62 @@ export const getAccessToken = (username) => {
             return "Bearer " + response.body.accessToken;
         })
     })
+}
+
+export const waitForElement = (element, maxAttempts = 200, interval = 2000) => {
+    if (maxAttempts > 0) {
+        maxAttempts--;
+        cy.get('body').then((body) => {
+            cy.log(body.find(element));
+            if (body.find(element).length == 0) {
+                cy.log(`Waiting for operation to complete after ${interval / 1000} seconds...`);
+                cy.wait(interval, { log: false });
+                waitForElement(element, maxAttempts, interval);
+            }
+        })
+    }
+    else
+        throw new Error(`${element} doesn't exist after a few attempts...`)
+}
+
+export const waitForTaskComplete = (maxAttempts = 200, interval = 2000) => {
+    cy.wait(1000);
+    if (maxAttempts > 0) {
+        maxAttempts--;
+        cy.get('body').then((body) => {
+            cy.log(body.find("div.task-viewer"));
+            if (body.find("div.task-viewer").length != 0) {
+                cy.log(`Waiting for operation to complete after ${interval / 1000} seconds...`);
+                cy.wait(interval-1000);
+                waitForTaskComplete(maxAttempts, interval);
+            }
+        })
+    }
+}
+
+export const waitForBalanceIncrease = (balance, username, maxAttempts = 200, interval = 10000) => {
+    if (maxAttempts > 0) {
+        maxAttempts--;
+        cy.get('body', { log: false }).then((body) => {
+            cy.log(body.find(`td:contains(${balance})`));
+            if (body.find(`td:contains(${balance})`).length == 0) {
+                cy.contains("td", username).siblings().find(CommonElements.svg).click();
+                cy.wait(interval, { log: false });
+                waitForBalanceIncrease(balance, username, maxAttempts, interval);
+            }
+        })
+    }
+}
+
+export const waitForLoading = (maxAttempts = 200, interval = 2000) => {
+    if (maxAttempts > 0) {
+        maxAttempts--;
+        cy.get('body').then((body) => {
+            if (body.find("div.loading").length != 0) {
+                cy.log(`Waiting for operation to complete after ${interval / 1000} seconds...`);
+                cy.wait(interval);
+                waitForLoading(maxAttempts, interval);
+            }
+        })
+    }
 }

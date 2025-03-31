@@ -949,13 +949,9 @@ export class HederaSDKHelper {
                     const signedMessage = tx.signedMessages[0];
                     if (signedMessage) {
                         const pubKey = PublicKey.fromStringED25519(signedMessage.publicKey);
-                        const signatureBuffer = Buffer.from(signedMessage.signature.fullSig, 'hex');
-                        const signature = new Uint8Array(signatureBuffer);
-
+                        const signature = Buffer.from(signedMessage.signature.fullSig, 'hex');
                         try {
-                            await messageTransaction.signWith(pubKey, async () => {
-                                return signature;
-                            });
+                            messageTransaction.addSignature(pubKey, signature as any);
                         } catch (error) {
                             throw new Error(error);
                         }

@@ -5,16 +5,16 @@
     "@azure/identity": "^3.2.2",
     "@azure/keyvault-secrets": "^4.9.0",
     "@google-cloud/secret-manager": "^4.2.2",
-    "@guardian/interfaces": "^3.1.0",
-    "@hashgraph/sdk": "2.59.0",
+    "@guardian/interfaces": "^3.1.1",
+    "@hashgraph/sdk": "2.60.1",
     "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
     "@meeco/cryppo": "^2.0.2",
     "@mikro-orm/core": "6.2.2",
     "@mikro-orm/migrations-mongodb": "6.2.2",
     "@mikro-orm/mongodb": "6.2.2",
-    "@nestjs/common": "^9.4.1",
-    "@nestjs/core": "^9.4.1",
-    "@nestjs/microservices": "^9.4.1",
+    "@nestjs/common": "^11.0.11",
+    "@nestjs/core": "^11.0.11",
+    "@nestjs/microservices": "^11.0.11",
     "jsonld-signatures": "11.5.0",
     "@transmute/credentials-context": "0.7.0-unstable.80",
     "@transmute/did-context": "0.7.0-unstable.80",
@@ -79,5 +79,5 @@
     "test:stability": "mocha tests/stability.test.js"
   },
   "type": "module",
-  "version": "3.1.0"
+  "version": "3.1.1"
 }

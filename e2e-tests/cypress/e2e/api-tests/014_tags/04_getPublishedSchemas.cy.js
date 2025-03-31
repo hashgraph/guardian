@@ -21,4 +21,40 @@ context("Tags", { tags: ['tags', 'thirdPool', 'all'] }, () => {
             });
         })
     })
+
+    it("Get a list of all published schemas without auth token - Negative", () => {
+        cy.request({
+            method: METHOD.GET,
+            url: API.ApiServer + API.Tags + "schemas/" + "published",
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Get a list of all published schemas with invalid auth token - Negative", () => {
+        cy.request({
+            method: METHOD.GET,
+            url: API.ApiServer + API.Tags + "schemas/" + "published",
+            headers: {
+                authorization: "Bearer wqe",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Get a list of all published schemas with empty auth token - Negative", () => {
+        cy.request({
+            method: METHOD.GET,
+            url: API.ApiServer + API.Tags + "schemas/" + "published",
+            headers: {
+                authorization: "",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
 })

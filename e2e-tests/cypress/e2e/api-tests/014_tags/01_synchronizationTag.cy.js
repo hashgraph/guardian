@@ -45,4 +45,52 @@ context("Tags", { tags: ['tags', 'thirdPool', 'all'] }, () => {
             })
         })
     })
+
+    it("Synchronization a tag without auth token - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Tags + "synchronization",
+            body: {
+                entity: "Contract",
+                target: contractId,
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Synchronization a tag with invalid auth token - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Tags + "synchronization",
+            body: {
+                entity: "Contract",
+                target: contractId,
+            },
+            headers: {
+                authorization: "Bearer wqe",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Synchronization a tag with empty auth token - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Tags + "synchronization",
+            body: {
+                entity: "Contract",
+                target: contractId,
+            },
+            headers: {
+                authorization: "",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
 })

@@ -116,8 +116,8 @@ export class PolicyLabelDTO {
 
     @ApiProperty({
         type: 'object',
+        additionalProperties: true,
         nullable: true,
-        required: false
     })
     @IsOptional()
     @IsObject()
@@ -257,7 +257,7 @@ export class PolicyLabelDocumentDTO {
     @ApiProperty({
         type: 'object',
         nullable: true,
-        required: false
+        additionalProperties: true
     })
     @IsOptional()
     @IsObject()

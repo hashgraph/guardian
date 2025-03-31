@@ -114,7 +114,12 @@
             >
                 <img alt="" src="assets/images/icons/user.svg">
                 <div [style.display]="menuCollapsed ? 'none' : 'flex'" class="span-icon">
-                    <span pTooltip="Open Profile" tooltipPosition="right">{{ username }}</span>
+                    <span
+                        #usernameSpan
+                        [pTooltip]="isUsernameOverflowing ? (username || '') : 'Open Profile'"
+                        tooltipPosition="right"
+                        tooltipStyleClass="one-line-tooltip"
+                    >{{ username }}</span>
                     <div class="flex-column-gap-10">
                         <i (click)="goToBrandingPage($event)"
                            *ngIf="user.BRANDING_CONFIG_UPDATE"

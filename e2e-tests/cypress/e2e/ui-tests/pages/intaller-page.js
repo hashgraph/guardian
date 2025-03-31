@@ -1,4 +1,4 @@
-import URL from "../../../support/GuardianUrls";
+import URL from "../../../../support/GuardianUrls";
 
 const InstallerPageLocators = {
     roleSelect: '[formcontrolname="roleOrGroup"]',

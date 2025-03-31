@@ -273,6 +273,15 @@
     .item {
         width: 100%;
     }
+
+    .span-icon span {
+        max-width: 140px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+        vertical-align: middle;
+    }
 }
 
 .smooth-rotate {
@@ -337,4 +346,9 @@
             border-bottom: 3px solid rgba(0, 0, 0, 0);
         }
     }
+}
+
+::ng-deep .one-line-tooltip {
+    white-space: nowrap !important;
+    max-width: none !important;
 }
