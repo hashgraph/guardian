@@ -86,8 +86,9 @@ export class TokenService {
         
     public static onTokenFinished(row: any) {
         if (TokenService.CHANNEL && row.priorityTimestamp) {
-            
-            TokenService.CHANNEL.publicMessage(IndexerMessageAPI.ON_PRIORITY_DATA_LOADED, row.priorityTimestamp);
+            TokenService.CHANNEL.publicMessage(IndexerMessageAPI.ON_PRIORITY_DATA_LOADED, {
+                priorityTimestamp: row.priorityTimestamp
+            });
         }
     }
 

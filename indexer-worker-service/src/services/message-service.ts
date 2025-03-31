@@ -41,7 +41,7 @@ export class MessageService {
             } else {
                 row.status = MessageStatus.UNSUPPORTED;
             }
-            row.priorityDate = null;
+            
             row.priorityStatus = PriorityStatus.FINISHED;
             await em.flush();
             MessageService.onMessageFinished(row);
@@ -52,7 +52,9 @@ export class MessageService {
     
     public static onMessageFinished(row: MessageCache) {
         if (MessageService.CHANNEL && row.priorityTimestamp) {
-            MessageService.CHANNEL.publicMessage(IndexerMessageAPI.ON_PRIORITY_DATA_LOADED, row.priorityTimestamp);
+            MessageService.CHANNEL.publicMessage(IndexerMessageAPI.ON_PRIORITY_DATA_LOADED, {
+                priorityTimestamp: row.priorityTimestamp
+            });
         }
     }
 
@@ -75,9 +77,7 @@ export class MessageService {
                 // fields: ['id', 'data', 'topicId', 'consensusTimestamp'],
             }
         )
-
         
-
         if (!rows || rows.length <= 0) {
             return null;
         }
@@ -103,7 +103,9 @@ export class MessageService {
             ]
         }, {
             lastUpdate: Date.now(),
-            status: MessageStatus.LOADING
+            status: MessageStatus.LOADING,
+            priorityDate: null,
+            priorityStatus: PriorityStatus.RUNNING
         });
 
         if (count) {

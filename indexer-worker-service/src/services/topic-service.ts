@@ -60,7 +60,9 @@ export class TopicService {
 
     public static onTopicFinished(row: TopicCache) {
         if (TopicService.CHANNEL && row.priorityTimestamp) {
-            TopicService.CHANNEL.publicMessage(IndexerMessageAPI.ON_PRIORITY_DATA_LOADED, row.priorityTimestamp);
+            TopicService.CHANNEL.publicMessage(IndexerMessageAPI.ON_PRIORITY_DATA_LOADED, {
+                priorityTimestamp: row.priorityTimestamp,
+            });
         }
     }
 
@@ -75,9 +77,10 @@ export class TopicService {
                     lastUpdate: 0,
                     messages: 0,
                     hasNext: false,
-                    priorityDate: priorityOptions?.priorityDate || null,
+                    priorityDate: priorityOptions?.priorityDate,
                     priorityStatus: priorityOptions?.priorityStatus || PriorityStatus.NONE,
-                    priorityStatusDate: priorityOptions?.priorityStatusDate || null,
+                    priorityStatusDate: priorityOptions?.priorityStatusDate,
+                    priorityTimestamp: priorityOptions?.priorityTimestamp
                 }));
                 return true;
             } else {
