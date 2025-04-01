@@ -1,4 +1,3 @@
-import { PriorityStatus } from '@indexer/interfaces';
 import { Entity, Property, PrimaryKey } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 
@@ -7,9 +6,7 @@ export class PriorityQueue {
     @PrimaryKey()
     _id: ObjectId;
 
-    @Property({
-        unique: true,
-    })
+    @Property()
     priorityTimestamp: number;
 
     @Property({ nullable: true })
