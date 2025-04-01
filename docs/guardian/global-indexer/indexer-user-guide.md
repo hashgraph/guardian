@@ -194,6 +194,20 @@ For documents (VC, VP, DID, Schema) with local CIDs (i.e. Such documents were up
 **For example:** `IPFS_GATEWAY="https://ipfs.io/ipfs/${cid}"`
 {% endhint %}
 
+### 1.2 Priority Loading Data Queue:
+
+As Hedera network have lots of data available, it would take some time to load it completely in indexer, hence, now we would now be able to prioritize the documents/topics/policies/tokens.
+
+<figure><img src="../../.gitbook/assets/image (829).png" alt=""><figcaption></figcaption></figure>
+
+We would be able to add it to the priority queue by clicking on the checkbox and adding it to the queue as shown below:
+
+<figure><img src="../../.gitbook/assets/image (830).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../.gitbook/assets/image (831).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../.gitbook/assets/image (832).png" alt=""><figcaption></figcaption></figure>
+
 ## 2. Demo Video
 
 [Youtube](https://youtu.be/TciXNvx1kcQ)
