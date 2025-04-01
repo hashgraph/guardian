@@ -32,7 +32,6 @@ const API = {
     //Contracts
     ListOfContracts: "contracts/",
     ImportContracts: "contracts/import/",
-    ContractPermissions: "permissions/",
     ListOfPairs: "contracts/pairs/",
     RetireRequests: "contracts/retire/requests/",
     WipeRequests: "contracts/wipe/requests/",
@@ -168,6 +167,9 @@ const API = {
     Test: "test/",
     Start: "start/",
     Config: "config/",
+    Roles: "roles/",
+    Permissions: "permissions/",
+    Default: "default/",
 
     //Indexer
     IndexerRegistries: "entities/registries/",

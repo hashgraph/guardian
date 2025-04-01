@@ -104,7 +104,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
 					})
 					cy.request({
 						method: METHOD.POST,
-						url: API.ApiServer + API.ContractPermissions + API.Users + UserUsername + "/" + API.Policies + API.Assign,
+						url: API.ApiServer + API.Permissions + API.Users + UserUsername + "/" + API.Policies + API.Assign,
 						body: {
 							policyIds: [
 								policyId
