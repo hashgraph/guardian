@@ -123,7 +123,7 @@ export class LoadingQueueService {
 
             let result = false;
 
-            topicIds.forEach(async id => {
+            for (const id of topicIds) {
                 const priorityTimestamp = Date.now();
 
                 if (await this.checkQueue(id)) {
@@ -134,7 +134,7 @@ export class LoadingQueueService {
                         result = true;
                     }
                 }
-            });
+            }
 
             return new MessageResponse(result);
         } catch (error) {
@@ -151,7 +151,7 @@ export class LoadingQueueService {
 
             let result = false;
 
-            policyTopicIds.forEach(async id => {
+            for (const id of policyTopicIds) {
                 const priorityTimestamp = Date.now();
                 if (await this.checkQueue(id)) {
                     const topicResult = await this.addInstancePolicy(id, priorityTimestamp);
@@ -161,7 +161,7 @@ export class LoadingQueueService {
                         result = true;
                     }
                 }
-            });
+            }
 
             return new MessageResponse(result);
         } catch (error) {
@@ -178,7 +178,7 @@ export class LoadingQueueService {
 
             let result = false;
 
-            tokenIds.forEach(async id => {
+            for (const id of tokenIds) {
                 const priorityTimestamp = Date.now();
                 if (await this.checkQueue(id)) {
                     const topicResult = await this.addToken(id, priorityTimestamp);
@@ -188,7 +188,7 @@ export class LoadingQueueService {
                         result = true;
                     }
                 }
-            });
+            }
 
             return new MessageResponse(result);
         } catch (error) {
@@ -373,9 +373,9 @@ export class LoadingQueueService {
             )
             
             let policyInstancesResult = false;
-            policyInstances.forEach(async item => {
+            for (const item of policyInstances) {
                 policyInstancesResult ||= await this.addInstancePolicy(item.options.instanceTopicId, priorityTimestamp);
-            });
+            }
 
             return policyInstancesResult;
         }
