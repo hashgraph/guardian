@@ -1,7 +1,5 @@
 ## VM0042 Improved Agricultural Land Management, v2.1
 
-## Climate Action Reserve’s U.S. Landfill Protocol Version 6.0
-
 ## Table of Contents
 <!-- TOC -->
 
