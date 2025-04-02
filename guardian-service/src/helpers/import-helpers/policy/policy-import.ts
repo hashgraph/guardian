@@ -1,19 +1,20 @@
 import { ConfigType, EntityStatus, GenerateUUIDv4, IFormula, IOwner, IRootConfig, PolicyTestStatus, PolicyToolMetadata, PolicyStatus, SchemaCategory, TagType, TopicType } from '@guardian/interfaces';
-import { DatabaseServer, IPolicyComponents, PinoLogger, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, PolicyTool, RecordImportExport, Schema, Tag, Token, Topic, TopicConfig, TopicHelper, Users, Formula, FormulaImportExport } from '@guardian/common';
-import { ImportMode } from './import.interface.js';
-import { ImportFormulaResult, ImportPolicyError, ImportPolicyResult, ImportTestResult } from './policy-import.interface.js';
-import { ImportSchemaMap, ImportSchemaResult } from './schema-import.interface.js';
+import { DatabaseServer, PinoLogger, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, PolicyTool, RecordImportExport, Schema, Tag, Token, Topic, TopicConfig, TopicHelper, Users, Formula, FormulaImportExport } from '@guardian/common';
+import { ImportMode } from '../common/import.interface.js';
+import { ImportFormulaResult, ImportPolicyError, ImportPolicyOptions, ImportPolicyResult, ImportTestResult } from './policy-import.interface.js';
+import { ImportSchemaMap, ImportSchemaResult } from '../schema/schema-import.interface.js';
 import { PolicyImportExportHelper } from './policy-import-helper.js';
-import { SchemaImportExportHelper } from './schema-import-helper.js';
-import { importTag } from './tag-import-helper.js';
-import { INotifier } from '../notifier.js';
-import { ImportToolMap, ImportToolResults } from './tool-import.interface.js';
-import { importSubTools } from './tool-import-helper.js';
-import { ImportTokenMap, ImportTokenResult } from './token-import.interface.js';
-import { ImportArtifactResult } from './artifact-import.interface.js';
-import { importTokensByFiles } from './token-import-helper.js';
-import { importArtifactsByFiles } from './artifact-import-helper.js';
-import { publishSystemSchemas } from './schema-publish-helper.js';
+import { SchemaImportExportHelper } from '../schema/schema-import-helper.js';
+import { importTag } from '../tag/tag-import-helper.js';
+import { INotifier } from '../../notifier.js';
+import { ImportToolMap, ImportToolResults } from '../tool/tool-import.interface.js';
+import { importSubTools } from '../tool/tool-import-helper.js';
+import { ImportTokenMap, ImportTokenResult } from '../token/token-import.interface.js';
+import { ImportArtifactResult } from '../artifact/artifact-import.interface.js';
+import { importTokensByFiles } from '../token/token-import-helper.js';
+import { importArtifactsByFiles } from '../artifact/artifact-import-helper.js';
+import { publishSystemSchemas } from '../schema/schema-publish-helper.js';
+import { ObjectId } from '@mikro-orm/mongodb';
 
 export class PolicyImport {
     private readonly mode: ImportMode;
@@ -69,37 +70,62 @@ export class PolicyImport {
         user: IOwner,
         additionalPolicyConfig: Partial<Policy> | null
     ): Promise<Policy> {
-        delete policy._id;
-        delete policy.id;
-        delete policy.messageId;
-        delete policy.version;
-        delete policy.previousVersion;
-        delete policy.createDate;
-        policy.uuid = GenerateUUIDv4();
-        policy.creator = user.creator;
-        policy.owner = user.owner;
-        policy.instanceTopicId = null;
-        policy.synchronizationTopicId = null;
-        policy.name = additionalPolicyConfig?.name || policy.name;
-        policy.topicDescription = additionalPolicyConfig?.topicDescription || policy.topicDescription;
-        policy.description = additionalPolicyConfig?.description || policy.description;
-        policy.policyTag = additionalPolicyConfig?.policyTag || 'Tag_' + Date.now();
+        console.log(policy);
         if (this.mode === ImportMode.DEMO) {
+            delete policy._id;
+            delete policy.id;
+            delete policy.messageId;
+            delete policy.version;
+            delete policy.previousVersion;
+            delete policy.createDate;
+            policy.uuid = GenerateUUIDv4();
+            policy.creator = user.creator;
+            policy.owner = user.owner;
+            policy.instanceTopicId = null;
+            policy.synchronizationTopicId = null;
+            policy.name = additionalPolicyConfig?.name || policy.name;
+            policy.topicDescription = additionalPolicyConfig?.topicDescription || policy.topicDescription;
+            policy.description = additionalPolicyConfig?.description || policy.description;
+            policy.policyTag = additionalPolicyConfig?.policyTag || 'Tag_' + Date.now();
             policy.status = PolicyStatus.DEMO;
         } else if (this.mode === ImportMode.VIEW) {
+            delete policy.createDate;
+            policy._id = new ObjectId(policy.id);
+            policy.id = policy.id;
+            policy.creator = user.creator;
+            policy.owner = user.owner;
+            policy.name = additionalPolicyConfig?.name || policy.name;
+            policy.topicDescription = additionalPolicyConfig?.topicDescription || policy.topicDescription;
+            policy.description = additionalPolicyConfig?.description || policy.description;
+            policy.policyTag = additionalPolicyConfig?.policyTag || policy.policyTag;
             policy.status = PolicyStatus.VIEW;
+            policy.messageId = additionalPolicyConfig?.messageId || policy.messageId;
         } else {
+            delete policy._id;
+            delete policy.id;
+            delete policy.messageId;
+            delete policy.version;
+            delete policy.previousVersion;
+            delete policy.createDate;
+            policy.uuid = GenerateUUIDv4();
+            policy.creator = user.creator;
+            policy.owner = user.owner;
+            policy.instanceTopicId = null;
+            policy.synchronizationTopicId = null;
+            policy.name = additionalPolicyConfig?.name || policy.name;
+            policy.topicDescription = additionalPolicyConfig?.topicDescription || policy.topicDescription;
+            policy.description = additionalPolicyConfig?.description || policy.description;
+            policy.policyTag = additionalPolicyConfig?.policyTag || 'Tag_' + Date.now();
             policy.status = PolicyStatus.DRAFT;
         }
         return policy;
     }
 
-    private async createPolicyTopic(policy: Policy, versionOfTopicId: string, user: IOwner) {
+    private async createPolicyTopic(policy: Policy, user: IOwner, versionOfTopicId: string) {
         this.notifier.completedAndStart('Resolve topic');
         this.parentTopic = await TopicConfig.fromObject(
             await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true
         );
-
 
         if (this.mode === ImportMode.DEMO) {
             this.topicRow = new TopicConfig({
@@ -118,9 +144,9 @@ export class PolicyImport {
                 name: policy.name || TopicType.PolicyTopic,
                 description: policy.topicDescription || TopicType.PolicyTopic,
                 owner: user.owner,
-                policyId: null,
-                policyUUID: null,
-                topicId: `0.0.${Date.now()}${(Math.random() * 1000).toFixed(0)}`
+                policyId: policy.id,
+                policyUUID: policy.uuid,
+                topicId: policy.topicId
             }, null, null);
             await DatabaseServer.saveTopic(this.topicRow.toObject());
         } else {
@@ -162,7 +188,7 @@ export class PolicyImport {
         this.topicId = policy.topicId;
     }
 
-    private async publishSystemSchemas(versionOfTopicId: string, user: IOwner) {
+    private async publishSystemSchemas(systemSchemas: Schema[], user: IOwner, versionOfTopicId: string) {
         if (this.mode === ImportMode.DEMO) {
             const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
             this.schemasResult = await SchemaImportExportHelper.importSystemSchema(
@@ -193,8 +219,8 @@ export class PolicyImport {
 
     private async importTools(
         tools: PolicyTool[],
-        metadata: PolicyToolMetadata | null,
-        user: IOwner
+        user: IOwner,
+        metadata: PolicyToolMetadata | null
     ) {
         this.notifier.completedAndStart('Import tools');
         this.notifier.sub(true);
@@ -227,7 +253,7 @@ export class PolicyImport {
     }
 
     private async importTokens(tokens: Token[], user: IOwner) {
-        this.tokensResult = await importTokensByFiles(user, tokens, this.notifier);
+        this.tokensResult = await importTokensByFiles(user, tokens, this.mode, this.notifier);
         this.tokenMapping = this.tokensResult.tokenMap;
     }
 
@@ -258,7 +284,7 @@ export class PolicyImport {
     }
 
     private async importArtifacts(artifacts: any[], user: IOwner) {
-        this.artifactsResult = await importArtifactsByFiles(user, artifacts, this.notifier);
+        this.artifactsResult = await importArtifactsByFiles(user, artifacts, this.mode, this.notifier);
         this.artifactsMapping = this.artifactsResult.artifactsMap;
     }
 
@@ -356,7 +382,11 @@ export class PolicyImport {
 
         const dataBaseServer = new DatabaseServer();
 
+        console.log(policy);
+
         const model = dataBaseServer.create(Policy, policy as Policy);
+
+        console.log(model)
         return await dataBaseServer.save(Policy, model);
     }
 
@@ -475,20 +505,30 @@ export class PolicyImport {
         return errors;
     }
 
-    public async import(
-        policyComponents: IPolicyComponents,
-        user: IOwner,
-        versionOfTopicId: string,
-        additionalPolicyConfig: Partial<Policy> | null,
-        metadata: PolicyToolMetadata | null,
-        logger: PinoLogger,
-    ): Promise<ImportPolicyResult> {
-        const { policy, tokens, schemas, artifacts, tags, tools, tests, formulas } = policyComponents;
+    public async import(options: ImportPolicyOptions): Promise<ImportPolicyResult> {
+        options.validate();
+        const {
+            policy,
+            tokens,
+            schemas,
+            systemSchemas,
+            artifacts,
+            tags,
+            tools,
+            tests,
+            formulas
+        } = options.policyComponents;
+        const user = options.user;
+        const versionOfTopicId = options.versionOfTopicId;
+        const additionalPolicyConfig = options.additionalPolicyConfig;
+        const metadata = options.metadata;
+        const logger = options.logger;
+
         await this.resolveAccount(user);
         await this.dataPreparation(policy, user, additionalPolicyConfig);
-        await this.createPolicyTopic(policy, versionOfTopicId, user);
-        await this.publishSystemSchemas(versionOfTopicId, user);
-        await this.importTools(tools, metadata, user);
+        await this.createPolicyTopic(policy, user, versionOfTopicId);
+        await this.publishSystemSchemas(systemSchemas, user, versionOfTopicId);
+        await this.importTools(tools, user, metadata);
         await this.importTokens(tokens, user);
         await this.importSchemas(schemas, user);
         await this.importArtifacts(artifacts, user);

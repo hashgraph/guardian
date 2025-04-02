@@ -14,9 +14,9 @@ import {
     SchemaEntity,
     SchemaHelper,
     SchemaStatus,
-    TagType,
     TopicType,
-    PolicyAvailability
+    PolicyAvailability,
+    SchemaCategory
 } from '@guardian/interfaces';
 import {
     Artifact,
@@ -41,7 +41,6 @@ import {
     SchemaFields,
     Singleton,
     SynchronizationMessage,
-    TagMessage,
     Token,
     TokenMessage,
     Topic,
@@ -50,7 +49,21 @@ import {
     Users,
     VcHelper,
 } from '@guardian/common';
-import { PolicyConverterUtils } from '../helpers/import-helpers/policy-converter-utils.js';
+import {
+    deleteDemoSchema,
+    deleteSchema,
+    findAndDryRunSchema,
+    findAndPublishSchema,
+    ImportMode,
+    ImportPolicyOptions,
+    importTag,
+    incrementSchemaVersion,
+    PolicyImportExportHelper,
+    publishPolicyTags,
+    publishSystemSchemas,
+    sendSchemaMessage
+} from '../helpers/import-helpers/index.js';
+import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
 import { emptyNotifier, INotifier } from '../helpers/notifier.js';
 import { ISerializedErrors } from './policy-validation-results-container.js';
 import { PolicyServiceChannelsContainer } from '../helpers/policy-service-channels-container.js';
@@ -58,21 +71,8 @@ import { PolicyValidator } from '../policy-engine/block-validators/index.js';
 import { createHederaToken } from '../api/token.service.js';
 import { GuardiansService } from '../helpers/guardians.js';
 import { AISuggestionsService } from '../helpers/ai-suggestions.js';
-import { FilterObject } from '@mikro-orm/core';
 import { publishFormula } from '../api/helpers/formulas-helpers.js';
-import {
-    deleteDemoSchema,
-    deleteSchema,
-    findAndDryRunSchema,
-    findAndPublishSchema,
-    ImportMode,
-    importTag,
-    incrementSchemaVersion,
-    PolicyImportExportHelper,
-    publishPolicyTags,
-    publishSystemSchemas,
-    sendSchemaMessage
-} from '@helpers/import-helpers/index.js';
+import { FilterObject } from '@mikro-orm/core';
 
 /**
  * Result of publishing
@@ -526,14 +526,18 @@ export class PolicyEngine extends NatsService {
             readonly: false
         });
 
+        const systemSchemas = await DatabaseServer.getSchemas({
+            topicId: policy.topicId,
+            readonly: true,
+            category: SchemaCategory.SYSTEM
+        });
+
         const tokenIds = findAllEntities(policy.config, ['tokenId']);
         const tokens = await DatabaseServer.getTokens({
             tokenId: { $in: tokenIds }
         });
 
-        const artifacts: any = await DatabaseServer.getArtifacts({
-            policyId: policy.id
-        });
+        const artifacts: any = await DatabaseServer.getArtifacts({ policyId: policy.id });
 
         for (const artifact of artifacts) {
             artifact.data = await DatabaseServer.getArtifactFileByUUID(artifact.uuid);
@@ -546,6 +550,7 @@ export class PolicyEngine extends NatsService {
         const dataToCreate: IPolicyComponents = {
             policy,
             schemas,
+            systemSchemas,
             tokens,
             artifacts,
             tools,
@@ -554,13 +559,11 @@ export class PolicyEngine extends NatsService {
             formulas: []
         };
         return await PolicyImportExportHelper.importPolicy(
-            dataToCreate,
-            user,
-            null,
-            logger,
             ImportMode.COMMON,
-            data,
-            null,
+            (new ImportPolicyOptions(logger))
+                .setComponents(dataToCreate)
+                .setUser(user)
+                .setAdditionalPolicy(data),
             notifier
         );
     }
@@ -1307,90 +1310,6 @@ export class PolicyEngine extends NatsService {
 
         notifier.completed();
         return policyToImport;
-    }
-
-    /**
-     * Import policy by message
-     * @param messageId
-     * @param user
-     * @param hederaAccount
-     * @param versionOfTopicId
-     * @param logger
-     * @param notifier
-     * @param metadata
-     */
-    public async importPolicyMessage(
-        messageId: string,
-        user: IOwner,
-        hederaAccount: IRootConfig,
-        logger: PinoLogger,
-        mode: ImportMode = ImportMode.COMMON,
-        versionOfTopicId: string = null,
-        metadata: PolicyToolMetadata = null,
-        notifier: INotifier = emptyNotifier()
-    ): Promise<{
-        /**
-         * New Policy
-         */
-        policy: Policy;
-        /**
-         * Errors
-         */
-        errors: any[];
-    }> {
-        notifier.start('Load from IPFS');
-        const messageServer = new MessageServer(
-            hederaAccount.hederaAccountId,
-            hederaAccount.hederaAccountKey,
-            hederaAccount.signOptions
-        );
-        const message = await messageServer.getMessage<PolicyMessage>(messageId);
-        if (message.type !== MessageType.InstancePolicy) {
-            throw new Error('Invalid Message Type');
-        }
-        if (!message.document) {
-            throw new Error('File in body is empty');
-        }
-
-        const tagMessages = await messageServer.getMessages<TagMessage>(message.policyTopicId, MessageType.Tag, MessageAction.PublishTag);
-
-        notifier.completedAndStart('File parsing');
-        const policyToImport = await PolicyImportExport.parseZipFile(message.document, true);
-
-        if (!Array.isArray(policyToImport.tags)) {
-            policyToImport.tags = [];
-        }
-        for (const tag of tagMessages) {
-            if (tag.entity === TagType.Policy && tag.target !== messageId) {
-                continue;
-            }
-            policyToImport.tags.push({
-                uuid: tag.uuid,
-                name: tag.name,
-                description: tag.description,
-                owner: tag.owner,
-                entity: tag.entity,
-                target: tag.target,
-                status: 'History',
-                topicId: tag.topicId,
-                messageId: tag.id,
-                date: tag.date,
-                document: null,
-                uri: null,
-                id: null
-            } as any);
-        }
-        notifier.completed();
-        return await PolicyImportExportHelper.importPolicy(
-            policyToImport,
-            user,
-            versionOfTopicId,
-            logger,
-            mode,
-            null,
-            metadata,
-            notifier
-        );
     }
 
     /**

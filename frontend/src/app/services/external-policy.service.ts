@@ -56,4 +56,8 @@ export class ExternalPoliciesService {
     public import(messageId: string): Observable<any> {
         return this.http.post<any>(`${this.url}/import`, { messageId });
     }
+
+    public pushApprove(policyId: string): Observable<{ taskId: string, expectation: number }> {
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/${policyId}/approve`, null);
+    }
 }

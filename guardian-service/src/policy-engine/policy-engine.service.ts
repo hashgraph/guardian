@@ -40,7 +40,7 @@ import { PolicyDataImportExport } from './helpers/policy-data/policy-data-import
 import { PolicyComponentsUtils } from './policy-components-utils.js';
 import { PolicyEngine } from './policy-engine.js';
 import { IPolicyUser } from './policy-user.js';
-import { getSchemaCategory, ImportMode, importSubTools, PolicyImportExportHelper, previewToolByMessage, SchemaImportExportHelper } from '../helpers/import-helpers/index.js';
+import { getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage, SchemaImportExportHelper } from '../helpers/import-helpers/index.js';
 
 /**
  * PolicyEngineChannel
@@ -1234,15 +1234,13 @@ export class PolicyEngineService {
                     await logger.info(`Import policy by file`, ['GUARDIAN_SERVICE']);
                     const policyToImport = await PolicyImportExport.parseZipFile(Buffer.from(zip.data), true);
                     const result = await PolicyImportExportHelper.importPolicy(
-                        policyToImport,
-                        owner,
-                        versionOfTopicId,
-                        logger,
                         demo ? ImportMode.DEMO : ImportMode.COMMON,
-                        null,
-                        metadata,
-                        null,
-                    );
+                        (new ImportPolicyOptions(logger))
+                            .setComponents(policyToImport)
+                            .setUser(owner)
+                            .setParentPolicyTopic(versionOfTopicId)
+                            .setMetadata(metadata)
+                    )
                     if (result?.errors?.length) {
                         const message = PolicyImportExportHelper.errorsMessage(result.errors);
                         await logger.warn(message, ['GUARDIAN_SERVICE']);
@@ -1279,13 +1277,12 @@ export class PolicyEngineService {
                     const policyToImport = await PolicyImportExport.parseZipFile(Buffer.from(zip.data), true);
                     notifier.completed();
                     const result = await PolicyImportExportHelper.importPolicy(
-                        policyToImport,
-                        owner,
-                        versionOfTopicId,
-                        logger,
                         demo ? ImportMode.DEMO : ImportMode.COMMON,
-                        null,
-                        metadata,
+                        (new ImportPolicyOptions(logger))
+                            .setComponents(policyToImport)
+                            .setUser(owner)
+                            .setParentPolicyTopic(versionOfTopicId)
+                            .setMetadata(metadata),
                         notifier
                     );
                     if (result?.errors?.length) {
@@ -1361,18 +1358,20 @@ export class PolicyEngineService {
                     if (!messageId) {
                         throw new Error('Policy ID in body is empty');
                     }
+                    const notifier = emptyNotifier();
+                    notifier.start('Resolve Hedera account');
                     const root = await this.users.getHederaAccount(owner.creator);
-                    const result = await this.policyEngine
-                        .importPolicyMessage(
-                            messageId,
-                            owner,
-                            root,
-                            logger,
-                            demo ? ImportMode.DEMO : ImportMode.COMMON,
-                            versionOfTopicId,
-                            null,
-                            metadata
-                        );
+                    notifier.completed();
+                    const policyToImport = await PolicyImportExportHelper.loadPolicyMessage(messageId, root, notifier);
+                    const result = await PolicyImportExportHelper.importPolicy(
+                        demo ? ImportMode.DEMO : ImportMode.COMMON,
+                        (new ImportPolicyOptions(logger))
+                            .setComponents(policyToImport)
+                            .setUser(owner)
+                            .setParentPolicyTopic(versionOfTopicId)
+                            .setMetadata(metadata),
+                        notifier
+                    );
                     if (result?.errors?.length) {
                         const message = PolicyImportExportHelper.errorsMessage(result.errors);
                         await logger.warn(message, ['GUARDIAN_SERVICE']);
@@ -1408,17 +1407,16 @@ export class PolicyEngineService {
                         notifier.start('Resolve Hedera account');
                         const root = await this.users.getHederaAccount(owner.creator);
                         notifier.completed();
-                        const result = await this.policyEngine
-                            .importPolicyMessage(
-                                messageId,
-                                owner,
-                                root,
-                                logger,
-                                demo ? ImportMode.DEMO : ImportMode.COMMON,
-                                versionOfTopicId,
-                                metadata,
-                                notifier
-                            );
+                        const policyToImport = await PolicyImportExportHelper.loadPolicyMessage(messageId, root, notifier);
+                        const result = await PolicyImportExportHelper.importPolicy(
+                            demo ? ImportMode.DEMO : ImportMode.COMMON,
+                            (new ImportPolicyOptions(logger))
+                                .setComponents(policyToImport)
+                                .setUser(owner)
+                                .setParentPolicyTopic(versionOfTopicId)
+                                .setMetadata(metadata),
+                            notifier
+                        );
                         if (result?.errors?.length) {
                             const message = PolicyImportExportHelper.errorsMessage(result.errors);
                             notifier.error(message);

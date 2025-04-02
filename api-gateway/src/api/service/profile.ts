@@ -44,7 +44,7 @@ export class ProfileApi {
     })
     @ApiExtraModels(ProfileDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    @UseCache()
+    // @UseCache()
     async getProfile(
         @AuthUser() user: IAuthUser
     ): Promise<ProfileDTO> {

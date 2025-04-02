@@ -4,7 +4,7 @@ import { IOwner, IRootConfig, MessageAPI, ModuleStatus, SchemaStatus, TopicType 
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
 import { ToolValidator } from '../policy-engine/block-validators/tool-validator.js';
-import { PolicyConverterUtils } from '../helpers/import-helpers/policy-converter-utils.js';
+import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
 import * as crypto from 'crypto';
 import { FilterObject } from '@mikro-orm/core';
 import { deleteSchema, findAndPublishSchema, importToolByFile, importToolByMessage, importToolErrors, incrementSchemaVersion, publishToolTags, updateToolConfig } from '../helpers/import-helpers/index.js'

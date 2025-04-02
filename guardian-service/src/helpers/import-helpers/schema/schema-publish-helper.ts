@@ -1,10 +1,10 @@
 import { GeoJsonContext, IOwner, IRootConfig, SchemaHelper, SchemaStatus, SentinelHubContext } from '@guardian/interfaces';
 import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaMessage, schemasToContext, TopicConfig, UrlType } from '@guardian/common';
-import { checkForCircularDependency } from './load-helper.js';
-import { SchemaImportExportHelper } from './schema-import-helper.js';
-import { emptyNotifier, INotifier } from '../../helpers/notifier.js';
+import { checkForCircularDependency } from '../common/load-helper.js';
 import { incrementSchemaVersion, updateSchemaDefs, updateSchemaDocument } from './schema-helper.js';
-import { publishSchemaTags } from './tag-publish-helper.js';
+import { publishSchemaTags } from '../tag/tag-publish-helper.js';
+import { SchemaImportExportHelper } from './schema-import-helper.js';
+import { emptyNotifier, INotifier } from '../../notifier.js';
 
 /**
  * Check access

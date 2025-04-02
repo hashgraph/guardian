@@ -182,14 +182,11 @@ export class ExternalPoliciesApi {
         }
     }
 
-
-
-
     /**
      * Approve policy (Async)
      */
-    @Put('/push/:policyId/approve')
-    @Auth(Permissions.STATISTICS_LABEL_CREATE)
+    @Post('/push/:policyId/approve')
+    @Auth(Permissions.POLICIES_EXTERNAL_POLICY_UPDATE)
     @ApiOperation({
         summary: 'Approves policy.',
         description: 'Approves policy for the specified policy ID.',
@@ -203,13 +200,13 @@ export class ExternalPoliciesApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyLabelDTO
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
-    @ApiExtraModels(TaskDTO, PolicyLabelDTO, InternalServerErrorDTO)
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
     async approveExternalPolicyAsync(
         @AuthUser() user: IAuthUser,
@@ -239,5 +236,5 @@ export class ExternalPoliciesApi {
         } catch (error) {
             await InternalException(error, this.logger);
         }
-    }    
+    }
 }

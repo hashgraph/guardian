@@ -77,6 +77,10 @@
                                     [ngSwitch]="column.id"
                                 >
                                     <ng-container *ngSwitchCase="'status'">
+                                        {{row.status}}
+                                    </ng-container>
+                                    <ng-container *ngSwitchCase="'options'">
+                                        <button (click)="onApprove(row)">Approve</button>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'delete'">
                                         <div

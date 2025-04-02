@@ -70,6 +70,12 @@ export class ExternalPolicyComponent implements OnInit {
             size: '180',
             tooltip: false
         }, {
+            id: 'options',
+            title: 'Options',
+            type: 'text',
+            size: '180',
+            tooltip: false
+        }, {
             id: 'edit',
             title: '',
             type: 'text',
@@ -213,5 +219,21 @@ export class ExternalPolicyComponent implements OnInit {
         //             });
         //     }
         // });
+    }
+
+    public onApprove(item: any) {
+        this.loading = true;
+        this.externalPoliciesService
+            .pushApprove(item.id)
+            .subscribe((result) => {
+                const { taskId, expectation } = result;
+                this.router.navigate(['task', taskId], {
+                    queryParams: {
+                        last: btoa(location.href),
+                    },
+                });
+            }, (e) => {
+                this.loading = false;
+            });
     }
 }

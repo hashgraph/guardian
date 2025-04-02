@@ -26,14 +26,15 @@ import {
     Users
 } from '@guardian/common';
 import { FilterObject } from '@mikro-orm/core';
-import { INotifier } from '../../helpers/notifier.js';
-import { ImportSchemaError, ImportSchemaMap, ImportSchemaResult } from './schema-import.interface.js';
+import { INotifier } from '../../notifier.js';
+import { ImportSchemaError, ImportSchemaMap, ImportSchemaOptions, ImportSchemaResult } from './schema-import.interface.js';
 import geoJson from '@guardian/interfaces/dist/helpers/geojson-schema/geo-json.js';
 import sentinelHub from '@guardian/interfaces/dist/helpers/sentinel-hub/sentinel-hub-schema.js';
-import { checkForCircularDependency, loadSchema } from './load-helper.js';
+import { checkForCircularDependency, loadSchema } from '../common/load-helper.js';
 import { SchemaImportExportHelper } from './schema-import-helper.js';
-import { ImportMode } from './import.interface.js';
-import { importTag } from './tag-import-helper.js';
+import { ImportMode } from '../common/import.interface.js';
+import { importTag } from '../tag/tag-import-helper.js';
+import { ObjectId } from '@mikro-orm/mongodb';
 
 export class SchemaImport {
     private readonly mode: ImportMode;
@@ -103,7 +104,7 @@ export class SchemaImport {
                 topicId
             }, null, null)
         } else if (this.mode === ImportMode.VIEW) {
-
+            this.topicRow = await TopicConfig.fromObject(await DatabaseServer.getTopicById(topicId), false);
         } else {
             if (topicId === 'draft') {
                 this.topicRow = null;
@@ -150,26 +151,62 @@ export class SchemaImport {
         return schemas;
     }
 
-    private updateId(schema: ISchema, generateNewId: boolean): ISchema {
-        const oldID = schema.id;
-        const oldUUID = schema.iri ? schema.iri.substring(1) : null;
-        const newUUID = generateNewId ? GenerateUUIDv4() : oldUUID;
-
-        this.schemasMapping.push({
-            oldID,
-            newID: null,
-            oldUUID,
-            newUUID,
-            oldIRI: `#${oldUUID}`,
-            newIRI: `#${newUUID}`,
-            oldMessageID: schema.messageId,
-            newMessageID: null,
-        })
-        if (oldUUID) {
-            this.schemaIdsMapping.set(oldUUID, newUUID);
+    private updateId(schema: ISchema): ISchema {
+        let ids: {
+            oldID: string | null,
+            newID: string | null,
+            oldUUID: string | null,
+            newUUID: string | null,
+            oldMessageID: string | null,
+            newMessageID: string | null,
+            oldIRI: string | null,
+            newIRI: string | null
         }
-        schema.uuid = newUUID;
-        schema.messageId = null;
+        if (this.mode === ImportMode.VIEW) {
+            const oldUUID = schema.iri ? schema.iri.substring(1) : null;
+            const newUUID = oldUUID;
+            ids = {
+                oldID: schema.id,
+                newID: schema.id,
+                oldUUID,
+                newUUID,
+                oldMessageID: schema.messageId,
+                newMessageID: schema.messageId,
+                oldIRI: `#${oldUUID}`,
+                newIRI: `#${newUUID}`,
+            }
+            schema.uuid = ids.newUUID;
+            schema.messageId = ids.newMessageID;
+            schema.iri = `#${ids.newUUID}`;
+            schema.documentURL = schema.documentURL;
+            schema.contextURL = schema.contextURL;
+            schema.id = ids.newID;
+            schema._id = new ObjectId(ids.newID);
+        } else {
+            const oldUUID = schema.iri ? schema.iri.substring(1) : null;
+            const newUUID = GenerateUUIDv4();
+            ids = {
+                oldID: schema.id,
+                newID: null,
+                oldUUID,
+                newUUID,
+                oldMessageID: schema.messageId,
+                newMessageID: null,
+                oldIRI: `#${oldUUID}`,
+                newIRI: `#${newUUID}`,
+            }
+            schema.uuid = ids.newUUID;
+            schema.messageId = ids.newMessageID;
+            schema.iri = `#${ids.newUUID}`;
+            schema.documentURL = null;
+            schema.contextURL = `schema:${schema.uuid}`;
+            delete schema.id;
+            delete schema._id;
+        }
+        this.schemasMapping.push(ids);
+        if (ids.oldUUID) {
+            this.schemaIdsMapping.set(ids.oldUUID, ids.newUUID);
+        }
         return schema;
     }
 
@@ -177,23 +214,18 @@ export class SchemaImport {
         category: SchemaCategory,
         schemas: ISchema[],
         user: IOwner,
-        skipGenerateId: boolean,
         system: boolean
     ) {
         this.notifier.info(`Found ${schemas.length} schemas`);
         for (const file of schemas) {
-            this.updateId(file, !skipGenerateId);
-
-            SchemaConverterUtils.SchemaConverter(file);
-            file.iri = '#' + file.uuid;
-            file.documentURL = null;
-            file.contextURL = `schema:${file.uuid}`;
+            this.updateId(file);
+            file.category = category;
+            file.readonly = system;
             file.creator = user.creator;
             file.owner = user.owner;
             file.topicId = this.topicId;
-            file.category = category;
-            file.readonly = system;
             file.system = false;
+            SchemaConverterUtils.SchemaConverter(file);
             file.codeVersion = SchemaConverterUtils.VERSION;
             if (this.mode === ImportMode.DEMO) {
                 file.status = SchemaStatus.DEMO;
@@ -202,9 +234,6 @@ export class SchemaImport {
             } else {
                 file.status = SchemaStatus.DRAFT;
             }
-
-            delete file.id;
-            delete file._id;
 
             //Find external schemas by Title
             const defs = SchemaImportExportHelper.getDefDocuments(file);
@@ -363,19 +392,15 @@ export class SchemaImport {
     public async import(
         components: ISchema[],
         user: IOwner,
-        options: {
-            topicId: string,
-            category: SchemaCategory,
-            skipGenerateId?: boolean
-        },
+        options: ImportSchemaOptions,
     ): Promise<ImportSchemaResult> {
-        const { topicId, category, skipGenerateId } = options;
+        const { topicId, category } = options;
 
         this.notifier.start('Import schemas');
 
         await this.resolveAccount(user);
         await this.resolveTopic(user, topicId);
-        await this.dataPreparation(category, components, user, skipGenerateId, false);
+        await this.dataPreparation(category, components, user, false);
         await this.updateUUIDs(components);
         await this.validateDefs(components);
         await this.saveSchemas(components);
@@ -391,19 +416,15 @@ export class SchemaImport {
     public async importSystem(
         components: ISchema[],
         user: IOwner,
-        options: {
-            topicId: string,
-            category: SchemaCategory,
-            skipGenerateId?: boolean
-        },
+        options: ImportSchemaOptions,
     ): Promise<ImportSchemaResult> {
-        const { topicId, category, skipGenerateId } = options;
+        const { topicId, category } = options;
 
         this.notifier.start('Import schemas');
 
         await this.resolveAccount(user);
         await this.resolveTopic(user, topicId);
-        await this.dataPreparation(category, components, user, skipGenerateId, true);
+        await this.dataPreparation(category, components, user, true);
         await this.updateUUIDs(components);
         await this.updateDefs(components);
         await this.saveSchemas(components);
@@ -419,14 +440,10 @@ export class SchemaImport {
     public async importByMessage(
         messageIds: string[],
         user: IOwner,
-        options: {
-            topicId: string,
-            category: SchemaCategory,
-            skipGenerateId?: boolean
-        },
+        options: ImportSchemaOptions,
         logger: PinoLogger
     ): Promise<ImportSchemaResult> {
-        const { topicId, category, skipGenerateId } = options;
+        const { topicId, category } = options;
 
         this.notifier.start('Import schemas');
 
@@ -435,7 +452,7 @@ export class SchemaImport {
         const components = await this.resolveMessages(messageIds, logger);
         const topics = new Set(components.map((s) => s.topicId));
 
-        await this.dataPreparation(category, components, user, skipGenerateId, false);
+        await this.dataPreparation(category, components, user, false);
         await this.updateUUIDs(components);
         await this.validateDefs(components);
         await this.saveSchemas(components);

@@ -5,12 +5,13 @@ import {
     MessageResponse,
     PinoLogger,
     ExternalPolicy,
-    RunFunctionAsync
+    RunFunctionAsync,
+    Users
 } from '@guardian/common';
 import { ExternalPolicyStatus, IOwner, MessageAPI } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { PolicyEngine } from '../policy-engine/policy-engine.js';
-import { PolicyImportExportHelper } from '../helpers/import-helpers/index.js'
+import { ImportMode, ImportPolicyOptions, PolicyImportExportHelper } from '../helpers/import-helpers/index.js'
 
 /**
  * Connect to the message broker methods of working with formula.
@@ -189,38 +190,38 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
 
                 const notifier = await initNotifier(task);
                 RunFunctionAsync(async () => {
-
+                    const users = new Users();
                     notifier.start('Resolve Hedera account');
-                    const root = await this.users.getHederaAccount(owner.creator);
+                    const root = await users.getHederaAccount(owner.creator);
                     notifier.completed();
-                    // const result = await this.policyEngine
-                    //     .importPolicyMessage(
-                    //         item.messageId,
-                    //         owner,
-                    //         root,
-                    //         null,
-                    //         logger,
-                    //         null,
-                    //         demo,
-                    //         notifier
-                    //     );
-                    // if (result?.errors?.length) {
-                    //     const message = PolicyImportExportHelper.errorsMessage(result.errors);
-                    //     notifier.error(message);
-                    //     await logger.warn(message, ['GUARDIAN_SERVICE']);
-                    //     return;
-                    // }
+                    const policyToImport = await PolicyImportExportHelper.loadPolicyMessage(item.messageId, root, notifier);
+                    const result = await PolicyImportExportHelper.importPolicy(
+                        ImportMode.VIEW,
+                        (new ImportPolicyOptions(logger))
+                            .setComponents(policyToImport)
+                            .setUser(owner)
+                            .setAdditionalPolicy({
+                                messageId: item.messageId
+                            }),
+                        notifier
+                    );
+                    if (result?.errors?.length) {
+                        const message = PolicyImportExportHelper.errorsMessage(result.errors);
+                        notifier.error(message);
+                        await logger.warn(message, ['GUARDIAN_SERVICE']);
+                        return;
+                    }
 
-                    // await this.policyEngine.startDemo(result.policy, owner, logger, notifier);
+                    // await policyEngine.startDemo(result.policy, owner, logger, notifier);
 
-                    // item.status = ExternalPolicyStatus.APPROVED;
-                    // await DatabaseServer.updateExternalPolicy(item);
+                    item.status = ExternalPolicyStatus.APPROVED;
+                    await DatabaseServer.updateExternalPolicy(item);
 
-                    // notifier.result({
-                    //     id: item.id,
-                    //     policyId: result.policy.id,
-                    //     errors: result.errors
-                    // });
+                    notifier.result({
+                        id: item.id,
+                        policyId: result.policy.id,
+                        errors: result.errors
+                    });
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
                     notifier.error(error);

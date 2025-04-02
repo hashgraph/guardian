@@ -1,12 +1,13 @@
-import { BlockType, IFormula, IOwner, ModuleStatus, PolicyToolMetadata, SchemaEntity } from '@guardian/interfaces';
-import { DatabaseServer, IPolicyComponents, PinoLogger, Policy, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, FormulaImportExport } from '@guardian/common';
-import { ImportMode } from './import.interface.js';
-import { ImportPolicyError, ImportPolicyResult } from './policy-import.interface.js';
+import { BlockType, IFormula, IOwner, IRootConfig, ModuleStatus, PolicyToolMetadata, SchemaEntity } from '@guardian/interfaces';
+import { DatabaseServer, IPolicyComponents, PinoLogger, Policy, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, FormulaImportExport, PolicyImportExport, MessageType, PolicyMessage, MessageServer } from '@guardian/common';
+import { ImportMode } from '../common/import.interface.js';
+import { ImportPolicyError, ImportPolicyOptions, ImportPolicyResult } from './policy-import.interface.js';
 import { PolicyImport } from './policy-import.js';
-import { ImportSchemaMap } from './schema-import.interface.js';
+import { ImportSchemaMap } from '../schema/schema-import.interface.js';
 import { PolicyConverterUtils } from './policy-converter-utils.js';
-import { emptyNotifier, INotifier } from '../notifier.js';
-import { HashComparator, PolicyLoader } from '../../analytics/index.js';
+import { emptyNotifier, INotifier } from '../../notifier.js';
+import { HashComparator, PolicyLoader } from '../../../analytics/index.js';
+import { importPolicyTags } from '../tag/tag-import-helper.js';
 
 /**
  * Policy import export helper
@@ -52,24 +53,12 @@ export class PolicyImportExportHelper {
      * @returns import result
      */
     public static async importPolicy(
-        policyToImport: IPolicyComponents,
-        user: IOwner,
-        versionOfTopicId: string,
-        logger: PinoLogger,
-        mode: ImportMode = ImportMode.COMMON,
-        additionalPolicyConfig: Partial<Policy> = null,
-        metadata: PolicyToolMetadata = null,
+        mode: ImportMode,
+        options: ImportPolicyOptions,
         notifier: INotifier = emptyNotifier(),
     ): Promise<ImportPolicyResult> {
         const helper = new PolicyImport(mode, notifier);
-        return helper.import(
-            policyToImport,
-            user,
-            versionOfTopicId,
-            additionalPolicyConfig,
-            metadata,
-            logger
-        )
+        return helper.import(options);
     }
 
     /**
@@ -221,5 +210,41 @@ export class PolicyImportExportHelper {
         policy = await DatabaseServer.updatePolicy(policy);
 
         return policy;
+    }
+
+    /**
+     * Import policy by message
+     * @param messageId
+     * @param hederaAccount
+     * @param notifier
+     */
+    public static async loadPolicyMessage(
+        messageId: string,
+        hederaAccount: IRootConfig,
+        notifier: INotifier
+    ): Promise<IPolicyComponents> {
+        notifier.start('Load from IPFS');
+        const messageServer = new MessageServer(
+            hederaAccount.hederaAccountId,
+            hederaAccount.hederaAccountKey,
+            hederaAccount.signOptions
+        );
+        const message = await messageServer.getMessage<PolicyMessage>(messageId);
+        if (message.type !== MessageType.InstancePolicy) {
+            throw new Error('Invalid Message Type');
+        }
+        if (!message.document) {
+            throw new Error('File in body is empty');
+        }
+
+        notifier.completedAndStart('File parsing');
+        const policyToImport = await PolicyImportExport.parseZipFile(message.document, true);
+
+        notifier.completedAndStart('Load tags parsing');
+        await importPolicyTags(policyToImport, messageId, message.policyTopicId, messageServer);
+
+        notifier.completed();
+
+        return policyToImport;
     }
 }

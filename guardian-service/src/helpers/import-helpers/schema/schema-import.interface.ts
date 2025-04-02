@@ -1,3 +1,5 @@
+import { SchemaCategory } from "@guardian/interfaces";
+
 /**
  * Import Result
  */
@@ -70,4 +72,10 @@ export interface ImportSchemaResult {
      * Errors
      */
     errors: ImportSchemaError[];
+}
+
+export interface ImportSchemaOptions  {
+    topicId: string,
+    category: SchemaCategory,
+    // skipGenerateId?: boolean
 }

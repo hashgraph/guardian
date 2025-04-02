@@ -1,7 +1,7 @@
-import { DatabaseServer, Tag } from '@guardian/common';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { ImportSchemaResult } from './schema-import.interface.js';
-import { INotifier } from '../../helpers/notifier.js';
+import { DatabaseServer, IPolicyComponents, MessageAction, MessageServer, MessageType, Tag, TagMessage } from '@guardian/common';
+import { GenerateUUIDv4, TagType } from '@guardian/interfaces';
+import { ImportSchemaResult } from '../schema/schema-import.interface.js';
+import { INotifier } from '../../notifier.js';
 
 /**
  * Import tags
@@ -73,4 +73,44 @@ export async function importTagsByFiles(
     }
     await importTag(files, idMap);
     return result;
+}
+
+/**
+ * Import tags by files
+ * @param result
+ * @param files
+ * @param topicId
+ */
+export async function importPolicyTags(
+    policyToImport: IPolicyComponents,
+    messageId: string,
+    policyTopicId: string,
+    messageServer: MessageServer
+): Promise<IPolicyComponents> {
+    const tagMessages = await messageServer
+        .getMessages<TagMessage>(policyTopicId, MessageType.Tag, MessageAction.PublishTag);
+    if (!Array.isArray(policyToImport.tags)) {
+        policyToImport.tags = [];
+    }
+    for (const tag of tagMessages) {
+        if (tag.entity === TagType.Policy && tag.target !== messageId) {
+            continue;
+        }
+        policyToImport.tags.push({
+            uuid: tag.uuid,
+            name: tag.name,
+            description: tag.description,
+            owner: tag.owner,
+            entity: tag.entity,
+            target: tag.target,
+            status: 'History',
+            topicId: tag.topicId,
+            messageId: tag.id,
+            date: tag.date,
+            document: null,
+            uri: null,
+            id: null
+        } as any);
+    }
+    return policyToImport;
 }
