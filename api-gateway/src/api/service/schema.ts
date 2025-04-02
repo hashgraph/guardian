@@ -967,7 +967,7 @@ export class SchemaApi {
 
             await guardians.createSchemaAsync(newSchema, owner, task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
 
