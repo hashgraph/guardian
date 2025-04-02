@@ -190,7 +190,7 @@ export class PolicyImport {
 
     private async publishSystemSchemas(systemSchemas: Schema[], user: IOwner, versionOfTopicId: string) {
         if (this.mode === ImportMode.DEMO) {
-            const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
+            systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
             this.schemasResult = await SchemaImportExportHelper.importSystemSchema(
                 systemSchemas,
                 user,
@@ -203,7 +203,17 @@ export class PolicyImport {
                 this.notifier
             );
         } else if (this.mode === ImportMode.VIEW) {
-            this.notifier.completedAndStart('Skip publishing schemas');
+            this.schemasResult = await SchemaImportExportHelper.importSystemSchema(
+                systemSchemas,
+                user,
+                {
+                    category: SchemaCategory.POLICY,
+                    topicId: this.topicRow.topicId,
+                    skipGenerateId: false,
+                    mode: this.mode
+                },
+                this.notifier
+            );
         } else {
             if (versionOfTopicId) {
                 this.notifier.completedAndStart('Skip publishing schemas');
@@ -381,12 +391,7 @@ export class PolicyImport {
         this.notifier.completedAndStart('Saving policy in DB');
 
         const dataBaseServer = new DatabaseServer();
-
-        console.log(policy);
-
         const model = dataBaseServer.create(Policy, policy as Policy);
-
-        console.log(model)
         return await dataBaseServer.save(Policy, model);
     }
 
