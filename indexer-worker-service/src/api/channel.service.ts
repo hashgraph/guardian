@@ -35,6 +35,7 @@ export class ChannelService {
 
     constructor(@Inject('INDEXER_WORKERS_API') private readonly client: ClientProxy) {
         this.worker = new Worker();
+        this.worker.setChannel(this);
         setInterval(() => {
             const status = this.worker.getStatuses();
             status.delay = this.STATUS_DELAY;
@@ -52,6 +53,13 @@ export class ChannelService {
         const status = this.worker.getStatuses();
         status.delay = this.STATUS_DELAY;
         this.client.emit(IndexerMessageAPI.INDEXER_WORKER_STATUS, status);
+    }
+
+    /**
+     * Public message
+     */
+    public publicMessage(type: IndexerMessageAPI, payload: any): any {
+        this.client.emit(type, payload);
     }
 }
 
@@ -148,6 +156,15 @@ export class Worker {
             tokens: this.tokens?.getStatuses(),
             files: this.files?.getStatuses()
         };
+    }
+
+    /**
+     * Set channel
+     */
+    public setChannel(channelService: ChannelService): any {
+        TopicService.CHANNEL = channelService;
+        TokenService.CHANNEL = channelService;
+        MessageService.CHANNEL = channelService;
     }
 }
 

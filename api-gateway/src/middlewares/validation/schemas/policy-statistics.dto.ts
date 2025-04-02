@@ -116,7 +116,7 @@ export class StatisticDefinitionDTO {
     @ApiProperty({
         type: 'object',
         nullable: true,
-        required: false
+        additionalProperties: true
     })
     @IsOptional()
     @IsObject()
@@ -227,7 +227,7 @@ export class StatisticAssessmentDTO {
     @ApiProperty({
         type: 'object',
         nullable: true,
-        required: false
+        additionalProperties: true
     })
     @IsOptional()
     @IsObject()
