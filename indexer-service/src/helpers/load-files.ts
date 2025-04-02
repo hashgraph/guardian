@@ -90,7 +90,6 @@ export async function fastLoadFiles(ids: Set<string>): Promise<Map<string, strin
         const fileId = chunk.files_id.toString();
         chunkMap.get(fileId)[chunk.n] = Buffer.from(chunk.data.toString('base64'), 'base64');
     }
-
     const result = new Map<string, string>();
     for (const [filename, fileId] of fileMap.entries()) {
         try {
