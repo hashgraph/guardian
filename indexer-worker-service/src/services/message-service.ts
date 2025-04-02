@@ -151,6 +151,10 @@ export class MessageService {
                     }
                 } else {
                     ref.status = MessageStatus.UNSUPPORTED;
+                    ref.priorityDate = null;
+                    ref.priorityStatus = PriorityStatus.FINISHED;
+                    ref.priorityStatusDate = priorityOptions.priorityStatusDate;
+                    ref.priorityTimestamp = priorityOptions.priorityTimestamp;
                     await em.flush();
                 }
             } catch (error) {
