@@ -2,7 +2,6 @@ import { CronJob } from 'cron';
 import { SynchronizationPolicy } from './synchronizers/synchronize-policy.js';
 import { SynchronizationVCs } from './synchronizers/synchronize-vcs.js';
 import { SynchronizationVPs } from './synchronizers/synchronize-vp.js';
-import { SynchronizationTask } from './synchronization-task.js';
 import { IPFS_CID_PATTERN, MessageAction, MessageType, PolicyAnalytics, PriorityStatus, TokenType, VPAnalytics } from '@indexer/interfaces';
 import { DataBaseHelper, Message, MessageCache, PriorityQueue, TokenCache } from '@indexer/common';
 import { textSearch } from './text-search-options.js';
@@ -10,10 +9,7 @@ import { fastLoadFiles, fastLoadFilesBuffer } from './load-files.js';
 import { Collection } from 'mongodb';
 import { PolicyLoader, HashComparator } from '../analytics/index.js';
 import { parsePolicyFile } from './parsers/policy.parser.js';
-
-function getMask(mask: string | undefined): string {
-    return (mask || '0 * * * *');
-}
+import { LoadingQueueService } from '../api/loading-queue.service.js';
 
 /**
  * Synchronization task
@@ -24,11 +20,13 @@ export class AnalyticsTask {
      * Cron job
      */
     private _job?: CronJob;
+    private _priority_check_job?: CronJob;
 
     public static EVENTS_SET: Set<number> = new Set();
     public static EVENTS_QUEUE: number[] = [];
 
     private static MASK: string = '* * * * *';
+    private static PRIORITY_CHECK_QUEUE_MASK: string = '0 0 * * *';
 
     private readonly synchronizationVCs: SynchronizationVCs;
     private readonly synchronizationVPs: SynchronizationVPs;
@@ -36,7 +34,7 @@ export class AnalyticsTask {
 
     private isSyncRunning = new Map<string, boolean>();
 
-    constructor() {
+    constructor(private queueService: LoadingQueueService) {
         this.synchronizationVCs = (new SynchronizationVCs(""));
         this.synchronizationVPs = (new SynchronizationVPs(""));
         this.synchronizationPolicy = (new SynchronizationPolicy(""));
@@ -59,13 +57,13 @@ export class AnalyticsTask {
             AnalyticsTask.EVENTS_QUEUE.push(item.priorityTimestamp);
         });
 
-        (new AnalyticsTask()).start();
+        (new AnalyticsTask(new LoadingQueueService)).start();
     }
 
     public start() {
         const taskExecution = async () => {
             try {
-                this.startSync()
+                this.startSync();
             } catch (error) {
                 console.error('Analytic synchronization failed:', error);
             }
@@ -75,6 +73,19 @@ export class AnalyticsTask {
         this._job.start();
 
         taskExecution();
+
+        const priorityCheckTaskExecution = async () => {
+            try {
+                this.queueService.updateAllPriorityQueue();
+            } catch (error) {
+                console.error('Analytic synchronization failed:', error);
+            }
+        };
+
+        this._priority_check_job = new CronJob(AnalyticsTask.PRIORITY_CHECK_QUEUE_MASK, priorityCheckTaskExecution);
+        this._priority_check_job.start();
+
+        priorityCheckTaskExecution();
     }
 
     public stop() {
@@ -99,11 +110,7 @@ export class AnalyticsTask {
 
             console.log(`Processing event (timestamp): ${timestamp}`);
 
-            // await this.updateAnalytics(timestamp);
-
-            await this.runTask(this.synchronizationVCs);
-            await this.runTask(this.synchronizationVPs);
-            await this.runTask(this.synchronizationPolicy);
+            await this.updateAnalytics(timestamp);
 
             const em = DataBaseHelper.getEntityManager();
             await em.nativeUpdate(PriorityQueue, {
@@ -118,23 +125,6 @@ export class AnalyticsTask {
             console.log(`Already running analytic synchronization`);
         }
     };
-
-    private async runTask(task: SynchronizationTask) {
-
-        this.isSyncRunning.set(task.taskName, true);
-
-        console.log(`${task.taskName} task is started`);
-        try {
-            console.time(`----- sync ${task.taskName} -----`);
-            await task.sync();
-            console.timeEnd(`----- sync ${task.taskName} -----`);
-        } catch (error) {
-            console.log(error);
-        }
-        console.log(`${task.taskName} task is finished`);
-
-        this.isSyncRunning.set(task.taskName, false);
-    }
 
     private async updateAnalytics(priorityTimestamp: number): Promise<void> {
         const em = DataBaseHelper.getEntityManager();
@@ -167,6 +157,7 @@ export class AnalyticsTask {
         const fileMap = await fastLoadFiles(fileIds);
         const schemaFileIds: Set<string> = new Set<string>();
         const schemaContextCIDs: Set<string> = new Set<string>();
+        const policyTopicIds: Set<string> = new Set<string>();
 
         for (const buffer of fileMap.values()) {
             const documentFile = this.parseFile(buffer);
@@ -177,8 +168,9 @@ export class AnalyticsTask {
             }
         }
 
-        const policyMap = await this.loadPolicies(messageCollection, consensusTimestamps);
-        const topicMap = await this.loadTopics(messageCollection, consensusTimestamps);
+        const topicMap = await this.loadTopics(messageCollection, consensusTimestamps, policyTopicIds);
+        
+        const policyMap = await this.loadPolicies(messageCollection, policyTopicIds);
 
         const schemaMap = await this.loadSchemas(messageCollection, schemaContextCIDs, schemaFileIds);
         const schemaFileMap = await fastLoadFiles(schemaFileIds);
@@ -271,18 +263,13 @@ export class AnalyticsTask {
     }
 
     //#region LOADING ENTITIES
-    private async loadPolicies(collection: Collection<Message>, consensusTimestamps: Set<string>) {
+    private async loadPolicies(collection: Collection<Message>, policyTopicIds: Set<string>) {
         console.log(`Sync Analytics: load policies`)
         const policyMap = new Map<string, Message>();
         const policies = collection.find({
             type: MessageType.INSTANCE_POLICY,
-            consensusTimestamp: { $in: Array.from(consensusTimestamps) }
+            topicId: { $in: Array.from(policyTopicIds) }
         });
-        console.log({
-            type: MessageType.INSTANCE_POLICY,
-            consensusTimestamp: { $in: Array.from(consensusTimestamps) }
-        });
-        
         while (await policies.hasNext()) {
             const policy = await policies.next();
             if (policy.options?.instanceTopicId) {
@@ -292,7 +279,7 @@ export class AnalyticsTask {
         return policyMap;
     }
 
-    private async loadTopics(collection: Collection<Message>, consensusTimestamps: Set<string>) {
+    private async loadTopics(collection: Collection<Message>, consensusTimestamps: Set<string>, policyTopicIds: Set<string>) {
         console.log(`Sync Analytics: load topics`)
         const topicMap = new Map<string, Message>();
         const topics = collection.find({
@@ -305,7 +292,14 @@ export class AnalyticsTask {
             if (!topic.options?.childId) {
                 topicMap.set(topic.topicId, topic);
             }
+            if (topic.options?.parentId) {
+                policyTopicIds.add(topic.options.parentId);
+            }
+            if (topic.options?.childId) {
+                policyTopicIds.add(topic.options.childId);
+            }
         }
+        
         return topicMap;
     }
 

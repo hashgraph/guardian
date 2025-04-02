@@ -37,7 +37,6 @@ export class LoadingQueueService {
 
     public static async init() {
         LoadingQueueService.mirrorNodeUrl = Environment.mirrorNode;
-        await this.updateAllPriorityQueue();
     }
 
     @MessagePattern(IndexerMessageAPI.GET_DATA_LOADING_PROGRESS)
@@ -273,7 +272,7 @@ export class LoadingQueueService {
                     isFinished = false;
                 }
             });
-    
+
             if (isFinished) {
                 AnalyticsTask.onAddEvent(priorityTimestamp);
     
@@ -294,7 +293,7 @@ export class LoadingQueueService {
         }
     }
 
-    private static async updateAllPriorityQueue() {
+    public async updateAllPriorityQueue() {
         console.log('started updating the entire priority queue');
         
         try {
@@ -348,11 +347,20 @@ export class LoadingQueueService {
                         priorityStatus: PriorityStatus.ANALYTICS
                     });
                 } else {
-                    await em.nativeUpdate(PriorityQueue, {
-                        priorityTimestamp: priorityTimestamp,
-                    }, {
-                        priorityStatus: status
-                    });
+                    if ((Date.now() - priorityQueueItem.priorityTimestamp) > 24 * 60 * 60 * 1000) {
+                        await this.addEntity(priorityQueueItem.entityId, priorityTimestamp);
+                        await em.nativeUpdate(PriorityQueue, {
+                            priorityTimestamp: priorityTimestamp,
+                        }, {
+                            priorityStatus: PriorityStatus.SCHEDULED
+                        });
+                    } else {
+                        await em.nativeUpdate(PriorityQueue, {
+                            priorityTimestamp: priorityTimestamp,
+                        }, {
+                            priorityStatus: status
+                        });
+                    }
                 }
             }
         } catch (error) {
@@ -484,7 +492,7 @@ export class LoadingQueueService {
             priorityStatusDate: priorityDate,
             priorityTimestamp
         });
-
+        
         const messageResult = await em.nativeUpdate(MessageCache, {
             topicId: { $in: Array.from(topicIds) },
             priorityDate: { $eq: null }
