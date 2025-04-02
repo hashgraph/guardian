@@ -110,12 +110,12 @@ export class ReportService {
         });
 
         if (!report) {
-            new PinoLogger().error(`Report does not exist`, ['ANALYTICS_SERVICE', user);
+            new PinoLogger().error(`Report does not exist`, ['ANALYTICS_SERVICE']);
             return report;
         }
 
         if (report.status === ReportStatus.PROGRESS) {
-            new PinoLogger().error(`Report already started`, ['ANALYTICS_SERVICE', user]);
+            new PinoLogger().error(`Report already started`, ['ANALYTICS_SERVICE']);
             return report;
         }
 
@@ -123,10 +123,10 @@ export class ReportService {
 
         ReportService.update(report).then((result) => {
             if (result && result.status === ReportStatus.FINISHED) {
-                new PinoLogger().info(`Update completed`, ['ANALYTICS_SERVICE', user]);
+                new PinoLogger().info(`Update completed`, ['ANALYTICS_SERVICE']);
             }
         }, (error) => {
-            new PinoLogger().error(`Update error: ${error?.message}`, ['ANALYTICS_SERVICE', user]);
+            new PinoLogger().error(`Update error: ${error?.message}`, ['ANALYTICS_SERVICE']);
         });
 
         return report;
