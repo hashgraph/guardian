@@ -37,6 +37,7 @@ export class LoadingQueueService {
 
     public static async init() {
         LoadingQueueService.mirrorNodeUrl = Environment.mirrorNode;
+        await this.updateAllPriorityQueue();
     }
 
     @MessagePattern(IndexerMessageAPI.GET_DATA_LOADING_PROGRESS)
@@ -288,20 +289,76 @@ export class LoadingQueueService {
                     priorityStatus: status
                 });
             }
-            // VM042 VM042 V2.1.
-
         } catch (error) {
 
         }
     }
 
+    private static async updateAllPriorityQueue() {
+        console.log('started updating the entire priority queue');
+        
+        try {
+            const em = DataBaseHelper.getEntityManager();
+            const queueCollection = em.getCollection<PriorityQueue>('PriorityQueue');
 
+            const priorityQueue = queueCollection.find({ priorityStatus: { $ne: PriorityStatus.FINISHED } });
 
+            while (await priorityQueue.hasNext()) {
+                const priorityQueueItem = await priorityQueue.next();
+                const priorityTimestamp = priorityQueueItem.priorityTimestamp;
 
-
-
-
-
+                const topics = await em.find(TopicCache, { priorityTimestamp });
+                const tokens = await em.find(TokenCache, { priorityTimestamp });
+                const messages = await em.find(MessageCache, { priorityTimestamp });
+        
+                let status = priorityQueueItem.priorityStatus;
+                let isFinished = true;
+        
+                topics.forEach(item => {
+                    if (item.priorityStatus === PriorityStatus.RUNNING || item.priorityStatus === PriorityStatus.FINISHED) {
+                        status = PriorityStatus.RUNNING;
+                    }
+                    if (item.priorityStatus !== PriorityStatus.FINISHED) {
+                        isFinished = false;
+                    }
+                });
+        
+                tokens.forEach(item => {
+                    if (item.priorityStatus === PriorityStatus.RUNNING || item.priorityStatus === PriorityStatus.FINISHED) {
+                        status = PriorityStatus.RUNNING;
+                    }
+                    if (item.priorityStatus !== PriorityStatus.FINISHED) {
+                        isFinished = false;
+                    }
+                });
+        
+                messages.forEach(item => {
+                    if (item.priorityStatus === PriorityStatus.RUNNING || item.priorityStatus === PriorityStatus.FINISHED) {
+                        status = PriorityStatus.RUNNING;
+                    }
+                    if (item.priorityStatus !== PriorityStatus.FINISHED) {
+                        isFinished = false;
+                    }
+                });
+                
+                if (isFinished) {
+                    await em.nativeUpdate(PriorityQueue, {
+                        priorityTimestamp: priorityTimestamp,
+                    }, {
+                        priorityStatus: PriorityStatus.ANALYTICS
+                    });
+                } else {
+                    await em.nativeUpdate(PriorityQueue, {
+                        priorityTimestamp: priorityTimestamp,
+                    }, {
+                        priorityStatus: status
+                    });
+                }
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     private async addTopic(topicId: string, priorityTimestamp: number = Date.now()) {
         const em = DataBaseHelper.getEntityManager();
