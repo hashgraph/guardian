@@ -219,5 +219,6 @@ const API = {
     //Formulas
     Formulas: "formulas/",
     Relationships: "relationships/",
+    Data: "data/",
 };
 export default API;

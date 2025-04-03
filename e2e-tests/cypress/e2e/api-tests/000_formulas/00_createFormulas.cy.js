@@ -37,7 +37,7 @@ context("Create formulas", { tags: ['formulas', 'firstPool', 'all'] }, () => {
                 body: {
                     name: formulaName,
                     description: formulaName + " desc",
-                    policy,
+                    policyId,
                     policyTopicId,
                     policyInstanceTopicId
                 },
