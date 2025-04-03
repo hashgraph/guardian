@@ -215,5 +215,9 @@ const API = {
     WizardPolicy: "wizard/policy/",
     WizardPolicyAsync: "wizard/push/policy/",
     Wizard: "wizard/",
+
+    //Formulas
+    Formulas: "formulas/",
+    Relationships: "relationships/",
 };
 export default API;
