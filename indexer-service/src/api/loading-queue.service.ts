@@ -123,7 +123,7 @@ export class LoadingQueueService {
 
             let result = false;
 
-            topicIds.forEach(async id => {
+            for (const id of topicIds) {
                 const priorityTimestamp = Date.now();
 
                 if (await this.checkQueue(id)) {
@@ -134,7 +134,7 @@ export class LoadingQueueService {
                         result = true;
                     }
                 }
-            });
+            }
 
             return new MessageResponse(result);
         } catch (error) {
@@ -151,7 +151,7 @@ export class LoadingQueueService {
 
             let result = false;
 
-            policyTopicIds.forEach(async id => {
+            for (const id of policyTopicIds) {
                 const priorityTimestamp = Date.now();
                 if (await this.checkQueue(id)) {
                     const topicResult = await this.addInstancePolicy(id, priorityTimestamp);
@@ -161,7 +161,7 @@ export class LoadingQueueService {
                         result = true;
                     }
                 }
-            });
+            }
 
             return new MessageResponse(result);
         } catch (error) {
@@ -178,7 +178,7 @@ export class LoadingQueueService {
 
             let result = false;
 
-            tokenIds.forEach(async id => {
+            for (const id of tokenIds) {
                 const priorityTimestamp = Date.now();
                 if (await this.checkQueue(id)) {
                     const topicResult = await this.addToken(id, priorityTimestamp);
@@ -188,7 +188,7 @@ export class LoadingQueueService {
                         result = true;
                     }
                 }
-            });
+            }
 
             return new MessageResponse(result);
         } catch (error) {
@@ -272,7 +272,7 @@ export class LoadingQueueService {
                     isFinished = false;
                 }
             });
-    
+
             if (isFinished) {
                 AnalyticsTask.onAddEvent(priorityTimestamp);
     
@@ -288,20 +288,85 @@ export class LoadingQueueService {
                     priorityStatus: status
                 });
             }
-            // VM042 VM042 V2.1.
-
         } catch (error) {
 
         }
     }
 
+    public async updateAllPriorityQueue() {
+        console.log('started updating the entire priority queue');
+        
+        try {
+            const em = DataBaseHelper.getEntityManager();
+            const queueCollection = em.getCollection<PriorityQueue>('PriorityQueue');
 
+            const priorityQueue = queueCollection.find({ priorityStatus: { $ne: PriorityStatus.FINISHED } });
 
+            while (await priorityQueue.hasNext()) {
+                const priorityQueueItem = await priorityQueue.next();
+                const priorityTimestamp = priorityQueueItem.priorityTimestamp;
 
-
-
-
-
+                const topics = await em.find(TopicCache, { priorityTimestamp });
+                const tokens = await em.find(TokenCache, { priorityTimestamp });
+                const messages = await em.find(MessageCache, { priorityTimestamp });
+        
+                let status = priorityQueueItem.priorityStatus;
+                let isFinished = true;
+        
+                topics.forEach(item => {
+                    if (item.priorityStatus === PriorityStatus.RUNNING || item.priorityStatus === PriorityStatus.FINISHED) {
+                        status = PriorityStatus.RUNNING;
+                    }
+                    if (item.priorityStatus !== PriorityStatus.FINISHED) {
+                        isFinished = false;
+                    }
+                });
+        
+                tokens.forEach(item => {
+                    if (item.priorityStatus === PriorityStatus.RUNNING || item.priorityStatus === PriorityStatus.FINISHED) {
+                        status = PriorityStatus.RUNNING;
+                    }
+                    if (item.priorityStatus !== PriorityStatus.FINISHED) {
+                        isFinished = false;
+                    }
+                });
+        
+                messages.forEach(item => {
+                    if (item.priorityStatus === PriorityStatus.RUNNING || item.priorityStatus === PriorityStatus.FINISHED) {
+                        status = PriorityStatus.RUNNING;
+                    }
+                    if (item.priorityStatus !== PriorityStatus.FINISHED) {
+                        isFinished = false;
+                    }
+                });
+                
+                if (isFinished) {
+                    await em.nativeUpdate(PriorityQueue, {
+                        priorityTimestamp: priorityTimestamp,
+                    }, {
+                        priorityStatus: PriorityStatus.ANALYTICS
+                    });
+                } else {
+                    if ((Date.now() - priorityQueueItem.priorityTimestamp) > 24 * 60 * 60 * 1000) {
+                        await this.addEntity(priorityQueueItem.entityId, priorityTimestamp);
+                        await em.nativeUpdate(PriorityQueue, {
+                            priorityTimestamp: priorityTimestamp,
+                        }, {
+                            priorityStatus: PriorityStatus.SCHEDULED
+                        });
+                    } else {
+                        await em.nativeUpdate(PriorityQueue, {
+                            priorityTimestamp: priorityTimestamp,
+                        }, {
+                            priorityStatus: status
+                        });
+                    }
+                }
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     private async addTopic(topicId: string, priorityTimestamp: number = Date.now()) {
         const em = DataBaseHelper.getEntityManager();
@@ -373,9 +438,9 @@ export class LoadingQueueService {
             )
             
             let policyInstancesResult = false;
-            policyInstances.forEach(async item => {
+            for (const item of policyInstances) {
                 policyInstancesResult ||= await this.addInstancePolicy(item.options.instanceTopicId, priorityTimestamp);
-            });
+            }
 
             return policyInstancesResult;
         }
@@ -427,7 +492,7 @@ export class LoadingQueueService {
             priorityStatusDate: priorityDate,
             priorityTimestamp
         });
-
+        
         const messageResult = await em.nativeUpdate(MessageCache, {
             topicId: { $in: Array.from(topicIds) },
             priorityDate: { $eq: null }

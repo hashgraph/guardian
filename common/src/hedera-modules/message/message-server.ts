@@ -408,7 +408,7 @@ export class MessageServer {
                     result.push(item);
                 }
             } catch (error) {
-
+                console.error(error.message);
             }
         }
         return result as T[];
@@ -510,7 +510,7 @@ export class MessageServer {
                         result.push(item);
                     }
                 } catch (error) {
-
+                    console.error(error.message);
                 }
             }
             return result;
@@ -714,7 +714,7 @@ export class MessageServer {
                     result.push(item);
                 }
             } catch (error) {
-
+                console.error(error.message);
             }
         }
         return result;
