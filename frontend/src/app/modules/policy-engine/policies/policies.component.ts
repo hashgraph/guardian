@@ -1,8 +1,9 @@
 import { ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
     ContractType,
     IUser,
+    LocationType,
     PolicyAvailability,
     PolicyHelper,
     PolicyStatus,
@@ -45,6 +46,7 @@ import {
     ImportEntityDialog,
     ImportEntityType
 } from '../../common/import-entity-dialog/import-entity-dialog.component';
+import { SearchExternalPolicyDialog } from '../dialogs/search-external-policy-dialog/search-external-policy-dialog.component';
 
 class MenuButton {
     public readonly visible: boolean;
@@ -88,6 +90,16 @@ const columns = [{
     }
 }, {
     id: 'topic',
+    permissions: (user: UserPermissions) => {
+        return (
+            user.POLICIES_POLICY_CREATE ||
+            user.POLICIES_POLICY_UPDATE ||
+            user.POLICIES_POLICY_REVIEW ||
+            user.POLICIES_POLICY_DELETE
+        )
+    }
+}, {
+    id: 'publicLink',
     permissions: (user: UserPermissions) => {
         return (
             user.POLICIES_POLICY_CREATE ||
@@ -232,6 +244,7 @@ export class PoliciesComponent implements OnInit {
             color: 'red',
         },
     ];
+    public tab: LocationType = LocationType.LOCAL;
 
     private filteredPolicies: any[] = [];
     public filtersForm = new UntypedFormGroup({
@@ -280,6 +293,7 @@ export class PoliciesComponent implements OnInit {
 
     public showInstance(policy: any): string | null {
         switch (policy.status) {
+            case PolicyStatus.VIEW:
             case PolicyStatus.PUBLISH:
             case PolicyStatus.DISCONTINUED: {
                 if (this.user.POLICIES_POLICY_MANAGE) {
@@ -381,6 +395,9 @@ export class PoliciesComponent implements OnInit {
         }
         if (policy.status === PolicyStatus.DEMO) {
             return 'Demo';
+        }
+        if (policy.status === PolicyStatus.VIEW) {
+            return 'View';
         }
         return 'Not published';
     }
@@ -554,6 +571,7 @@ export class PoliciesComponent implements OnInit {
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
         private router: Router,
+        private route: ActivatedRoute,
         private dialogService: DialogService,
         private taskService: TasksService,
         private informService: InformService,
@@ -577,6 +595,12 @@ export class PoliciesComponent implements OnInit {
             this.wsService.testSubscribe(((test) => {
                 this.updatePolicyTest(test);
             }))
+        );
+        this.tab = this.route.snapshot.queryParams['tab'] || LocationType.LOCAL;
+        this.subscription.add(
+            this.route.queryParams.subscribe((queryParams) => {
+                this.tab = this.route.snapshot.queryParams['tab'] || LocationType.LOCAL;
+            })
         );
         this.loading = true;
         this.loadPolicy();
@@ -623,7 +647,8 @@ export class PoliciesComponent implements OnInit {
     private loadAllPolicy() {
         this.loading = true;
         this.tagOptions = [];
-        this.policyEngineService.page(this.pageIndex, this.pageSize)
+        this.policyEngineService
+            .page(this.pageIndex, this.pageSize, this.tab)
             .subscribe((policiesResponse) => {
                 this.policies = policiesResponse.body?.map(policy => {
                     if (policy.discontinuedDate) {
@@ -1456,5 +1481,32 @@ export class PoliciesComponent implements OnInit {
         test.date = event.date;
         test.progress = event.progress;
         test.status = event.status;
+    }
+
+    public onChangeTab(tab: any) {
+        this.loading = true;
+        this.tab = tab.index === 0 ? LocationType.LOCAL : LocationType.REMOTE;
+        this.pageIndex = 0;
+        this.router.navigate([], {
+            queryParams: { tab: this.tab }
+        });
+        this.loadAllPolicy();
+    }
+
+    // public importExternalPolicy() {
+    //     this.router.navigate(['/external-policies']);
+    // }
+
+    public importExternalPolicy() {
+        const dialogRef = this.dialogService.open(SearchExternalPolicyDialog, {
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
+        });
+        dialogRef.onClose.subscribe(async (result: any | null) => {
+            if (result) {
+                this.loadAllPolicy();
+            }
+        });
     }
 }

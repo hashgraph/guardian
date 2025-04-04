@@ -11,8 +11,9 @@
         padding-left: 16px;
     }
 }
+
 .guardian-dropdown {
-    &::ng-deep .p-dropdown { 
+    &::ng-deep .p-dropdown {
         width: 250px;
     }
 }
@@ -23,6 +24,55 @@
     margin-right: 16px;
 
     &:last-child {
-        margin-right: 0px; 
+        margin-right: 0px;
+    }
+}
+
+.policy-status {
+    width: 92px;
+    height: 28px;
+    border-radius: 6px;
+    padding-top: 6px;
+    padding-right: 10px;
+    padding-bottom: 6px;
+    padding-left: 10px;
+    font-family: Inter;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 16px;
+    vertical-align: middle;
+
+    &.NEW-status {
+        color: #848FA9;
+        background: #E1E7EF;
+    }
+
+    &.APPROVED-status {
+        color: #19BE47;
+        background: #CAFDD9;
+    }
+
+    &.REJECTED-status {
+        color: #FF432A;
+        background: #FFEAEA;
+    }
+}
+
+.option-btns {
+    display: flex;
+
+    .approve-btn {
+        width: 100px;
+        height: 28px;
+        background: #19BE47;
+        color: #FFF;
+        margin-right: 8px;
+    }
+    
+    .reject-btn {
+        width: 100px;
+        height: 28px;
+        background: #FF432A;
+        color: #FFF;
     }
 }

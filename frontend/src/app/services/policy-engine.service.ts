@@ -15,15 +15,45 @@ export class PolicyEngineService {
     constructor(private http: HttpClient) {
     }
 
+    public static getOptions(
+        filters: any,
+        pageIndex?: number,
+        pageSize?: number
+    ): HttpParams {
+        let params = new HttpParams();
+        if (filters && typeof filters === 'object') {
+            for (const key of Object.keys(filters)) {
+                if (filters[key]) {
+                    params = params.set(key, filters[key]);
+                }
+            }
+        }
+        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            params = params.set('pageIndex', String(pageIndex));
+            params = params.set('pageSize', String(pageSize));
+        }
+        return params;
+    }
+
     public all(): Observable<any[]> {
         return this.http.get<any[]>(`${this.url}/`);
     }
 
-    public page(pageIndex?: number, pageSize?: number): Observable<HttpResponse<any[]>> {
-        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
-            return this.http.get<any>(`${this.url}?pageIndex=${pageIndex}&pageSize=${pageSize}`, { observe: 'response', headers: headersV2 });
+    public page(
+        pageIndex?: number,
+        pageSize?: number,
+        type?: string
+    ): Observable<HttpResponse<any[]>> {
+        const filters: any = {};
+        const header: any = { observe: 'response' };
+        if (type) {
+            filters.type = type;
         }
-        return this.http.get<any>(`${this.url}`, { observe: 'response' });
+        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            header.headers = headersV2;
+        }
+        header.params = PolicyEngineService.getOptions(filters, pageIndex, pageSize);
+        return this.http.get<any[]>(`${this.url}`, header) as any;
     }
 
     public create(policy: any): Observable<void> {
@@ -47,7 +77,7 @@ export class PolicyEngineService {
     }
 
     public publish(
-        policyId: string, 
+        policyId: string,
         options: { policyVersion: string, policyAvailability: PolicyAvailability }
     ): Observable<any> {
         return this.http.put<any>(`${this.url}/${policyId}/publish`, options);
@@ -66,7 +96,7 @@ export class PolicyEngineService {
     }
 
     public pushPublish(
-        policyId: string, 
+        policyId: string,
         options: { policyVersion: string, policyAvailability: PolicyAvailability }
     ): Observable<{ taskId: string, expectation: number }> {
         return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${policyId}/publish`, options);

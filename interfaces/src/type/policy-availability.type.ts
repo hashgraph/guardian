@@ -2,6 +2,6 @@
  * Policy type
  */
 export enum PolicyAvailability {
-    PRIVATE = 'Private',
-    PUBLIC = 'Public'
+    PRIVATE = 'private',
+    PUBLIC = 'public'
 }

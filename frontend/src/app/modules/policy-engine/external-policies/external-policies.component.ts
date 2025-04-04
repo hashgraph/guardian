@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, ExternalPolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -52,16 +52,40 @@ export class ExternalPolicyComponent implements OnInit {
             size: 'auto',
             tooltip: true
         }, {
-            id: 'policy',
-            title: 'Policy',
+            id: 'description',
+            title: 'Description',
             type: 'text',
             size: 'auto',
+            tooltip: false
+        }, {
+            id: 'version',
+            title: 'Version',
+            type: 'text',
+            size: '135',
             tooltip: false
         }, {
             id: 'topicId',
             title: 'Topic',
             type: 'text',
             size: '135',
+            tooltip: false
+        }, {
+            id: 'messageId',
+            title: 'Message',
+            type: 'text',
+            size: '210',
+            tooltip: false
+        }, {
+            id: 'user',
+            title: 'Username',
+            type: 'text',
+            size: '180',
+            tooltip: false
+        }, {
+            id: 'role',
+            title: 'Role',
+            type: 'text',
+            size: '180',
             tooltip: false
         }, {
             id: 'status',
@@ -81,13 +105,15 @@ export class ExternalPolicyComponent implements OnInit {
             type: 'text',
             size: '56',
             tooltip: false
-        }, {
-            id: 'delete',
-            title: '',
-            type: 'text',
-            size: '64',
-            tooltip: false
-        }]
+        }
+            // , {
+            //     id: 'delete',
+            //     title: '',
+            //     type: 'text',
+            //     size: '64',
+            //     tooltip: false
+            // }
+        ]
     }
 
     ngOnInit() {
@@ -132,7 +158,7 @@ export class ExternalPolicyComponent implements OnInit {
         const filters: any = {};
         this.loading = true;
         this.externalPoliciesService
-            .getPolicies(
+            .getPolicyRequests(
                 this.pageIndex,
                 this.pageSize,
                 filters
@@ -235,5 +261,34 @@ export class ExternalPolicyComponent implements OnInit {
             }, (e) => {
                 this.loading = false;
             });
+    }
+
+    public onReject(item: any) {
+        this.loading = true;
+        this.externalPoliciesService
+            .reject(item.id)
+            .subscribe((result) => {
+                const { taskId, expectation } = result;
+                this.router.navigate(['task', taskId], {
+                    queryParams: {
+                        last: btoa(location.href),
+                    },
+                });
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    getStatusName(row: any) {
+        switch (row.status) {
+            case ExternalPolicyStatus.NEW:
+                return 'Requested';
+            case ExternalPolicyStatus.APPROVED:
+                return 'Approved';
+            case ExternalPolicyStatus.REJECTED:
+                return 'Rejected';
+            default:
+                return 'Incorrect status';
+        }
     }
 }

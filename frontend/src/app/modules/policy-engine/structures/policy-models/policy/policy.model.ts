@@ -73,6 +73,7 @@ export class PolicyTemplate {
     public readonly isPublishError: boolean = false;
     public readonly isDemo: boolean = false;
     public readonly isRun: boolean = false;
+    public readonly isView: boolean = false;
 
     constructor(policy?: any) {
         this._changed = false;
@@ -106,7 +107,14 @@ export class PolicyTemplate {
         this.isDryRun = this.status === PolicyStatus.DRY_RUN;
         this.isPublishError = this.status === PolicyStatus.PUBLISH_ERROR;
         this.isDemo = this.status === PolicyStatus.DEMO;
-        this.readonly = this.isPublished || this.isDryRun || this.isPublishError || this.isDemo;
+        this.isView = this.status === PolicyStatus.VIEW;
+        this.readonly = (
+            this.isPublished ||
+            this.isDryRun ||
+            this.isPublishError ||
+            this.isDemo ||
+            this.isView
+        );
         this.isRun = this.isDryRun || this.isPublished || this.isDemo
     }
 

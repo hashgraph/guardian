@@ -3620,17 +3620,15 @@ export class Guardians extends NatsService {
 
 
 
-
     /**
-     * Create external policy
+     * Get external policy
      *
-     * @param externalPolicy
+     * @param id
      * @param owner
-     *
-     * @returns policy
+     * @returns {ExternalPolicyDTO}
      */
-    public async createExternalPolicy(externalPolicy: ExternalPolicyDTO, owner: IOwner): Promise<ExternalPolicyDTO> {
-        return await this.sendMessage(MessageAPI.CREATE_EXTERNAL_POLICY, { externalPolicy, owner });
+    public async getExternalPolicyRequest(id: string, owner: IOwner): Promise<ExternalPolicyDTO> {
+        return await this.sendMessage(MessageAPI.GET_EXTERNAL_POLICY_REQUEST, { id, owner });
     }
 
     /**
@@ -3641,8 +3639,8 @@ export class Guardians extends NatsService {
      *
      * @returns {ResponseAndCount<PolicyLabelDTO>}
      */
-    public async getExternalPolicies(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<PolicyLabelDTO>> {
-        return await this.sendMessage(MessageAPI.GET_EXTERNAL_POLICIES, { filters, owner });
+    public async getExternalPolicyRequests(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<PolicyLabelDTO>> {
+        return await this.sendMessage(MessageAPI.GET_EXTERNAL_POLICY_REQUESTS, { filters, owner });
     }
 
     /**
@@ -3667,17 +3665,6 @@ export class Guardians extends NatsService {
      */
     public async importExternalPolicy(messageId: string, owner: IOwner): Promise<ExternalPolicyDTO> {
         return await this.sendMessage(MessageAPI.IMPORT_EXTERNAL_POLICY, { messageId, owner });
-    }
-
-    /**
-     * Get external policy
-     *
-     * @param policyId
-     * @param owner
-     * @returns {ExternalPolicyDTO}
-     */
-    public async getExternalPolicyById(policyId: string, owner: IOwner): Promise<ExternalPolicyDTO> {
-        return await this.sendMessage(MessageAPI.GET_EXTERNAL_POLICY, { policyId, owner });
     }
 
     /**

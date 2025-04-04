@@ -630,7 +630,7 @@ export class PolicyEngineService {
             async (msg: { options: any, owner: IOwner }) => {
                 try {
                     const { options, owner } = msg;
-                    const { filters, pageIndex, pageSize } = options;
+                    const { filters, pageIndex, pageSize, type } = options;
                     const _filters: any = { ...filters };
                     const otherOptions: any = {
                         fields: [
@@ -666,6 +666,7 @@ export class PolicyEngineService {
                         otherOptions.limit = 100;
                     }
                     await this.policyEngine.addAccessFilters(_filters, owner);
+                    await this.policyEngine.addLocationFilters(_filters, type);
                     const [policies, count] = await DatabaseServer.getPoliciesAndCount(_filters, otherOptions);
                     for (const policy of policies) {
                         await PolicyComponentsUtils.GetPolicyInfo(policy, owner.creator);
@@ -683,7 +684,7 @@ export class PolicyEngineService {
             async (msg: { options: any, owner: IOwner }) => {
                 try {
                     const { options, owner } = msg;
-                    const { fields, filters, pageIndex, pageSize } = options;
+                    const { fields, filters, pageIndex, pageSize, type } = options;
                     const _filters: any = { ...filters };
 
                     const otherOptions: any = { fields };
@@ -699,7 +700,7 @@ export class PolicyEngineService {
                         otherOptions.limit = 100;
                     }
                     await this.policyEngine.addAccessFilters(_filters, owner);
-
+                    await this.policyEngine.addLocationFilters(_filters, type);
                     const [policies, count] = await DatabaseServer.getPoliciesAndCount(_filters, otherOptions);
                     for (const policy of policies) {
                         await PolicyComponentsUtils.GetPolicyInfo(policy, owner.creator);
@@ -1946,7 +1947,8 @@ export class PolicyEngineService {
                                 PolicyStatus.DRY_RUN,
                                 PolicyStatus.PUBLISH,
                                 PolicyStatus.DISCONTINUED,
-                                PolicyStatus.DEMO
+                                PolicyStatus.DEMO,
+                                PolicyStatus.VIEW
                             ]
                         },
                     });

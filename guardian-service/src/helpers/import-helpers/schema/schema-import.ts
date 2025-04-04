@@ -167,7 +167,7 @@ export class SchemaImport {
             const newUUID = oldUUID;
             ids = {
                 oldID: schema.id,
-                newID: schema.id,
+                newID: null,
                 oldUUID,
                 newUUID,
                 oldMessageID: schema.messageId,
@@ -180,8 +180,8 @@ export class SchemaImport {
             schema.iri = `#${ids.newUUID}`;
             schema.documentURL = schema.documentURL;
             schema.contextURL = schema.contextURL;
-            schema.id = ids.newID;
-            schema._id = new ObjectId(ids.newID);
+            delete schema.id;
+            delete schema._id;
         } else {
             const oldUUID = schema.iri ? schema.iri.substring(1) : null;
             const newUUID = GenerateUUIDv4();
@@ -294,6 +294,7 @@ export class SchemaImport {
     }
 
     private async saveSchemas(schemas: ISchema[]): Promise<void> {
+        console.log(' ---  schemas', schemas);
         let index = 0;
         for (const file of schemas) {
             const label = `Schema ${index + 1} (${file.name || '-'})`;
@@ -314,19 +315,19 @@ export class SchemaImport {
                 schemaObject.status = SchemaStatus.ERROR;
             }
 
-            const errorsCount = await DatabaseServer.getSchemasCount({
-                iri: {
-                    $eq: schemaObject.iri
-                },
-                $or: [{
-                    topicId: { $ne: schemaObject.topicId }
-                }, {
-                    uuid: { $ne: schemaObject.uuid }
-                }]
-            } as FilterObject<SchemaCollection>);
-            if (errorsCount > 0) {
-                throw new Error('Schema identifier already exist');
-            }
+            // const errorsCount = await DatabaseServer.getSchemasCount({
+            //     iri: {
+            //         $eq: schemaObject.iri
+            //     },
+            //     $or: [{
+            //         topicId: { $ne: schemaObject.topicId }
+            //     }, {
+            //         uuid: { $ne: schemaObject.uuid }
+            //     }]
+            // } as FilterObject<SchemaCollection>);
+            // if (errorsCount > 0) {
+            //     throw new Error('Schema identifier already exist');
+            // }
 
             this.notifier.info(`${label}: Save to IPFS & Hedera`);
             if (this.mode === ImportMode.COMMON) {

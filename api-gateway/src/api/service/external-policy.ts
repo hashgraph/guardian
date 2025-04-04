@@ -1,6 +1,6 @@
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
-import { Permissions, TaskAction } from '@guardian/interfaces';
+import { Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, PolicyLabelDocumentDTO, PolicyLabelDTO, PolicyLabelRelationshipsDTO, VcDocumentDTO, pageHeader, PolicyLabelDocumentRelationshipsDTO, PolicyLabelComponentsDTO, PolicyLabelFiltersDTO, TaskDTO, ExternalPolicyDTO, ImportMessageDTO, PolicyPreviewDTO } from '#middlewares';
 import { Guardians, InternalException, EntityOwner, TaskManager, ServiceError } from '#helpers';
@@ -10,46 +10,6 @@ import { AuthUser, Auth } from '#auth';
 @ApiTags('external-policies')
 export class ExternalPoliciesApi {
     constructor(private readonly logger: PinoLogger) { }
-
-    /**
-     * Creates a new external policy
-     */
-    @Post('/')
-    @Auth(Permissions.POLICIES_EXTERNAL_POLICY_CREATE)
-    @ApiOperation({
-        summary: 'Creates a new external policy.',
-        description: 'Creates a new external policy.',
-    })
-    @ApiBody({
-        description: 'Configuration.',
-        type: ExternalPolicyDTO,
-        required: true
-    })
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        type: ExternalPolicyDTO,
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO,
-    })
-    @ApiExtraModels(ExternalPolicyDTO, InternalServerErrorDTO)
-    @HttpCode(HttpStatus.CREATED)
-    async createExternalPolicy(
-        @AuthUser() user: IAuthUser,
-        @Body() externalPolicy: ExternalPolicyDTO
-    ): Promise<ExternalPolicyDTO> {
-        try {
-            if (!externalPolicy) {
-                throw new HttpException('Invalid config.', HttpStatus.UNPROCESSABLE_ENTITY);
-            }
-            const owner = new EntityOwner(user);
-            const guardian = new Guardians();
-            return await guardian.createExternalPolicy(externalPolicy, owner);
-        } catch (error) {
-            await InternalException(error, this.logger);
-        }
-    }
 
     /**
      * Get page
@@ -86,17 +46,40 @@ export class ExternalPoliciesApi {
     })
     @ApiExtraModels(ExternalPolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getPolicyLabels(
+    async getExternalPolicies(
         @AuthUser() user: IAuthUser,
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
     ): Promise<ExternalPolicyDTO[]> {
         try {
+            let itemsAndCount = { items: [], count: 0 };
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            const { items, count } = await guardians.getExternalPolicies({ pageIndex, pageSize }, owner);
-            return res.header('X-Total-Count', count).send(items);
+            if (owner) {
+                if (UserPermissions.has(user, Permissions.POLICIES_EXTERNAL_POLICY_UPDATE)) {
+                    const { items, count } = await guardians.getExternalPolicyRequests({
+                        query: {
+                            owner: owner.owner,
+                        },
+                        pageIndex, 
+                        pageSize 
+                    }, owner);
+                    itemsAndCount.items = items;
+                    itemsAndCount.count = count;
+                } else {
+                    const { items, count } = await guardians.getExternalPolicyRequests({
+                        query: {
+                            creator: owner.creator,
+                        },
+                        pageIndex, 
+                        pageSize 
+                    }, owner);
+                    itemsAndCount.items = items;
+                    itemsAndCount.count = count;
+                }
+            }
+            return res.header('X-Total-Count', itemsAndCount.count).send(itemsAndCount.items);
         } catch (error) {
             await InternalException(error, this.logger);
         }
@@ -218,7 +201,7 @@ export class ExternalPoliciesApi {
             }
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            const oldItem = await guardians.getExternalPolicyById(policyId, owner);
+            const oldItem = await guardians.getExternalPolicyRequests(policyId, owner);
             if (!oldItem) {
                 throw new HttpException('Item not found.', HttpStatus.NOT_FOUND);
             }

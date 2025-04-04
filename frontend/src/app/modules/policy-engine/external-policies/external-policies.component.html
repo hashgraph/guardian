@@ -28,7 +28,14 @@
 
     <div class="guardian-user-page-toolbar">
         <div class="guardian-user-page-filters">
-
+            <div class="guardian-search">
+                <input
+                    id="fieldSearch"
+                    placeholder="Search"
+                    pInputText
+                    type="text"
+                />
+            </div>
         </div>
         <div class="guardian-user-page-buttons">
             <button
@@ -77,10 +84,22 @@
                                     [ngSwitch]="column.id"
                                 >
                                     <ng-container *ngSwitchCase="'status'">
-                                        {{row.status}}
+                                        <div class="policy-status {{row.status}}-status">
+                                            {{ getStatusName(row) }}
+                                        </div>
+                                    </ng-container>
+                                    <ng-container *ngSwitchCase="'topicId'">
+                                        <span class="text-truncate">
+                                            <hedera-explorer 
+                                                [params]="row.topicId"
+                                                type="topics">{{ row.topicId }}</hedera-explorer>
+                                        </span>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'options'">
-                                        <button (click)="onApprove(row)">Approve</button>
+                                        <div *ngIf="row.status === 'NEW'" class="option-btns">
+                                            <button class="guardian-button approve-btn" (click)="onApprove(row)">Approve</button>
+                                            <button class="guardian-button reject-btn" (click)="onReject(row)">Reject</button>
+                                        </div>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'delete'">
                                         <div

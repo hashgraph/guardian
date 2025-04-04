@@ -16,7 +16,8 @@ import {
     SchemaStatus,
     TopicType,
     PolicyAvailability,
-    SchemaCategory
+    SchemaCategory,
+    LocationType
 } from '@guardian/interfaces';
 import {
     Artifact,
@@ -160,6 +161,7 @@ export class PolicyEngine extends NatsService {
                     PolicyStatus.DRY_RUN,
                     PolicyStatus.DISCONTINUED,
                     PolicyStatus.DEMO,
+                    PolicyStatus.DEMO,
                 ]
             }
         });
@@ -249,7 +251,7 @@ export class PolicyEngine extends NatsService {
 
     /**
      * Check access
-     * @param policy
+     * @param filters
      * @param user
      */
     public async addAccessFilters(filters: { [field: string]: any }, user: IOwner): Promise<any> {
@@ -292,6 +294,19 @@ export class PolicyEngine extends NatsService {
                 filters.id = { $in: [] };
                 break;
             }
+        }
+    }
+
+    /**
+     * Check location type
+     * @param filters
+     * @param type
+     */
+    public async addLocationFilters(filters: { [field: string]: any }, type: LocationType): Promise<any> {
+        if (type === LocationType.REMOTE) {
+            filters.locationType = { $eq: LocationType.REMOTE }
+        } else {
+            filters.locationType = { $ne: LocationType.REMOTE }
         }
     }
 
@@ -834,6 +849,8 @@ export class PolicyEngine extends NatsService {
 
         model.version = version;
         model.availability = availability;
+
+        console.log(model);
 
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(model.topicId), true);
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
@@ -1485,5 +1502,31 @@ export class PolicyEngine extends NatsService {
         const newPolicy = await this.dryRunPolicy(model, owner, 'Demo', true, logger);
         notifier.completedAndStart('Run policy');
         await this.generateModel(newPolicy.id.toString());
+    }
+
+    public async startView(
+        policy: Policy,
+        owner: IOwner,
+        logger: PinoLogger,
+        notifier: INotifier = emptyNotifier(),
+    ): Promise<void> {
+        notifier.completedAndStart('Validate policy');
+        const blockErrors = await this.validateModel(policy.id);
+        const errors = blockErrors.blocks
+            .filter((block) => !block.isValid && block.errors)
+            .map((block) => {
+                return {
+                    type: 'Block',
+                    uuid: block.id,
+                    name: block.name,
+                    error: JSON.stringify(block.errors)
+                }
+            })
+        if (errors.length) {
+            const message = PolicyImportExportHelper.errorsMessage(errors);
+            throw new Error(message);
+        }
+        notifier.completedAndStart('Run policy');
+        await this.generateModel(policy.id.toString());
     }
 }

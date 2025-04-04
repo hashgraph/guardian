@@ -1,5 +1,5 @@
 import { BaseEntity } from '../models/index.js';
-import { GenerateUUIDv4, PolicyAvailability, PolicyCategoryExport, PolicyStatus } from '@guardian/interfaces';
+import { GenerateUUIDv4, LocationType, PolicyAvailability, PolicyCategoryExport, PolicyStatus } from '@guardian/interfaces';
 import { AfterDelete, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property, Unique } from '@mikro-orm/core';
 import { DataBaseHelper } from '../helpers/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
@@ -240,10 +240,17 @@ export class Policy extends BaseEntity {
     availability?: PolicyAvailability;
 
     /**
+     * Location Type
+     */
+    @Property({ nullable: true })
+    locationType?: LocationType;
+
+    /**
      * Set policy defaults
      */
     @BeforeCreate()
     setDefaults() {
+        this.locationType = this.locationType || LocationType.LOCAL;
         this.status = this.status || PolicyStatus.DRAFT;
         this.availability = this.availability || PolicyAvailability.PRIVATE;
         this.uuid = this.uuid || GenerateUUIDv4();

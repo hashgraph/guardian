@@ -74,6 +74,12 @@ export class ExternalPolicy extends BaseEntity {
     status?: ExternalPolicyStatus;
 
     /**
+     * Username
+     */
+    @Property({ nullable: true })
+    username?: string;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()

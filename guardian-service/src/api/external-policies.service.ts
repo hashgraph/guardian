@@ -18,46 +18,20 @@ import { ImportMode, ImportPolicyOptions, PolicyImportExportHelper } from '../he
  */
 export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
     /**
-     * 
-     *
-     * @param {any} msg - options
-     *
-     * @returns {any} external policy
-     */
-    ApiResponse(MessageAPI.CREATE_EXTERNAL_POLICY,
-        async (msg: { externalPolicy: ExternalPolicy, owner: IOwner }) => {
-            try {
-                if (!msg) {
-                    return new MessageError('Invalid parameters.');
-                }
-                const { externalPolicy, owner } = msg;
-
-                if (!externalPolicy) {
-                    return new MessageError('Invalid object.');
-                }
-
-                // return new MessageResponse(row);
-            } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
-                return new MessageError(error);
-            }
-        });
-
-    /**
      * Get external policy
      *
      * @param {any} msg - external policy id
      *
      * @returns {any} - external policy
      */
-    ApiResponse(MessageAPI.GET_EXTERNAL_POLICY,
-        async (msg: { policyId: string, owner: IOwner }) => {
+    ApiResponse(MessageAPI.GET_EXTERNAL_POLICY_REQUEST,
+        async (msg: { id: string, owner: IOwner }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
                 }
-                const { policyId, owner } = msg;
-                const item = await DatabaseServer.getExternalPolicyById(policyId);
+                const { id, owner } = msg;
+                const item = await DatabaseServer.getExternalPolicyById(id);
                 if (!(item && item.owner === owner.owner)) {
                     return new MessageError('Item does not exist.');
                 }
@@ -75,14 +49,14 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
      *
      * @returns {any} - external policies
      */
-    ApiResponse(MessageAPI.GET_EXTERNAL_POLICIES,
+    ApiResponse(MessageAPI.GET_EXTERNAL_POLICY_REQUESTS,
         async (msg: { filters: any, owner: IOwner }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
                 }
-                const { filters, owner } = msg;
-                const { pageIndex, pageSize } = filters;
+                const { filters } = msg;
+                const { query, pageIndex, pageSize } = filters;
 
                 const otherOptions: any = {};
                 const _pageSize = parseInt(pageSize, 10);
@@ -95,9 +69,6 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     otherOptions.orderBy = { createDate: 'DESC' };
                     otherOptions.limit = 100;
                 }
-                const query: any = {
-                    owner: owner.owner
-                };
                 const [items, count] = await DatabaseServer.getExternalPoliciesAndCount(query, otherOptions);
                 return new MessageResponse({ items, count });
             } catch (error) {
@@ -147,11 +118,13 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     name: policyToImport.policy.name,
                     description: policyToImport.policy.description,
                     version: policyToImport.policy.version,
+                    topicId: policyToImport.policy.topicId,
                     instanceTopicId: policyToImport.policy.instanceTopicId,
                     messageId,
                     policyTag: policyToImport.policy.policyTag,
                     owner: owner.owner,
                     creator: owner.creator,
+                    username: owner.username,
                     status: ExternalPolicyStatus.NEW
                 });
 
@@ -212,7 +185,8 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                         return;
                     }
 
-                    // await policyEngine.startDemo(result.policy, owner, logger, notifier);
+                    const policyEngine = new PolicyEngine(logger);
+                    await policyEngine.startView(result.policy, owner, logger, notifier);
 
                     item.status = ExternalPolicyStatus.APPROVED;
                     await DatabaseServer.updateExternalPolicy(item);

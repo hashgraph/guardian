@@ -48,3 +48,4 @@ export * from './entity-status.type.js';
 export * from './multi-policy-type.type.js';
 export * from './policy-availability.type.js';
 export * from './external-policy-status.type.js';
+export * from './location.type.js';
