@@ -38,15 +38,13 @@ interface LoggerOptions {
 @Singleton
 export class PinoLogger {
     private options: LoggerOptions;
-    private logLevel: LogType;
     private mapTransports: { [key: string]: any };
     private transports: string;
     private determinedTransports: (new (options: any) => any)[];
     private logger: pino.Logger;
 
-    public init(options: LoggerOptions) {
+    public init(options: LoggerOptions, user?: any) {
         this.options = options;
-        this.logLevel = options.logLevel;
         this.mapTransports = options.mapTransports;
         this.transports = options.transports;
         this.determinedTransports = this.determineTransports();
@@ -73,17 +71,13 @@ export class PinoLogger {
         const transportInstances = this.determinedTransports.map(TransportClass => new TransportClass(this.options));
 
         return pino({
-            level: this.logLevel,
             base: null,
             formatters: {
-                level(label) {
-                    return { level: label };
-                },
                 log(object) {
                     return { ...object };
                 }
             },
-            timestamp: () => `,"time":"${new Date().toISOString()}"`,
+            timestamp: false,
         }, pino.multistream(transportInstances.map(transport => ({ stream: transport })), { dedupe: true }));
     }
 
@@ -92,10 +86,12 @@ export class PinoLogger {
      * @param message
      * @param attributes
      */
-    public async debug(message: string, attributes?: string[], level?: number,): Promise<void> {
+    public async debug(message: string, attributes?: string[], level?: number): Promise<void> {
         this.logger.debug({
             message,
             attributes,
+            type: LogType.INFO,
+            datetime: new Date(),
         });
     }
 
@@ -104,10 +100,12 @@ export class PinoLogger {
      * @param message
      * @param attributes
      */
-    public async info(message: string, attributes?: string[], level?: number,): Promise<void> {
+    public async info(message: string, attributes?: string[], level?: number): Promise<void> {
         this.logger.info({
             message,
             attributes,
+            type: LogType.INFO,
+            datetime: new Date(),
         });
     }
 
@@ -116,10 +114,12 @@ export class PinoLogger {
      * @param message
      * @param attributes
      */
-    public async warn(message: string, attributes?: string[], level?: number,): Promise<void> {
+    public async warn(message: string, attributes?: string[], level?: number): Promise<void> {
         this.logger.warn({
             message,
             attributes,
+            type: LogType.WARN,
+            datetime: new Date(),
         });
     }
 
@@ -128,11 +128,13 @@ export class PinoLogger {
      * @param error
      * @param attributes
      */
-    public async error(error: string | Error, attributes?: string[], level?: number,): Promise<void> {
+    public async error(error: string | Error, attributes?: string[], level?: number): Promise<void> {
         const message = !error ? 'Unknown error' : (typeof error === 'string' ? error : error.stack);
         this.logger.error({
             message,
             attributes,
+            type: LogType.ERROR,
+            datetime: new Date(),
         });
     }
 }

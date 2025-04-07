@@ -66,6 +66,7 @@ export class Message implements IMessage {
         textSearch?: string;
         childSchemas?: any[];
         owner?: string;
+        issuer?: string;
         tools?: any[];
         tokens?: string[];
         vcCount?: number;
@@ -77,7 +78,11 @@ export class Message implements IMessage {
         tokenId?: string,
         labels?: string[];
         labelName?: string;
+        dynamicTopics?: string[];
     };
+
+    @Property({ nullable: true })
+    analyticsUpdate?: number;
 
     @Property({ nullable: true })
     files: string[];

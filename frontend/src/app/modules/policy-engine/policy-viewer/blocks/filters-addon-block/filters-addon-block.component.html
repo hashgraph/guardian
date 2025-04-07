@@ -13,9 +13,10 @@
                 optionLabel="name"
                 optionValue="value"
                 [(ngModel)]="currentType"
+                [appendTo]="'body'"
                 [style]="{'width':'100%', 'border-radius': '8px 0 0 8px'}"
                 class="w-full"
-                (onChange)="onFilters($event)">
+                (onChange)="onType($event)">
                     <ng-template pTemplate="selectedItem" let-selectedOption>
                         <span class="prefix-dropdown">Type</span>
                         <span *ngIf="selectedOption">{{ selectedOption.name }}</span>
@@ -35,13 +36,15 @@
             <span *ngIf="currentType === 'lte'" class="common-prefix-dropdown">Less Than or Equal</span>
         </div>
 
-        <div *ngIf="type == 'dropdown'" class="content-select">
+        <div *ngIf="type == 'dropdown'" class="content-select" [attr.valid]="valid">
             <p-dropdown
+                *ngIf="!(currentType === 'in' || currentType === 'not_in' || currentType === 'nin')"
                 autoWidth="false"
                 [(ngModel)]="currentValue"
                 [options]="options"
                 optionLabel="name"
                 optionValue="value"
+                [appendTo]="'body'"
                 (onChange)="onFilters($event)"
                 [style]="{'width':'100%', 'height': '100%'}"
                 class="w-full filter-dropdown"
@@ -51,8 +54,23 @@
                     <span *ngIf="!selectedOption">Not selected</span>
                 </ng-template>
             </p-dropdown>
+            <p-multiSelect
+                *ngIf="currentType === 'in' || currentType === 'not_in' || currentType === 'nin'"
+                autoWidth="false"
+                [(ngModel)]="currentValue"
+                [options]="multioptions"
+                [showHeader]="false"
+                optionLabel="name"
+                optionValue="value"
+                [appendTo]="'body'"
+                (onChange)="onFilters($event)"
+                [style]="{'width':'100%', 'height': '100%'}"
+                class="w-full filter-dropdown"
+                panelStyleClass="guardian-multiselect-panel"
+            >
+            </p-multiSelect>
         </div>
-        <div *ngIf="type == 'datepicker'" class="content-select">
+        <div *ngIf="type == 'datepicker'" class="content-select" [attr.valid]="valid">
             <p-calendar
                 [style]="{'border-left': '0', 'border-radius': '0 8px 8px 0'}"
                 [(ngModel)]="currentValue"
@@ -63,7 +81,7 @@
                 dateFormat="yy-mm-dd">
             </p-calendar>
         </div>
-        <div *ngIf="type == 'input'" class="content-select">
+        <div *ngIf="type == 'input'" class="content-select" [attr.valid]="valid">
             <input class="input-filter" [(ngModel)]="currentValue" (change)="onFilters($event)">
         </div>
     </div>

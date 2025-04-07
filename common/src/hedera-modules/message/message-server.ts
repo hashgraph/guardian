@@ -25,6 +25,7 @@ import { GuardianRoleMessage } from './guardian-role-message.js';
 import { UserPermissionsMessage } from './user-permissions-message.js';
 import { StatisticMessage } from './statistic-message.js';
 import { LabelMessage } from './label-message.js';
+import { FormulaMessage } from './formula-message.js';
 
 /**
  * Message server
@@ -315,6 +316,9 @@ export class MessageServer {
             case MessageType.PolicyLabel:
                 message = LabelMessage.fromMessageObject(json);
                 break;
+            case MessageType.Formula:
+                message = FormulaMessage.fromMessageObject(json);
+                break;
             // Default schemas
             case 'schema-document':
                 message = SchemaMessage.fromMessageObject(json);
@@ -404,7 +408,7 @@ export class MessageServer {
                     result.push(item);
                 }
             } catch (error) {
-                continue;
+                console.error(error.message);
             }
         }
         return result as T[];
@@ -425,7 +429,7 @@ export class MessageServer {
         message.setLang(MessageServer.lang);
         const time = await this.messageStartLog('Hedera');
         const buffer = message.toMessage();
-        const timestamp = await new Workers().addRetryableTask({
+      const timestamp = await new Workers().addRetryableTask({
             type: WorkerTaskType.SEND_HEDERA,
             data: {
                 topicId: this.topicId,
@@ -441,7 +445,7 @@ export class MessageServer {
             }
         }, 10, 0, userId);
         await this.messageEndLog(time, 'Hedera');
-        message.setId(timestamp);
+      message.setId(timestamp);
         message.setTopicId(this.topicId);
         return message;
     }
@@ -506,7 +510,7 @@ export class MessageServer {
                         result.push(item);
                     }
                 } catch (error) {
-                    continue;
+                    console.error(error.message);
                 }
             }
             return result;
@@ -690,7 +694,7 @@ export class MessageServer {
             }
         }, 10);
 
-        new PinoLogger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE']);
+        new PinoLogger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE', operatorId]);
         const result: Message[] = [];
         for (const message of messages) {
             try {
@@ -710,7 +714,7 @@ export class MessageServer {
                     result.push(item);
                 }
             } catch (error) {
-                continue;
+                console.error(error.message);
             }
         }
         return result;

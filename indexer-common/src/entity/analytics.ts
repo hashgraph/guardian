@@ -20,4 +20,10 @@ export class Analytics {
 
     @Property()
     totalIssuance: number;
+
+    @Property()
+    totalSerialized: number;
+
+    @Property()
+    totalFungible: number;
 }

@@ -10,7 +10,9 @@
                         (onChange)="onSave()"
                         placeholder="Select Permission"
                         optionLabel="label"
-                        optionValue="value">
+                        optionValue="value"
+                        [appendTo]="'body'"
+            >
             </p-dropdown>
         </td>
     </tr>
@@ -22,6 +24,7 @@
                         [options]="canDeleteOptions"
                         [disabled]="readonly"
                         (onChange)="onSave()"
+                        [appendTo]="'body'"
                         placeholder="Select Permission"
                         optionLabel="label"
                         optionValue="value">

@@ -24,7 +24,9 @@
                         class="policy-dropdown"
                         optionLabel="name"
                         optionValue="topicId"
-                        placeholder="Policy"></p-dropdown>
+                        placeholder="Policy"
+                        [appendTo]="'body'"
+                    ></p-dropdown>
                 </ng-container>
                 <ng-container *ngIf="isTool">
                     <p-dropdown
@@ -35,7 +37,9 @@
                         class="policy-dropdown"
                         optionLabel="name"
                         optionValue="topicId"
-                        placeholder="Tool"></p-dropdown>
+                        placeholder="Tool"
+                        [appendTo]="'body'"
+                    ></p-dropdown>
                 </ng-container>
             </div>
             <div class="schema-actions-buttons-container">
@@ -421,17 +425,19 @@
                                     *ngIf="ifCanEdit(schema)"
                                     (click)="onEditSchema(schema)"
                                     class="btn-settings"
-                                    matTooltip="Edit"
-                                    matTooltipClass="guardian-tooltip"
-                                    matTooltipPosition="above">
+                                    pTooltip="Edit"
+                                    tooltipStyleClass="guardian-tooltip"
+                                    tooltipPosition="top"
+                                >
                                     <svg-icon src="/assets/images/icons/edit.svg" svgClass="color-primary"></svg-icon>
                                 </div>
                                 <div
                                     *ngIf="!ifCanEdit(schema)"
                                     class="btn-settings"
-                                    matTooltip="Edit"
-                                    matTooltipClass="guardian-tooltip"
-                                    matTooltipPosition="above">
+                                    pTooltip="Edit"
+                                    tooltipStyleClass="guardian-tooltip"
+                                    tooltipPosition="top"
+                                >
                                     <svg-icon src="/assets/images/icons/edit.svg" svgClass="color-grey"></svg-icon>
                                 </div>
                             </div>

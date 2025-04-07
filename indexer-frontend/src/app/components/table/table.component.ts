@@ -4,15 +4,20 @@ import { PaginatorModule } from 'primeng/paginator';
 import { TranslocoModule } from '@jsverse/transloco';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ButtonModule } from 'primeng/button';
-import { NgStyle, NgTemplateOutlet } from '@angular/common';
+import { CommonModule, DatePipe, NgStyle, NgTemplateOutlet } from '@angular/common';
 import { PaginatorComponent } from '@components/paginator/paginator.component';
 import { TagModule } from 'primeng/tag';
 import { RouterModule } from '@angular/router';
+import { HederaExplorer, HederaType } from '@components/hedera-explorer/hedera-explorer.component';
+import { CheckboxModule } from 'primeng/checkbox';
+import { TooltipModule } from 'primeng/tooltip';
 
 export enum ColumnType {
     TEXT = 'text',
     BUTTON = 'button',
     CHIP = 'chip',
+    HEDERA = 'hedera',
+    CHECK_BOX = 'check_box',
 }
 
 export interface BaseColumn {
@@ -27,12 +32,15 @@ export interface TextColumn extends BaseColumn {
     link?: {
         field: string;
         url: string;
+        getUrl?: (item: any) => string;
     };
+    formatValue: (value: any) => string;
 }
 
 export interface ChipColumn extends BaseColumn {
     type: ColumnType.CHIP;
     field: string;
+    severity?: (row: any) => "success" | "secondary" | "info" | "warning" | "danger" | "contrast" | undefined;
     sort?: boolean;
 }
 
@@ -41,28 +49,47 @@ export interface ButtonColumn extends BaseColumn {
     callback: (row: any) => void;
     field?: string;
     btn_label: string;
+    icon?: string;
+}
+
+export interface HederaTimestampColumn extends BaseColumn {
+    type: ColumnType.HEDERA;
+    field: string;
+    hederaType: HederaType;
+}
+
+export interface CheckBoxColumn extends BaseColumn {
+    type: ColumnType.CHECK_BOX;
+    checkGroup: any[];
+    checkField: string,
+    disabled: (item: any) => boolean;
+    callback: (checkField: string, checkGroup: string[]) => void;
+    getTooltip?: (item: any) => string;
 }
 
 @Component({
     selector: 'app-table',
     standalone: true,
     imports: [
+        CommonModule,
         TableModule,
         PaginatorModule,
         TranslocoModule,
         ProgressSpinnerModule,
         ButtonModule,
-        NgStyle,
         NgTemplateOutlet,
         PaginatorComponent,
+        HederaExplorer,
         TagModule,
+        CheckboxModule,
+        TooltipModule,
         RouterModule,
     ],
     templateUrl: './table.component.html',
     styleUrl: './table.component.scss',
 })
 export class TableComponent {
-    @Input() columns!: TextColumn[] | ButtonColumn[] | ChipColumn[];
+    @Input() columns!: TextColumn[] | ButtonColumn[] | ChipColumn[] | HederaTimestampColumn[] | CheckBoxColumn[];
     @Input() data!: any[];
     @Input() pageIndex: number = 0;
     @Input() pageSize: number = 5;
@@ -128,5 +155,29 @@ export class TableComponent {
             result = result[pathList[i]];
         }
         return result;
+    }
+
+    getLink(column: any, obj: any): string[] {
+        if (column.link?.filters) {
+            return [column.link.url];
+        } else if (column.link?.url) {
+            return [column.link.url, this.getFieldValue(column.link.field, obj)];
+        } else if (column.link?.getUrl) {
+            return [column.link?.getUrl(obj), this.getFieldValue(column.link.field, obj)];
+        }
+        return [];
+    }
+
+    getFilterParams(column: any, obj: any) {
+        if (column.link?.filters) {
+            const queryParams: any = {};
+            for (const [key, path] of Object.entries(column.link.filters)) {
+              const value = this.getFieldValue(path as string, obj);
+              if (value !== null && value !== undefined) {
+                queryParams[key] = value;
+              }
+            }
+            return queryParams;
+        }
     }
 }

@@ -111,6 +111,7 @@ export class PolicyAnalyticsDTO implements PolicyAnalytics {
     @ApiProperty({
         description: 'Hash map',
         type: 'object',
+        additionalProperties: true,
     })
     hashMap: any;
     @ApiProperty({
@@ -150,6 +151,11 @@ export class PolicyActivityDTO implements PolicyActivity {
         example: 10,
     })
     roles: number;
+    @ApiProperty({
+        description: 'Formulas',
+        example: 10,
+    })
+    formulas: number;
 }
 
 export class PolicyDTO

@@ -1,4 +1,4 @@
-<div [attr.status]="policyInfo?.status" [attr.instance]="!!policy" class="content">
+<div [attr.instance]="!!policy" [attr.status]="policyInfo?.status" class="content">
     <ng-container *ngIf="!isConfirmed">
         <div class="not-exist">
             Before starting work you need to get DID
@@ -29,19 +29,38 @@
                 class="dry-run-action-btn"
                 title="Save Policy"
             >
-                <svg-icon src="/assets/images/icons/restart_alt.svg" svgClass="icon-style-restart_alt"
-                          class="icon-style-restart_alt"></svg-icon>
+                <svg-icon 
+                    class="icon-style-restart_alt"
+                    src="/assets/images/icons/restart_alt.svg"
+                    svgClass="icon-style-restart_alt"></svg-icon>
                 <span>Restart</span>
             </div>
 
             <div class="delimiter"></div>
 
-            <div class="dry-run-action-btn" (click)="createVirtualUser()">
+            <div (click)="createSavepoint()" class="dry-run-action-btn">
+                <i class="pi pi-flag"></i>
+                <span>Savepoint</span>
+            </div>
+
+            <!--            <div (click)="deleteSavepoint()" class="dry-run-action-btn">-->
+            <!--              <i class="pi pi-times"></i>-->
+            <!--              <span>Delete Savepoint</span>-->
+            <!--            </div>-->
+
+            <div (click)="restoreSavepoint()" [attr.disabled]="!savePointState" class="dry-run-action-btn">
+                <i class="pi pi-undo"></i>
+                <span>Restore</span>
+            </div>
+
+            <div class="delimiter"></div>
+
+            <div (click)="createVirtualUser()" class="dry-run-action-btn">
                 <i class="pi pi-user-plus"></i>
                 <span>Create User</span>
             </div>
 
-            <div class="dry-run-group-btn" (click)="menu.toggle($event)">
+            <div (click)="menu.toggle($event)" class="dry-run-group-btn">
                 <i class="pi pi-users"></i>
                 <span>Users</span>
                 <div class="expand-group">
@@ -52,19 +71,19 @@
             <div class="delimiter"></div>
 
             <div
-                class="dry-run-action-btn record-btn"
                 (click)="startRecord()"
-                title="Start Record"
-                [attr.disabled]="recordingActive">
+                [attr.disabled]="recordingActive"
+                class="dry-run-action-btn record-btn"
+                title="Start Record">
                 <i class="pi pi-circle-on"></i>
                 <span>Record</span>
             </div>
 
             <div
-                class="dry-run-action-btn run-btn"
                 (click)="runRecord()"
-                title="Run Record"
-                [attr.disabled]="recordingActive">
+                [attr.disabled]="recordingActive"
+                class="dry-run-action-btn run-btn"
+                title="Run Record">
                 <i class="pi pi-play"></i>
                 <span>Run</span>
             </div>
@@ -75,41 +94,38 @@
                 (click)="onView('policy')"
                 [attr.action]="view === 'policy'"
                 class="dry-run-btn"
-            >
-                Policy View
-            </div>
+            >Policy View</div>
+            
             <div
                 (click)="onView('transactions')"
                 [attr.action]="view === 'transactions'"
                 class="dry-run-btn"
-            >
-                Transactions
-            </div>
+            >Transactions</div>
+
             <div
                 (click)="onView('artifacts')"
                 [attr.action]="view === 'artifacts'"
                 class="dry-run-btn"
-            >
-                Artifacts
-            </div>
+            >Artifacts</div>
+
             <div
                 (click)="onView('ipfs')"
                 [attr.action]="view === 'ipfs'"
                 class="dry-run-btn"
-            >
-                IPFS
-            </div>
+            >IPFS</div>
 
             <div class="delimiter"></div>
         </div>
 
-        <div class="policy-header" [attr.policy-status]="policyInfo.status"
-             [attr.expired]="!!policyInfo.discontinuedDate">
+        <div 
+            [attr.expired]="!!policyInfo.discontinuedDate" 
+            [attr.policy-status]="policyInfo.status"
+            class="policy-header">
             <div class="guardian-user-back-button">
                 <button
                     (click)="onBack()"
-                    class="guardian-button guardian-button-secondary"
                     [ngClass]="{ 'back-button': isDryRun || !!policyInfo.discontinuedDate }"
+                    class="guardian-button guardian-button-secondary"
                 >
                     <div class="guardian-button-icon">
                         <svg-icon class="icon-btn svg-icon"
@@ -140,7 +156,7 @@
                     >
                         Role: {{ policyInfo.userRoles.join(", ") }}
                     </span>
-                    <span *ngIf="isMultipleGroups" class="current-user-group" (click)="group.toggle($event)">
+                    <span (click)="group.toggle($event)" *ngIf="isMultipleGroups" class="current-user-group">
                         <span
                             [ngClass]="isDryRun ? 'white-additional-policy-info-text' : ''"
                             class="additional-policy-info-text"
@@ -167,19 +183,27 @@
             <div style="width: 100%; overflow-y: scroll;">
                 <render-block
                     [block]="policy"
-                    [policyId]="policyId"
                     [dryRun]="isDryRun"
+                    [policyId]="policyId"
                     style="width: 100%;"
                 ></render-block>
 
                 <div *ngIf="!navigationFooterDisabled" class="progress-footer-container">
                     <div class="progress-footer">
-                        <button (click)="onNavigationPrevButton()" [disabled]="prevButtonDisabled" class="button"
-                                label="Previous" pButton
-                                type="button"></button>
+                        <button 
+                            (click)="onNavigationPrevButton()" 
+                            [disabled]="prevButtonDisabled" 
+                            class="button"
+                            label="Previous" 
+                            pButton
+                            type="button"></button>
                         <div *ngIf="!nextButtonDisabled">
-                            <button (click)="onNavigationNextButton()" class="p-button" label="Next" pButton
-                                    type="button"></button>
+                            <button 
+                                (click)="onNavigationNextButton()"
+                                class="p-button" 
+                                label="Next" 
+                                pButton
+                                type="button"></button>
                         </div>
                     </div>
                 </div>
@@ -187,8 +211,8 @@
         </div>
 
         <div
-            [attr.hidden-container]="view === 'policy'"
             *ngIf="isDryRun"
+            [attr.hidden-container]="view === 'policy'"
             [attr.policy-status]="policyInfo.status"
             class="second-policy-container"
         >
@@ -204,8 +228,7 @@
                             <th></th>
                         </tr>
                     </ng-template>
-
-                    <ng-template pTemplate="body" let-element>
+                    <ng-template let-element pTemplate="body">
                         <tr>
                             <td>{{ element.createDate }}</td>
                             <td>{{ element.__type }}</td>
@@ -240,31 +263,29 @@
                         </tr>
                     </ng-template>
                 </p-table>
-
             </div>
 
             <app-paginator
+                (page)="onPage($event)"
+                [length]="documentCount"
                 [pageIndex]="pageIndex"
                 [pageSize]="pageSize"
-                [length]="documentCount"
-                (page)="onPage($event)"
             ></app-paginator>
-
         </div>
     </ng-container>
 
     <app-record-controller
-        *ngIf="isDryRun && permissions.POLICIES_RECORD_ALL"
         #recordController
-        [policyId]="policyId"
         (update)="updatePolicy()"
+        *ngIf="isDryRun && permissions.POLICIES_RECORD_ALL"
         [(active)]="recordingActive"
+        [policyId]="policyId"
     ></app-record-controller>
 </div>
 
 <p-overlayPanel #menu>
     <div
-        (click)="setVirtualUser(item)"
+        (click)="setVirtualUser(item, menu)"
         *ngFor="let item of virtualUsers"
         [attr.active]="item.active"
         class="debug-user"
@@ -281,7 +302,7 @@
     </div>
     <div class="group-container">
         <div
-            (click)="setGroup(item)"
+            (click)="setGroup(item, group)"
             *ngFor="let item of groups"
             [attr.active]="item.active"
             class="user-group"
@@ -298,7 +319,7 @@
             </div>
         </div>
     </div>
-    <div class="user-group user-group-default" (click)="setGroup(null)">
+    <div (click)="setGroup(null, group)" class="user-group user-group-default">
         <div class="user-group-header">
             Default state
         </div>

@@ -33,6 +33,18 @@ export class SchemaViewDialog {
         this.policies = data.policies || [];
         this.modules = data.modules || [];
         this.tools = data.tools || [];
+
+        if(this.errors) {
+            for (const error of this.errors) {
+                if (error.cell) {
+                    error.__path = `Cell: ${error.cell}`;
+                } else if (error.row) {
+                    error.__path = `Row: ${error.row}`;
+                } else if (error.col) {
+                    error.__path = `Col: ${error.col}`;
+                }
+            }
+        }
     }
 
     ngOnInit() {

@@ -2,22 +2,20 @@ openapi: 3.0.0
 paths:
   /search:
     get:
-      operationId: SearchApi_search
-      summary: Search
       description: Full-text indexer search
+      operationId: SearchApi_search
       parameters:
         - name: pageIndex
           required: true
           in: query
           description: Page index
-          example: 0
           schema:
+            example: 0
             type: number
         - name: pageSize
           required: true
           in: query
           description: Page size
-          example: 10
           schema:
             type: number
             maximum: 100
@@ -25,8 +23,8 @@ paths:
           required: true
           in: query
           description: Search phrase
-          example: Project
           schema:
+            example: Project
             type: string
       responses:
         '200':
@@ -47,26 +45,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Search
       tags:
         - search
   /entities/registries:
     get:
-      operationId: EntityApi_getRegistries
-      summary: Get standard registries
       description: Returns standard registries
+      operationId: EntityApi_getRegistries
       parameters:
         - name: pageIndex
           required: false
           in: query
           description: Page index
-          example: 0
           schema:
+            example: 0
             type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
-          example: 10
           schema:
             type: number
             maximum: 100
@@ -74,8 +71,8 @@ paths:
           required: false
           in: query
           description: Order field
-          example: consensusTimestamp
           schema:
+            example: consensusTimestamp
             type: string
         - name: orderDir
           required: false
@@ -106,23 +103,30 @@ paths:
           required: false
           in: query
           description: Global topic identifier
-          example: 0.0.1960
           schema:
+            example: 0.0.1960
             type: string
         - name: options.did
           required: false
           in: query
           description: Registry did
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
           schema:
+            example: >-
+              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
         - name: options.registrantTopicId
           required: false
           in: query
           description: Registry user topic identifier
-          example: 0.0.4481265
           schema:
+            example: 0.0.4481265
+            type: string
+        - name: options.attributes.OrganizationName
+          required: false
+          in: query
+          description: Registry organization name
+          schema:
+            example: Example
             type: string
       responses:
         '200':
@@ -143,20 +147,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_0
+      summary: Get standard registries
+      tags:
         - entities
   /entities/registries/{messageId}:
     get:
-      operationId: EntityApi_getRegistry
-      summary: Get registry
       description: Returns registry
+      operationId: EntityApi_getRegistry
       parameters:
         - name: messageId
           required: true
           in: path
           description: Message identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -171,25 +175,53 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get registry
+      tags:
+        - entities
+  /entities/registries/{messageId}/relationships:
+    get:
+      description: Returns registry relationships
+      operationId: EntityApi_getRegistriesRelationships
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Message identifier
+          schema:
+            example: '1706823227.586179534'
+            type: string
+      responses:
+        '200':
+          description: Registry relationships
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelationshipsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Get registry relationships
+      tags:
+        - entities
   /entities/registry-users:
     get:
-      operationId: EntityApi_getRegistryUsers
-      summary: Get registry users
       description: Returns registry users
+      operationId: EntityApi_getRegistryUsers
       parameters:
         - name: pageIndex
           required: false
           in: query
           description: Page index
-          example: 0
           schema:
+            example: 0
             type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
-          example: 10
           schema:
             type: number
             maximum: 100
@@ -197,8 +229,8 @@ paths:
           required: false
           in: query
           description: Order field
-          example: consensusTimestamp
           schema:
+            example: consensusTimestamp
             type: string
         - name: orderDir
           required: false
@@ -229,8 +261,8 @@ paths:
           required: false
           in: query
           description: User topic identifier
-          example: 0.0.1960
           schema:
+            example: 0.0.1960
             type: string
       responses:
         '200':
@@ -251,19 +283,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get registry users
+      tags:
+        - entities
   /entities/registry-users/{messageId}:
     get:
-      operationId: EntityApi_getRegistryUser
-      summary: Get registry user
       description: Returns registry user
+      operationId: EntityApi_getRegistryUser
       parameters:
         - name: messageId
           required: true
           in: path
           description: Message identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -278,25 +311,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get registry user
+      tags:
+        - entities
   /entities/policies:
     get:
-      operationId: EntityApi_getPolicies
-      summary: Get policies
       description: Returns policies
+      operationId: EntityApi_getPolicies
       parameters:
         - name: pageIndex
           required: false
           in: query
           description: Page index
-          example: 0
           schema:
+            example: 0
             type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
-          example: 10
           schema:
             type: number
             maximum: 100
@@ -304,8 +337,8 @@ paths:
           required: false
           in: query
           description: Order field
-          example: consensusTimestamp
           schema:
+            example: consensusTimestamp
             type: string
         - name: orderDir
           required: false
@@ -334,23 +367,23 @@ paths:
           required: false
           in: query
           description: Policy topic identifier
-          example: 0.0.1960
           schema:
+            example: 0.0.1960
             type: string
         - name: options.owner
           required: false
           in: query
           description: Policy owner
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
           schema:
+            example: >-
+              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
         - name: analytics.tools
           required: false
           in: query
           description: Tool
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -371,19 +404,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get policies
+      tags:
+        - entities
   /entities/policies/{messageId}:
     get:
-      operationId: EntityApi_getPolicy
-      summary: Get policy
       description: Returns policy
+      operationId: EntityApi_getPolicy
       parameters:
         - name: messageId
           required: true
           in: path
           description: Message identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -398,25 +432,53 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get policy
+      tags:
+        - entities
+  /entities/policies/{messageId}/relationships:
+    get:
+      description: Returns policy relationships
+      operationId: EntityApi_getPolicyRelationships
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Message identifier
+          schema:
+            example: '1706823227.586179534'
+            type: string
+      responses:
+        '200':
+          description: Policy relationships
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelationshipsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Get policy relationships
+      tags:
+        - entities
   /entities/tools:
     get:
-      operationId: EntityApi_getTools
-      summary: Get tools
       description: Returns tools
+      operationId: EntityApi_getTools
       parameters:
         - name: pageIndex
           required: false
           in: query
           description: Page index
-          example: 0
           schema:
+            example: 0
             type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
-          example: 10
           schema:
             type: number
             maximum: 100
@@ -424,8 +486,8 @@ paths:
           required: false
           in: query
           description: Order field
-          example: consensusTimestamp
           schema:
+            example: consensusTimestamp
             type: string
         - name: orderDir
           required: false
@@ -454,16 +516,16 @@ paths:
           required: false
           in: query
           description: Tool owner
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
           schema:
+            example: >-
+              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
         - name: topicId
           required: false
           in: query
           description: Topic identifier
-          example: 0.0.1960
           schema:
+            example: 0.0.1960
             type: string
       responses:
         '200':
@@ -484,19 +546,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get tools
+      tags:
+        - entities
   /entities/tools/{messageId}:
     get:
-      operationId: EntityApi_getTool
-      summary: Get tool
       description: Returns tool
+      operationId: EntityApi_getTool
       parameters:
         - name: messageId
           required: true
           in: path
           description: Message identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -511,25 +574,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get tool
+      tags:
+        - entities
   /entities/modules:
     get:
-      operationId: EntityApi_getModules
-      summary: Get modules
       description: Returns modules
+      operationId: EntityApi_getModules
       parameters:
         - name: pageIndex
           required: false
           in: query
           description: Page index
-          example: 0
           schema:
+            example: 0
             type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
-          example: 10
           schema:
             type: number
             maximum: 100
@@ -537,8 +600,8 @@ paths:
           required: false
           in: query
           description: Order field
-          example: consensusTimestamp
           schema:
+            example: consensusTimestamp
             type: string
         - name: orderDir
           required: false
@@ -567,16 +630,16 @@ paths:
           required: false
           in: query
           description: Module owner
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
           schema:
+            example: >-
+              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
         - name: topicId
           required: false
           in: query
           description: Topic identifier
-          example: 0.0.1960
           schema:
+            example: 0.0.1960
             type: string
       responses:
         '200':
@@ -597,19 +660,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get modules
+      tags:
+        - entities
   /entities/modules/{messageId}:
     get:
-      operationId: EntityApi_getModule
-      summary: Get module
       description: Returns module
+      operationId: EntityApi_getModule
       parameters:
         - name: messageId
           required: true
           in: path
           description: Message identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -624,25 +688,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get module
+      tags:
+        - entities
   /entities/schemas:
     get:
-      operationId: EntityApi_getSchemas
-      summary: Get schemas
       description: Returns schemas
+      operationId: EntityApi_getSchemas
       parameters:
         - name: pageIndex
           required: false
           in: query
           description: Page index
-          example: 0
           schema:
+            example: 0
             type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
-          example: 10
           schema:
             type: number
             maximum: 100
@@ -650,8 +714,8 @@ paths:
           required: false
           in: query
           description: Order field
-          example: consensusTimestamp
           schema:
+            example: consensusTimestamp
             type: string
         - name: orderDir
           required: false
@@ -680,16 +744,16 @@ paths:
           required: false
           in: query
           description: Policy topic identifier
-          example: 0.0.1960
           schema:
+            example: 0.0.1960
             type: string
         - name: options.owner
           required: false
           in: query
           description: Schema owner
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
           schema:
+            example: >-
+              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
       responses:
         '200':
@@ -710,19 +774,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get schemas
+      tags:
+        - entities
   /entities/schemas/{messageId}:
     get:
-      operationId: EntityApi_getSchema
-      summary: Get schema
       description: Returns schema
+      operationId: EntityApi_getSchema
       parameters:
         - name: messageId
           required: true
           in: path
           description: Message identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -737,19 +802,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get schema
+      tags:
+        - entities
   /entities/schemas/{messageId}/tree:
     get:
-      operationId: EntityApi_getSchemaTree
-      summary: Get schema tree
       description: Returns schema tree
+      operationId: EntityApi_getSchemaTree
       parameters:
         - name: messageId
           required: true
           in: path
           description: Message identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -764,25 +830,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get schema tree
+      tags:
+        - entities
   /entities/tokens:
     get:
-      operationId: EntityApi_getTokens
-      summary: Get tokens
       description: Returns tokens
+      operationId: EntityApi_getTokens
       parameters:
         - name: pageIndex
           required: false
           in: query
           description: Page index
-          example: 0
           schema:
+            example: 0
             type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
-          example: 10
           schema:
             type: number
             maximum: 100
@@ -790,8 +856,8 @@ paths:
           required: false
           in: query
           description: Order field
-          example: consensusTimestamp
           schema:
+            example: consensusTimestamp
             type: string
         - name: orderDir
           required: false
@@ -810,15 +876,15 @@ paths:
           required: false
           in: query
           description: Token identifier
-          example: 0.0.1960
           schema:
+            example: 0.0.1960
             type: string
         - name: treasury
           required: false
           in: query
           description: Treasury
-          example: 0.0.1960
           schema:
+            example: 0.0.1960
             type: string
       responses:
         '200':
@@ -839,19 +905,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get tokens
+      tags:
+        - entities
   /entities/tokens/{tokenId}:
     get:
-      operationId: EntityApi_getToken
-      summary: Get token
       description: Returns token
+      operationId: EntityApi_getToken
       parameters:
         - name: tokenId
           required: true
           in: path
           description: Token identifier
-          example: 0.0.1960
           schema:
+            example: 0.0.1960
             type: string
       responses:
         '200':
@@ -866,25 +933,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get token
+      tags:
+        - entities
   /entities/roles:
     get:
-      operationId: EntityApi_getRoles
-      summary: Get roles
       description: Returns roles
+      operationId: EntityApi_getRoles
       parameters:
         - name: pageIndex
           required: false
           in: query
           description: Page index
-          example: 0
           schema:
+            example: 0
             type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
-          example: 10
           schema:
             type: number
             maximum: 100
@@ -892,8 +959,8 @@ paths:
           required: false
           in: query
           description: Order field
-          example: consensusTimestamp
           schema:
+            example: consensusTimestamp
             type: string
         - name: orderDir
           required: false
@@ -922,23 +989,33 @@ paths:
           required: false
           in: query
           description: Issuer
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          schema:
+            example: >-
+              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+            type: string
+        - name: options.role
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: analytics.sr
+          required: true
+          in: query
           schema:
             type: string
         - name: topicId
           required: false
           in: query
           description: Topic identifier
-          example: 0.0.1960
           schema:
+            example: 0.0.1960
             type: string
         - name: analytics.policyId
           required: false
           in: query
           description: Policy identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -959,19 +1036,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get roles
+      tags:
+        - entities
   /entities/roles/{messageId}:
     get:
-      operationId: EntityApi_getRole
-      summary: Get role
       description: Returns role
+      operationId: EntityApi_getRole
       parameters:
         - name: messageId
           required: true
           in: path
           description: Message identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -986,25 +1064,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get role
+      tags:
+        - entities
   /entities/statistics:
     get:
-      operationId: EntityApi_getStatistics
-      summary: Get statistics
       description: Returns statistics
+      operationId: EntityApi_getStatistics
       parameters:
         - name: pageIndex
           required: false
           in: query
           description: Page index
-          example: 0
           schema:
+            example: 0
             type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
-          example: 10
           schema:
             type: number
             maximum: 100
@@ -1012,8 +1090,8 @@ paths:
           required: false
           in: query
           description: Order field
-          example: consensusTimestamp
           schema:
+            example: consensusTimestamp
             type: string
         - name: orderDir
           required: false
@@ -1044,23 +1122,23 @@ paths:
           required: false
           in: query
           description: Statistic topic identifier
-          example: 0.0.1960
           schema:
+            example: 0.0.1960
             type: string
         - name: options.owner
           required: false
           in: query
           description: Statistic owner
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
           schema:
+            example: >-
+              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
         - name: options.policy
           required: false
           in: query
           description: Policy
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -1081,19 +1159,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get statistics
+      tags:
+        - entities
   /entities/statistics/{messageId}:
     get:
-      operationId: EntityApi_getStatistic
-      summary: Get statistic
       description: Returns statistic
+      operationId: EntityApi_getStatistic
       parameters:
         - name: messageId
           required: true
           in: path
           description: Message identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -1108,25 +1187,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get statistic
+      tags:
+        - entities
   /entities/statistic-documents:
     get:
-      operationId: EntityApi_getStatisticDocuments
-      summary: Get VCs
       description: Returns VCs
+      operationId: EntityApi_getStatisticDocuments
       parameters:
         - name: pageIndex
           required: false
           in: query
           description: Page index
-          example: 0
           schema:
+            example: 0
             type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
-          example: 10
           schema:
             type: number
             maximum: 100
@@ -1134,8 +1213,8 @@ paths:
           required: false
           in: query
           description: Order field
-          example: consensusTimestamp
           schema:
+            example: consensusTimestamp
             type: string
         - name: orderDir
           required: false
@@ -1164,37 +1243,37 @@ paths:
           required: false
           in: query
           description: Topic identifier
-          example: 0.0.1960
           schema:
+            example: 0.0.1960
             type: string
         - name: options.issuer
           required: false
           in: query
           description: Issuer
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
           schema:
+            example: >-
+              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
         - name: analytics.policyId
           required: false
           in: query
           description: Policy identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
         - name: analytics.schemaId
           required: false
           in: query
           description: Schema identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
         - name: options.relationships
           required: false
           in: query
           description: Relationships
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -1215,25 +1294,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get VCs
+      tags:
+        - entities
   /entities/labels:
     get:
-      operationId: EntityApi_getLabels
-      summary: Get labels
       description: Returns labels
+      operationId: EntityApi_getLabels
       parameters:
         - name: pageIndex
           required: false
           in: query
           description: Page index
-          example: 0
           schema:
+            example: 0
             type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
-          example: 10
           schema:
             type: number
             maximum: 100
@@ -1241,8 +1320,8 @@ paths:
           required: false
           in: query
           description: Order field
-          example: consensusTimestamp
           schema:
+            example: consensusTimestamp
             type: string
         - name: orderDir
           required: false
@@ -1271,23 +1350,23 @@ paths:
           required: false
           in: query
           description: Label topic identifier
-          example: 0.0.1960
           schema:
+            example: 0.0.1960
             type: string
         - name: options.owner
           required: false
           in: query
           description: Label owner
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
           schema:
+            example: >-
+              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
         - name: options.policy
           required: false
           in: query
           description: Policy
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -1308,19 +1387,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get labels
+      tags:
+        - entities
   /entities/labels/{messageId}:
     get:
-      operationId: EntityApi_getLabel
-      summary: Get label
       description: Returns label
+      operationId: EntityApi_getLabel
       parameters:
         - name: messageId
           required: true
           in: path
           description: Message identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -1335,19 +1415,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get label
+      tags:
+        - entities
   /entities/label-documents/{messageId}:
     get:
-      operationId: EntityApi_getLabelDocument
-      summary: Get label document
       description: Returns label document
+      operationId: EntityApi_getLabelDocument
       parameters:
         - name: messageId
           required: true
           in: path
           description: Message identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -1362,25 +1443,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get label document
+      tags:
+        - entities
   /entities/label-documents:
     get:
-      operationId: EntityApi_getLabelDocuments
-      summary: Get Label Documents
       description: Returns Label Documents
+      operationId: EntityApi_getLabelDocuments
       parameters:
         - name: pageIndex
           required: false
           in: query
           description: Page index
-          example: 0
           schema:
+            example: 0
             type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
-          example: 10
           schema:
             type: number
             maximum: 100
@@ -1388,8 +1469,8 @@ paths:
           required: false
           in: query
           description: Order field
-          example: consensusTimestamp
           schema:
+            example: consensusTimestamp
             type: string
         - name: orderDir
           required: false
@@ -1418,30 +1499,30 @@ paths:
           required: false
           in: query
           description: Topic identifier
-          example: 0.0.1960
           schema:
+            example: 0.0.1960
             type: string
         - name: options.issuer
           required: false
           in: query
           description: Issuer
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
           schema:
+            example: >-
+              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
         - name: analytics.policyId
           required: false
           in: query
           description: Policy identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
         - name: analytics.schemaIds
           required: false
           in: query
           description: Schema identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -1462,25 +1543,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
-  /entities/did-documents:
+      summary: Get Label Documents
+      tags:
+        - entities
+  /entities/formulas:
     get:
-      operationId: EntityApi_getDidDocuments
-      summary: Get DIDs
-      description: Returns DIDs
+      description: Returns formulas
+      operationId: EntityApi_getFormulas
       parameters:
         - name: pageIndex
           required: false
           in: query
           description: Page index
-          example: 0
           schema:
+            example: 0
             type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
-          example: 10
           schema:
             type: number
             maximum: 100
@@ -1488,8 +1569,150 @@ paths:
           required: false
           in: query
           description: Order field
-          example: consensusTimestamp
           schema:
+            example: consensusTimestamp
+            type: string
+        - name: orderDir
+          required: false
+          in: query
+          description: Order direction
+          examples:
+            ASC:
+              value: ASC
+              description: Ascending ordering
+            DESC:
+              value: DESC
+              description: Descending ordering
+          schema:
+            type: string
+        - name: keywords
+          required: false
+          in: query
+          description: Keywords to search
+          examples:
+            0.0.1960:
+              description: Search formulas, which are related to specific topic identifier
+              value: '["0.0.1960"]'
+          schema:
+            type: string
+        - name: topicId
+          required: false
+          in: query
+          description: Policy topic identifier
+          schema:
+            example: 0.0.1960
+            type: string
+        - name: options.owner
+          required: false
+          in: query
+          description: formula owner
+          schema:
+            example: >-
+              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+            type: string
+      responses:
+        '200':
+          description: formulas
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageDTO'
+                  - properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FormulaDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Get formulas
+      tags:
+        - entities
+  /entities/formulas/{messageId}:
+    get:
+      description: Returns formula
+      operationId: EntityApi_getFormula
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Message identifier
+          schema:
+            example: '1706823227.586179534'
+            type: string
+      responses:
+        '200':
+          description: Formula details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaDetailsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Get formula
+      tags:
+        - entities
+  /entities/formulas/{messageId}/relationships:
+    get:
+      description: Returns formula relationships
+      operationId: EntityApi_getFormulaRelationships
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Message identifier
+          schema:
+            example: '1706823227.586179534'
+            type: string
+      responses:
+        '200':
+          description: Formula relationships
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaRelationshipsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Get formula relationships
+      tags:
+        - entities
+  /entities/did-documents:
+    get:
+      description: Returns DIDs
+      operationId: EntityApi_getDidDocuments
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: Page index
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: Page size
+          schema:
+            type: number
+            maximum: 100
+        - name: orderField
+          required: false
+          in: query
+          description: Order field
+          schema:
+            example: consensusTimestamp
             type: string
         - name: orderDir
           required: false
@@ -1518,16 +1741,16 @@ paths:
           required: false
           in: query
           description: Topic identifier
-          example: 0.0.1960
           schema:
+            example: 0.0.1960
             type: string
         - name: options.did
           required: false
           in: query
           description: DID
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
           schema:
+            example: >-
+              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
       responses:
         '200':
@@ -1548,19 +1771,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get DIDs
+      tags:
+        - entities
   /entities/did-documents/{messageId}:
     get:
-      operationId: EntityApi_getDidDocument
-      summary: Get DID
       description: Returns DID
+      operationId: EntityApi_getDidDocument
       parameters:
         - name: messageId
           required: true
           in: path
           description: Message identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -1575,19 +1799,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get DID
+      tags:
+        - entities
   /entities/did-documents/{messageId}/relationships:
     get:
-      operationId: EntityApi_getDidRelationships
-      summary: Get DID relationships
       description: Returns DID relationships
+      operationId: EntityApi_getDidRelationships
       parameters:
         - name: messageId
           required: true
           in: path
           description: Message identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -1602,25 +1827,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get DID relationships
+      tags:
+        - entities
   /entities/vp-documents:
     get:
-      operationId: EntityApi_getVpDocuments
-      summary: Get VPs
       description: Returns VPs
+      operationId: EntityApi_getVpDocuments
       parameters:
         - name: pageIndex
           required: false
           in: query
           description: Page index
-          example: 0
           schema:
+            example: 0
             type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
-          example: 10
           schema:
             type: number
             maximum: 100
@@ -1628,8 +1853,8 @@ paths:
           required: false
           in: query
           description: Order field
-          example: consensusTimestamp
           schema:
+            example: consensusTimestamp
             type: string
         - name: orderDir
           required: false
@@ -1658,30 +1883,30 @@ paths:
           required: false
           in: query
           description: Topic identifier
-          example: 0.0.1960
           schema:
+            example: 0.0.1960
             type: string
         - name: options.issuer
           required: false
           in: query
           description: Issuer
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
           schema:
+            example: >-
+              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
         - name: analytics.policyId
           required: false
           in: query
           description: Policy identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
         - name: analytics.schemaIds
           required: false
           in: query
           description: Schema identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -1702,19 +1927,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get VPs
+      tags:
+        - entities
   /entities/vp-documents/{messageId}:
     get:
-      operationId: EntityApi_getVpDocument
-      summary: Get VP
       description: Returns VP
+      operationId: EntityApi_getVpDocument
       parameters:
         - name: messageId
           required: true
           in: path
           description: Message identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -1729,19 +1955,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get VP
+      tags:
+        - entities
   /entities/vp-documents/{messageId}/relationships:
     get:
-      operationId: EntityApi_getVpRelationships
-      summary: Get VP relationships
       description: Returns VP relationships
+      operationId: EntityApi_getVpRelationships
       parameters:
         - name: messageId
           required: true
           in: path
           description: Message identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -1756,25 +1983,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get VP relationships
+      tags:
+        - entities
   /entities/vc-documents:
     get:
-      operationId: EntityApi_getVcDocuments
-      summary: Get VCs
       description: Returns VCs
+      operationId: EntityApi_getVcDocuments
       parameters:
         - name: pageIndex
           required: false
           in: query
           description: Page index
-          example: 0
           schema:
+            example: 0
             type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
-          example: 10
           schema:
             type: number
             maximum: 100
@@ -1782,8 +2009,8 @@ paths:
           required: false
           in: query
           description: Order field
-          example: consensusTimestamp
           schema:
+            example: consensusTimestamp
             type: string
         - name: orderDir
           required: false
@@ -1812,37 +2039,37 @@ paths:
           required: false
           in: query
           description: Topic identifier
-          example: 0.0.1960
           schema:
+            example: 0.0.1960
             type: string
         - name: options.issuer
           required: false
           in: query
           description: Issuer
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
           schema:
+            example: >-
+              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
         - name: analytics.policyId
           required: false
           in: query
           description: Policy identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
         - name: analytics.schemaId
           required: false
           in: query
           description: Schema identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
         - name: options.relationships
           required: false
           in: query
           description: Relationships
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -1863,19 +2090,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get VCs
+      tags:
+        - entities
   /entities/vc-documents/{messageId}:
     get:
-      operationId: EntityApi_getVcDocument
-      summary: Get VC
       description: Returns VC
+      operationId: EntityApi_getVcDocument
       parameters:
         - name: messageId
           required: true
           in: path
           description: Message identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -1890,19 +2118,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get VC
+      tags:
+        - entities
   /entities/vc-documents/{messageId}/relationships:
     get:
-      operationId: EntityApi_getVcRelationships
-      summary: Get VC relationships
       description: Returns VC relationships
+      operationId: EntityApi_getVcRelationships
       parameters:
         - name: messageId
           required: true
           in: path
           description: Message identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -1917,25 +2146,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get VC relationships
+      tags:
+        - entities
   /entities/nfts:
     get:
-      operationId: EntityApi_getNFTs
-      summary: Get NFTs
       description: Returns NFTs
+      operationId: EntityApi_getNFTs
       parameters:
         - name: pageIndex
           required: false
           in: query
           description: Page index
-          example: 0
           schema:
+            example: 0
             type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
-          example: 10
           schema:
             type: number
             maximum: 100
@@ -1943,8 +2172,8 @@ paths:
           required: false
           in: query
           description: Order field
-          example: consensusTimestamp
           schema:
+            example: consensusTimestamp
             type: string
         - name: orderDir
           required: false
@@ -1963,8 +2192,8 @@ paths:
           required: false
           in: query
           description: Token identifier
-          example: 0.0.1960
           schema:
+            example: 0.0.1960
             type: string
       responses:
         '200':
@@ -1985,26 +2214,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get NFTs
+      tags:
+        - entities
   /entities/nfts/{tokenId}/{serialNumber}:
     get:
-      operationId: EntityApi_getNFT
-      summary: Get NFT
       description: Returns NFT
+      operationId: EntityApi_getNFT
       parameters:
         - name: tokenId
           required: true
           in: path
           description: Token identifier
-          example: 0.0.1960
           schema:
+            example: 0.0.1960
             type: string
         - name: serialNumber
           required: true
           in: path
           description: Serial number
-          example: '1'
           schema:
+            example: '1'
             type: string
       responses:
         '200':
@@ -2019,25 +2249,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get NFT
+      tags:
+        - entities
   /entities/topics:
     get:
-      operationId: EntityApi_getTopics
-      summary: Get topics
       description: Returns topics
+      operationId: EntityApi_getTopics
       parameters:
         - name: pageIndex
           required: false
           in: query
           description: Page index
-          example: 0
           schema:
+            example: 0
             type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
-          example: 10
           schema:
             type: number
             maximum: 100
@@ -2045,8 +2275,8 @@ paths:
           required: false
           in: query
           description: Order field
-          example: consensusTimestamp
           schema:
+            example: consensusTimestamp
             type: string
         - name: orderDir
           required: false
@@ -2075,8 +2305,8 @@ paths:
           required: false
           in: query
           description: Parent topic identifier
-          example: 0.0.1960
           schema:
+            example: 0.0.1960
             type: string
       responses:
         '200':
@@ -2097,19 +2327,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get topics
+      tags:
+        - entities
   /entities/topics/{topicId}:
     get:
-      operationId: EntityApi_getTopic
-      summary: Get topic
       description: Returns topic
+      operationId: EntityApi_getTopic
       parameters:
         - name: topicId
           required: true
           in: path
           description: Message identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -2124,25 +2355,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get topic
+      tags:
+        - entities
   /entities/contracts:
     get:
-      operationId: EntityApi_getContracts
-      summary: Get contracts
       description: Returns contracts
+      operationId: EntityApi_getContracts
       parameters:
         - name: pageIndex
           required: false
           in: query
           description: Page index
-          example: 0
           schema:
+            example: 0
             type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
-          example: 10
           schema:
             type: number
             maximum: 100
@@ -2150,8 +2381,8 @@ paths:
           required: false
           in: query
           description: Order field
-          example: consensusTimestamp
           schema:
+            example: consensusTimestamp
             type: string
         - name: orderDir
           required: false
@@ -2180,15 +2411,15 @@ paths:
           required: false
           in: query
           description: Topic identifier
-          example: 0.0.1960
           schema:
+            example: 0.0.1960
             type: string
         - name: owner
           required: false
           in: query
           description: Owner
-          example: 0.0.2160
           schema:
+            example: 0.0.2160
             type: string
       responses:
         '200':
@@ -2209,19 +2440,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get contracts
+      tags:
+        - entities
   /entities/contracts/{messageId}:
     get:
-      operationId: EntityApi_getContract
-      summary: Get contract
       description: Returns contract
+      operationId: EntityApi_getContract
       parameters:
         - name: messageId
           required: true
           in: path
           description: Message identifier
-          example: '1706823227.586179534'
           schema:
+            example: '1706823227.586179534'
             type: string
       responses:
         '200':
@@ -2236,12 +2468,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Get contract
+      tags:
+        - entities
   /entities/update-files:
     post:
-      operationId: EntityApi_search
-      summary: Try load ipfs files
       description: Returns ipfs files
+      operationId: EntityApi_search
       parameters: []
       requestBody:
         required: true
@@ -2263,14 +2496,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Try load ipfs files
+      tags:
+        - entities
   /landing/analytics:
     get:
-      operationId: LandingApi_getOnboardingStat
-      summary: Get landing page analytics
       description: >-
         Returns count of registries, methodologies, projects, totalIssuance,
-        date
+        totalSerialized, totalFungible, date
+      operationId: LandingApi_getOnboardingStat
       parameters: []
       responses:
         '200':
@@ -2287,13 +2521,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_1
+      summary: Get landing page analytics
+      tags:
         - landing
   /landing/projects-coordinates:
     get:
-      operationId: LandingApi_getProjectCoordinates
-      summary: Get projects coordinates
       description: Returns all project coordinates
+      operationId: LandingApi_getProjectCoordinates
       parameters: []
       responses:
         '200':
@@ -2310,12 +2544,237 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_1
+      summary: Get projects coordinates
+      tags:
+        - landing
+  /landing/data-loading-progress:
+    get:
+      description: Returns the number of messages loaded and the total number of messages
+      operationId: LandingApi_getDataLoadingProgress
+      parameters: []
+      responses:
+        '200':
+          description: Data loading progress result
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DataLoadingProgress'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Get data loading progress
+      tags:
+        - landing
+  /landing/data-priority-topics:
+    get:
+      description: Returns priority data loading
+      operationId: LandingApi_getDataPriorityLoadingProgress
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: Page index
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: Page size
+          schema:
+            type: number
+            maximum: 100
+        - name: orderField
+          required: false
+          in: query
+          description: Order field
+          schema:
+            example: consensusTimestamp
+            type: string
+        - name: orderDir
+          required: false
+          in: query
+          description: Order direction
+          examples:
+            ASC:
+              value: ASC
+              description: Ascending ordering
+            DESC:
+              value: DESC
+              description: Descending ordering
+          schema:
+            type: string
+        - name: entityId
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: entityIds
+          required: true
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: PriorityQueue
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageDTO'
+                  - properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/DataPriorityLoadingProgress'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Get data priority loading progress
+      tags:
+        - landing
+    post:
+      description: Returns priority data loading
+      operationId: LandingApi_setDataPriorityLoadingProgressTopics
+      parameters: []
+      requestBody:
+        required: true
+        description: Topic Ids
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetLoadingPriorityDTO'
+            examples:
+              Priority:
+                value: 0.0.1
+      responses:
+        '200':
+          description: Data priority loading progress result
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DataPriorityLoadingProgress'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Get data priority loading progress
+      tags:
+        - landing
+  /landing/data-priority-policy:
+    post:
+      description: Returns priority data loading
+      operationId: LandingApi_setDataPriorityLoadingProgressPolicies
+      parameters: []
+      requestBody:
+        required: true
+        description: Topic Ids
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetLoadingPriorityDTO'
+            examples:
+              Priority:
+                value: 0.0.1
+      responses:
+        '200':
+          description: Data priority loading progress result
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DataPriorityLoadingProgress'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Get data priority loading progress
+      tags:
+        - landing
+  /landing/data-priority-tokens:
+    post:
+      description: Returns priority data loading
+      operationId: LandingApi_setDataPriorityLoadingProgressTokens
+      parameters: []
+      requestBody:
+        required: true
+        description: Topic Ids
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetLoadingPriorityDTO'
+            examples:
+              Priority:
+                value: 0.0.1
+      responses:
+        '200':
+          description: Data priority loading progress result
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DataPriorityLoadingProgress'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Get data priority loading progress
+      tags:
+        - landing
+  /landing/data-priority-any/{entityId}:
+    post:
+      description: Returns priority data loading
+      operationId: LandingApi_setDataPriorityLoadingProgressAny
+      parameters:
+        - name: entityId
+          required: true
+          in: path
+          description: Entity id
+          schema:
+            example: 0.0.1
+            type: string
+      responses:
+        '200':
+          description: Data priority loading progress result
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DataPriorityLoadingProgress'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Get data priority loading progress
+      tags:
+        - landing
   /analytics/search/policy:
     post:
-      operationId: AnalyticsApi_search
-      summary: Search policy
       description: Returns search policy result
+      operationId: AnalyticsApi_search
       parameters: []
       requestBody:
         required: true
@@ -2341,13 +2800,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_2
+      summary: Search policy
+      tags:
         - analytics
   /analytics/search/retire:
     post:
-      operationId: AnalyticsApi_getRetireDocuments
-      summary: Search contract retirements
       description: Returns contract retirements result
+      operationId: AnalyticsApi_getRetireDocuments
       parameters: []
       requestBody:
         required: true
@@ -2373,12 +2832,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      summary: Search contract retirements
+      tags:
+        - analytics
   /analytics/checkAvailability:
     get:
-      operationId: AnalyticsApi_getIndexerAvailability
-      summary: Get indexer availability
       description: Returns indexer availability
+      operationId: AnalyticsApi_getIndexerAvailability
       parameters: []
       responses:
         '200':
@@ -2393,7 +2853,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_2
+      summary: Get indexer availability
+      tags:
+        - analytics
+  /settings/network:
+    get:
+      description: Returns Hedera network
+      operationId: SettingsApi_getNetworkEnvironment
+      parameters: []
+      responses:
+        '200':
+          description: Hedera network result
+          content:
+            application/json:
+              schema:
+                type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Get Hedera network
+      tags:
+        - settings
+  /settings/networkExplorer:
+    get:
+      description: Returns Hedera network explorer settings
+      operationId: SettingsApi_getNetworkExplorer
+      parameters: []
+      responses:
+        '200':
+          description: Hedera network explorer settings result
+          content:
+            application/json:
+              schema:
+                type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Get Hedera network explorer settings
+      tags:
+        - settings
 info:
   title: Guardian
   description: >-
@@ -2402,7 +2906,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 3.0.0
+  version: 3.1.1
   contact:
     name: API developer
     url: https://envisionblockchain.com
@@ -2544,21 +3048,21 @@ components:
           description: Status message
         files:
           description: Files
-          example: &ref_3
+          example:
             - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: &ref_4
+          example:
             - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: &ref_5
+          example:
             - 0.0.4481265
           type: array
           items:
@@ -2592,6 +3096,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Standard Registry
         action:
           type: string
@@ -2634,6 +3139,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: Init
         options:
           $ref: '#/components/schemas/RegistryOptionsDTO'
@@ -2802,6 +3308,192 @@ components:
         - item
         - row
         - activity
+    MessageDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier
+          example: 667c240639282050117a1985
+        topicId:
+          type: string
+          description: Topic identifier
+          example: 0.0.4481265
+        consensusTimestamp:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        owner:
+          type: string
+          description: Owner
+          example: 0.0.1
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        status:
+          type: string
+          description: Status
+          example: NEW
+        statusReason:
+          type: string
+          description: Status
+          example: Revoked
+        lang:
+          type: string
+          description: Lang
+          example: en-US
+        responseType:
+          type: string
+          description: Response type
+          example: str
+        statusMessage:
+          type: string
+          description: Status message
+        files:
+          description: Files
+          example:
+            - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
+          type: array
+          items:
+            type: string
+        topics:
+          description: Topics
+          example:
+            - 0.0.4481265
+          type: array
+          items:
+            type: string
+        tokens:
+          description: Tokens
+          example:
+            - 0.0.4481265
+          type: array
+          items:
+            type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
+      required:
+        - id
+        - topicId
+        - consensusTimestamp
+        - owner
+        - uuid
+        - status
+        - statusReason
+        - lang
+        - responseType
+        - statusMessage
+        - files
+        - topics
+        - tokens
+        - sequenceNumber
+    RelationshipDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
+            - Formula
+        category:
+          type: number
+          description: Category
+          example: 1
+        name:
+          type: string
+          description: Name
+          example: Monitoring Report Document
+      required:
+        - id
+        - uuid
+        - type
+        - category
+        - name
+    RelationshipLinkDTO:
+      type: object
+      properties:
+        source:
+          type: string
+          description: Source message identifier
+          example: '1706823227.586179534'
+        target:
+          type: string
+          description: Target message identifier
+          example: '1706823227.586179534'
+      required:
+        - source
+        - target
+    RelationshipsDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        item:
+          $ref: '#/components/schemas/MessageDTO'
+        target:
+          $ref: '#/components/schemas/RelationshipDTO'
+        relationships:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelationshipDTO'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelationshipLinkDTO'
+        categories:
+          description: Categories
+          example:
+            - name: Registry
+            - name: Policy
+            - name: Schema
+            - name: Role
+            - name: VC
+            - name: VP
+            - name: Token
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - item
+        - target
+        - relationships
+        - links
+        - categories
     RegistryUserOptionsDTO:
       type: object
       properties:
@@ -2864,19 +3556,22 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example:
+            - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
@@ -2909,6 +3604,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: DID-Document
         action:
           type: string
@@ -2951,6 +3647,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-did-document
         options:
           $ref: '#/components/schemas/RegistryUserOptionsDTO'
@@ -3019,19 +3716,22 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example:
+            - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
@@ -3064,6 +3764,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: DID-Document
         action:
           type: string
@@ -3106,6 +3807,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-did-document
         options:
           $ref: '#/components/schemas/RegistryUserOptionsDTO'
@@ -3282,6 +3984,7 @@ components:
         hashMap:
           type: object
           description: Hash map
+          additionalProperties: true
         tools:
           description: Tools
           example:
@@ -3352,19 +4055,22 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example:
+            - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
@@ -3397,6 +4103,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Policy
         action:
           type: string
@@ -3439,6 +4146,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: publish-policy
         options:
           $ref: '#/components/schemas/PolicyOptionsDTO'
@@ -3482,11 +4190,16 @@ components:
           type: number
           description: Roles
           example: 10
+        formulas:
+          type: number
+          description: Formulas
+          example: 10
       required:
         - schemas
         - vcs
         - vps
         - roles
+        - formulas
     PolicyDetailsDTO:
       type: object
       properties:
@@ -3602,19 +4315,22 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example:
+            - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
@@ -3647,6 +4363,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Tool
         action:
           type: string
@@ -3689,6 +4406,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: publish-tool
         options:
           $ref: '#/components/schemas/ToolOptionsDTO'
@@ -3832,19 +4550,22 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example:
+            - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
@@ -3877,6 +4598,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Module
         action:
           type: string
@@ -3919,6 +4641,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: publish-module
         options:
           $ref: '#/components/schemas/ModuleOptionsDTO'
@@ -4055,19 +4778,22 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example:
+            - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
@@ -4100,6 +4826,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Schema
         action:
           type: string
@@ -4142,6 +4869,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: publish-schema
         options:
           $ref: '#/components/schemas/SchemaOptionsDTO'
@@ -4248,19 +4976,22 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example:
+            - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
@@ -4293,6 +5024,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Schema
         action:
           type: string
@@ -4335,6 +5067,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: publish-schema
         options:
           $ref: '#/components/schemas/SchemaOptionsDTO'
@@ -4438,7 +5171,7 @@ components:
         data:
           $ref: '#/components/schemas/SchemaTreeNodeDataDTO'
         children:
-          type: object
+          type: array
           description: Schema tree node children
       required:
         - label
@@ -4644,19 +5377,22 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example:
+            - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
@@ -4689,6 +5425,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: VP-Document
         action:
           type: string
@@ -4731,6 +5468,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-vp-document
         options:
           $ref: '#/components/schemas/VPOptionsDTO'
@@ -4858,19 +5596,22 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example:
+            - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
@@ -4903,6 +5644,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Role-Document
         action:
           type: string
@@ -4945,6 +5687,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-vc-document
         options:
           $ref: '#/components/schemas/RoleOptionsDTO'
@@ -5083,19 +5826,22 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example:
+            - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
@@ -5128,6 +5874,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Policy-Label
         action:
           type: string
@@ -5170,6 +5917,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: publish-policy-label
         options:
           $ref: '#/components/schemas/StatisticOptionsDTO'
@@ -5325,19 +6073,22 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example:
+            - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
@@ -5370,6 +6121,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: VC-Document
         action:
           type: string
@@ -5412,6 +6164,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-vc-document
         options:
           $ref: '#/components/schemas/VCOptionsDTO'
@@ -5485,6 +6238,7 @@ components:
         config:
           type: object
           description: Label Config
+          additionalProperties: true
       required:
         - textSearch
         - owner
@@ -5533,19 +6287,22 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example:
+            - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
@@ -5578,6 +6335,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Policy-Label
         action:
           type: string
@@ -5620,6 +6378,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: publish-policy-label
         options:
           $ref: '#/components/schemas/LabelOptionsDTO'
@@ -5755,19 +6514,22 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example:
+            - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
@@ -5800,6 +6562,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: VP-Document
         action:
           type: string
@@ -5842,6 +6605,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-vp-document
         options:
           $ref: '#/components/schemas/VPOptionsDTO'
@@ -5863,6 +6627,279 @@ components:
         - type
         - action
         - options
+    FormulaOptionsDTO:
+      type: object
+      properties:
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        name:
+          type: string
+          description: Name
+          example: Formula Name
+        description:
+          type: string
+          description: Description
+          example: Formula Description
+        owner:
+          type: string
+          description: Owner
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+        policyTopicId:
+          type: string
+          description: Policy topic identifier
+          example: 0.0.4481265
+        policyInstanceTopicId:
+          type: string
+          description: Policy instance topic identifier
+          example: 0.0.4481265
+      required:
+        - uuid
+        - name
+        - description
+        - owner
+        - policyTopicId
+        - policyInstanceTopicId
+    FormulaAnalyticsDTO:
+      type: object
+      properties:
+        textSearch:
+          type: string
+          description: Text search
+        owner:
+          type: string
+          description: Owner
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+        config:
+          type: object
+          description: Formula Config
+          additionalProperties: true
+      required:
+        - textSearch
+        - owner
+        - config
+    FormulaDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier
+          example: 667c240639282050117a1985
+        topicId:
+          type: string
+          description: Topic identifier
+          example: 0.0.4481265
+        consensusTimestamp:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        owner:
+          type: string
+          description: Owner
+          example: 0.0.1
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        status:
+          type: string
+          description: Status
+          example: NEW
+        statusReason:
+          type: string
+          description: Status
+          example: Revoked
+        lang:
+          type: string
+          description: Lang
+          example: en-US
+        responseType:
+          type: string
+          description: Response type
+          example: str
+        statusMessage:
+          type: string
+          description: Status message
+        files:
+          description: Files
+          example:
+            - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
+          type: array
+          items:
+            type: string
+        topics:
+          description: Topics
+          example:
+            - 0.0.4481265
+          type: array
+          items:
+            type: string
+        tokens:
+          description: Tokens
+          example:
+            - 0.0.4481265
+          type: array
+          items:
+            type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
+            - Formula
+          example: Formula
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
+            - publish-formula
+          example: publish-formula
+        options:
+          $ref: '#/components/schemas/FormulaOptionsDTO'
+        analytics:
+          $ref: '#/components/schemas/FormulaAnalyticsDTO'
+      required:
+        - id
+        - topicId
+        - consensusTimestamp
+        - owner
+        - uuid
+        - status
+        - statusReason
+        - lang
+        - responseType
+        - statusMessage
+        - files
+        - topics
+        - tokens
+        - sequenceNumber
+        - type
+        - action
+        - options
+        - analytics
+    FormulaActivityDTO:
+      type: object
+      properties:
+        schemas:
+          type: number
+          description: Schemas
+          example: 10
+        vps:
+          type: number
+          description: VPs
+          example: 10
+      required:
+        - schemas
+        - vps
+    FormulaDetailsDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        item:
+          $ref: '#/components/schemas/FormulaDTO'
+        row:
+          $ref: '#/components/schemas/RawMessageDTO'
+        activity:
+          $ref: '#/components/schemas/FormulaActivityDTO'
+      required:
+        - id
+        - uuid
+        - item
+        - row
+        - activity
+    FormulaRelationshipsDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        item:
+          $ref: '#/components/schemas/MessageDTO'
+        schemas:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageDTO'
+        formulas:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageDTO'
+      required:
+        - id
+        - item
+        - schemas
+        - formulas
     DIDOptionsDTO:
       type: object
       properties:
@@ -5933,19 +6970,22 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example:
+            - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
@@ -5978,6 +7018,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: DID-Document
         action:
           type: string
@@ -6020,6 +7061,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-did-document
         options:
           $ref: '#/components/schemas/DIDOptionsDTO'
@@ -6088,19 +7130,22 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example:
+            - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
@@ -6133,6 +7178,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: DID-Document
         action:
           type: string
@@ -6175,6 +7221,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-did-document
         options:
           $ref: '#/components/schemas/DIDOptionsDTO'
@@ -6233,187 +7280,6 @@ components:
         - item
         - row
         - history
-    MessageDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
-        topicId:
-          type: string
-          description: Topic identifier
-          example: 0.0.4481265
-        consensusTimestamp:
-          type: string
-          description: Message identifier
-          example: '1706823227.586179534'
-        owner:
-          type: string
-          description: Owner
-          example: 0.0.1
-        uuid:
-          type: string
-          description: UUID
-          example: 93938a10-d032-4a9b-9425-092e58bffbf7
-        status:
-          type: string
-          description: Status
-          example: NEW
-        statusReason:
-          type: string
-          description: Status
-          example: Revoked
-        lang:
-          type: string
-          description: Lang
-          example: en-US
-        responseType:
-          type: string
-          description: Response type
-          example: str
-        statusMessage:
-          type: string
-          description: Status message
-        files:
-          description: Files
-          example: *ref_3
-          type: array
-          items:
-            type: string
-        topics:
-          description: Topics
-          example: *ref_4
-          type: array
-          items:
-            type: string
-        tokens:
-          description: Tokens
-          example: *ref_5
-          type: array
-          items:
-            type: string
-        sequenceNumber:
-          type: number
-          description: SequenceNumber
-          example: 0
-      required:
-        - id
-        - topicId
-        - consensusTimestamp
-        - owner
-        - uuid
-        - status
-        - statusReason
-        - lang
-        - responseType
-        - statusMessage
-        - files
-        - topics
-        - tokens
-        - sequenceNumber
-    RelationshipDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Message identifier
-          example: '1706823227.586179534'
-        uuid:
-          type: string
-          description: UUID
-          example: 93938a10-d032-4a9b-9425-092e58bffbf7
-        type:
-          type: string
-          description: Type
-          enum:
-            - EVC-Document
-            - VC-Document
-            - DID-Document
-            - Schema
-            - schema-document
-            - Policy
-            - Instance-Policy
-            - VP-Document
-            - Standard Registry
-            - Topic
-            - Token
-            - Module
-            - Tool
-            - Tag
-            - Role-Document
-            - Synchronization Event
-            - Contract
-            - Guardian-Role-Document
-            - User-Permissions
-            - Policy-Statistic
-            - Policy-Label
-        category:
-          type: number
-          description: Category
-          example: 1
-        name:
-          type: string
-          description: Name
-          example: Monitoring Report Document
-      required:
-        - id
-        - uuid
-        - type
-        - category
-        - name
-    RelationshipLinkDTO:
-      type: object
-      properties:
-        source:
-          type: string
-          description: Source message identifier
-          example: '1706823227.586179534'
-        target:
-          type: string
-          description: Target message identifier
-          example: '1706823227.586179534'
-      required:
-        - source
-        - target
-    RelationshipsDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Message identifier
-          example: '1706823227.586179534'
-        item:
-          $ref: '#/components/schemas/MessageDTO'
-        target:
-          $ref: '#/components/schemas/RelationshipDTO'
-        relationships:
-          type: array
-          items:
-            $ref: '#/components/schemas/RelationshipDTO'
-        links:
-          type: array
-          items:
-            $ref: '#/components/schemas/RelationshipLinkDTO'
-        categories:
-          description: Categories
-          example:
-            - name: Registry
-            - name: Policy
-            - name: Schema
-            - name: Role
-            - name: VC
-            - name: VP
-          type: array
-          items:
-            type: string
-      required:
-        - id
-        - item
-        - target
-        - relationships
-        - links
-        - categories
     VPDetailsDTO:
       type: object
       properties:
@@ -6488,19 +7354,22 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example:
+            - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
@@ -6533,6 +7402,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: VC-Document
         action:
           type: string
@@ -6575,6 +7445,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-vc-document
         options:
           $ref: '#/components/schemas/VCOptionsDTO'
@@ -6630,6 +7501,41 @@ components:
         schema:
           type: object
           description: VC Schema
+          properties:
+            '@context':
+              oneOf:
+                - type: string
+                - type: array
+                  items:
+                    type: string
+              readOnly: true
+            type:
+              oneOf:
+                - type: string
+                - type: array
+                  items:
+                    type: string
+              readOnly: true
+            id:
+              type: string
+              readOnly: true
+            geography:
+              type: string
+              readOnly: false
+            law:
+              type: string
+              readOnly: false
+            tags:
+              type: string
+              readOnly: false
+            ISIC:
+              type: string
+              readOnly: false
+          required:
+            - geography
+            - law
+            - tags
+          additionalProperties: false
           example:
             $id: '#StandardRegistry'
             $comment: '{ "@id": "#StandardRegistry", "term": "StandardRegistry" }'
@@ -6683,13 +7589,16 @@ components:
               - law
               - tags
             additionalProperties: false
+        formulasData:
+          type: object
+          description: Formulas data
       required:
         - id
         - uuid
         - item
         - row
         - history
-        - schema
+        - formulasData
     NFTDTO:
       type: object
       properties:
@@ -6861,19 +7770,22 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example:
+            - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
@@ -6906,6 +7818,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Topic
         action:
           type: string
@@ -6948,6 +7861,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-topic
         options:
           $ref: '#/components/schemas/TopicOptionsDTO'
@@ -7167,19 +8081,22 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example:
+            - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example:
+            - 0.0.4481265
           type: array
           items:
             type: string
@@ -7212,6 +8129,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Contract
         action:
           type: string
@@ -7254,6 +8172,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-contract
         options:
           $ref: '#/components/schemas/ContractOptionsDTO'
@@ -7335,6 +8254,14 @@ components:
           type: number
           description: Total issuance
           example: '10'
+        totalSerialized:
+          type: number
+          description: Total serialized
+          example: '10'
+        totalFungible:
+          type: number
+          description: Total fungible
+          example: '10'
         date:
           format: date-time
           type: string
@@ -7345,6 +8272,8 @@ components:
         - methodologies
         - projects
         - totalIssuance
+        - totalSerialized
+        - totalFungible
         - date
     ProjectCoordinatesDTO:
       type: object
@@ -7360,6 +8289,24 @@ components:
       required:
         - coordinates
         - projectId
+    DataLoadingProgress:
+      type: object
+      properties: {}
+    DataPriorityLoadingProgress:
+      type: object
+      properties: {}
+    SetLoadingPriorityDTO:
+      type: object
+      properties:
+        ids:
+          description: Topic Ids
+          example:
+            - 0.0.1
+          type: array
+          items:
+            type: string
+      required:
+        - ids
     SearchPolicyBlocksDTO:
       type: object
       properties:
@@ -7370,6 +8317,7 @@ components:
         hashMap:
           type: object
           description: Hash map
+          additionalProperties: true
         threshold:
           type: number
           description: Threshold

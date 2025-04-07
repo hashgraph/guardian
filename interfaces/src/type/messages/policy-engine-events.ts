@@ -3,6 +3,7 @@
  */
 export enum PolicyEngineEvents {
     RECEIVE_EXTERNAL_DATA = 'policy-engine-event-receive-external-data',
+    RECEIVE_EXTERNAL_DATA_CUSTOM = 'policy-engine-event-recieve-external-data-custom',
     POLICY_IMPORT_FILE = 'policy-engine-event-policy-import-file',
     POLICY_IMPORT_FILE_ASYNC = 'policy-engine-event-policy-import-file-async',
     POLICY_IMPORT_MESSAGE = 'policy-engine-event-policy-import-message',
@@ -68,5 +69,9 @@ export enum PolicyEngineEvents {
     STOP_POLICY_TEST = 'policy-engine-event-stop-policy-test',
     DELETE_POLICY_TEST = 'policy-engine-event-delete-policy-test',
     GET_POLICY_TEST_DETAILS = 'policy-engine-event-get-policy-test-details',
-    ACCESS_POLICY = 'policy-engine-event-access-policy'
+    ACCESS_POLICY = 'policy-engine-event-access-policy',
+    CREATE_SAVEPOINT = 'policy-engine-event-create-savepoint',
+    DELETE_SAVEPOINT = 'policy-engine-event-delete-savepoint',
+    RESTORE_SAVEPOINT = 'policy-engine-event-restore-savepoint',
+    GET_SAVEPOINT = 'policy-engine-event-get-savepoint'
 }

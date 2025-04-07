@@ -951,7 +951,7 @@ export class HederaSDKHelper {
                         const pubKey = PublicKey.fromStringED25519(signedMessage.publicKey);
                         const signature = Buffer.from(signedMessage.signature.fullSig, 'hex');
                         try {
-                            messageTransaction.addSignature(pubKey, signature);
+                            messageTransaction.addSignature(pubKey, signature as any);
                         } catch (error) {
                             throw new Error(error);
                         }

@@ -8,7 +8,7 @@
         <ng-container *ngIf="isConfirmed; else noDIDSettings">
             <div class="actions-container">
                 <div *ngIf="policies" class="dropdown-block">
-                    <p-dropdown (onChange)="onFilter()" [(ngModel)]="policyDropdownItem" [options]="policies!">
+                    <p-dropdown (onChange)="onFilter()" [appendTo]="'body'" [(ngModel)]="policyDropdownItem" [options]="policies!">
                         <ng-template pTemplate="selectedItem">
                             <div *ngIf="policyDropdownItem">
                                 <span class="dropdown-label">Policy</span>

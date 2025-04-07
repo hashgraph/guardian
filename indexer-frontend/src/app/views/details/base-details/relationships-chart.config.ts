@@ -52,7 +52,7 @@ export function createChartConfig(
                 links,
                 lineStyle: {
                     color: 'source',
-                    curveness: 0.3,
+                    curveness: 0.1,
                 },
                 tooltip: {
                     trigger: 'item',
@@ -68,9 +68,11 @@ export function createChartData(
     item: any,
     target: any,
     index: number,
-    count: number
+    count: number,
+    columnOffsetX: number,
+    previousCategoryIndex: number | null,
 ): any {
-    const [x, y] = getCoordinates(item.category, index, count);
+    const [x, y] = getCoordinates(item.category, index, count, columnOffsetX, previousCategoryIndex);
     return {
         symbolSize: [80, 80],
         name: item.id,
@@ -90,9 +92,29 @@ export function createChartData(
     };
 }
 
-function getCoordinates(categoryIndex: number, index: number, count: number) {
-    const x = categoryIndex * 300 + (index % 2 === 0 ? 30 : -30);
-    const y = index * 200 - (count / 2) * 200;
+function getCoordinates(categoryIndex: number, index: number, count: number, columnOffsetX: number, previousCategoryIndex: number | null) {
+    let x: number;
+    let y: number;
+    if (count > 5) {
+        const column = Math.floor(index / 5);
+        const row = index % 5;
+
+        x = categoryIndex * 100 + column * 100;
+        columnOffsetX = x;
+        
+        const totalRows = Math.ceil(count / 3);
+        const centerOffset = (totalRows - 1) * 100;
+    
+        y = row * 200 - centerOffset;
+    } else {
+        x = columnOffsetX + categoryIndex * 300;
+        y = index * 200 - (count / 2) * 200;
+    }
+    
+    if (previousCategoryIndex !== categoryIndex)
+        previousCategoryIndex = categoryIndex;
+
+    x += columnOffsetX;
     return [x, y];
 }
 
@@ -117,15 +139,22 @@ export function createChart(result: Relationships | null = null) {
             ).length;
             categoriesIndexes[i] = 0;
         }
+
+        const sortedRelationships = relationships.sort((a,b) => a.category - b.category)
+        
+        let columnOffsetX = 0;
+        let previousCategoryIndex: number | null = null;
         // tslint:disable-next-line:prefer-for-of
-        for (let index = 0; index < relationships.length; index++) {
-            const item: any = relationships[index];
+        for (let index = 0; index < sortedRelationships.length; index++) {
+            const item: any = sortedRelationships[index];
             data.push(
                 createChartData(
                     item,
                     result.target,
                     categoriesIndexes[item.category],
-                    categoriesLength[item.category]
+                    categoriesLength[item.category],
+                    columnOffsetX,
+                    previousCategoryIndex,
                 )
             );
             categoriesIndexes[item.category]++;

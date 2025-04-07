@@ -1,9 +1,11 @@
 const API = {
-    ApiServer: "http://localhost:" + Cypress.env("portApi") + "/",
+    ApiServer: `http://localhost:${Cypress.env("portApi")}/`,
+    ApiIndexer: `http://localhost:${Cypress.env("portIndexer")}/`,
 
     //Accounts
     Accounts: "accounts/",
     AccountsLogin: "accounts/login/",
+    ChangePassword: "accounts/change-password/",
     AccessToken: "accounts/access-token/",
     RootAuthorities: "accounts/root-authorities",
     Installer: "accounts/installer",
@@ -72,9 +74,11 @@ const API = {
 
     //TrustChains
     Trustchains: "trust-chains/",
+    TrustChainBlock: "tag/trustChainBlock/blocks/",
 
     //Settings
     SettingsEnv: "settings/environment",
+    SettingsAbout: "settings/about",
 
     //External
     External: "external",
@@ -97,6 +101,8 @@ const API = {
     PolicisImportMsgPreviewPush: "policies/push/import/message/preview",
     PolicyGroups: "groups/",
     DryRun: "dry-run/",
+    DryRunUser: "dry-run/user/",
+    DryRunLogin: "dry-run/login/",
     ChooseRegistrantRole: "tag/choose_role/blocks/",
     CreateApplication: "tag/create_application/blocks",
     WaitForApproveApplication: "tag/wait_for_approve",
@@ -112,12 +118,36 @@ const API = {
     GetIssues: "tag/issue_requests_grid(evident)/blocks",
     ApproveIssueRequestsBtn: "tag/approve_issue_requests_btn/blocks",
     CreateIssue: "tag/create_issue_request_form/blocks",
+    Categories: "methodologies/categories/",
+
+    //Records
+    Record: "record/",
+    RecordStatus: "status/",
+    RecordStart: "recording/start/",
+    RecordStop: "recording/stop/",
+    RecordActions: "recording/actions/",
+    RunningStart: "running/start/",
+    RunningStop: "running/stop/",
+    RecordResults: "running/results/",
+    RecordDetails: "running/details/",
+    RecordFastForward: "running/fast-forward/",
+    RecordRetry: "running/retry/",
+    RecordSkip: "running/skip/",
 
     //Artifacts
     Artifacts: "artifacts/",
 
     //Tags
     Tags: "tags/",
+    ApproveApplicationTag: "tag/approve_registrant_btn/",
+    RegistrantGrid: "tag/registrants_grid/",
+    CreateDeviceTag: "tag/create_device_form/",
+    DeviceApproveGrid: "tag/approve_devices_grid/",
+    ApproveDeviceTag: "tag/approve_device_btn/",
+    CreateIssueTag: "tag/create_issue_request_form/",
+    IssueGrid: "tag/issue_requests_grid(evident)/",
+    ApproveIssueTag: "tag/approve_issue_requests_btn/",
+    GetTokenAmountTag: "tag/vp_grid/",
 
     //General
     ExportCSV: "export?type=csv",
@@ -134,6 +164,54 @@ const API = {
     Preview: "preview/",
     Validate: "validate/",
     Users: "users/",
-    Assign: "assign/"
+    Assign: "assign/",
+    Test: "test/",
+    Start: "start/",
+    Config: "config/",
+
+    //Indexer
+    IndexerRegistries: "entities/registries/",
+    IndexerUsers: "entities/registry-users/",
+
+    IndexerDIDs: "entities/did-documents/",
+    IndexerVCs: "entities/vc-documents/",
+    IndexerVPs: "entities/vp-documents/",
+    IndexerStatisticVCs: "entities/statistic-documents/",
+    IndexerLabelVPs: "entities/label-documents/",
+    
+    IndexerPolicies: "entities/policies/",
+    IndexerTools: "entities/tools/",
+    IndexerModules: "entities/modules/",
+    IndexerSchemas: "entities/schemas/",
+    IndexerTokens: "entities/tokens/",
+    IndexerRoles: "entities/roles/",
+    IndexerStatistics: "entities/statistics/",
+    IndexerLabels: "entities/labels/",
+    IndexerFormulas: "entities/formulas/",
+    
+    IndexerNFTs: "entities/nfts/",
+    IndexerTopics: "entities/topics/",
+    IndexerContracts: "entities/contracts/",
+
+    //Worker tasks
+    WorkerTasks: "worker-tasks/",
+
+    //Themes
+    Themes: "themes/",
+
+    //Branding
+    Branding: "branding/",
+
+    //Notifications
+    Notifications: "notifications/",
+    NewNotifications: "notifications/new/",
+    Progresses: "notifications/progresses/",
+    ReadAll: "notifications/read/all/",
+    DeleteNotification: "notifications/delete/",
+
+    //Wizard
+    WizardPolicy: "wizard/policy/",
+    WizardPolicyAsync: "wizard/push/policy/",
+    Wizard: "wizard/",
 };
 export default API;

@@ -42,6 +42,9 @@ export class SynchronizationVCs extends SynchronizationTask {
         const documents = collection.find({
             type: { $in: [MessageType.VC_DOCUMENT] },
             ...this.filter(),
+        }, {
+            sort: { analyticsUpdate: 1 },
+            limit: 100000
         });
         const allDocuments: Message[] = [];
         const fileIds: Set<string> = new Set<string>();
@@ -76,6 +79,7 @@ export class SynchronizationVCs extends SynchronizationTask {
         for (const document of allDocuments) {
             const row = em.getReference(Message, document._id);
             row.analytics = this.createAnalytics(document, policyMap, topicMap, schemaMap, fileMap);
+            row.analyticsUpdate = Date.now();
             em.persist(row);
         }
         console.log(`Sync VCs: flush`)
@@ -176,9 +180,6 @@ export class SynchronizationVCs extends SynchronizationTask {
                 },
                 {
                     'analytics.schemaId': null,
-                },
-                {
-                    'analytics.policyId': null,
                 },
             ],
         };

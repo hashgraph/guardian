@@ -5,7 +5,6 @@ import {
     FormControl,
     FormsModule,
     ReactiveFormsModule,
-    Validators,
 } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
@@ -35,7 +34,7 @@ import { LandingService } from '@services/landing.service';
         ProjectLocationsComponent,
         InputTextModule,
         IconFieldModule,
-        InputIconModule,
+        InputIconModule
     ],
 })
 export class HomeComponent {
@@ -48,7 +47,7 @@ export class HomeComponent {
     constructor(
         private router: Router,
         private landingService: LandingService
-    ) {}
+    ) { }
 
     ngOnInit() {
         this.landingService.getAnalytics().subscribe((result) => {
@@ -56,67 +55,139 @@ export class HomeComponent {
                 return;
             }
             const labels = result.map(
-                (item: { date: string | number | Date }) =>
-                    new Date(item.date).toLocaleString()
+                (item: { date: string | number | Date }) => {
+                    const date = new Date(item.date);
+                    const formattedDate = date.toLocaleDateString('ru-RU', {
+                        year: '2-digit',
+                        month: '2-digit',
+                        day: '2-digit',
+                    });
+                    const formattedTime = date.toLocaleTimeString('ru-RU', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                    });
+                    return `${formattedDate} ${formattedTime}`;
+                }
             );
             const hasUpcount = result.length > 1;
             this.stats.push({
-                label: 'stat.registries',
-                labels,
-                data: result.map(
-                    (item: { registries: any }) => item.registries
-                ),
-                count: result[result.length - 1].registries,
-                upcount: hasUpcount
-                    ? result[result.length - 1].registries -
-                      result[result.length - 2].registries
-                    : 0,
-                link: '/registries',
+                statData: [{
+                    label: 'stat.registries',
+                    chartData: {
+                        labels,
+                        data: result.map(
+                            (item: { registries: any }) => item.registries
+                        ),
+                    },
+                    count: result[result.length - 1].registries,
+                    upcount: hasUpcount
+                        ? result[result.length - 1].registries -
+                        result[result.length - 2].registries
+                        : 0,
+                    link: '/registries',
+                }]
             });
             this.stats.push({
-                label: 'stat.methodologies',
-                labels,
-                data: result.map(
-                    (item: { methodologies: any }) => item.methodologies
-                ),
-                count: result[result.length - 1].methodologies,
-                upcount: hasUpcount
-                    ? result[result.length - 1].methodologies -
-                      result[result.length - 2].methodologies
-                    : 0,
-                link: '/policies',
+                statData: [{
+                    label: 'stat.methodologies',
+                    chartData: {
+                        labels,
+                        data: result.map(
+                            (item: { methodologies: any }) => item.methodologies
+                        ),
+                    },
+                    count: result[result.length - 1].methodologies,
+                    upcount: hasUpcount
+                        ? result[result.length - 1].methodologies -
+                        result[result.length - 2].methodologies
+                        : 0,
+                    link: '/policies',
+                }]
             });
             this.stats.push({
-                label: 'stat.projects',
-                labels,
-                data: result.map((item: { projects: any }) => item.projects),
-                count: result[result.length - 1].projects,
-                upcount: hasUpcount
-                    ? result[result.length - 1].projects -
-                      result[result.length - 2].projects
-                    : 0,
-                link: '/vc-documents',
+                statData: [{
+                    label: 'stat.projects',
+                    chartData: {
+                        labels,
+                        data: result.map((item: { projects: any }) => item.projects),
+                    },
+                    count: result[result.length - 1].projects,
+                    upcount: hasUpcount
+                        ? result[result.length - 1].projects -
+                        result[result.length - 2].projects
+                        : 0,
+                    link: '/vc-documents',
+                }]
             });
-            this.stats.push({
-                label: 'stat.total_issuance',
-                labels,
-                data: result.map(
-                    (item: { totalIssuance: any }) => item.totalIssuance
-                ),
-                count: result[result.length - 1].totalIssuance,
-                upcount: hasUpcount
-                    ? result[result.length - 1].totalIssuance -
-                      result[result.length - 2].totalIssuance
-                    : 0,
-                link: '/tokens',
-            });
+
+            if (result.some(item => item.totalFungible)) {
+                this.stats.push({
+                    statData: [
+                        {
+                            label: 'stat.projects_issuance',
+                            chartData: {
+                                labels,
+                                data: result.filter(item => item.totalFungible).map(
+                                    (item: { totalFungible: any }) => item.totalFungible
+                                ),
+                            },
+                            count: result[result.length - 1].totalFungible,
+                            upcount: hasUpcount
+                                ? result[result.length - 1].totalFungible -
+                                result[result.length - 2].totalFungible
+                                : 0,
+                            link: '/tokens',
+                            tabLabel: 'stat.total_fungible',
+                        },
+                        {
+                            label: 'stat.projects_issuance',
+                            chartData: {
+                                labels,
+                                data: result.filter(item => item.totalSerialized).map(
+                                    (item: { totalSerialized: any }) => item.totalSerialized
+                                ),
+                            },
+                            count: result[result.length - 1].totalSerialized,
+                            upcount: hasUpcount
+                                ? result[result.length - 1].totalSerialized -
+                                result[result.length - 2].totalSerialized
+                                : 0,
+                            link: '/tokens',
+                            tabLabel: 'stat.total_serialized',
+                        }
+                    ]
+                });
+            } else if (result.some(item => item.totalIssuance)) {
+                this.stats.push({
+                    statData: [
+                        {
+                            label: 'stat.projects_issuance',
+                            chartData: {
+                                labels,
+                                data: result.filter(item => item.totalIssuance).map(
+                                    (item: { totalIssuance: any }) => item.totalIssuance
+                                ),
+                            },
+                            count: result[result.length - 1].totalIssuance,
+                            upcount: hasUpcount
+                                ? result[result.length - 1].totalIssuance -
+                                result[result.length - 2].totalIssuance
+                                : 0,
+                            link: '/tokens',
+                            tabLabel: 'stat.total_fungible',
+                        }
+                    ]
+                });
+            }
         });
         this.landingService
             .getProjectsCoordinates()
             .subscribe((result) => (this.projectLocations = result));
     }
 
-    ngOnDestroy(): void {}
+    ngOnDestroy(): void {
+        this.landingService.stopPollingDataLoadingProgress();
+    }
 
     public onSearch() {
         if (this.searchControl.valid && this.searchControl.value) {

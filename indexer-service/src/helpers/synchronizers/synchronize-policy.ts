@@ -1,15 +1,10 @@
 import { DataBaseHelper, Message, TokenCache } from '@indexer/common';
-import { MessageType, MessageAction, PolicyAnalytics } from '@indexer/interfaces';
+import { MessageType, MessageAction, PolicyAnalytics, TokenType } from '@indexer/interfaces';
 import { textSearch } from '../text-search-options.js';
 import { parsePolicyFile } from '../parsers/policy.parser.js';
 import { HashComparator, PolicyLoader } from '../../analytics/index.js';
 import { SynchronizationTask } from '../synchronization-task.js';
 import { loadFiles } from '../load-files.js';
-
-enum TokenType {
-    FT = 'FUNGIBLE_COMMON',
-    NFT = 'NON_FUNGIBLE_UNIQUE',
-}
 
 export class SynchronizationPolicy extends SynchronizationTask {
     public readonly name: string = 'policy';
@@ -106,6 +101,7 @@ export class SynchronizationPolicy extends SynchronizationTask {
                 tokenMap,
                 fileMap
             );
+            row.analyticsUpdate = Date.now();
             em.persist(row);
         }
         console.log(`Sync Policies: flush`)
@@ -215,6 +211,8 @@ export class SynchronizationPolicy extends SynchronizationTask {
                 analytics.vpCount = analytics.vpCount + documents.vp;
             }
         }
+
+        analytics.dynamicTopics = Array.from(topics);
     }
 
     private findNFTs(

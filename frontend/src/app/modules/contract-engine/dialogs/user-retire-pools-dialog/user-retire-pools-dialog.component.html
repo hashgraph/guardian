@@ -10,6 +10,7 @@
                     [(ngModel)]="selectedTokens"
                     [options]="getTokenOptions()"
                     optionLabel="label"
+                    optionValue="value"
                     [showHeader]="false"
                     defaultLabel="Select Tokens"
                     [filter]="true"
@@ -96,6 +97,7 @@
                             formControlName="serials"
                             [options]="getSerialOptions(token.serials)"
                             optionLabel="label"
+                            optionValue="value"
                             [appendTo]="'body'"
                             placeholder="Select Serials">
                             <ng-template let-item pTemplate="item">

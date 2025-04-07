@@ -1,17 +1,17 @@
+import { HttpResponse } from '@angular/common/http';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IUser, PolicyType, UserPermissions } from '@guardian/interfaces';
+import { DialogService } from 'primeng/dynamicdialog';
 import { forkJoin, interval, Subscription } from 'rxjs';
-import { HttpResponse } from '@angular/common/http';
+import { audit } from 'rxjs/operators';
+import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
-import { IStep } from '../../structures';
-import { PolicyProgressService } from '../../services/policy-progress.service';
-import { DialogService } from 'primeng/dynamicdialog';
 import { RecordControllerComponent } from '../../record/record-controller/record-controller.component';
-import { audit } from 'rxjs/operators';
+import { PolicyProgressService } from '../../services/policy-progress.service';
+import { IStep } from '../../structures';
 
 /**
  * Component for choosing a policy and
@@ -23,6 +23,8 @@ import { audit } from 'rxjs/operators';
     styleUrls: ['./policy-viewer.component.scss'],
 })
 export class PolicyViewerComponent implements OnInit, OnDestroy {
+    private subscription = new Subscription();
+    public savePointState: boolean = false;
     public policyId!: string;
     public policy: any | null;
     public policyInfo: any | null;
@@ -50,24 +52,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public navigationFooterDisabled = false;
     public prevButtonDisabled = false;
     public nextButtonDisabled = false;
-    private subscription = new Subscription();
     public permissions: UserPermissions;
-
-    public get isDryRun(): boolean {
-        return (
-            this.policyInfo &&
-            (
-                this.policyInfo.status === PolicyType.DRY_RUN ||
-                this.policyInfo.status === PolicyType.DEMO
-            )
-        );
-    }
-
-    @ViewChild('recordController')
-    public set recordController(value: RecordControllerComponent | undefined) {
-        this._recordController = value;
-    }
-    private _recordController!: RecordControllerComponent | undefined;
 
     constructor(
         private profileService: ProfileService,
@@ -83,6 +68,57 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.pageIndex = 0;
         this.pageSize = 10;
         this.documentCount = 0;
+    }
+
+    public get isDryRun(): boolean {
+        return (
+            this.policyInfo &&
+            (
+                this.policyInfo.status === PolicyType.DRY_RUN ||
+                this.policyInfo.status === PolicyType.DEMO
+            )
+        );
+    }
+
+    private _recordController!: RecordControllerComponent | undefined;
+
+    @ViewChild('recordController')
+    public set recordController(value: RecordControllerComponent | undefined) {
+        this._recordController = value;
+    }
+
+    private setType(document: any) {
+        if (this.view === 'artifacts') {
+            if (document.dryRunClass === 'VcDocumentCollection') {
+                document.__type = 'VC';
+            } else if (document.dryRunClass === 'VpDocumentCollection') {
+                document.__type = 'VP';
+            } else if (document.dryRunClass === 'DidDocumentCollection') {
+                document.__type = 'DID';
+                document.owner = document.did;
+            } else if (document.dryRunClass === 'ApprovalDocumentCollection') {
+                document.__type = 'VC';
+            }
+        } else if (this.view === 'transactions') {
+            document.__type = document.type;
+            document.owner = document.hederaAccountId;
+        } else if (this.view === 'ipfs') {
+            document.__type = '';
+        }
+        return document;
+    }
+
+    private getSavepointState() {
+        if (!this.isDryRun) {
+            return;
+        }
+        this.policyEngineService
+            .getSavepointState(this.policyInfo.id)
+            .subscribe((value) => {
+                this.savePointState = value.state;
+            }, (e) => {
+                this.savePointState = false;
+            });
     }
 
     ngOnInit() {
@@ -165,7 +201,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.userRole = this.policyInfo.userRole;
                 this.userGroup = this.policyInfo.userGroup?.groupLabel || this.policyInfo.userGroup?.uuid;
 
-                if (this.policyInfo?.status === PolicyType.DRY_RUN) {
+                if (this.policyInfo?.status === PolicyType.DRY_RUN
+                    || this.policyInfo?.status === PolicyType.DEMO
+                ) {
                     this.loadDryRunOptions();
                 } else {
                     setTimeout(() => {
@@ -185,6 +223,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                         }
                     })
                 })
+                this.getSavepointState();
             }, (e) => {
                 this.loading = false;
             });
@@ -219,7 +258,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         }
     }
 
-    setGroup(item: any) {
+    setGroup(item: any, group: any) {
+        group?.toggle(false);
         this.loading = true;
         this.policyEngineService
             .setGroup(this.policyInfo.id, item ? item.uuid : null)
@@ -248,7 +288,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 });
     }
 
-    setVirtualUser(item: any) {
+    setVirtualUser(item: any, menu: any) {
+        menu?.toggle(false)
         this.loading = true;
         this.policyEngineService
             .loginVirtualUser(this.policyInfo.id, item.did)
@@ -262,6 +303,40 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 }, (e) => {
                     this.loading = false;
                 });
+    }
+
+    public createSavepoint() {
+        this.loading = true;
+        this.policyEngineService.createSavepoint(this.policyInfo.id).subscribe(() => {
+            this.loadPolicyById(this.policyId);
+            this.getSavepointState();
+        }, (e) => {
+            this.loading = false;
+        }
+        );
+    }
+
+    public deleteSavepoint() {
+        this.loading = true;
+        this.policyEngineService.deleteSavepoint(this.policyInfo.id).subscribe(() => {
+            this.loadPolicyById(this.policyId);
+        }, (e) => {
+            this.loading = false;
+        }
+        );
+    }
+
+    public restoreSavepoint() {
+        this.loading = true;
+        this.policyEngineService.restoreSavepoint(this.policyInfo.id).subscribe(() => {
+            this.policy = null;
+            this.policyInfo = null;
+            this.isMultipleGroups = false;
+            this.loadPolicyById(this.policyId);
+        }, (e) => {
+            this.loading = false;
+        }
+        );
     }
 
     restartDryRun() {
@@ -353,27 +428,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     this.loading = false;
                 }
             );
-    }
-
-    private setType(document: any) {
-        if (this.view === 'artifacts') {
-            if (document.dryRunClass === 'VcDocumentCollection') {
-                document.__type = 'VC';
-            } else if (document.dryRunClass === 'VpDocumentCollection') {
-                document.__type = 'VP';
-            } else if (document.dryRunClass === 'DidDocumentCollection') {
-                document.__type = 'DID';
-                document.owner = document.did;
-            } else if (document.dryRunClass === 'ApprovalDocumentCollection') {
-                document.__type = 'VC';
-            }
-        } else if (this.view === 'transactions') {
-            document.__type = document.type;
-            document.owner = document.hederaAccountId;
-        } else if (this.view === 'ipfs') {
-            document.__type = '';
-        }
-        return document;
     }
 
     updateNavigationButtons() {

@@ -47,6 +47,9 @@ import { LabelDetailsComponent } from '@views/details/label-details/label-detail
 import { LabelDocumentsComponent } from '@views/collections/label-documents/label-documents.component';
 import { StatisticDocumentsComponent } from '@views/collections/statistic-documents/statistic-documents.component';
 import { LabelDocumentDetailsComponent } from '@views/details/label-document-details/label-document-details.component';
+import { FormulasComponent } from '@views/collections/formulas/formulas.component';
+import { FormulaDetailsComponent } from '@views/details/formula-details/formula-details.component';
+import { PriorityQueueComponent } from '@views/priority-queue/priority-queue.component';
 
 export const routes: Routes = [
     // _DEV
@@ -59,6 +62,7 @@ export const routes: Routes = [
     //Home
     { path: '', component: HomeComponent },
     { path: 'search', component: SearchViewComponent },
+    { path: 'priority-queue', component: PriorityQueueComponent },
 
     //Collections
     { path: 'registries', component: RegistriesComponent },
@@ -79,6 +83,7 @@ export const routes: Routes = [
     { path: 'labels', component: LabelsComponent },
     { path: 'label-documents', component: LabelDocumentsComponent },
     { path: 'statistic-documents', component: StatisticDocumentsComponent },
+    { path: 'formulas', component: FormulasComponent },
 
     //Details
     { path: 'registries/:id', component: RegistryDetailsComponent },
@@ -99,4 +104,5 @@ export const routes: Routes = [
     { path: 'labels/:id', component: LabelDetailsComponent },
     { path: 'label-documents/:id', component: LabelDocumentDetailsComponent },
     { path: 'statistic-documents/:id', component: VcDocumentDetailsComponent },
+    { path: 'formulas/:id', component: FormulaDetailsComponent },
 ];

@@ -63,7 +63,7 @@ export class RetireRequestDTO implements IRetireRequest {
     @ApiProperty({ required: true })
     contractId: string;
     @ApiProperty({
-        required: true,
+        required: ['token', 'count', 'serials', 'decimals', 'type', 'tokenSymbol'],
         type: 'object',
         properties: {
             token: {
@@ -87,7 +87,7 @@ export class RetireRequestDTO implements IRetireRequest {
             tokenSymbol: {
                 type: 'string',
             },
-        },
+        }
     })
     tokens: (RetireTokenRequest & {
         tokenSymbol: string;
@@ -106,7 +106,7 @@ export class RetirePoolDTO implements IRetirePool {
     @ApiProperty({ required: true })
     contractId: string;
     @ApiProperty({
-        required: true,
+        required: ['token', 'contract', 'count', 'decimals', 'type', 'tokenSymbol'],
         type: 'object',
         properties: {
             token: {

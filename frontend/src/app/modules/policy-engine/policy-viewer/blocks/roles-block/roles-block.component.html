@@ -12,7 +12,10 @@
                         [options]="roles"
                         formControlName="roleOrGroup"
                         id="role"
+                        [appendTo]="'body'"
                         placeholder="Not selected"
+                        class="guardian-dropdown"
+                        panelStyleClass="guardian-dropdown-panel"
                     >
                     </p-dropdown>
                 </div>
@@ -34,6 +37,7 @@
                                 <p-dropdown
                                     id="groupDropdown"
                                     [options]="groups"
+                                    [appendTo]="'body'"
                                     formControlName="roleOrGroup"
                                     placeholder="Select a group"
                                     optionLabel="label"

@@ -3,6 +3,7 @@
 @import 'primeicons/primeicons.css';
 @import 'assets/primeng/lara-light-blue/theme.css';
 @import 'primeng/resources/primeng.css';
+@import 'mathlive/fonts.css';
 
 html,
 body {
@@ -40,8 +41,7 @@ body {
 
 @font-face {
     font-family: 'Archivo Black';
-    src: url('assets/fonts/Archivo_Black/ArchivoBlack-Regular.ttf')
-        format('truetype');
+    src: url('assets/fonts/Archivo_Black/ArchivoBlack-Regular.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
@@ -69,11 +69,14 @@ h1 {
 
 .p-button {
     padding: 6px 16px;
+
     .p-button-label {
         font-weight: 500;
     }
+
     &.p-button-link {
         user-select: all;
+
         .p-button-label {
             font-weight: 400;
         }
@@ -109,7 +112,7 @@ p-tabview {
 
     p-tabpanel:has(.p-tabview-panel:not([hidden])) {
         overflow: hidden;
-        flex: 1;
+        // flex: 1;
     }
 }
 
@@ -139,16 +142,20 @@ p-tabview {
 }
 
 @keyframes custom-spin {
+
     100%,
     0% {
         stroke: var(--primary-color);
     }
+
     40% {
         stroke: var(--primary-color);
     }
+
     66% {
         stroke: var(--primary-color);
     }
+
     80%,
     90% {
         stroke: var(--primary-color);
@@ -159,10 +166,12 @@ p-tabview {
     width: 5px;
     height: 5px;
 }
+
 *::-webkit-scrollbar-thumb {
     background-color: #babac0;
     border-radius: 5px;
 }
+
 *::-webkit-scrollbar-button {
     display: none;
 }
@@ -185,16 +194,20 @@ a {
 .p-selectbutton {
     .p-button {
         border: 1px solid var(--color-gray-2);
+
         .p-button-icon-left {
             color: var(--color-gray-3);
         }
     }
+
     .p-button:focus {
         box-shadow: none;
     }
+
     .p-button.p-highlight {
         background: var(--color-gray-2);
         border-color: var(--color-gray-2);
+
         .p-button-icon-left {
             color: var(--color-gray-4);
         }

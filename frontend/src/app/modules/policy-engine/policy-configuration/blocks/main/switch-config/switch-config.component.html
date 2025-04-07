@@ -16,6 +16,7 @@
                         [options]="executionFlowOptions"
                         [disabled]="readonly"
                         (onChange)="onSave()"
+                        [appendTo]="'body'"
                         placeholder="Select Execution Flow"
                         optionLabel="label"
                         optionValue="value">
@@ -68,6 +69,7 @@
                             [options]="conditionTypeOptions"
                             [disabled]="readonly"
                             (onChange)="onSave()"
+                            [appendTo]="'body'"
                             placeholder="Select Condition Type"
                             optionLabel="label"
                             optionValue="value">
@@ -91,6 +93,7 @@
                             [options]="actorOptions"
                             [disabled]="readonly"
                             (onChange)="onSave()"
+                            [appendTo]="'body'"
                             placeholder="Select Actor"
                             optionLabel="label"
                             optionValue="value">

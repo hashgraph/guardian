@@ -9,6 +9,7 @@ export const REQUIRED_PROPS = {
     VERSION: 'version',
     OWNER: 'owner',
     MESSAGE_ID: 'messageId',
+    DISCONTINUED_DATE: 'discontinuedDate',
 };
 
 export const UN_REQUIRED_PROPS = {

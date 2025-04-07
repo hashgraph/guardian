@@ -82,6 +82,9 @@ export class SynchronizationVPs extends SynchronizationTask {
         const documents = collection.find({
             type: { $in: [MessageType.VP_DOCUMENT] },
             ...this.filter(),
+        }, {
+            sort: { analyticsUpdate: 1 },
+            limit: 100000
         });
         const allDocuments: Message[] = [];
         while (await documents.hasNext()) {
@@ -121,6 +124,7 @@ export class SynchronizationVPs extends SynchronizationTask {
                 fileMap,
                 labelDocumentMap
             );
+            row.analyticsUpdate = Date.now();
             em.persist(row);
         }
         console.log(`Sync VPs: flush`)

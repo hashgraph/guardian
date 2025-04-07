@@ -1,0 +1,82 @@
+.content {
+    padding: 45px 100px;
+    &__header, &__table {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    &__table {
+        padding-top: 5px;
+        flex: 1;
+        overflow-y: hidden;
+        overflow-x: auto;
+    }
+}
+
+.filters {
+    display: grid;
+    overflow: visible;
+    grid-template-columns: minmax(400px, 1fr) 1fr;
+    column-gap: 10px;
+
+    &__keywords {
+        width: 100%;
+    }
+
+    &__fields {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+}
+
+.field-filters {
+    display: flex;
+    gap: 5px;
+}
+
+.priority-options {
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+
+    .search-field {
+        max-width: 480px;
+        flex: 1;
+
+        input {
+            width: 100%;
+            height: 40px;
+        }
+    }
+    
+    .add-to-queue {
+
+        input {
+            width: 243px;
+            height: 40px;
+            margin-right: 16px;
+        }
+    }
+}
+
+::ng-deep {
+    .p-chips {
+        width: 100%;
+        .p-chips-multiple-container {
+            width: 100%;
+        }
+    }
+
+    .add-to-queue-button {
+        .p-button {
+            height: 40px;
+            padding: 5px 16px;
+            
+            font-weight: 500;
+            font-size: 14px;
+            line-height: 30px;
+            letter-spacing: 0%;
+            vertical-align: middle;
+        }
+    }
+}

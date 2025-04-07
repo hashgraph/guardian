@@ -1,0 +1,40 @@
+<button 
+    (click)="onAction()" 
+    class="menu-left-button guardian-button guardian-button-primary">
+    <div *ngIf="current.icon" class="guardian-button-icon">
+        <svg-icon class="icon-btn svg-icon"
+            src="/assets/images/icons/{{current.icon}}.svg"
+            svgClass="icon-color-secondary">
+        </svg-icon>
+    </div>
+    <div class="guardian-button-label">{{current.text}}</div>
+</button>
+<div class="menu-right-button" (click)="dropdownMenu.show()">
+    <svg-icon class="icon-btn svg-icon"
+        src="/assets/images/icons/collapse-down.svg"
+        svgClass="icon-color-secondary">
+    </svg-icon>
+</div>
+<p-dropdown
+    #dropdownMenu
+    [ngModel]="current"
+    [options]="options"
+    [showClear]="false"
+    class="menu-dropdown"
+    appendTo="body"
+    panelStyleClass="menu-dropdown-panel"
+    (onChange)="onChange($event)"
+>
+    <ng-template pTemplate="selectedItem"></ng-template>
+    <ng-template let-option pTemplate="item">
+        <div class="menu-option" [style.width]="size">
+            <div *ngIf="current.icon" class="menu-option-icon">
+                <svg-icon class="icon-btn svg-icon"
+                    src="/assets/images/icons/{{option.icon}}.svg"
+                    [svgClass]="option.color">
+                </svg-icon>
+            </div>
+            <div class="menu-option-label {{option.color}}">{{option.text}}</div>
+        </div>
+    </ng-template>
+</p-dropdown>

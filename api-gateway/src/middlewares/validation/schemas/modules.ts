@@ -38,7 +38,7 @@ export class ModuleDTO {
     @ApiProperty({ type: 'string', nullable: false })
     createDate?: string;
 
-    @ApiProperty({ type: 'object', nullable: true })
+    @ApiProperty({ type: 'object', additionalProperties: true, nullable: true })
     config?: any;
 }
 
@@ -49,10 +49,10 @@ export class ModulePreviewDTO {
     @ApiProperty({ type: 'string', required: true })
     messageId: string;
 
-    @ApiProperty({ type: 'object', isArray: true, nullable: true })
+    @ApiProperty({ type: 'array', isArray: true, nullable: true })
     schemas?: any[];
 
-    @ApiProperty({ type: 'object', isArray: true, nullable: true })
+    @ApiProperty({ type: 'array', isArray: true, nullable: true })
     tags?: any[];
 
     @ApiProperty({ type: 'string', nullable: true })

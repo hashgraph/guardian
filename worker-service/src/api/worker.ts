@@ -1,4 +1,12 @@
-import { MessageBrokerChannel, MessageResponse, NatsService, NotificationHelper, PinoLogger, SecretManager, Users } from '@guardian/common';
+import {
+    MessageBrokerChannel,
+    MessageResponse,
+    NatsService,
+    NotificationHelper,
+    PinoLogger,
+    SecretManager,
+    Users
+} from '@guardian/common';
 import { ExternalMessageEvents, GenerateUUIDv4, ISignOptions, ITask, ITaskResult, WorkerEvents, WorkerTaskType } from '@guardian/interfaces';
 import { HederaSDKHelper, NetworkOptions } from './helpers/hedera-sdk-helper.js';
 import { IpfsClientClass } from './ipfs-client-class.js';
@@ -17,6 +25,15 @@ function rejectTimeout(t: number): Promise<void> {
             reject(new Error('Timeout error'));
         }, t);
     })
+}
+
+function getAnalytycsHeaders() {
+    const headers: any = {};
+    const token = process.env.ANALYTICS_SERVICE_TOKEN;
+    if (token) {
+        headers.Authorization = `Bearer ${token}`
+    }
+    return headers;
 }
 
 /**
@@ -129,7 +146,6 @@ export class Worker extends NatsService {
     public async init(): Promise<void> {
         await super.init();
         this.channel = new MessageBrokerChannel(this.connection, 'worker');
-
         try {
             await this.ipfsClient.createClient()
         } catch (e) {
@@ -217,7 +233,7 @@ export class Worker extends NatsService {
                     balance,
                     unit: 'Hbar',
                     operatorAccountId
-                });
+                }, false);
             } catch (error) {
                 throw new Error(`Worker (${['api-gateway', 'update-user-balance'].join('.')}) send: ` + error);
             }
@@ -311,10 +327,14 @@ export class Worker extends NatsService {
                 case WorkerTaskType.ANALYTICS_SEARCH_POLICIES: {
                     const { options } = task.data.payload;
                     try {
+                        const headers = getAnalytycsHeaders();
                         const response = await axios.post(
                             `${this.analyticsService}/analytics/search/policy`,
                             options,
-                            { responseType: 'json' }
+                            {
+                                responseType: 'json',
+                                headers
+                            }
                         );
                         result.data = response.data;
                     } catch (error) {
@@ -330,10 +350,14 @@ export class Worker extends NatsService {
                 case WorkerTaskType.ANALYTICS_GET_RETIRE_DOCUMENTS: {
                     const { options } = task.data.payload;
                     try {
+                        const headers = getAnalytycsHeaders();
                         const response = await axios.post(
                             `${this.analyticsService}/analytics/search/retire`,
                             options,
-                            { responseType: 'json' }
+                            {
+                                responseType: 'json',
+                                headers
+                            }
                         );
                         result.data = response.data;
 
@@ -349,8 +373,10 @@ export class Worker extends NatsService {
 
                 case WorkerTaskType.ANALYTICS_GET_INDEXER_AVAILABILITY: {
                     try {
+                        const headers = getAnalytycsHeaders();
                         const response = await axios.get(
-                            `${this.analyticsService}/analytics/checkAvailability`
+                            `${this.analyticsService}/analytics/checkAvailability`,
+                            { headers }
                         );
                         result.data = response.data;
                     } catch (error) {
@@ -523,7 +549,6 @@ export class Worker extends NatsService {
                         operatorKey,
                         adminKey,
                     } = task.data;
-
                     client = new HederaSDKHelper(operatorId, operatorKey, null, networkOptions);
                     result.data = await client.deleteToken(
                         TokenId.fromString(tokenId),

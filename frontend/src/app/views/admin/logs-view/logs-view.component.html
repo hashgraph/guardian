@@ -48,10 +48,17 @@
                         placeholder="Message"
                     />
                 </span>
-                <p-dropdown [formControlName]="'type'" [options]="types" class="message-type-container">
+                <p-dropdown
+                    [formControlName]="'type'"
+                    [appendTo]="'body'"
+                    [options]="types"
+                    placeholder="Message Type"
+                    class="message-type-container">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="selected-type-value">
-                            <span class="grey-6">Message Type {{ item?.label }}</span>
+                            <span class="grey-6">
+                                Message Type {{ item?.label }}
+                            </span>
                         </div>
                     </ng-template>
                     <ng-template let-item pTemplate="item">
@@ -60,9 +67,14 @@
                         </div>
                     </ng-template>
                 </p-dropdown>
-                <p-calendar [formControl]="dateRangeForm" [maxDate]="currentDate" [placeholder]="'Enter date range'"
-                            [showIcon]="true" [showTime]="true" dateFormat="mm/dd/yy"
-                            selectionMode="range"></p-calendar>
+                <p-calendar
+                    [formControl]="dateRangeForm"
+                    [placeholder]="'Enter date range'"
+                    [showIcon]="true"
+                    [showTime]="true"
+                    dateFormat="mm/dd/yy"
+                    selectionMode="range">
+                </p-calendar>
             </div>
         </form>
       <div class="flex flex-column-gap-8" style="flex-wrap: wrap; row-gap: 8px;">

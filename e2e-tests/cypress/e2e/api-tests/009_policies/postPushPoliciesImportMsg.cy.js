@@ -3,7 +3,7 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 
-context("Policies", { tags: ['policies', 'secondPool'] }, () => {
+context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     it("Push import new policy and all associated artifacts from IPFS", () => {
@@ -11,7 +11,12 @@ context("Policies", { tags: ['policies', 'secondPool'] }, () => {
             cy.request({
                 method: METHOD.POST,
                 url: API.ApiServer + API.PolicisImportMsgPush,
-                body: { "messageId": "1707125414.999819805" },
+                body: {
+                    messageId: (Cypress.env('policy_with_artifacts')),
+                    metadata: {
+                        "tools": {}
+                    }
+                },
                 headers: {
                     authorization,
                 },

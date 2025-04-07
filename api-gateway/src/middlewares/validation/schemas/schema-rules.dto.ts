@@ -98,7 +98,7 @@ export class SchemaRuleDTO {
     @ApiProperty({
         type: 'object',
         nullable: true,
-        required: false
+        additionalProperties: true
     })
     @IsOptional()
     @IsObject()
@@ -125,6 +125,44 @@ export class SchemaRuleRelationshipsDTO {
     schemas?: SchemaDTO[];
 }
 
+export class SchemaRuleOptionsDTO {
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    policyId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    schemaId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    documentId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    parentId?: string;
+}
+
 @ApiExtraModels(SchemaRuleDTO, VcDocumentDTO)
 export class SchemaRuleDataDTO {
     @ApiProperty({
@@ -149,6 +187,6 @@ export class SchemaRuleDataDTO {
         isArray: true,
     })
     @IsOptional()
-    @IsObject()
-    relationships?: VcDocumentDTO;
+    @IsArray()
+    relationships?: VcDocumentDTO[];
 }

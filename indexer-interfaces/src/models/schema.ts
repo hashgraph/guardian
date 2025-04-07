@@ -6,6 +6,22 @@ import { SchemaHelper } from '../helpers/index.js';
  */
 export class Schema {
     /**
+     * IRI
+     */
+    public iri?: string;
+    /**
+     * Name
+     */
+    public name?: string;
+    /**
+     * Description
+     */
+    public description?: string;
+    /**
+     * Type
+     */
+    public type?: string;
+    /**
      * Document
      */
     public document?: ISchemaDocument;
@@ -34,6 +50,10 @@ export class Schema {
             this.document = null;
         }
         if (this.document) {
+            this.iri = this.document.$id || '';
+            this.name = this.document.title || '';
+            this.type = this.iri.replace(/^\#/, '');
+            this.description = this.document.description || '';
             this.parseDocument();
         }
     }
@@ -57,5 +77,65 @@ export class Schema {
             this.fields,
             schemaCache
         );
+        this.setPaths(this.fields, '', this.iri + '/');
+    }
+
+    /**
+     * Parse document
+     * @private
+     */
+    private setPaths(fields: SchemaField[], path: string, fullPath: string): void {
+        for (const f of fields) {
+            f.path = path + f.name;
+            f.fullPath = fullPath + f.name;
+            if (Array.isArray(f.fields)) {
+                this.setPaths(f.fields, f.path + '.', f.fullPath + '.');
+            }
+        }
+    }
+
+    /**
+     * Get all fields
+     */
+    public getFields(): SchemaField[] {
+        return this._getFields([], this.fields);
+    }
+
+    /**
+     * Get all fields
+     */
+    private _getFields(result: SchemaField[], fields?: SchemaField[]): SchemaField[] {
+        if (Array.isArray(fields)) {
+            for (const field of fields) {
+                result.push(field);
+                this._getFields(result, field.fields);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get field
+     */
+    public getField(path: string): SchemaField | null {
+        return this._getField(path, this.fields);
+    }
+
+    /**
+     * Get field
+     */
+    private _getField(path: string, fields?: SchemaField[]): SchemaField | null {
+        if (Array.isArray(fields)) {
+            for (const field of fields) {
+                if (field.path === path) {
+                    return field;
+                }
+                const result = this._getField(path, field.fields);
+                if (result) {
+                    return result;
+                }
+            }
+        }
+        return null;
     }
 }

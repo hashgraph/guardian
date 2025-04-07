@@ -1,5 +1,5 @@
-import {ChangeDetectorRef, Component, Inject, OnInit} from '@angular/core';
-import {Router} from '@angular/router';
+import { ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import {
     ContractType,
     IUser,
@@ -11,37 +11,37 @@ import {
     Token,
     UserPermissions
 } from '@guardian/interfaces';
-import {PolicyEngineService} from 'src/app/services/policy-engine.service';
-import {ProfileService} from 'src/app/services/profile.service';
-import {TokenService} from 'src/app/services/token.service';
-import {ExportPolicyDialog} from '../dialogs/export-policy-dialog/export-policy-dialog.component';
-import {NewPolicyDialog} from '../dialogs/new-policy-dialog/new-policy-dialog.component';
-import {PreviewPolicyDialog} from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
-import {TasksService} from 'src/app/services/tasks.service';
-import {InformService} from 'src/app/services/inform.service';
-import {MultiPolicyDialogComponent} from '../dialogs/multi-policy-dialog/multi-policy-dialog.component';
-import {ComparePolicyDialog} from '../dialogs/compare-policy-dialog/compare-policy-dialog.component';
-import {TagsService} from 'src/app/services/tag.service';
-import {forkJoin, Subscription} from 'rxjs';
-import {SchemaService} from 'src/app/services/schema.service';
-import {WizardMode, WizardService} from 'src/app/modules/policy-engine/services/wizard.service';
-import {UntypedFormControl, UntypedFormGroup} from '@angular/forms';
-import {AnalyticsService} from 'src/app/services/analytics.service';
-import {SearchPolicyDialog} from '../../analytics/search-policy-dialog/search-policy-dialog.component';
-import {mobileDialog} from 'src/app/utils/mobile-utils';
-import {DialogService} from 'primeng/dynamicdialog';
+import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { ProfileService } from 'src/app/services/profile.service';
+import { TokenService } from 'src/app/services/token.service';
+import { ExportPolicyDialog } from '../dialogs/export-policy-dialog/export-policy-dialog.component';
+import { NewPolicyDialog } from '../dialogs/new-policy-dialog/new-policy-dialog.component';
+import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
+import { TasksService } from 'src/app/services/tasks.service';
+import { InformService } from 'src/app/services/inform.service';
+import { MultiPolicyDialogComponent } from '../dialogs/multi-policy-dialog/multi-policy-dialog.component';
+import { ComparePolicyDialog } from '../dialogs/compare-policy-dialog/compare-policy-dialog.component';
+import { TagsService } from 'src/app/services/tag.service';
+import { forkJoin, Subscription } from 'rxjs';
+import { SchemaService } from 'src/app/services/schema.service';
+import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { AnalyticsService } from 'src/app/services/analytics.service';
+import { SearchPolicyDialog } from '../../analytics/search-policy-dialog/search-policy-dialog.component';
+import { mobileDialog } from 'src/app/utils/mobile-utils';
+import { DialogService } from 'primeng/dynamicdialog';
 import {
     SuggestionsConfigurationComponent
 } from '../../../views/suggestions-configuration/suggestions-configuration.component';
-import {DeletePolicyDialogComponent} from '../dialogs/delete-policy-dialog/delete-policy-dialog.component';
-import {CONFIGURATION_ERRORS} from '../injectors/configuration.errors.injector';
-import {DiscontinuePolicy} from '../dialogs/discontinue-policy/discontinue-policy.component';
-import {MigrateData} from '../dialogs/migrate-data/migrate-data.component';
-import {ContractService} from 'src/app/services/contract.service';
-import {PolicyTestDialog} from '../dialogs/policy-test-dialog/policy-test-dialog.component';
-import {NewImportFileDialog} from '../dialogs/new-import-file-dialog/new-import-file-dialog.component';
-import {PublishPolicyDialog} from '../dialogs/publish-policy-dialog/publish-policy-dialog.component';
-import {WebSocketService} from 'src/app/services/web-socket.service';
+import { DeletePolicyDialogComponent } from '../dialogs/delete-policy-dialog/delete-policy-dialog.component';
+import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
+import { DiscontinuePolicy } from '../dialogs/discontinue-policy/discontinue-policy.component';
+import { MigrateData } from '../dialogs/migrate-data/migrate-data.component';
+import { ContractService } from 'src/app/services/contract.service';
+import { PolicyTestDialog } from '../dialogs/policy-test-dialog/policy-test-dialog.component';
+import { NewImportFileDialog } from '../dialogs/new-import-file-dialog/new-import-file-dialog.component';
+import { PublishPolicyDialog } from '../dialogs/publish-policy-dialog/publish-policy-dialog.component';
+import { WebSocketService } from 'src/app/services/web-socket.service';
 import {
     IImportEntityResult,
     ImportEntityDialog,
@@ -597,25 +597,25 @@ export class PoliciesComponent implements OnInit {
             this.profileService.getProfile(),
             this.tagsService.getPublishedSchemas(),
         ]).subscribe((value) => {
-                const profile: IUser | null = value[0];
-                const tagSchemas: any[] = value[1] || [];
-                this.isConfirmed = !!(profile && profile.confirmed);
-                this.user = new UserPermissions(profile);
-                this.owner = this.user.did;
-                this.tagSchemas = SchemaHelper.map(tagSchemas);
+            const profile: IUser | null = value[0];
+            const tagSchemas: any[] = value[1] || [];
+            this.isConfirmed = !!(profile && profile.confirmed);
+            this.user = new UserPermissions(profile);
+            this.owner = this.user.did;
+            this.tagSchemas = SchemaHelper.map(tagSchemas);
 
-                this.columns = columns
-                    .filter((c) => c.permissions(this.user))
-                    .map((c) => c.id);
+            this.columns = columns
+                .filter((c) => c.permissions(this.user))
+                .map((c) => c.id);
 
-                if (this.isConfirmed) {
-                    this.loadAllPolicy();
-                } else {
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
-                }
-            },
+            if (this.isConfirmed) {
+                this.loadAllPolicy();
+            } else {
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }
+        },
             (e) => {
                 this.loading = false;
             }
@@ -688,7 +688,7 @@ export class PoliciesComponent implements OnInit {
         this.loading = true;
         this.policyEngineService.dryRun(element.id).subscribe(
             (data: any) => {
-                const {policies, isValid, errors} = data;
+                const { policies, isValid, errors } = data;
                 if (!isValid) {
                     let text = [];
                     const blocks = errors.blocks;
@@ -730,7 +730,7 @@ export class PoliciesComponent implements OnInit {
         this.loading = true;
         this.policyEngineService.draft(element.id).subscribe(
             (data: any) => {
-                const {policies, isValid, errors} = data;
+                const { policies, isValid, errors } = data;
                 this.loadAllPolicy();
             },
             (e) => {
@@ -761,7 +761,7 @@ export class PoliciesComponent implements OnInit {
         this.loading = true;
         this.policyEngineService.pushPublish(element.id, version).subscribe(
             (result) => {
-                const {taskId, expectation} = result;
+                const { taskId, expectation } = result;
                 this.router.navigate(['task', taskId], {
                     queryParams: {
                         last: btoa(location.href),
@@ -793,7 +793,7 @@ export class PoliciesComponent implements OnInit {
             this.loading = true;
             this.policyEngineService.pushDelete(policy?.id).subscribe(
                 (result) => {
-                    const {taskId, expectation} = result;
+                    const { taskId, expectation } = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
                             last: btoa(location.href),
@@ -902,30 +902,19 @@ export class PoliciesComponent implements OnInit {
     }
 
     private importPolicyDetails(result: IImportEntityResult) {
-        const {type, data, policy} = result;
+        const { type, data, policy } = result;
         const distinctPolicies = this.getDistinctPolicy();
-        let dialogRef;
-        if (window.innerWidth <= 810) {
-            dialogRef = this.dialogService.open(PreviewPolicyDialog, {
-                header: 'Preview',
-                width: `${window.innerWidth.toString()}px`,
-                styleClass: 'custom-dialog',
-                data: {
-                    policy: policy,
-                    policies: distinctPolicies,
-                },
-            });
-        } else {
-            dialogRef = this.dialogService.open(PreviewPolicyDialog, {
-                header: 'Preview',
-                width: '800px',
-                styleClass: 'custom-dialog',
-                data: {
-                    policy: policy,
-                    policies: distinctPolicies,
-                },
-            });
-        }
+        const dialogRef = this.dialogService.open(PreviewPolicyDialog, {
+            header: 'Preview',
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
+            data: {
+                title: 'Preview',
+                policy: policy,
+                policies: distinctPolicies,
+            },
+        });
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 if (result.messageId) {
@@ -940,9 +929,9 @@ export class PoliciesComponent implements OnInit {
                 this.loading = true;
                 if (type == 'message') {
                     this.policyEngineService
-                        .pushImportByMessage(data, versionOfTopicId, {tools}, demo)
+                        .pushImportByMessage(data, versionOfTopicId, { tools }, demo)
                         .subscribe((result) => {
-                            const {taskId, expectation} = result;
+                            const { taskId, expectation } = result;
                             this.router.navigate(['task', taskId], {
                                 queryParams: {
                                     last: btoa(location.href),
@@ -954,9 +943,9 @@ export class PoliciesComponent implements OnInit {
                         });
                 } else if (type == 'file') {
                     this.policyEngineService
-                        .pushImportByFile(data, versionOfTopicId, {tools}, demo)
+                        .pushImportByFile(data, versionOfTopicId, { tools }, demo)
                         .subscribe((result) => {
-                            const {taskId, expectation} = result;
+                            const { taskId, expectation } = result;
                             this.router.navigate(['task', taskId], {
                                 queryParams: {
                                     last: btoa(location.href),
@@ -972,38 +961,24 @@ export class PoliciesComponent implements OnInit {
     }
 
     private importExcelDetails(result: IImportEntityResult, policyId: string) {
-        const {type, data, xlsx} = result;
-        let dialogRef;
-        if (window.innerWidth <= 810) {
-            const bodyStyles = window.getComputedStyle(document.body);
-            const headerHeight: number = parseInt(
-                bodyStyles.getPropertyValue('--header-height')
-            );
-            dialogRef = this.dialogService.open(PreviewPolicyDialog, {
-                header: 'Preview',
-                width: `${window.innerWidth.toString()}px`,
-                styleClass: 'custom-dialog',
-                data: {
-                    xlsx: xlsx,
-                },
-            });
-        } else {
-            dialogRef = this.dialogService.open(PreviewPolicyDialog, {
-                header: 'Preview',
-                width: '800px',
-                styleClass: 'custom-dialog',
-                data: {
-                    xlsx: xlsx,
-                },
-            });
-        }
+        const { type, data, xlsx } = result;
+        const dialogRef = this.dialogService.open(PreviewPolicyDialog, {
+            header: 'Preview',
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
+            data: {
+                title: 'Preview',
+                xlsx: xlsx,
+            },
+        });
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.policyEngineService
                     .pushImportByXlsx(data, policyId)
                     .subscribe(
                         (result) => {
-                            const {taskId, expectation} = result;
+                            const { taskId, expectation } = result;
                             this.router.navigate(['task', taskId], {
                                 queryParams: {
                                     last: btoa(location.href),
@@ -1022,22 +997,22 @@ export class PoliciesComponent implements OnInit {
         this.policyEngineService
             .exportToExcel(policy?.id)
             .subscribe((fileBuffer) => {
-                    let downloadLink = document.createElement('a');
-                    downloadLink.href = window.URL.createObjectURL(
-                        new Blob([new Uint8Array(fileBuffer)], {
-                            type: 'application/guardian-policy',
-                        })
-                    );
-                    downloadLink.setAttribute(
-                        'download',
-                        `policy_${Date.now()}.xlsx`
-                    );
-                    document.body.appendChild(downloadLink);
-                    downloadLink.click();
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
-                },
+                let downloadLink = document.createElement('a');
+                downloadLink.href = window.URL.createObjectURL(
+                    new Blob([new Uint8Array(fileBuffer)], {
+                        type: 'application/guardian-policy',
+                    })
+                );
+                downloadLink.setAttribute(
+                    'download',
+                    `policy_${Date.now()}.xlsx`
+                );
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            },
                 (error) => {
                     this.loading = false;
                 }
@@ -1138,10 +1113,9 @@ export class PoliciesComponent implements OnInit {
 
     public createMultiPolicy(element: any) {
         const dialogRef = this.dialogService.open(MultiPolicyDialogComponent, {
+            showHeader: false,
             width: '650px',
-            styleClass: 'g-dialog',
-            closable: false,
-            autoZIndex: true,
+            styleClass: 'guardian-dialog',
             data: {
                 policyId: element.id
             }
@@ -1185,7 +1159,7 @@ export class PoliciesComponent implements OnInit {
     public migrateData(policy?: any) {
         const item = this.policies?.find((e) => e.id === policy?.id);
         this.loading = true;
-        this.contractSerivce.getContracts({type: ContractType.RETIRE}).subscribe({
+        this.contractSerivce.getContracts({ type: ContractType.RETIRE }).subscribe({
             next: (res) => {
                 const dialogRef = this.dialogService.open(MigrateData, {
                     header: 'Migrate Data',
@@ -1203,7 +1177,7 @@ export class PoliciesComponent implements OnInit {
                     }
                     this.policyEngineService.migrateDataAsync(result).subscribe(
                         (result) => {
-                            const {taskId} = result;
+                            const { taskId } = result;
                             this.router.navigate(['task', taskId], {
                                 queryParams: {
                                     last: btoa(location.href),
@@ -1233,7 +1207,7 @@ export class PoliciesComponent implements OnInit {
                 this.loading = true;
                 this.policyEngineService.pushCreate(result).subscribe(
                     (result) => {
-                        const {taskId, expectation} = result;
+                        const { taskId, expectation } = result;
                         this.router.navigate(['/task', taskId]);
                     },
                     (e) => {
@@ -1268,7 +1242,7 @@ export class PoliciesComponent implements OnInit {
                             })
                             .subscribe(
                                 (result) => {
-                                    const {taskId, expectation} = result;
+                                    const { taskId, expectation } = result;
                                     this.router.navigate(['task', taskId], {
                                         queryParams: {
                                             last: btoa(location.href),
@@ -1291,20 +1265,25 @@ export class PoliciesComponent implements OnInit {
     }
 
     public applyFilters(): void {
-        if (this.filters.policyName && this.filters.tag) {
-            this.filterByNameAndTag();
+        if (this.filters.policyName) {
+            if (this.filters.tag) {
+                this.filterByNameAndTag();
+                this.noFilterResults = this.filteredPolicies.length === 0;
+            } else {
+                this.filterByPolicyName();
+                this.noFilterResults = this.filteredPolicies.length === 0;
+            }
+        } else if (this.filters.tag) {
+            this.filterByTag();
             this.noFilterResults = this.filteredPolicies.length === 0;
-            return;
+        } else {
+            this.filteredPolicies = [];
+            this.noFilterResults = false;
         }
-
-        this.filters.policyName
-            ? this.filterByPolicyName()
-            : this.filterByTag();
-        this.noFilterResults = this.filteredPolicies.length === 0;
     }
 
     public clearFilters(): void {
-        this.filtersForm.reset({policyName: '', tag: ''});
+        this.filtersForm.reset({ policyName: '', tag: '' });
         this.filteredPolicies = [];
         this.noFilterResults = false;
     }
@@ -1448,7 +1427,7 @@ export class PoliciesComponent implements OnInit {
     }
 
     public onRunTest($event: any) {
-        const {policy, test} = $event;
+        const { policy, test } = $event;
         this.loading = true;
         this.policyEngineService
             .runTest(policy.id, test.id)
@@ -1460,7 +1439,7 @@ export class PoliciesComponent implements OnInit {
     }
 
     public onAddTest($event: any) {
-        const {policy} = $event;
+        const { policy } = $event;
         this.addTest(policy);
     }
 

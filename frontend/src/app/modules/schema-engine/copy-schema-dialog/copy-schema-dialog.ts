@@ -144,7 +144,7 @@ export class CopySchemaDialog {
     }
 
     getPoliciesWithDefault(): Record<string, any>[] {
-        return [this.defaultPolicyOption, ...this.policies];
+        return [...this.policies];
     }
 
     getToolsWithDefault(): Record<string, any>[] {

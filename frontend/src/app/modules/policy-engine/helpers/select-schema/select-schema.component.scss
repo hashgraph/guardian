@@ -58,3 +58,11 @@
     font-weight: 500;
     font-size: 14px;
 }
+
+::ng-deep .p-overlay {
+    min-width: 375px !important;
+}
+
+// .schema-select ::ng-deep .p-dropdown-label {
+
+// }

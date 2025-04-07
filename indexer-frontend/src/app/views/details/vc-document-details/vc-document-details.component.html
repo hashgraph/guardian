@@ -14,6 +14,28 @@
                     @if (target) {
                     <p-tabPanel [header]="'details.overview' | transloco">
                         <app-overview-form [target]="target" [fields]="overviewFields"></app-overview-form>
+                        
+                        @if (geoShapes?.length > 0) {
+                            <div class="map-project-container">
+                                <app-project-locations [geoShapes]="geoShapes"></app-project-locations>
+                                <div class="map-sidebar">
+                                    <p-tabView [activeIndex]="tabIndex" [hidden]="loading">
+                                        <p-tabPanel [header]="'details.json' | transloco">
+                                            <pre [innerHTML]="geoJsonShapes"></pre>
+                                        </p-tabPanel>
+                                        <p-tabPanel [header]="'details.table' | transloco">
+                                            <app-table class="collection-container__table"
+                                                [loading]="loading"
+                                                [columns]="geoShapesColumns"
+                                                [data]="mapPoints"
+                                                [paginator]="false"
+                                            >
+                                            </app-table>
+                                        </p-tabPanel>
+                                    </p-tabView>
+                                </div>
+                            </div>
+                        }
                     </p-tabPanel>
 
                     <p-tabPanel [header]="'details.documents' | transloco">
@@ -60,7 +82,8 @@
                                                             <app-schema-form-view 
                                                                 [schema]="schema"
                                                                 [values]="first._ipfs[0].credentialSubject"
-                                                                [private-fields]="privateFields">
+                                                                [private-fields]="privateFields"
+                                                                [formulas]="formulasResults">
                                                             </app-schema-form-view>
                                                         </div>
                                                     </div>
@@ -119,7 +142,7 @@
                     </p-tabPanel>
 
                     <p-tabPanel [header]="'details.relationships' | transloco">
-                        <div echarts [options]="chartOption" class="relationships-chart" (chartDblClick)="onSelect($event)">
+                        <div echarts [options]="chartOption" class="relationships-chart" (chartClick)="onSelect($event)">
                         </div>
                     </p-tabPanel>
                     }
@@ -136,3 +159,4 @@
         }
     </div>
 </div>
+

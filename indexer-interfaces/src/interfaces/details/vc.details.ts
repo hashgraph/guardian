@@ -53,4 +53,13 @@ export type VC = Message<VCOptions, VCAnalytics>;
 /**
  * VC details
  */
-export type VCDetails = DetailsHistory<VC> & { schema?: any };
+export type VCDetails = DetailsHistory<VC> & {
+    schema?: any,
+    formulasData?: {
+        document: any,
+        policy: any,
+        formulas: any[],
+        relationships: any[],
+        schemas: any[]
+    }
+};

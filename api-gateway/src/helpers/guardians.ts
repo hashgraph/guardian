@@ -49,7 +49,12 @@ import {
     PolicyLabelRelationshipsDTO,
     PolicyLabelDocumentRelationshipsDTO,
     PolicyLabelComponentsDTO,
-    PolicyLabelFiltersDTO
+    PolicyLabelFiltersDTO,
+    FormulaDTO,
+    SchemaRuleOptionsDTO,
+    FormulasOptionsDTO,
+    FormulasDataDTO,
+    FormulaRelationshipsDTO
 } from '#middlewares';
 
 /**
@@ -2953,7 +2958,7 @@ export class Guardians extends NatsService {
      * @param definition
      * @param owner
      *
-     * @returns theme
+     * @returns statistic
      */
     public async updateStatisticDefinition(
         definitionId: string,
@@ -2981,7 +2986,7 @@ export class Guardians extends NatsService {
      * @param definitionId
      * @param owner
      *
-     * @returns Operation Success
+     * @returns statistic
      */
     public async publishStatisticDefinition(definitionId: string, owner: IOwner): Promise<StatisticDefinitionDTO> {
         return await this.sendMessage(MessageAPI.PUBLISH_STATISTIC_DEFINITION, { definitionId, owner });
@@ -3028,7 +3033,7 @@ export class Guardians extends NatsService {
      * @param assessmentId
      * @param owner
      *
-     * @returns Operation Success
+     * @returns assessment
      */
     public async getStatisticAssessment(
         definitionId: string,
@@ -3045,7 +3050,7 @@ export class Guardians extends NatsService {
      * @param assessmentId
      * @param owner
      *
-     * @returns Operation Success
+     * @returns relationships
      */
     public async getStatisticAssessmentRelationships(
         definitionId: string,
@@ -3111,7 +3116,7 @@ export class Guardians extends NatsService {
      *
      * @param ruleId
      * @param owner
-     * @returns Operation Success
+     * @returns schema rule
      */
     public async getSchemaRuleById(ruleId: string, owner: IOwner): Promise<SchemaRuleDTO> {
         return await this.sendMessage(MessageAPI.GET_SCHEMA_RULE, { ruleId, owner });
@@ -3136,7 +3141,7 @@ export class Guardians extends NatsService {
      * @param definition
      * @param owner
      *
-     * @returns theme
+     * @returns schema rule
      */
     public async updateSchemaRule(
         ruleId: string,
@@ -3164,7 +3169,7 @@ export class Guardians extends NatsService {
      * @param ruleId
      * @param owner
      *
-     * @returns Operation Success
+     * @returns schema rule
      */
     public async activateSchemaRule(ruleId: string, owner: IOwner): Promise<SchemaRuleDTO> {
         return await this.sendMessage(MessageAPI.ACTIVATE_SCHEMA_RULE, { ruleId, owner });
@@ -3176,7 +3181,7 @@ export class Guardians extends NatsService {
      * @param ruleId
      * @param owner
      *
-     * @returns Operation Success
+     * @returns schema rule
      */
     public async inactivateSchemaRule(ruleId: string, owner: IOwner): Promise<SchemaRuleDTO> {
         return await this.sendMessage(MessageAPI.INACTIVATE_SCHEMA_RULE, { ruleId, owner });
@@ -3188,9 +3193,9 @@ export class Guardians extends NatsService {
      * @param options
      * @param owner
      *
-     * @returns Operation Success
+     * @returns Schema Rule Data
      */
-    public async getSchemaRuleData(options: any, owner: IOwner): Promise<SchemaRuleDataDTO> {
+    public async getSchemaRuleData(options: SchemaRuleOptionsDTO, owner: IOwner): Promise<SchemaRuleDataDTO[]> {
         return await this.sendMessage(MessageAPI.GET_SCHEMA_RULE_DATA, { options, owner });
     }
 
@@ -3221,7 +3226,6 @@ export class Guardians extends NatsService {
     public async previewSchemaRule(zip: any, owner: IOwner) {
         return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_RULE_FILE, { zip, owner });
     }
-
 
     /**
      * Get Indexer availability
@@ -3258,7 +3262,7 @@ export class Guardians extends NatsService {
      *
      * @param definitionId
      * @param owner
-     * @returns Operation Success
+     * @returns policy label
      */
     public async getPolicyLabelById(definitionId: string, owner: IOwner): Promise<PolicyLabelDTO> {
         return await this.sendMessage(MessageAPI.GET_POLICY_LABEL, { definitionId, owner });
@@ -3283,7 +3287,7 @@ export class Guardians extends NatsService {
      * @param label
      * @param owner
      *
-     * @returns theme
+     * @returns policy label
      */
     public async updatePolicyLabel(
         definitionId: string,
@@ -3311,7 +3315,7 @@ export class Guardians extends NatsService {
      * @param definitionId
      * @param owner
      *
-     * @returns Operation Success
+     * @returns policy label
      */
     public async publishPolicyLabel(definitionId: string, owner: IOwner): Promise<PolicyLabelDTO> {
         return await this.sendMessage(MessageAPI.PUBLISH_POLICY_LABEL, { definitionId, owner });
@@ -3450,7 +3454,7 @@ export class Guardians extends NatsService {
      * @param documentId
      * @param owner
      *
-     * @returns Operation Success
+     * @returns policy label document
      */
     public async getLabelDocument(
         definitionId: string,
@@ -3469,7 +3473,7 @@ export class Guardians extends NatsService {
      * @param documentId
      * @param owner
      *
-     * @returns Operation Success
+     * @returns relationships
      */
     public async getLabelDocumentRelationships(
         definitionId: string,
@@ -3479,5 +3483,133 @@ export class Guardians extends NatsService {
         return await this.sendMessage(MessageAPI.GET_POLICY_LABEL_DOCUMENT_RELATIONSHIPS,
             { definitionId, documentId, owner }
         );
+    }
+
+    /**
+     * Create formula
+     *
+     * @param formula
+     * @param owner
+     *
+     * @returns formula
+     */
+    public async createFormula(formula: FormulaDTO, owner: IOwner): Promise<FormulaDTO> {
+        return await this.sendMessage(MessageAPI.CREATE_FORMULA, { formula, owner });
+    }
+
+    /**
+     * Return formulas
+     *
+     * @param filters
+     * @param owner
+     *
+     * @returns {ResponseAndCount<FormulaDTO>}
+     */
+    public async getFormulas(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<FormulaDTO>> {
+        return await this.sendMessage(MessageAPI.GET_FORMULAS, { filters, owner });
+    }
+
+    /**
+     * Get formula
+     *
+     * @param formulaId
+     * @param owner
+     * @returns formula
+     */
+    public async getFormulaById(formulaId: string, owner: IOwner): Promise<FormulaDTO> {
+        return await this.sendMessage(MessageAPI.GET_FORMULA, { formulaId, owner });
+    }
+
+    /**
+     * Update formula
+     *
+     * @param formulaId
+     * @param definition
+     * @param owner
+     *
+     * @returns formula
+     */
+    public async updateFormula(
+        formulaId: string,
+        formula: FormulaDTO,
+        owner: IOwner
+    ): Promise<FormulaDTO> {
+        return await this.sendMessage(MessageAPI.UPDATE_FORMULA, { formulaId, formula, owner });
+    }
+
+    /**
+     * Delete formula
+     *
+     * @param formulaId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async deleteFormula(formulaId: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_FORMULA, { formulaId, owner });
+    }
+
+    /**
+     * Load formula file for import
+     * @param zip
+     * @param owner
+     */
+    public async importFormula(zip: any, policyId: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.IMPORT_FORMULA_FILE, { zip, policyId, owner });
+    }
+
+    /**
+     * Get formula export file
+     * @param formulaId
+     * @param owner
+     */
+    public async exportFormula(formulaId: string, owner: IOwner) {
+        const file = await this.sendMessage(MessageAPI.EXPORT_FORMULA_FILE, { formulaId, owner }) as any;
+        return Buffer.from(file, 'base64');
+    }
+
+    /**
+     * Get formula info from file
+     * @param zip
+     * @param owner
+     */
+    public async previewFormula(zip: any, owner: IOwner) {
+        return await this.sendMessage(MessageAPI.PREVIEW_FORMULA_FILE, { zip, owner });
+    }
+
+    /**
+     * Get formula relationships
+     *
+     * @param formulaId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async getFormulaRelationships(formulaId: string, owner: IOwner): Promise<FormulaRelationshipsDTO> {
+        return await this.sendMessage(MessageAPI.GET_FORMULA_RELATIONSHIPS, { formulaId, owner });
+    }
+
+    /**
+     * Get Formulas Data
+     *
+     * @param options
+     * @param owner
+     *
+     * @returns Formulas Data
+     */
+    public async getFormulasData(options: FormulasOptionsDTO, owner: IOwner): Promise<FormulasDataDTO> {
+        return await this.sendMessage(MessageAPI.GET_FORMULAS_DATA, { options, owner });
+    }
+
+    /**
+     * Publish Formula
+     *
+     * @param formulaId
+     * @param owner
+     *
+     * @returns statistic
+     */
+    public async publishFormula(formulaId: string, owner: IOwner): Promise<FormulaDTO> {
+        return await this.sendMessage(MessageAPI.PUBLISH_FORMULA, { formulaId, owner });
     }
 }

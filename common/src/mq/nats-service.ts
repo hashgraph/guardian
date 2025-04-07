@@ -1,12 +1,13 @@
-import { NatsConnection, headers, Subscription } from 'nats';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { ZipCodec } from './zip-codec.js';
-import { IMessageResponse } from '../models/index.js';
+import {NatsConnection, headers, Subscription} from 'nats';
+import {GenerateUUIDv4} from '@guardian/interfaces';
+import {ZipCodec} from './zip-codec.js';
+import {IMessageResponse} from '../models/index.js';
 
 type CallbackFunction = (body: any, error?: string, code?: number) => void;
 
 class MessageError extends Error {
     public code: number;
+
     constructor(message: any, code?: number) {
         super(message);
         this.code = code;
@@ -107,6 +108,7 @@ export abstract class NatsService {
      */
     public subscribe(subject: string, cb: Function): Subscription {
         const sub = this.connection.subscribe(subject);
+
         const fn = async (_sub: Subscription) => {
             for await (const m of _sub) {
                 try {
@@ -124,19 +126,26 @@ export abstract class NatsService {
      * Send message
      * @param subject
      * @param data
+     * @param isResponseCallback
+     * @param externalMessageId
      */
-    public sendMessage<T>(subject: string, data?: unknown): Promise<T> {
-        const messageId = GenerateUUIDv4();
+    public sendMessage<T>(subject: string, data?: unknown, isResponseCallback: boolean = true, externalMessageId?: string): Promise<T> {
+        const messageId = externalMessageId ?? GenerateUUIDv4();
+
         return new Promise(async (resolve, reject) => {
             const head = headers();
             head.append('messageId', messageId);
-            this.responseCallbacksMap.set(messageId, (body: T, error?: string, code?: number) => {
-                if (error) {
-                    reject(new MessageError(error, code));
-                } else {
-                    resolve(body);
-                }
-            })
+            if (isResponseCallback) {
+                this.responseCallbacksMap.set(messageId, (body: T, error?: string, code?: number) => {
+                    if (error) {
+                        reject(new MessageError(error, code));
+                    } else {
+                        resolve(body);
+                    }
+                })
+            } else {
+                resolve(null);
+            }
 
             this.connection.publish(subject, await this.codec.encode(data), {
                 reply: this.replySubject,
@@ -152,12 +161,18 @@ export abstract class NatsService {
      * @param data
      */
     public sendMessageWithTimeout<T>(subject: string, timeout: number, data?: unknown): Promise<T> {
-        return Promise.race([
-            this.sendMessage<T>(subject, data),
-            new Promise<T>((_, reject) => {
-                setTimeout(() => { reject(new Error('Timeout exceed')) }, timeout)
-            })
-        ])
+        const messageId = GenerateUUIDv4();
+
+        const messagePromise = this.sendMessage<T>(subject, data, true, messageId);
+
+        const timeoutPromise = new Promise<T>((_, reject) => {
+            setTimeout(() => {
+                this.responseCallbacksMap.delete(messageId);
+                reject(new Error('Timeout exceed'));
+            }, timeout);
+        });
+
+        return Promise.race([messagePromise, timeoutPromise]);
     }
 
     /**
@@ -206,7 +221,7 @@ export abstract class NatsService {
                     }
                     // head.append('rawMessage', isRaw);
                     if (!noRespond) {
-                        msg.respond(await this.codec.encode(await cb(await this.codec.decode(msg.data), msg.headers)), { headers: head });
+                        msg.respond(await this.codec.encode(await cb(await this.codec.decode(msg.data), msg.headers)), {headers: head});
                     } else {
                         cb(await this.codec.decode(msg.data), msg.headers);
                     }

@@ -31,9 +31,9 @@ Please note that it would take minimum 6 hours to load complete Indexer data.
 * _Registries_, _Methodologies_, _Total Documents_, _Total Issuance_. All cards are clickable. Also there is an ability to check charts with count and date.
 * Project Locations section : shows locations of projects on the world map, all points are clickable.
 
-![image4.png](<../../.gitbook/assets/0 (14).png>)
+![](<../../.gitbook/assets/0 (14).png>)
 
-![image8.png](<../../.gitbook/assets/1 (16).png>)
+![](<../../.gitbook/assets/1 (16).png>)
 
 ### Indexer UI sections:&#x20;
 
@@ -77,7 +77,7 @@ Majority of the grids provide capability to search by keyword filter, which has 
 
 For example, searching for. schema by typing ‘Project’ and ‘Description’ will find all schemas which contain ‘Project’ and ‘Description’ strings.
 
-![image10.png](<../../.gitbook/assets/3 (15).png>)
+![](<../../.gitbook/assets/3 (15).png>)
 
 Each grid includes special details page:
 
@@ -85,16 +85,16 @@ Each grid includes special details page:
   * Overview - a common information.
   * Activity - activity of SR (VCs, VPs, Policies, Roles, Tools, Modules, Tokens, Users). All activity cards are clickable and it will navigate the user to the appropriate grid with correctly applied filters.
 
-![image6.png](<../../.gitbook/assets/4 (13).png>)
+![](<../../.gitbook/assets/4 (13).png>)
 
 * Raw Data - raw message data.
 
-![image11.png](<../../.gitbook/assets/5 (16).png>)
+![](<../../.gitbook/assets/5 (16).png>)
 
 * Policy details page have the following tabs:
   * Overview - general information with link to Standard Registry.
 
-![image7.png](<../../.gitbook/assets/6 (15).png>)
+![](<../../.gitbook/assets/6 (15).png>)
 
 * Activity - activity in policy (VCs, VPs, Roles, Creating schemas). All activity cards are clickable and it will navigate you to the appropriate table with necessary filters.
 * Raw Data - raw message data.
@@ -116,7 +116,7 @@ Schema details has the following tabs:
 * Document - schema document data.
 * Tree - schema tree. All nodes here are clickable, upon clicking they open the associated schema pages.
 
-![image1.png](<../../.gitbook/assets/7 (15).png>)
+![](<../../.gitbook/assets/7 (15).png>)
 
 * Activity - schema activity (VCs, VPs)
 * Raw Data - raw message data.
@@ -143,12 +143,16 @@ VC details has the following tabs:
 * Overview - a common information with link to policy.
 * Document - VC document data. It can be represented in two forms JSON and Document form.
 
-![image2.png](<../../.gitbook/assets/8 (16).png>)
+![](<../../.gitbook/assets/8 (16).png>)
+
+<figure><img src="../../.gitbook/assets/image (801).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../.gitbook/assets/image (802).png" alt=""><figcaption></figcaption></figure>
 
 * History - document history since it was created.
 * Relationships - document relationships with links to policy, roles, schemas, standard registry, other documents.
 
-![image9.png](<../../.gitbook/assets/9 (14).png>)
+<figure><img src="../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
 
 * Raw Data - raw message data.
 
@@ -159,7 +163,7 @@ VP details includes following tabs:
 * History - document history since it was created.
 * Relationships - document relationships with links to policy, roles, schemas, standard registry, other documents.
 
-![image5.png](<../../.gitbook/assets/10 (15).png>)
+![](<../../.gitbook/assets/10 (15).png>)
 
 * Raw Data - raw message data.
 
@@ -167,6 +171,7 @@ NFT details includes following tabs:
 
 * Overview - a common information.
 * History - NFT transactions history since it was minted
+* Labels - Labels involved in NFT.
 * Raw Data - raw NFT data.
 
 Topic details includes following tabs:
@@ -181,13 +186,27 @@ Synchronization of all entity data starts one time per hour, but it can be chang
 
 For documents (VC, VP, DID, Schema) with local CIDs (i.e. Such documents were uploaded onto local IPFS nodes) Guardian attempts to automatically download the file when user attempts to open in in the Indexer UI. This may not be possible if the local node is ‘closed’ for outside requests. For such cases there is also an option for the user to manually attempt to download from the local IPFS node. This can be retried unlimited number of times, for situations when local node administrators open access to the node\[s] at a later date.
 
-<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Note:** This functionality requires the correct setting for the IPFS\_GATEWAY configuration option in the `indexer-service .env` file:
 
 **For example:** `IPFS_GATEWAY="https://ipfs.io/ipfs/${cid}"`
 {% endhint %}
+
+### 1.2 Priority Loading Data Queue:
+
+As Hedera network have lots of data available, it would take some time to load it completely in indexer, hence, now we would now be able to prioritize the documents/topics/policies/tokens.
+
+<figure><img src="../../.gitbook/assets/image (829).png" alt=""><figcaption></figcaption></figure>
+
+We would be able to add it to the priority queue by clicking on the checkbox and adding it to the queue as shown below:
+
+<figure><img src="../../.gitbook/assets/image (830).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../.gitbook/assets/image (831).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../.gitbook/assets/image (832).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Demo Video
 

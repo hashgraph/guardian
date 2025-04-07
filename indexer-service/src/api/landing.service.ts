@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { MessagePattern } from '@nestjs/microservices';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import {
     IndexerMessageAPI,
     MessageResponse,
@@ -7,11 +7,23 @@ import {
     DataBaseHelper,
     ProjectCoordinates,
     Analytics,
+    Message,
+    MessageCache,
+    MessageError,
+    TopicCache,
+    TokenCache,
 } from '@indexer/common';
 import {
+    DataLoadingProgress,
+    DataPriorityLoadingProgress,
     LandingAnalytics as IAnalytics,
     ProjectCoordinates as IProjectCoordinates,
+    MessageType,
+    Page,
+    PageFilters,
+    PriorityStatus,
 } from '@indexer/interfaces';
+import { parsePageParams } from '../utils/parse-page-params.js';
 
 @Controller()
 export class LandingService {
@@ -31,6 +43,8 @@ export class LandingService {
                     'methodologies',
                     'projects',
                     'totalIssuance',
+                    'totalSerialized',
+                    'totalFungible',
                     'date',
                 ],
             }
@@ -39,10 +53,12 @@ export class LandingService {
     }
 
     @MessagePattern(IndexerMessageAPI.GET_PROJECTS_COORDINATES)
-    async getProjects(): Promise<AnyResponse<any>> {
+    async getProjects(): Promise<AnyResponse<IProjectCoordinates[]>> {
         const em = DataBaseHelper.getEntityManager();
-        return new MessageResponse<IProjectCoordinates[]>(
-            await em.findAll(ProjectCoordinates)
-        );
+        const coordinates: IProjectCoordinates[] = (await em.find(
+            ProjectCoordinates,
+            {}
+        )) as any;
+        return new MessageResponse<IProjectCoordinates[]>(coordinates);
     }
 }

@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, SimpleChanges, } from '@angular/core';
 import { DocumentValidators, Schema, SchemaRuleValidateResult } from '@guardian/interfaces';
 import { forkJoin, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { FormulasService } from 'src/app/services/formulas.service';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaService } from 'src/app/services/schema.service';
+import { FormulasTree } from '../../formulas/models/formula-tree';
 
 /**
  * View document
@@ -17,6 +19,7 @@ import { SchemaService } from 'src/app/services/schema.service';
 export class DocumentViewComponent implements OnInit {
     @Input('getByUser') getByUser: boolean = false;
     @Input('document') document: any;
+    @Input('formulas') formulas: FormulasTree | null;
     @Input('hide-fields') hideFields!: { [x: string]: boolean };
     @Input('type') type!: 'VC' | 'VP';
     @Input('schema') schema!: any;
@@ -37,11 +40,14 @@ export class DocumentViewComponent implements OnInit {
     public schemaMap: { [x: string]: Schema | null } = {};
     public rules: DocumentValidators;
     public rulesResults: SchemaRuleValidateResult;
+    public formulasResults: any | null;
+
     private destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
         private schemaService: SchemaService,
         private schemaRulesService: SchemaRulesService,
+        private formulasService: FormulasService,
         private ref: ChangeDetectorRef
     ) {
 
@@ -80,9 +86,11 @@ export class DocumentViewComponent implements OnInit {
                 this.subjects.push(this.document.verifiableCredential);
             }
         }
-        if (this.type === 'VC') {
-            this.loadSchema();
-        }
+        this.loadData();
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        this.formulasResults = this.formulas?.getFields(this.schemaId);
     }
 
     ngOnDestroy() {
@@ -90,60 +98,100 @@ export class DocumentViewComponent implements OnInit {
         this.destroy$.unsubscribe();
     }
 
-    private loadSchema() {
-        for (const credentialSubject of this.subjects) {
-            const type: string = credentialSubject.type;
-            if (!this.schemaMap[type]) {
-                this.schemaMap[type] = null;
-            }
-        }
-        const requests: any[] = [];
-        for (const [type, schema] of Object.entries(this.schemaMap)) {
-            if (!schema) {
-                if (this.getByUser) {
-                    requests.push(
-                        this.schemaService
-                            .getSchemasByTypeAndUser(type)
-                            .pipe(takeUntil(this.destroy$))
-                    )
-                } else {
-                    requests.push(
-                        this.schemaService
-                            .getSchemasByType(type)
-                            .pipe(takeUntil(this.destroy$))
-                    )
+    private loadData() {
+        const requests: any = {};
+
+        //Load Schemas
+        if (this.type === 'VC') {
+            const schemas: any[] = [];
+            for (const credentialSubject of this.subjects) {
+                const type: string = credentialSubject.type;
+                if (!this.schemaMap[type]) {
+                    this.schemaMap[type] = null;
                 }
+                if (!this.schemaId) {
+                    this.schemaId = `#${type}`;
+                }
+            }
+            for (const [type, schema] of Object.entries(this.schemaMap)) {
+                if (!schema) {
+                    if (this.getByUser) {
+                        schemas.push(
+                            this.schemaService
+                                .getSchemasByTypeAndUser(type)
+                                .pipe(takeUntil(this.destroy$))
+                        )
+                    } else {
+                        schemas.push(
+                            this.schemaService
+                                .getSchemasByType(type)
+                                .pipe(takeUntil(this.destroy$))
+                        )
+                    }
+                }
+            }
+            for (let i = 0; i < schemas.length; i++) {
+                requests[i] = schemas[i];
             }
         }
 
-        requests.push(
-            this.schemaRulesService
+        //Load Rules
+        if (this.type === 'VC') {
+            requests.rules = this.schemaRulesService
                 .getSchemaRuleData({
                     policyId: this.policyId,
                     schemaId: this.schemaId,
                     documentId: this.documentId
                 })
-                .pipe(takeUntil(this.destroy$))
-        )
+                .pipe(takeUntil(this.destroy$));
+        }
+
+        //Load Formulas
+        if (this.documentId) {
+            requests.formulas = this.formulasService
+                .getFormulasData({
+                    policyId: this.policyId,
+                    schemaId: this.schemaId,
+                    documentId: this.documentId
+                })
+                .pipe(takeUntil(this.destroy$));
+        }
+
 
         this.loading = true;
-        forkJoin(requests).subscribe((results: any[]) => {
-            const rules = results.pop();
-            this.rules = new DocumentValidators(rules);
-            for (const result of results) {
-                if (result) {
+        forkJoin(requests).subscribe((results: any) => {
+            //Load Rules
+            if (results.rules) {
+                const rules = results.rules;
+                this.rules = new DocumentValidators(rules);
+                this.rulesResults = this.rules.validateVC(this.schemaId, this.document);
+                delete results.rules;
+            }
+
+            //Load Formulas
+            if (results.formulas) {
+                const formulas = results.formulas;
+                this.formulas = FormulasTree.from(formulas);
+                this.formulas?.setDocuments(this.document);
+                this.formulasResults = this.formulas?.getFields(this.schemaId);
+                delete results.formulas;
+            }
+
+            //Load Schemas
+            for (const schema of Object.values<any>(results)) {
+                if (schema) {
                     try {
-                        let type = (result.iri || '');
+                        let type = (schema.iri || '');
                         if (type.startsWith('#')) {
                             type = type.substr(1);
                         }
-                        this.schemaMap[type] = new Schema(result);
+                        this.schemaMap[type] = new Schema(schema);
                     } catch (error) {
                         console.error(error);
                     }
                 }
             }
-            this.rulesResults = this.rules.validateVC(this.schemaId, this.document);
+
             setTimeout(() => {
                 this.loading = false;
                 this.ref.detectChanges();
@@ -152,6 +200,7 @@ export class DocumentViewComponent implements OnInit {
             this.loading = false;
             this.ref.detectChanges();
         });
+
     }
 
     getItemsPage(items: any[]) {

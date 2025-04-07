@@ -221,7 +221,7 @@
     min-width: 25px;
     margin-left: 6px;
     border-radius: 6px;
-    padding: 1px;
+    padding: 2px;
 }
 
 .btn-icon-import,
@@ -259,8 +259,7 @@
     cursor: not-allowed;
 }
 
-.btn-icon-edit i,
-.btn-icon-edit svg {
+.btn-icon-edit i {
     font-size: 30px;
     position: absolute;
     left: 0;
@@ -705,12 +704,14 @@
 .status-actions-dropdown {
     ::ng-deep {
         .p-dropdown {
-            height: 28px;
+            height: 30px;
             border: 1px solid var(--color-secondary);
+            outline: none !important;
+            box-shadow: none !important;
         }
 
         .p-inputtext {
-            padding: 3px 0 0 10px;
+            padding: 5px 0 0 10px;
             color: inherit;
             font-family: Inter, sans-serif;
             font-size: 14px;
@@ -991,7 +992,7 @@
 
 .cell-description {
     min-width: 150px;
-    max-width: calc(100vw - 970px);
+    max-width: calc(100vw - 1080px);
 }
 
 .submenu-arrow {

@@ -9,7 +9,9 @@
                 [disabled]="readonly"
                 (onChange)="onSave()"
                 placeholder="Select a data type"
-                [options]="dataTypeOptions">
+                [options]="dataTypeOptions"
+                [appendTo]="'body'"
+            >
             </p-dropdown>
         </td>
     </tr>
@@ -26,7 +28,9 @@
                 [disabled]="readonly"
                 (onChange)="onSave()"
                 placeholder="Select a data type"
-                [options]="dataSourceOptions">
+                [options]="dataSourceOptions"
+                [appendTo]="'body'"
+            >
             </p-dropdown>
         </td>
     </tr>
@@ -41,7 +45,9 @@
                     [disabled]="readonly"
                     (onChange)="selectTopic($event)"
                     placeholder="Select a topic"
-                    [options]="getDropdownTopics()">
+                    [options]="getDropdownTopics()"
+                    [appendTo]="'body'"
+                >
                 </p-dropdown>
             </td>
         </tr>
@@ -55,7 +61,9 @@
                     [disabled]="readonly"
                     (onChange)="onSave()"
                     placeholder="Select topic owner"
-                    [options]="topicOwnerOptions">
+                    [options]="topicOwnerOptions"
+                    [appendTo]="'body'"
+                >
                 </p-dropdown>
             </td>
         </tr>

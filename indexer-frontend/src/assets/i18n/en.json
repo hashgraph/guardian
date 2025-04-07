@@ -8,7 +8,9 @@
         "registries": "Registries",
         "methodologies": "Methodologies",
         "projects": "Total Documents",
-        "total_issuance": "Total Issuance",
+        "projects_issuance": "Projects Issuance",
+        "total_serialized": "Total Serialized",
+        "total_fungible": "Total Fungible",
         "x": "Date and time",
         "y": "Count"
     },
@@ -39,12 +41,25 @@
         "label_documents": "Label Documents (VPs)",
         "dids": "Decentralized Identifiers (DIDs)",
         "others": "Others",
+        "priority_queue": "Priority Update Queue",
         "search_placeholder": "Search by keyword",
         "statistics": "Statistics",
-        "labels": "Labels"
+        "labels": "Labels",
+        "formulas": "Formulas",
+        "loading_progress": "Loading data...",
+        "left": "left"
     },
     "home": {
         "header": "Indexer"
+    },
+    "priority_queue": {
+        "open_priority_queue": "Open Priority Update Queue",
+        "search_placeholder": "Search by Topic ID",
+        "enter_topic_id": "Enter Topic ID",
+        "add_to_queue": "Add Topic ID to Priority Update Queue",
+        "already_in_queue": "Already in Priority Update Queue",
+        "add_to_queue_success": "Added to priority queue.",
+        "add_to_queue_error": "This topic ID not found or already in queue. Please try again."
     },
     "filter": {
         "placeholder": "placeholder",
@@ -82,6 +97,17 @@
         "registrantTopicId": "User Topic Id",
         "open": "Open",
         "target": "Target",
+        "sr": "Registry",
+        "policy": "Policy",
+        "date": "Date",
+        "createdTimestamp": "Created Date",
+        "modifiedTimestamp": "Modified Date",
+        "coordinates": "Coordinates",
+        "prioritize": "Prioritize",
+        "send_to_priority": "Send to Priority Update Queue",
+        "lastUpdate": "Last Update",
+        "entity_id": "Entity Id",
+        "entity_type": "Entity Type",
         "filter": {
             "policy": "Policy",
             "schema": "Schema",
@@ -112,6 +138,8 @@
         "relationships": "Relationships",
         "raw_data": "Raw data",
         "labels": "Labels",
+        "formulas": "Formulas",
+        "table": "Table",
         "tabs": {
             "activity": "Activity"
         },
@@ -128,7 +156,8 @@
             "tools": "Tools",
             "modules": "Modules",
             "vcs": "Verifiable Credentials",
-            "vps": "Verifiable Presentations"
+            "vps": "Verifiable Presentations",
+            "formulas": "Formulas"  
         },
         "hedera": {
             "topic_id": "Topic Id",
@@ -243,6 +272,25 @@
                 "owner": "Owner"
             }
         },
+        "formula": {
+            "header": "Formula",
+            "tabs": {
+                "overview": "Overview",
+                "view": "View",
+                "document": "Document",
+                "raw_data": "Raw data",
+                "formulas": "Formulas",
+                "files": "Files"
+            },
+            "overview": {
+                "topic_id": "Topic Id",
+                "policy_topic_id": "Policy Topic Id",
+                "name": "Name",
+                "description": "Description",
+                "owner": "Owner",
+                "policy": "Policy"
+            }
+        },
         "statistic": {
             "header": "Statistic",
             "tabs": {
@@ -314,7 +362,9 @@
             "overview": {
                 "token_id": "Token Id",
                 "serial_number": "Serial Number",
-                "metadata": "Metadata"
+                "metadata": "Metadata",
+                "policy": "Policy",
+                "sr": "Standard Registry"
             }
         },
         "token": {

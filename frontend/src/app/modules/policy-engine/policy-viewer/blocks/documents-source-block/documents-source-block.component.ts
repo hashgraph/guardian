@@ -487,4 +487,21 @@ export class DocumentsSourceBlockComponent implements OnInit {
     parseArrayValue(value: string | string[]): string {
         return Array.isArray(value) ? value.join(', ') : value;
     }
+
+    hasHistory(): boolean {
+        return !!this.documents?.some(doc => doc.history && doc.history.length > 0);
+    }
+
+    onRowClick(element: any) {
+        if (element.history && element.history.length) {
+            this.statusDetailed = this.statusDetailed === element ? null : element;
+        }
+    }
+
+    getClass(type: string): string {
+        if(type === 'text') {
+            return 'text-container';
+        }
+        return ''
+    }
 }

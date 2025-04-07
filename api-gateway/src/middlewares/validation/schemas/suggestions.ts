@@ -1,5 +1,5 @@
 import { ConfigType } from '@guardian/interfaces';
-import { ApiProperty } from '@nestjs/swagger';
+import {ApiProperty, getSchemaPath} from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsEnum, IsInt, IsNotEmpty, IsString } from 'class-validator';
 
@@ -9,7 +9,14 @@ export class SuggestionsInputDTO {
     @IsNotEmpty()
     blockType: string;
 
-    @ApiProperty({ type: 'object', isArray: true, nullable: true })
+    @ApiProperty({
+        type: 'array',
+        isArray: true,
+        nullable: true,
+        items: {
+            $ref: getSchemaPath(SuggestionsInputDTO)
+        }
+    })
     children?: SuggestionsInputDTO[];
 }
 

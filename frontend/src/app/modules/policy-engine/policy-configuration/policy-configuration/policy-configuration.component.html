@@ -3,11 +3,11 @@
         Component doesn't exist
     </div>
 
-    <policy-settings *ngIf="openSettings" (update)="onChangeSettings($event)"></policy-settings>
-    <search-blocks *ngIf="blockSearchData" class="policy-configuration" [value]="blockSearchData"
-                   (action)="onSearchAction($event)"></search-blocks>
+    <policy-settings (update)="onChangeSettings($event)" *ngIf="openSettings"></policy-settings>
+    <search-blocks (action)="onSearchAction($event)" *ngIf="blockSearchData" [value]="blockSearchData"
+        class="policy-configuration"></search-blocks>
 
-    <div *ngIf="isModuleValid" class="policy-configuration" [attr.readonly]="readonly">
+    <div *ngIf="isModuleValid" [attr.readonly]="readonly" class="policy-configuration">
         <div class="top-toolbar">
             <ng-container *ngIf="rootType === 'Policy'">
                 <div (click)="backToPolicies()" class="top-toolbar-btn all-status" title="Back">
@@ -15,40 +15,35 @@
                     <span>Back</span>
                 </div>
 
-                <div class="top-toolbar-btn readonly-status" (click)="savePolicy()" title="Save Policy">
+                <div (click)="savePolicy()" class="top-toolbar-btn readonly-status" title="Save Policy">
                     <i class="pi pi-save"></i>
                     <span>Save</span>
                 </div>
 
-                <div
-                    *ngIf="user.POLICIES_POLICY_CREATE"
-                    class="top-toolbar-btn all-status"
-                    [class.readonly-status]="policyTemplate.isDemo"
-                    (click)="saveAsPolicy()"
+                <div (click)="saveAsPolicy()" *ngIf="user.POLICIES_POLICY_CREATE"
+                    [class.readonly-status]="policyTemplate.isDemo" class="top-toolbar-btn all-status"
                     title="Save Policy">
                     <i class="pi pi-save"></i>
                     <span>Save As</span>
                 </div>
 
-                <div class="top-toolbar-btn readonly-status wizard-btn" (click)="openPolicyWizardDialog()"
-                     title="Policy Wizard">
+                <div (click)="openPolicyWizardDialog()" class="top-toolbar-btn readonly-status wizard-btn"
+                    title="Policy Wizard">
                     <svg-icon src="/assets/images/icons/auto_awesome.svg" svgClass="icon-style-auto_awesome"></svg-icon>
                     <span>Wizard</span>
                 </div>
 
                 <div class="delimiter"></div>
-                <div *ngIf="policyTemplate.isDraft" class="top-toolbar-group all-status"
-                     (click)="publishMenu.toggle($event)"
-
-                >
+                <div (click)="publishMenu.toggle($event)" *ngIf="policyTemplate.isDraft"
+                    class="top-toolbar-group all-status">
                     <i class="pi pi-pencil edit-color"></i>
                     <span class="edit-color">Draft</span>
                     <div class="expand-group">
                         <i class="pi pi-sort-down-fill"></i>
                     </div>
                 </div>
-                <div *ngIf="policyTemplate.isDryRun" class="top-toolbar-group all-status" style="width: 80px"
-                     (click)="dryRunMenu.toggle($event)">
+                <div (click)="dryRunMenu.toggle($event)" *ngIf="policyTemplate.isDryRun"
+                    class="top-toolbar-group all-status" style="width: 80px">
                     <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build"></svg-icon>
                     <span class="dry-run-color font-size-xs">
                         In Dry Run
@@ -70,15 +65,15 @@
 
                 <div class="delimiter"></div>
 
-                <div *ngIf="policyTemplate.isDraft" class="top-toolbar-btn all-status" (click)="validationPolicy()"
-                     title="Validation Policy" [attr.errors-count]="errorsCount" [attr.readonly]="!isTree">
+                <div (click)="validationPolicy()" *ngIf="policyTemplate.isDraft" [attr.errors-count]="errorsCount"
+                    [attr.readonly]="!isTree" class="top-toolbar-btn all-status" title="Validation Policy">
                     <i class="pi pi-check-circle"></i>
                     <span>Validation</span>
                     <div *ngIf="errorsCount>0" class="error-count">{{ errorsCount }}</div>
                 </div>
 
-                <div *ngIf="policyTemplate.isRun" class="top-toolbar-btn all-status"
-                     [routerLink]="['/policy-viewer', policyId]">
+                <div *ngIf="policyTemplate.isRun" [routerLink]="['/policy-viewer', policyId]"
+                    class="top-toolbar-btn all-status">
                     <i class="pi pi-angle-double-right"></i>
                     <span>Go</span>
                 </div>
@@ -88,30 +83,25 @@
 
 
             <ng-container *ngIf="rootType === 'Module'">
-                <div (click)="backToModules()" class="top-toolbar-btn all-status" title="Back">
-                    <i class="pi pi-arrow-left"></i>
-                    <span>Back</span>
-                </div>
+                <!--                <div (click)="backToModules()" class="top-toolbar-btn all-status" title="Back">-->
+                <!--                    <i class="pi pi-arrow-left"></i>-->
+                <!--                    <span>Back</span>-->
+                <!--                </div>-->
 
-                <div class="top-toolbar-btn readonly-status" (click)="updateModule()" title="Save Module">
+                <div (click)="updateModule()" class="top-toolbar-btn readonly-status" title="Save Module">
                     <i class="pi pi-save"></i>
                     <span>Save</span>
                 </div>
 
-                <div
-                    *ngIf="user.MODULES_MODULE_CREATE"
-                    class="top-toolbar-btn all-status"
-                    (click)="saveAsModule()"
+                <div (click)="saveAsModule()" *ngIf="user.MODULES_MODULE_CREATE" class="top-toolbar-btn all-status"
                     title="Save Module">
                     <i class="pi pi-save"></i>
                     <span>Save As</span>
                 </div>
 
                 <div class="delimiter"></div>
-                <div
-                    *ngIf="moduleTemplate.isDraft && user.MODULES_MODULE_REVIEW"
-                    class="top-toolbar-group all-status"
-                    (click)="publishMenu2.toggle($event)">
+                <div (click)="publishMenu2.toggle($event)" *ngIf="moduleTemplate.isDraft && user.MODULES_MODULE_REVIEW"
+                    class="top-toolbar-group all-status">
                     <i class="pi pi-pencil"></i>
                     <span class="edit-color">Draft</span>
                     <div class="expand-group">
@@ -124,14 +114,8 @@
                     <span class="publish-color">Published</span>
                 </div>
 
-                <div
-                    *ngIf="moduleTemplate.isDraft"
-                    class="top-toolbar-btn all-status"
-                    (click)="validationModule()"
-                    title="Validation Module"
-                    [attr.errors-count]="errorsCount"
-                    [attr.readonly]="!isTree"
-                >
+                <div (click)="validationModule()" *ngIf="moduleTemplate.isDraft" [attr.errors-count]="errorsCount"
+                    [attr.readonly]="!isTree" class="top-toolbar-btn all-status" title="Validation Module">
                     <i class="pi pi-check-circle"></i>
                     <span>Validation</span>
                     <div *ngIf="errorsCount>0" class="error-count">{{ errorsCount }}</div>
@@ -141,30 +125,25 @@
             </ng-container>
 
             <ng-container *ngIf="rootType === 'Tool'">
-                <div (click)="backToTools()" class="top-toolbar-btn all-status" title="Back">
-                    <i class="pi pi-arrow-left"></i>
-                    <span>Back</span>
-                </div>
+                <!--                <div (click)="backToTools()" class="top-toolbar-btn all-status" title="Back">-->
+                <!--                    <i class="pi pi-arrow-left"></i>-->
+                <!--                    <span>Back</span>-->
+                <!--                </div>-->
 
-                <div class="top-toolbar-btn readonly-status" (click)="updateTool()" title="Save Tool">
+                <div (click)="updateTool()" class="top-toolbar-btn readonly-status" title="Save Tool">
                     <i class="pi pi-save"></i>
                     <span>Save</span>
                 </div>
 
-                <div
-                    *ngIf="user.TOOLS_TOOL_CREATE"
-                    class="top-toolbar-btn readonly-status"
-                    (click)="saveAsTool()"
+                <div (click)="saveAsTool()" *ngIf="user.TOOLS_TOOL_CREATE" class="top-toolbar-btn readonly-status"
                     title="Save Tool">
                     <i class="pi pi-save"></i>
                     <span>Save As</span>
                 </div>
 
                 <div class="delimiter"></div>
-                <div
-                    *ngIf="toolTemplate.isDraft && user.TOOLS_TOOL_REVIEW"
-                    class="top-toolbar-group all-status"
-                    (click)="publishMenu3.toggle($event)">
+                <div (click)="publishMenu3.toggle($event)" *ngIf="toolTemplate.isDraft && user.TOOLS_TOOL_REVIEW"
+                    class="top-toolbar-group all-status">
                     <i class="pi pi-pencil edit-color"></i>
                     <span class="edit-color">Draft</span>
                     <div class="expand-group">
@@ -177,8 +156,8 @@
                     <span class="publish-color">Published</span>
                 </div>
 
-                <div *ngIf="toolTemplate.isDraft" class="top-toolbar-btn all-status" (click)="validationTool()"
-                     title="Validation Module" [attr.errors-count]="errorsCount" [attr.readonly]="!isTree">
+                <div (click)="validationTool()" *ngIf="toolTemplate.isDraft" [attr.errors-count]="errorsCount"
+                    [attr.readonly]="!isTree" class="top-toolbar-btn all-status" title="Validation Module">
                     <i class="pi pi-check-circle"></i>
                     <span>Validation</span>
                     <div *ngIf="errorsCount>0" class="error-count">{{ errorsCount }}</div>
@@ -189,25 +168,24 @@
 
             <ng-container *ngIf="!readonly && isTree">
                 <ng-container>
-                    <div [attr.storage-active]="storage.isUndo" class="top-toolbar-btn readonly-status"
-                         (click)="undoPolicy()" title="Undo">
+                    <div (click)="undoPolicy()" [attr.storage-active]="storage.isUndo"
+                        class="top-toolbar-btn readonly-status" title="Undo">
                         <i class="pi pi-undo"></i>
                         <span>Undo</span>
                     </div>
 
-                    <div [attr.storage-active]="storage.isRedo" class="top-toolbar-btn readonly-status"
-                         (click)="redoPolicy()" title="Redo">
+                    <div (click)="redoPolicy()" [attr.storage-active]="storage.isRedo"
+                        class="top-toolbar-btn readonly-status" title="Redo">
                         <i class="pi pi-refresh"></i>
                         <span>Redo</span>
                     </div>
-                    <div class="top-toolbar-btn top-toolbar-btn__suggestions" (click)="onSuggestionsClick()"
-                         title="Suggestions"
-                         [ngClass]="{'btn-mode-active': isSuggestionsEnabled}">
+                    <div (click)="onSuggestionsClick()" [ngClass]="{'btn-mode-active': isSuggestionsEnabled}"
+                        class="top-toolbar-btn top-toolbar-btn__suggestions" title="Suggestions">
                         <svg-icon src="/assets/images/icons/assistant.svg" svgClass="icon-style-assistant"></svg-icon>
                         <span>Suggestions</span>
                     </div>
-                    <div class="top-toolbar-btn" (click)="copyBlocksMode=!copyBlocksMode" title="Copy Mode"
-                         [ngClass]="{'btn-mode-active': copyBlocksMode}">
+                    <div (click)="copyBlocksMode=!copyBlocksMode" [ngClass]="{'btn-mode-active': copyBlocksMode}"
+                        class="top-toolbar-btn" title="Copy Mode">
                         <i class="pi pi-copy"></i>
                         <span>Copy Mode</span>
                     </div>
@@ -226,19 +204,16 @@
                     openType !== 'Sub' &&
                     !currentBlock?.isModule &&
                     !currentBlock?.isRoot">
-                    <div class="top-toolbar-btn readonly-status long_title_i" title="Create New Module"
-                         (click)="onCreateModule()">
+                    <div (click)="onCreateModule()" class="top-toolbar-btn readonly-status long_title_i"
+                        title="Create New Module">
                         <i class="pi pi-folder-plus"></i>
                         <span>Create New Module</span>
                     </div>
 
-                    <div
-                        *ngIf="user.MODULES_MODULE_CREATE"
-                        class="top-toolbar-btn readonly-status long_title_svg"
-                        title="Convert to Module"
-                        (click)="onConvertToModule()">
+                    <div (click)="onConvertToModule()" *ngIf="user.MODULES_MODULE_CREATE"
+                        class="top-toolbar-btn readonly-status long_title_svg" title="Convert to Module">
                         <svg-icon src="/assets/images/icons/move_to_inbox.svg"
-                                  svgClass="icon-style-move_to_inbox"></svg-icon>
+                            svgClass="icon-style-move_to_inbox"></svg-icon>
                         <span>Convert to Module</span>
                     </div>
 
@@ -246,14 +221,14 @@
                 </ng-container>
 
                 <ng-container *ngIf="rootType === 'Policy' && currentBlock?.isModule">
-                    <div class="top-toolbar-btn readonly-status" title="Create New Module" (click)="onSaveModule()">
+                    <div (click)="onSaveModule()" class="top-toolbar-btn readonly-status" title="Create New Module">
                         <svg-icon src="/assets/images/icons/folder_special.svg"
-                                  svgClass="icon-style-folder_special"></svg-icon>
+                            svgClass="icon-style-folder_special"></svg-icon>
                         <span>Save Module</span>
                     </div>
 
-                    <div *ngIf="openType !== 'Sub'" class="top-toolbar-btn readonly-status" title="Convert to Module"
-                         (click)="onOpenModule(currentBlock)">
+                    <div (click)="onOpenModule(currentBlock)" *ngIf="openType !== 'Sub'"
+                        class="top-toolbar-btn readonly-status" title="Convert to Module">
                         <i class="pi pi-folder-open"></i>
                         <span>Open Module</span>
                     </div>
@@ -262,10 +237,8 @@
                 </ng-container>
             </ng-container>
             <div (click)="viewMenu.toggle($event)" class="top-toolbar-group all-status event-color" style="width: 80px">
-                <svg-icon *ngIf="currentView == 'blocks'"
-                          src="/assets/images/icons/view_agenda.svg"
-                          svgClass="icon-style-view_agenda"></svg-icon
-                >
+                <svg-icon *ngIf="currentView == 'blocks'" src="/assets/images/icons/view_agenda.svg"
+                    svgClass="icon-style-view_agenda"></svg-icon>
                 <i *ngIf="currentView == 'json'" class="pi pi-code"></i>
                 <i *ngIf="currentView == 'yaml'" class="pi pi-list"></i>
                 <span *ngIf="currentView == 'blocks'">Tree</span>
@@ -279,7 +252,7 @@
             <div class="delimiter"></div>
 
             <ng-container *ngIf="isTree">
-                <div class="top-toolbar-btn all-status" (click)="onSchemas()" title="Settings">
+                <div (click)="onSchemas()" class="top-toolbar-btn all-status" title="Settings">
                     <svg-icon src="/assets/images/icons/dataset.svg" svgClass="icon-style-dataset"></svg-icon>
                     <span>Schemas</span>
                 </div>
@@ -288,18 +261,18 @@
             </ng-container>
 
             <ng-container *ngIf="isTree">
-                <div class="top-toolbar-group all-status event-color" (click)="eventMenu.toggle($event)"
-                     style="width: 80px">
-                    <svg-icon *ngIf="eventVisible =='All'" src="/assets/images/icons/flash_on.svg"
-                              svgClass="icon-style-flash_on event-color" class="event-color"></svg-icon>
+                <div (click)="eventMenu.toggle($event)" class="top-toolbar-group all-status event-color"
+                    style="width: 80px">
+                    <svg-icon *ngIf="eventVisible =='All'" class="event-color" src="/assets/images/icons/flash_on.svg"
+                        svgClass="icon-style-flash_on event-color"></svg-icon>
                     <div *ngIf="eventVisible == 'Action'" class="event-color">
                         <div class="action-event-icon"></div>
                     </div>
                     <div *ngIf="eventVisible == 'Refresh'" class="event-color">
                         <div class="refresh-event-icon"></div>
                     </div>
-                    <svg-icon *ngIf="eventVisible =='None'" src="/assets/images/icons/flash_off.svg"
-                              svgClass="icon-style-flash_off event-color" class="event-color"></svg-icon>
+                    <svg-icon *ngIf="eventVisible =='None'" class="event-color" src="/assets/images/icons/flash_off.svg"
+                        svgClass="icon-style-flash_off event-color"></svg-icon>
                     <span *ngIf="eventVisible =='All'" class="event-color">All Events</span>
                     <span *ngIf="eventVisible =='Action'" class="event-color">Action Events</span>
                     <span *ngIf="eventVisible =='Refresh'" class="event-color">Refresh Events</span>
@@ -312,7 +285,7 @@
                 <div class="delimiter"></div>
             </ng-container>
             <div (click)="themesMenu.toggle($event)" class="top-toolbar-group all-status event-color"
-                 style="width: 80px">
+                style="width: 80px">
                 <i class="pi pi-palette"></i>
                 <span>Themes</span>
                 <div class="expand-group">
@@ -320,7 +293,7 @@
                 </div>
             </div>
 
-            <div class="top-toolbar-btn all-status" (click)="onSettings()" title="Settings">
+            <div (click)="onSettings()" class="top-toolbar-btn all-status" title="Settings">
                 <i class="pi pi-cog"></i>
                 <span>Settings</span>
             </div>
@@ -328,8 +301,8 @@
             <div class="delimiter"></div>
         </div>
 
-        <div class="main-container" cdkDropList cdkDropListOrientation="horizontal"
-             (cdkDropListDropped)="onDroppedSection($event)" [cdkDropListData]="options.configurationOrder">
+        <div (cdkDropListDropped)="onDroppedSection($event)" [cdkDropListData]="options.configurationOrder" cdkDropList
+            cdkDropListOrientation="horizontal" class="main-container">
             <ng-container *ngFor="let configuration of options.configurationOrder; let last = last">
                 <ng-container [ngSwitch]="configuration.id">
                     <ng-container *ngSwitchCase="'blocks'">
@@ -345,58 +318,49 @@
                             *ngTemplateOutlet="configurationProperties; context: { last, size: configuration.size, id: configuration.id }"></ng-container>
                     </ng-container>
                 </ng-container>
-                <div class="resizing" resizing *ngIf="!last" (onStopResizing)="stopResizingConfiguration($event)">
+                <div (onStopResizing)="stopResizingConfiguration($event)" *ngIf="!last" class="resizing" resizing>
                     <div class="resizing__delimiter"></div>
                 </div>
             </ng-container>
-            <ng-template #configurationBlocks let-size="size" let-id="id">
-                <div class="left-toolbar" cdkDrag [cdkDragStartDelay]="100" (cdkDragStarted)="onDragSection($event)"
-                     (cdkDragDropped)="onDropSection($event)" [ngStyle]="{ width: size, 'flex-basis': size }"
-                     [attr.resizing-id]="id">
+            <ng-template #configurationBlocks let-id="id" let-size="size">
+                <div (cdkDragDropped)="onDropSection($event)" (cdkDragStarted)="onDragSection($event)"
+                    [attr.resizing-id]="id" [cdkDragStartDelay]="100" [ngStyle]="{ width: size, 'flex-basis': size }"
+                    cdkDrag class="left-toolbar">
                     <i *cdkDragPreview class="pi pi-list"></i>
                     <div class="pc-tabs">
-                        <div class="pc-tabs-headers" cdkDragHandle>
-                            <div class="tab-header tab-header-min" [attr.selected]="options.components"
-                                 (click)="select('components')">
-                                <svg-icon src="/assets/images/icons/article.svg"
-                                          svgClass="icon-style-article action-color"
-                                          class="icon-style-article action-color"></svg-icon>
+                        <div cdkDragHandle class="pc-tabs-headers">
+                            <div (click)="select('components')" [attr.selected]="options.components"
+                                class="tab-header tab-header-min">
+                                <svg-icon class="icon-style-article action-color" src="/assets/images/icons/article.svg"
+                                    svgClass="icon-style-article action-color"></svg-icon>
                                 <span>Blocks</span>
                             </div>
-                            <div class="tab-header tab-header-min" [attr.selected]="options.moduleLibrary"
-                                 (click)="select('moduleLibrary')">
-                                <svg-icon src="/assets/images/icons/policy-module.svg" class="action-color"></svg-icon>
+                            <div (click)="select('moduleLibrary')" [attr.selected]="options.moduleLibrary"
+                                class="tab-header tab-header-min">
+                                <svg-icon class="action-color" src="/assets/images/icons/policy-module.svg"></svg-icon>
                                 <span>Modules</span>
                             </div>
-                            <div class="tab-header tab-header-min" [attr.selected]="options.toolLibrary"
-                                 (click)="select('toolLibrary')">
-                                <svg-icon src="/assets/images/icons/handyman.svg"
-                                          svgClass="icon-style-handyman" class="icon-style-handyman"></svg-icon>
+                            <div (click)="select('toolLibrary')" [attr.selected]="options.toolLibrary"
+                                class="tab-header tab-header-min">
+                                <svg-icon class="icon-style-handyman" src="/assets/images/icons/handyman.svg"
+                                    svgClass="icon-style-handyman"></svg-icon>
                                 <span>Tools</span>
                             </div>
                         </div>
 
-                        <div
-                            class="pc-tabs-content components-menu"
-                            cdkDropList #menuList="cdkDropList"
+                        <div #menuList="cdkDropList" (cdkDropListDropped)="drop($event)"
                             [cdkDropListConnectedTo]="[dropListConnector.body]"
-                            cdkDropListSortingDisabled
-                            [cdkDropListEnterPredicate]="noReturnPredicate"
-                            (cdkDropListDropped)="drop($event)"
-                        >
-                            <div class="components-container" [hidden]="!options.components">
+                            [cdkDropListEnterPredicate]="noReturnPredicate" cdkDropList cdkDropListSortingDisabled
+                            class="pc-tabs-content components-menu">
+                            <div [hidden]="!options.components" class="components-container">
 
                                 <div class="components-search">
-                                    <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">
+                                    <input (input)="onSearch($event)" [(ngModel)]="search" placeholder="Search">
                                     <i class="pi pi-search components-search-icon"></i>
                                 </div>
-                                <div
-                                    *ngIf="componentsList.favorites.length"
-                                    class="components-group"
-                                    [attr.readonly]="disableComponentMenu"
-                                    [attr.collapsed]="options.favoritesGroup"
-                                >
-                                    <div class="components-group-name" (click)="collapse('favoritesGroup')">
+                                <div *ngIf="componentsList.favorites.length" [attr.collapsed]="options.favoritesGroup"
+                                    [attr.readonly]="disableComponentMenu" class="components-group">
+                                    <div (click)="collapse('favoritesGroup')" class="components-group-name">
                                         <i class="pi pi-caret-down components-group-collapse"></i>
                                         <i class="pi pi-caret-right components-group-open"></i>
                                         <i class="pi pi-star components-group-name-icon"></i>
@@ -405,174 +369,140 @@
                                         </span>
                                     </div>
                                     <div class="components-group-body readonly-status">
-                                        <div class="components-group-item"
-                                             *ngFor="let item of componentsList.favorites">
-                                            <div
-                                                cdkDrag
-                                                [cdkDragData]="item.data"
-                                                class="drag-btn"
-                                                [attr.block-type]="item.header"
-                                                (click)="onAdd(item)"
-                                            >
+                                        <div *ngFor="let item of componentsList.favorites"
+                                            class="components-group-item">
+                                            <div (click)="onAdd(item)" [attr.block-type]="item.header"
+                                                [cdkDragData]="item.data" cdkDrag class="drag-btn">
                                                 <div class="drag-component">
                                                     <i [ngClass]="'pi pi-' + item.icon" class="drag-component-icon"></i>
                                                     <span class="drag-component-name">{{ item.name }}</span>
                                                 </div>
                                             </div>
-                                            <div class="component-btn" (click)="onAdd(item)">
+                                            <div (click)="onAdd(item)" class="component-btn">
                                                 <i [ngClass]="'pi pi-' + item.icon" class="component-btn-icon"></i>
                                                 <span>{{ item.name }}</span>
-                                                <i
-                                                    class="pi pi-star component-btn-favorite"
-                                                    [attr.favorite]="item.favorite"
-                                                    (click)="setFavorite($event, item)"
-                                                ></i>
+                                                <i (click)="setFavorite($event, item)" [attr.favorite]="item.favorite"
+                                                    class="pi pi-star component-btn-favorite"></i>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="components-group" [attr.readonly]="disableComponentMenu"
-                                     [attr.collapsed]="options.uiGroup">
-                                    <div class="components-group-name" (click)="collapse('uiGroup')">
+                                <div [attr.collapsed]="options.uiGroup" [attr.readonly]="disableComponentMenu"
+                                    class="components-group">
+                                    <div (click)="collapse('uiGroup')" class="components-group-name">
                                         <i class="pi pi-caret-down components-group-collapse"></i>
                                         <i class="pi pi-caret-right components-group-open"></i>
                                         <span>UI Components ({{ componentsList.uiComponents.length }})</span>
                                     </div>
                                     <div class="components-group-body readonly-status">
-                                        <div class="components-group-item"
-                                             *ngFor="let item of componentsList.uiComponents">
-                                            <div
-                                                cdkDrag
-                                                [cdkDragData]="item.data"
-                                                class="drag-btn"
-                                                [attr.block-type]="item.header"
-                                                (click)="onAdd(item)"
-                                            >
+                                        <div *ngFor="let item of componentsList.uiComponents"
+                                            class="components-group-item">
+                                            <div (click)="onAdd(item)" [attr.block-type]="item.header"
+                                                [cdkDragData]="item.data" cdkDrag class="drag-btn">
                                                 <div class="drag-component">
                                                     <i [ngClass]="'pi pi-' + item.icon" class="drag-component-icon"></i>
                                                     <span class="drag-component-name">{{ item.name }}</span>
                                                 </div>
                                             </div>
-                                            <div class="component-btn" (click)="onAdd(item)">
+                                            <div (click)="onAdd(item)" class="component-btn">
                                                 <i [ngClass]="'pi pi-' + item.icon" class="component-btn-icon"></i>
                                                 <span>{{ item.name }}</span>
-                                                <i class="pi pi-star component-btn-favorite"
-                                                   [attr.favorite]="item.favorite"
-                                                   (click)="setFavorite($event, item)"></i>
+                                                <i (click)="setFavorite($event, item)" [attr.favorite]="item.favorite"
+                                                    class="pi pi-star component-btn-favorite"></i>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="components-group" [attr.readonly]="disableComponentMenu"
-                                     [attr.collapsed]="options.serverGroup">
-                                    <div class="components-group-name" (click)="collapse('serverGroup')">
+                                <div [attr.collapsed]="options.serverGroup" [attr.readonly]="disableComponentMenu"
+                                    class="components-group">
+                                    <div (click)="collapse('serverGroup')" class="components-group-name">
                                         <i class="pi pi-caret-down components-group-collapse"></i>
                                         <i class="pi pi-caret-right components-group-open"></i>
                                         <span>Server Components ({{ componentsList.serverBlocks.length }})</span>
                                     </div>
                                     <div class="components-group-body readonly-status">
-                                        <div class="components-group-item"
-                                             *ngFor="let item of componentsList.serverBlocks">
-                                            <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                                 [attr.block-type]="item.header" (click)="onAdd(item)">
+                                        <div *ngFor="let item of componentsList.serverBlocks"
+                                            class="components-group-item">
+                                            <div (click)="onAdd(item)" [attr.block-type]="item.header"
+                                                [cdkDragData]="item.data" cdkDrag class="drag-btn">
                                                 <div class="drag-component">
                                                     <i [ngClass]="'pi pi-' + item.icon" class="drag-component-icon"></i>
                                                     <span class="drag-component-name">{{ item.name }}</span>
                                                 </div>
                                             </div>
-                                            <div class="component-btn" (click)="onAdd(item)">
+                                            <div (click)="onAdd(item)" class="component-btn">
                                                 <i [ngClass]="'pi pi-' + item.icon" class="component-btn-icon"></i>
                                                 <span>{{ item.name }}</span>
-                                                <i class="pi pi-star component-btn-favorite"
-                                                   [attr.favorite]="item.favorite"
-                                                   (click)="setFavorite($event, item)"></i>
+                                                <i (click)="setFavorite($event, item)" [attr.favorite]="item.favorite"
+                                                    class="pi pi-star component-btn-favorite"></i>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="components-group" [attr.readonly]="disableComponentMenu"
-                                     [attr.collapsed]="options.addonsGroup">
-                                    <div class="components-group-name" (click)="collapse('addonsGroup')">
+                                <div [attr.collapsed]="options.addonsGroup" [attr.readonly]="disableComponentMenu"
+                                    class="components-group">
+                                    <div (click)="collapse('addonsGroup')" class="components-group-name">
                                         <i class="pi pi-caret-down components-group-collapse"></i>
                                         <i class="pi pi-caret-right components-group-open"></i>
                                         <span>Addons ({{ componentsList.addons.length }})</span>
                                     </div>
                                     <div class="components-group-body readonly-status">
-                                        <div class="components-group-item" *ngFor="let item of componentsList.addons">
-                                            <div
-                                                cdkDrag
-                                                [cdkDragData]="item.data"
-                                                class="drag-btn"
-                                                [attr.block-type]="item.header"
-                                                (click)="onAdd(item)"
-                                            >
+                                        <div *ngFor="let item of componentsList.addons" class="components-group-item">
+                                            <div (click)="onAdd(item)" [attr.block-type]="item.header"
+                                                [cdkDragData]="item.data" cdkDrag class="drag-btn">
                                                 <div class="drag-component">
                                                     <i [ngClass]="'pi pi-' + item.icon" class="drag-component-icon"></i>
                                                     <span class="drag-component-name">{{ item.name }}</span>
                                                 </div>
                                             </div>
-                                            <div class="component-btn" (click)="onAdd(item)">
+                                            <div (click)="onAdd(item)" class="component-btn">
                                                 <i [ngClass]="'pi pi-' + item.icon" class="component-btn-icon"></i>
                                                 <span>{{ item.name }}</span>
-                                                <i class="pi pi-star component-btn-favorite"
-                                                   [attr.favorite]="item.favorite"
-                                                   (click)="setFavorite($event, item)"></i>
+                                                <i (click)="setFavorite($event, item)" [attr.favorite]="item.favorite"
+                                                    class="pi pi-star component-btn-favorite"></i>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div
-                                    *ngIf="componentsList.unGrouped.length"
-                                    class="components-group"
-                                    [attr.readonly]="disableComponentMenu"
-                                    [attr.collapsed]="options.unGroup"
-                                >
-                                    <div class="components-group-name" (click)="collapse('unGroup')">
+                                <div *ngIf="componentsList.unGrouped.length" [attr.collapsed]="options.unGroup"
+                                    [attr.readonly]="disableComponentMenu" class="components-group">
+                                    <div (click)="collapse('unGroup')" class="components-group-name">
                                         <i class="pi pi-caret-down components-group-collapse"></i>
                                         <i class="pi pi-caret-right components-group-open"></i>
                                         <span>unGrouped</span>
                                     </div>
                                     <div class="components-group-body readonly-status">
-                                        <div class="components-group-item"
-                                             *ngFor="let item of componentsList.unGrouped">
-                                            <div
-                                                cdkDrag
-                                                [cdkDragData]="item.data"
-                                                class="drag-btn"
-                                                [attr.block-type]="item.header"
-                                                (click)="onAdd(item)"
-                                            >
+                                        <div *ngFor="let item of componentsList.unGrouped"
+                                            class="components-group-item">
+                                            <div (click)="onAdd(item)" [attr.block-type]="item.header"
+                                                [cdkDragData]="item.data" cdkDrag class="drag-btn">
                                                 <div class="drag-component">
                                                     <i [ngClass]="'pi pi-' + item.icon" class="drag-component-icon"></i>
                                                     <span class="drag-component-name">{{ item.name }}</span>
                                                 </div>
                                             </div>
-                                            <div class="component-btn" (click)="onAdd(item)"
-                                                 [attr.block-type]="item.header">
+                                            <div (click)="onAdd(item)" [attr.block-type]="item.header"
+                                                class="component-btn">
                                                 <i [ngClass]="'pi pi-' + item.icon" class="component-btn-icon"></i>
                                                 <span>{{ item.name }}</span>
-                                                <i class="pi pi-star component-btn-favorite"
-                                                   [attr.favorite]="item.favorite"
-                                                   (click)="setFavorite($event, item)"></i>
+                                                <i (click)="setFavorite($event, item)" [attr.favorite]="item.favorite"
+                                                    class="pi pi-star component-btn-favorite"></i>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="components-container" [hidden]="!options.moduleLibrary">
+                            <div [hidden]="!options.moduleLibrary" class="components-container">
                                 <div class="components-search">
-                                    <input placeholder="Search" [(ngModel)]="searchModule"
-                                           (input)="onModuleSearch($event)">
+                                    <input (input)="onModuleSearch($event)" [(ngModel)]="searchModule"
+                                        placeholder="Search">
                                     <i class="pi pi-search components-search-icon"></i>
                                 </div>
-                                <div
-                                    *ngIf="modulesList.favorites.length"
-                                    class="components-group"
-                                    [attr.collapsed]="options.favoritesModulesGroup"
-                                    [attr.readonly]="disableModuleMenu"
-                                >
-                                    <div class="components-group-name" (click)="collapse('favoritesModulesGroup')">
+                                <div *ngIf="modulesList.favorites.length"
+                                    [attr.collapsed]="options.favoritesModulesGroup" [attr.readonly]="disableModuleMenu"
+                                    class="components-group">
+                                    <div (click)="collapse('favoritesModulesGroup')" class="components-group-name">
                                         <i class="pi pi-caret-down components-group-collapse"></i>
                                         <i class="pi pi-caret-right components-group-open"></i>
                                         <i class="pi pi-star components-group-name-icon"></i>
@@ -580,99 +510,99 @@
                                             ({{ modulesList.favorites.length }})</span>
                                     </div>
                                     <div class="components-group-body readonly-status">
-                                        <div class="components-group-item" *ngFor="let item of modulesList.favorites">
-                                            <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                                 [attr.block-type]="item.header" (click)="onAddModule(item)">
+                                        <div *ngFor="let item of modulesList.favorites" class="components-group-item">
+                                            <div (click)="onAddModule(item)" [attr.block-type]="item.header"
+                                                [cdkDragData]="item.data" cdkDrag class="drag-btn">
                                                 <div class="drag-component drag-module">
                                                     <div class="drag-component-icon">
-                                                        <svg-icon src="/assets/images/icons/policy-module.svg"
-                                                                  class="action-color"></svg-icon>
+                                                        <svg-icon class="action-color"
+                                                            src="/assets/images/icons/policy-module.svg"></svg-icon>
                                                     </div>
                                                     <span class="drag-component-name">{{ item.name }}</span>
                                                 </div>
                                             </div>
-                                            <div class="component-btn" (click)="onAddModule(item)">
+                                            <div (click)="onAddModule(item)" class="component-btn">
                                                 <div class="component-btn-icon">
-                                                    <svg-icon src="/assets/images/icons/policy-module.svg"
-                                                              class="action-color"></svg-icon>
+                                                    <svg-icon class="action-color"
+                                                        src="/assets/images/icons/policy-module.svg"></svg-icon>
                                                 </div>
                                                 <span>{{ item.name }}</span>
                                                 <span class="component-btn-toolbar">
-                                                    <i class="pi pi-star component-btn-favorite"
-                                                       [attr.favorite]="item.favorite"
-                                                       (click)="setModuleFavorite($event, item)"></i>
+                                                    <i (click)="setModuleFavorite($event, item)"
+                                                        [attr.favorite]="item.favorite"
+                                                        class="pi pi-star component-btn-favorite"></i>
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="components-group" [attr.collapsed]="options.defaultModulesGroup"
-                                     [attr.readonly]="disableModuleMenu">
-                                    <div class="components-group-name" (click)="collapse('defaultModulesGroup')">
+                                <div [attr.collapsed]="options.defaultModulesGroup" [attr.readonly]="disableModuleMenu"
+                                    class="components-group">
+                                    <div (click)="collapse('defaultModulesGroup')" class="components-group-name">
                                         <i class="pi pi-caret-down components-group-collapse"></i>
                                         <i class="pi pi-caret-right components-group-open"></i>
                                         <span>Default Modules ({{ modulesList.defaultModules.length }})</span>
                                     </div>
                                     <div class="components-group-body readonly-status">
-                                        <div class="components-group-item"
-                                             *ngFor="let item of modulesList.defaultModules">
-                                            <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                                 [attr.block-type]="item.header" (click)="onAddModule(item)">
+                                        <div *ngFor="let item of modulesList.defaultModules"
+                                            class="components-group-item">
+                                            <div (click)="onAddModule(item)" [attr.block-type]="item.header"
+                                                [cdkDragData]="item.data" cdkDrag class="drag-btn">
                                                 <div class="drag-component drag-module">
                                                     <div class="drag-component-icon">
-                                                        <svg-icon src="/assets/images/icons/policy-module.svg"
-                                                                  class="action-color"></svg-icon>
+                                                        <svg-icon class="action-color"
+                                                            src="/assets/images/icons/policy-module.svg"></svg-icon>
                                                     </div>
                                                     <span class="drag-component-name">{{ item.name }}</span>
                                                 </div>
                                             </div>
-                                            <div class="component-btn" (click)="onAddModule(item)">
+                                            <div (click)="onAddModule(item)" class="component-btn">
                                                 <div class="component-btn-icon">
-                                                    <svg-icon src="/assets/images/icons/policy-module.svg"
-                                                              class="action-color"></svg-icon>
+                                                    <svg-icon class="action-color"
+                                                        src="/assets/images/icons/policy-module.svg"></svg-icon>
                                                 </div>
                                                 <span>{{ item.name }}</span>
                                                 <span class="component-btn-toolbar">
-                                                    <i class="pi pi-star component-btn-favorite"
-                                                       [attr.favorite]="item.favorite"
-                                                       (click)="setModuleFavorite($event, item)"></i>
+                                                    <i (click)="setModuleFavorite($event, item)"
+                                                        [attr.favorite]="item.favorite"
+                                                        class="pi pi-star component-btn-favorite"></i>
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="components-group" [attr.collapsed]="options.customModulesGroup"
-                                     [attr.readonly]="disableModuleMenu">
-                                    <div class="components-group-name" (click)="collapse('customModulesGroup')">
+                                <div [attr.collapsed]="options.customModulesGroup" [attr.readonly]="disableModuleMenu"
+                                    class="components-group">
+                                    <div (click)="collapse('customModulesGroup')" class="components-group-name">
                                         <i class="pi pi-caret-down components-group-collapse"></i>
                                         <i class="pi pi-caret-right components-group-open"></i>
                                         <span>Custom models ({{ modulesList.customModules.length }})</span>
                                     </div>
                                     <div class="components-group-body readonly-status">
-                                        <div class="components-group-item"
-                                             *ngFor="let item of modulesList.customModules">
-                                            <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                                 [attr.block-type]="item.header" (click)="onAddModule(item)">
+                                        <div *ngFor="let item of modulesList.customModules"
+                                            class="components-group-item">
+                                            <div (click)="onAddModule(item)" [attr.block-type]="item.header"
+                                                [cdkDragData]="item.data" cdkDrag class="drag-btn">
                                                 <div class="drag-component drag-module">
                                                     <div class="drag-component-icon">
-                                                        <svg-icon src="/assets/images/icons/policy-module.svg"
-                                                                  svgClass="icon-style-policy-module action-color"
-                                                                  class="icon-style-policy-module action-color"></svg-icon>
+                                                        <svg-icon class="icon-style-policy-module action-color"
+                                                            src="/assets/images/icons/policy-module.svg"
+                                                            svgClass="icon-style-policy-module action-color"></svg-icon>
                                                     </div>
                                                     <span class="drag-component-name">{{ item.name }}</span>
                                                 </div>
                                             </div>
-                                            <div class="component-btn" (click)="onAddModule(item)">
+                                            <div (click)="onAddModule(item)" class="component-btn">
                                                 <div class="component-btn-icon">
-                                                    <svg-icon src="/assets/images/icons/policy-module.svg"
-                                                              svgClass="icon-style-policy-module action-color"
-                                                              class="icon-style-policy-module action-color"></svg-icon>
+                                                    <svg-icon class="icon-style-policy-module action-color"
+                                                        src="/assets/images/icons/policy-module.svg"
+                                                        svgClass="icon-style-policy-module action-color"></svg-icon>
                                                 </div>
                                                 <span>{{ item.name }}</span>
                                                 <span class="component-btn-toolbar">
-                                                    <i class="pi pi-star component-btn-favorite"
-                                                       [attr.favorite]="item.favorite"
-                                                       (click)="setModuleFavorite($event, item)"></i>
+                                                    <i (click)="setModuleFavorite($event, item)"
+                                                        [attr.favorite]="item.favorite"
+                                                        class="pi pi-star component-btn-favorite"></i>
                                                 </span>
                                             </div>
                                         </div>
@@ -680,35 +610,35 @@
                                 </div>
                             </div>
 
-                            <div class="components-container" [hidden]="!options.toolLibrary">
+                            <div [hidden]="!options.toolLibrary" class="components-container">
                                 <div class="components-search">
-                                    <input placeholder="Search" [(ngModel)]="searchModule"
-                                           (input)="onModuleSearch($event)">
+                                    <input (input)="onModuleSearch($event)" [(ngModel)]="searchModule"
+                                        placeholder="Search">
                                     <i class="pi pi-search components-search-icon"></i>
                                 </div>
-                                <div class="components-group" [attr.collapsed]="options.customToolsGroup"
-                                     [attr.readonly]="disableToolMenu">
-                                    <div class="components-group-name" (click)="collapse('customToolsGroup')">
+                                <div [attr.collapsed]="options.customToolsGroup" [attr.readonly]="disableToolMenu"
+                                    class="components-group">
+                                    <div (click)="collapse('customToolsGroup')" class="components-group-name">
                                         <i class="pi pi-caret-down components-group-collapse"></i>
                                         <i class="pi pi-caret-right components-group-open"></i>
                                         <span>Tools ({{ modulesList.customTools.length }})</span>
                                     </div>
                                     <div class="components-group-body readonly-status">
-                                        <div class="components-group-item" *ngFor="let item of modulesList.customTools">
-                                            <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                                 [attr.block-type]="item.header" (click)="onAddTool(item)">
+                                        <div *ngFor="let item of modulesList.customTools" class="components-group-item">
+                                            <div (click)="onAddTool(item)" [attr.block-type]="item.header"
+                                                [cdkDragData]="item.data" cdkDrag class="drag-btn">
                                                 <div class="drag-component drag-module">
                                                     <div class="drag-component-icon">
                                                         <svg-icon src="/assets/images/icons/handyman.svg"
-                                                                  svgClass="icon-style-handyman tool-icon"></svg-icon>
+                                                            svgClass="icon-style-handyman tool-icon"></svg-icon>
                                                     </div>
                                                     <span class="drag-component-name">{{ item.name }}</span>
                                                 </div>
                                             </div>
-                                            <div class="component-btn" (click)="onAddTool(item)">
+                                            <div (click)="onAddTool(item)" class="component-btn">
                                                 <div class="component-btn-icon">
                                                     <svg-icon src="/assets/images/icons/handyman.svg"
-                                                              svgClass="icon-style-handyman tool-icon"></svg-icon>
+                                                        svgClass="icon-style-handyman tool-icon"></svg-icon>
                                                 </div>
                                                 <span>{{ item.name }}</span>
                                                 <span class="component-btn-toolbar">
@@ -722,15 +652,10 @@
                     </div>
                 </div>
             </ng-template>
-            <ng-template #configurationTree let-size="size" let-id="id">
-                <div class="center-container"
-                     [attr.resizing-id]="id"
-                     cdkDrag
-                     [cdkDragStartDelay]="100"
-                     (cdkDragStarted)="onDragSection($event)"
-                     (cdkDragDropped)="onDropSection($event)"
-                     [ngStyle]="{ width: size, 'flex-basis': size }"
-                >
+            <ng-template #configurationTree let-id="id" let-size="size">
+                <div (cdkDragDropped)="onDropSection($event)" (cdkDragStarted)="onDragSection($event)"
+                    [attr.resizing-id]="id" [cdkDragStartDelay]="100" [ngStyle]="{ width: size, 'flex-basis': size }"
+                    cdkDrag class="center-container">
                     <i *cdkDragPreview class="pi pi-sitemap"></i>
                     <div *ngIf="!isTree && errors?.length" class="json-errors">
                         <div *ngFor="let item of errors" class="errors-property">
@@ -739,65 +664,59 @@
                     </div>
 
                     <div class="pc-tabs minimized-tabs">
-                        <div class="pc-tabs-headers right-menu" cdkDragHandle>
-                            <div *ngIf="rootType ==='Policy'"
-                                 class="tab-header tab-header-icon"
-                                 [attr.selected]="openFolder===policyTemplate"
-                                 (click)="onOpenRoot(policyTemplate)"
-                                 style="width: 100px;margin-right: 6px"
-                            >
-                                <svg-icon src="/assets/images/icons/article.svg"
-                                          svgClass="icon-style-article action-color"
-                                          class="icon-style-article action-color"></svg-icon>
+                        <div cdkDragHandle class="pc-tabs-headers right-menu">
+                            <div (click)="onOpenRoot(policyTemplate)" *ngIf="rootType ==='Policy'"
+                                [attr.selected]="openFolder===policyTemplate" class="tab-header tab-header-icon"
+                                style="width: 100px;margin-right: 6px">
+                                <svg-icon class="icon-style-article action-color" src="/assets/images/icons/article.svg"
+                                    svgClass="icon-style-article action-color"></svg-icon>
                                 Policy
                             </div>
-                            <div *ngIf="rootType ==='Module'" class="tab-header tab-header-icon" [attr.selected]="true"
-                                 (click)="onOpenRoot(moduleTemplate)" style="width: 100px;margin-right: 6px">
-                                <svg-icon src="/assets/images/icons/policy-module.svg"
-                                          class="action-color module-root-icon action-color"></svg-icon>
+                            <div (click)="onOpenRoot(moduleTemplate)" *ngIf="rootType ==='Module'"
+                                [attr.selected]="true" class="tab-header tab-header-icon"
+                                style="width: 100px;margin-right: 6px">
+                                <svg-icon class="action-color module-root-icon action-color"
+                                    src="/assets/images/icons/policy-module.svg"></svg-icon>
                                 Module
                             </div>
-                            <div *ngIf="rootType ==='Tool'" class="tab-header tab-header-icon" [attr.selected]="true"
-                                 (click)="onOpenRoot(toolTemplate)" style="width: 100px;margin-right: 6px">
+                            <div (click)="onOpenRoot(toolTemplate)" *ngIf="rootType ==='Tool'" [attr.selected]="true"
+                                class="tab-header tab-header-icon" style="width: 100px;margin-right: 6px">
                                 <svg-icon src="/assets/images/icons/handyman.svg"
-                                          svgClass="icon-style-handyman module-root-icon action-color tool-icon"></svg-icon>
+                                    svgClass="icon-style-handyman module-root-icon action-color tool-icon"></svg-icon>
                                 Tool
                             </div>
 
                             <ng-container *ngIf="allSubModule">
-                                <div class="tab-header tab-header-icon"
-                                     *ngFor="let item of allSubModule"
-                                     [attr.selected]="openFolder===item"
-                                     (click)="onOpenModule(item)"
-                                >
-                                    <svg-icon src="/assets/images/icons/policy-module.svg"
-                                              class="module-root-icon edit-color"></svg-icon>
+                                <div (click)="onOpenModule(item)" *ngFor="let item of allSubModule"
+                                    [attr.selected]="openFolder===item" class="tab-header tab-header-icon">
+                                    <svg-icon class="module-root-icon edit-color"
+                                        src="/assets/images/icons/policy-module.svg"></svg-icon>
                                     {{ item.localTag }}
                                 </div>
                             </ng-container>
-                            <div class="theme-legends" [attr.active]="options.legendActive">
-                                <div class="theme-legends-icon" (click)="change('legendActive')">
+                            <div [attr.active]="options.legendActive" class="theme-legends">
+                                <div (click)="change('legendActive')" class="theme-legends-icon">
                                     <i class="pi pi-palette"></i>
                                 </div>
                                 <div *ngIf="isTree" class="theme-legends-container">
                                     <div *ngFor="let rule of theme.rules" class="theme-rule">
-                                        <div class="theme-rule-prev" [style]="blockStyle(rule)" theme-block theme-all>
+                                        <div [style]="blockStyle(rule)" class="theme-rule-prev" theme-all theme-block>
                                         </div>
                                         <div class="theme-rule-description">
                                             {{ getLegendText(rule) }}
                                         </div>
                                     </div>
                                     <div *ngIf="theme.default" class="theme-rule">
-                                        <div class="theme-rule-prev" [style]="blockStyle(theme.default)" theme-block
-                                             theme-all></div>
+                                        <div [style]="blockStyle(theme.default)" class="theme-rule-prev" theme-all
+                                            theme-block></div>
                                         <div class="theme-rule-description">{{ theme.default.description || '-' }}</div>
                                     </div>
                                 </div>
                                 <div *ngIf="!isTree" class="theme-legends-container">
                                     <div *ngFor="let syntaxGroup of theme.syntaxGroups" class="theme-rule">
                                         <div class="theme-rule-syntax-prev" style="padding: 5px 10px;">
-                                            <div style="width: 100%; height: 100%;"
-                                                 [ngStyle]="{ 'background-color': syntaxGroup.color}"></div>
+                                            <div [ngStyle]="{ 'background-color': syntaxGroup.color}"
+                                                style="width: 100%; height: 100%;"></div>
                                         </div>
                                         <div class="theme-rule-description">
                                             {{ syntaxGroup.name }}
@@ -806,35 +725,22 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="pc-tabs-content"
-                             [ngClass]="{
+                        <div [ngClass]="{
                                 'tree-container': isTree
-                            }">
+                            }" class="pc-tabs-content">
                             <div *ngIf="!isTree" class="textarea-code">
-                                <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions"
-                                                (ngModelChange)="saveState()">
+                                <ngx-codemirror (ngModelChange)="saveState()" [(ngModel)]="code"
+                                    [options]="codeMirrorOptions">
                                 </ngx-codemirror>
                             </div>
-                            <policy-tree
-                                *ngIf="isTree"
-                                [module]="openFolder"
-                                [blocks]="openFolder.dataSource"
-                                [errors]="errorsMap"
-                                [readonly]="readonly"
-                                [active]="eventVisible"
-                                [connector]="dropListConnector"
-                                [suggestions]="isSuggestionsEnabled"
-                                [nextBlock]="nextBlock"
-                                [nestedBlock]="nestedBlock"
-                                [(currentBlock)]="currentBlock"
-                                (search)="onBlockSearch($event)"
-                                (nested)="addSuggestionsBlock($event, true)"
-                                (next)="addSuggestionsBlock($event)"
-                                (open)="onOpenModule($event)"
-                                (delete)="onDelete($event)"
-                                (select)="onSelect($event)"
-                                (reorder)="onReorder($event)"
-                                (init)="onInitViewer($event)">
+                            <policy-tree (delete)="onDelete($event)" (init)="onInitViewer($event)"
+                                (nested)="addSuggestionsBlock($event, true)" (next)="addSuggestionsBlock($event)"
+                                (open)="onOpenModule($event)" (reorder)="onReorder($event)"
+                                (search)="onBlockSearch($event)" (select)="onSelect($event)" *ngIf="isTree"
+                                [(currentBlock)]="currentBlock" [active]="eventVisible" [blocks]="openFolder.dataSource"
+                                [connector]="dropListConnector" [errors]="errorsMap" [module]="openFolder"
+                                [nestedBlock]="nestedBlock" [nextBlock]="nextBlock" [readonly]="readonly"
+                                [suggestions]="isSuggestionsEnabled">
                             </policy-tree>
                         </div>
                     </div>
@@ -842,21 +748,12 @@
                 </div>
             </ng-template>
 
-            <ng-template #configurationProperties let-size="size" let-id="id">
-                <div
-                    [attr.resizing-id]="id"
-                    cdkDrag
-                    [cdkDragStartDelay]="100"
-                    (cdkDragStarted)="onDragSection($event)"
-                    (cdkDragDropped)="onDropSection($event)"
-                    [cdkDragDisabled]="true"
-                    cdkDropList
-                    cdkDropListOrientation="vertical"
-                    (cdkDropListDropped)="onDroppedSection($event)"
-                    [cdkDropListData]="options.propertiesOrder"
-                    class="right-toolbar"
-                    [ngStyle]="{ width: size, 'flex-basis': size }"
-                >
+            <ng-template #configurationProperties let-id="id" let-size="size">
+                <div (cdkDragDropped)="onDropSection($event)" (cdkDragStarted)="onDragSection($event)"
+                    (cdkDropListDropped)="onDroppedSection($event)" [attr.resizing-id]="id" [cdkDragDisabled]="true"
+                    [cdkDragStartDelay]="100" [cdkDropListData]="options.propertiesOrder"
+                    [ngStyle]="{ width: size, 'flex-basis': size }" cdkDrag cdkDropList
+                    cdkDropListOrientation="vertical" class="right-toolbar">
                     <i *cdkDragPreview class="pi pi-receipt"></i>
                     <ng-container *ngFor="let properties of options.propertiesOrder; let last = last">
                         <ng-container [ngSwitch]="properties.id">
@@ -869,40 +766,33 @@
                                     *ngTemplateOutlet="propertiesBlock; context: { size: properties.size, id: properties.id }"></ng-container>
                             </ng-container>
                         </ng-container>
-                        <div class="resizing-vertical" resizing *ngIf="!last"
-                             [ngStyle]="{ visibility: (!options.rightTopMenu && !options.rightBottomMenu) ? 'visible' : 'hidden' }"
-                             [vertical]="true" (onStopResizing)="stopResizingProperties($event)">
+                        <div (onStopResizing)="stopResizingProperties($event)" *ngIf="!last"
+                            [ngStyle]="{ visibility: (!options.rightTopMenu && !options.rightBottomMenu) ? 'visible' : 'hidden' }"
+                            [vertical]="true" class="resizing-vertical" resizing>
                             <div class="resizing__delimiter"></div>
                         </div>
                     </ng-container>
 
-                    <ng-template #propertiesPolicy let-size="size" let-id="id">
+                    <ng-template #propertiesPolicy let-id="id" let-size="size">
 
-                        <div
-                            cdkDrag
-                            [cdkDragStartDelay]="100"
-                            (cdkDragStarted)="onDragSection($event)"
-                            (cdkDragDropped)="onDropSection($event)"
-                            [attr.resizing-id]="id"
-                            [ngStyle]="{ height: size, 'flex-basis': size }"
-                            class="right-top-toolbar"
-                            [attr.collapse-top]="options.rightTopMenu"
-                            [attr.collapse-bottom]="options.rightBottomMenu"
-                        >
-                            <svg-icon *cdkDragPreview src="/assets/images/icons/article.svg"
-                                      svgClass="icon-style-article action-color"
-                                      class="icon-style-article action-color"></svg-icon>
+                        <div (cdkDragDropped)="onDropSection($event)" (cdkDragStarted)="onDragSection($event)"
+                            [attr.collapse-bottom]="options.rightBottomMenu" [attr.collapse-top]="options.rightTopMenu"
+                            [attr.resizing-id]="id" [cdkDragStartDelay]="100"
+                            [ngStyle]="{ height: size, 'flex-basis': size }" cdkDrag class="right-top-toolbar">
+                            <svg-icon *cdkDragPreview class="icon-style-article action-color"
+                                src="/assets/images/icons/article.svg"
+                                svgClass="icon-style-article action-color"></svg-icon>
                             <div *ngIf="policyDescription" class="pc-tabs">
-                                <div class="pc-tabs-headers" cdkDragHandle>
-                                    <div class="tab-header" [attr.selected]="options.description"
-                                         (click)="select('description')">
+                                <div cdkDragHandle class="pc-tabs-headers">
+                                    <div (click)="select('description')" [attr.selected]="options.description"
+                                        class="tab-header">
                                         Description
                                     </div>
                                     <div (click)="select('roles')" [attr.selected]="options.roles" class="tab-header">
                                         Roles
                                     </div>
                                     <div (click)="select('navigation')" [attr.selected]="options.navigation"
-                                         class="tab-header">
+                                        class="tab-header">
                                         Navigation
                                     </div>
                                     <div (click)="select('groups')" [attr.selected]="options.groups" class="tab-header">
@@ -914,239 +804,183 @@
                                     <div (click)="select('tokens')" [attr.selected]="options.tokens" class="tab-header">
                                         Tokens
                                     </div>
-                                    <div class="tabs-icon" [attr.collapsed]="options.rightTopMenu"
-                                         (click)="collapse('rightTopMenu')">
-                                        <i class="pi pi-arrow-up-right-and-arrow-down-left-from-center tabs-icon-full"></i>
-                                        <i class="pi  pi-arrow-down-left-and-arrow-up-right-to-center tabs-icon-min"></i>
+                                    <div (click)="collapse('rightTopMenu')" [attr.collapsed]="options.rightTopMenu"
+                                        class="tabs-icon">
+                                        <i
+                                            class="pi pi-arrow-up-right-and-arrow-down-left-from-center tabs-icon-full"></i>
+                                        <i
+                                            class="pi  pi-arrow-down-left-and-arrow-up-right-to-center tabs-icon-min"></i>
                                     </div>
                                 </div>
-                                <div class="pc-tabs-content" [attr.readonly]="!isTree">
-                                    <div class="prop-container" [hidden]="!options.description">
-                                        <policy-properties
-                                            class="readonly-status"
-                                            [allCategories]="allCategories"
-                                            [policyCategories]="policyCategoriesMapped"
-                                            [policy]="policyTemplate"
-                                            type="Main"
-                                            [readonly]="readonly"
-                                        ></policy-properties>
+                                <div [attr.readonly]="!isTree" class="pc-tabs-content">
+                                    <div [hidden]="!options.description" class="prop-container">
+                                        <policy-properties [allCategories]="allCategories"
+                                            [policyCategories]="policyCategoriesMapped" [policy]="policyTemplate"
+                                            [readonly]="readonly" class="readonly-status"
+                                            type="Main"></policy-properties>
                                     </div>
-                                    <div class="prop-container" [hidden]="!options.roles">
-                                        <policy-properties
-                                            class="readonly-status"
-                                            [policy]="policyTemplate"
-                                            type="Role"
-                                            [readonly]="readonly"
-                                        ></policy-properties>
+                                    <div [hidden]="!options.roles" class="prop-container">
+                                        <policy-properties [policy]="policyTemplate" [readonly]="readonly"
+                                            class="readonly-status" type="Role"></policy-properties>
                                     </div>
                                     <div [hidden]="!options.navigation" class="prop-container">
-                                        <policy-properties
-                                            [policy]="policyTemplate"
-                                            [readonly]="readonly"
-                                            class="readonly-status"
-                                            type="Navigation"
-                                        ></policy-properties>
+                                        <policy-properties [policy]="policyTemplate" [readonly]="readonly"
+                                            class="readonly-status" type="Navigation"></policy-properties>
                                     </div>
-                                    <div class="prop-container" [hidden]="!options.groups">
-                                        <policy-properties
-                                            [policy]="policyTemplate"
-                                            type="Groups"
-                                            class="readonly-status"
-                                            [readonly]="readonly"
-                                        ></policy-properties>
+                                    <div [hidden]="!options.groups" class="prop-container">
+                                        <policy-properties [policy]="policyTemplate" [readonly]="readonly"
+                                            class="readonly-status" type="Groups"></policy-properties>
                                     </div>
-                                    <div class="prop-container" [hidden]="!options.topics">
-                                        <policy-properties
-                                            class="readonly-status"
-                                            [policy]="policyTemplate"
-                                            type="Topics"
-                                            [readonly]="readonly"
-                                        ></policy-properties>
+                                    <div [hidden]="!options.topics" class="prop-container">
+                                        <policy-properties [policy]="policyTemplate" [readonly]="readonly"
+                                            class="readonly-status" type="Topics"></policy-properties>
                                     </div>
-                                    <div class="prop-container" [hidden]="!options.tokens">
-                                        <policy-properties
-                                            class="readonly-status"
-                                            [policy]="policyTemplate"
-                                            type="Tokens"
-                                            [readonly]="readonly"
-                                            [wipeContracts]="wipeContracts"
-                                        ></policy-properties>
+                                    <div [hidden]="!options.tokens" class="prop-container">
+                                        <policy-properties [policy]="policyTemplate" [readonly]="readonly"
+                                            [wipeContracts]="wipeContracts" class="readonly-status"
+                                            type="Tokens"></policy-properties>
                                     </div>
                                 </div>
                             </div>
 
                             <div *ngIf="moduleDescription" class="pc-tabs">
                                 <div class="pc-tabs-headers">
-                                    <div class="tab-header" [attr.selected]="options.descriptionModule"
-                                         (click)="select('descriptionModule')">
+                                    <div (click)="select('descriptionModule')"
+                                        [attr.selected]="options.descriptionModule" class="tab-header">
                                         Description
                                     </div>
-                                    <div class="tab-header" [attr.selected]="options.inputsModule"
-                                         (click)="select('inputsModule')">
+                                    <div (click)="select('inputsModule')" [attr.selected]="options.inputsModule"
+                                        class="tab-header">
                                         Inputs
                                     </div>
-                                    <div class="tab-header" [attr.selected]="options.outputsModule"
-                                         (click)="select('outputsModule')">
+                                    <div (click)="select('outputsModule')" [attr.selected]="options.outputsModule"
+                                        class="tab-header">
                                         Outputs
                                     </div>
-                                    <div class="tab-header" [attr.selected]="options.variablesModule"
-                                         (click)="select('variablesModule')">
+                                    <div (click)="select('variablesModule')" [attr.selected]="options.variablesModule"
+                                        class="tab-header">
                                         Variables
                                     </div>
-                                    <div class="tabs-icon" [attr.collapsed]="options.rightTopMenu"
-                                         (click)="collapse('rightTopMenu')">
-                                        <i class="pi pi-arrow-up-right-and-arrow-down-left-from-center tabs-icon-full"></i>
-                                        <i class="pi  pi-arrow-down-left-and-arrow-up-right-to-center tabs-icon-min"></i>
+                                    <div (click)="collapse('rightTopMenu')" [attr.collapsed]="options.rightTopMenu"
+                                        class="tabs-icon">
+                                        <i
+                                            class="pi pi-arrow-up-right-and-arrow-down-left-from-center tabs-icon-full"></i>
+                                        <i
+                                            class="pi  pi-arrow-down-left-and-arrow-up-right-to-center tabs-icon-min"></i>
                                     </div>
                                 </div>
-                                <div class="pc-tabs-content" [attr.readonly]="!isTree">
-                                    <div class="prop-container" [hidden]="!options.descriptionModule">
-                                        <module-properties
-                                            [module]="openFolder"
-                                            type="Main"
-                                            class="readonly-status"
-                                            [readonly]="readonly"
-                                            [errors]="errorsMap[openFolder.id]"
-                                        ></module-properties>
+                                <div [attr.readonly]="!isTree" class="pc-tabs-content">
+                                    <div [hidden]="!options.descriptionModule" class="prop-container">
+                                        <module-properties [errors]="errorsMap[openFolder.id]" [module]="openFolder"
+                                            [readonly]="readonly" class="readonly-status"
+                                            type="Main"></module-properties>
                                     </div>
-                                    <div class="prop-container" [hidden]="!options.inputsModule">
-                                        <module-properties
-                                            [module]="openFolder"
-                                            class="readonly-status" type="Inputs"
-                                            [readonly]="readonly"
-                                            [errors]="errorsMap[openFolder.id]"
-                                        ></module-properties>
+                                    <div [hidden]="!options.inputsModule" class="prop-container">
+                                        <module-properties [errors]="errorsMap[openFolder.id]" [module]="openFolder"
+                                            [readonly]="readonly" class="readonly-status"
+                                            type="Inputs"></module-properties>
                                     </div>
-                                    <div class="prop-container" [hidden]="!options.outputsModule">
-                                        <module-properties
-                                            [module]="openFolder"
-                                            type="Outputs"
-                                            class="readonly-status"
-                                            [readonly]="readonly"
-                                            [errors]="errorsMap[openFolder.id]"
-                                        ></module-properties>
+                                    <div [hidden]="!options.outputsModule" class="prop-container">
+                                        <module-properties [errors]="errorsMap[openFolder.id]" [module]="openFolder"
+                                            [readonly]="readonly" class="readonly-status"
+                                            type="Outputs"></module-properties>
                                     </div>
-                                    <div class="prop-container" [hidden]="!options.variablesModule">
-                                        <module-properties
-                                            [module]="openFolder"
-                                            class="readonly-status"
-                                            type="Variables"
-                                            [readonly]="readonly"
-                                            [errors]="errorsMap[openFolder.id]"
-                                        ></module-properties>
+                                    <div [hidden]="!options.variablesModule" class="prop-container">
+                                        <module-properties [errors]="errorsMap[openFolder.id]" [module]="openFolder"
+                                            [readonly]="readonly" class="readonly-status"
+                                            type="Variables"></module-properties>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </ng-template>
 
-                    <ng-template #propertiesBlock let-size="size" let-id="id">
-                        <div
-                            cdkDrag
-                            [cdkDragStartDelay]="100"
-                            (cdkDragStarted)="onDragSection($event)"
-                            (cdkDragDropped)="onDropSection($event)"
-                            [attr.resizing-id]="id"
-                            [ngStyle]="{ height: size, 'flex-basis': size }"
-                            class="right-bottom-toolbar"
-                            *ngIf="currentBlock && !isRootModule"
-                            [attr.collapse-top]="options.rightTopMenu"
-                            [attr.collapse-bottom]="options.rightBottomMenu"
-                        >
+                    <ng-template #propertiesBlock let-id="id" let-size="size">
+                        <div (cdkDragDropped)="onDropSection($event)" (cdkDragStarted)="onDragSection($event)"
+                            *ngIf="currentBlock && !isRootModule" [attr.collapse-bottom]="options.rightBottomMenu"
+                            [attr.collapse-top]="options.rightTopMenu" [attr.resizing-id]="id" [cdkDragStartDelay]="100"
+                            [ngStyle]="{ height: size, 'flex-basis': size }" cdkDrag class="right-bottom-toolbar">
                             <i *cdkDragPreview class="pi pi-align-left"></i>
                             <div class="pc-tabs">
-                                <div class="pc-tabs-headers" cdkDragHandle>
-                                    <div class="tab-header" [attr.selected]="options.properties"
-                                         (click)="select('properties')">
+                                <div cdkDragHandle class="pc-tabs-headers">
+                                    <div (click)="select('properties')" [attr.selected]="options.properties"
+                                        class="tab-header">
                                         Properties
                                     </div>
-                                    <div class="tab-header" [attr.selected]="options.events" (click)="select('events')">
+                                    <div (click)="select('events')" [attr.selected]="options.events" class="tab-header">
                                         Events
                                     </div>
-                                    <div class="tab-header" [attr.selected]="options.artifacts"
-                                         (click)="select('artifacts')">
+                                    <div (click)="select('artifacts')" [attr.selected]="options.artifacts"
+                                        class="tab-header">
                                         Artifacts
                                     </div>
-                                    <div class="tab-header" [attr.selected]="options.json" (click)="select('json')">
+                                    <div (click)="select('json')" [attr.selected]="options.json" class="tab-header">
                                         Json
                                     </div>
-                                    <div class="tabs-icon" [attr.collapsed]="options.rightBottomMenu"
-                                         (click)="collapse('rightBottomMenu')">
-                                        <i class="pi pi-arrow-up-right-and-arrow-down-left-from-center tabs-icon-full"></i>
-                                        <i class="pi  pi-arrow-down-left-and-arrow-up-right-to-center tabs-icon-min"></i>
+                                    <div (click)="collapse('rightBottomMenu')"
+                                        [attr.collapsed]="options.rightBottomMenu" class="tabs-icon">
+                                        <i
+                                            class="pi pi-arrow-up-right-and-arrow-down-left-from-center tabs-icon-full"></i>
+                                        <i
+                                            class="pi  pi-arrow-down-left-and-arrow-up-right-to-center tabs-icon-min"></i>
                                     </div>
                                 </div>
-                                <div class="pc-tabs-content" [attr.readonly]="!isTree">
-                                    <div class="prop-container" [hidden]="!options.properties">
+                                <div [attr.readonly]="!isTree" class="pc-tabs-content">
+                                    <div [hidden]="!options.properties" class="prop-container">
                                         <div *ngIf="errorsMap[currentBlock.id]" class="errors-properties">
                                             <div *ngFor="let item of errorsMap[currentBlock.id]"
-                                                 class="errors-property">
+                                                class="errors-property">
                                                 <span>{{ item }}</span>
                                             </div>
                                         </div>
-                                        <common-properties
+                                        <common-properties 
+                                            [block]="currentBlock" 
                                             [module]="openFolder"
-                                            [readonly]="readonly"
-                                            [block]="currentBlock"
+                                            [readonly]="readonly" 
                                             class="readonly-status"
-                                            type="Common"
-                                        ></common-properties>
+                                            type="Common"></common-properties>
                                     </div>
-                                    <div class="prop-container" [hidden]="!options.events">
-                                        <common-properties
+                                    <div [hidden]="!options.events" class="prop-container">
+                                        <common-properties 
+                                            [block]="currentBlock" 
                                             [module]="openFolder"
-                                            [readonly]="readonly"
-                                            [block]="currentBlock"
+                                            [readonly]="readonly" 
                                             class="readonly-status"
-                                            type="Events"
-                                        ></common-properties>
+                                            type="Events"></common-properties>
                                     </div>
-                                    <div class="prop-container" [hidden]="!options.artifacts">
-                                        <artifact-properties
-                                            [policyId]="policyId"
-                                            [readonly]="readonly"
-                                            class="readonly-status"
-                                            [block]="currentBlock"
-                                        ></artifact-properties>
+                                    <div [hidden]="!options.artifacts" class="prop-container">
+                                        <artifact-properties [block]="currentBlock" [policyId]="policyId"
+                                            [readonly]="readonly" class="readonly-status"></artifact-properties>
                                     </div>
-                                    <div class="prop-container" [hidden]="!options.json">
-                                        <json-properties
-                                            *ngIf="options.json"
-                                            [block]="currentBlock"
-                                            [readonly]="readonly"
-                                        ></json-properties>
+                                    <div [hidden]="!options.json" class="prop-container">
+                                        <json-properties *ngIf="options.json" [block]="currentBlock"
+                                            [readonly]="readonly"></json-properties>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div
-                            cdkDrag
-                            [cdkDragStartDelay]="100"
-                            (cdkDragStarted)="onDragSection($event)"
-                            (cdkDragDropped)="onDropSection($event)"
-                            [attr.resizing-id]="id"
-                            [ngStyle]="{ height: size, 'flex-basis': size }"
-                            class="right-bottom-toolbar"
-                            *ngIf="currentBlock && isRootModule"
-                            [attr.collapse-top]="options.rightTopMenu"
-                            [attr.collapse-bottom]="options.rightBottomMenu"
-                        >
+                        <div (cdkDragDropped)="onDropSection($event)" (cdkDragStarted)="onDragSection($event)"
+                            *ngIf="currentBlock && isRootModule" [attr.collapse-bottom]="options.rightBottomMenu"
+                            [attr.collapse-top]="options.rightTopMenu" [attr.resizing-id]="id" [cdkDragStartDelay]="100"
+                            [ngStyle]="{ height: size, 'flex-basis': size }" cdkDrag class="right-bottom-toolbar">
                             <div class="pc-tabs">
-                                <div class="pc-tabs-headers" cdkDragHandle>
-                                    <div class="tab-header" [attr.selected]="true" (click)="select('events')">
+                                <div cdkDragHandle class="pc-tabs-headers">
+                                    <div (click)="select('events')" [attr.selected]="true" class="tab-header">
                                         Events
                                     </div>
-                                    <div class="tabs-icon" [attr.collapsed]="options.rightBottomMenu"
-                                         (click)="collapse('rightBottomMenu')">
-                                        <i class="pi pi-arrow-up-right-and-arrow-down-left-from-center tabs-icon-full"></i>
-                                        <i class="pi  pi-arrow-down-left-and-arrow-up-right-to-center tabs-icon-min"></i>
+                                    <div (click)="collapse('rightBottomMenu')"
+                                        [attr.collapsed]="options.rightBottomMenu" class="tabs-icon">
+                                        <i
+                                            class="pi pi-arrow-up-right-and-arrow-down-left-from-center tabs-icon-full"></i>
+                                        <i
+                                            class="pi  pi-arrow-down-left-and-arrow-up-right-to-center tabs-icon-min"></i>
                                     </div>
                                 </div>
                                 <div class="pc-tabs-content">
                                     <div class="prop-container readonly-status">
-                                        <common-properties [module]="openFolder" [block]="currentBlock"
-                                                           [readonly]="readonly" type="Events"></common-properties>
+                                        <common-properties [block]="currentBlock" [module]="openFolder"
+                                            [readonly]="readonly" type="Events"></common-properties>
 
                                     </div>
                                 </div>
@@ -1160,27 +994,21 @@
 </div>
 
 <p-overlayPanel #publishMenu>
-    <div
-        *ngIf="user.POLICIES_POLICY_REVIEW"
-        class="toolbar-menu all-status publish-color"
-        (click)="tryPublishPolicy(); publishMenu.hide()"
-        title="Release version into public domain."
-    >
+    <div (click)="tryPublishPolicy(); publishMenu.hide()" *ngIf="user.POLICIES_POLICY_REVIEW"
+        class="toolbar-menu all-status publish-color" title="Release version into public domain.">
         <i class="pi pi-globe"></i>
         <span class="publish-color">Publish</span>
     </div>
 
-    <div class="toolbar-menu all-status dry-run-color" (click)="tryRunPolicy(); publishMenu.hide()"
-         title="Run without making any persistent changes or executing transaction.">
+    <div (click)="tryRunPolicy(); publishMenu.hide()" class="toolbar-menu all-status dry-run-color"
+        title="Run without making any persistent changes or executing transaction.">
         <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build dry-run-color"></svg-icon>
         <span class="dry-run-color">Dry Run</span>
     </div>
 </p-overlayPanel>
 
 <p-overlayPanel #publishMenu2>
-    <div
-        class="toolbar-menu all-status publish-color"
-        (click)="tryPublishModule(); publishMenu2.hide()"
+    <div (click)="tryPublishModule(); publishMenu2.hide()" class="toolbar-menu all-status publish-color"
         title="Release version into public domain.">
         <i class="pi pi-globe publish-color"></i>
         <span class="publish-color">Publish</span>
@@ -1188,9 +1016,7 @@
 </p-overlayPanel>
 
 <p-overlayPanel #publishMenu3>
-    <div
-        class="toolbar-menu all-status publish-color"
-        (click)="tryPublishTool(); publishMenu3.hide()"
+    <div (click)="tryPublishTool(); publishMenu3.hide()" class="toolbar-menu all-status publish-color"
         title="Release version into public domain.">
         <i class="pi pi-globe publish-color"></i>
         <span class="publish-color">Publish</span>
@@ -1198,61 +1024,61 @@
 </p-overlayPanel>
 
 <p-overlayPanel #dryRunMenu>
-    <div class="toolbar-menu all-status publish-color" (click)="tryPublishPolicy(); dryRunMenu.hide()"
-         title="Release version into public domain.">
+    <div (click)="tryPublishPolicy(); dryRunMenu.hide()" class="toolbar-menu all-status publish-color"
+        title="Release version into public domain.">
         <i class="pi pi-globe publish-color"></i>
         <span class="publish-color">Publish</span>
     </div>
 
-    <div class="toolbar-menu all-status edit-color" (click)="draftPolicy(); dryRunMenu.hide()"
-         title="Return to editing.">
+    <div (click)="draftPolicy(); dryRunMenu.hide()" class="toolbar-menu all-status edit-color"
+        title="Return to editing.">
         <i class="pi pi-pencil edit-color"></i>
         <span class="edit-color">Stop</span>
     </div>
 </p-overlayPanel>
 
 <p-overlayPanel #eventMenu>
-    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('All'); eventMenu.hide()">
-        <svg-icon src="/assets/images/icons/flash_on.svg" svgClass="icon-style-flash_on event-color"
-                  class="icon-style-flash_on event-color"></svg-icon>
+    <div (click)="onShowEvent('All'); eventMenu.hide()" class="toolbar-menu all-status event-color">
+        <svg-icon class="icon-style-flash_on event-color" src="/assets/images/icons/flash_on.svg"
+            svgClass="icon-style-flash_on event-color"></svg-icon>
         <span class="action-color">Show All Events</span>
     </div>
-    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('Action'); eventMenu.hide()">
+    <div (click)="onShowEvent('Action'); eventMenu.hide()" class="toolbar-menu all-status event-color">
         <div class="event-color">
             <div class="action-event-icon"></div>
         </div>
         <span class="action-color">Show Action Events</span>
     </div>
-    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('Refresh'); eventMenu.hide()">
+    <div (click)="onShowEvent('Refresh'); eventMenu.hide()" class="toolbar-menu all-status event-color">
         <div class="event-color">
             <div class="refresh-event-icon"></div>
         </div>
         <span class="action-color">Show Refresh Events</span>
     </div>
-    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('None'); eventMenu.hide()">
-        <svg-icon src="/assets/images/icons/flash_off.svg" svgClass="icon-style-flash_on event-color"
-                  class="icon-style-flash_on event-color"></svg-icon>
+    <div (click)="onShowEvent('None'); eventMenu.hide()" class="toolbar-menu all-status event-color">
+        <svg-icon class="icon-style-flash_on event-color" src="/assets/images/icons/flash_off.svg"
+            svgClass="icon-style-flash_on event-color"></svg-icon>
         <span class="action-color">Hide All Events</span>
     </div>
 </p-overlayPanel>
 
 <p-overlayPanel #viewMenu>
-    <div class="toolbar-menu all-status event-color" (click)="onView('blocks'); viewMenu.hide()">
+    <div (click)="onView('blocks'); viewMenu.hide()" class="toolbar-menu all-status event-color">
         <svg-icon src="/assets/images/icons/view_agenda.svg" svgClass="icon-style-view_agenda"></svg-icon>
         <span class="action-color">Tree</span>
     </div>
-    <div class="toolbar-menu all-status event-color" (click)="onView('json'); viewMenu.hide()">
+    <div (click)="onView('json'); viewMenu.hide()" class="toolbar-menu all-status event-color">
         <i class="pi pi-copy action-color"></i>
         <span class="action-color">JSON</span>
     </div>
-    <div class="toolbar-menu all-status event-color" (click)="onView('yaml'); viewMenu.hide()">
+    <div (click)="onView('yaml'); viewMenu.hide()" class="toolbar-menu all-status event-color">
         <i class="pi pi-align-right action-color"></i>
         <span class="action-color">YAML</span>
     </div>
 </p-overlayPanel>
 
 <p-overlayPanel #themesMenu>
-    <div class="toolbar-menu all-status" *ngFor="let t of themes" (click)="setTheme(t); themesMenu.hide()">
+    <div (click)="setTheme(t); themesMenu.hide()" *ngFor="let t of themes" class="toolbar-menu all-status">
         <i [ngClass]="t === theme ? 'pi pi-palette action-color' : 'pi pi-palette no-action-color'"></i>
         <span [class]="t === theme ? 'action-color' : 'no-action-color'">{{ t.name }}</span>
     </div>

@@ -440,20 +440,20 @@
     color: #686868;
 }
 
-.prop-table-row[type="LEFT"],
-.prop-table-row[type="RIGHT"] {
+[type="LEFT"],
+[type="RIGHT"] {
     background: #ffe1e1;
 }
 
-.prop-table-row[type="FULL"] {
+[type="FULL"] {
     background: #d3ffd5;
 }
 
-.prop-table-row[type="PARTLY"] {
+[type="PARTLY"] {
     background: #ffface;
 }
 
-.prop-table-row[type="NONE"] {
+[type="NONE"] {
     background: #f3f3f3;
 }
 
@@ -625,4 +625,29 @@
 .icon {
     font-size: 16px;
     line-height: 16px;
+}
+
+.table .mat-header-cell,
+.table .mat-cell {
+    padding: 4px 8px;
+    min-width: 30px;
+    max-width: 185px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.table {
+    font-size: 14px;
+    table-layout: fixed;
+    width: 100%;
+}
+
+.mat-row {
+    display: table-row;
+}
+
+.mat-header-cell {
+    font-size: 14px;
+    text-align: left;
 }

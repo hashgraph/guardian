@@ -76,9 +76,7 @@ export class LoggerApi {
             }
             if (body.startDate && body.endDate) {
                 const sDate = new Date(body.startDate);
-                sDate.setHours(0, 0, 0, 0);
                 const eDate = new Date(body.endDate);
-                eDate.setHours(23, 59, 59, 999);
                 filters.datetime = {
                     $gte: sDate,
                     $lt: eDate

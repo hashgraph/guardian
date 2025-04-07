@@ -449,3 +449,37 @@ body {
 ::ng-deep .p-tooltip {
     z-index: 9999 !important;
 }
+
+::ng-deep p-dropdownitem li {
+    min-height: 38px !important;
+}
+
+::ng-deep .grid-setting td.propRowCell {
+    height: 38px !important;
+}
+
+::ng-deep .propRowCell .pi-trash {
+    margin: 4px 4px
+}
+
+::ng-deep .propRowCell .readonly-prop {
+    min-height: 36px;
+    padding-top: 12px;
+}
+
+::ng-deep td.propRowCell.cellName,
+::ng-deep .propRow .propRowCell{
+    align-content: center;
+}
+
+::ng-deep .propRow .propRowCell .remove-prop {
+    top: 10px !important;
+}
+
+::ng-deep p-progressspinner svg circle {
+    stroke: var(--button-primary-color) !important;
+}
+
+::ng-deep p-dropdown .p-dropdown-label-empty {
+    min-height: 36px;
+}

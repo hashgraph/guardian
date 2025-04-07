@@ -7,7 +7,10 @@
     [attr.error]="!!error"
 >
     <div cdkDragHandle class="left-side-panel">
-        <img alt="" class="equal-icon" src="assets/images/icons/equal.svg"/>
+        <svg-icon class="icon-btn svg-icon"
+            src="/assets/images/icons/equal.svg"
+            svgClass="icon-color-close">
+        </svg-icon>
     </div>
     <div class="fields-main-container">
         <ng-template [ngIf]="field.controlKey.invalid && field.controlKey.errors">
@@ -207,8 +210,8 @@
                     </button>
                 </div>
 
-                <div *ngIf="canBePrivate" class="checkbox-field-container">
-                    <p-checkbox [formControl]="field.controlPrivate"></p-checkbox>
+                <div *ngIf="canBePrivate" class="checkbox-field-container private">
+                    <p-checkbox [formControl]="field.controlPrivate" [binary]="true"></p-checkbox>
                     <label class="checkbox-label">Private</label>
                 </div>
             </ng-template>
@@ -339,7 +342,7 @@
             <p-checkbox
                 [ngModel]="value?.required"
                 [disabled]="readonly"
-                [binary]="true"
+                [binary]="false"
                 [styleClass]="readonly ? 'p-disabled' : 'primary-checkbox'"
             >
             </p-checkbox>

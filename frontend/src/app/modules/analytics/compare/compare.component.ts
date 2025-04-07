@@ -184,9 +184,9 @@ export class CompareComponent implements OnInit {
     private loadDocument() {
         this.error = null;
         const options = {
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
+            eventsLvl: this.eventsLvl.value,
+            propLvl: this.propLvl.value,
+            childrenLvl: this.childrenLvl.value,
             idLvl: this.idLvl.value,
             documentIds: this.getIds()
         }
@@ -210,9 +210,9 @@ export class CompareComponent implements OnInit {
     private downloadDocuments() {
         this.error = null;
         const options = {
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
+            eventsLvl: this.eventsLvl.value,
+            propLvl: this.propLvl.value,
+            childrenLvl: this.childrenLvl.value,
             idLvl: this.idLvl.value,
             documentIds: this.getIds()
         }
@@ -342,7 +342,7 @@ export class CompareComponent implements OnInit {
             eventsLvl: this.eventsLvl.value,
             propLvl: this.propLvl.value,
             childrenLvl: this.childrenLvl.value,
-            idLvl: this.idLvl.value.value,
+            idLvl: this.idLvl.value,
             moduleId1: ids[0],
             moduleId2: ids[1]
         }

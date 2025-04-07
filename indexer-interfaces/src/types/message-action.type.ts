@@ -39,4 +39,5 @@ export enum MessageAction {
     CreateStatisticAssessment = 'create-assessment-document',
     PublishPolicyLabel = 'publish-policy-label',
     CreateLabelDocument = 'create-label-document',
+    PublishFormula = 'publish-formula',
 }

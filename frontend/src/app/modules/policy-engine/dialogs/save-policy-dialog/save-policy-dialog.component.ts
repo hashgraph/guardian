@@ -21,8 +21,6 @@ export class SavePolicyDialog {
     action?: PolicyAction;
     dataForm = this.fb.group({});
     isNewVersionDisabled: boolean = false;
-
-    isVisible: boolean = true;
     data: any;
 
     private _isActionSelected$ = new ReplaySubject<boolean>(1);

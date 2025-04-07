@@ -1,8 +1,15 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{title}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
 <div class="dialog-body">
     <div *ngIf="loading" class="loading">
         <div class="preloader-image preloader-image-l-size"></div>
     </div>
-
 
     <div *ngIf="policy">
         <div class="group-container">
@@ -99,6 +106,10 @@
                 <div class="field-header">Tokens</div>
                 <div class="field-value">{{ tokens }}</div>
             </div>
+            <div *ngIf="formulas" class="field-container">
+                <div class="field-header">Formulas</div>
+                <div class="field-value">{{ formulas }}</div>
+            </div>
             <div *ngIf="similar" class="field-container">
                 <div class="field-header">Similar Policies</div>
                 <div class="field-value">{{ similar }}</div>
@@ -179,7 +190,9 @@
                         <div>{{error.__path}}</div>
                         <div>
                             <div>{{error.text}}</div>
-                            <div *ngIf="error.message && error.message !== error.text">{{error.message}}</div>
+                            <div 
+                                *ngIf="error.message && error.message !== error.text"
+                                class="error-message">{{error.message}}</div>
                         </div>
                     </div>
                 </div>
@@ -189,30 +202,22 @@
 </div>
 <div class="dialog-footer">
     <div class="action-buttons">
-        <div class="cancel-button">
+        <div class="dialog-button cancel-button">
             <button
-                    (click)="onClose()"
-                    class="button secondary"
-                    label="Close"
-                    pButton
-            ></button>
+                (click)="onClose()"
+                class="guardian-button guardian-button-secondary">Close</button>
         </div>
-        <div [ngSwitch]="!!(xlsx && errors?.length)">
+        <div class="dialog-button" [ngSwitch]="!!(xlsx && errors?.length)">
             <button
-                    *ngSwitchCase="true"
-                    (click)="onImport()"
-                    class="button"
-                    label="Skip & Import"
-                    pButton
-            ></button>
+                *ngSwitchCase="true"
+                style="min-width: 120px"
+                (click)="onImport()"
+                class="guardian-button guardian-button-primary">Skip & Import</button>
             <button
-                    *ngSwitchCase="false"
-                    [disabled]="inValid"
-                    (click)="onImport()"
-                    class="button"
-                    label="Import"
-                    pButton
-            ></button>
+                *ngSwitchCase="false"
+                [disabled]="inValid"
+                (click)="onImport()"
+                class="guardian-button guardian-button-primary">Import</button>
         </div>
     </div>
 </div>

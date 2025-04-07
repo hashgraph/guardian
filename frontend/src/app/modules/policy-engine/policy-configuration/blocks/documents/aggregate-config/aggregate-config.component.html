@@ -16,7 +16,9 @@
                 [(ngModel)]="properties.aggregateType"
                 [disabled]="readonly"
                 placeholder="Select an aggregate type"
-                [options]="aggregateTypeOptions">
+                [options]="aggregateTypeOptions"
+                [appendTo]="'body'"
+            >
             </p-dropdown>
         </td>
     </tr>

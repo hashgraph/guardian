@@ -22,10 +22,10 @@
     </div>
     <div *ngIf="!confirmationStatus && documentStatus !== 'NEW'">
         <div class="progress-container"
-             matTooltip="Click here to see more details"
-             matTooltipPosition="above"
-             matTooltipClass="helpText"
-             (click)="onDetails()"
+             pTooltip="Click here to see more details"
+             tooltipPosition="top"
+             tooltipStyleClass="helpText"
+             (click)="onDetails($event)"
              (contextmenu)="menu2.toggle($event); $event.preventDefault()"
         >
             <div class="progress">
@@ -37,7 +37,7 @@
                 </div>
                 <div class="threshold" [style.left.%]="threshold"></div>
             </div>
-            <div class="icon-details">
+            <div class="icon-details" (click)="onDetails($event)">
                 <i class="pi pi-info-circle"></i>
             </div>
         </div>

@@ -7,10 +7,10 @@ To make changes in the Explorer, we need to change some parameters in environmen
 As we see the above demonstrates setting of Ledger Works explorer.
 
 {% hint style="info" %}
-**Note: By default, we use Ledger Works explorer.**
+**Note: By default, we use HashScan explorer.**
 {% endhint %}
 
-#### To switch from Ledger Works to Dragon Glass we need to make following changes:
+#### To switch from HashScan to Dragon Glass we need to make following changes:
 
 1. Change the url to [https://${network}.dragonglass.me/hedera/${type}/${value}](https://${network}.dragonglass.me/hedera/$%7Btype%7D/$%7Bvalue%7D)
 2. Change networkMap mainnet to app

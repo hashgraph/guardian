@@ -38,6 +38,7 @@ import { PermissionsService } from './services/permissions.service';
 import { WorkerTasksService } from './services/worker-tasks.service';
 import { SchemaRulesService } from './services/schema-rules.service';
 import { PolicyLabelsService } from './services/policy-labels.service';
+import { FormulasService } from './services/formulas.service';
 //Views
 import { UserProfileComponent } from './views/user-profile/user-profile.component';
 import { LoginComponent } from './views/login/login.component';
@@ -76,6 +77,7 @@ import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module
 import { ThemeService } from './services/theme.service';
 import { RecordService } from './services/record.service';
 import { StatisticsModule } from './modules/statistics/statistics.module';
+import { FormulasModule } from './modules/formulas/formulas.module';
 // Injectors
 import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
 import { BLOCK_TYPE_TIPS, BLOCK_TYPE_TIPS_VALUE, } from './injectors/block-type-tips.injector';
@@ -112,7 +114,6 @@ import { AISearchService } from './services/ai-search.service';
 import { DndModule } from 'ngx-drag-drop';
 import { PasswordModule } from 'primeng/password';
 import { RegisterDialogComponent } from './views/login/register-dialogs/register-dialog/register-dialog.component';
-import { TermsConditionsComponent } from './views/login/register-dialogs/terms-conditions-dialog/terms-conditions.component';
 import { AccountTypeSelectorDialogComponent } from './views/login/register-dialogs/account-type-selector-dialog/account-type-selector-dialog.component';
 import { ForgotPasswordDialogComponent } from './views/login/forgot-password-dialog/forgot-password-dialog.component';
 import { MultiSelectModule } from 'primeng/multiselect';
@@ -164,7 +165,6 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         SearchResultCardComponent,
         ListOfTokensUserComponent,
         RegisterDialogComponent,
-        TermsConditionsComponent,
         AccountTypeSelectorDialogComponent,
         ForgotPasswordDialogComponent,
         OnlyForDemoDirective,
@@ -187,6 +187,7 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         SchemaEngineModule,
         PolicyEngineModule,
         StatisticsModule,
+        FormulasModule,
         TagEngineModule,
         CompareModule,
         ToastrModule.forRoot(),
@@ -250,6 +251,7 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         RecordService,
         CompareStorage,
         ProjectComparisonService,
+        FormulasService,
         PermissionsService,
         PermissionsGuard,
         {

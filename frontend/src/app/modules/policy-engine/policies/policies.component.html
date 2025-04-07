@@ -27,7 +27,9 @@
                     appendTo="body"
                     class="tags-dropdown"
                     formControlName="tag"
-                    placeholder="Tags"></p-dropdown>
+                    placeholder="Tags"
+                    [appendTo]="'body'"
+                ></p-dropdown>
                 <button (click)="applyFilters()"
                         class="button ml-8"
                         label="Apply Filters"
@@ -232,11 +234,11 @@
                                             [queryParams]="{ policyId: policy.id }"
                                             [routerLink]="['/policy-configuration']"
                                             class="btn-icon-edit"
-                                            matTooltip="Policy configuration"
-                                            matTooltipClass="guardian-tooltip"
-                                            matTooltipHideDelay="100"
-                                            matTooltipPosition="above"
-                                            matTooltipShowDelay="500"
+                                            pTooltip="Policy configuration"
+                                            tooltipStyleClass="guardian-tooltip"
+                                            tooltipPosition="top"
+                                            [showDelay]="500"
+                                            [hideDelay]="100"
                                         >
                                             <svg-icon src="/assets/images/icons/edit.svg"
                                                       svgClass="primary-color"></svg-icon>

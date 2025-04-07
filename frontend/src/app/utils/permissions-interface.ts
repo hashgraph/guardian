@@ -123,7 +123,8 @@ export const entityNames = new Map<PermissionEntities, string>([
     [PermissionEntities.TRUST_CHAIN, 'Trust Chain'],
     [PermissionEntities.ROLE, 'Role'],
     [PermissionEntities.STATISTIC, 'Statistic'],
-    [PermissionEntities.LABEL, 'Label']
+    [PermissionEntities.LABEL, 'Label'],
+    [PermissionEntities.FORMULA, 'Formula']
 ])
 
 export const actionIndexes = new Map<PermissionActions, number>([
@@ -168,6 +169,7 @@ export const categoryNames = new Map<PermissionCategories, string>([
     [PermissionCategories.TOOLS, 'Tools'],
     [PermissionCategories.PERMISSIONS, 'Permissions'],
     [PermissionCategories.STATISTICS, 'Policy Statistics'],
+    [PermissionCategories.FORMULAS, 'Formulas'],
     [PermissionCategories.ACCESS, 'Access']
 ])
 

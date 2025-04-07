@@ -28,7 +28,7 @@
                         formControlName="name"
                         placeholder="Schema Name"
                         type="text"
-                        class="full-width">
+                    >
                 </div>
                 <div *ngIf="isPolicy" class="form-group">
                     <label for="policyDropdown" class="form-label">* Policy</label>
@@ -38,6 +38,7 @@
                         [options]="getPoliciesWithDefault()"
                         optionLabel="name"
                         optionValue="topicId"
+                        [appendTo]="'body'"
                         placeholder="Select a policy"
                         (onChange)="onFilter($event)"
                         class="full-width">

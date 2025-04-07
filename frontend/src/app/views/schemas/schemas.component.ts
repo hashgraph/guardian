@@ -100,7 +100,7 @@ export class SchemaConfigComponent implements OnInit {
     public user: UserPermissions = new UserPermissions();
     public type: SchemaType = SchemaType.System;
     public isConfirmed: boolean = false;
-    public currentTopic: string = '';
+    public currentTopic: string | null = null;
     public page: ISchema[] = [];
     public pageIndex: number = 0;
     public pageSize: number = 25;
@@ -156,7 +156,7 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     public get readonly(): boolean {
-        return this.readonlyByTopic[this.currentTopic];
+        return this.readonlyByTopic[this.currentTopic ?? ''];
     }
 
     public get isPolicy(): boolean {
@@ -384,33 +384,33 @@ export class SchemaConfigComponent implements OnInit {
         }
     }
 
-    private getTopicId(): string {
+    private getTopicId(): string | null {
         switch (this.type) {
             case SchemaType.Tag:
                 return '';
             case SchemaType.Policy:
-                if (!this.policyNameByTopic[this.currentTopic]) {
-                    return '';
+                if (!this.policyNameByTopic[this.currentTopic ?? '']) {
+                    return null;
                 } else {
                     return this.currentTopic;
                 }
             case SchemaType.Module:
-                if (!this.moduleNameByTopic[this.currentTopic]) {
-                    return '';
+                if (!this.moduleNameByTopic[this.currentTopic ?? '']) {
+                    return null;
                 } else {
                     return this.currentTopic;
                 }
             case SchemaType.Tool:
-                if (!this.toolNameByTopic[this.currentTopic]) {
-                    return '';
+                if (!this.toolNameByTopic[this.currentTopic ?? '']) {
+                    return null;
                 } else {
                     return this.currentTopic;
                 }
             case SchemaType.System:
-                return '';
+                return null;
             default:
-                if (!this.policyNameByTopic[this.currentTopic]) {
-                    return '';
+                if (!this.policyNameByTopic[this.currentTopic ?? '']) {
+                    return null;
                 } else {
                     return this.currentTopic;
                 }
@@ -562,7 +562,7 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Tool:
             default: {
                 const category = this.getCategory();
-                loader = this.schemaService.getSchemasByPage(category, this.currentTopic, this.pageIndex, this.pageSize);
+                loader = this.schemaService.getSchemasByPage(category, this.currentTopic ?? '', this.pageIndex, this.pageSize);
                 break;
             }
         }
@@ -1221,9 +1221,8 @@ export class SchemaConfigComponent implements OnInit {
         const {type, data, schemas, errors} = result;
         const dialogRef = this.dialog.open(SchemaViewDialog, {
             width: '950px',
-            styleClass: 'g-dialog',
-            modal: true,
-            closable: false,
+            styleClass: 'guardian-dialog',
+            showHeader: false,
             data: {
                 schemas: schemas,
                 errors: errors,
