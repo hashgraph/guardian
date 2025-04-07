@@ -820,8 +820,6 @@ Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/2986](https://github.com/hashgraph/guardian/issues/2986)
 
-Documentation Link:&#x20;
-
 ### Guardian analytics: bottom-up data traceability
 
 1. Design and implement specialized analytics engine which would enable Guardian to identify, trace and display mathematical relations between data in different artifacts (VCs/VPs/tokens) including events (transactions/messages) on Hedera hashgraph, with unlimited traceability depth.
@@ -859,7 +857,7 @@ The ability to set parameters, which may not be public on Verifiable Credential 
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4025](https://github.com/hashgraph/guardian/issues/4025)
 
-Documentation Link: https://docs.hedera.com/guardian/guardian/standard-registry/schemas/schema-rules
+Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/schemas/schema-rules](https://docs.hedera.com/guardian/guardian/standard-registry/schemas/schema-rules)
 
 ### Verify and Fix the features that got affected by Mirror Node changes
 
