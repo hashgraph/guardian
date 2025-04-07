@@ -26,7 +26,7 @@
     "@formulajs/formulajs": "4.4.6",
     "mathjs": "^13.1.1",
     "bson": "^6.5.0",
-    "cron": "^2.0.0",
+    "cron": "^4.1.4",
     "dotenv": "^16.0.0",
     "ethers": "^6.7.1",
     "express": "^4.21.1",
