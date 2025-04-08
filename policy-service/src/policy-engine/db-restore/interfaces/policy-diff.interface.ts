@@ -15,9 +15,10 @@ import {
 import { ICollectionDiff } from './../index.js';
 
 export interface IPolicyDiff {
-    type?: 'backup' | 'diff';
+    uuid: string,
+    type: 'backup' | 'diff';
+    index: number;
     messageId?: string;
-    index?: number;
     lastUpdate?: Date;
     vcCollection?: ICollectionDiff<VcDocument>;
     vpCollection?: ICollectionDiff<VpDocument>;

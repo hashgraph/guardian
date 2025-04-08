@@ -1,5 +1,25 @@
 import '../config.js'
-import { COMMON_CONNECTION_CONFIG, DatabaseServer, entities, Environment, ExternalEventChannel, GenerateTLSOptionsNats, IPFS, LargePayloadContainer, MessageBrokerChannel, MessageServer, mongoForLoggingInitialization, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization, Users, Wallet, Workers, } from '@guardian/common';
+import {
+    COMMON_CONNECTION_CONFIG,
+    DatabaseServer,
+    entities,
+    Environment,
+    ExternalEventChannel,
+    GenerateTLSOptionsNats,
+    IPFS,
+    LargePayloadContainer,
+    MessageBrokerChannel,
+    MessageServer,
+    mongoForLoggingInitialization,
+    NotificationService,
+    OldSecretManager,
+    PinoLogger,
+    pinoLoggerInitialization,
+    TopicListener,
+    Users,
+    Wallet,
+    Workers
+} from '@guardian/common';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { BlockTreeGenerator } from '../policy-engine/block-tree-generator.js';
@@ -18,7 +38,7 @@ import { DEFAULT_MONGO } from '#constants';
         NotificationService,
     ]
 })
-class AppModule {}
+class AppModule { }
 
 const {
     policyId,
@@ -33,14 +53,14 @@ Promise.all([
         ...COMMON_CONNECTION_CONFIG,
         driverOptions: {
             minPoolSize: parseInt(process.env.MIN_POOL_SIZE ?? DEFAULT_MONGO.MIN_POOL_SIZE, 10),
-            maxPoolSize: parseInt(process.env.MAX_POOL_SIZE  ?? DEFAULT_MONGO.MAX_POOL_SIZE, 10),
-            maxIdleTimeMS: parseInt(process.env.MAX_IDLE_TIME_MS  ?? DEFAULT_MONGO.MAX_IDLE_TIME_MS, 10)
+            maxPoolSize: parseInt(process.env.MAX_POOL_SIZE ?? DEFAULT_MONGO.MAX_POOL_SIZE, 10),
+            maxIdleTimeMS: parseInt(process.env.MAX_IDLE_TIME_MS ?? DEFAULT_MONGO.MAX_IDLE_TIME_MS, 10)
         },
         ensureIndexes: true,
         entities
     }),
     MessageBrokerChannel.connect(policyServiceName),
-    NestFactory.createMicroservice<MicroserviceOptions>(AppModule,{
+    NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
         transport: Transport.NATS,
         options: {
             name: `${process.env.SERVICE_CHANNEL}`,
@@ -105,6 +125,8 @@ Promise.all([
     await new OldSecretManager().setConnection(cn).init();
     await new Users().setConnection(cn).init();
     await new Wallet().setConnection(cn).init();
+    await TopicListener.init(cn);
+
     const workersHelper = new Workers();
     await workersHelper.setConnection(cn).init();;
     workersHelper.initListeners();

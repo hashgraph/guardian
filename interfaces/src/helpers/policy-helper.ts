@@ -12,6 +12,7 @@ export class PolicyHelper {
         if (policy && (
             policy.status === PolicyStatus.DRY_RUN ||
             policy.status === PolicyStatus.DEMO ||
+            policy.status === PolicyStatus.VIEW ||
             policy.status === PolicyStatus.PUBLISH ||
             policy.status === PolicyStatus.DISCONTINUED
         )) {

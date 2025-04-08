@@ -27,6 +27,16 @@ enum FileHeaders {
     COLLECTION = 'COLLECTION: ',
     SIZE = 'SIZE: ',
     HASH = 'HASH: ',
+    UUID = 'UUID: ',
+    INDEX = 'INDEX: ',
+}
+
+class Cursor {
+    public index: number;
+
+    constructor() {
+        this.index = 0;
+    }
 }
 
 export class FileHelper {
@@ -45,7 +55,7 @@ export class FileHelper {
         return buffer;
     }
 
-    public static async unZipFile(buffer: any): Promise<string> {
+    public static async unZipFile(buffer: ArrayBuffer): Promise<string> {
         const zip = new JSZip();
         const content = await zip.loadAsync(buffer);
         if (!content.files[FileHelper.FileName] || content.files[FileHelper.FileName].dir) {
@@ -86,116 +96,84 @@ export class FileHelper {
     public static decryptFile(file: string): IPolicyDiff {
         const lines = file.split(FileHeaders.NEW_LINE);
 
-        let index = 0;
-        const version = FileHelper._readString(FileHeaders.VERSION, lines[index++]);
+        const cursor = new Cursor();
+        const version = FileHelper._readString(FileHeaders.VERSION, lines, cursor);
         if (!version) {
             throw Error('Invalid version');
         }
 
-        const lastUpdate = FileHelper._readDate(FileHeaders.DATE, lines[index++]);
-        const type = FileHelper._readString(FileHeaders.TYPE, lines[index++]);
+        const lastUpdate = FileHelper._readDate(FileHeaders.DATE, lines, cursor);
+        const uuid = FileHelper._readString(FileHeaders.UUID, lines, cursor);
+        const index = FileHelper._readNumber(FileHeaders.INDEX, lines, cursor);
+        const type = FileHelper._readString(FileHeaders.TYPE, lines, cursor);
 
         if (type !== 'backup' && type !== 'diff') {
             throw Error('Invalid type');
         }
 
         //VcDocument
-        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
-        const vcCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
-        const vcCollectionStart = index;
-        const vcCollectionEnd = index + vcCollectionSize + 1;
-        const vcCollection = FileHelper._decryptCollection<VcDocument>(lines, vcCollectionStart, vcCollectionEnd);
-        index = vcCollectionEnd;
+        FileHelper._readString(FileHeaders.COLLECTION, lines, cursor);
+        const vcCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
+        const vcCollection = FileHelper._decryptCollection<VcDocument>(lines, cursor, vcCollectionSize);
 
         //VpDocument
-        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
-        const vpCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
-        const vpCollectionStart = index;
-        const vpCollectionEnd = index + vpCollectionSize + 1;
-        const vpCollection = FileHelper._decryptCollection<VpDocument>(lines, vpCollectionStart, vpCollectionEnd);
-        index = vpCollectionEnd;
+        FileHelper._readString(FileHeaders.COLLECTION, lines, cursor);
+        const vpCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
+        const vpCollection = FileHelper._decryptCollection<VpDocument>(lines, cursor, vpCollectionSize);
 
         //DidDocument
-        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
-        const didCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
-        const didCollectionStart = index;
-        const didCollectionEnd = index + didCollectionSize + 1;
-        const didCollection = FileHelper._decryptCollection<DidDocument>(lines, didCollectionStart, didCollectionEnd);
-        index = didCollectionEnd;
+        FileHelper._readString(FileHeaders.COLLECTION, lines, cursor);
+        const didCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
+        const didCollection = FileHelper._decryptCollection<DidDocument>(lines, cursor, didCollectionSize);
 
         //BlockState
-        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
-        const stateCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
-        const stateCollectionStart = index;
-        const stateCollectionEnd = index + stateCollectionSize + 1;
-        const stateCollection = FileHelper._decryptCollection<BlockState>(lines, stateCollectionStart, stateCollectionEnd);
-        index = stateCollectionEnd;
+        FileHelper._readString(FileHeaders.COLLECTION, lines, cursor);
+        const stateCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
+        const stateCollection = FileHelper._decryptCollection<BlockState>(lines, cursor, stateCollectionSize);
 
         //PolicyRoles
-        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
-        const roleCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
-        const roleCollectionStart = index;
-        const roleCollectionEnd = index + roleCollectionSize + 1;
-        const roleCollection = FileHelper._decryptCollection<PolicyRoles>(lines, roleCollectionStart, roleCollectionEnd);
-        index = roleCollectionEnd;
+        FileHelper._readString(FileHeaders.COLLECTION, lines, cursor);
+        const roleCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
+        const roleCollection = FileHelper._decryptCollection<PolicyRoles>(lines, cursor, roleCollectionSize);
 
         //MultiDocuments
-        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
-        const multiDocCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
-        const multiDocCollectionStart = index;
-        const multiDocCollectionEnd = index + multiDocCollectionSize + 1;
-        const multiDocCollection = FileHelper._decryptCollection<MultiDocuments>(lines, multiDocCollectionStart, multiDocCollectionEnd);
-        index = multiDocCollectionEnd;
+        FileHelper._readString(FileHeaders.COLLECTION, lines, cursor);
+        const multiDocCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
+        const multiDocCollection = FileHelper._decryptCollection<MultiDocuments>(lines, cursor, multiDocCollectionSize);
 
         //Token
-        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
-        const tokenCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
-        const tokenCollectionStart = index;
-        const tokenCollectionEnd = index + tokenCollectionSize + 1;
-        const tokenCollection = FileHelper._decryptCollection<Token>(lines, tokenCollectionStart, tokenCollectionEnd);
-        index = tokenCollectionEnd;
+        FileHelper._readString(FileHeaders.COLLECTION, lines, cursor);
+        const tokenCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
+        const tokenCollection = FileHelper._decryptCollection<Token>(lines, cursor, tokenCollectionSize);
 
         //Tag
-        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
-        const tagCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
-        const tagCollectionStart = index;
-        const tagCollectionEnd = index + tagCollectionSize + 1;
-        const tagCollection = FileHelper._decryptCollection<Tag>(lines, tagCollectionStart, tagCollectionEnd);
-        index = tagCollectionEnd;
+        FileHelper._readString(FileHeaders.COLLECTION, lines, cursor);
+        const tagCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
+        const tagCollection = FileHelper._decryptCollection<Tag>(lines, cursor, tagCollectionSize);
 
         //DocumentState
-        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
-        const docStateCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
-        const docStateCollectionStart = index;
-        const docStateCollectionEnd = index + docStateCollectionSize + 1;
-        const docStateCollection = FileHelper._decryptCollection<DocumentState>(lines, docStateCollectionStart, docStateCollectionEnd);
-        index = docStateCollectionEnd;
+        FileHelper._readString(FileHeaders.COLLECTION, lines, cursor);
+        const docStateCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
+        const docStateCollection = FileHelper._decryptCollection<DocumentState>(lines, cursor, docStateCollectionSize);
 
         //Topic
-        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
-        const topicCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
-        const topicCollectionStart = index;
-        const topicCollectionEnd = index + topicCollectionSize + 1;
-        const topicCollection = FileHelper._decryptCollection<Topic>(lines, topicCollectionStart, topicCollectionEnd);
-        index = topicCollectionEnd;
+        FileHelper._readString(FileHeaders.COLLECTION, lines, cursor);
+        const topicCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
+        const topicCollection = FileHelper._decryptCollection<Topic>(lines, cursor, topicCollectionSize);
 
         //ExternalDocument
-        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
-        const externalDocCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
-        const externalDocCollectionStart = index;
-        const externalDocCollectionEnd = index + externalDocCollectionSize + 1;
-        const externalDocCollection = FileHelper._decryptCollection<ExternalDocument>(lines, externalDocCollectionStart, externalDocCollectionEnd);
-        index = externalDocCollectionEnd;
+        FileHelper._readString(FileHeaders.COLLECTION, lines, cursor);
+        const externalDocCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
+        const externalDocCollection = FileHelper._decryptCollection<ExternalDocument>(lines, cursor, externalDocCollectionSize);
 
         //ApprovalDocument
-        FileHelper._readString(FileHeaders.COLLECTION, lines[index++]);
-        const approveCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines[index++]);
-        const approveCollectionStart = index;
-        const approveCollectionEnd = index + approveCollectionSize + 1;
-        const approveCollection = FileHelper._decryptCollection<ApprovalDocument>(lines, approveCollectionStart, approveCollectionEnd);
-        index = approveCollectionEnd;
+        FileHelper._readString(FileHeaders.COLLECTION, lines, cursor);
+        const approveCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
+        const approveCollection = FileHelper._decryptCollection<ApprovalDocument>(lines, cursor, approveCollectionSize);
 
         const diff: IPolicyDiff = {
+            uuid,
+            index,
             type,
             lastUpdate,
             vcCollection,
@@ -217,12 +195,14 @@ export class FileHelper {
 
     private static _decryptCollection<T extends RestoreEntity>(
         lines: string[],
-        start: number,
-        end: number
+        cursor: Cursor,
+        size: number
     ): ICollectionDiff<T> {
-        const hash = FileHelper._readString(FileHeaders.HASH, lines[start++]);
-        const fullHash = FileHelper._readString(FileHeaders.HASH, lines[start++]);
+        const hash = FileHelper._readString(FileHeaders.HASH, lines, cursor);
+        const fullHash = FileHelper._readString(FileHeaders.HASH, lines, cursor);
         const actions: IDiffAction<T>[] = [];
+        const start = cursor.index;
+        const end = cursor.index + size;
         for (let index = start; index < end; index++) {
             const action = FileHelper._decryptAction<T>(lines[index]);
             if (!action) {
@@ -230,6 +210,7 @@ export class FileHelper {
             }
             actions.push(action);
         }
+        cursor.index = end;
         const diff: ICollectionDiff<T> = {
             hash,
             fullHash,
@@ -246,26 +227,26 @@ export class FileHelper {
         }
     }
 
-    private static _readString(header: FileHeaders, line: string): string {
-        if (line.startsWith(header)) {
-            return line.substring(header.length);
+    private static _readString(header: FileHeaders, lines: string[], cursor: Cursor): string {
+        if (lines[cursor.index] && lines[cursor.index].startsWith(header)) {
+            return lines[cursor.index++].substring(header.length);
         } else {
             return null;
         }
     }
 
-    private static _readNumber(header: FileHeaders, line: string): number {
-        if (line.startsWith(header)) {
-            const number = line.substring(header.length);
+    private static _readNumber(header: FileHeaders, lines: string[], cursor: Cursor): number {
+        if (lines[cursor.index] && lines[cursor.index].startsWith(header)) {
+            const number = lines[cursor.index++].substring(header.length);
             return Number(number);
         } else {
             return null;
         }
     }
-    private static _readDate(header: FileHeaders, line: string): Date {
-        if (line.startsWith(header)) {
-            const date = line.substring(header.length);
-            return new Date(date);
+    private static _readDate(header: FileHeaders, lines: string[], cursor: Cursor): Date {
+        if (lines[cursor.index] && lines[cursor.index].startsWith(header)) {
+            const date = lines[cursor.index++].substring(header.length);
+            return date ? (new Date(date)) : null;
         } else {
             return null;
         }
@@ -275,6 +256,8 @@ export class FileHelper {
         let result = '';
         result += FileHelper._writeString(FileHeaders.VERSION, '1.0.0');
         result += FileHelper._writeDate(FileHeaders.DATE, diff.lastUpdate);
+        result += FileHelper._writeString(FileHeaders.UUID, diff.uuid);
+        result += FileHelper._writeNumber(FileHeaders.INDEX, diff.index);
         result += FileHelper._writeString(FileHeaders.TYPE, diff.type);
 
         //VcDocument
@@ -366,6 +349,6 @@ export class FileHelper {
         return header + value + FileHeaders.NEW_LINE;
     }
     private static _writeDate(header: FileHeaders, value: Date): string {
-        return header + (value).toISOString() + FileHeaders.NEW_LINE;
+        return header + (value?.toISOString() || '') + FileHeaders.NEW_LINE;
     }
 }

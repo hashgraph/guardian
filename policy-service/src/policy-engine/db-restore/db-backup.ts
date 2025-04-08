@@ -1,6 +1,5 @@
 import { DataBaseHelper, DatabaseServer, Policy, PolicyDiff } from '@guardian/common';
 import { IPolicyDiff } from './index.js';
-import { ObjectId } from 'mongodb';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { FileHelper } from './file-helper.js';
 import {
@@ -101,8 +100,11 @@ export class PolicyBackup {
         const topicResult = await this.topicBackup.createCollectionBackup();
         const externalDocResult = await this.externalDocBackup.createCollectionBackup();
         const approveResult = await this.approveBackup.createCollectionBackup();
+        const uuid = GenerateUUIDv4();
         const backup: IPolicyDiff = {
+            uuid,
             type: 'backup',
+            index: 0,
             lastUpdate,
             vcCollection: vcResult.backup,
             vpCollection: vpResult.backup,
@@ -118,7 +120,9 @@ export class PolicyBackup {
             approveCollection: approveResult.backup
         }
         const diff: IPolicyDiff = {
+            uuid,
             type: 'backup',
+            index: 0,
             lastUpdate,
             vcCollection: vcResult.diff,
             vpCollection: vpResult.diff,
@@ -153,8 +157,11 @@ export class PolicyBackup {
         const topicResult = await this.topicBackup.createCollectionDiff(oldDiff.topicCollection, lastUpdate);
         const externalDocResult = await this.externalDocBackup.createCollectionDiff(oldDiff.externalDocCollection, lastUpdate);
         const approveResult = await this.approveBackup.createCollectionDiff(oldDiff.approveCollection, lastUpdate);
+        const uuid = GenerateUUIDv4();
         const backup: IPolicyDiff = {
+            uuid,
             type: 'backup',
+            index: (oldDiff.index || 0) + 1,
             lastUpdate,
             vcCollection: vcResult.backup,
             vpCollection: vpResult.backup,
@@ -170,7 +177,9 @@ export class PolicyBackup {
             approveCollection: approveResult.backup
         }
         const diff: IPolicyDiff = {
+            uuid,
             type: 'diff',
+            index: (oldDiff.index || 0) + 1,
             lastUpdate,
             vcCollection: vcResult.diff,
             vpCollection: vpResult.diff,

@@ -1019,6 +1019,9 @@ export class PolicyEngineService {
                     if (model.status === PolicyStatus.DEMO) {
                         throw new Error(`Policy imported in demo mode`);
                     }
+                    if (model.status === PolicyStatus.VIEW) {
+                        throw new Error(`Policy imported in view mode`);
+                    }
 
                     const errors = await this.policyEngine.validateModel(policyId);
                     const isValid = !errors.blocks.some(block => !block.isValid);
@@ -1104,6 +1107,9 @@ export class PolicyEngineService {
                     }
                     if (model.status === PolicyStatus.DEMO) {
                         throw new Error(`Policy imported in demo mode`);
+                    }
+                    if (model.status === PolicyStatus.VIEW) {
+                        throw new Error(`Policy imported in view mode`);
                     }
 
                     model.status = PolicyStatus.DRAFT;

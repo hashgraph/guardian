@@ -115,7 +115,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 }
                 const { filters } = msg;
                 const item = await DatabaseServer.getExternalPolicy(filters);
-                if (item) {
+                if (!item) {
                     return new MessageError('Item does not exist.');
                 }
                 return new MessageResponse(item);

@@ -161,7 +161,7 @@ export class PolicyEngine extends NatsService {
                     PolicyStatus.DRY_RUN,
                     PolicyStatus.DISCONTINUED,
                     PolicyStatus.DEMO,
-                    PolicyStatus.DEMO,
+                    PolicyStatus.VIEW,
                 ]
             }
         });
@@ -1228,6 +1228,9 @@ export class PolicyEngine extends NatsService {
         }
         if (policy.status === PolicyStatus.DEMO) {
             throw new Error(`Policy imported in demo mode`);
+        }
+        if (policy.status === PolicyStatus.VIEW) {
+            throw new Error(`Policy imported in view mode`);
         }
         if (!ModelHelper.checkVersionFormat(version)) {
             throw new Error('Invalid version format');

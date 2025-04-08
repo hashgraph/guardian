@@ -56,9 +56,9 @@ export class PolicyDiffMessage extends Message {
     public setDocument(diff: any, zip?: ArrayBuffer): void {
         this.uuid = diff.uuid;
         this.owner = diff.owner;
-        this.diffType = diff.type;
-        this.diffIndex = diff.index;
-        this.policyTopicId = diff.topicId;
+        this.diffType = diff.diffType;
+        this.diffIndex = diff.diffIndex;
+        this.policyTopicId = diff.policyTopicId;
         this.instanceTopicId = diff.instanceTopicId;
         this.document = zip;
     }

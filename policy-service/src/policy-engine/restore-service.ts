@@ -1,6 +1,6 @@
 import { IPolicyDiff, PolicyBackup, PolicyRestore } from "./db-restore/index.js";
 import { FileHelper } from "./db-restore/file-helper.js";
-import { DatabaseServer, MessageAction, MessageServer, MessageType, Policy, PolicyDiffMessage, TopicConfig, Users, Wallet } from "@guardian/common";
+import { DatabaseServer, ITopicMessage, MessageAction, MessageServer, MessageType, Policy, PolicyDiffMessage, TopicConfig, TopicListener, Users, Wallet } from "@guardian/common";
 
 class Timer {
     private readonly min: number;
@@ -76,11 +76,15 @@ export class PolicyBackupService {
 
     private messageServer: MessageServer;
     private userId: string;
+    private policyTopicId: string;
+    private instanceTopicId: string;
 
     constructor(policyId: string, policy: Policy) {
         this.controller = new PolicyBackup(policyId);
         this.topicId = policy.restoreTopicId;
         this.owner = policy.owner;
+        this.policyTopicId = policy.topicId;
+        this.instanceTopicId = policy.instanceTopicId;
 
         this.timer = new Timer(30 * 1000, 120 * 1000);
         this.timer.subscribe(this.task.bind(this));
@@ -132,7 +136,14 @@ export class PolicyBackupService {
 
         const type = diff.type === 'backup' ? MessageAction.PublishPolicyBackup : MessageAction.PublishPolicyDiff;
         const message = new PolicyDiffMessage(MessageType.PolicyDiff, type);
-        message.setDocument(diff, buffer);
+        message.setDocument({
+            uuid: diff.uuid,
+            owner: this.owner,
+            diffType: diff.type,
+            diffIndex: diff.index,
+            policyTopicId: this.policyTopicId,
+            instanceTopicId: this.instanceTopicId,
+        }, buffer);
         const result = await this.messageServer
             .sendMessage(message, true, null, this.userId);
 
@@ -150,13 +161,38 @@ export class PolicyRestoreService {
     private readonly owner: string;
     private readonly controller: PolicyRestore;
 
+    private messageServer: MessageServer;
+    private userId: string;
+    private policyId: string;
+    private topicListener: TopicListener;
+
     constructor(policyId: string, policy: Policy) {
         this.controller = new PolicyRestore(policyId);
+        this.policyId = policyId;
         this.topicId = policy.restoreTopicId;
         this.owner = policy.owner;
     }
 
     public async init(): Promise<void> {
+        console.debug('--- PolicyRestoreService init')
         await this.controller.init();
+
+        this.topicListener = new TopicListener(this.topicId);
+        this.topicListener.setListenerName(this.policyId);
+        await this.topicListener.subscribe(this.task.bind(this));
+    }
+
+    private async task(data: ITopicMessage): Promise<boolean> {
+        console.debug('--- task');
+        try {
+            const message = PolicyDiffMessage.fromMessage(data.message);
+            await MessageServer.loadDocument(message);
+            const file = await FileHelper.unZipFile(message.document);
+            await this.controller.restore(file);
+            console.debug('--- task --');
+        } catch (error) {
+            console.log(error);
+        }
+        return true;
     }
 }

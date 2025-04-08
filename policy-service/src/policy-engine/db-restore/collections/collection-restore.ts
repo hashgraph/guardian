@@ -63,7 +63,11 @@ export abstract class CollectionRestore<T extends RestoreEntity> {
 
             hash = this.actionHash(hash, action);
         }
-        const fullHash = hash ? this.sumHash(oldCollectionDiff.fullHash, hash) : oldCollectionDiff.fullHash;
+        const fullHash = oldCollectionDiff ?
+            (hash ?
+                this.sumHash(oldCollectionDiff.fullHash, hash) :
+                oldCollectionDiff.fullHash
+            ) : null;
 
         await this.insertDocuments(insertRows);
         await this.updateDocuments(updateRows);
