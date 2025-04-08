@@ -29,6 +29,10 @@ export interface IAuthUser {
      */
     parent?: string;
     /**
+     * Parents
+     */
+    parents?: string[];
+    /**
      * login expire date
      */
     expireAt?: number

@@ -26,6 +26,11 @@ export interface IAuthUser {
      * Parent user DID
      */
     parent?: string;
+
+    /**
+     * Parents user list of DID
+     */
+    parents?: string;
     /**
      * Hedera account id
      */
