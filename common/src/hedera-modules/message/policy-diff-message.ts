@@ -96,9 +96,6 @@ export class PolicyDiffMessage extends Message {
      * To documents
      */
     public async toDocuments(): Promise<ArrayBuffer[]> {
-        if (this.action !== MessageAction.PublishPolicy) {
-            return [];
-        }
         if (this.document) {
             return [this.document];
         }

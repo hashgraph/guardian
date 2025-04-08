@@ -53,14 +53,20 @@ export class PolicyMessage extends Message {
     public synchronizationTopicId: string;
     /**
      * Policy topic ID
-     * @private
      */
     public policyTopicId: string;
-
     /**
      * Discontinued date
      */
     public discontinuedDate?: Date;
+    /**
+     * 
+     */
+    public availability: string;
+    /**
+     * 
+     */
+    public restoreTopicId: string;
 
     constructor(type: MessageType.Policy | MessageType.InstancePolicy, action: MessageAction) {
         super(action, type);
@@ -85,6 +91,8 @@ export class PolicyMessage extends Message {
         this.instanceTopicId = model.instanceTopicId;
         this.synchronizationTopicId = model.synchronizationTopicId;
         this.discontinuedDate = model.discontinuedDate;
+        this.availability = model.availability;
+        this.restoreTopicId = model.restoreTopicId;
         this.document = zip;
     }
 
@@ -115,6 +123,8 @@ export class PolicyMessage extends Message {
             topicId: this.policyTopicId?.toString(),
             instanceTopicId: this.instanceTopicId,
             synchronizationTopicId: this.synchronizationTopicId,
+            availability: this.availability,
+            restoreTopicId: this.restoreTopicId,
             cid: this.getDocumentUrl(UrlType.cid),
             uri: this.getDocumentUrl(UrlType.url)
         };
@@ -188,6 +198,8 @@ export class PolicyMessage extends Message {
         message.policyTopicId = json.topicId;
         message.instanceTopicId = json.instanceTopicId;
         message.synchronizationTopicId = json.synchronizationTopicId;
+        message.availability = json.availability;
+        message.restoreTopicId = json.restoreTopicId;
         if ([MessageAction.DeferredDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(json.action)
             && json.effectiveDate) {
             message.discontinuedDate = new Date(json.effectiveDate)
@@ -243,6 +255,8 @@ export class PolicyMessage extends Message {
         result.policyTopicId = this.policyTopicId;
         result.instanceTopicId = this.instanceTopicId;
         result.synchronizationTopicId = this.synchronizationTopicId;
+        result.availability = this.availability;
+        result.restoreTopicId = this.restoreTopicId;
         if ([MessageAction.DeferredDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(this.action)) {
             result.effectiveDate = this.discontinuedDate;
         }

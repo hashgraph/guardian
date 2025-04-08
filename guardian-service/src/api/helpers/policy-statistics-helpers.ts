@@ -267,7 +267,6 @@ export function uniqueDocuments(documents: VcDocument[]): VcDocument[] {
     }
     const result: VcDocument[] = [];
     for (const item of map.values()) {
-        console.log(item.size)
         for (const doc of item.values()) {
             if (Array.isArray(doc.relationships)) {
                 for (const messageId of doc.relationships) {

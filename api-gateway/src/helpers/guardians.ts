@@ -3614,12 +3614,6 @@ export class Guardians extends NatsService {
         return await this.sendMessage(MessageAPI.PUBLISH_FORMULA, { formulaId, owner });
     }
 
-
-
-
-
-
-
     /**
      * Get external policy
      *
@@ -3627,8 +3621,8 @@ export class Guardians extends NatsService {
      * @param owner
      * @returns {ExternalPolicyDTO}
      */
-    public async getExternalPolicyRequest(id: string, owner: IOwner): Promise<ExternalPolicyDTO> {
-        return await this.sendMessage(MessageAPI.GET_EXTERNAL_POLICY_REQUEST, { id, owner });
+    public async getExternalPolicyRequest(filters: any, owner: IOwner): Promise<ExternalPolicyDTO> {
+        return await this.sendMessage(MessageAPI.GET_EXTERNAL_POLICY_REQUEST, { filters, owner });
     }
 
     /**
@@ -3669,15 +3663,67 @@ export class Guardians extends NatsService {
 
     /**
      * Async approve external policy
-     * @param policyId
+     * @param messageId
      * @param owner
      * @param task
      */
     public async approveExternalPolicyAsync(
-        policyId: string,
+        messageId: string,
         owner: IOwner,
         task: NewTask
     ): Promise<NewTask> {
-        return await this.sendMessage(MessageAPI.APPROVE_EXTERNAL_POLICY_ASYNC, { policyId, owner, task });
+        return await this.sendMessage(MessageAPI.APPROVE_EXTERNAL_POLICY_ASYNC, { messageId, owner, task });
     }
+
+    /**
+     * Async reject external policy
+     * @param messageId
+     * @param owner
+     * @param task
+     */
+    public async rejectExternalPolicyAsync(
+        messageId: string,
+        owner: IOwner,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.REJECT_EXTERNAL_POLICY_ASYNC, { messageId, owner, task });
+    }
+
+    /**
+     * Async approve external policy
+     * @param messageId
+     * @param owner
+     */
+    public async approveExternalPolicy(
+        messageId: string,
+        owner: IOwner
+    ): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.APPROVE_EXTERNAL_POLICY, { messageId, owner });
+    }
+
+    /**
+     * Async reject external policy
+     * @param messageId
+     * @param owner
+     */
+    public async rejectExternalPolicy(
+        messageId: string,
+        owner: IOwner
+    ): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.REJECT_EXTERNAL_POLICY, { messageId, owner });
+    }
+
+
+    /**
+     * Return external policies
+     *
+     * @param filters
+     * @param owner
+     *
+     * @returns {ResponseAndCount<PolicyLabelDTO>}
+     */
+    public async groupExternalPolicyRequests(filters: { full: boolean, pageIndex: any, pageSize: any }, owner: IOwner): Promise<ResponseAndCount<PolicyLabelDTO>> {
+        return await this.sendMessage(MessageAPI.GROUP_EXTERNAL_POLICY_REQUESTS, { filters, owner });
+    }
+
 }

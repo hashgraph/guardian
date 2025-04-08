@@ -35,6 +35,7 @@ export class ExternalPolicyComponent implements OnInit {
     public pageSize: number;
     public pageCount: number;
     public columns: IColumn[];
+    private _defaultColumns: IColumn[];
 
     private subscription = new Subscription();
 
@@ -45,7 +46,7 @@ export class ExternalPolicyComponent implements OnInit {
         private router: Router,
         private route: ActivatedRoute
     ) {
-        this.columns = [{
+        this._defaultColumns = [{
             id: 'name',
             title: 'Name',
             type: 'text',
@@ -76,14 +77,8 @@ export class ExternalPolicyComponent implements OnInit {
             size: '210',
             tooltip: false
         }, {
-            id: 'user',
+            id: 'username',
             title: 'Username',
-            type: 'text',
-            size: '180',
-            tooltip: false
-        }, {
-            id: 'role',
-            title: 'Role',
             type: 'text',
             size: '180',
             tooltip: false
@@ -93,19 +88,7 @@ export class ExternalPolicyComponent implements OnInit {
             type: 'text',
             size: '180',
             tooltip: false
-        }, {
-            id: 'options',
-            title: 'Options',
-            type: 'text',
-            size: '180',
-            tooltip: false
-        }, {
-            id: 'edit',
-            title: '',
-            type: 'text',
-            size: '56',
-            tooltip: false
-        }
+        },
             // , {
             //     id: 'delete',
             //     title: '',
@@ -113,7 +96,8 @@ export class ExternalPolicyComponent implements OnInit {
             //     size: '64',
             //     tooltip: false
             // }
-        ]
+        ];
+        this.columns = [...this._defaultColumns];
     }
 
     ngOnInit() {
@@ -141,6 +125,18 @@ export class ExternalPolicyComponent implements OnInit {
             this.isConfirmed = !!(profile && profile.confirmed);
             this.user = new UserPermissions(profile);
             this.owner = this.user.did;
+
+            if (this.user.POLICIES_EXTERNAL_POLICY_UPDATE) {
+                this.columns = [...this._defaultColumns, {
+                    id: 'options',
+                    title: 'Options',
+                    type: 'text',
+                    size: '180',
+                    tooltip: false
+                }];
+            } else {
+                this.columns = [...this._defaultColumns];
+            }
 
             if (this.isConfirmed) {
                 this.loadData();
@@ -250,7 +246,7 @@ export class ExternalPolicyComponent implements OnInit {
     public onApprove(item: any) {
         this.loading = true;
         this.externalPoliciesService
-            .pushApprove(item.id)
+            .pushApprove(item.messageId)
             .subscribe((result) => {
                 const { taskId, expectation } = result;
                 this.router.navigate(['task', taskId], {
@@ -266,7 +262,7 @@ export class ExternalPolicyComponent implements OnInit {
     public onReject(item: any) {
         this.loading = true;
         this.externalPoliciesService
-            .reject(item.id)
+            .reject(item.messageId)
             .subscribe((result) => {
                 const { taskId, expectation } = result;
                 this.router.navigate(['task', taskId], {
@@ -280,7 +276,7 @@ export class ExternalPolicyComponent implements OnInit {
     }
 
     getStatusName(row: any) {
-        switch (row.status) {
+        switch (row.fullStatus) {
             case ExternalPolicyStatus.NEW:
                 return 'Requested';
             case ExternalPolicyStatus.APPROVED:

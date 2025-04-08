@@ -31,5 +31,6 @@ export enum TaskAction {
     IMPORT_TOOL_MESSAGE = 'Import tool message',
     MIGRATE_DATA = 'Migrate data',
     PUBLISH_POLICY_LABEL = 'Publish policy label',
-    APPROVE_EXTERNAL_POLICY = 'Approve external policy'
+    APPROVE_EXTERNAL_POLICY = 'Approve external policy',
+    REJECT_EXTERNAL_POLICY = 'Reject external policy'
 }

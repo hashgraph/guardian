@@ -43,12 +43,13 @@
                 (click)="onImport()"
                 class="guardian-button guardian-button-primary">
                 <div class="guardian-button-icon">
-                    <svg-icon class="icon-btn svg-icon"
-                        src="/assets/images/icons/import.svg"
+                    <svg-icon
+                        class="icon-btn"
+                        src="/assets/images/icons/add.svg"
                         svgClass="icon-color-secondary">
                     </svg-icon>
                 </div>
-                <div class="guardian-button-label">Search</div>
+                <div class="guardian-button-label">Request Access</div>
             </button>
         </div>
     </div>
@@ -84,7 +85,7 @@
                                     [ngSwitch]="column.id"
                                 >
                                     <ng-container *ngSwitchCase="'status'">
-                                        <div class="policy-status {{row.status}}-status">
+                                        <div class="policy-status {{row.fullStatus}}-status">
                                             {{ getStatusName(row) }}
                                         </div>
                                     </ng-container>
@@ -96,12 +97,12 @@
                                         </span>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'options'">
-                                        <div *ngIf="row.status === 'NEW'" class="option-btns">
+                                        <div *ngIf="row.fullStatus === 'NEW'" class="option-btns">
                                             <button class="guardian-button approve-btn" (click)="onApprove(row)">Approve</button>
                                             <button class="guardian-button reject-btn" (click)="onReject(row)">Reject</button>
                                         </div>
                                     </ng-container>
-                                    <ng-container *ngSwitchCase="'delete'">
+                                    <!-- <ng-container *ngSwitchCase="'delete'">
                                         <div
                                             [attr.disabled]="row.status === 'PUBLISHED'"
                                             class="guardian-icon-button big"
@@ -112,7 +113,7 @@
                                                 [svgClass]="row.status === 'PUBLISHED' ? 'icon-color-disabled' : 'icon-color-delete'">
                                             </svg-icon>
                                         </div>
-                                    </ng-container>
+                                    </ng-container> -->
                                     <ng-container *ngSwitchDefault>
                                         <span class="text-truncate">{{row[column.id]}}</span>
                                     </ng-container>

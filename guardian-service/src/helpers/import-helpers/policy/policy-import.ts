@@ -70,7 +70,6 @@ export class PolicyImport {
         user: IOwner,
         additionalPolicyConfig: Partial<Policy> | null
     ): Promise<Policy> {
-        console.log(policy);
         if (this.mode === ImportMode.DEMO) {
             delete policy._id;
             delete policy.id;

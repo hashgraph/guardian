@@ -116,6 +116,14 @@ export interface PolicyMessageBody extends MessageBody {
      */
     synchronizationTopicId: string;
     /**
+     * 
+     */
+    availability: string;
+    /**
+     * 
+     */
+    restoreTopicId: string;
+    /**
      * Effective Date
      */
     effectiveDate?: string;

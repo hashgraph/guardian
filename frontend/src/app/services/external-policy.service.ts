@@ -57,19 +57,19 @@ export class ExternalPoliciesService {
         return this.http.post<any>(`${this.url}/import`, { messageId });
     }
 
-    public approve(policyId: string): Observable<any> {
-        return this.http.post<any>(`${this.url}/${policyId}/approve`, null);
+    public approve(messageId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/${messageId}/approve`, null);
     }
 
-    public pushApprove(policyId: string): Observable<{ taskId: string, expectation: number }> {
-        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/${policyId}/approve`, null);
+    public pushApprove(messageId: string): Observable<{ taskId: string, expectation: number }> {
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/${messageId}/approve`, null);
     }
 
-    public reject(policyId: string): Observable<any> {
-        return this.http.post<any>(`${this.url}/${policyId}/reject`, null);
+    public reject(messageId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/${messageId}/reject`, null);
     }
 
-    public pushReject(policyId: string): Observable<{ taskId: string, expectation: number }> {
-        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/${policyId}/reject`, null);
+    public pushReject(messageId: string): Observable<{ taskId: string, expectation: number }> {
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/${messageId}/reject`, null);
     }
 }

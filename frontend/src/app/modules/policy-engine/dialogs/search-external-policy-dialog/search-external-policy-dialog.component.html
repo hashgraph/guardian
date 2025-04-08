@@ -32,6 +32,10 @@
                     <label class="form-label">Version</label>
                     <div class="guardian-input-readonly">{{policy?.policy?.version || 'N\\A'}}</div>
                 </div>
+                <div class="guardian-input-container">
+                    <label class="form-label">Type</label>
+                    <div class="guardian-input-readonly">{{policy?.availability === 'public' ? 'Public' : 'Private'}}</div>
+                </div>
             </div>
         </ng-container>
         <ng-container *ngIf="step===0">

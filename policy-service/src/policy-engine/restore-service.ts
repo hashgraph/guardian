@@ -1,6 +1,6 @@
 import { IPolicyDiff, PolicyBackup, PolicyRestore } from "./db-restore/index.js";
 import { FileHelper } from "./db-restore/file-helper.js";
-import { DatabaseServer, MessageAction, MessageServer, MessageType, Policy, PolicyDiffMessage, TopicConfig, Users } from "@guardian/common";
+import { DatabaseServer, MessageAction, MessageServer, MessageType, Policy, PolicyDiffMessage, TopicConfig, Users, Wallet } from "@guardian/common";
 
 class Timer {
     private readonly min: number;
@@ -79,7 +79,7 @@ export class PolicyBackupService {
 
     constructor(policyId: string, policy: Policy) {
         this.controller = new PolicyBackup(policyId);
-        this.topicId = policy.diffTopicId;
+        this.topicId = policy.restoreTopicId;
         this.owner = policy.owner;
 
         this.timer = new Timer(30 * 1000, 120 * 1000);
@@ -93,13 +93,19 @@ export class PolicyBackupService {
         if (!root) {
             throw Error('Invalid user');
         }
-        const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(this.topicId), true);
+
+        const topicConfig = await DatabaseServer.getTopicById(this.topicId);
+        const topic = await TopicConfig.fromObjectV2(topicConfig);
         if (!topic) {
             throw Error('Invalid topic');
         }
         this.userId = root.id;
-        this.messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
-            .setTopicObject(topic);
+
+        this.messageServer = new MessageServer(
+            root.hederaAccountId,
+            root.hederaAccountKey,
+            root.signOptions
+        ).setTopicObject(topic);
 
         this.backup();
     }
@@ -120,7 +126,7 @@ export class PolicyBackupService {
     }
 
     private async sendDiff(diff: IPolicyDiff) {
-        console.log('-- _sendDiff')
+        console.log('----------- _sendDiff')
         const file = FileHelper.encryptFile(diff);
         const buffer = await FileHelper.zipFile(file);
 
@@ -132,7 +138,10 @@ export class PolicyBackupService {
 
         diff.messageId = result.getId();
 
-        console.log(file)
+        console.log('--- messageId', diff.messageId);
+        console.log('--- getTopic', this.messageServer.getTopic());
+
+        // console.log(file)
     }
 }
 
@@ -143,7 +152,7 @@ export class PolicyRestoreService {
 
     constructor(policyId: string, policy: Policy) {
         this.controller = new PolicyRestore(policyId);
-        this.topicId = policy.diffTopicId;
+        this.topicId = policy.restoreTopicId;
         this.owner = policy.owner;
     }
 

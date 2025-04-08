@@ -850,8 +850,6 @@ export class PolicyEngine extends NatsService {
         model.version = version;
         model.availability = availability;
 
-        console.log(model);
-
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(model.topicId), true);
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
             .setTopicObject(topic);
@@ -967,6 +965,30 @@ export class PolicyEngine extends NatsService {
                 }
             } else {
                 await createSynchronizationTopic();
+            }
+
+            const createDiffTopic = async () => {
+                notifier.completedAndStart('Create restore topic');
+                const diffTopic = await topicHelper.create({
+                    type: TopicType.RestoreTopic,
+                    name: model.name || TopicType.RestoreTopic,
+                    description: model.topicDescription || TopicType.RestoreTopic,
+                    owner: user.owner,
+                    policyId: model.id.toString(),
+                    policyUUID: model.uuid
+                }, { admin: true, submit: true });
+                await diffTopic.saveKeys();
+                await DatabaseServer.saveTopic(diffTopic.toObject());
+                model.restoreTopicId = diffTopic.topicId;
+            }
+            if (model.availability === PolicyAvailability.PUBLIC) {
+                if (model.status === PolicyStatus.PUBLISH_ERROR) {
+                    if (!!model.restoreTopicId) {
+                        await createDiffTopic();
+                    }
+                } else {
+                    await createDiffTopic();
+                }
             }
 
             const zip = await PolicyImportExport.generate(model);
@@ -1314,10 +1336,7 @@ export class PolicyEngine extends NatsService {
                     });
                 }
             }
-            ;
         }
-
-        // const tagMessages = await messageServer.getMessages<TagMessage>(message.policyTopicId, MessageType.Tag, MessageAction.PublishTag);
 
         notifier.completedAndStart('Parse policy files');
         const policyToImport: any = await PolicyImportExport.parseZipFile(message.document, true);

@@ -1505,7 +1505,8 @@ export class PoliciesComponent implements OnInit {
         });
         dialogRef.onClose.subscribe(async (result: any | null) => {
             if (result) {
-                this.loadAllPolicy();
+                // this.loadAllPolicy();
+                this.router.navigate(['/external-policies']);
             }
         });
     }

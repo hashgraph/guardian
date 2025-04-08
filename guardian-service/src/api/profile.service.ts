@@ -248,7 +248,6 @@ async function createUserProfile(
         }
     }
     const messageServer = new MessageServer(hederaAccountId, hederaAccountKey, signOptions);
-    console.log('hederaAccountId', hederaAccountId);
 
     // ------------------------
     // <-- Check hedera key

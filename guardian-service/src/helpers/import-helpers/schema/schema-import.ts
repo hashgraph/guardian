@@ -294,7 +294,6 @@ export class SchemaImport {
     }
 
     private async saveSchemas(schemas: ISchema[]): Promise<void> {
-        console.log(' ---  schemas', schemas);
         let index = 0;
         for (const file of schemas) {
             const label = `Schema ${index + 1} (${file.name || '-'})`;

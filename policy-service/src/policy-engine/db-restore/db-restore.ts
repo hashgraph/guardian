@@ -120,7 +120,7 @@ export class PolicyRestore {
                 policyId: this.policyId,
                 policyTopicId: policy.topicId,
                 instanceTopicId: policy.instanceTopicId,
-                diffTopicId: '',
+                restoreTopicId: policy.restoreTopicId,
                 type: 'restore',
                 valid: true
             } as any);
@@ -130,8 +130,8 @@ export class PolicyRestore {
             row.file = await FileHelper.loadFile(row.fileId);
         }
         this.lastDiff = row;
-        console.log('-- _loadBackup')
-        console.log(JSON.stringify(this.lastDiff))
+        console.log('-- _loadBackup (r)')
+        // console.log(JSON.stringify(this.lastDiff))
     }
 
     private async _saveBackup(backup: IPolicyDiff) {

@@ -133,8 +133,8 @@ export class PolicyBackup {
             externalDocCollection: externalDocResult.diff,
             approveCollection: approveResult.diff
         }
-        console.log(JSON.stringify(backup))
-        console.log(JSON.stringify(diff))
+        // console.log(JSON.stringify(backup))
+        // console.log(JSON.stringify(diff))
         return { backup, diff };
     }
 
@@ -185,8 +185,8 @@ export class PolicyBackup {
             externalDocCollection: externalDocResult.diff,
             approveCollection: approveResult.diff
         }
-        console.log(JSON.stringify(backup))
-        console.log(JSON.stringify(diff))
+        // console.log(JSON.stringify(backup))
+        // console.log(JSON.stringify(diff))
         return { backup, diff };
     }
 
@@ -198,7 +198,7 @@ export class PolicyBackup {
                 policyId: this.policyId,
                 policyTopicId: policy.topicId,
                 instanceTopicId: policy.instanceTopicId,
-                diffTopicId: '',
+                restoreTopicId: policy.restoreTopicId,
             } as any);
             row = await collection.findOne<PolicyDiff>({ _id: record.insertedId });
         }
@@ -206,7 +206,7 @@ export class PolicyBackup {
             row.file = await FileHelper.loadFile(row.fileId);
         }
         this.lastDiff = row;
-        console.log('-- _loadBackup')
-        console.log(JSON.stringify(this.lastDiff))
+        console.log('-- _loadBackup (b)')
+        // console.log(JSON.stringify(this.lastDiff))
     }
 }

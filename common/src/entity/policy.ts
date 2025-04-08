@@ -231,7 +231,7 @@ export class Policy extends BaseEntity {
      * TopicId
      */
     @Property({ nullable: true })
-    diffTopicId?: string;
+    restoreTopicId?: string;
 
     /**
      * Policy Availability

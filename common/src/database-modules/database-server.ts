@@ -1,4 +1,4 @@
-import { AssignedEntityType, GenerateUUIDv4, IVC, MintTransactionStatus, PolicyTestStatus, PolicyStatus, SchemaEntity, TokenType, TopicType } from '@guardian/interfaces';
+import { AssignedEntityType, GenerateUUIDv4, IVC, MintTransactionStatus, PolicyTestStatus, PolicyStatus, SchemaEntity, TokenType, TopicType, ExternalPolicyStatus } from '@guardian/interfaces';
 import { TopicId } from '@hashgraph/sdk';
 import { FilterObject, FilterQuery, FindAllOptions, MikroORM } from '@mikro-orm/core';
 import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
@@ -117,7 +117,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param id
      */
     public static async setSystemMode(dryRunId: string, systemMode: boolean): Promise<void> {
-        const items = await new DataBaseHelper(DryRun).find({dryRunId});
+        const items = await new DataBaseHelper(DryRun).find({ dryRunId });
         for (const item of items) {
             item.systemMode = systemMode;
         }
@@ -130,17 +130,17 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param systemMode
      */
     public static async createSavepoint(dryRunId: string): Promise<void> {
-        const limit = {limit: DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE};
-        const amount = await new DataBaseHelper(DryRun).count({dryRunId});
+        const limit = { limit: DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE };
+        const amount = await new DataBaseHelper(DryRun).count({ dryRunId });
         const naturalCount = Math.floor(amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
         for (let i = 0; i < naturalCount; i++) {
-            const items = await new DataBaseHelper(DryRun).find({dryRunId}, limit);
+            const items = await new DataBaseHelper(DryRun).find({ dryRunId }, limit);
             for (const item of items) {
                 item.savepoint = true;
             }
             await new DataBaseHelper(DryRun).update(items);
         }
-        const restItems = await new DataBaseHelper(DryRun).find({dryRunId});
+        const restItems = await new DataBaseHelper(DryRun).find({ dryRunId });
         for (const item of restItems) {
             item.savepoint = true;
         }
@@ -156,14 +156,14 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param systemMode
      */
     public static async restoreSavepoint(dryRunId: string): Promise<void> {
-        const limit = {limit: DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE};
-        const amount = await new DataBaseHelper(DryRun).count({dryRunId, savepoint: {$exists: false}});
+        const limit = { limit: DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE };
+        const amount = await new DataBaseHelper(DryRun).count({ dryRunId, savepoint: { $exists: false } });
         const naturalCount = Math.floor(amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
         for (let i = 0; i < naturalCount; i++) {
-            const items = await new DataBaseHelper(DryRun).find({dryRunId, savepoint: {$exists: false}}, limit);
+            const items = await new DataBaseHelper(DryRun).find({ dryRunId, savepoint: { $exists: false } }, limit);
             await new DataBaseHelper(DryRun).remove(items);
         }
-        const restItems = await new DataBaseHelper(DryRun).find({dryRunId, savepoint: {$exists: false}});
+        const restItems = await new DataBaseHelper(DryRun).find({ dryRunId, savepoint: { $exists: false } });
         await new DataBaseHelper(DryRun).remove(restItems);
 
         // const files = await new DataBaseHelper(DryRunFiles).find({ policyId: dryRunId });
@@ -176,7 +176,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param systemMode
      */
     public static async getSavepointSate(dryRunId: string): Promise<DryRun> {
-        return await new DataBaseHelper(DryRun).findOne({dryRunId, savepoint: true});
+        return await new DataBaseHelper(DryRun).findOne({ dryRunId, savepoint: true });
 
         // const files = await new DataBaseHelper(DryRunFiles).find({ policyId: dryRunId });
         // await new DataBaseHelper(DryRunFiles).remove(files);
@@ -491,7 +491,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * Restore States
      */
     public static async restoreStates(policyId: string): Promise<void> {
-        const states = await new DataBaseHelper(BlockState).find({policyId});
+        const states = await new DataBaseHelper(BlockState).find({ policyId });
         for (const state of states) {
             state.blockState = state.savedState;
             await new DataBaseHelper(BlockState).save(state);
@@ -502,7 +502,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * Copy States
      */
     public static async copyStates(policyId: string): Promise<void> {
-        const states = await new DataBaseHelper(BlockState).find({policyId});
+        const states = await new DataBaseHelper(BlockState).find({ policyId });
         for (const state of states) {
             state.savedState = state.blockState;
             await new DataBaseHelper(BlockState).save(state);
@@ -612,6 +612,14 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Get ExternalPolicy
+     * @param id
+     */
+    public static async getExternalPolicy(filters: any): Promise<ExternalPolicy | null> {
+        return await new DataBaseHelper(ExternalPolicy).findOne(filters);
+    }
+
+    /**
      * Update ExternalPolicy
      * @param externalPolicy
      */
@@ -626,6 +634,135 @@ export class DatabaseServer extends AbstractDatabaseServer {
     public static async removeExternalPolicy(externalPolicy: ExternalPolicy): Promise<void> {
         return await new DataBaseHelper(ExternalPolicy).remove(externalPolicy);
     }
+
+    /**
+     * Get ExternalPolicies
+     * @param filters
+     * @param options
+     */
+    public static async groupExternalPoliciesAndCount(
+        owner: { owner: string, creator: string },
+        skip: number,
+        limit: number,
+        full: boolean = false
+    ): Promise<[ExternalPolicy[], number]> {
+        const pipeline: any[] = [];
+        pipeline.push({ $sort: { createDate: 1 } });
+
+        if (!full) {
+            pipeline.push({
+                $match: {
+                    creator: { $eq: owner.creator }
+                }
+            });
+        }
+
+        pipeline.push({
+            $group: {
+                _id: "$messageId",
+                createDate: { $first: "$createDate" },
+                name: { $first: "$name" },
+                description: { $first: "$description" },
+                version: { $first: "$version" },
+                topicId: { $first: "$topicId" },
+                instanceTopicId: { $first: "$instanceTopicId" },
+                policyTag: { $first: "$policyTag" },
+                owner: { $addToSet: "$owner" },
+                creator: { $push: "$creator" },
+                status: { $push: "$status" },
+                username: { $push: "$username" }
+            }
+        });
+        pipeline.push({
+            $project: {
+                messageId: '$_id',
+                createDate: true,
+                name: true,
+                description: true,
+                version: true,
+                topicId: true,
+                instanceTopicId: true,
+                policyTag: true,
+                owner: true,
+                creator: true,
+                status: true,
+                username: true,
+                fullStatus: {
+                    $switch: {
+                        branches: [
+                            {
+                                case: { $in: [ExternalPolicyStatus.APPROVED, "$status"] },
+                                then: ExternalPolicyStatus.APPROVED
+                            },
+                            {
+                                case: { $in: [ExternalPolicyStatus.NEW, "$status"] },
+                                then: ExternalPolicyStatus.NEW
+                            },
+                            {
+                                case: { $in: [ExternalPolicyStatus.REJECTED, "$status"] },
+                                then: ExternalPolicyStatus.REJECTED
+                            }
+                        ],
+                        default: ExternalPolicyStatus.REJECTED
+                    }
+                }
+            }
+        });
+        pipeline.push({ $sort: { createDate: -1 } });
+
+        if (full) {
+            pipeline.push({
+                $match: {
+                    owner: { $eq: owner.owner }
+                }
+            });
+        }
+
+        pipeline.push({
+            $facet: {
+                items: [{ $skip: skip }, { $limit: limit }],
+                count: [{ $count: "count" }]
+            }
+        });
+
+        const result: any = await new DataBaseHelper(ExternalPolicy).aggregate(pipeline);
+        let count: number = 0;
+        let items: ExternalPolicy[];
+        if (result && result[0]) {
+            if (result[0].items) {
+                items = result[0].items;
+            } else {
+                items = [];
+            }
+            if (
+                result[0].count &&
+                result[0].count[0]
+            ) {
+                count = result[0].count[0].count;
+            }
+        }
+
+        return [items, count];
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * Dry-run

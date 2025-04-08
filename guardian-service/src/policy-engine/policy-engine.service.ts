@@ -1333,7 +1333,8 @@ export class PolicyEngineService {
                 const notifier = await initNotifier(task);
 
                 RunFunctionAsync(async () => {
-                    const policyToImport = await this.policyEngine.preparePolicyPreviewMessage(messageId, owner, notifier, logger);
+                    const policyToImport = await this.policyEngine
+                        .preparePolicyPreviewMessage(messageId, owner, notifier, logger);
                     const hash = await this.createHashByFile(policyToImport, logger);
                     const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
                     const similarPolicies = await DatabaseServer.getListOfPolicies(filters);

@@ -341,16 +341,20 @@ export class BlockTreeGenerator extends NatsService {
         try {
             if (
                 policy.status === PolicyStatus.PUBLISH &&
-                policy.availability === PolicyAvailability.PUBLIC
+                policy.availability === PolicyAvailability.PUBLIC &&
+                policy.restoreTopicId
             ) {
                 const service = new PolicyBackupService(policyId, policy);
                 await service.init();
                 PolicyComponentsUtils.RegisterBackup(policyId, service);
             }
-            if (policy.status === PolicyStatus.VIEW) {
+            if (
+                policy.status === PolicyStatus.VIEW && 
+                policy.restoreTopicId
+            ) {
                 const service = new PolicyRestoreService(policyId, policy);
-                await service.init();
-                PolicyComponentsUtils.RegisterRestore(policyId, service);
+                // await service.init();
+                // PolicyComponentsUtils.RegisterRestore(policyId, service);
             }
         } catch (error) {
             console.log(error);

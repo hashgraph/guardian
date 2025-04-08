@@ -44,7 +44,6 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
                 title: 'Manage Schema Rules',
                 routerLink: '/schema-rules'
             },
-
             {
                 title: 'External Policies',
                 routerLink: '/external-policies'
@@ -178,6 +177,12 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
                 childItems.push({
                     title: 'Formulas',
                     routerLink: '/formulas'
+                });
+            }
+            if (user.POLICIES_EXTERNAL_POLICY_READ) {
+                childItems.push({
+                    title: 'External Policies',
+                    routerLink: '/external-policies'
                 });
             }
         }
