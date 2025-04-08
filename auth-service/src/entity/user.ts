@@ -46,6 +46,11 @@ export class User extends BaseEntity implements IUser {
     parent?: string;
 
     /**
+     * Parents user
+     */
+    @Property({ nullable: true })
+    parents?: string[];
+    /**
      * Wallet token
      */
     @Property({ nullable: true })

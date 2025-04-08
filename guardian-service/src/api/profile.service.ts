@@ -127,6 +127,7 @@ async function setupUserProfile(
     await users.updateCurrentUser(username, {
         did,
         parent: profile.parent,
+        parents: [profile.parent],
         hederaAccountId: profile.hederaAccountId,
         useFireblocksSigning: profile.useFireblocksSigning
     });
@@ -278,28 +279,20 @@ async function createUserProfile(
 
     const dataBaseServer = new DatabaseServer();
 
-    if (parent) {
-        topicConfig = await TopicConfig.fromObject(
-            await dataBaseServer.findOne(Topic, {
-                owner: parent,
-                type: TopicType.UserTopic
-            }), true);
-    }
-    if (!topicConfig) {
-        notifier.info('Create user topic');
-        logger.info('Create User Topic', ['GUARDIAN_SERVICE']);
-        const topicHelper = new TopicHelper(hederaAccountId, hederaAccountKey, signOptions);
-        topicConfig = await topicHelper.create({
-            type: TopicType.UserTopic,
-            name: TopicType.UserTopic,
-            description: TopicType.UserTopic,
-            owner: null,
-            policyId: null,
-            policyUUID: null
-        });
-        await topicHelper.oneWayLink(topicConfig, globalTopic, user.id.toString());
-        newTopic = await dataBaseServer.save(Topic, topicConfig.toObject());
-    }
+    notifier.info('Create user topic');
+    logger.info('Create User Topic', ['GUARDIAN_SERVICE']);
+    const topicHelper = new TopicHelper(hederaAccountId, hederaAccountKey, signOptions);
+    topicConfig = await topicHelper.create({
+        type: TopicType.UserTopic,
+        name: TopicType.UserTopic,
+        description: TopicType.UserTopic,
+        owner: null,
+        policyId: null,
+        policyUUID: null
+    });
+    await topicHelper.oneWayLink(topicConfig, globalTopic, user.id.toString());
+    newTopic = await dataBaseServer.save(Topic, topicConfig.toObject());
+
     messageServer.setTopicObject(topicConfig);
     // ------------------------
     // Resolve topic -->
@@ -694,6 +687,51 @@ export function profileAPI(logger: PinoLogger) {
             }
         });
 
+    ApiResponse(MessageAPI.USER_UPDATE_STANDART_REGISTRY,
+        async (msg: { username: string, standartRegistryDid: string }) => {
+            try {
+                const { username, standartRegistryDid } = msg;
+                const users = new Users();
+                const user = await users.getUser(username);
+
+                if (!user.parents?.length || !user.parents.includes(standartRegistryDid)) {
+                    return new MessageError("The Standard Registry DID is not included in the user's parents", 403);
+                }
+
+                await users.updateCurrentUser(username, {
+                    parent: standartRegistryDid,
+                });
+                //notifier
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                console.error(error);
+                return new MessageError(error, 500);
+            }
+        });
+    
+    ApiResponse(MessageAPI.USER_ADD_STANDART_REGISTRY,
+        async (msg: { username: string, standartRegistryDid: string }) => {
+            try {
+                const { username, standartRegistryDid } = msg;
+                const users = new Users();
+                const user = await users.getUser(username);
+
+                if (user.parents?.includes(standartRegistryDid)) {
+                    return new MessageError("The Standard Registry DID has already been included in the user's parents", 403);
+                }
+
+                await users.updateCurrentUser(username, {
+                    parents: [...(user.parents || []), standartRegistryDid],
+                });
+                //notifier
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                console.error(error);
+                return new MessageError(error, 500);
+            }
+        });
+
+            
     ApiResponse(MessageAPI.CREATE_USER_PROFILE_COMMON,
         async (msg: { username: string, profile: any }) => {
             try {
