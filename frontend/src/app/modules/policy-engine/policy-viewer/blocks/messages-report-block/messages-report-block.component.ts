@@ -336,6 +336,7 @@ export class MessagesReportBlockComponent implements OnInit {
             if (this.report) {
                 this.createReport(this.report);
                 this.createSmallReport();
+                this.loadRetirementMessages();
             }
         }
         this.removeLines();
