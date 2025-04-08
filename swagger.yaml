@@ -4589,6 +4589,13 @@ paths:
           example: 20
           schema:
             type: number
+        - name: type
+          required: false
+          in: query
+          description: Policy type
+          example: local
+          schema:
+            type: string
       responses:
         '200':
           description: Successful operation.
@@ -13686,41 +13693,8 @@ paths:
       security:
         - bearer: []
   /external-policies:
-    post:
-      operationId: ExternalPoliciesApi_createExternalPolicy
-      summary: Creates a new external policy.
-      description: Creates a new external policy.
-      parameters: []
-      requestBody:
-        required: true
-        description: Configuration.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ExternalPolicyDTO'
-      responses:
-        '200':
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ExternalPolicyDTO'
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_31
-        - external-policies
-      security:
-        - bearer: []
     get:
-      operationId: ExternalPoliciesApi_getPolicyLabels
+      operationId: ExternalPoliciesApi_getExternalPolicies
       summary: Return a list of all external policies.
       description: Returns all external policies.
       parameters:
@@ -13764,7 +13738,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_31
+      tags: &ref_31
+        - external-policies
       security:
         - bearer: []
   /external-policies/preview:
@@ -16679,8 +16654,8 @@ components:
         policyAvailability:
           type: string
           enum:
-            - Private
-            - Public
+            - private
+            - public
           example: private
       required:
         - policyVersion
