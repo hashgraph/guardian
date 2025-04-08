@@ -13808,17 +13808,17 @@ paths:
       tags: *ref_31
       security:
         - bearer: []
-  /external-policies/push/{policyId}/approve:
+  /external-policies/push/{messageId}/approve:
     post:
       operationId: ExternalPoliciesApi_approveExternalPolicyAsync
       summary: Approves policy.
       description: Approves policy for the specified policy ID.
       parameters:
-        - name: policyId
+        - name: messageId
           required: true
           in: path
-          description: Policy Id
-          example: '000000000000000000000001'
+          description: Policy message id
+          example: '0000000000.000000001'
           schema:
             type: string
       responses:
@@ -13828,6 +13828,105 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_31
+      security:
+        - bearer: []
+  /external-policies/push/{messageId}/reject:
+    post:
+      operationId: ExternalPoliciesApi_rejectExternalPolicyAsync
+      summary: Rejects policy.
+      description: Rejects policy for the specified policy ID.
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Policy message id
+          example: '0000000000.000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_31
+      security:
+        - bearer: []
+  /external-policies/{messageId}/approve:
+    post:
+      operationId: ExternalPoliciesApi_approveExternalPolicy
+      summary: Approves policy.
+      description: Approves policy for the specified policy ID.
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Policy message id
+          example: '0000000000.000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_31
+      security:
+        - bearer: []
+  /external-policies/{messageId}/reject:
+    post:
+      operationId: ExternalPoliciesApi_rejectExternalPolicy
+      summary: Rejects policy.
+      description: Rejects policy for the specified policy ID.
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Policy message id
+          example: '0000000000.000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
         '401':
           description: Unauthorized.
         '403':
