@@ -48,8 +48,8 @@
 
                         <ng-container *ngFor="let field of fields">
                             <td class="col-{{field.title}}">
-                                <div [style.width]="field.width">
-                                    <ng-container *ngIf="getGroup(element, field) as option">
+                                <ng-container *ngIf="getGroup(element, field) as option">
+                                    <div [style.width]="field.width" [class]="getClass(option.type)">
                                         <span *ngIf="option.type == 'text'" [title]="getText(element, option)"
                                               class="text">
                                             {{ getText(element, option) }}
@@ -106,8 +106,8 @@
                                             >
                                             </render-block>
                                         </div>
-                                    </ng-container>
-                                </div>
+                                    </div>
+                                </ng-container>
                             </td>
                         </ng-container>
                     </tr>

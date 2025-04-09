@@ -127,9 +127,11 @@ export abstract class NatsService {
      * @param subject
      * @param data
      * @param isResponseCallback
+     * @param externalMessageId
      */
-    public sendMessage<T>(subject: string, data?: unknown, isResponseCallback: boolean = true): Promise<T> {
-        const messageId = GenerateUUIDv4();
+    public sendMessage<T>(subject: string, data?: unknown, isResponseCallback: boolean = true, externalMessageId?: string): Promise<T> {
+        const messageId = externalMessageId ?? GenerateUUIDv4();
+
         return new Promise(async (resolve, reject) => {
             const head = headers();
             head.append('messageId', messageId);
@@ -159,14 +161,18 @@ export abstract class NatsService {
      * @param data
      */
     public sendMessageWithTimeout<T>(subject: string, timeout: number, data?: unknown): Promise<T> {
-        return Promise.race([
-            this.sendMessage<T>(subject, data),
-            new Promise<T>((_, reject) => {
-                setTimeout(() => {
-                    reject(new Error(`Timeout exceed (${subject})`))
-                }, timeout)
-            })
-        ])
+        const messageId = GenerateUUIDv4();
+
+        const messagePromise = this.sendMessage<T>(subject, data, true, messageId);
+
+        const timeoutPromise = new Promise<T>((_, reject) => {
+            setTimeout(() => {
+                this.responseCallbacksMap.delete(messageId);
+                reject(new Error(`Timeout exceed (${subject})`));
+            }, timeout);
+        });
+
+        return Promise.race([messagePromise, timeoutPromise]);
     }
 
     /**

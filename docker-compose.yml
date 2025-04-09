@@ -75,7 +75,7 @@ services:
       - '8200:8200'
     environment:
       VAULT_SERVER: "http://0.0.0.0:8200"
-      VAULT_DEV_ROOT_TOKEN_ID: "1234"
+      VAULT_DEV_ROOT_TOKEN_ID: "Q5D>3nu+Z#TbN.@9PWHSyL"
     cap_add:
       - IPC_LOCK
     volumes:

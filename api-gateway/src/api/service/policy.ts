@@ -3048,8 +3048,6 @@ export class PolicyApi {
             throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN);
         }
 
-        console.log('restore savepoint');
-
         const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
         await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 

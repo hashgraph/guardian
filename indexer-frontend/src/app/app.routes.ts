@@ -49,6 +49,7 @@ import { StatisticDocumentsComponent } from '@views/collections/statistic-docume
 import { LabelDocumentDetailsComponent } from '@views/details/label-document-details/label-document-details.component';
 import { FormulasComponent } from '@views/collections/formulas/formulas.component';
 import { FormulaDetailsComponent } from '@views/details/formula-details/formula-details.component';
+import { PriorityQueueComponent } from '@views/priority-queue/priority-queue.component';
 
 export const routes: Routes = [
     // _DEV
@@ -61,6 +62,7 @@ export const routes: Routes = [
     //Home
     { path: '', component: HomeComponent },
     { path: 'search', component: SearchViewComponent },
+    { path: 'priority-queue', component: PriorityQueueComponent },
 
     //Collections
     { path: 'registries', component: RegistriesComponent },

@@ -39,20 +39,16 @@ export class LoggerService {
             const logRepository = new DatabaseServer();
 
             const filters = msg && msg.filters || {};
-            if (filters.datetime && filters.datetime.$gte && filters.datetime.$lt) {
-                filters.datetime.$gte = new Date(filters.datetime.$gte);
-                filters.datetime.$lt = new Date(filters.datetime.$lt);
-            }
+
             const pageParameters = msg && msg.pageParameters || {};
-            // if (!pageParameters.limit) {
-            //     pageParameters.limit = 2000;
-            // }
+
             const logs = await logRepository.find(Log, filters, {
-                    orderBy: {
-                        datetime: msg.sortDirection && msg.sortDirection.toUpperCase() || 'DESC'
-                    },
-                    ...pageParameters
+                orderBy: {
+                    datetime: msg.sortDirection && msg.sortDirection.toUpperCase() || 'DESC'
+                },
+                ...pageParameters
             });
+
             const totalCount = await logRepository.count(Log, filters as any);
             const directLink = new LargePayloadContainer().addObject(Buffer.from(JSON.stringify(logs)));
             return new MessageResponse({

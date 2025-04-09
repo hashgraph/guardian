@@ -121,6 +121,7 @@ export class SchemaDTO {
 
     @ApiProperty({
         type: 'object',
+        additionalProperties: true
     })
     @IsOptional()
     @IsObject()
@@ -128,6 +129,7 @@ export class SchemaDTO {
 
     @ApiProperty({
         type: 'object',
+        additionalProperties: true
     })
     @IsOptional()
     @IsObject()

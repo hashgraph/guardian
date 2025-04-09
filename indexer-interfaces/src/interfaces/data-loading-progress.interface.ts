@@ -1,6 +1,6 @@
 
 /**
- * NFT
+ * Data Loading Progress
  */
 export class DataLoadingProgress {
     /**

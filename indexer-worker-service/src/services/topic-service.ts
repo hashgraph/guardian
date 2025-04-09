@@ -4,12 +4,14 @@ import { MessageService } from './message-service.js';
 import { LogService } from './log-service.js';
 import { Parser } from '../utils/parser.js';
 import { HederaService } from '../loaders/hedera-service.js';
-import { DataBaseHelper, Job, MessageCache, TopicCache, TopicMessage, Utils } from '@indexer/common';
+import { DataBaseHelper, IndexerMessageAPI, Job, MessageCache, TopicCache, TopicMessage, Utils } from '@indexer/common';
 import { TokenService } from './token-service.js';
-import { MessageStatus } from '@indexer/interfaces';
+import { MessageStatus, PriorityOptions, PriorityStatus } from '@indexer/interfaces';
+import { ChannelService } from 'api/channel.service.js';
 
 export class TopicService {
     public static CYCLE_TIME: number = 0;
+    public static CHANNEL: ChannelService | null;
 
     public static async updateTopic(job: Job) {
         try {
@@ -23,17 +25,33 @@ export class TopicService {
             const data = await HederaService.getMessages(row.topicId, row.messages);
 
             if (data && data.messages.length) {
-                const rowMessages = await TopicService.saveMessages(data.messages);
+                const priorityOptions: PriorityOptions = {
+                    priorityDate: row.priorityDate,
+                    priorityStatus: row.priorityStatus as PriorityStatus || PriorityStatus.NONE,
+                    priorityStatusDate: row.priorityStatusDate,
+                    priorityTimestamp: row.priorityTimestamp
+                }
+                
+                const rowMessages = await TopicService.saveMessages(data.messages, priorityOptions);
                 if (rowMessages) {
                     const compressed = await TopicService.compressMessages(rowMessages);
-                    await MessageService.saveImmediately(compressed);
-                    await TopicService.saveRelationships(compressed);
+                    await MessageService.saveImmediately(compressed, priorityOptions);
+                    await TopicService.saveRelationships(compressed, priorityOptions);
                     await em.nativeUpdate(TopicCache, { topicId: row.topicId }, {
                         messages: data.messages[data.messages.length - 1].sequence_number,
                         lastUpdate: Date.now(),
-                        hasNext: !!data.links.next
+                        hasNext: !!data.links.next,
+                        priorityDate: !!data.links.next ? row.priorityDate : null,
+                        priorityStatus: !!data.links.next ? PriorityStatus.RUNNING : PriorityStatus.FINISHED,
                     });
+                    TopicService.onTopicFinished(row);
                 }
+            } else if (row.priorityDate) {
+                await em.nativeUpdate(TopicCache, { topicId: row.topicId }, {
+                    priorityDate: null,
+                    priorityStatus: PriorityStatus.FINISHED,
+                });
+                TopicService.onTopicFinished(row);
             }
 
         } catch (error) {
@@ -41,7 +59,15 @@ export class TopicService {
         }
     }
 
-    public static async addTopic(topicId: string): Promise<boolean> {
+    public static onTopicFinished(row: TopicCache) {
+        if (TopicService.CHANNEL && row.priorityTimestamp) {
+            TopicService.CHANNEL.publicMessage(IndexerMessageAPI.ON_PRIORITY_DATA_LOADED, {
+                priorityTimestamp: row.priorityTimestamp,
+            });
+        }
+    }
+
+    public static async addTopic(topicId: string, priorityOptions?: PriorityOptions): Promise<boolean> {
         try {
             const em = DataBaseHelper.getEntityManager();
             const old = await em.findOne(TopicCache, { topicId });
@@ -51,7 +77,11 @@ export class TopicService {
                     status: MessageStatus.NONE,
                     lastUpdate: 0,
                     messages: 0,
-                    hasNext: false
+                    hasNext: false,
+                    priorityDate: priorityOptions?.priorityDate,
+                    priorityStatus: priorityOptions?.priorityStatus || PriorityStatus.NONE,
+                    priorityStatusDate: priorityOptions?.priorityStatusDate,
+                    priorityTimestamp: priorityOptions?.priorityTimestamp
                 }));
                 return true;
             } else {
@@ -63,29 +93,44 @@ export class TopicService {
         }
     }
 
-    public static async addTopics(topicIds: Iterable<string>): Promise<void> {
+    public static async addTopics(topicIds: Iterable<string>, priorityOptions?: PriorityOptions): Promise<void> {
         for (const topicId of topicIds) {
             if (topicId && typeof topicId === 'string' && Utils.isTopic(topicId)) {
-                await TopicService.addTopic(topicId);
+                await TopicService.addTopic(topicId, priorityOptions);
             }
         }
     }
 
     private static async randomTopic(em: MongoEntityManager<MongoDriver>): Promise<TopicCache> {
         const delay = Date.now() - TopicService.CYCLE_TIME;
+
         const rows = await em.find(TopicCache,
             {
                 $or: [
+                    { priorityDate: { $ne: null } },
                     { lastUpdate: { $lt: delay } },
                     { hasNext: true }
                 ]
             },
             {
+                orderBy: [
+                    { priorityDate: 'DESC' },
+                ],
                 limit: 50
             }
-        )
-        const index = Math.min(Math.floor(Math.random() * rows.length), rows.length - 1);
-        const row = rows[index];
+        );
+
+        if (!rows || rows.length <= 0) {
+            return null;
+        }
+
+        let row: any;
+        if (rows[0].priorityDate) {
+            row = rows[0]
+        } else {
+            const index = Math.min(Math.floor(Math.random() * rows.length), rows.length - 1);
+            row = rows[index];
+        }
 
         if (!row) {
             return null;
@@ -95,13 +140,14 @@ export class TopicService {
         const count = await em.nativeUpdate(TopicCache, {
             topicId: row.topicId,
             $or: [
+                { priorityDate: { $ne: null } },
                 { lastUpdate: { $lt: delay } },
                 { hasNext: true }
             ]
         }, {
             messages: row.messages,
             lastUpdate: now,
-            hasNext: false
+            hasNext: false,
         });
 
         if (count) {
@@ -116,12 +162,12 @@ export class TopicService {
         // await em.flush();
     }
 
-    public static async saveMessages(messages: TopicMessage[]): Promise<MessageCache[]> {
+    public static async saveMessages(messages: TopicMessage[], priorityOptions?: PriorityOptions): Promise<MessageCache[]> {
         try {
             const em = DataBaseHelper.getEntityManager();
             const rows = [];
             for (const message of messages) {
-                const item = TopicService.createMessageCache(message);
+                const item = TopicService.createMessageCache(message, priorityOptions);
                 const row = await TopicService.insertMessage(item, em);
                 if (!row) {
                     return;
@@ -149,10 +195,10 @@ export class TopicService {
         }
     }
 
-    public static async saveRelationships(messages: MessageCache[]) {
+    public static async saveRelationships(messages: MessageCache[], priorityOptions?: PriorityOptions) {
         try {
             const { topics, tokens } = TopicService.findRelationships(messages);
-            await TopicService.addTopics(topics);
+            await TopicService.addTopics(topics, priorityOptions);
             await TokenService.addTokens(tokens);
         } catch (error) {
             await LogService.error(error, 'Save relationships');
@@ -180,7 +226,7 @@ export class TopicService {
         return { topics, tokens };
     }
 
-    private static createMessageCache(message: TopicMessage): RequiredEntityData<MessageCache> {
+    private static createMessageCache(message: TopicMessage, priorityOptions?: PriorityOptions): RequiredEntityData<MessageCache> {
         const item: RequiredEntityData<MessageCache> = {};
         item.consensusTimestamp = message.consensus_timestamp;
         item.topicId = message.topic_id;
@@ -188,6 +234,12 @@ export class TopicService {
         item.sequenceNumber = message.sequence_number;
         item.owner = message.payer_account_id;
         item.lastUpdate = 0;
+        if (priorityOptions) {
+            item.priorityDate = priorityOptions.priorityDate;
+            item.priorityStatus = priorityOptions.priorityStatus;
+            item.priorityStatusDate = priorityOptions.priorityStatusDate;
+            item.priorityTimestamp = priorityOptions.priorityTimestamp;
+        }
         if (message?.chunk_info?.initial_transaction_id) {
             item.chunkId = message.chunk_info.initial_transaction_id.transaction_valid_start;
             item.chunkNumber = message.chunk_info.number;
@@ -206,6 +258,7 @@ export class TopicService {
             item.status = MessageStatus.COMPRESSED;
             item.data = TopicService.compressData(item.message);
         }
+
         return item;
     }
 

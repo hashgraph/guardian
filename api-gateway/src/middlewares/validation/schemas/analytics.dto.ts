@@ -451,7 +451,8 @@ export class FilterSearchBlocksDTO {
 
     @ApiProperty({
         type: 'object',
-        required: true
+        required: [],
+        additionalProperties: {}
     })
     @IsObject()
     config: any;
@@ -554,10 +555,11 @@ export class SearchPolicyDTO {
     owner?: string;
 
     @ApiProperty({
-        type: 'object',
+        type: 'array',
         isArray: true,
         required: false,
-        example: 'Tag'
+        example: 'Tag',
+        additionalProperties: true
     })
     @IsOptional()
     @IsArray()
@@ -603,8 +605,7 @@ export class SearchPolicyDTO {
 @ApiExtraModels(SearchPolicyDTO)
 export class SearchPoliciesDTO {
     @ApiProperty({
-        type: 'object',
-        required: false
+        type: () => SearchPolicyDTO
     })
     @IsOptional()
     @IsObject()

@@ -17,7 +17,7 @@
                 svgClass="icon-color-primary">
             </svg-icon>
             <b>There is some data to restore. You can restore latest values:</b>
-            <button 
+            <button
                 (click)="onRestoreClick()"
                 class="guardian-button guardian-button-primary">
                 <div class="guardian-button-icon">
@@ -35,8 +35,8 @@
                 src="/assets/images/icons/info.svg"
                 svgClass="icon-color-primary">
             </svg-icon>
-            <b>There is dry run mode. You can fill document with test data:</b>
-            <button 
+            <b>Dry run mode. You can fill this document with test data:</b>
+            <button
                 (click)="onDryRun()"
                 class="guardian-button guardian-button-primary">
                 <div class="guardian-button-icon">
@@ -80,12 +80,12 @@
 </div>
 <div class="dialog-footer">
     <div class="action-buttons">
-        <div 
+        <div
             *ngFor="let config of buttons"
             [attr.visible]="config.visible()"
             [attr.id]="config.id"
             class="dialog-button">
-            <button 
+            <button
                 (click)="config.fn()"
                 [disabled]="ifDisabledBtn(config)"
                 class="guardian-button guardian-button-{{config.type}}">{{config.text}}</button>

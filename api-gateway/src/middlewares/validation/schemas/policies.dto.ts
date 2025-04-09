@@ -222,6 +222,7 @@ export class PolicyDTO {
 
     @ApiProperty({
         type: 'object',
+        additionalProperties: true,
     })
     @IsOptional()
     @IsObject()
@@ -246,6 +247,7 @@ export class PolicyDTO {
 
     @ApiProperty({
         type: 'object',
+        additionalProperties: true,
         example: {
             uuid: Examples.UUID,
             role: 'Installer',
@@ -259,7 +261,7 @@ export class PolicyDTO {
     userGroup?: any;
 
     @ApiProperty({
-        type: 'object',
+        type: 'array',
         isArray: true,
         example: [{
             uuid: Examples.UUID,
@@ -283,7 +285,7 @@ export class PolicyDTO {
     policyRoles?: string[];
 
     @ApiProperty({
-        type: 'object',
+        type: 'array',
         isArray: true,
         example: [{
             role: 'Registrant',
@@ -299,7 +301,7 @@ export class PolicyDTO {
     policyNavigation?: any[];
 
     @ApiProperty({
-        type: 'object',
+        type: 'array',
         isArray: true,
         example: [{
             name: 'Project',
@@ -314,7 +316,7 @@ export class PolicyDTO {
     policyTopics?: any[];
 
     @ApiProperty({
-        type: 'object',
+        type: 'array',
         isArray: true,
         example: [{
             tokenName: 'Token name',
@@ -334,7 +336,7 @@ export class PolicyDTO {
     policyTokens?: any[];
 
     @ApiProperty({
-        type: 'object',
+        type: 'array',
         isArray: true,
         example: [{
             name: 'Group name',
@@ -391,7 +393,7 @@ export class PolicyPreviewDTO {
     messageId: string;
 
     @ApiProperty({
-        type: 'object',
+        type: 'array',
         isArray: true
     })
     @IsOptional()
@@ -399,7 +401,7 @@ export class PolicyPreviewDTO {
     schemas?: any[];
 
     @ApiProperty({
-        type: 'object',
+        type: 'array',
         isArray: true
     })
     @IsOptional()
