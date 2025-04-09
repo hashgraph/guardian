@@ -31,19 +31,19 @@ export class ApproveCollectionBackup extends CollectionBackup<ApprovalDocument> 
         }
     }
 
-    protected override createDiffData(newVc: ApprovalDocument, oldVc?: ApprovalDocument): any {
-        let diff: any = this.compareData(newVc, oldVc);
+    protected override createDiffData(newRow: ApprovalDocument, oldRow?: ApprovalDocument): any {
+        let diff: any = this.compareData(newRow, oldRow);
         delete diff.documentFileId;
         return diff;
     }
 
 
-    protected override checkDocument(newVc: ApprovalDocument, oldVc: ApprovalDocument): boolean {
-        return (newVc._docHash !== oldVc._docHash) || (newVc._propHash !== oldVc._propHash);
+    protected override checkDocument(newRow: ApprovalDocument, oldRow: ApprovalDocument): boolean {
+        return (newRow._docHash !== oldRow._docHash) || (newRow._propHash !== oldRow._propHash);
     }
 
-    protected override needLoadFile(newVc: ApprovalDocument, oldVc?: ApprovalDocument): boolean {
-        return (!oldVc) || (newVc._docHash !== oldVc._docHash);
+    protected override needLoadFile(newRow: ApprovalDocument, oldRow?: ApprovalDocument): boolean {
+        return (!oldRow) || (newRow._docHash !== oldRow._docHash);
     }
 
     protected override async loadFile(row: ApprovalDocument, i: number = 0): Promise<any> {
@@ -52,6 +52,7 @@ export class ApproveCollectionBackup extends CollectionBackup<ApprovalDocument> 
                 console.error('Load file error');
                 return row;
             }
+            delete row.document;
             if (row.documentFileId) {
                 const buffer = await DataBaseHelper.loadFile(row.documentFileId);
                 if (buffer) {
@@ -63,6 +64,11 @@ export class ApproveCollectionBackup extends CollectionBackup<ApprovalDocument> 
             const newRow = await this.findDocument(row);
             return await this.loadFile(newRow, i + 1);
         }
+    }
+
+    protected override async clearFile(row: ApprovalDocument): Promise<ApprovalDocument> {
+        delete row.document;
+        return row;
     }
 
     protected override actionHash(hash: string, action: IDiffAction<ApprovalDocument>, row?: ApprovalDocument): string {

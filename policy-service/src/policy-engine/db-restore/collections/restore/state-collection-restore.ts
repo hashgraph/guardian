@@ -16,7 +16,7 @@ export class StateCollectionRestore extends CollectionRestore<BlockState> {
 
     protected override async insertDocuments(rows: BlockState[]): Promise<void> {
         const collection = new DataBaseHelper(BlockState);
-        await collection.insertMany(rows as BlockState[]);
+        await collection.update(rows as BlockState[]);
     }
 
     protected override async updateDocuments(rows: BlockState[]): Promise<void> {

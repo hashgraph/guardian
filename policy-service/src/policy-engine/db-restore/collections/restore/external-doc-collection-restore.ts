@@ -16,7 +16,7 @@ export class ExternalCollectionRestore extends CollectionRestore<ExternalDocumen
 
     protected override async insertDocuments(rows: ExternalDocument[]): Promise<void> {
         const collection = new DataBaseHelper(ExternalDocument);
-        await collection.insertMany(rows as ExternalDocument[]);
+        await collection.update(rows as ExternalDocument[]);
     }
 
     protected override async updateDocuments(rows: ExternalDocument[]): Promise<void> {

@@ -31,20 +31,24 @@ export class StateCollectionBackup extends CollectionBackup<BlockState> {
         }
     }
 
-    protected override createDiffData(newVc: BlockState, oldVc?: BlockState): any {
-        let diff: any = this.compareData(newVc, oldVc);
+    protected override createDiffData(newRow: BlockState, oldRow?: BlockState): any {
+        let diff: any = this.compareData(newRow, oldRow);
         return diff;
     }
 
-    protected override checkDocument(newVc: BlockState, oldVc: BlockState): boolean {
-        return (newVc._docHash !== oldVc._docHash) || (newVc._propHash !== oldVc._propHash);
+    protected override checkDocument(newRow: BlockState, oldRow: BlockState): boolean {
+        return (newRow._docHash !== oldRow._docHash) || (newRow._propHash !== oldRow._propHash);
     }
 
-    protected override needLoadFile(newVc: BlockState, oldVc?: BlockState): boolean {
+    protected override needLoadFile(newRow: BlockState, oldRow?: BlockState): boolean {
         return false;
     }
 
-    protected override async loadFile(row: any, i: number = 0): Promise<any> {
+    protected override async loadFile(row: BlockState, i: number = 0): Promise<any> {
+        return row;
+    }
+
+    protected override async clearFile(row: BlockState): Promise<BlockState> {
         return row;
     }
 

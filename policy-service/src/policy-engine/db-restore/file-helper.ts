@@ -79,6 +79,7 @@ export class FileHelper {
     }
 
     public static async saveFile(diff: IPolicyDiff): Promise<ObjectId> {
+        console.debug(diff);
         const file = FileHelper.encryptFile(diff);
         const buffer = Buffer.from(file);
         const id = await DataBaseHelper.saveFile(GenerateUUIDv4(), buffer);
@@ -259,76 +260,40 @@ export class FileHelper {
         result += FileHelper._writeString(FileHeaders.UUID, diff.uuid);
         result += FileHelper._writeNumber(FileHeaders.INDEX, diff.index);
         result += FileHelper._writeString(FileHeaders.TYPE, diff.type);
+        result += FileHelper._writeCollection('VcDocument', diff.vcCollection);
+        result += FileHelper._writeCollection('VpDocument', diff.vpCollection);
+        result += FileHelper._writeCollection('DidDocument', diff.didCollection);
+        result += FileHelper._writeCollection('BlockState', diff.stateCollection);
+        result += FileHelper._writeCollection('PolicyRoles', diff.roleCollection);
+        result += FileHelper._writeCollection('MultiDocuments', diff.multiDocCollection);
+        result += FileHelper._writeCollection('Token', diff.tokenCollection);
+        result += FileHelper._writeCollection('Tag', diff.tagCollection);
+        result += FileHelper._writeCollection('DocumentState', diff.docStateCollection);
+        result += FileHelper._writeCollection('Topic', diff.topicCollection);
+        result += FileHelper._writeCollection('ExternalDocument', diff.externalDocCollection);
+        result += FileHelper._writeCollection('ApprovalDocument', diff.approveCollection);
+        return result;
+    }
 
-        //VcDocument
-        result += FileHelper._writeString(FileHeaders.COLLECTION, 'VcDocument');
-        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.vcCollection.actions.length);
-        result += FileHelper._encryptCollection(diff.vcCollection);
-
-        //VpDocument
-        result += FileHelper._writeString(FileHeaders.COLLECTION, 'VpDocument');
-        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.vpCollection.actions.length);
-        result += FileHelper._encryptCollection(diff.vpCollection);
-
-        //DidDocument
-        result += FileHelper._writeString(FileHeaders.COLLECTION, 'DidDocument');
-        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.didCollection.actions.length);
-        result += FileHelper._encryptCollection(diff.didCollection);
-
-        //BlockState
-        result += FileHelper._writeString(FileHeaders.COLLECTION, 'BlockState');
-        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.stateCollection.actions.length);
-        result += FileHelper._encryptCollection(diff.stateCollection);
-
-        //PolicyRoles
-        result += FileHelper._writeString(FileHeaders.COLLECTION, 'PolicyRoles');
-        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.roleCollection.actions.length);
-        result += FileHelper._encryptCollection(diff.roleCollection);
-
-        //MultiDocuments
-        result += FileHelper._writeString(FileHeaders.COLLECTION, 'MultiDocuments');
-        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.multiDocCollection.actions.length);
-        result += FileHelper._encryptCollection(diff.multiDocCollection);
-
-        //Token
-        result += FileHelper._writeString(FileHeaders.COLLECTION, 'Token');
-        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.tokenCollection.actions.length);
-        result += FileHelper._encryptCollection(diff.tokenCollection);
-
-        //Tag
-        result += FileHelper._writeString(FileHeaders.COLLECTION, 'Tag');
-        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.tagCollection.actions.length);
-        result += FileHelper._encryptCollection(diff.tagCollection);
-
-        //DocumentState
-        result += FileHelper._writeString(FileHeaders.COLLECTION, 'DocumentState');
-        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.docStateCollection.actions.length);
-        result += FileHelper._encryptCollection(diff.docStateCollection);
-
-        //Topic
-        result += FileHelper._writeString(FileHeaders.COLLECTION, 'Topic');
-        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.topicCollection.actions.length);
-        result += FileHelper._encryptCollection(diff.topicCollection);
-
-        //ExternalDocument
-        result += FileHelper._writeString(FileHeaders.COLLECTION, 'ExternalDocument');
-        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.externalDocCollection.actions.length);
-        result += FileHelper._encryptCollection(diff.externalDocCollection);
-
-        //ApprovalDocument
-        result += FileHelper._writeString(FileHeaders.COLLECTION, 'ApprovalDocument');
-        result += FileHelper._writeNumber(FileHeaders.SIZE, diff.approveCollection.actions.length);
-        result += FileHelper._encryptCollection(diff.approveCollection);
-
+    private static _writeCollection<T extends RestoreEntity>(
+        name: string,
+        collection: ICollectionDiff<T>
+    ): string {
+        let result = '';
+        result += FileHelper._writeString(FileHeaders.COLLECTION, name);
+        result += FileHelper._writeNumber(FileHeaders.SIZE, collection?.actions?.length || 0);
+        result += FileHelper._encryptCollection(collection);
         return result;
     }
 
     public static _encryptCollection<T extends RestoreEntity>(collection: ICollectionDiff<T>): string {
         let result = '';
-        result += FileHelper._writeString(FileHeaders.HASH, collection.hash);
-        result += FileHelper._writeString(FileHeaders.HASH, collection.fullHash);
-        for (const action of collection.actions) {
-            result += FileHelper._encryptAction<T>(action);
+        result += FileHelper._writeString(FileHeaders.HASH, collection?.hash || '');
+        result += FileHelper._writeString(FileHeaders.HASH, collection?.fullHash || '');
+        if (collection) {
+            for (const action of collection.actions) {
+                result += FileHelper._encryptAction<T>(action);
+            }
         }
         return result;
     }

@@ -16,7 +16,7 @@ export class TokenCollectionRestore extends CollectionRestore<Token> {
 
     protected override async insertDocuments(rows: Token[]): Promise<void> {
         const collection = new DataBaseHelper(Token);
-        await collection.insertMany(rows as Token[]);
+        await collection.update(rows as Token[]);
     }
 
     protected override async updateDocuments(rows: Token[]): Promise<void> {

@@ -79,6 +79,7 @@ export class PolicyRestore {
         oldDiff.uuid = backup.uuid;
         oldDiff.index = backup.index;
         oldDiff.lastUpdate = backup.lastUpdate;
+        oldDiff.type = backup.type;
         oldDiff.vcCollection = await this.vcRestore.restoreBackup(backup.vcCollection);
         oldDiff.vpCollection = await this.vpRestore.restoreBackup(backup.vpCollection);
         oldDiff.didCollection = await this.didRestore.restoreBackup(backup.didCollection);
@@ -102,6 +103,7 @@ export class PolicyRestore {
         oldDiff.uuid = diff.uuid;
         oldDiff.index = diff.index;
         oldDiff.lastUpdate = diff.lastUpdate;
+        oldDiff.type = diff.type;
         oldDiff.vcCollection = await this.vcRestore.restoreDiff(diff.vcCollection, oldDiff.vcCollection);
         oldDiff.vpCollection = await this.vpRestore.restoreDiff(diff.vpCollection, oldDiff.vpCollection);
         oldDiff.didCollection = await this.didRestore.restoreDiff(diff.didCollection, oldDiff.didCollection);

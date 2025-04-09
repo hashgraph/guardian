@@ -16,7 +16,7 @@ export class RoleCollectionRestore extends CollectionRestore<PolicyRoles> {
 
     protected override async insertDocuments(rows: PolicyRoles[]): Promise<void> {
         const collection = new DataBaseHelper(PolicyRoles);
-        await collection.insertMany(rows as PolicyRoles[]);
+        await collection.update(rows as PolicyRoles[]);
     }
 
     protected override async updateDocuments(rows: PolicyRoles[]): Promise<void> {

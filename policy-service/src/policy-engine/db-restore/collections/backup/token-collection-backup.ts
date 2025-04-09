@@ -31,21 +31,25 @@ export class TokenCollectionBackup extends CollectionBackup<Token> {
         }
     }
 
-    protected override createDiffData(newVc: Token, oldVc?: Token): any {
-        let diff: any = this.compareData(newVc, oldVc);
+    protected override createDiffData(newRow: Token, oldRow?: Token): any {
+        let diff: any = this.compareData(newRow, oldRow);
         delete diff.documentFileId;
         return diff;
     }
 
-    protected override checkDocument(newVc: Token, oldVc: Token): boolean {
-        return (newVc._docHash !== oldVc._docHash) || (newVc._propHash !== oldVc._propHash);
+    protected override checkDocument(newRow: Token, oldRow: Token): boolean {
+        return (newRow._docHash !== oldRow._docHash) || (newRow._propHash !== oldRow._propHash);
     }
 
-    protected override needLoadFile(newVc: Token, oldVc?: Token): boolean {
+    protected override needLoadFile(newRow: Token, oldRow?: Token): boolean {
         return false;
     }
 
     protected override async loadFile(row: Token, i: number = 0): Promise<any> {
+        return row;
+    }
+
+    protected override async clearFile(row: Token): Promise<Token> {
         return row;
     }
 

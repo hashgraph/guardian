@@ -31,21 +31,25 @@ export class TopicCollectionBackup extends CollectionBackup<Topic> {
         }
     }
 
-    protected override createDiffData(newVc: Topic, oldVc?: Topic): any {
-        let diff: any = this.compareData(newVc, oldVc);
+    protected override createDiffData(newRow: Topic, oldRow?: Topic): any {
+        let diff: any = this.compareData(newRow, oldRow);
         delete diff.documentFileId;
         return diff;
     }
 
-    protected override checkDocument(newVc: Topic, oldVc: Topic): boolean {
-        return (newVc._docHash !== oldVc._docHash) || (newVc._propHash !== oldVc._propHash);
+    protected override checkDocument(newRow: Topic, oldRow: Topic): boolean {
+        return (newRow._docHash !== oldRow._docHash) || (newRow._propHash !== oldRow._propHash);
     }
 
-    protected override needLoadFile(newVc: Topic, oldVc?: Topic): boolean {
+    protected override needLoadFile(newRow: Topic, oldRow?: Topic): boolean {
         return false;
     }
 
     protected override async loadFile(row: Topic, i: number = 0): Promise<any> {
+        return row;
+    }
+
+    protected override async clearFile(row: Topic): Promise<Topic> {
         return row;
     }
 

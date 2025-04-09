@@ -17,11 +17,13 @@ export abstract class CollectionRestore<T extends RestoreEntity> {
         const rows: T[] = [];
         for (const action of backup.actions) {
             const row = this.createRow(action.data);
-            row._restoreId = action.id;
+            this.setRowId(row, action);
             rows.push(row);
             hash = this.actionHash(hash, action, row);
         }
 
+        console.debug('------- restoreBackup', this.policyId)
+        console.debug('------- insertDocuments', this.policyId, rows.length)
         await this.insertDocuments(rows);
 
         console.log(backup.hash, hash)
@@ -48,10 +50,16 @@ export abstract class CollectionRestore<T extends RestoreEntity> {
 
         let hash = '';
         for (const action of diff.actions) {
+            console.log(typeof action.data);
+            try {
+                const row = this.createRow(action.data);
+                this.setRowId(row, action);
+            } catch (error) {
+                console.log(action)
+                console.log(error)
+            }
             const row = this.createRow(action.data);
-            row._id = new ObjectId(action.id);
-            row.id = action.id;
-            row._restoreId = action.id;
+            this.setRowId(row, action);
 
             if (action.type === DiffActionType.Delete) {
                 deleteRows.push(row);
@@ -69,6 +77,10 @@ export abstract class CollectionRestore<T extends RestoreEntity> {
                 oldCollectionDiff.fullHash
             ) : null;
 
+        console.debug('------- restoreDiff')
+        console.debug('------- insertDocuments', this.policyId, insertRows.length)
+        console.debug('------- updateDocuments', this.policyId, updateRows.length)
+        console.debug('------- deleteDocuments', this.policyId, deleteRows.length)
         await this.insertDocuments(insertRows);
         await this.updateDocuments(updateRows);
         await this.deleteDocuments(deleteRows);
@@ -97,6 +109,12 @@ export abstract class CollectionRestore<T extends RestoreEntity> {
         } else {
             return '';
         }
+    }
+
+    protected setRowId(row: T, action: IDiffAction<T>) {
+        row._id = new ObjectId(action.id);
+        row.id = action.id;
+        row._restoreId = action.id;
     }
 
     protected abstract actionHash(hash: string, action: IDiffAction<T>, row?: T): string;

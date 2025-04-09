@@ -31,8 +31,8 @@ export class VpCollectionBackup extends CollectionBackup<VpDocument> {
         }
     }
 
-    protected override createDiffData(newVc: VpDocument, oldVc?: VpDocument): any {
-        let diff: any = this.compareData(newVc, oldVc);
+    protected override createDiffData(newRow: VpDocument, oldRow?: VpDocument): any {
+        let diff: any = this.compareData(newRow, oldRow);
         delete diff.documentFileId;
         return diff;
     }
@@ -43,6 +43,7 @@ export class VpCollectionBackup extends CollectionBackup<VpDocument> {
                 console.error('Load file error');
                 return row;
             }
+            delete row.document;
             if (row.documentFileId) {
                 const buffer = await DataBaseHelper.loadFile(row.documentFileId);
                 if (buffer) {
@@ -56,12 +57,17 @@ export class VpCollectionBackup extends CollectionBackup<VpDocument> {
         }
     }
 
-    protected override checkDocument(newVc: VpDocument, oldVc: VpDocument): boolean {
-        return (newVc._docHash !== oldVc._docHash) || (newVc._propHash !== oldVc._propHash);
+    protected override async clearFile(row: VpDocument): Promise<VpDocument> {
+        delete row.document;
+        return row;
     }
 
-    protected override needLoadFile(newVc: VpDocument, oldVc?: VpDocument): boolean {
-        return (!oldVc) || (newVc._docHash !== oldVc._docHash);
+    protected override checkDocument(newRow: VpDocument, oldRow: VpDocument): boolean {
+        return (newRow._docHash !== oldRow._docHash) || (newRow._propHash !== oldRow._propHash);
+    }
+
+    protected override needLoadFile(newRow: VpDocument, oldRow?: VpDocument): boolean {
+        return (!oldRow) || (newRow._docHash !== oldRow._docHash);
     }
 
     protected override actionHash(hash: string, action: IDiffAction<VpDocument>, row?: VpDocument): string {

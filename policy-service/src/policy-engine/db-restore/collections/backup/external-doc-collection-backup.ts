@@ -31,21 +31,25 @@ export class ExternalCollectionBackup extends CollectionBackup<ExternalDocument>
         }
     }
 
-    protected override createDiffData(newVc: ExternalDocument, oldVc?: ExternalDocument): any {
-        let diff: any = this.compareData(newVc, oldVc);
+    protected override createDiffData(newRow: ExternalDocument, oldRow?: ExternalDocument): any {
+        let diff: any = this.compareData(newRow, oldRow);
         delete diff.documentFileId;
         return diff;
     }
 
-    protected override checkDocument(newVc: ExternalDocument, oldVc: ExternalDocument): boolean {
-        return (newVc._docHash !== oldVc._docHash) || (newVc._propHash !== oldVc._propHash);
+    protected override checkDocument(newRow: ExternalDocument, oldRow: ExternalDocument): boolean {
+        return (newRow._docHash !== oldRow._docHash) || (newRow._propHash !== oldRow._propHash);
     }
 
-    protected override needLoadFile(newVc: ExternalDocument, oldVc?: ExternalDocument): boolean {
+    protected override needLoadFile(newRow: ExternalDocument, oldRow?: ExternalDocument): boolean {
         return false;
     }
 
     protected override async loadFile(row: ExternalDocument, i: number = 0): Promise<any> {
+        return row;
+    }
+
+    protected override async clearFile(row: ExternalDocument): Promise<ExternalDocument> {
         return row;
     }
 

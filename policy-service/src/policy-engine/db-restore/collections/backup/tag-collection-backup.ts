@@ -31,23 +31,28 @@ export class TagCollectionBackup extends CollectionBackup<Tag> {
         }
     }
 
-    protected override createDiffData(newVc: Tag, oldVc?: Tag): any {
-        let diff: any = this.compareData(newVc, oldVc);
+    protected override createDiffData(newRow: Tag, oldRow?: Tag): any {
+        let diff: any = this.compareData(newRow, oldRow);
         delete diff.documentFileId;
         return diff;
     }
 
-    protected override checkDocument(newVc: Tag, oldVc: Tag): boolean {
-        return (newVc._docHash !== oldVc._docHash) || (newVc._propHash !== oldVc._propHash);
+    protected override checkDocument(newRow: Tag, oldRow: Tag): boolean {
+        return (newRow._docHash !== oldRow._docHash) || (newRow._propHash !== oldRow._propHash);
     }
 
-    protected override needLoadFile(newVc: Tag, oldVc?: Tag): boolean {
+    protected override needLoadFile(newRow: Tag, oldRow?: Tag): boolean {
         return false;
     }
 
     protected override async loadFile(row: Tag, i: number = 0): Promise<any> {
         return row;
     }
+    
+    protected override async clearFile(row: Tag): Promise<Tag> {
+        return row;
+    }
+
     protected override actionHash(hash: string, action: IDiffAction<Tag>, row?: Tag): string {
         if (row) {
             return this.sumHash(hash, action.type, action.id, row._propHash, row._docHash);

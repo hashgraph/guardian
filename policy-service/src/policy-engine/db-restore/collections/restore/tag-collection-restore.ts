@@ -16,7 +16,7 @@ export class TagCollectionRestore extends CollectionRestore<Tag> {
 
     protected override async insertDocuments(rows: Tag[]): Promise<void> {
         const collection = new DataBaseHelper(Tag);
-        await collection.insertMany(rows as Tag[]);
+        await collection.update(rows as Tag[]);
     }
 
     protected override async updateDocuments(rows: Tag[]): Promise<void> {

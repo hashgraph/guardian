@@ -16,7 +16,7 @@ export class VpCollectionRestore extends CollectionRestore<VpDocument> {
 
     protected override async insertDocuments(rows: VpDocument[]): Promise<void> {
         const collection = new DataBaseHelper(VpDocument);
-        await collection.insertMany(rows as VpDocument[]);
+        await collection.update(rows as VpDocument[]);
     }
 
     protected override async updateDocuments(rows: VpDocument[]): Promise<void> {

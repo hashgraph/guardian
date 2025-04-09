@@ -31,20 +31,24 @@ export class DidCollectionBackup extends CollectionBackup<DidDocument> {
         }
     }
 
-    protected override createDiffData(newVc: DidDocument, oldVc?: DidDocument): any {
-        let diff: any = this.compareData(newVc, oldVc);
+    protected override createDiffData(newRow: DidDocument, oldRow?: DidDocument): any {
+        let diff: any = this.compareData(newRow, oldRow);
         return diff;
     }
 
-    protected override checkDocument(newVc: DidDocument, oldVc: DidDocument): boolean {
-        return (newVc._docHash !== oldVc._docHash) || (newVc._propHash !== oldVc._propHash);
+    protected override checkDocument(newRow: DidDocument, oldRow: DidDocument): boolean {
+        return (newRow._docHash !== oldRow._docHash) || (newRow._propHash !== oldRow._propHash);
     }
 
-    protected override needLoadFile(newVc: DidDocument, oldVc?: DidDocument): boolean {
+    protected override needLoadFile(newRow: DidDocument, oldRow?: DidDocument): boolean {
         return false;
     }
 
-    protected override async loadFile(row: any, i: number = 0): Promise<any> {
+    protected override async loadFile(row: DidDocument, i: number = 0): Promise<DidDocument> {
+        return row;
+    }
+
+    protected override async clearFile(row: DidDocument): Promise<DidDocument> {
         return row;
     }
 

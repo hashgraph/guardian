@@ -31,26 +31,27 @@ export class VcCollectionBackup extends CollectionBackup<VcDocument> {
         }
     }
 
-    protected override createDiffData(newVc: VcDocument, oldVc?: VcDocument): any {
-        let diff: any = this.compareData(newVc, oldVc);
+    protected override createDiffData(newRow: VcDocument, oldRow?: VcDocument): any {
+        let diff: any = this.compareData(newRow, oldRow);
         delete diff.documentFileId;
         return diff;
     }
 
-    protected override checkDocument(newVc: VcDocument, oldVc: VcDocument): boolean {
-        return (newVc._docHash !== oldVc._docHash) || (newVc._propHash !== oldVc._propHash);
+    protected override checkDocument(newRow: VcDocument, oldRow: VcDocument): boolean {
+        return (newRow._docHash !== oldRow._docHash) || (newRow._propHash !== oldRow._propHash);
     }
 
-    protected override needLoadFile(newVc: VcDocument, oldVc?: VcDocument): boolean {
-        return (!oldVc) || (newVc._docHash !== oldVc._docHash);
+    protected override needLoadFile(newRow: VcDocument, oldRow?: VcDocument): boolean {
+        return (!oldRow) || (newRow._docHash !== oldRow._docHash);
     }
 
-    protected override async loadFile(row: VcDocument, i: number = 0): Promise<any> {
+    protected override async loadFile(row: VcDocument, i: number = 0): Promise<VcDocument> {
         try {
             if (i > 10) {
                 console.error('Load file error');
                 return row;
             }
+            delete row.document;
             if (row.documentFileId) {
                 const buffer = await DataBaseHelper.loadFile(row.documentFileId);
                 if (buffer) {
@@ -62,6 +63,11 @@ export class VcCollectionBackup extends CollectionBackup<VcDocument> {
             const newRow = await this.findDocument(row);
             return await this.loadFile(newRow, i + 1);
         }
+    }
+
+    protected override async clearFile(row: VcDocument): Promise<VcDocument> {
+        delete row.document;
+        return row;
     }
 
     protected override actionHash(hash: string, action: IDiffAction<VcDocument>, row?: VcDocument): string {

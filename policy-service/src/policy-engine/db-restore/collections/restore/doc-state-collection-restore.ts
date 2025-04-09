@@ -16,7 +16,7 @@ export class DocStateCollectionRestore extends CollectionRestore<DocumentState> 
 
     protected override async insertDocuments(rows: DocumentState[]): Promise<void> {
         const collection = new DataBaseHelper(DocumentState);
-        await collection.insertMany(rows as DocumentState[]);
+        await collection.update(rows as DocumentState[]);
     }
 
     protected override async updateDocuments(rows: DocumentState[]): Promise<void> {

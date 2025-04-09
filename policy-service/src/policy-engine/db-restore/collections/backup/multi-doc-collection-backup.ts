@@ -31,18 +31,18 @@ export class MultiDocCollectionBackup extends CollectionBackup<MultiDocuments> {
         }
     }
 
-    protected override createDiffData(newVc: MultiDocuments, oldVc?: MultiDocuments): any {
-        let diff: any = this.compareData(newVc, oldVc);
+    protected override createDiffData(newRow: MultiDocuments, oldRow?: MultiDocuments): any {
+        let diff: any = this.compareData(newRow, oldRow);
         delete diff.documentFileId;
         return diff;
     }
 
-    protected override checkDocument(newVc: MultiDocuments, oldVc: MultiDocuments): boolean {
-        return (newVc._docHash !== oldVc._docHash) || (newVc._propHash !== oldVc._propHash);
+    protected override checkDocument(newRow: MultiDocuments, oldRow: MultiDocuments): boolean {
+        return (newRow._docHash !== oldRow._docHash) || (newRow._propHash !== oldRow._propHash);
     }
 
-    protected override needLoadFile(newVc: MultiDocuments, oldVc?: MultiDocuments): boolean {
-        return (!oldVc) || (newVc._docHash !== oldVc._docHash);
+    protected override needLoadFile(newRow: MultiDocuments, oldRow?: MultiDocuments): boolean {
+        return (!oldRow) || (newRow._docHash !== oldRow._docHash);
     }
 
     protected override async loadFile(row: MultiDocuments, i: number = 0): Promise<any> {
@@ -51,6 +51,7 @@ export class MultiDocCollectionBackup extends CollectionBackup<MultiDocuments> {
                 console.error('Load file error');
                 return row;
             }
+            delete row.document;
             if (row.documentFileId) {
                 const buffer = await DataBaseHelper.loadFile(row.documentFileId);
                 if (buffer) {
@@ -62,6 +63,11 @@ export class MultiDocCollectionBackup extends CollectionBackup<MultiDocuments> {
             const newRow = await this.findDocument(row);
             return await this.loadFile(newRow, i + 1);
         }
+    }
+
+    protected override async clearFile(row: MultiDocuments): Promise<MultiDocuments> {
+        delete row.document;
+        return row;
     }
 
     protected override actionHash(hash: string, action: IDiffAction<MultiDocuments>, row?: MultiDocuments): string {

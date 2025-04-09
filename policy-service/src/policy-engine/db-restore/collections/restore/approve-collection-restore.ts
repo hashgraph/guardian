@@ -16,7 +16,7 @@ export class ApproveCollectionRestore extends CollectionRestore<ApprovalDocument
 
     protected override async insertDocuments(rows: ApprovalDocument[]): Promise<void> {
         const collection = new DataBaseHelper(ApprovalDocument);
-        await collection.insertMany(rows as ApprovalDocument[]);
+        await collection.update(rows as ApprovalDocument[]);
     }
 
     protected override async updateDocuments(rows: ApprovalDocument[]): Promise<void> {

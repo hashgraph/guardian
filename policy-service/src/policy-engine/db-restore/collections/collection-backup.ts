@@ -25,6 +25,8 @@ export abstract class CollectionBackup<T extends RestoreEntity> {
             const row = await rows.next();
             if (this.needLoadFile(row)) {
                 await this.loadFile(row);
+            } else {
+                this.clearFile(row);
             }
             const backupAction: IDiffAction<T> = {
                 type: DiffActionType.Set,
@@ -58,6 +60,7 @@ export abstract class CollectionBackup<T extends RestoreEntity> {
         oldCollectionDiff: ICollectionDiff<T>,
         lastUpdate: Date
     ): Promise<DiffResult<T>> {
+        console.debug('---- createCollectionDiff')
         const backup = oldCollectionDiff.actions || [];
 
         const rows = this.findDocuments(lastUpdate);
@@ -95,8 +98,15 @@ export abstract class CollectionBackup<T extends RestoreEntity> {
 
                 if (this.needLoadFile(newRow, oldRow)) {
                     await this.loadFile(newRow);
+                } else {
+                    this.clearFile(newRow);
                 }
                 if (this.checkDocument(newRow, oldRow)) {
+                    console.debug('---- checkDocument')
+                    console.debug(oldRow)
+                    console.debug(newRow)
+                    console.debug(this.createDiffData(newRow, oldRow))
+                    console.debug('checkDocument ----')
                     const backupAction = {
                         type: DiffActionType.Update,
                         id: item.id,
@@ -120,6 +130,8 @@ export abstract class CollectionBackup<T extends RestoreEntity> {
         for (const [id, newRow] of list.entries()) {
             if (this.needLoadFile(newRow)) {
                 await this.loadFile(newRow);
+            } else {
+                this.clearFile(newRow);
             }
             const backupAction: IDiffAction<T> = {
                 type: DiffActionType.Create,
@@ -202,7 +214,9 @@ export abstract class CollectionBackup<T extends RestoreEntity> {
 
     protected abstract needLoadFile(newRow: T, oldRow?: T): boolean;
 
-    protected abstract loadFile(row: T): Promise<any>;
+    protected abstract loadFile(row: T): Promise<T>;
+
+    protected abstract clearFile(row: T): Promise<T>;
 
     protected abstract createBackupData(row: T): any;
 

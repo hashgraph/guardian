@@ -31,21 +31,25 @@ export class DocStateCollectionBackup extends CollectionBackup<DocumentState> {
         }
     }
 
-    protected override createDiffData(newVc: DocumentState, oldVc?: DocumentState): any {
-        let diff: any = this.compareData(newVc, oldVc);
+    protected override createDiffData(newRow: DocumentState, oldRow?: DocumentState): any {
+        let diff: any = this.compareData(newRow, oldRow);
         delete diff.documentFileId;
         return diff;
     }
 
-    protected override checkDocument(newVc: DocumentState, oldVc: DocumentState): boolean {
-        return (newVc._docHash !== oldVc._docHash) || (newVc._propHash !== oldVc._propHash);
+    protected override checkDocument(newRow: DocumentState, oldRow: DocumentState): boolean {
+        return (newRow._docHash !== oldRow._docHash) || (newRow._propHash !== oldRow._propHash);
     }
 
-    protected override needLoadFile(newVc: DocumentState, oldVc?: DocumentState): boolean {
+    protected override needLoadFile(newRow: DocumentState, oldRow?: DocumentState): boolean {
         return false;
     }
 
     protected override async loadFile(row: DocumentState, i: number = 0): Promise<any> {
+        return row;
+    }
+
+    protected override async clearFile(row: DocumentState): Promise<DocumentState> {
         return row;
     }
 
