@@ -6,6 +6,18 @@
     top: 0;
     display: flex;
     flex-direction: column;
+
+    ::ng-deep {
+        .p-tabview .p-tabview-nav {
+            li:first-child {
+                margin-left: 48px;
+            }
+        }
+        
+        .p-tabview-panels {
+            background: none;
+        }
+    }
 }
 
 .loading {
@@ -68,7 +80,7 @@ a.go-back-link svg {
 .policy-header {
     display: flex;
     flex-direction: column;
-    background: #f9fafc;
+    background: #ffffff;
     padding: 25px 40px 0 48px;
     font-size: 20px;
 }
@@ -617,6 +629,7 @@ a.go-back-link svg {
     display: flex;
     align-items: center;
     margin-top: 12px;
+    margin-bottom: 24px;
 }
 
 .white-additional-policy-info-text {
