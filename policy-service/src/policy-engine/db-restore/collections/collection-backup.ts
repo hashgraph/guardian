@@ -102,11 +102,6 @@ export abstract class CollectionBackup<T extends RestoreEntity> {
                     this.clearFile(newRow);
                 }
                 if (this.checkDocument(newRow, oldRow)) {
-                    console.debug('---- checkDocument')
-                    console.debug(oldRow)
-                    console.debug(newRow)
-                    console.debug(this.createDiffData(newRow, oldRow))
-                    console.debug('checkDocument ----')
                     const backupAction = {
                         type: DiffActionType.Update,
                         id: item.id,

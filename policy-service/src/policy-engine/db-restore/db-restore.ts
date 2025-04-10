@@ -100,6 +100,8 @@ export class PolicyRestore {
         console.log('-- _restoreDiff');
         const oldDiff: IPolicyDiff = this.lastDiff.file || {};
 
+        // console.log('-- _restoreDiff 1', JSON.stringify(diff));
+
         oldDiff.uuid = diff.uuid;
         oldDiff.index = diff.index;
         oldDiff.lastUpdate = diff.lastUpdate;

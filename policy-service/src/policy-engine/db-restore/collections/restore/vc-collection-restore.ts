@@ -16,12 +16,12 @@ export class VcCollectionRestore extends CollectionRestore<VcDocument> {
 
     protected override async insertDocuments(rows: VcDocument[]): Promise<void> {
         const collection = new DataBaseHelper(VcDocument);
-        await collection.update(rows as VcDocument[]);
+        await collection.insertOrUpdate(rows as VcDocument[], '_restoreId');
     }
 
     protected override async updateDocuments(rows: VcDocument[]): Promise<void> {
         const collection = new DataBaseHelper(VcDocument);
-        await collection.updateByKey(rows as VcDocument[], '_restoreId');
+        await collection.insertOrUpdate(rows as VcDocument[], '_restoreId');
     }
 
     protected override async deleteDocuments(rows: VcDocument[]): Promise<void> {
@@ -32,8 +32,11 @@ export class VcCollectionRestore extends CollectionRestore<VcDocument> {
 
     protected override createRow(data: VcDocument): VcDocument {
         if (data.document) {
+            console.debug('--- createRow 1', !!data)
             const document = Buffer.from((data as any).document, 'base64').toString();
+            console.debug('--- createRow 2', !!document)
             data.document = JSON.parse(document);
+            console.debug('--- createRow 3', !!data.document)
         }
         return data;
     }

@@ -16,12 +16,12 @@ export class VpCollectionRestore extends CollectionRestore<VpDocument> {
 
     protected override async insertDocuments(rows: VpDocument[]): Promise<void> {
         const collection = new DataBaseHelper(VpDocument);
-        await collection.update(rows as VpDocument[]);
+        await collection.insertOrUpdate(rows as VpDocument[], '_restoreId');
     }
 
     protected override async updateDocuments(rows: VpDocument[]): Promise<void> {
         const collection = new DataBaseHelper(VpDocument);
-        await collection.updateByKey(rows as VpDocument[], '_restoreId');
+        await collection.insertOrUpdate(rows as VpDocument[], '_restoreId');
     }
 
     protected override async deleteDocuments(rows: VpDocument[]): Promise<void> {

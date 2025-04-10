@@ -16,12 +16,12 @@ export class TagCollectionRestore extends CollectionRestore<Tag> {
 
     protected override async insertDocuments(rows: Tag[]): Promise<void> {
         const collection = new DataBaseHelper(Tag);
-        await collection.update(rows as Tag[]);
+        await collection.insertOrUpdate(rows as Tag[], '_restoreId');
     }
 
     protected override async updateDocuments(rows: Tag[]): Promise<void> {
         const collection = new DataBaseHelper(Tag);
-        await collection.updateByKey(rows as Tag[], '_restoreId');
+        await collection.insertOrUpdate(rows as Tag[], '_restoreId');
     }
 
     protected override async deleteDocuments(rows: Tag[]): Promise<void> {

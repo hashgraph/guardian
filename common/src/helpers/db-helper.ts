@@ -917,4 +917,37 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
         await this._em.flush();
         return result;
     }
+
+    @CreateRequestContext(() => DataBaseHelper.orm)
+    public async insertOrUpdate(
+        entities: T[],
+        keyField: string
+    ): Promise<T[]> {
+        const repository = this._em.getRepository(this.entityClass);
+        const filter: any = {};
+        const result: T[] = [];
+        for (const entity of entities) {
+            filter[keyField] = entity[keyField];
+            const entityToUpdate = await repository.findOne(filter);
+            if(entityToUpdate) {
+                for (const systemFileField of DataBaseHelper._systemFileFields) {
+                    if (entity[systemFileField]) {
+                        entity[systemFileField] = entityToUpdate[systemFileField];
+                    }
+                }
+                wrap(entityToUpdate)
+                    .assign(
+                        { ...entity, updateDate: new Date() } as EntityData<T>,
+                        { mergeObjectProperties: false }
+                    );
+                result.push(entityToUpdate);
+            } else {
+                const item = repository.create(entity as RequiredEntityData<T>)
+                this._em.persist(item);
+                result.push(item);
+            }
+        }
+        await this._em.flush();
+        return result;
+    }
 }

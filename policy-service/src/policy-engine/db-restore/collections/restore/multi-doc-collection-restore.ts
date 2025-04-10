@@ -16,12 +16,12 @@ export class MultiDocCollectionRestore extends CollectionRestore<MultiDocuments>
 
     protected override async insertDocuments(rows: MultiDocuments[]): Promise<void> {
         const collection = new DataBaseHelper(MultiDocuments);
-        await collection.update(rows as MultiDocuments[]);
+        await collection.insertOrUpdate(rows as MultiDocuments[], '_restoreId');
     }
 
     protected override async updateDocuments(rows: MultiDocuments[]): Promise<void> {
         const collection = new DataBaseHelper(MultiDocuments);
-        await collection.updateByKey(rows as MultiDocuments[], '_restoreId');
+        await collection.insertOrUpdate(rows as MultiDocuments[], '_restoreId');
     }
 
     protected override async deleteDocuments(rows: MultiDocuments[]): Promise<void> {

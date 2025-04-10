@@ -16,12 +16,12 @@ export class TopicCollectionRestore extends CollectionRestore<Topic> {
 
     protected override async insertDocuments(rows: Topic[]): Promise<void> {
         const collection = new DataBaseHelper(Topic);
-        await collection.update(rows as Topic[]);
+        await collection.insertOrUpdate(rows as Topic[], '_restoreId');
     }
 
     protected override async updateDocuments(rows: Topic[]): Promise<void> {
         const collection = new DataBaseHelper(Topic);
-        await collection.updateByKey(rows as Topic[], '_restoreId');
+        await collection.insertOrUpdate(rows as Topic[], '_restoreId');
     }
 
     protected override async deleteDocuments(rows: Topic[]): Promise<void> {

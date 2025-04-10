@@ -16,12 +16,12 @@ export class ApproveCollectionRestore extends CollectionRestore<ApprovalDocument
 
     protected override async insertDocuments(rows: ApprovalDocument[]): Promise<void> {
         const collection = new DataBaseHelper(ApprovalDocument);
-        await collection.update(rows as ApprovalDocument[]);
+        await collection.insertOrUpdate(rows as ApprovalDocument[], '_restoreId');
     }
 
     protected override async updateDocuments(rows: ApprovalDocument[]): Promise<void> {
         const collection = new DataBaseHelper(ApprovalDocument);
-        await collection.updateByKey(rows as ApprovalDocument[], '_restoreId');
+        await collection.insertOrUpdate(rows as ApprovalDocument[], '_restoreId');
     }
 
     protected override async deleteDocuments(rows: ApprovalDocument[]): Promise<void> {

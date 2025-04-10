@@ -16,12 +16,12 @@ export class DidCollectionRestore extends CollectionRestore<DidDocument> {
 
     protected override async insertDocuments(rows: DidDocument[]): Promise<void> {
         const collection = new DataBaseHelper(DidDocument);
-        await collection.update(rows as DidDocument[]);
+        await collection.insertOrUpdate(rows as DidDocument[], '_restoreId');
     }
 
     protected override async updateDocuments(rows: DidDocument[]): Promise<void> {
         const collection = new DataBaseHelper(DidDocument);
-        await collection.updateByKey(rows as DidDocument[], '_restoreId');
+        await collection.insertOrUpdate(rows as DidDocument[], '_restoreId');
     }
 
     protected override async deleteDocuments(rows: DidDocument[]): Promise<void> {

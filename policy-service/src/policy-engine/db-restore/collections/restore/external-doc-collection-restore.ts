@@ -16,12 +16,12 @@ export class ExternalCollectionRestore extends CollectionRestore<ExternalDocumen
 
     protected override async insertDocuments(rows: ExternalDocument[]): Promise<void> {
         const collection = new DataBaseHelper(ExternalDocument);
-        await collection.update(rows as ExternalDocument[]);
+        await collection.insertOrUpdate(rows as ExternalDocument[], '_restoreId');
     }
 
     protected override async updateDocuments(rows: ExternalDocument[]): Promise<void> {
         const collection = new DataBaseHelper(ExternalDocument);
-        await collection.updateByKey(rows as ExternalDocument[], '_restoreId');
+        await collection.insertOrUpdate(rows as ExternalDocument[], '_restoreId');
     }
 
     protected override async deleteDocuments(rows: ExternalDocument[]): Promise<void> {

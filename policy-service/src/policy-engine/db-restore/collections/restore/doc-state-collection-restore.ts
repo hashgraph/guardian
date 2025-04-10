@@ -16,12 +16,12 @@ export class DocStateCollectionRestore extends CollectionRestore<DocumentState> 
 
     protected override async insertDocuments(rows: DocumentState[]): Promise<void> {
         const collection = new DataBaseHelper(DocumentState);
-        await collection.update(rows as DocumentState[]);
+        await collection.insertOrUpdate(rows as DocumentState[], '_restoreId');
     }
 
     protected override async updateDocuments(rows: DocumentState[]): Promise<void> {
         const collection = new DataBaseHelper(DocumentState);
-        await collection.updateByKey(rows as DocumentState[], '_restoreId');
+        await collection.insertOrUpdate(rows as DocumentState[], '_restoreId');
     }
 
     protected override async deleteDocuments(rows: DocumentState[]): Promise<void> {

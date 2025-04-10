@@ -16,12 +16,12 @@ export class TokenCollectionRestore extends CollectionRestore<Token> {
 
     protected override async insertDocuments(rows: Token[]): Promise<void> {
         const collection = new DataBaseHelper(Token);
-        await collection.update(rows as Token[]);
+        await collection.insertOrUpdate(rows as Token[], '_restoreId');
     }
 
     protected override async updateDocuments(rows: Token[]): Promise<void> {
         const collection = new DataBaseHelper(Token);
-        await collection.updateByKey(rows as Token[], '_restoreId');
+        await collection.insertOrUpdate(rows as Token[], '_restoreId');
     }
 
     protected override async deleteDocuments(rows: Token[]): Promise<void> {

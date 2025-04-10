@@ -16,12 +16,12 @@ export class RoleCollectionRestore extends CollectionRestore<PolicyRoles> {
 
     protected override async insertDocuments(rows: PolicyRoles[]): Promise<void> {
         const collection = new DataBaseHelper(PolicyRoles);
-        await collection.update(rows as PolicyRoles[]);
+        await collection.insertOrUpdate(rows as PolicyRoles[], '_restoreId');
     }
 
     protected override async updateDocuments(rows: PolicyRoles[]): Promise<void> {
         const collection = new DataBaseHelper(PolicyRoles);
-        await collection.updateByKey(rows as PolicyRoles[], '_restoreId');
+        await collection.insertOrUpdate(rows as PolicyRoles[], '_restoreId');
     }
 
     protected override async deleteDocuments(rows: PolicyRoles[]): Promise<void> {

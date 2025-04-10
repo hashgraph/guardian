@@ -51,13 +51,6 @@ export abstract class CollectionRestore<T extends RestoreEntity> {
         let hash = '';
         for (const action of diff.actions) {
             console.log(typeof action.data);
-            try {
-                const row = this.createRow(action.data);
-                this.setRowId(row, action);
-            } catch (error) {
-                console.log(action)
-                console.log(error)
-            }
             const row = this.createRow(action.data);
             this.setRowId(row, action);
 
