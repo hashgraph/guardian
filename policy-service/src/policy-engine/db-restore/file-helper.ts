@@ -5,6 +5,8 @@ import {
     DidDocument,
     DocumentState,
     ExternalDocument,
+    MintRequest,
+    MintTransaction,
     MultiDocuments,
     PolicyRoles,
     RestoreEntity,
@@ -172,6 +174,16 @@ export class FileHelper {
         const approveCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
         const approveCollection = FileHelper._decryptCollection<ApprovalDocument>(lines, cursor, approveCollectionSize);
 
+        //MintRequest
+        FileHelper._readString(FileHeaders.COLLECTION, lines, cursor);
+        const mintRequestCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
+        const mintRequestCollection = FileHelper._decryptCollection<MintRequest>(lines, cursor, mintRequestCollectionSize);
+
+        //MintTransaction
+        FileHelper._readString(FileHeaders.COLLECTION, lines, cursor);
+        const mintTransactionCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
+        const mintTransactionCollection = FileHelper._decryptCollection<MintTransaction>(lines, cursor, mintTransactionCollectionSize);
+
         const diff: IPolicyDiff = {
             uuid,
             index,
@@ -189,6 +201,8 @@ export class FileHelper {
             topicCollection,
             externalDocCollection,
             approveCollection,
+            mintRequestCollection,
+            mintTransactionCollection,
         }
 
         return diff
@@ -272,6 +286,9 @@ export class FileHelper {
         result += FileHelper._writeCollection('Topic', diff.topicCollection);
         result += FileHelper._writeCollection('ExternalDocument', diff.externalDocCollection);
         result += FileHelper._writeCollection('ApprovalDocument', diff.approveCollection);
+        result += FileHelper._writeCollection('MintRequest', diff.mintRequestCollection);
+        result += FileHelper._writeCollection('MintTransaction', diff.mintTransactionCollection);
+
         return result;
     }
 

@@ -232,6 +232,7 @@ export class SynchronizationService {
                         transaction.target,
                         messageIds,
                         transaction.vpMessageId,
+                        policy.id?.toString(),
                         notifier,
                     ).catch(error => {
                         this.logger.error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);

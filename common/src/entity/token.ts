@@ -119,6 +119,12 @@ export class Token extends RestoreEntity implements IToken {
     wipeContractId?: string;
 
     /**
+     * Is token view
+     */
+    @Property({ nullable: true })
+    view?: boolean;
+
+    /**
      * Create document
      */
     @BeforeCreate()

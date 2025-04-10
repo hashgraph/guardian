@@ -90,6 +90,7 @@ export abstract class TypedMint {
             tokenId: string;
             tokenType: TokenType;
             decimals: number;
+            policyId: string;
             metadata?: string;
         },
         root: IHederaCredentials,
@@ -137,22 +138,22 @@ export abstract class TypedMint {
      */
     private async _resolvePendingTransactionsCheck(): Promise<boolean> {
         const pendingTransactions = await this._db.getMintTransactions({
-                                                                           $and: [
-                                                                               {
-                                                                                   mintRequestId: this._mintRequest.id,
-                                                                               },
-                                                                               {
-                                                                                   $or: [
-                                                                                       {
-                                                                                           mintStatus: MintTransactionStatus.PENDING,
-                                                                                       },
-                                                                                       {
-                                                                                           transferStatus: MintTransactionStatus.PENDING,
-                                                                                       },
-                                                                                   ],
-                                                                               },
-                                                                           ],
-                                                                       } as FilterObject<MintTransaction>);
+            $and: [
+                {
+                    mintRequestId: this._mintRequest.id,
+                },
+                {
+                    $or: [
+                        {
+                            mintStatus: MintTransactionStatus.PENDING,
+                        },
+                        {
+                            transferStatus: MintTransactionStatus.PENDING,
+                        },
+                    ],
+                },
+            ],
+        } as FilterObject<MintTransaction>);
         if (pendingTransactions.length === 0) {
             return false;
         }
@@ -180,25 +181,25 @@ export abstract class TypedMint {
     private async _handleResolveResult() {
         const notCompletedMintTransactions =
             await this._db.getTransactionsCount({
-                                                    mintRequestId: this._mintRequest.id,
-                                                    mintStatus: {
-                                                        $nin: [
-                                                            MintTransactionStatus.SUCCESS,
-                                                            MintTransactionStatus.NONE,
-                                                        ],
-                                                    },
-                                                });
+                mintRequestId: this._mintRequest.id,
+                mintStatus: {
+                    $nin: [
+                        MintTransactionStatus.SUCCESS,
+                        MintTransactionStatus.NONE,
+                    ],
+                },
+            });
         this._mintRequest.isMintNeeded = notCompletedMintTransactions > 0;
         const notCompletedTransferTransactions =
             await this._db.getTransactionsCount({
-                                                    mintRequestId: this._mintRequest.id,
-                                                    transferStatus: {
-                                                        $nin: [
-                                                            MintTransactionStatus.SUCCESS,
-                                                            MintTransactionStatus.NONE,
-                                                        ],
-                                                    },
-                                                });
+                mintRequestId: this._mintRequest.id,
+                transferStatus: {
+                    $nin: [
+                        MintTransactionStatus.SUCCESS,
+                        MintTransactionStatus.NONE,
+                    ],
+                },
+            });
         this._mintRequest.isTransferNeeded =
             notCompletedTransferTransactions > 0;
         await this._db.saveMintRequest(this._mintRequest);

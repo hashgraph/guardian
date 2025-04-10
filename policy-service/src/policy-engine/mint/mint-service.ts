@@ -166,6 +166,7 @@ export class MintService {
                         tokenType: token.tokenType,
                         decimals: token.decimals,
                         memo: transactionMemo,
+                        policyId: ref.policyId
                     },
                     root,
                     tokenConfig,
@@ -193,6 +194,7 @@ export class MintService {
                         tokenType: token.tokenType,
                         decimals: token.decimals,
                         memo: transactionMemo,
+                        policyId: ref.policyId
                     },
                     root,
                     tokenConfig,
@@ -428,6 +430,7 @@ export class MintService {
         targetAccount: string,
         ids: string[],
         vpMessageId: string,
+        policyId: string,
         notifier?: NotificationHelper
     ): Promise<void> {
         const messageIds = ids.join(',');
@@ -466,6 +469,7 @@ export class MintService {
                     tokenId: token.tokenId,
                     tokenType: token.tokenType,
                     decimals: token.decimals,
+                    policyId
                 },
                 root,
                 tokenConfig,
@@ -494,6 +498,7 @@ export class MintService {
                     tokenId: token.tokenId,
                     tokenType: token.tokenType,
                     decimals: token.decimals,
+                    policyId
                 },
                 root,
                 tokenConfig,

@@ -31,6 +31,7 @@ export class TokenCollectionRestore extends CollectionRestore<Token> {
     }
 
     protected override createRow(data: Token): Token {
+        data.view = true;
         return data;
     }
 }

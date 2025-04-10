@@ -43,6 +43,9 @@ export abstract class CollectionRestore<T extends RestoreEntity> {
         diff: ICollectionDiff<T>,
         oldCollectionDiff: ICollectionDiff<T>,
     ): Promise<ICollectionDiff<T>> {
+        if(!diff) {
+            return null;
+        }
 
         const insertRows: T[] = [];
         const updateRows: T[] = [];

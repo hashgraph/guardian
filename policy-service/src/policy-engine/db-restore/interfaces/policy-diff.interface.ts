@@ -10,7 +10,9 @@ import {
     Token,
     Topic,
     VcDocument,
-    VpDocument
+    VpDocument,
+    MintRequest,
+    MintTransaction
 } from '@guardian/common';
 import { ICollectionDiff } from './../index.js';
 
@@ -32,4 +34,6 @@ export interface IPolicyDiff {
     topicCollection?: ICollectionDiff<Topic>;
     externalDocCollection?: ICollectionDiff<ExternalDocument>;
     approveCollection?: ICollectionDiff<ApprovalDocument>;
+    mintRequestCollection?: ICollectionDiff<MintRequest>;
+    mintTransactionCollection?: ICollectionDiff<MintTransaction>;
 }

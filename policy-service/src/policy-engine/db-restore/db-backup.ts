@@ -14,7 +14,9 @@ import {
     DocStateCollectionBackup,
     TopicCollectionBackup,
     ExternalCollectionBackup,
-    ApproveCollectionBackup
+    ApproveCollectionBackup,
+    MintRequestCollectionBackup,
+    MintTransactionCollectionBackup
 } from './collections/index.js';
 
 export class PolicyBackup {
@@ -31,6 +33,8 @@ export class PolicyBackup {
     private readonly topicBackup: TopicCollectionBackup;
     private readonly externalDocBackup: ExternalCollectionBackup;
     private readonly approveBackup: ApproveCollectionBackup;
+    private readonly mintRequestBackup: MintRequestCollectionBackup;
+    private readonly mintTransactionBackup: MintTransactionCollectionBackup;
 
     private lastDiff: PolicyDiff | null;
 
@@ -50,6 +54,8 @@ export class PolicyBackup {
         this.topicBackup = new TopicCollectionBackup(this.policyId);
         this.externalDocBackup = new ExternalCollectionBackup(this.policyId);
         this.approveBackup = new ApproveCollectionBackup(this.policyId);
+        this.mintRequestBackup = new MintRequestCollectionBackup(this.policyId);
+        this.mintTransactionBackup = new MintTransactionCollectionBackup(this.policyId);
     }
 
     public async init(): Promise<void> {
@@ -100,6 +106,9 @@ export class PolicyBackup {
         const topicResult = await this.topicBackup.createCollectionBackup();
         const externalDocResult = await this.externalDocBackup.createCollectionBackup();
         const approveResult = await this.approveBackup.createCollectionBackup();
+        const mintRequestCollection = await this.mintRequestBackup.createCollectionBackup();
+        const mintTransactionCollection = await this.mintTransactionBackup.createCollectionBackup();
+
         const uuid = GenerateUUIDv4();
         const backup: IPolicyDiff = {
             uuid,
@@ -117,7 +126,9 @@ export class PolicyBackup {
             docStateCollection: docStateResult.backup,
             topicCollection: topicResult.backup,
             externalDocCollection: externalDocResult.backup,
-            approveCollection: approveResult.backup
+            approveCollection: approveResult.backup,
+            mintRequestCollection: mintRequestCollection.backup,
+            mintTransactionCollection: mintTransactionCollection.backup,
         }
         const diff: IPolicyDiff = {
             uuid,
@@ -135,7 +146,9 @@ export class PolicyBackup {
             docStateCollection: docStateResult.diff,
             topicCollection: topicResult.diff,
             externalDocCollection: externalDocResult.diff,
-            approveCollection: approveResult.diff
+            approveCollection: approveResult.diff,
+            mintRequestCollection: mintRequestCollection.diff,
+            mintTransactionCollection: mintTransactionCollection.diff,
         }
         // console.log(JSON.stringify(backup))
         // console.log(JSON.stringify(diff))
@@ -157,6 +170,9 @@ export class PolicyBackup {
         const topicResult = await this.topicBackup.createCollectionDiff(oldDiff.topicCollection, lastUpdate);
         const externalDocResult = await this.externalDocBackup.createCollectionDiff(oldDiff.externalDocCollection, lastUpdate);
         const approveResult = await this.approveBackup.createCollectionDiff(oldDiff.approveCollection, lastUpdate);
+        const mintRequestCollection = await this.mintRequestBackup.createCollectionDiff(oldDiff.mintRequestCollection, lastUpdate);
+        const mintTransactionCollection = await this.mintTransactionBackup.createCollectionDiff(oldDiff.mintTransactionCollection, lastUpdate);
+
         const uuid = GenerateUUIDv4();
         const backup: IPolicyDiff = {
             uuid,
@@ -174,7 +190,9 @@ export class PolicyBackup {
             docStateCollection: docStateResult.backup,
             topicCollection: topicResult.backup,
             externalDocCollection: externalDocResult.backup,
-            approveCollection: approveResult.backup
+            approveCollection: approveResult.backup,
+            mintRequestCollection: mintRequestCollection.backup,
+            mintTransactionCollection: mintTransactionCollection.backup,
         }
         const diff: IPolicyDiff = {
             uuid,
@@ -192,7 +210,9 @@ export class PolicyBackup {
             docStateCollection: docStateResult.diff,
             topicCollection: topicResult.diff,
             externalDocCollection: externalDocResult.diff,
-            approveCollection: approveResult.diff
+            approveCollection: approveResult.diff,
+            mintRequestCollection: mintRequestCollection.diff,
+            mintTransactionCollection: mintTransactionCollection.diff,
         }
         // console.log(JSON.stringify(backup))
         // console.log(JSON.stringify(diff))

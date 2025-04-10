@@ -61,7 +61,7 @@ export abstract class CollectionBackup<T extends RestoreEntity> {
         lastUpdate: Date
     ): Promise<DiffResult<T>> {
         console.debug('---- createCollectionDiff')
-        const backup = oldCollectionDiff.actions || [];
+        const backup = oldCollectionDiff?.actions || [];
 
         const rows = this.findDocuments(lastUpdate);
         const list = new Map<string, T>();
@@ -142,7 +142,8 @@ export abstract class CollectionBackup<T extends RestoreEntity> {
             diffActions.push(diffAction);
             hash = this.actionHash(hash, diffAction, newRow);
         }
-        const backupHash = hash ? this.sumHash(oldCollectionDiff.fullHash, hash) : oldCollectionDiff.fullHash;
+        const oldFullHash = oldCollectionDiff?.fullHash || '';
+        const backupHash = hash ? this.sumHash(oldFullHash, hash) : oldFullHash;
         return {
             backup: {
                 hash: backupHash,

@@ -14,6 +14,8 @@ import {
     TopicCollectionRestore,
     ExternalCollectionRestore,
     ApproveCollectionRestore,
+    MintRequestCollectionRestore,
+    MintTransactionCollectionRestore
 } from './collections/index.js';
 
 export class PolicyRestore {
@@ -30,6 +32,8 @@ export class PolicyRestore {
     private readonly topicRestore: TopicCollectionRestore;
     private readonly externalDocRestore: ExternalCollectionRestore;
     private readonly approveRestore: ApproveCollectionRestore;
+    private readonly mintRequestRestore: MintRequestCollectionRestore;
+    private readonly mintTransactionRestore: MintTransactionCollectionRestore;
 
     private lastDiff: PolicyDiff | null;
 
@@ -49,6 +53,8 @@ export class PolicyRestore {
         this.topicRestore = new TopicCollectionRestore(this.policyId);
         this.externalDocRestore = new ExternalCollectionRestore(this.policyId);
         this.approveRestore = new ApproveCollectionRestore(this.policyId);
+        this.mintRequestRestore = new MintRequestCollectionRestore(this.policyId);
+        this.mintTransactionRestore = new MintTransactionCollectionRestore(this.policyId);
     }
 
     public async init(): Promise<void> {
@@ -92,6 +98,8 @@ export class PolicyRestore {
         oldDiff.topicCollection = await this.topicRestore.restoreBackup(backup.topicCollection);
         oldDiff.externalDocCollection = await this.externalDocRestore.restoreBackup(backup.externalDocCollection);
         oldDiff.approveCollection = await this.approveRestore.restoreBackup(backup.approveCollection);
+        oldDiff.mintRequestCollection = await this.mintRequestRestore.restoreBackup(backup.mintRequestCollection);
+        oldDiff.mintTransactionCollection = await this.mintTransactionRestore.restoreBackup(backup.mintTransactionCollection);
 
         await this._saveBackup(oldDiff);
     }
@@ -118,6 +126,8 @@ export class PolicyRestore {
         oldDiff.topicCollection = await this.topicRestore.restoreDiff(diff.topicCollection, oldDiff.topicCollection);
         oldDiff.externalDocCollection = await this.externalDocRestore.restoreDiff(diff.externalDocCollection, oldDiff.externalDocCollection);
         oldDiff.approveCollection = await this.approveRestore.restoreDiff(diff.approveCollection, oldDiff.approveCollection);
+        oldDiff.mintRequestCollection = await this.mintRequestRestore.restoreDiff(diff.mintRequestCollection, oldDiff.mintRequestCollection);
+        oldDiff.mintTransactionCollection = await this.mintTransactionRestore.restoreDiff(diff.mintTransactionCollection, oldDiff.mintTransactionCollection);
 
         await this._saveBackup(oldDiff);
     }

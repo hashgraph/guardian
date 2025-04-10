@@ -4,6 +4,7 @@ import { TypedMint } from './typed-mint.js';
 import { IHederaCredentials } from '../../policy-user.js';
 import { TokenConfig } from '../configs/token-config.js';
 import { PolicyUtils } from '../../helpers/utils.js';
+import { PolicyComponentsUtils } from '../../policy-components-utils.js';
 
 /**
  * Mint FT
@@ -57,6 +58,7 @@ export class MintFT extends TypedMint {
             tokenId: string;
             tokenType: TokenType;
             decimals: number;
+            policyId: string;
             secondaryVpIds?: string[];
         },
         root: IHederaCredentials,
@@ -103,6 +105,7 @@ export class MintFT extends TypedMint {
                         ? MintTransactionStatus.SUCCESS
                         : MintTransactionStatus.NEW;
                 await this._db.saveMintTransaction(mintTransaction);
+                PolicyComponentsUtils.backup(mintTransaction.policyId);
             }
         }
 
@@ -137,6 +140,7 @@ export class MintFT extends TypedMint {
                         ? MintTransactionStatus.SUCCESS
                         : MintTransactionStatus.NEW;
                 await this._db.saveMintTransaction(transferTrasaction);
+                PolicyComponentsUtils.backup(transferTrasaction.policyId);
             }
         }
     }
@@ -156,6 +160,7 @@ export class MintFT extends TypedMint {
         if (!transaction) {
             transaction = await this._db.saveMintTransaction({
                 mintRequestId: this._mintRequest.id,
+                policyId: this._mintRequest.policyId,
                 mintStatus: MintTransactionStatus.NEW,
                 transferStatus: this._mintRequest.isTransferNeeded
                     ? MintTransactionStatus.NEW
@@ -225,6 +230,7 @@ export class MintFT extends TypedMint {
             throw error;
         } finally {
             await this._db.saveMintTransaction(transaction);
+            PolicyComponentsUtils.backup(transaction.policyId);
         }
     }
 
@@ -304,6 +310,7 @@ export class MintFT extends TypedMint {
             throw error;
         } finally {
             await this._db.saveMintTransaction(transaction);
+            PolicyComponentsUtils.backup(transaction.policyId);
         }
     }
 
