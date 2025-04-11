@@ -502,7 +502,7 @@ export class ReportBlockComponent implements OnInit {
                                 const combinedRetirements = [...retiresDbMapped];
                                 retiresIndexer.forEach((retirements: IRetirementMessage[]) => {
                                     retirements.forEach((item: IRetirementMessage) => {
-                                        const existInGuardianDocument = retiresDbMapped.find((retire: IVC) => retire.id === item.documents[0].id);
+                                        const existInGuardianDocument = retiresDbMapped.find((retire: IVC) => retire.id === item?.documents?.[0].id);
                                         if (!existInGuardianDocument) {
                                             item.documents[0].topicId = item.topicId;
                                             item.documents[0].timestamp = item.consensusTimestamp;
