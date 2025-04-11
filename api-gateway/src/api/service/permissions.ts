@@ -414,8 +414,8 @@ export class PermissionsApi {
                     role,
                     status,
                     username,
-                    did: { $ne: user.did }
                 },
+                currentUsername: user.username,
                 parent: user.parent ? user.parent : user.did,
                 pageIndex,
                 pageSize
@@ -468,8 +468,9 @@ export class PermissionsApi {
         try {
             const owner = user.parent || user.did;
             const users = new Users();
-            const row = await users.getUserPermissions(username);
-            if (!row || row.parent !== owner || row.did === user.did) {
+            const row = await users.getUserPermissions(username, owner);
+
+            if (!row || row.did === user.did) {
                 throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND);
             }
             return row as any;
@@ -526,11 +527,12 @@ export class PermissionsApi {
         let row: any;
         const users = new Users();
         try {
-            row = await users.getUserPermissions(username);
+            const parent = user.parent || user.did;
+            row = await users.getUserPermissions(username, parent);
         } catch (error) {
             await InternalException(error, this.logger);
         }
-        if (!row || row.parent !== user.did || row.did === user.did) {
+        if (!row || row.did === user.did) {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
         }
         try {
@@ -616,11 +618,11 @@ export class PermissionsApi {
         const owner = user.parent || user.did;
         let target: any;
         try {
-            target = await (new Users()).getUserPermissions(username);
+            target = await (new Users()).getUserPermissions(username, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }
-        if (!target || target.parent !== owner) {
+        if (!target) {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
         }
         try {
@@ -681,11 +683,12 @@ export class PermissionsApi {
         let row: any;
         const users = new Users();
         try {
-            row = await users.getUserPermissions(username);
+            const parent = user.parent || user.did;
+            row = await users.getUserPermissions(username, parent);
         } catch (error) {
             await InternalException(error, this.logger);
         }
-        if (!row || row.parent !== user.did || row.did === user.did) {
+        if (!row || row.did === user.did) {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
         }
         try {
@@ -746,11 +749,12 @@ export class PermissionsApi {
         let row: any;
         const users = new Users();
         try {
-            row = await users.getUserPermissions(username);
+            const parent = user.parent || user.did;
+            row = await users.getUserPermissions(username, parent);
         } catch (error) {
             await InternalException(error, this.logger);
         }
-        if (!row || row.parent !== user.parent || row.did === user.did) {
+        if (!row || row.did === user.did) {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
         }
         try {
@@ -806,11 +810,12 @@ export class PermissionsApi {
         let row: any;
         const users = new Users();
         try {
-            row = await users.getUserPermissions(username);
+            const parent = user.parent || user.did;
+            row = await users.getUserPermissions(username, parent);
         } catch (error) {
             await InternalException(error, this.logger);
         }
-        if (!row || row.parent !== user.parent || row.did === user.did) {
+        if (!row || row.did === user.did) {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
         }
         try {

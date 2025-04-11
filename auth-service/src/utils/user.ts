@@ -11,6 +11,7 @@ import { USER_REQUIRED_PROPS, USER_KEYS_PROPS } from '#constants';
 import { User } from '../entity/user.js';
 import { DynamicRole } from '../entity/dynamic-role.js';
 import { DatabaseServer } from '@guardian/common';
+import { ParentPermissions } from '../entity/parent-permissions.js';
 
 export enum UserProp {
     RAW = 'RAW',
@@ -71,6 +72,22 @@ export class UserUtils {
 
     public static updateUsersFields(users: User[], prop: UserProp): User[] {
         return users.map((user) => UserUtils.updateUserFields(user, prop));
+    }
+
+    public static async updateUserPermissions(user: User): Promise<User> {
+        const entityRepository = new DatabaseServer();
+        const permissionsRow = await entityRepository.findOne(ParentPermissions, {
+            username: user.username,
+            parent: user.parent,
+        });
+
+        if(permissionsRow) {
+            user.permissions = permissionsRow.permissions;
+            user.permissionsGroup = permissionsRow.permissionsGroup;
+        }
+        
+        await new DatabaseServer().update(User, null, user);
+        return user;
     }
 
     public static async createNewUser(user: {

@@ -24,3 +24,4 @@ export { StatisticAssessmentMessage } from './statistic-assessment-message.js';
 export { LabelMessage } from './label-message.js';
 export { LabelDocumentMessage } from './label-document-message.js';
 export { FormulaMessage } from './formula-message.js';
+export { UserMessage } from './user-message.js';

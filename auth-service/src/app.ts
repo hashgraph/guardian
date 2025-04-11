@@ -14,6 +14,7 @@ import { MeecoAuthService } from './api/meeco-service.js';
 import { ApplicationEnvironment } from './environment.js';
 import { RoleService } from './api/role-service.js';
 import { DEFAULT_MONGO } from '#constants';
+import { ParentPermissionsService } from './api/parent-permissions-service.js';
 
 Promise.all([
     Migration({
@@ -67,6 +68,9 @@ Promise.all([
 
         await new RoleService().setConnection(cn).init();
         new RoleService().registerListeners(logger);
+
+        await new ParentPermissionsService().setConnection(cn).init();
+        new ParentPermissionsService().registerListeners(logger);
 
         const validator = new ValidateConfiguration();
 
