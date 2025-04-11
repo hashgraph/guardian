@@ -35,8 +35,11 @@ export class PolicyEngineService {
         return params;
     }
 
-    public all(): Observable<any[]> {
-        return this.http.get<any[]>(`${this.url}/`);
+    public all(type?: string): Observable<any[]> {
+        if (type) {
+            return this.http.get<any[]>(`${this.url}?type=${type}`);
+        }
+        return this.http.get<any[]>(`${this.url}`);
     }
 
     public page(
