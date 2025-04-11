@@ -29,7 +29,7 @@ export class ArtifactImport {
         };
     }
 
-    private prepareArtifactData(artifact: Artifact, user: IOwner): Partial<Artifact> {
+    private prepareArtifactData(artifact: any, user: IOwner): Partial<any> {
         if (this.mode === ImportMode.VIEW) {
             return {
                 _id: new ObjectId(artifact.id),
@@ -39,6 +39,7 @@ export class ArtifactImport {
                 name: artifact.name,
                 category: artifact.category,
                 extention: artifact.extention,
+                data: artifact.data,
                 policyId: artifact.policyId,
                 owner: user.owner,
                 creator: user.creator
@@ -50,6 +51,7 @@ export class ArtifactImport {
                 name: artifact.name,
                 category: artifact.category,
                 extention: artifact.extention,
+                data: artifact.data,
                 policyId: null,
                 owner: user.owner,
                 creator: user.creator
@@ -75,7 +77,7 @@ export class ArtifactImport {
         for (const artifact of artifactsObject) {
             const data = (artifact as any).data;
             delete (artifact as any).data;
-            const file = await DatabaseServer.saveArtifact(artifact)
+            const file = await DatabaseServer.saveArtifact(artifact);
             await DatabaseServer.saveArtifactFile(artifact.uuid, data);
             addedArtifacts.push(file);
         }
