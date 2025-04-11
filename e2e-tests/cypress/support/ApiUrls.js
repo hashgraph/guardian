@@ -170,6 +170,8 @@ const API = {
     Roles: "roles/",
     Permissions: "permissions/",
     Default: "default/",
+    Relationships: "relationships/",
+    Documents: "documents/",
 
     //Indexer
     IndexerRegistries: "entities/registries/",
@@ -218,7 +220,9 @@ const API = {
 
     //Formulas
     Formulas: "formulas/",
-    Relationships: "relationships/",
     Data: "data/",
+
+    //Policy Labels
+    PolicyLabels: "policy-labels/",
 };
 export default API;

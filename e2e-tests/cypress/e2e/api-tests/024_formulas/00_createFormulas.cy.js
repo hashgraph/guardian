@@ -6,7 +6,7 @@ context("Create formulas", { tags: ['formulas', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const formulaName = "testFormulaAPI";
 
-    let policyId, policyTopicId, policyInstanceTopicId, policy;
+    let policyId, policyTopicId, policyInstanceTopicId;
 
     before("Get policy ids", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -20,9 +20,9 @@ context("Create formulas", { tags: ['formulas', 'firstPool', 'all'] }, () => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 response.body.forEach(element => {
                     if (element.name == "iRec_4") {
-                        policyId = response.body.at(0).id;
-                        policyTopicId = response.body.at(0).topicId;
-                        policyInstanceTopicId = response.body.at(0).instanceTopicId;
+                        policyId = element.id;
+                        policyTopicId = element.topicId;
+                        policyInstanceTopicId = element.instanceTopicId;
                     }
                 })
             });
@@ -39,7 +39,7 @@ context("Create formulas", { tags: ['formulas', 'firstPool', 'all'] }, () => {
                     description: formulaName + " desc",
                     policyId,
                     policyTopicId,
-                    policyInstanceTopicId
+                    policyInstanceTopicId,
                 },
                 headers: {
                     authorization,

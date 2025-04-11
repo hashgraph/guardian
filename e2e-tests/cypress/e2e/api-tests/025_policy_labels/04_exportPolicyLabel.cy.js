@@ -2,31 +2,31 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("Export formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+context("Export policy label", { tags: ['policy_labels', 'firstPool', 'all'] }, () => {
+    const UserUsername = Cypress.env('User');
 
-    let firstFormula;
+    let policyLabel;
 
-    before("Get first formula", () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
+    before("Get policy label", () => {
+        Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.Formulas,
+                url: API.ApiServer + API.PolicyLabels,
                 headers: {
                     authorization,
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                firstFormula = response.body.at(0);
-            });
-        })
-    });
+                policyLabel = response.body.at(0);
+            })
+        });
+    })
 
-    it("Export formula", () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
+    it("Export policy label", () => {
+        Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.Formulas + firstFormula.id + "/" + API.ExportFile,
+                url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.ExportFile,
                 encoding: null,
                 headers: {
                     authorization,
@@ -35,18 +35,18 @@ context("Export formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 expect(response.body).to.not.be.oneOf([null, ""]);
                 cy.writeFile(
-                    "cypress/fixtures/exportedFormula.formula",
+                    "cypress/fixtures/exportedLabel.label",
                     Cypress.Blob.arrayBufferToBinaryString(response.body),
                     "binary"
                 );
             });
-        });
+        })
     });
 
-    it("Export formula without auth - Negative", () => {
+    it("Export policy label without auth - Negative", () => {
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.Formulas + firstFormula.id + "/" + API.ExportFile,
+            url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.ExportFile,
             headers: {
             },
             failOnStatusCode: false,
@@ -55,10 +55,10 @@ context("Export formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Export formula with incorrect auth - Negative", () => {
+    it("Export policy label with incorrect auth - Negative", () => {
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.Formulas + firstFormula.id + "/" + API.ExportFile,
+            url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.ExportFile,
             headers: {
                 authorization: "bearer 11111111111111111111@#$",
             },
@@ -68,10 +68,10 @@ context("Export formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Export formula with empty auth - Negative", () => {
+    it("Export policy label with empty auth - Negative", () => {
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.Formulas + firstFormula.id + "/" + API.ExportFile,
+            url: API.ApiServer + API.PolicyLabels + policyLabel.id + "/" + API.ExportFile,
             headers: {
                 authorization: "",
             },
@@ -80,5 +80,4 @@ context("Export formula", { tags: ['formulas', 'firstPool', 'all'] }, () => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
-
 });
