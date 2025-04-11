@@ -20,6 +20,7 @@ import {
     UserRole
 } from '@guardian/interfaces';
 import { UserUtils, UserPassword, PasswordType, UserAccessTokenService, UserProp } from '#utils';
+import { ParentPermissions } from '../entity/parent-permissions.js';
 
 /**
  * Account service
@@ -442,6 +443,7 @@ export class AccountService extends NatsService {
         this.getMessages(AuthEvents.GET_USER_ACCOUNTS,
             async (msg: {
                 filters?: any,
+                currentUsername?: string,
                 parent?: string,
                 pageIndex?: any,
                 pageSize?: any
@@ -451,18 +453,8 @@ export class AccountService extends NatsService {
                         return new MessageError('Invalid load users parameter');
                     }
 
-                    const { filters, pageIndex, pageSize, parent } = msg;
-                    const otherOptions: any = {
-                        fields: [
-                            'username',
-                            'did',
-                            'hederaAccountId',
-                            'role',
-                            'permissionsGroup',
-                            'permissions',
-                            'template'
-                        ]
-                    };
+                    const { filters, currentUsername, pageIndex, pageSize, parent } = msg;
+                    const otherOptions: any = {};
                     const _pageSize = parseInt(pageSize, 10);
                     const _pageIndex = parseInt(pageIndex, 10);
                     if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
@@ -478,15 +470,28 @@ export class AccountService extends NatsService {
                         if (filters.role) {
                             options['permissionsGroup.roleId'] = filters.role;
                         }
-                        if (filters.username) {
-                            options.username = { $regex: '.*' + filters.username + '.*' };
-                        }
-                        if (filters.did) {
-                            options.did = filters.did;
-                        }
+                        options.username = {
+                            ...(filters.username && { $regex: '.*' + filters.username + '.*' }),
+                            $ne: currentUsername
+                        };
                     }
-                    const [items, count] = await new DatabaseServer().findAndCount(User, options, otherOptions);
-                    return new MessageResponse({ items, count });
+                    const [items, count] = await new DatabaseServer().findAndCount(ParentPermissions, options, otherOptions);
+                    const resultUsers = [];
+                    for (const item of items) {
+                        const user = await new DatabaseServer().findOne(User, { username: item.username }, {
+                            fields: [
+                                'username',
+                                'did',
+                                'hederaAccountId',
+                                'role',
+                                'permissionsGroup',
+                                'permissions',
+                                'template'
+                            ]
+                        });
+                        resultUsers.push({...user, permissions: item.permissions, permissionsGroup: item.permissionsGroup});
+                    }
+                    return new MessageResponse({ items: resultUsers, count });
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);

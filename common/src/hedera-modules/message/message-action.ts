@@ -40,4 +40,5 @@ export enum MessageAction {
     PublishPolicyLabel = 'publish-policy-label',
     CreateLabelDocument = 'create-label-document',
     PublishFormula = 'publish-formula',
+    AddParent = 'add-parent',
 }

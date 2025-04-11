@@ -28,6 +28,7 @@ import {
     VCMessage,
     Wallet,
     Workers,
+    UserMessage
 } from '@guardian/common';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { RestoreDataFromHedera } from '../helpers/restore-data-from-hedera.js';
@@ -89,7 +90,6 @@ async function getGlobalTopic(): Promise<TopicConfig | null> {
         return null;
     }
 }
-
 /**
  * Set up user profile
  * @param username
@@ -692,16 +692,8 @@ export function profileAPI(logger: PinoLogger) {
             try {
                 const { username, standartRegistryDid } = msg;
                 const users = new Users();
-                const user = await users.getUser(username);
-
-                if (!user.parents?.length || !user.parents.includes(standartRegistryDid)) {
-                    return new MessageError("The Standard Registry DID is not included in the user's parents", 403);
-                }
-
-                await users.updateCurrentUser(username, {
-                    parent: standartRegistryDid,
-                });
-                //notifier
+                await users.updateUserParent(username, standartRegistryDid);
+                return new MessageResponse(username);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 console.error(error);
@@ -714,16 +706,28 @@ export function profileAPI(logger: PinoLogger) {
             try {
                 const { username, standartRegistryDid } = msg;
                 const users = new Users();
+
+                await users.addUserParent(username, standartRegistryDid);
                 const user = await users.getUser(username);
 
-                if (user.parents?.includes(standartRegistryDid)) {
-                    return new MessageError("The Standard Registry DID has already been included in the user's parents", 403);
-                }
-
-                await users.updateCurrentUser(username, {
-                    parents: [...(user.parents || []), standartRegistryDid],
+                const row = await new DatabaseServer().findOne(Topic, {
+                    owner: standartRegistryDid,
+                    type: TopicType.UserTopic
                 });
-                //notifier
+                const userTopic = await new DatabaseServer().findOne(Topic, {
+                    owner: user.did,
+                    type: TopicType.UserTopic
+                });
+                const topicConfig = await TopicConfig.fromObject(row, true);
+                
+                const root = await users.getHederaAccount(user.did);
+                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
+                messageServer.setTopicObject(topicConfig);
+
+                const message = new UserMessage(MessageAction.AddParent);
+                message.setDocument({...user, topicId: userTopic.topicId});
+                await messageServer.sendMessage(message);
+                return new MessageResponse(user);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 console.error(error);

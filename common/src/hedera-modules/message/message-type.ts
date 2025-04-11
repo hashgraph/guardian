@@ -22,5 +22,6 @@ export enum MessageType {
     UserPermissions = 'User-Permissions',
     PolicyStatistic = 'Policy-Statistic',
     PolicyLabel = 'Policy-Label',
-    Formula = 'Formula'
+    Formula = 'Formula',
+    User = 'User'
 }

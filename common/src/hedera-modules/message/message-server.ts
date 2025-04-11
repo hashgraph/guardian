@@ -26,6 +26,7 @@ import { UserPermissionsMessage } from './user-permissions-message.js';
 import { StatisticMessage } from './statistic-message.js';
 import { LabelMessage } from './label-message.js';
 import { FormulaMessage } from './formula-message.js';
+import { UserMessage } from './user-message.js';
 
 /**
  * Message server
@@ -318,6 +319,9 @@ export class MessageServer {
                 break;
             case MessageType.Formula:
                 message = FormulaMessage.fromMessageObject(json);
+                break;
+            case MessageType.User:
+                message = UserMessage.fromMessageObject(json);
                 break;
             // Default schemas
             case 'schema-document':

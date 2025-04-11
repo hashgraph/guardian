@@ -299,6 +299,25 @@ export interface RegistrationMessageBody extends MessageBody {
     attributes: { [x: string]: string } | undefined;
 }
 
+export interface UserMessageBody extends MessageBody {
+    /**
+     * DID
+     */
+    did: string;
+    /**
+     * Topic ID
+     */
+    topicId: string;
+    /**
+     * Language
+     */
+    lang: string;
+    /**
+     * Attributes
+     */
+    attributes: { [x: string]: string } | undefined;
+}
+
 /**
  * Token message body
  */

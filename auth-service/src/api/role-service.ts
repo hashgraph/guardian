@@ -3,6 +3,7 @@ import { AuthEvents, GenerateUUIDv4, IGroup, IOwner, PermissionsArray } from '@g
 import { DynamicRole } from '../entity/dynamic-role.js';
 import { User } from '../entity/user.js';
 import { UserProp, UserUtils } from '#utils';
+import { ParentPermissions } from '../entity/parent-permissions.js';
 
 const permissionList = PermissionsArray.filter((p) => !p.disabled).map((p) => {
     return {
@@ -407,10 +408,15 @@ export class RoleService extends NatsService {
                     }
                     const { username, userRoles, owner } = msg;
 
-                    const target = await UserUtils.getUser({ username, parent: owner.creator }, UserProp.RAW);
-                    if (!target) {
+                    const user = await UserUtils.getUser({ username, parents: owner.owner }, UserProp.RAW);
+                    if (!user) {
                         return new MessageError('User does not exist');
                     }
+
+                    const target = await entityRepository.findOne(ParentPermissions, {
+                        username: user.username,
+                        parent: owner.owner,
+                    });
 
                     const roleMap = new Map<string, [string, string, string]>();
                     const permissions = new Set<string>();
@@ -447,8 +453,10 @@ export class RoleService extends NatsService {
                         });
                     }
                     target.permissions = Array.from(permissions);
-                    const result = await entityRepository.update(User, null, target);
-                    return new MessageResponse(UserUtils.updateUserFields(result, UserProp.REQUIRED));
+                    await entityRepository.update(ParentPermissions, null, target);
+                    await UserUtils.updateUserPermissions(user);
+
+                    return new MessageResponse(UserUtils.updateUserFields(user, UserProp.REQUIRED));
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
@@ -468,13 +476,15 @@ export class RoleService extends NatsService {
                     const entityRepository = new DatabaseServer();
 
                     const { owner } = msg;
-                    const users = await UserUtils.getUsers({ parent: owner }, UserProp.RAW);
+                    const parentPermissions = await entityRepository.find(ParentPermissions, {
+                        parent: owner,
+                    });
                     const roleMap = new Map<string, DynamicRole>();
-                    for (const user of users) {
+                    for (const target of parentPermissions) {
                         const permissionsGroup: IGroup[] = [];
                         const permissions = new Set<string>();
-                        if (user.permissionsGroup) {
-                            for (const group of user.permissionsGroup) {
+                        if (target.permissionsGroup) {
+                            for (const group of target.permissionsGroup) {
                                 if (!roleMap.has(group.roleId)) {
                                     const row = await entityRepository.findOne(DynamicRole, { id: group.roleId });
                                     roleMap.set(group.roleId, row);
@@ -489,10 +499,16 @@ export class RoleService extends NatsService {
                                 }
                             }
                         }
-                        user.permissionsGroup = permissionsGroup;
-                        user.permissions = Array.from(permissions);
-                        await entityRepository.update(User, null, user);
+                        target.permissionsGroup = permissionsGroup;
+                        target.permissions = Array.from(permissions);
+                        await entityRepository.update(ParentPermissions, null, target);
                     }
+
+                    const users = await UserUtils.getUsers({ parent: owner }, UserProp.RAW);
+                    for (const user of users) {
+                        await UserUtils.updateUserPermissions(user);
+                    }
+
                     return new MessageResponse(UserUtils.updateUsersFields(users, UserProp.REQUIRED));
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -517,17 +533,22 @@ export class RoleService extends NatsService {
                     }
                     const { username, userRoles, owner } = msg;
 
-                    const user = await UserUtils.getUser({ did: owner.creator }, UserProp.RAW);
-                    const target = await UserUtils.getUser({ username }, UserProp.RAW);
+                    const userSender = await UserUtils.getUser({ did: owner.creator }, UserProp.RAW);
+                    const userReceiver = await UserUtils.getUser({ username }, UserProp.RAW);
+                    
+                    const userPermissions = await entityRepository.findOne(ParentPermissions, {
+                        username: userReceiver.username,
+                        parent: userSender.parent,
+                    });
 
-                    if (!user || !target) {
+                    if (!userSender || !userReceiver) {
                         return new MessageError('User does not exist');
                     }
 
                     //Old
                     const othersRoles = new Map<string, [string, DynamicRole]>();
-                    target.permissionsGroup = target.permissionsGroup || [];
-                    for (const group of target.permissionsGroup) {
+                    userPermissions.permissionsGroup = userPermissions.permissionsGroup || [];
+                    for (const group of userPermissions.permissionsGroup) {
                         if (group.owner !== owner.creator) {
                             const role = await entityRepository.findOne(DynamicRole, { id: group.roleId });
                             if (role) {
@@ -537,7 +558,7 @@ export class RoleService extends NatsService {
                     }
 
                     //New
-                    const ownRoles = user.permissionsGroup?.map((g) => g.roleId) || [];
+                    const ownRoles = userSender.permissionsGroup?.map((g) => g.roleId) || [];
                     const roles = await entityRepository.find(DynamicRole, { id: { $in: userRoles } });
                     for (const role of roles) {
                         if (ownRoles.includes(role.id)) {
@@ -565,10 +586,12 @@ export class RoleService extends NatsService {
                         }
                     }
 
-                    target.permissionsGroup = permissionsGroup;
-                    target.permissions = Array.from(permissions);
-                    await entityRepository.update(User, null, target);
-                    return new MessageResponse(UserUtils.updateUserFields(target, UserProp.REQUIRED));
+                    userPermissions.permissionsGroup = permissionsGroup;
+                    userPermissions.permissions = Array.from(permissions);
+                    await entityRepository.update(ParentPermissions, null, userPermissions);
+                    await UserUtils.updateUserPermissions(userReceiver);
+
+                    return new MessageResponse(UserUtils.updateUserFields(userReceiver, UserProp.REQUIRED));
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
@@ -580,9 +603,26 @@ export class RoleService extends NatsService {
          * @param username - username
          */
         this.getMessages(AuthEvents.GET_USER_PERMISSIONS, async (msg: any) => {
-            const { username } = msg;
+            const { username, parent } = msg;
             try {
-                const user = await UserUtils.getUser({ username }, UserProp.REQUIRED)
+                const user = await UserUtils.getUser({ username, parents: parent }, UserProp.REQUIRED);
+
+                if(!user) {
+                    return new MessageResponse(null);
+                }
+
+                const parentPermissions = await new DatabaseServer().findOne(ParentPermissions, {
+                    username,
+                    parent
+                });
+                
+                if(!parentPermissions) {
+                    return new MessageResponse(null);
+                }
+
+                user.permissions = parentPermissions.permissions;
+                user.permissionsGroup = parentPermissions.permissionsGroup;
+
                 return new MessageResponse(user);
             } catch (error) {
                 await logger.error(error, ['AUTH_SERVICE']);
