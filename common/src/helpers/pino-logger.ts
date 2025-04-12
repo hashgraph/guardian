@@ -43,7 +43,7 @@ export class PinoLogger {
     private determinedTransports: (new (options: any) => any)[];
     private logger: pino.Logger;
 
-    public init(options: LoggerOptions, user?: any) {
+    public init(options: LoggerOptions) {
         this.options = options;
         this.mapTransports = options.mapTransports;
         this.transports = options.transports;

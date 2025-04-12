@@ -1,6 +1,7 @@
 import { Entity, Enum, Property } from '@mikro-orm/core';
 import { ILog, LogType } from '@guardian/interfaces';
 import { BaseEntity } from '../models/base-entity.js';
+import { IsOptional, IsString } from 'class-validator';
 
 /**
  * Log message
@@ -35,4 +36,9 @@ export class Log extends BaseEntity implements ILog {
         index: true
     })
     attributes?: string[];
+
+    @Property({ nullable: true, index: true })
+    @IsOptional()
+    @IsString()
+    userId?: string;
 }
