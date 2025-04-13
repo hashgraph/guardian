@@ -118,7 +118,7 @@ export class ArtifactApi {
 
             return res.header('X-Total-Count', count).send(artifacts);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -227,7 +227,7 @@ export class ArtifactApi {
 
             return res.header('X-Total-Count', count).send(artifacts);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -303,7 +303,7 @@ export class ArtifactApi {
 
             return uploadedArtifacts;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -348,7 +348,7 @@ export class ArtifactApi {
 
             return await guardian.deleteArtifact(artifactId, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

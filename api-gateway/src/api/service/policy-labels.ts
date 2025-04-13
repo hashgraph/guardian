@@ -47,7 +47,7 @@ export class PolicyLabelsApi {
             const guardian = new Guardians();
             return await guardian.createPolicyLabel(label, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -108,7 +108,7 @@ export class PolicyLabelsApi {
             }, owner);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -150,7 +150,7 @@ export class PolicyLabelsApi {
             const guardian = new Guardians();
             return await guardian.getPolicyLabelById(definitionId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -202,7 +202,7 @@ export class PolicyLabelsApi {
             }
             return await guardians.updatePolicyLabel(definitionId, item, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -244,7 +244,7 @@ export class PolicyLabelsApi {
             const guardians = new Guardians();
             return await guardians.deletePolicyLabel(definitionId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -290,7 +290,7 @@ export class PolicyLabelsApi {
             }
             return await guardians.publishPolicyLabel(definitionId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -346,7 +346,7 @@ export class PolicyLabelsApi {
 
             return task;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -388,7 +388,7 @@ export class PolicyLabelsApi {
             const guardian = new Guardians();
             return await guardian.getPolicyLabelRelationships(definitionId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -432,7 +432,7 @@ export class PolicyLabelsApi {
             const owner = new EntityOwner(user);
             return await guardian.importPolicyLabel(zip, policyId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -474,7 +474,7 @@ export class PolicyLabelsApi {
             res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -509,7 +509,7 @@ export class PolicyLabelsApi {
             const guardian = new Guardians();
             return await guardian.previewPolicyLabel(body, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -545,7 +545,7 @@ export class PolicyLabelsApi {
             const guardian = new Guardians();
             return await guardian.searchComponents(body, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -604,7 +604,7 @@ export class PolicyLabelsApi {
             const { items, count } = await guardians.getPolicyLabelTokens(definitionId, owner, pageIndex, pageSize);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -653,7 +653,7 @@ export class PolicyLabelsApi {
             const guardians = new Guardians();
             return await guardians.getPolicyLabelTokenDocuments(documentId, definitionId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -704,7 +704,7 @@ export class PolicyLabelsApi {
             const guardian = new Guardians();
             return await guardian.createLabelDocument(definitionId, document, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -766,7 +766,7 @@ export class PolicyLabelsApi {
             const { items, count } = await guardians.getLabelDocuments(definitionId, { pageIndex, pageSize }, owner);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -816,7 +816,7 @@ export class PolicyLabelsApi {
             const guardian = new Guardians();
             return await guardian.getLabelDocument(definitionId, documentId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -866,7 +866,7 @@ export class PolicyLabelsApi {
             const guardian = new Guardians();
             return await guardian.getLabelDocumentRelationships(definitionId, documentId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

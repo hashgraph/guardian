@@ -107,7 +107,7 @@ export class ProfileApi {
                 vcDocument
             };
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -215,7 +215,7 @@ export class ProfileApi {
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
@@ -321,7 +321,7 @@ export class ProfileApi {
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
@@ -379,7 +379,7 @@ export class ProfileApi {
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
@@ -426,7 +426,7 @@ export class ProfileApi {
             const guardians = new Guardians();
             return await guardians.validateDidDocument(document);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -476,7 +476,7 @@ export class ProfileApi {
             const guardians = new Guardians();
             return await guardians.validateDidKeys(document, keys);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

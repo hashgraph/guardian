@@ -58,7 +58,7 @@ export class ThemesApi {
 
             return await guardians.createTheme(theme, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -122,7 +122,7 @@ export class ThemesApi {
 
             return await guardians.updateTheme(themeId, theme, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -176,7 +176,7 @@ export class ThemesApi {
 
             return await guardians.deleteTheme(themeId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -216,7 +216,7 @@ export class ThemesApi {
                 return [];
             }
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -263,7 +263,7 @@ export class ThemesApi {
 
             return await guardian.importThemeFile(zip, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -309,7 +309,7 @@ export class ThemesApi {
             res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

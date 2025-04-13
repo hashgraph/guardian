@@ -56,7 +56,7 @@ export class TagsApi {
 
             return await guardian.createTag(body, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -106,6 +106,7 @@ export class TagsApi {
     @ApiExtraModels(TagFilterDTO, TagMapDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async searchTags(
+        @AuthUser() user: IAuthUser,
         @Body() body: TagFilterDTO,
         @Req() req
     ): Promise<{ [localTarget: string]: TagMapDTO }> {
@@ -160,7 +161,7 @@ export class TagsApi {
 
             return tagMap;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -211,7 +212,7 @@ export class TagsApi {
 
             return await guardian.deleteTag(uuid, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -252,6 +253,7 @@ export class TagsApi {
     @ApiExtraModels(TagMapDTO, TagFilterDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async synchronizationTags(
+        @AuthUser() user: IAuthUser,
         @Body() body: TagFilterDTO,
         @Req() req
     ): Promise<TagMapDTO> {
@@ -277,7 +279,7 @@ export class TagsApi {
                 refreshDate: (new Date()).toISOString(),
             };
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -341,7 +343,7 @@ export class TagsApi {
                 .header('X-Total-Count', count)
                 .send(SchemaUtils.toOld(items));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -406,7 +408,7 @@ export class TagsApi {
                 .header('X-Total-Count', count)
                 .send(SchemaUtils.toOld(items));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -460,7 +462,7 @@ export class TagsApi {
 
             return SchemaUtils.toOld(schemas);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -513,7 +515,7 @@ export class TagsApi {
 
             return true;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -574,7 +576,7 @@ export class TagsApi {
 
             return await guardians.updateSchema(newSchema, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -628,7 +630,7 @@ export class TagsApi {
 
             return await guardians.publishTagSchema(schemaId, version, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -651,12 +653,14 @@ export class TagsApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
-    async getPublished(): Promise<SchemaDTO[]> {
+    async getPublished(
+        @AuthUser() user: IAuthUser,
+    ): Promise<SchemaDTO[]> {
         try {
             const guardians = new Guardians();
             return await guardians.getPublishedTagSchemas();
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

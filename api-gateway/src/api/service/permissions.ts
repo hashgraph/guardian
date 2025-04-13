@@ -55,7 +55,7 @@ export class PermissionsApi {
         try {
             return await (new Users()).getPermissions();
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, null);
         }
     }
 
@@ -124,7 +124,7 @@ export class PermissionsApi {
             const { items, count } = await (new Users()).getRoles(options);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -164,7 +164,7 @@ export class PermissionsApi {
             await (new Guardians()).createRole(role, owner);
             return role;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -211,7 +211,7 @@ export class PermissionsApi {
         try {
             row = await userService.getRoleById(id);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
         if (!row) {
             throw new HttpException('Role does not exist.', HttpStatus.NOT_FOUND)
@@ -232,7 +232,7 @@ export class PermissionsApi {
 
             return result;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -281,7 +281,7 @@ export class PermissionsApi {
             wsService.updatePermissions(users);
             return result;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -335,7 +335,7 @@ export class PermissionsApi {
         try {
             return await (new Users()).setDefaultRole(body?.id, user.did);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -427,7 +427,7 @@ export class PermissionsApi {
             }
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -474,7 +474,7 @@ export class PermissionsApi {
             }
             return row as any;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -528,7 +528,7 @@ export class PermissionsApi {
         try {
             row = await users.getUserPermissions(username);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
         if (!row || row.parent !== user.did || row.did === user.did) {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
@@ -548,7 +548,7 @@ export class PermissionsApi {
 
             return result;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -618,7 +618,7 @@ export class PermissionsApi {
         try {
             target = await (new Users()).getUserPermissions(username);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
         if (!target || target.parent !== owner) {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
@@ -636,7 +636,7 @@ export class PermissionsApi {
             const { policies, count } = await (new Guardians()).getAssignedPolicies(options);
             return res.header('X-Total-Count', count).send(policies);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -683,7 +683,7 @@ export class PermissionsApi {
         try {
             row = await users.getUserPermissions(username);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
         if (!row || row.parent !== user.did || row.did === user.did) {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
@@ -698,7 +698,7 @@ export class PermissionsApi {
                 user.did
             );
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -748,7 +748,7 @@ export class PermissionsApi {
         try {
             row = await users.getUserPermissions(username);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
         if (!row || row.parent !== user.parent || row.did === user.did) {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
@@ -761,7 +761,7 @@ export class PermissionsApi {
             wsService.updatePermissions(result);
             return result;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -808,7 +808,7 @@ export class PermissionsApi {
         try {
             row = await users.getUserPermissions(username);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
         if (!row || row.parent !== user.parent || row.did === user.did) {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
@@ -823,7 +823,7 @@ export class PermissionsApi {
                 user.did
             );
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

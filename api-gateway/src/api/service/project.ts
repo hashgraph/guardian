@@ -53,7 +53,7 @@ export class ProjectsAPI {
             const projectService = new ProjectService();
             return await projectService.search(categoryIds, policyIds);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, null);
         }
     }
 
@@ -140,7 +140,7 @@ export class ProjectsAPI {
                 refLvl
             );
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, null);
         }
     }
 
@@ -249,7 +249,7 @@ export class ProjectsAPI {
                 presentations: comparationVpArray
             }
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, null);
         }
     }
 
@@ -277,7 +277,7 @@ export class ProjectsAPI {
             const projectService = new ProjectService();
             return await projectService.getPolicyProperties();
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, null);
         }
     }
 }

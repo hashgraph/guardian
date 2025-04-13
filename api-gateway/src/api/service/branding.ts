@@ -1,10 +1,10 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
 import { ApiExtraModels, ApiTags, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiBody } from '@nestjs/swagger';
-import { Auth } from '#auth';
+import {Auth, AuthUser} from '#auth';
 import { Permissions } from '@guardian/interfaces';
 import { BrandingDTO, InternalServerErrorDTO } from '#middlewares';
 import { ONLY_SR, Guardians, UseCache, InternalException, getCacheKey, CacheService } from '#helpers';
-import { PinoLogger } from '@guardian/common';
+import {IAuthUser, PinoLogger} from '@guardian/common';
 
 /**
  * Branding route
@@ -44,6 +44,7 @@ export class BrandingApi {
     async setBranding(
         @Body() body: BrandingDTO,
         @Req() req,
+        @AuthUser() user: IAuthUser,
     ): Promise<any> {
         try {
             const {
@@ -72,7 +73,7 @@ export class BrandingApi {
 
             await this.cacheService.invalidate(getCacheKey([req.url], req.user))
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -91,13 +92,15 @@ export class BrandingApi {
     @ApiExtraModels(BrandingDTO, InternalServerErrorDTO)
     @UseCache()
     @HttpCode(HttpStatus.OK)
-    async getBranding(): Promise<any> {
+    async getBranding(
+        @AuthUser() user: IAuthUser,
+    ): Promise<any> {
         try {
             const guardians = new Guardians();
             const brandingDataString = await guardians.getBranding();
             return JSON.parse(brandingDataString.config);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

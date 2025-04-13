@@ -3,7 +3,7 @@ import { Controller, Get, HttpCode, HttpStatus, Param, Query, Response } from '@
 import { Permissions } from '@guardian/interfaces';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiInternalServerErrorResponse, ApiExtraModels, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { Guardians, Users, UseCache, ONLY_SR, InternalException } from '#helpers';
-import { Auth } from '#auth';
+import {Auth, AuthUser} from '#auth';
 import { Examples, InternalServerErrorDTO, VpDocumentDTO, pageHeader } from '#middlewares';
 
 @Controller('trust-chains')
@@ -65,6 +65,7 @@ export class TrustChainsApi {
     @ApiExtraModels(VpDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getTrustChains(
+        @AuthUser() user: IAuthUser,
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
@@ -82,7 +83,7 @@ export class TrustChainsApi {
             const { items, count } = await guardians.getVpDocuments({ filters, pageIndex, pageSize });
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -181,6 +182,7 @@ export class TrustChainsApi {
     @UseCache()
     @HttpCode(HttpStatus.OK)
     async getTrustChainByHash(
+        @AuthUser() user: IAuthUser,
         @Param('hash') hash: string,
     ): Promise<any> {
         try {
@@ -208,7 +210,7 @@ export class TrustChainsApi {
 
             return { chain, userMap };
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

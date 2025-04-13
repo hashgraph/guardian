@@ -41,7 +41,7 @@ export class ExternalApi {
             const engineService = new PolicyEngine();
             return await engineService.receiveExternalDataCustom(document, policyId, blockTag);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, null);
         }
     }
 
@@ -74,7 +74,7 @@ export class ExternalApi {
             const engineService = new PolicyEngine();
             return await engineService.receiveExternalData(document);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, null);
         }
     }
 }

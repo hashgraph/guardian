@@ -2,11 +2,11 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Injectable, Post, 
 import { ApiTags, ApiBody, ApiOperation, ApiOkResponse, ApiInternalServerErrorResponse, ApiQuery, ApiExtraModels } from '@nestjs/swagger';
 import { IPageParameters, MessageAPI, Permissions } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
-import { Auth } from '#auth';
+import {Auth, AuthUser} from '#auth';
 import { InternalServerErrorDTO, LogFilterDTO, LogResultDTO } from '#middlewares';
 import { UseCache, InternalException } from '#helpers';
 import axios from 'axios';
-import { PinoLogger } from '@guardian/common';
+import {IAuthUser, PinoLogger} from '@guardian/common';
 import process from 'process';
 
 @Injectable()
@@ -63,6 +63,7 @@ export class LoggerApi {
     @ApiExtraModels(LogFilterDTO, LogResultDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getLogs(
+        @AuthUser() user: IAuthUser,
         @Body() body: LogFilterDTO
     ): Promise<LogResultDTO> {
         try {
@@ -103,7 +104,7 @@ export class LoggerApi {
                 logs: logs.data
             };
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -145,6 +146,7 @@ export class LoggerApi {
     @UseCache()
     @HttpCode(HttpStatus.OK)
     async getAttributes(
+        @AuthUser() user: IAuthUser,
         @Query('name') name: string,
         @Query('existingAttributes') existingAttributes: string | string[],
     ): Promise<any> {
@@ -159,7 +161,7 @@ export class LoggerApi {
             }
             return await this.loggerService.getAttributes(escapeRegExp(name), attributes);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
