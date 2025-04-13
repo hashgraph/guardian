@@ -306,9 +306,9 @@ export class TransactionLogger extends NatsService {
                 ...attr
             ]
             if (types[1] === 'ERROR') {
-                log.error(name, attributes, 4);
+                log.error(name, attributes);
             } else {
-                log.info(name, attributes, 4);
+                log.info(name, attributes);
             }
         });
         this.setVirtualFileFunction(async (date: string, id: string, file: ArrayBuffer, url: any) => {
