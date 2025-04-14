@@ -455,6 +455,134 @@
               </ng-template>
             </div>
           </ng-container>
+          <ng-container *ngIf="groupedByContractRetirements && groupedByContractRetirements.length > 0">
+            <ng-container *ngFor="let group of groupedByContractRetirements">
+                <div class="multiple-documents-container">
+                    <div class="retirements-container">
+                        <ng-container>
+                            <div style="display: inline-block;">
+                                <div class="chain-item item-type-retire-group">
+                                    <div class="retire-block">
+                                        <div class="chain-title">
+                                            Token(s) Retirement: {{ group.documents.length }}
+                                        </div>
+                                        <div class="retire-info">
+                                            <p>Token ID <span>{{ mintTokenId }}</span></p>
+                                            <p>ContractID <span>{{
+                                                    group.contractId
+                                                    }}</span></p>
+                                        </div>
+                                        <div *ngIf="!indexerAvailable" class="retire-no-indexer-info">
+                                            <i class="pi pi-info-circle"></i>
+                                            <p>
+                                                No data from the indexer. Connect it and click Refresh for full
+                                                details.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-container>
+
+                        <i class="pi pi-bars retirement-group-icon"></i>
+
+                        <ng-container *ngIf="getSelectedRetirementVC(group) as selectedVC">
+                            <ng-container *ngIf="selectedVC.credentialSubject[0]?.tokens?.length > 1; else singleTokenRetirementTemplate">
+                                <div style="display: inline-block; position: relative; align-self: end;">
+                                    <div class="chain-item item-type-RETIRE multiple-tokens retire-multiple-card-2"></div>
+                                    <div class="chain-item item-type-RETIRE multiple-tokens retire-multiple-card-1"></div>
+                                    <div [ngClass]="{
+                                        'single-multiple-document': true
+                                    }" class="chain-item item-type-RETIRE multiple-tokens">
+                                        <div class="chain-top-block">
+                                            <div class="chain-title">
+                                                {{ selectedVC.issuanceDate | date : 'YYYY-MM-dd, hh:mm:ss' }}
+                                            </div>
+                                            <div class="chain-document">
+                                                <button
+                                                    (click)="openRetireVCDocument(selectedVC)"
+                                                    class="p-button-outlined" label="VC File" pButton></button>
+                                            </div>
+                                        </div>
+                                        <div class="retire-multiple-tokens">
+                                            <div class="retire-info">
+                                                <p>Token <span>{{ selectedVC.credentialSubject[0]?.tokens[0].tokenId }}</span></p>
+                                                <p *ngIf="selectedVC.credentialSubject[0]?.tokens[0].serials && selectedVC.credentialSubject[0]?.tokens[0].serials.length > 0">Instance ID <span>{{ selectedVC.credentialSubject[0]?.tokens[0].serials.join(', ') }}</span></p>
+                                                <p *ngIf="selectedVC.credentialSubject[0]?.tokens[0].serials && selectedVC.credentialSubject[0]?.tokens[0].serials.length <= 0">Amount <span>{{ selectedVC.credentialSubject[0]?.tokens[0].count }}</span></p>
+
+                                                <p *ngIf="selectedVC.timestamp">Transaction
+                                                    <hedera-explorer type="topics" [params]="selectedVC.topicId" subType="messages"
+                                                    [subParams]="selectedVC.sequenceNumber">{{selectedVC.timestamp}}</hedera-explorer>
+                                                </p>
+                                                <p *ngIf="!selectedVC.timestamp">Transaction <span>-</span></p>
+
+                                                <p>User ID <span>{{ selectedVC.credentialSubject[0]?.user }}</span></p>
+                                            </div>
+                                            <div class="retire-info second-token">
+                                                <p>Token <span>{{ selectedVC.credentialSubject[0]?.tokens[1].tokenId }}</span></p>
+                                                <p *ngIf="selectedVC.credentialSubject[0]?.tokens[1].serials && selectedVC.credentialSubject[0]?.tokens[1].serials.length > 0">Instance ID <span>{{ selectedVC.credentialSubject[0]?.tokens[1].serials.join(', ') }}</span></p>
+                                                <p *ngIf="selectedVC.credentialSubject[0]?.tokens[1].serials && selectedVC.credentialSubject[0]?.tokens[1].serials.length <= 0">Amount <span>{{ selectedVC.credentialSubject[0]?.tokens[1].count }}</span></p>
+                                            </div>
+                                        </div>
+
+                                        <div *ngIf="
+                                        selectedVC &&
+                                        group.documents.length > 1
+                                                " class="multiple-documents-count">
+                                            <i class="pi pi-chevron-left"
+                                                (click)="onPrevRetirementClick($event, group)"></i>
+
+                                            {{ (group.selectedItemIndex + 1) }} of {{ group.documents.length }}
+
+                                            <i class="pi pi-chevron-right"
+                                                (click)="onNextRetirementClick($event, group)"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng-container>
+                            <ng-template #singleTokenRetirementTemplate>
+                                <div style="display: inline-block;">
+                                    <div [ngClass]="{
+                                        'single-multiple-document': true
+                                    }" class="chain-item item-type-RETIRE">
+                                        <div class="chain-top-block">
+                                            <div class="chain-title">
+                                                {{ selectedVC.issuanceDate | date : 'YYYY-MM-dd, hh:mm:ss' }}
+                                            </div>
+                                            <div class="chain-document">
+                                                <button
+                                                    (click)="openRetireVCDocument(selectedVC)"
+                                                    class="p-button-outlined" label="VC File" pButton></button>
+                                            </div>
+                                        </div>
+                                        <div class="retire-info">
+                                            <p>Token <span>{{ selectedVC.credentialSubject[0]?.tokens[0].tokenId }}</span></p>
+                                            <p *ngIf="selectedVC.credentialSubject[0]?.tokens[0].serials && selectedVC.credentialSubject[0]?.tokens[0].serials.length > 0">Instance ID <span>{{ selectedVC.credentialSubject[0]?.tokens[0].serials.join(', ') }}</span></p>
+                                            <p *ngIf="selectedVC.credentialSubject[0]?.tokens[0].serials && selectedVC.credentialSubject[0]?.tokens[0].serials.length <= 0">Amount <span>{{ selectedVC.credentialSubject[0]?.tokens[0].count }}</span></p>
+                                            <p>Transaction <span>{{ selectedVC.timestamp }}</span></p>
+                                            <p>User ID <span>{{ selectedVC.credentialSubject[0]?.user }}</span></p>
+                                        </div>
+
+                                        <div *ngIf="
+                                        selectedVC &&
+                                        group.documents.length > 1
+                                                " class="multiple-documents-count">
+                                            <i class="pi pi-chevron-left"
+                                                (click)="onPrevRetirementClick($event, group)"></i>
+
+                                            {{ (group.selectedItemIndex + 1) }} of {{ group.documents.length }}
+
+                                            <i class="pi pi-chevron-right"
+                                                (click)="onNextRetirementClick($event, group)"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </ng-container>
+                    </div>
+                </div>
+            </ng-container>
+        </ng-container>
         </div>
         <div
             (click)="onScrollButtonPress(scrollContainer, 150)"

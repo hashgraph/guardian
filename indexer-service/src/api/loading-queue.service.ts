@@ -545,7 +545,7 @@ export class LoadingQueueService {
             const url = LoadingQueueService.mirrorNodeUrl + 'topics/' + entityId + '/messages';
             const option: any = {
                 params: {
-                    limit: 1
+                    limit: 2
                 },
                 responseType: 'json',
                 timeout: 2 * 60 * 1000,

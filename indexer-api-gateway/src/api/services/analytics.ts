@@ -7,7 +7,7 @@ import {
     ApiTags,
     ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { IndexerMessageAPI } from '@indexer/common';
+import { IndexerMessageAPI, Message } from '@indexer/common';
 import { ApiClient } from '../api-client.js';
 import {
     InternalServerErrorDTO,
