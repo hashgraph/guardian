@@ -1796,7 +1796,7 @@ export class PolicyApi {
     ) {
         try {
             const engineService = new PolicyEngine();
-            return await engineService.blockAbout();
+            return await engineService.blockAbout(user.id);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

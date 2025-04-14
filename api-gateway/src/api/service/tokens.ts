@@ -149,7 +149,7 @@ export class TokensApi {
             const owner = new EntityOwner(user);
             if (owner) {
                 if (UserPermissions.has(user, Permissions.TOKENS_TOKEN_EXECUTE) && status !== 'All') {
-                    tokensAndCount = await guardians.getAssociatedTokens(user.did, parseInteger(pageIndex), parseInteger(pageSize));
+                    tokensAndCount = await guardians.getAssociatedTokens(user.did, parseInteger(pageIndex), parseInteger(pageSize), user.id);
                     const map = await engineService.getTokensMap(owner, 'PUBLISH');
                     tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
                     tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, true);
@@ -242,7 +242,7 @@ export class TokensApi {
             const owner = new EntityOwner(user);
             if (owner) {
                 if (UserPermissions.has(user, Permissions.TOKENS_TOKEN_EXECUTE) && status !== 'All') {
-                    tokensAndCount = await guardians.getAssociatedTokens(user.did, parseInteger(pageIndex), parseInteger(pageSize));
+                    tokensAndCount = await guardians.getAssociatedTokens(user.did, parseInteger(pageIndex), parseInteger(pageSize), user.id);
                     const map = await engineService.getTokensMap(owner, 'PUBLISH');
                     tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
                     tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, true);
@@ -1371,7 +1371,7 @@ export class TokensApi {
     ): Promise<number[]> {
         try {
             const guardians = new Guardians();
-            return await guardians.getTokenSerials(tokenId, user.did);
+            return await guardians.getTokenSerials(tokenId, user.did, user.id);
         } catch (error) {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             if (error?.message?.toLowerCase().includes('user not found')) {

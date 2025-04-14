@@ -52,7 +52,7 @@ export class ProfileApi {
         try {
             let didDocument: any = null;
             if (user.did) {
-                const didDocuments = await guardians.getDidDocuments({ did: user.did });
+                const didDocuments = await guardians.getDidDocuments({ did: user.did }, user.id);
                 if (didDocuments) {
                     didDocument = didDocuments[didDocuments.length - 1];
                 }
@@ -63,14 +63,14 @@ export class ProfileApi {
                 let vcDocuments = await guardians.getVcDocuments({
                     owner: user.did,
                     type: SchemaEntity.USER
-                });
+                }, user.id);
                 if (vcDocuments && vcDocuments.length) {
                     vcDocument = vcDocuments[vcDocuments.length - 1];
                 }
                 vcDocuments = await guardians.getVcDocuments({
                     owner: user.did,
                     type: SchemaEntity.STANDARD_REGISTRY
-                });
+                }, user.id);
                 if (vcDocuments && vcDocuments.length) {
                     vcDocument = vcDocuments[vcDocuments.length - 1];
                 }
@@ -88,7 +88,7 @@ export class ProfileApi {
                 topic = await guardians.getTopic({
                     type: TopicType.UserTopic,
                     owner: { $in: filters }
-                });
+                }, user.id);
             }
 
             return {
@@ -154,7 +154,7 @@ export class ProfileApi {
         const username: string = user.username;
         const guardians = new Guardians();
         try {
-            await guardians.createUserProfileCommon(username, profile);
+            await guardians.createUserProfileCommon(username, profile, user.id);
         } catch (error) {
             throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
         }
@@ -211,7 +211,7 @@ export class ProfileApi {
         const invalidedCacheTags = [`/${PREFIXES.PROFILES}/${username}`];
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.createUserProfileCommonAsync(username, profile, task);
+            await guardians.createUserProfileCommonAsync(username, profile, task, user.id);
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
         }, async (error) => {
@@ -263,7 +263,7 @@ export class ProfileApi {
             return null;
         }
         const guardians = new Guardians();
-        const balance = await guardians.getUserBalance(username);
+        const balance = await guardians.getUserBalance(username, user.id);
         if (isNaN(parseFloat(balance))) {
             throw new HttpException(balance, HttpStatus.UNPROCESSABLE_ENTITY);
         }
@@ -317,7 +317,7 @@ export class ProfileApi {
         const invalidedCacheTags = [`/${PREFIXES.PROFILES}/${username}`];
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.restoreUserProfileCommonAsync(username, profile, task);
+            await guardians.restoreUserProfileCommonAsync(username, profile, task, user.id);
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
         }, async (error) => {
@@ -375,7 +375,7 @@ export class ProfileApi {
         const invalidedCacheTags = [`/${PREFIXES.PROFILES}/${username}`];
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.getAllUserTopicsAsync(username, profile, task);
+            await guardians.getAllUserTopicsAsync(username, profile, task, user.id);
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
         }, async (error) => {
@@ -424,7 +424,7 @@ export class ProfileApi {
         }
         try {
             const guardians = new Guardians();
-            return await guardians.validateDidDocument(document);
+            return await guardians.validateDidDocument(document, user.id);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -474,7 +474,7 @@ export class ProfileApi {
         }
         try {
             const guardians = new Guardians();
-            return await guardians.validateDidKeys(document, keys);
+            return await guardians.validateDidKeys(document, keys, user.id);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

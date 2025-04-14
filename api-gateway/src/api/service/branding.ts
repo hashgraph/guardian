@@ -69,11 +69,11 @@ export class BrandingApi {
                 termsAndConditions
             };
             const guardians = new Guardians();
-            await guardians.setBranding(JSON.stringify(data));
+            await guardians.setBranding(JSON.stringify(data), user.id);
 
             await this.cacheService.invalidate(getCacheKey([req.url], req.user))
         } catch (error) {
-            await InternalException(error, this.logger, user.id);
+            await InternalException(error, this.logger, user?.id);
         }
     }
 
@@ -97,10 +97,10 @@ export class BrandingApi {
     ): Promise<any> {
         try {
             const guardians = new Guardians();
-            const brandingDataString = await guardians.getBranding();
+            const brandingDataString = await guardians.getBranding(user?.id);
             return JSON.parse(brandingDataString.config);
         } catch (error) {
-            await InternalException(error, this.logger, user.id);
+            await InternalException(error, this.logger, user?.id);
         }
     }
 }

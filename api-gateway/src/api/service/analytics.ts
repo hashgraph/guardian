@@ -973,7 +973,7 @@ export class AnalyticsApi {
     ): Promise<boolean> {
         const guardians = new Guardians();
         try {
-            return await guardians.getIndexerAvailability();
+            return await guardians.getIndexerAvailability(user.id);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

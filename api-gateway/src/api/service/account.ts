@@ -240,7 +240,7 @@ export class AccountApi {
         @AuthUser() user: IAuthUser
     ): Promise<AccountsResponseDTO[]> {
         try {
-            return await (new Users()).getAllUserAccounts();
+            return await (new Users()).getAllUserAccounts(user.id);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -274,7 +274,7 @@ export class AccountApi {
         @AuthUser() user: IAuthUser
     ): Promise<any> {
         try {
-            return await (new Users()).getAllStandardRegistryAccounts();
+            return await (new Users()).getAllStandardRegistryAccounts(user.id);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -312,16 +312,16 @@ export class AccountApi {
         const guardians = new Guardians();
         try {
             const users = new Users();
-            const standardRegistries = await users.getAllStandardRegistryAccounts() as StandardRegistryAccountResponse[];
+            const standardRegistries = await users.getAllStandardRegistryAccounts(userParent.id) as StandardRegistryAccountResponse[];
             const promises = standardRegistries
                 .filter(({ did, username }) => !!did && !!username)
                 .map(async ({ did, username }) => {
                     let vcDocument = {};
-                    const user = await users.getUser(username);
+                    const user = await users.getUser(username, userParent.id);
                     const vcDocuments = await guardians.getVcDocuments({
                         owner: did,
                         type: SchemaEntity.STANDARD_REGISTRY
-                    });
+                    }, userParent.id);
                     if (vcDocuments && vcDocuments.length) {
                         vcDocument = vcDocuments[vcDocuments.length - 1];
                     }
@@ -378,7 +378,7 @@ export class AccountApi {
         @AuthUser() user: IAuthUser,
     ): Promise<any> {
         try {
-            return await (new Guardians()).getBalance(user.username);
+            return await (new Guardians()).getBalance(user.username, user.id);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

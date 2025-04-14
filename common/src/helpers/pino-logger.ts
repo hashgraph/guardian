@@ -86,7 +86,7 @@ export class PinoLogger {
      * @param message
      * @param attributes
      */
-    public async debug(message: string, attributes?: string[], userId: string = null): Promise<void> {
+    public async debug(message: string, attributes?: string[], userId: string | null = null): Promise<void> {
         this.logger.debug({
             message,
             attributes,
@@ -101,7 +101,7 @@ export class PinoLogger {
      * @param message
      * @param attributes
      */
-    public async info(message: string, attributes?: string[], userId: string = null): Promise<void> {
+    public async info(message: string, attributes?: string[], userId: string | null = null): Promise<void> {
         this.logger.info({
             message,
             attributes,
@@ -116,7 +116,7 @@ export class PinoLogger {
      * @param message
      * @param attributes
      */
-    public async warn(message: string, attributes?: string[], userId: string = null): Promise<void> {
+    public async warn(message: string, attributes?: string[], userId: string | null = null): Promise<void> {
         this.logger.warn({
             message,
             attributes,

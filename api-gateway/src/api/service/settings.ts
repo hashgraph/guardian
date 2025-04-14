@@ -46,7 +46,7 @@ export class SettingsApi {
         try {
             const settings = body as CommonSettings;
             const guardians = new Guardians();
-            await Promise.all([guardians.updateSettings(settings)]);
+            await Promise.all([guardians.updateSettings(settings, user.id)]);
             return null;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -80,7 +80,7 @@ export class SettingsApi {
     ): Promise<SettingsDTO> {
         try {
             const guardians = new Guardians();
-            const [guardiansSettings] = await Promise.all([guardians.getSettings()]);
+            const [guardiansSettings] = await Promise.all([guardians.getSettings(user.id)]);
             return { ...guardiansSettings } as any;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -111,7 +111,7 @@ export class SettingsApi {
     ): Promise<string> {
         try {
             const guardians = new Guardians();
-            return await guardians.getEnvironment();
+            return await guardians.getEnvironment(user.id);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

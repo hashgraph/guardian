@@ -112,7 +112,7 @@ export class ArtifactApi {
                 options.pageSize = pageSize;
             }
             const guardians = new Guardians();
-            const { artifacts, count } = await guardians.getArtifacts(options);
+            const { artifacts, count } = await guardians.getArtifacts(options, user.id);
 
             req.locals = artifacts
 
@@ -223,7 +223,7 @@ export class ArtifactApi {
             options.fields = Object.values(ARTIFACT_REQUIRED_PROPS)
 
             const guardians = new Guardians();
-            const { artifacts, count } = await guardians.getArtifactsV2(options);
+            const { artifacts, count } = await guardians.getArtifactsV2(options, user.id);
 
             return res.header('X-Total-Count', count).send(artifacts);
         } catch (error) {

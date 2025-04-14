@@ -117,7 +117,7 @@ export class ProjectsAPI {
         const user = null;
 
         let samePolicy: boolean = true;
-        const _data = await guardians.getVcDocuments({ id: ids });
+        const _data = await guardians.getVcDocuments({ id: ids }, null);
         for (let index = 1; index < _data.length; index++) {
             if (_data[index - 1].policyId !== _data[index].policyId) {
                 samePolicy = false;
@@ -198,7 +198,7 @@ export class ProjectsAPI {
             throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
-        const rowDocuments = await guardians.getVcDocuments({ id: ids });
+        const rowDocuments = await guardians.getVcDocuments({ id: ids }, null);
         let samePolicy: boolean = true;
         const policyIds: string[] = [];
         for (const id of ids) {

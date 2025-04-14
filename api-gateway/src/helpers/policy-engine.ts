@@ -25,7 +25,7 @@ export class PolicyEngine extends NatsService {
      * @param filters
      */
     public async getPolicy(options: any, owner: IOwner): Promise<PolicyDTO | null> {
-        return await this.sendMessage(PolicyEngineEvents.GET_POLICY, { options, owner });
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY, { options, owner, userId: owner.id });
     }
 
     /**
@@ -37,7 +37,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         action: string
     ): Promise<PolicyDTO> {
-        return await this.sendMessage(PolicyEngineEvents.ACCESS_POLICY, { policyId, owner, action });
+        return await this.sendMessage(PolicyEngineEvents.ACCESS_POLICY, { policyId, owner, action, userId: owner.id });
     }
 
     /**
@@ -55,7 +55,7 @@ export class PolicyEngine extends NatsService {
          */
         count: number
     }>(options: any, owner: IOwner): Promise<T> {
-        return await this.sendMessage<T>(PolicyEngineEvents.GET_POLICIES, { options, owner });
+        return await this.sendMessage<T>(PolicyEngineEvents.GET_POLICIES, { options, owner, userId: owner.id });
     }
 
     /**
@@ -73,7 +73,7 @@ export class PolicyEngine extends NatsService {
          */
         count: number
     }>(options: any, owner: IOwner): Promise<T> {
-        return await this.sendMessage<T>(PolicyEngineEvents.GET_POLICIES_V2, { options, owner });
+        return await this.sendMessage<T>(PolicyEngineEvents.GET_POLICIES_V2, { options, owner, userId: owner.id });
     }
 
     /**
@@ -85,7 +85,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         status?: string
     ): Promise<any> {
-        return await this.sendMessage<any>(PolicyEngineEvents.GET_TOKENS_MAP, { owner, status });
+        return await this.sendMessage<any>(PolicyEngineEvents.GET_TOKENS_MAP, { owner, status, userId: owner.id });
     }
 
     /**
@@ -97,7 +97,7 @@ export class PolicyEngine extends NatsService {
         model: PolicyDTO,
         owner: IOwner
     ): Promise<PolicyDTO> {
-        return await this.sendMessage(PolicyEngineEvents.CREATE_POLICIES, { model, owner });
+        return await this.sendMessage(PolicyEngineEvents.CREATE_POLICIES, { model, owner, userId: owner.id });
     }
 
     /**
@@ -111,7 +111,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         task: NewTask
     ): Promise<NewTask> {
-        return await this.sendMessage(PolicyEngineEvents.CREATE_POLICIES_ASYNC, { model, owner, task });
+        return await this.sendMessage(PolicyEngineEvents.CREATE_POLICIES_ASYNC, { model, owner, task, userId: owner.id });
     }
 
     /**
@@ -127,7 +127,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         task: NewTask
     ): Promise<NewTask> {
-        return await this.sendMessage(PolicyEngineEvents.CLONE_POLICY_ASYNC, { policyId, model, owner, task });
+        return await this.sendMessage(PolicyEngineEvents.CLONE_POLICY_ASYNC, { policyId, model, owner, task, userId: owner.id });
     }
 
     /**
@@ -141,7 +141,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         task: NewTask
     ): Promise<NewTask> {
-        return await this.sendMessage(PolicyEngineEvents.DELETE_POLICY_ASYNC, { policyId, owner, task });
+        return await this.sendMessage(PolicyEngineEvents.DELETE_POLICY_ASYNC, { policyId, owner, task, userId: owner.id });
     }
 
     /**
@@ -155,7 +155,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         policyId: string
     ): Promise<PolicyDTO> {
-        return await this.sendMessage(PolicyEngineEvents.SAVE_POLICIES, { model, owner, policyId });
+        return await this.sendMessage(PolicyEngineEvents.SAVE_POLICIES, { model, owner, policyId, userId: owner.id });
     }
 
     /**
@@ -169,7 +169,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         policyId: string
     ): Promise<PoliciesValidationDTO> {
-        return await this.sendMessage(PolicyEngineEvents.PUBLISH_POLICIES, { model, owner, policyId });
+        return await this.sendMessage(PolicyEngineEvents.PUBLISH_POLICIES, { model, owner, policyId, userId: owner.id });
     }
 
     /**
@@ -185,7 +185,7 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         task: NewTask
     ): Promise<NewTask> {
-        return await this.sendMessage(PolicyEngineEvents.PUBLISH_POLICIES_ASYNC, { model, owner, policyId, task });
+        return await this.sendMessage(PolicyEngineEvents.PUBLISH_POLICIES_ASYNC, { model, owner, policyId, task, userId: owner.id });
     }
 
     /**
@@ -197,7 +197,7 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         owner: IOwner,
     ): Promise<PoliciesValidationDTO> {
-        return await this.sendMessage(PolicyEngineEvents.DRY_RUN_POLICIES, { policyId, owner });
+        return await this.sendMessage(PolicyEngineEvents.DRY_RUN_POLICIES, { policyId, owner, userId: owner.id });
     }
 
     /**
@@ -209,7 +209,7 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         owner: IOwner
     ): Promise<boolean> {
-        return await this.sendMessage(PolicyEngineEvents.DRAFT_POLICIES, { policyId, owner });
+        return await this.sendMessage(PolicyEngineEvents.DRAFT_POLICIES, { policyId, owner, userId: owner.id });
     }
 
     /**
@@ -218,7 +218,7 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      */
     public async restartPolicyInstance(user: IAuthUser, policyId: string) {
-        return await this.sendMessage(PolicyEngineEvents.RESTART_POLICY_INSTANCE, { user, policyId });
+        return await this.sendMessage(PolicyEngineEvents.RESTART_POLICY_INSTANCE, { user, policyId, userId: user.id });
     }
 
     /**
@@ -232,7 +232,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         policyId?: string
     ): Promise<PolicyValidationDTO> {
-        return await this.sendMessage(PolicyEngineEvents.VALIDATE_POLICIES, { model, owner, policyId });
+        return await this.sendMessage(PolicyEngineEvents.VALIDATE_POLICIES, { model, owner, policyId, userId: owner.id });
     }
 
     /**
@@ -241,12 +241,14 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      */
     public async getPolicyBlocks(user: IAuthUser, policyId: string): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_BLOCKS, { user, policyId });
+        return await this.sendMessage(PolicyEngineEvents.POLICY_BLOCKS, { user, policyId, userId: user.id });
     }
 
     /**
      * Get policies by category Id
-     * @param filters
+     * @param categoryIds
+     * @param text
+     * @param userId
      */
     public async getPoliciesByCategoriesAndText(
         categoryIds: string[],
@@ -268,7 +270,7 @@ export class PolicyEngine extends NatsService {
         blockId: string,
         params?: any
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_DATA, { user, blockId, policyId, params });
+        return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_DATA, { user, blockId, policyId, params, userId: user.id });
     }
 
     /**
@@ -284,7 +286,7 @@ export class PolicyEngine extends NatsService {
         tag: string,
         params?: any
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_DATA_BY_TAG, { user, tag, policyId, params });
+        return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_DATA_BY_TAG, { user, tag, policyId, params, userId: user.id });
     }
 
     /**
@@ -300,7 +302,7 @@ export class PolicyEngine extends NatsService {
         blockId: string,
         data: any
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA, { user, blockId, policyId, data });
+        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA, { user, blockId, policyId, data, userId: user.id });
     }
 
     /**
@@ -316,7 +318,7 @@ export class PolicyEngine extends NatsService {
         tag: string,
         data: any
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA_BY_TAG, { user, tag, policyId, data });
+        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA_BY_TAG, { user, tag, policyId, data, userId: user.id });
     }
 
     /**
@@ -330,7 +332,7 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         tag: string
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.BLOCK_BY_TAG, { user, tag, policyId });
+        return await this.sendMessage(PolicyEngineEvents.BLOCK_BY_TAG, { user, tag, policyId, userId: user.id });
     }
 
     /**
@@ -344,7 +346,7 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         blockId: string
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_PARENTS, { user, blockId, policyId });
+        return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_PARENTS, { user, blockId, policyId, userId: user.id });
     }
 
     /**
@@ -356,7 +358,7 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         owner: IOwner
     ): Promise<ArrayBuffer> {
-        const file = await this.sendMessage(PolicyEngineEvents.POLICY_EXPORT_FILE, { policyId, owner }) as any;
+        const file = await this.sendMessage(PolicyEngineEvents.POLICY_EXPORT_FILE, { policyId, owner, userId: owner.id }) as any;
         return Buffer.from(file, 'base64');
     }
 
@@ -369,7 +371,7 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         owner: IOwner
     ): Promise<ExportMessageDTO> {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_EXPORT_MESSAGE, { policyId, owner });
+        return await this.sendMessage(PolicyEngineEvents.POLICY_EXPORT_MESSAGE, { policyId, owner, userId: owner.id });
     }
 
     /**
@@ -381,7 +383,7 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         owner: IOwner
     ): Promise<ArrayBuffer> {
-        const file = await this.sendMessage(PolicyEngineEvents.POLICY_EXPORT_XLSX, { policyId, owner }) as any;
+        const file = await this.sendMessage(PolicyEngineEvents.POLICY_EXPORT_XLSX, { policyId, owner, userId: owner.id }) as any;
         return Buffer.from(file, 'base64');
     }
 
@@ -405,7 +407,8 @@ export class PolicyEngine extends NatsService {
             owner,
             versionOfTopicId,
             metadata,
-            demo
+            demo,
+            userId: owner.id
         });
     }
 
@@ -428,7 +431,7 @@ export class PolicyEngine extends NatsService {
     ) {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC,
-            { zip, owner, task, versionOfTopicId, metadata, demo }
+            { zip, owner, task, versionOfTopicId, metadata, demo, userId: owner.id }
         );
     }
 
@@ -449,7 +452,7 @@ export class PolicyEngine extends NatsService {
     ): Promise<boolean> {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_MESSAGE,
-            { messageId, owner, versionOfTopicId, metadata, demo }
+            { messageId, owner, versionOfTopicId, metadata, demo, userId: owner.id }
         );
     }
 
@@ -472,7 +475,7 @@ export class PolicyEngine extends NatsService {
     ) {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC,
-            { messageId, owner, versionOfTopicId, task, metadata, demo }
+            { messageId, owner, versionOfTopicId, task, metadata, demo, userId: owner.id }
         );
     }
 
@@ -485,7 +488,7 @@ export class PolicyEngine extends NatsService {
         zip: ArrayBuffer,
         owner: IOwner
     ): Promise<PolicyPreviewDTO> {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_FILE_PREVIEW, { zip, owner });
+        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_FILE_PREVIEW, { zip, owner, userId: owner.id });
     }
 
     /**
@@ -499,7 +502,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         policyId: string
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX, { xlsx, owner, policyId });
+        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX, { xlsx, owner, policyId, userId: owner.id });
     }
 
     /**
@@ -515,7 +518,7 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         task: NewTask
     ) {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX_ASYNC, { xlsx, owner, policyId, task });
+        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX_ASYNC, { xlsx, owner, policyId, task, userId: owner.id });
     }
 
     /**
@@ -527,7 +530,7 @@ export class PolicyEngine extends NatsService {
         xlsx: ArrayBuffer,
         owner: IOwner
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX_FILE_PREVIEW, { owner, xlsx });
+        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX_FILE_PREVIEW, { owner, xlsx, userId: owner.id });
     }
 
     /**
@@ -539,7 +542,7 @@ export class PolicyEngine extends NatsService {
         messageId: string,
         owner: IOwner
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW, { messageId, owner });
+        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW, { messageId, owner, userId: owner.id });
     }
 
     /**
@@ -553,15 +556,15 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         task: NewTask
     ): Promise<NewTask> {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC, { messageId, owner, task });
+        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC, { messageId, owner, task, userId: owner.id });
     }
 
     /**
      * Receive external data
      * @param data
      */
-    public async receiveExternalData(data: any) {
-        return await this.sendMessage(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA, data);
+    public async receiveExternalData(data: any): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA, {...data, userId: null});
     }
 
     /**
@@ -571,14 +574,14 @@ export class PolicyEngine extends NatsService {
      * @param blockTag
      */
     public async receiveExternalDataCustom(data: any, policyId: string, blockTag: string): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA_CUSTOM, { data, policyId, blockTag });
+        return await this.sendMessage(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA_CUSTOM, { data, policyId, blockTag, userId: null });
     }
 
     /**
      * Get block about information
      */
-    public async blockAbout() {
-        return await this.sendMessage(PolicyEngineEvents.BLOCK_ABOUT, null);
+    public async blockAbout(userId: string | null) {
+        return await this.sendMessage(PolicyEngineEvents.BLOCK_ABOUT, {userId});
     }
 
     /**
@@ -589,7 +592,7 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         owner: IOwner
     ) {
-        return await this.sendMessage(PolicyEngineEvents.GET_VIRTUAL_USERS, { policyId, owner });
+        return await this.sendMessage(PolicyEngineEvents.GET_VIRTUAL_USERS, { policyId, owner, userId: owner.id });
     }
 
     /**
@@ -601,7 +604,7 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         owner: IOwner
     ) {
-        return await this.sendMessage(PolicyEngineEvents.CREATE_VIRTUAL_USER, { policyId, owner });
+        return await this.sendMessage(PolicyEngineEvents.CREATE_VIRTUAL_USER, { policyId, owner, userId: owner.id });
     }
 
     /**
@@ -614,7 +617,7 @@ export class PolicyEngine extends NatsService {
         virtualDID: string,
         owner: IOwner
     ) {
-        return await this.sendMessage(PolicyEngineEvents.SET_VIRTUAL_USER, { policyId, virtualDID, owner });
+        return await this.sendMessage(PolicyEngineEvents.SET_VIRTUAL_USER, { policyId, virtualDID, owner, userId: owner.id });
     }
 
     /**
@@ -628,7 +631,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         policyId: string
     ) {
-        return await this.sendMessage(PolicyEngineEvents.RESTART_DRY_RUN, { model, owner, policyId });
+        return await this.sendMessage(PolicyEngineEvents.RESTART_DRY_RUN, { model, owner, policyId, userId: owner.id });
     }
 
     /**
@@ -642,7 +645,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         policyId: string
     ) {
-        return await this.sendMessage(PolicyEngineEvents.CREATE_SAVEPOINT, {model, owner, policyId});
+        return await this.sendMessage(PolicyEngineEvents.CREATE_SAVEPOINT, {model, owner, policyId, userId: owner.id});
     }
 
     /**
@@ -656,7 +659,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         policyId: string
     ) {
-        return await this.sendMessage(PolicyEngineEvents.DELETE_SAVEPOINT, {model, owner, policyId});
+        return await this.sendMessage(PolicyEngineEvents.DELETE_SAVEPOINT, {model, owner, policyId, userId: owner.id});
     }
 
     /**
@@ -670,7 +673,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         policyId: string
     ) {
-        return await this.sendMessage(PolicyEngineEvents.RESTORE_SAVEPOINT, {model, owner, policyId});
+        return await this.sendMessage(PolicyEngineEvents.RESTORE_SAVEPOINT, {model, owner, policyId, userId: owner.id});
     }
 
     /**
@@ -682,7 +685,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         policyId: string
     ) {
-        return await this.sendMessage(PolicyEngineEvents.GET_SAVEPOINT, {owner, policyId});
+        return await this.sendMessage(PolicyEngineEvents.GET_SAVEPOINT, {owner, policyId, userId: owner.id});
     }
 
     /**
@@ -704,7 +707,8 @@ export class PolicyEngine extends NatsService {
             type,
             owner,
             pageIndex,
-            pageSize
+            pageSize,
+            userId: owner.id
         });
     }
 
@@ -718,7 +722,7 @@ export class PolicyEngine extends NatsService {
         user: IAuthUser,
         policyId: string
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_NAVIGATION, { user, policyId });
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_NAVIGATION, { user, policyId, userId: user.id });
     }
 
     /**
@@ -731,7 +735,7 @@ export class PolicyEngine extends NatsService {
         user: IAuthUser,
         policyId: string
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_GROUPS, { user, policyId });
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_GROUPS, { user, policyId, userId: user.id });
     }
 
     /**
@@ -746,7 +750,7 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         uuid: string
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.SELECT_POLICY_GROUP, { user, policyId, uuid });
+        return await this.sendMessage(PolicyEngineEvents.SELECT_POLICY_GROUP, { user, policyId, uuid, userId: user.id });
     }
 
     /**
@@ -758,7 +762,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         policyId: string
     ) {
-        return await this.sendMessage(PolicyEngineEvents.GET_MULTI_POLICY, { owner, policyId });
+        return await this.sendMessage(PolicyEngineEvents.GET_MULTI_POLICY, { owner, policyId, userId: owner.id });
     }
 
     /**
@@ -772,7 +776,7 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         data: any
     ) {
-        return await this.sendMessage(PolicyEngineEvents.SET_MULTI_POLICY, { owner, policyId, data });
+        return await this.sendMessage(PolicyEngineEvents.SET_MULTI_POLICY, { owner, policyId, data, userId: owner.id });
     }
 
     /**
@@ -786,7 +790,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         date?: string
     ): Promise<boolean> {
-        return await this.sendMessage(PolicyEngineEvents.DISCONTINUE_POLICY, { policyId, owner, date });
+        return await this.sendMessage(PolicyEngineEvents.DISCONTINUE_POLICY, { policyId, owner, date, userId: owner.id });
     }
 
     /**
@@ -808,7 +812,7 @@ export class PolicyEngine extends NatsService {
         pageSize?: number | string
     ): Promise<[any[], number]> {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_DOCUMENTS,
-            { owner, policyId, includeDocument, type, pageIndex, pageSize });
+            { owner, policyId, includeDocument, type, pageIndex, pageSize, userId: owner.id });
     }
 
     /**
@@ -821,7 +825,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         migrationConfig: MigrationConfig,
     ): Promise<{ error: string, id: string }[]> {
-        return await this.sendMessage(PolicyEngineEvents.MIGRATE_DATA, { owner, migrationConfig });
+        return await this.sendMessage(PolicyEngineEvents.MIGRATE_DATA, { owner, migrationConfig, userId: owner.id });
     }
 
     /**
@@ -835,7 +839,7 @@ export class PolicyEngine extends NatsService {
         migrationConfig: MigrationConfig,
         task: NewTask
     ): Promise<NewTask> {
-        return await this.sendMessage(PolicyEngineEvents.MIGRATE_DATA_ASYNC, { owner, migrationConfig, task });
+        return await this.sendMessage(PolicyEngineEvents.MIGRATE_DATA_ASYNC, { owner, migrationConfig, task, userId: owner.id });
     }
 
     /**
@@ -852,6 +856,7 @@ export class PolicyEngine extends NatsService {
             (await this.sendMessage(PolicyEngineEvents.DOWNLOAD_POLICY_DATA, {
                 policyId,
                 owner,
+                userId: owner.id
             })) as string,
             'base64'
         );
@@ -868,6 +873,7 @@ export class PolicyEngine extends NatsService {
             (await this.sendMessage(PolicyEngineEvents.DOWNLOAD_VIRTUAL_KEYS, {
                 policyId,
                 owner,
+                userId: owner.id
             })) as string,
             'base64'
         );
@@ -886,6 +892,7 @@ export class PolicyEngine extends NatsService {
         return await this.sendMessage(PolicyEngineEvents.UPLOAD_POLICY_DATA, {
             owner,
             data,
+            userId: owner.id
         });
     }
 
@@ -904,7 +911,8 @@ export class PolicyEngine extends NatsService {
         return await this.sendMessage(PolicyEngineEvents.UPLOAD_VIRTUAL_KEYS, {
             owner,
             data,
-            policyId
+            policyId,
+            userId: owner.id
         });
     }
 
@@ -921,6 +929,7 @@ export class PolicyEngine extends NatsService {
         return await this.sendMessage(PolicyEngineEvents.GET_TAG_BLOCK_MAP, {
             policyId,
             owner,
+            userId: owner.id
         })
     }
 
@@ -938,7 +947,8 @@ export class PolicyEngine extends NatsService {
         return await this.sendMessage(PolicyEngineEvents.ADD_POLICY_TEST, {
             policyId,
             file,
-            owner
+            owner,
+            userId: owner.id
         });
     }
 
@@ -956,7 +966,8 @@ export class PolicyEngine extends NatsService {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_TEST, {
             policyId,
             testId,
-            owner
+            owner,
+            userId: owner.id
         });
     }
 
@@ -974,7 +985,8 @@ export class PolicyEngine extends NatsService {
         return await this.sendMessage(PolicyEngineEvents.START_POLICY_TEST, {
             policyId,
             testId,
-            owner
+            owner,
+            userId: owner.id
         });
     }
 
@@ -992,7 +1004,8 @@ export class PolicyEngine extends NatsService {
         return await this.sendMessage(PolicyEngineEvents.STOP_POLICY_TEST, {
             policyId,
             testId,
-            owner
+            owner,
+            userId: owner.id
         });
     }
 
@@ -1010,7 +1023,8 @@ export class PolicyEngine extends NatsService {
         return await this.sendMessage(PolicyEngineEvents.DELETE_POLICY_TEST, {
             policyId,
             testId,
-            owner
+            owner,
+            userId: owner.id
         });
     }
 
@@ -1028,7 +1042,8 @@ export class PolicyEngine extends NatsService {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_TEST_DETAILS, {
             policyId,
             testId,
-            owner
+            owner,
+            userId: owner.id
         });
     }
 }

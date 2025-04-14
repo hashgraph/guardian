@@ -52,7 +52,7 @@ export class IpfsApi {
             }
 
             const guardians = new Guardians();
-            const { cid } = await guardians.addFileIpfs(body);
+            const { cid } = await guardians.addFileIpfs(body, user.id);
             if (!cid) {
                 throw new HttpException('File is not uploaded', HttpStatus.BAD_REQUEST);
             }
@@ -116,7 +116,7 @@ export class IpfsApi {
             }
 
             const guardians = new Guardians();
-            const { cid } = await guardians.addFileToDryRunStorage(body, policyId);
+            const { cid } = await guardians.addFileToDryRunStorage(body, policyId, user.id);
 
             const invalidedCacheTags = [
                 `${PREFIXES.IPFS}file/${cid}`,
@@ -220,7 +220,7 @@ export class IpfsApi {
     ): Promise<any> {
         try {
             const guardians = new Guardians();
-            const result = await guardians.getFileFromDryRunStorage(cid, 'raw');
+            const result = await guardians.getFileFromDryRunStorage(cid, 'raw', user.id);
             if (result.type !== 'Buffer') {
                 throw new HttpException('File is not found', HttpStatus.NOT_FOUND)
             }

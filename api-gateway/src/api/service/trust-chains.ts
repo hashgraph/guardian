@@ -80,7 +80,7 @@ export class TrustChainsApi {
             } else if (policyOwner) {
                 filters = { policyOwner }
             }
-            const { items, count } = await guardians.getVpDocuments({ filters, pageIndex, pageSize });
+            const { items, count } = await guardians.getVpDocuments(user.id, { filters, pageIndex, pageSize });
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -182,12 +182,12 @@ export class TrustChainsApi {
     @UseCache()
     @HttpCode(HttpStatus.OK)
     async getTrustChainByHash(
-        @AuthUser() user: IAuthUser,
+        @AuthUser() authUser: IAuthUser,
         @Param('hash') hash: string,
     ): Promise<any> {
         try {
             const guardians = new Guardians();
-            const chain = await guardians.getChain(hash);
+            const chain = await guardians.getChain(hash, authUser.id);
             const DIDs = chain.map((item) => {
                 if (item.type === 'VC' && item.document) {
                     if (typeof item.document.issuer === 'string') {
@@ -203,14 +203,14 @@ export class TrustChainsApi {
             }).filter(did => !!did);
 
             const users = new Users();
-            const allUsers = (await users.getUsersByIds(DIDs)) || [];
+            const allUsers = (await users.getUsersByIds(DIDs, authUser.id)) || [];
             const userMap = allUsers.map((user: IAuthUser) => {
                 return { username: user.username, did: user.did }
             })
 
             return { chain, userMap };
         } catch (error) {
-            await InternalException(error, this.logger, user.id);
+            await InternalException(error, this.logger, authUser.id);
         }
     }
 }
