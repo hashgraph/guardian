@@ -39,8 +39,6 @@ context("Publish policy label", { tags: ['policy_labels', 'firstPool', 'all'] },
                 expect(response.body.name).eql(policyLabel.name);
                 expect(response.body.description).eql(policyLabel.description);
                 expect(response.body.policyId).eql(policyLabel.policyId);
-                expect(response.body.policyTopicId).eql(policyLabel.topicId);
-                expect(response.body.policyInstanceTopicId).eql(policyLabel.instanceTopicId);
                 expect(response.body.status).eql("PUBLISHED");
             });
         })

@@ -2,11 +2,13 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
+context("Delete Module", { tags: ['modules', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    let moduleId, moduleId2;
+    const UserUsername = Cypress.env('User');
     const moduleName = Math.floor(Math.random() * 999) + "APIModule";
     const moduleName2 = Math.floor(Math.random() * 999) + "APIModule";
+
+    let moduleId, moduleId2;
 
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -17,34 +19,34 @@ context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
                     authorization,
                 },
                 body: {
-                    "name": moduleName,
-                    "description": moduleName,
-                    "menu": "show",
-                    "config": {
-                        "blockType": "module"
+                    name: moduleName,
+                    description: moduleName,
+                    menu: "show",
+                    config: {
+                        blockType: "module"
                     }
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
                 moduleId = response.body.uuid;
-            });
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.ListOfAllModules,
-                headers: {
-                    authorization,
-                },
-                body: {
-                    "name": moduleName2,
-                    "description": moduleName2,
-                    "menu": "show",
-                    "config": {
-                        "blockType": "module"
-                    }
-                },
-            }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.SUCCESS);
-                moduleId2 = response.body.uuid;
+                cy.request({
+                    method: METHOD.POST,
+                    url: API.ApiServer + API.ListOfAllModules,
+                    headers: {
+                        authorization,
+                    },
+                    body: {
+                        "name": moduleName2,
+                        "description": moduleName2,
+                        "menu": "show",
+                        "config": {
+                            "blockType": "module"
+                        }
+                    },
+                }).then((response) => {
+                    expect(response.status).eql(STATUS_CODE.SUCCESS);
+                    moduleId2 = response.body.uuid;
+                });
             });
         })
     });
@@ -102,7 +104,7 @@ context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
     });
 
     it("Deletes the module with the provided module ID by user", () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
+        Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
                 url: API.ApiServer + API.ListOfAllModules + moduleId,
                 method: METHOD.DELETE,
@@ -111,7 +113,7 @@ context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
                 },
                 failOnStatusCode: false,
             }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.OK);
+                expect(response.status).eql(STATUS_CODE.FORBIDDEN);
             });
         });
     });
@@ -133,7 +135,7 @@ context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
     it("Deletes already deleted module - Negative", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
-                url: API.ApiServer + API.ListOfAllModules + moduleId,
+                url: API.ApiServer + API.ListOfAllModules + moduleId2,
                 method: METHOD.DELETE,
                 headers: {
                     authorization,
