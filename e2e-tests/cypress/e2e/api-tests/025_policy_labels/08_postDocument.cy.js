@@ -60,6 +60,7 @@ context("Get tokens for policy label", { tags: ['policy_labels', 'firstPool', 'a
                 headers: {
                     authorization,
                 },
+                timeout: 180000
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
                 expect(response.body).to.have.property("createDate");

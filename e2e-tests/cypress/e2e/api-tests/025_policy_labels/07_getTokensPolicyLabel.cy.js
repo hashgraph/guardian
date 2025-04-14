@@ -104,9 +104,9 @@ context("Get tokens for policy label", { tags: ['policy_labels', 'firstPool', 'a
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body.at(0)).to.have.property("relatedDocuments");
-                expect(response.body.at(0)).to.have.property("targetDocument");
-                expect(response.body.at(0)).to.have.property("unrelatedDocuments");
+                expect(response.body).to.have.property("relatedDocuments");
+                expect(response.body).to.have.property("targetDocument");
+                expect(response.body).to.have.property("unrelatedDocuments");
             });
         })
     });

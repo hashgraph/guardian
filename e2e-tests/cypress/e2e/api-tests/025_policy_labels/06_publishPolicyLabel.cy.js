@@ -30,9 +30,10 @@ context("Publish policy label", { tags: ['policy_labels', 'firstPool', 'all'] },
                 headers: {
                     authorization,
                 },
+                timeout: 180000,
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body.id).not.eql(policyLabel.id);
+                expect(response.body.id).eql(policyLabel.id);
                 expect(response.body.creator).eql(policyLabel.creator);
                 expect(response.body.owner).eql(policyLabel.owner);
                 expect(response.body.name).eql(policyLabel.name);

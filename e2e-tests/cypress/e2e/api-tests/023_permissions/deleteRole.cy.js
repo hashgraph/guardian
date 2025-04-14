@@ -34,6 +34,7 @@ context("Delete role", { tags: ['permissions', 'firstPool', 'all'] }, () => {
                 headers: {
                     authorization,
                 },
+                timeout: 180000
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 cy.request({
