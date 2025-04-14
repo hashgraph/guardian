@@ -1,0 +1,281 @@
+var _pp = {
+  "G5": "BRA-3C-VR-2025",
+  "G6": "Brazilian Regenerative Agriculture for Cerrado’s Carbon Credit (BRA-3C)",
+  "G7": "5043",
+  "G8": "2025-2035",
+  "G9": "2025-03-27",
+  "G10": "2025-03-27",
+  "G11": "1.0",
+  "G12": "VCS v4.3",
+  "G13": "Cerrado Regenerative Farming Cooperative (CRFC)",
+  "G14": "EcoVerify International, LLC",
+  "G15": "EcoVerify International, LLC",
+  "G16": "EcoVerify International, LLC",
+  "G18": "The validation process assesses whether the Brazilian Regenerative Agriculture for Cerrado’s Carbon Credit (BRA-3C) project complies with VCS requirements. The project aims to enhance carbon sequestration and reduce emissions through regenerative agricultural practices in the Cerrado biome.",
+  "G21": "The validation ensures that the project design meets the methodological and regulatory requirements for credit issuance under the VCS program. The scope includes reviewing baseline quantification, additionality, leakage assessment, monitoring methodology, and project governance.",
+  "G23": "The validation followed VCS v4.3 and included document review, site visits, interviews with stakeholders, and evaluation of data consistency with the applied methodology.",
+  "G25": "The validation examined baseline data, project boundary assumptions, and carbon sequestration models to ensure that the estimations are reasonable and based on credible scientific principles.",
+  "G27": "The BRA-3C project implements regenerative agricultural techniques, such as cover cropping, reduced tillage, and agroforestry, to improve soil carbon sequestration and reduce methane and nitrous oxide emissions in the Cerrado biome.",
+  "G30": "The validation process included:  Desk Review: Examination of project documents and emission reduction calculations.  Site Visit: On-ground verification of project activities and stakeholder interviews.  Stakeholder Consultation: Engagement with farmers and local authorities.  Evidence Gathering: Review of monitoring plans and historical land-use data.",
+  "G32": "Documents reviewed included:  Project Description Document (PDD)  Land-use and carbon stock data  Monitoring reports and baseline assessments  Stakeholder engagement records",
+  "G34": "The validation team conducted interviews with:  Project developers from CRFC  Local farmers implementing regenerative practices  Independent soil carbon measurement specialists",
+  "G36": "The site visit included:  Inspection of 10 representative project areas across the Cerrado biome  Verification of soil sampling procedures  Assessment of agroforestry and cover cropping implementation",
+  "G38": "CAR-01: Clarification required on soil carbon sampling methodology.  Response: Project proponents provided updated sampling protocols.  Conclusion: Issue resolved, methodology now aligns with VCS requirements.  CAR-02: Inconsistencies in additionality demonstration.  Response: Additional historical land-use evidence submitted.  Conclusion: Issue resolved, additionality criteria met.  CL-01: Request for clarification on leakage monitoring approach.  Response: Proponent provided further details on indirect land-use change risks.  Conclusion: Clarification accepted.  FAR-01: Recommendation for improving long-term monitoring plan.  Action: Project proponents committed to enhancing monitoring methodologies in future crediting periods.",
+  "G40": "FAR-01: Community Engagement Strategy  Issue: The validation process identified the need for an expanded stakeholder engagement strategy.  Resolution Plan: The project proponent has committed to conducting additional stakeholder meetings and incorporating feedback into project operations.  Next Steps: This action will be reviewed during the next verification cycle.",
+  "G43": "The project description is accurate, complete, and provides a clear understanding of the nature of the project. The validation team conducted a review of project documents, site visit reports, and stakeholder interviews to confirm the accuracy of the information. The project was found to conform with relevant VCS Program requirements.",
+  "G45": "The project underwent an initial validation audit in [Year], followed by periodic verifications. No major non-conformities were identified.",
+  "G46": "The project falls under Sectoral Scope [Number], which covers [specific category].",
+  "G47": "Category selection is appropriate",
+  "G48": "The project involves [specific activity type], which aligns with the selected methodology.",
+  "G49": "he project is not excluded under Table 2.1 of the VCS Standard, meets pipeline listing deadlines, and complies with validation requirements. The applied methodology is eligible and does not exceed capacity limits. The project is not a fragmented part of a larger initiative.",
+  "G51": "No evidence of ecosystem conversion",
+  "G53": "The project meets criteria under Section 3.22 of the VCS Standard and does not participate in other GHG programs in a manner that would result in double counting.",
+  "G55": "The project adheres to VCS Program requirements for grouped projects, where applicable.",
+  "G57": "The project proponent has demonstrated clear ownership through legal documentation.",
+  "G58": "The project commenced on [Start Date].",
+  "G59": "The crediting period is from [Start Date] to [End Date].",
+  "G60": " The project is classified as [large/small-scale].",
+  "G61": "Based on an assessment of the monitoring plan and historical performance, the project is likely to achieve its estimated reductions.",
+  "G62": "he project implements [describe technology], ensuring compliance with best practices.",
+  "G63": "The project has been implemented as per the outlined timeline, with minor deviations that do not affect its eligibility.",
+  "G65": "The project is located in [Location], with site conditions documented in the PDD.",
+  "G66": " Baseline conditions were assessed and validated against historical data.",
+  "G67": "The project complies with national and international regulatory frameworks.",
+  "G68": "No evidence of double issuance was identified.",
+  "G70": "The project is not part of any emissions trading scheme.",
+  "G72": "The project has not sought or received credits from other environmental programs.",
+  "G74": "No risks identified.",
+  "G75": "The project contributes to local employment and environmental conservation.",
+  "G76": "N/A",
+  "G80": "Stakeholder engagement activities included community meetings, public notices, and direct consultations with affected groups. The validation body reviewed meeting minutes, attendance records, and feedback summaries to confirm compliance with VCS requirements.",
+  "G81": "Stakeholders expressed general support for the project, with some concerns raised regarding employment opportunities and land use impacts. The project proponent addressed these concerns through workforce training initiatives and transparent land management policies.",
+  "G82": "The project proponent has established a communication mechanism to provide updates and receive feedback from stakeholders. This includes periodic newsletters, an open-door policy at the project office, and scheduled engagement sessions.",
+  "G83": "Feedback collected during the consultation process was documented, and adjustments to the project design were made where necessary to reflect stakeholder concerns.",
+  "G86": "The FPIC process involved preliminary discussions, information-sharing sessions, and formal agreements with affected communities. Evidence reviewed includes signed consent forms and recorded meetings.",
+  "G87": "All consulted parties provided consent without coercion. No disputes or objections were recorded.",
+  "G90": "The grievance mechanism was designed following international best practices, incorporating community input.",
+  "G91": "Stakeholders can submit complaints via multiple channels, including a dedicated hotline and an online portal. A review committee assesses complaints, and resolutions are documented. No grievances have been filed to date.",
+  "G94": [
+    {
+      "G5": "During the public comment period, concerns were raised regarding the project’s potential impact on water resources.",
+      "G6": "In response, the project proponent conducted an additional environmental assessment and implemented measures to mitigate potential water use conflicts.",
+      "G7": "The validation body found that the project proponent had adequately addressed public concerns and incorporated appropriate measures into the project design."
+    }
+  ],
+  "G100": "The project proponent has a strong management team with experience in similar projects. Partnerships with local organizations further strengthen project implementation.",
+  "G103": "Potential risks include extreme weather events affecting project infrastructure. Mitigation measures, such as emergency response plans, are in place.",
+  "G104": "No significant risks identified. Regular community meetings ensure continued participation.",
+  "G105": "Compliance with labor laws was verified through employee contracts and on-site inspections.",
+  "G106": "No gender-based safety concerns were reported. A gender-sensitive grievance mechanism is available.",
+  "G107": "The project actively includes indigenous and marginalized communities, ensuring equal participation.",
+  "G108": "Emission levels are within regulatory limits. Monitoring data confirm compliance.",
+  "G109": [],
+  "G115": "Evidence was gathered through worker interviews, policy reviews, and third-party audits. Employment records and grievance mechanisms were checked to verify compliance with non-discrimination policies. No discrimination cases were identified, and policies are in place to ensure equal opportunity.",
+  "G116": "Surveys and anonymous reporting channels were analyzed to assess the prevalence of sexual harassment. The project mandates anti-harassment training, and grievance procedures are available. No reported incidents were found, and measures remain in place to prevent future occurrences.",
+  "G117": "Payroll records and job descriptions were reviewed to ensure wage equity. Evidence confirmed that compensation is based on experience and qualifications, without gender-based disparities. The assessment concluded no risk was identified.",
+  "G118": "Project hiring practices and workforce composition were analyzed to ensure fair gender representation. While the workforce is predominantly male due to job nature, targeted recruitment strategies are in place to improve gender balance.",
+  "G119": "Interviews with employees and supply chain audits confirmed that no forced or child labor is used. Contracts and working conditions comply with national labor laws. No risks were identified.",
+  "G120": "Stakeholder consultations and compliance checks confirmed that no trafficking risks exist within the project. Preventative measures, such as ID verification and subcontractor screenings, are implemented to mitigate future risks.",
+  "G121": "Where no risk is identified, provide a conclusion confirming this assessment.",
+  "G124": [
+    {
+      "G5": "human rights",
+      "G6": "The project assessed the rights of Indigenous Peoples (IPs) and Local Communities (LCs) by reviewing national laws, international human rights frameworks, and conducting stakeholder interviews. No direct human rights violations were identified. However, to prevent risks, the project ensures that FPIC (Free, Prior, and Informed Consent) is obtained before major decisions. Compliance with UNDRIP and ILO 169 is maintained."
+    }
+  ],
+  "G129": [
+    {
+      "G5": "Indigenous Peoples and Cultural Heritage",
+      "G6": "Site visits and consultations with Indigenous leaders were conducted to assess potential cultural heritage impacts. No sacred sites were found within the project boundary. Measures such as a grievance mechanism and engagement protocols are in place to prevent future conflicts."
+    }
+  ],
+  "G134": [
+    {
+      "G5": "Property Rights",
+      "G6": "Land tenure documents and local government records were reviewed to ensure rightful land use. No disputes were identified, and land agreements were confirmed as legally valid. The project ensures continued compliance with local property laws."
+    }
+  ],
+  "G139": "Stakeholder consultations and participatory planning were conducted.",
+  "G140": "Revenue distribution ensures equitable benefit sharing, prioritizing local employment and infrastructure projects.",
+  "G141": "The plan was approved by a community committee and publicly disclosed via community meetings.",
+  "G144": "No impact found",
+  "G145": "No impact found",
+  "G146": "No impact found",
+  "G147": [],
+  "G152": "Surveys identified two threatened species in the project area. Mitigation measures, including buffer zones and habitat restoration, were implemented. Monitoring ensures ongoing protection.",
+  "G153": "n/a",
+  "G154": [],
+  "G159": [
+    {
+      "G5": "Native species only. No invasives were introduced.",
+      "G6": "The project complies with biodiversity standards, ensuring no risk from species introduction."
+    }
+  ],
+  "G163": [
+    {
+      "G5": " One invasive plant species was found, and a removal plan is in place.",
+      "G6": "The project complies with biodiversity standards, ensuring no risk from species introduction."
+    }
+  ],
+  "G167": [
+    {
+      "G5": "n/a",
+      "G6": "n/a"
+    }
+  ],
+  "G172": [
+    {
+      "G5": "No ecosystem conversion was identified. Land use remains unchanged, and conservation efforts support habitat preservation.",
+      "G6": "No ecosystem conversion was identified. Land use remains unchanged, and conservation efforts support habitat preservation."
+    }
+  ],
+  "G177": "The project applies methodology VM0042, version 2.1, and associated monitoring tools as valid at the time of validation.",
+  "G180": [
+    {
+      "G5": "VM0042 V2.1",
+      "G6": "Conditions were all met",
+      "G7": "Reviewed PDD and found that all conditions were met"
+    }
+  ],
+  "G187": [
+    {
+      "G5": [
+        {
+          "G5": "CO2",
+          "G6": "Yes",
+          "G7": "Main source"
+        }
+      ]
+    }
+  ],
+  "G193": [
+    {
+      "G5": [
+        {
+          "G5": "CO2",
+          "G6": "Yes",
+          "G7": "Main Source"
+        }
+      ]
+    }
+  ],
+  "G199": "The baseline scenario assumes that in the absence of the project, agricultural practices would continue under current methods, relying on traditional, low-yield, and non-sustainable farming techniques such as the use of inefficient irrigation systems, limited crop rotation, and the reliance on chemical fertilizers and pesticides. These practices contribute to soil degradation and reduced productivity. Steps Taken to Validate:  Assumptions and Data: The assumption that current agricultural practices would persist in the absence of the project is supported by agricultural surveys conducted in the project area in 2023. The surveys indicated that 75% of farmers still use traditional practices with minimal crop rotation. This data is deemed reasonable given the region's limited access to modern agricultural training and technologies.  Documentary Evidence: A national agricultural policy document from the Ministry of Agriculture (2021) supports the claim that sustainable farming methods are not yet widely adopted in the region. This document was correctly quoted and interpreted in the project description.  Policies and Circumstances: Relevant national and sectoral policies on agriculture were reviewed. For example, the national agricultural policy (2019) emphasizes the shift towards sustainable farming but acknowledges that implementation is slow in rural areas. This is consistent with the project's region, which lacks the infrastructure for large-scale adoption of these methods.  Validation Procedures: The methodology described in VM0042, which considers the use of improved farming techniques and the associated emission reductions, was followed. The identified baseline scenario accurately represents the agricultural practices that would have continued in the absence of the project.  Cross-Checking Steps:  Data from local farming surveys was cross-checked with reports from local agricultural extension services and external studies on farming practices in similar regions (e.g., a 2022 report by the International Food Policy Research Institute on the adoption of sustainable agriculture practices in Sub-Saharan Africa).  Conclusion: The baseline scenario has been validated and is justified. The identified baseline scenario aligns with the observed practices in the region, and the evidence supporting the assumptions and data used is relevant and reliable.",
+  "G201": "Method Used to Demonstrate Additionality: The project demonstrates additionality using the \"Barrier Analysis\" method, as prescribed in the VM0042 methodology. The project proponent has provided evidence that the proposed improvements in agricultural practices would not occur without the project's intervention.  Steps Taken to Validate:  Regulatory Surplus Requirements: The project is in a non-Annex 1 country (Country X), where there is no existing regulation mandating the adoption of improved agricultural practices. The national agricultural policy acknowledges the barriers to widespread adoption of sustainable farming and provides no regulations that would enforce these practices. A letter from the Ministry of Agriculture (2023) confirms the lack of regulatory enforcement for sustainable farming practices in the region.  Financial Calculations and Sensitivity Analyses: Financial analyses from the project's feasibility study were reviewed, and the assumptions regarding capital costs and expected returns were found reasonable. The analysis supports that without the project, farmers would not be able to afford the upfront costs of adopting the new agricultural methods.  Investment Analysis: The benchmark for investment analysis was based on similar agricultural projects in the region, demonstrating that the adoption of improved practices would not be financially viable without external funding or intervention.  Barrier Analysis: The barriers identified include high upfront costs, limited access to training, and lack of awareness. These barriers were found credible, as they align with the region's agricultural development reports from the last five years (e.g., FAO report on barriers to sustainable farming, 2022).  Common Practice Analysis: A review of similar agricultural projects in the region confirmed that the practices proposed by the project (e.g., efficient irrigation, use of organic fertilizers) are not yet common in the area.  Cross-Checking Steps:  The financial assumptions were cross-checked with data from other recent agricultural projects in similar regions, including a 2023 World Bank study on financing sustainable agriculture in developing countries.  Conclusion: Additionality has been justified. The barriers identified are credible, and the financial analysis supports the claim that the project would not have been implemented without external intervention.",
+  "G203": "Quantification Methods: The quantification of GHG emissions reductions from improved agricultural management will follow the methodologies outlined in VM0042. This includes accounting for reductions from improved soil management (e.g., reduced fertilizer use, improved crop rotation) and enhanced carbon sequestration through sustainable practices like agroforestry.  Steps Taken to Validate:  Baseline Emissions: The baseline emissions were calculated based on existing agricultural practices, including current levels of fertilizer use, irrigation practices, and crop yields. These values were sourced from national agricultural data (Ministry of Agriculture, 2022) and cross-checked with local farmer data from the region.  Project Emissions: Emission reductions were calculated based on the projected adoption of sustainable farming practices, including more efficient irrigation and organic farming methods. The assumptions were supported by a study from the International Center for Agricultural Research (2022) on emission reductions from similar projects.  Leakage Emissions: Leakage from the project, such as potential shifts in farming activities to other regions, was calculated based on historical data on land use change in the region (local land-use survey, 2023). A leakage factor of 5% was applied.  GHG Emission Reductions/Removals: The estimated total GHG reductions for the project period (5 years) are 25,000 tCO2e, based on the adopted improvements in agricultural practices and the calculated sequestration from soil carbon enhancements.  Uncertainties: A sensitivity analysis was performed to assess the impact of uncertainties in input data, such as variation in fertilizer use and crop yield. The analysis indicated that uncertainties in emission reductions are within an acceptable range of ±10%.  Cross-Checking Steps:  Data on emission reductions and carbon sequestration were cross-checked with similar studies from regions with similar agricultural practices, including a report by the FAO (2021) on emission reductions from improved farming.  Conclusion: The quantification methods have been applied correctly, and the emissions reductions, carbon dioxide removals, and uncertainties are reasonable and in line with VCS Program rules.",
+  "G205": "Deviation(s) Applied:  The project has deviated from the default emission factors used in the approved methodology for the baseline scenario by applying local emission factors derived from region-specific studies on agricultural fertilizer use. This was done to increase the accuracy of emission reductions based on the specific farming practices in the region.  Steps Taken to Validate the Deviation:  Criteria and Specifications: The deviation was assessed in accordance with the permitted methodology deviations outlined in the VCS guidelines. The project team demonstrated that the local emission factors are more accurate for the region, based on extensive data collection and research.  Impact on Conservativeness: The deviation does not negatively impact the conservativeness of the quantification of GHG emission reductions or removals. In fact, it results in a more accurate estimate, as the default emission factors in the approved methodology were not reflective of local agricultural practices.  Conclusion: The methodology deviation is valid. The use of local emission factors has been justified and does not impact the conservativeness of the emission reductions.",
+  "G207": "Parameters to be Monitored:  Parameters to be monitored include soil carbon content, fertilizer usage, irrigation water use, crop yields, and fuel consumption for mechanized agricultural equipment. These parameters are critical for quantifying the project’s GHG emission reductions and removals.  Steps Taken to Validate Monitoring Equipment and Procedures:  Suitability of Equipment: The monitoring equipment has been selected based on industry standards. For example, soil carbon content will be measured using a laboratory-based method approved by the International Organization for Standardization (ISO). Irrigation water use will be tracked using automated metering systems that have been validated for accuracy by the local regulatory body.  Process and Schedule: The project will implement a quarterly monitoring schedule, with field data collected by trained technicians. The data will be recorded digitally and compiled into a centralized database for analysis. Regular calibration of equipment will be conducted to ensure accuracy.  Conclusion: The monitoring plan adheres to the requirements of the applied methodology. The monitoring equipment and procedures have been validated, and the plan will ensure the reliable collection and analysis of data to quantify the GHG emissions reductions and removals.",
+  "G209": "Risk Rating Determination:  The project proponent has assigned a non-permanence risk rating of 5%. This rating is based on the low likelihood of reversals in the project area due to climate-related risks (e.g., droughts) and the fact that the project is implemented in a region with stable land tenure.  Rationale, Assumptions, and Justifications:  Climate Risk: Historical weather data (National Meteorological Institute, 2021) supports that the area is not prone to extreme weather events. The project has also included drought-resistant crop varieties as part of its agricultural management practices.  Land Tenure Risk: Land tenure is stable, with farmers holding long-term land use rights, which were confirmed through land registration data (Local Land Registry, 2022).  Quality of Documentation: The supporting data includes official meteorological and land use records, as well as field data collected by the project team. The documentation is robust and was cross-verified with third-party experts in land use and climate risk.  Conclusion: The non-permanence risk rating of 5% is appropriate based on the available data and the project’s risk mitigation measures.",
+  "G212": "Responsibility of the GHG Statement:  The GHG statement is the responsibility of the project proponent. The project is assessed in compliance with VCS Version 4 criteria, and no significant deviations or qualifications were noted during the validation process.  The validation was conducted by an accredited validation/verification body under ISO 14064-3:2019 standards.  Conclusion: The project conforms with the validation criteria set out in VCS Version 4, and the GHG statement is based on reliable data and methods.",
+  "G214": "Nature of Data Supporting GHG Statement:  The data supporting the GHG statement includes both projected and historical data. For instance, projected data related to crop yields and emission reductions is based on assumptions about the adoption of improved agricultural practices, while historical data was used for baseline emissions estimation.  Reasonableness of Assumptions and Limitations:  The assumptions regarding technology adoption and crop yields are reasonable given the current local context and historical trends in agricultural productivity.  The limitations include potential fluctuations in weather conditions, which may affect crop yields and water use. These factors have been accounted for with a sensitivity analysis showing a ±10% uncertainty in the emissions reductions.  Conclusion on Estimated GHG Emissions and Removals:  The project is likely to achieve the estimated GHG emission reductions and carbon dioxide removals, based on the reasonable assumptions, methodology, and data used.",
+  "G215": "01/01/2024-12/31/2028",
+  "G216": "Estimated ERRs & VCUs:  Vintage period: 2024–2028  Estimated baseline emissions (tCO2e): 50,000 tCO2e  Estimated project emissions (tCO2e): 10,000 tCO2e  Estimated leakage emissions (tCO2e): 5,000 tCO2e  Estimated reduction VCUs (tCO2e): 35,000 tCO2e  Estimated removal VCUs (tCO2e): 5,000 tCO2e  Estimated total VCUs (tCO2e): 40,000 tCO2e  Total Estimated Baseline Emissions (tCO2e): 50,000 tCO2e  Total Estimated Project Emissions (tCO2e): 10,000 tCO2e  Total Estimated Leakage Emissions (tCO2e): 5,000 tCO2e  Total Estimated Reduction VCUs (tCO2e): 35,000 tCO2e  Total Estimated Removal VCUs (tCO2e): 5,000 tCO2e  Total Estimated VCUs (tCO2e): 40,000 tCO2e",
+  "G218": [
+    {
+      "G5": "2024",
+      "G6": 10000,
+      "G7": 2000,
+      "G8": 1000,
+      "G9": 7000,
+      "G10": 1000,
+      "G11": 8000
+    },
+    {
+      "G5": "2025",
+      "G6": 10000,
+      "G7": 2000,
+      "G8": 1000,
+      "G9": 7000,
+      "G10": 1000,
+      "G11": 8000
+    },
+    {
+      "G5": "2026",
+      "G6": 10000,
+      "G7": 2000,
+      "G8": 1000,
+      "G9": 7000,
+      "G10": 1000,
+      "G11": 8000
+    },
+    {
+      "G5": "2027",
+      "G6": 10000,
+      "G7": 2000,
+      "G8": 1000,
+      "G9": 7000,
+      "G10": 1000,
+      "G11": 8000
+    },
+    {
+      "G5": "2028",
+      "G6": 10000,
+      "G7": 2000,
+      "G8": 1000,
+      "G9": 7000,
+      "G10": 1000,
+      "G11": 8000
+    }
+  ],
+  "G226": 50000,
+  "G227": 10000,
+  "G228": 5000,
+  "G229": 35000,
+  "G230": 5000,
+  "G231": 40000,
+  "G234": "5%",
+  "G235": "95%",
+  "G237": [
+    {
+      "G5": "2024",
+      "G6": 10000,
+      "G7": 2000,
+      "G8": 1000,
+      "G9": 7000,
+      "G10": 1000,
+      "G11": 8000
+    },
+    {
+      "G5": "2025",
+      "G6": 10000,
+      "G7": 2000,
+      "G8": 1000,
+      "G9": 7000,
+      "G10": 1000,
+      "G11": 8000
+    },
+    {
+      "G5": "2026",
+      "G6": 10000,
+      "G7": 2000,
+      "G8": 1000,
+      "G9": 7000,
+      "G10": 1000,
+      "G11": 8000
+    },
+    {
+      "G5": "2027",
+      "G6": 10000,
+      "G7": 2000,
+      "G8": 1000,
+      "G9": 7000,
+      "G10": 1000,
+      "G11": 8000
+    },
+    {
+      "G5": "2028",
+      "G6": 10000,
+      "G7": 2000,
+      "G8": 1000,
+      "G9": 7000,
+      "G10": 1000,
+      "G11": 8000
+    }
+  ],
+  "G245": 50000,
+  "G246": 10000,
+  "G247": 5000,
+  "G248": 35000,
+  "G249": 5000,
+  "G250": 40000
+}
+Object.values(__request).forEach(r=>r.preset(_pp));
