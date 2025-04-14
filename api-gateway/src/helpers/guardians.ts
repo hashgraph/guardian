@@ -2613,8 +2613,8 @@ export class Guardians extends NatsService {
      *          or null if the branding is not available.
      */
     // tslint:disable-next-line:completed-docs
-    public async getBranding(userId: string | null): Promise<{ config: string } | null> {
-        return await this.sendMessage(MessageAPI.GET_BRANDING, { userId });
+    public async getBranding(): Promise<{ config: string } | null> {
+        return await this.sendMessage(MessageAPI.GET_BRANDING, { userId: null });
     }
 
     /**

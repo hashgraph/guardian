@@ -92,15 +92,13 @@ export class BrandingApi {
     @ApiExtraModels(BrandingDTO, InternalServerErrorDTO)
     @UseCache()
     @HttpCode(HttpStatus.OK)
-    async getBranding(
-        @AuthUser() user: IAuthUser,
-    ): Promise<any> {
+    async getBranding(): Promise<any> {
         try {
             const guardians = new Guardians();
-            const brandingDataString = await guardians.getBranding(user?.id);
+            const brandingDataString = await guardians.getBranding();
             return JSON.parse(brandingDataString.config);
         } catch (error) {
-            await InternalException(error, this.logger, user?.id);
+            await InternalException(error, this.logger, null);
         }
     }
 }
