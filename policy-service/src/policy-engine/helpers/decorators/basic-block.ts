@@ -218,6 +218,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             /**
+             * Policy status
+             */
+            public get policyStatus(): PolicyStatus | null {
+                return this.policyInstance?.status || null;
+            }
+
+            /**
              * Next block in chain
              */
             public get next(): IPolicyBlock {

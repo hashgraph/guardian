@@ -2577,30 +2577,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      *
      * @virtual
      */
-    public async getTopic(
-        filters: {
-            /**
-             * policyId
-             */
-            policyId?: string,
-            /**
-             * type
-             */
-            type?: TopicType,
-            /**
-             * name
-             */
-            name?: string,
-            /**
-             * owner
-             */
-            owner?: string,
-            /**
-             * topicId
-             */
-            topicId?: string
-        }
-    ): Promise<TopicCollection | null> {
+    public async getTopic(filters: FilterObject<TopicCollection>): Promise<TopicCollection | null> {
         return await this.findOne(TopicCollection, filters);
     }
 

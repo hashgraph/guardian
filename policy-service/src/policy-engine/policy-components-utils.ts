@@ -791,6 +791,7 @@ export class PolicyComponentsUtils {
             synchronizationTopicId: policy.synchronizationTopicId,
             owner: policy.owner,
             policyOwner: policy.owner,
+            policyStatus: policy.status
         };
         PolicyComponentsUtils.PolicyById.set(policyId, policyInstance);
     }

@@ -55,7 +55,8 @@ import {
     FormulasDataDTO,
     FormulaRelationshipsDTO,
     ExternalPolicyDTO,
-    PolicyPreviewDTO
+    PolicyPreviewDTO,
+    ProfileDTO
 } from '#middlewares';
 
 /**
@@ -3726,4 +3727,14 @@ export class Guardians extends NatsService {
         return await this.sendMessage(MessageAPI.GROUP_EXTERNAL_POLICY_REQUESTS, { filters, owner });
     }
 
+    /**
+     * Return User Profile
+     *
+     * @param {IAuthUser} user - user
+     *
+     * @returns {ProfileDTO} - Profile
+     */
+    public async getProfile(user: IAuthUser): Promise<ProfileDTO> {
+        return await this.sendMessage(MessageAPI.GET_USER_PROFILE, { user });
+    }
 }

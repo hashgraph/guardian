@@ -5,7 +5,7 @@ import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse,
 import { CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO, InternalServerErrorDTO, ProfileDTO, TaskDTO } from '#middlewares';
 import { Auth, AuthUser } from '#auth';
 import { CacheService, getCacheKey, Guardians, InternalException, ServiceError, TaskManager, UseCache } from '#helpers';
-import {CACHE, PREFIXES} from '#constants';
+import { CACHE, PREFIXES } from '#constants';
 
 @Controller('profiles')
 @ApiTags('profiles')
@@ -17,12 +17,7 @@ export class ProfileApi {
      * Get user profile.
      */
     @Get('/:username/')
-    @Auth(
-        Permissions.PROFILES_USER_READ
-        // UserRole.STANDARD_REGISTRY,
-        // UserRole.USER,
-        // UserRole.AUDITOR
-    )
+    @Auth(Permissions.PROFILES_USER_READ)
     @ApiOperation({
         summary: 'Returns user account info.',
         description: 'Returns user account information. For users with the Standard Registry role it also returns address book and VC document information.',
@@ -48,64 +43,9 @@ export class ProfileApi {
     async getProfile(
         @AuthUser() user: IAuthUser
     ): Promise<ProfileDTO> {
-        const guardians = new Guardians();
         try {
-            let didDocument: any = null;
-            if (user.did) {
-                const didDocuments = await guardians.getDidDocuments({ did: user.did });
-                if (didDocuments) {
-                    didDocument = didDocuments[didDocuments.length - 1];
-                }
-            }
-
-            let vcDocument: any = null;
-            if (user.did) {
-                let vcDocuments = await guardians.getVcDocuments({
-                    owner: user.did,
-                    type: SchemaEntity.USER
-                });
-                if (vcDocuments && vcDocuments.length) {
-                    vcDocument = vcDocuments[vcDocuments.length - 1];
-                }
-                vcDocuments = await guardians.getVcDocuments({
-                    owner: user.did,
-                    type: SchemaEntity.STANDARD_REGISTRY
-                });
-                if (vcDocuments && vcDocuments.length) {
-                    vcDocument = vcDocuments[vcDocuments.length - 1];
-                }
-            }
-
-            let topic: any;
-            if (user.did || user.parent) {
-                const filters = [];
-                if (user.did) {
-                    filters.push(user.did);
-                }
-                if (user.parent) {
-                    filters.push(user.parent);
-                }
-                topic = await guardians.getTopic({
-                    type: TopicType.UserTopic,
-                    owner: { $in: filters }
-                });
-            }
-
-            return {
-                username: user.username,
-                role: user.role,
-                permissionsGroup: user.permissionsGroup,
-                permissions: user.permissions,
-                did: user.did,
-                parent: user.parent,
-                hederaAccountId: user.hederaAccountId,
-                confirmed: !!(didDocument && didDocument.status === DidDocumentStatus.CREATE),
-                failed: !!(didDocument && didDocument.status === DidDocumentStatus.FAILED),
-                topicId: topic?.topicId,
-                parentTopicId: topic?.parent,
-                didDocument,
-                vcDocument
-            };
+            const guardians = new Guardians();
+            return await guardians.getProfile(user);
         } catch (error) {
             await InternalException(error, this.logger);
         }

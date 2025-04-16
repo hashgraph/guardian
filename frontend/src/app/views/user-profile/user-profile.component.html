@@ -82,6 +82,10 @@
                         <span>View document</span>
                     </div>
                 </div>
+
+                <div *ngIf="profile" class="item">
+                    <span (click)="download()">Download</span>
+                </div>
             </div>
         </div>
     </ng-container>
@@ -93,23 +97,17 @@
                 <div class="progress-container">
                     <div
                         *ngFor="let step of visibleSteps"
-                        [ngClass]="{ active: step.index === currentStep }"
+                        [ngClass]="{ active: step === currentStep }"
                         class="step-item"
                     >
-                        <i
-                            [ngClass]="step.index === currentStep
-                                ? 'pi-check'
-                                : 'pi-angle-right'"
-                            class="pi"
-                        ></i>
+                        <i [ngClass]="step === currentStep ? 'pi-check' : 'pi-angle-right'" class="pi"></i>
                         <p>{{ step.label }}</p>
                     </div>
                 </div>
 
                 <div class="forms-container">
-                    <form [formGroup]="fullForm" class="hedera-form">
-
-                        <ng-container *ngIf="currentStep === 0">
+                    <form class="hedera-form">
+                        <ng-container *ngIf="currentStep?.id === 'select_sr'">
                             <div class="user-onboarding-wizard__header">
                                 <form
                                     *ngIf="hasRegistries"
@@ -155,8 +153,7 @@
                                             [disabled]="!filtersForm.dirty"
                                             class="clear-filters-button"
                                             [outlined]=true
-                                        >Clear filters
-                                        </p-button>
+                                        >Clear filters</p-button>
                                     </div>
                                 </form>
                             </div>
@@ -164,8 +161,7 @@
                             <div class="user-onboarding-wizard__content">
                                 <ng-container *ngIf="!noFilterResults; else noResults">
                                     <p *ngIf="!hasRegistries" class="no-results">
-                                        Standard registries have not been created
-                                        yet.
+                                        Standard registries have not been created yet.
                                     </p>
 
                                     <ul class="standard-registry">
@@ -184,8 +180,37 @@
                                 </ng-template>
                             </div>
                         </ng-container>
+                        <ng-container *ngIf="currentStep?.id === 'select_type'">
+                            <div class="hedera-credentials-title">
+                                Type
+                            </div>
+                            <div class="hedera-credentials-form-container">
+                                <form class="hedera-form">
+                                    <div class="boolean-option-group">
+                                        <div>
+                                            <p-radioButton
+                                                name="didType"
+                                                [value]="false"
+                                                [formControl]="locationType"
+                                                class="boolean-option">
+                                            </p-radioButton>
+                                            <label>Local User.</label>
+                                        </div>
+                                        <div>
+                                            <p-radioButton
+                                                name="didType"
+                                                [value]="true"
+                                                [formControl]="locationType"
+                                                class="boolean-option">
+                                            </p-radioButton>
+                                            <label>Remote User.</label>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
 
-                        <ng-container *ngIf="currentStep === 1">
+                        </ng-container>
+                        <ng-container *ngIf="currentStep?.id === 'hedera_credentials'">
                             <div class="hedera-credentials-title">
                                 Hedera Credentials
                             </div>
@@ -286,12 +311,10 @@
                                 </form>
                             </div>
                         </ng-container>
-
-                        <ng-container *ngIf="currentStep === 2">
+                        <ng-container *ngIf="currentStep?.id === 'did_document'">
                             <div class="hedera-credentials-title">
                                 DID Document
                             </div>
-
                             <div class="hedera-credentials-form-container">
                                 <form class="hedera-form">
                                     <div class="boolean-option-group">
@@ -323,8 +346,7 @@
                                             [formControl]="didDocumentForm"
                                             class="full-width"
                                             placeholder="DID Document: *"
-                                            style="height: 150px">
-    </textarea>
+                                            style="height: 150px"></textarea>
                                         <small *ngIf="didDocumentForm.hasError('incorrect')" class="p-error">
                                             Invalid DID Document.
                                         </small>
@@ -335,11 +357,10 @@
                                 </form>
                             </div>
                         </ng-container>
-                        <ng-container *ngIf="currentStep === 3">
+                        <ng-container *ngIf="currentStep?.id === 'did_document_keys'">
                             <div class="hedera-credentials-title">
                                 DID Document signing keys
                             </div>
-
                             <div class="hedera-credentials-form-container">
                                 <form class="hedera-form">
                                     <div *ngFor="let item of didKeys" class="group-container">
@@ -375,8 +396,7 @@
                                 </form>
                             </div>
                         </ng-container>
-
-                        <ng-container *ngIf="currentStep === 4">
+                        <ng-container *ngIf="currentStep?.id === 'vc_document'">
                             <div class="hedera-credentials-title">
                                 VC Document
                             </div>
@@ -393,15 +413,51 @@
                                 </form>
                             </div>
                         </ng-container>
-
+                        <ng-container *ngIf="currentStep?.id === 'remote_config'">
+                            <div class="hedera-credentials-title">
+                                Hedera Credentials
+                            </div>
+                            <div class="hedera-credentials-form-container">
+                                <form [formGroup]="remoteCredentialsForm" class="hedera-form">
+                                    <div class="input-field-container">
+                                        <label class="form-label" htmlFor="operatorId">
+                                            * OPERATOR ID (Hedera Account):
+                                        </label>
+                                        <input
+                                            formControlName="id"
+                                            id="operatorId"
+                                            pInputText
+                                            placeholder="0.0.1548173"
+                                            type="text"
+                                        />
+                                    </div>
+                                </form>
+                                <form class="hedera-form">
+                                    <div class="form-group example-full-width">
+                                        <textarea
+                                            pInputTextarea
+                                            id="didDocumentTextarea"
+                                            [formControl]="remoteDidDocumentForm"
+                                            class="full-width"
+                                            placeholder="DID Document: *"
+                                            style="height: 150px"></textarea>
+                                        <small *ngIf="remoteDidDocumentForm.hasError('incorrect')" class="p-error">
+                                            Invalid DID Document.
+                                        </small>
+                                        <small *ngIf="remoteDidDocumentForm.hasError('exists')" class="p-error">
+                                            DID Document already exists.
+                                        </small>
+                                    </div>
+                                </form>
+                            </div>
+                        </ng-container>
                     </form>
-
                 </div>
             </div>
 
             <div class="user-profile-setup-buttons-container">
                 <div class="user-profile-finish-buttons">
-                    <div *ngIf="currentStep !== 0" class="previous-button">
+                    <div *ngIf="canPrev()" class="previous-button">
                         <p-button
                             (click)="onPrev()"
                             label="Previous"
@@ -429,10 +485,12 @@
                 </div>
             </div>
         </div>
+
         <div *ngIf="!isNewAccount && !isFailed" class="clock-list">
             <div class="clock-loader"></div>
             <p>Creating DID ...</p>
         </div>
+
         <div *ngIf="isFailed" class="error-list">
             <p>An error occurred while creating the document.</p>
             <p>Please try again later.</p>

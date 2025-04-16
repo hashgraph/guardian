@@ -193,7 +193,7 @@ async function checkAndPublishSchema(
         topicId: topicConfig.topicId
     });
     if (!schema) {
-        schema = await dataBaseServer.findOne(SchemaCollection,{
+        schema = await dataBaseServer.findOne(SchemaCollection, {
             entity,
             system: true,
             active: true
@@ -921,6 +921,56 @@ export function profileAPI(logger: PinoLogger) {
                 } catch (error) {
                     return new MessageResponse(keys);
                 }
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.GET_USER_PROFILE,
+        async (msg: { user: IAuthUser }) => {
+            try {
+                const { user } = msg;
+                const result = {
+                    username: user.username,
+                    role: user.role,
+                    permissionsGroup: user.permissionsGroup,
+                    permissions: user.permissions,
+                    did: user.did,
+                    parent: user.parent,
+                    hederaAccountId: user.hederaAccountId,
+                    confirmed: false,
+                    failed: false,
+                    topicId: undefined,
+                    parentTopicId: undefined,
+                    didDocument: undefined,
+                    vcDocument: undefined,
+                };
+                if (user.did) {
+                    const db = new DatabaseServer();
+                    const didDocument = await db.getDidDocument(user.did);
+                    const vcDocument = await db.getVcDocument({
+                        owner: user.did,
+                        type: { $in: [SchemaEntity.USER, SchemaEntity.STANDARD_REGISTRY] }
+                    });
+                    result.confirmed = !!(didDocument && didDocument.status === DidDocumentStatus.CREATE);
+                    result.failed = !!(didDocument && didDocument.status === DidDocumentStatus.FAILED);
+                    result.didDocument = didDocument;
+                    result.vcDocument = vcDocument;
+                    let topic = await db.getTopic({
+                        type: TopicType.UserTopic,
+                        owner: user.did
+                    });
+                    if (!topic && user.parent) {
+                        topic = await db.getTopic({
+                            type: TopicType.UserTopic,
+                            owner: user.parent
+                        });
+                    }
+                    result.topicId = topic?.topicId;
+                    result.parentTopicId = topic?.parent;
+                }
+                return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

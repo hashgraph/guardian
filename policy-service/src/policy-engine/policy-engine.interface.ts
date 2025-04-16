@@ -2,6 +2,7 @@ import { BlockCacheType, EventConfig, IPolicyEvent, PolicyOutputEventType } from
 import { DatabaseServer, Policy } from '@guardian/common';
 import { PolicyUser, UserCredentials } from './policy-user.js';
 import { ComponentsService } from './helpers/components-service.js';
+import { PolicyStatus } from '@guardian/interfaces';
 
 /**
  * Policy roles interface
@@ -150,6 +151,11 @@ export interface IPolicyBlock {
      * Dry-run
      */
     readonly dryRun: string;
+
+    /**
+     * Policy status
+     */
+    readonly policyStatus: PolicyStatus;
 
     /**
      * Set policy owner
@@ -998,7 +1004,12 @@ export interface IPolicyInstance {
     /**
      * Policy Owner
      */
-    readonly components: ComponentsService
+    readonly components: ComponentsService;
+
+    /**
+     * Policy Status
+     */
+    readonly policyStatus: PolicyStatus;
 }
 
 /**

@@ -1,5 +1,5 @@
 import { DatabaseServer, DidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method, IAuthUser, KeyType, PolicyRoles, Users, Wallet } from '@guardian/common';
-import { ISignOptions, Permissions, PolicyRole, SignType } from '@guardian/interfaces';
+import { ISignOptions, Permissions, PolicyRole, PolicyStatus, SignType } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyDocument, IPolicyInstance } from './policy-engine.interface.js';
 
 /**
@@ -53,11 +53,18 @@ export class PolicyUser {
      */
     public readonly policyOwner: string | null;
     /**
+     * Policy status
+     */
+    public readonly policyStatus: PolicyStatus | null;
+    /**
      * Permissions
      */
     public readonly permissions: string[];
 
-    constructor(arg: IAuthUser | string, instance: IPolicyInstance | AnyBlockType) {
+    constructor(
+        arg: IAuthUser | string,
+        instance: IPolicyInstance | AnyBlockType
+    ) {
         if (typeof arg === 'string') {
             this.did = arg;
             this.username = null;
@@ -72,6 +79,7 @@ export class PolicyUser {
         this.roleMessage = null;
         this.policyId = instance.policyId;
         this.policyOwner = instance.policyOwner;
+        this.policyStatus = instance.policyStatus;
     }
 
     public get id(): string {

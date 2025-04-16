@@ -1,27 +1,39 @@
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
-import {UntypedFormControl, UntypedFormGroup, Validators,} from '@angular/forms';
-import {forkJoin} from 'rxjs';
-import {IPolicy, IStandardRegistryResponse, IUser, Schema, SchemaEntity,} from '@guardian/interfaces';
-import {ActivatedRoute, Router} from '@angular/router';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
+import { forkJoin } from 'rxjs';
+import { IPolicy, IStandardRegistryResponse, IUser, LocationType, Schema, SchemaEntity, } from '@guardian/interfaces';
+import { ActivatedRoute, Router } from '@angular/router';
 //services
-import {AuthService} from '../../services/auth.service';
-import {ProfileService} from '../../services/profile.service';
-import {DemoService} from '../../services/demo.service';
-import {SchemaService} from '../../services/schema.service';
-import {HeaderPropsService} from '../../services/header-props.service';
-import {InformService} from '../../services/inform.service';
-import {TasksService} from '../../services/tasks.service';
+import { AuthService } from '../../services/auth.service';
+import { ProfileService } from '../../services/profile.service';
+import { DemoService } from '../../services/demo.service';
+import { SchemaService } from '../../services/schema.service';
+import { HeaderPropsService } from '../../services/header-props.service';
+import { InformService } from '../../services/inform.service';
+import { TasksService } from '../../services/tasks.service';
 //modules
-import {VCViewerDialog} from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
-import {noWhitespaceValidator} from 'src/app/validators/no-whitespace-validator';
-import {DialogService} from 'primeng/dynamicdialog';
-import {ValidateIfFieldEqual} from '../../validators/validate-if-field-equal';
-import {ChangePasswordComponent} from '../login/change-password/change-password.component';
+import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
+import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
+import { DialogService } from 'primeng/dynamicdialog';
+import { ValidateIfFieldEqual } from '../../validators/validate-if-field-equal';
+import { ChangePasswordComponent } from '../login/change-password/change-password.component';
 
 enum OperationMode {
     None,
     Generate,
     Associate,
+}
+
+interface IStep {
+    id: string;
+    label: string;
+    index: number;
+    visibility: () => boolean;
+    isFinish: () => boolean;
+    canNext: () => boolean;
+    next: () => void;
+    canPrev: () => boolean;
+    prev: () => void;
 }
 
 /**
@@ -43,16 +55,8 @@ export class UserProfileComponent implements OnInit {
     public didDocument?: any;
     public vcDocument?: any;
 
-    public steps: {
-        label: string,
-        index: number,
-        visibility: () => boolean,
-        isFinish: () => boolean,
-        canNext: () => boolean,
-        next: () => void
-    }[] = [];
-
-    public currentStep: number = 0;
+    public steps: IStep[] = [];
+    public currentStep!: IStep;
 
     public noFilterResults: boolean = false;
 
@@ -89,16 +93,20 @@ export class UserProfileComponent implements OnInit {
         return this.steps.filter((s) => s.visibility());
     }
 
-    public privateFields: any = {id: true};
+    public privateFields: any = { id: true };
     public schema!: Schema | null;
-    public fullForm!: UntypedFormGroup;
+    public localFullForm!: UntypedFormGroup;
+    public remoteFullForm!: UntypedFormGroup;
     public hederaCredentialsForm!: UntypedFormGroup;
     public standardRegistryForm!: UntypedFormControl;
+    public locationType!: UntypedFormControl;
     public didDocumentType!: UntypedFormControl;
     public didDocumentForm!: UntypedFormControl;
     public didKeysForm!: UntypedFormGroup;
     public vcDocumentType!: UntypedFormControl;
     public vcDocumentForm!: UntypedFormGroup;
+    public remoteCredentialsForm!: UntypedFormGroup;
+    public remoteDidDocumentForm!: UntypedFormControl;
     public didKeys: any[] = [];
 
     private interval: any;
@@ -115,7 +123,7 @@ export class UserProfileComponent implements OnInit {
         private taskService: TasksService,
         private route: ActivatedRoute,
         private router: Router,
-        public dialogService: DialogService,
+        private dialogService: DialogService,
         private headerProps: HeaderPropsService,
         private cdRef: ChangeDetectorRef
     ) {
@@ -131,24 +139,40 @@ export class UserProfileComponent implements OnInit {
                 ValidateIfFieldEqual('useFireblocksSigning', true,
                     [
                         Validators.pattern(/^-----BEGIN PRIVATE KEY-----[\s\S]+-----END PRIVATE KEY-----$/gm)
-                    ])])
+                    ]
+                )
+            ])
         });
+        this.locationType = new UntypedFormControl(false, [Validators.required]);
         this.didDocumentType = new UntypedFormControl(false, [Validators.required]);
         this.didDocumentForm = new UntypedFormControl('', [Validators.required]);
         this.didKeysForm = new UntypedFormGroup({});
         this.vcDocumentType = new UntypedFormControl(false, [Validators.required]);
         this.vcDocumentForm = new UntypedFormGroup({});
+        this.remoteCredentialsForm = new UntypedFormGroup({
+            id: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()]),
+        });
+        this.remoteDidDocumentForm = new UntypedFormControl('', [Validators.required]);
 
-        this.fullForm = new UntypedFormGroup({});
-        this.fullForm.addControl('standardRegistry', this.standardRegistryForm);
-        this.fullForm.addControl('hederaCredentials', this.hederaCredentialsForm);
-        this.fullForm.addControl('didDocumentType', this.didDocumentType);
-        this.fullForm.addControl('didDocument', this.didDocumentForm);
-        this.fullForm.addControl('didKeys', this.didKeysForm);
-        this.fullForm.addControl('vcDocumentType', this.vcDocumentType);
-        this.fullForm.addControl('vcDocument', this.vcDocumentForm);
+        this.localFullForm = new UntypedFormGroup({});
+        this.localFullForm.addControl('standardRegistry', this.standardRegistryForm);
+        this.localFullForm.addControl('locationType', this.locationType);
+        this.localFullForm.addControl('hederaCredentials', this.hederaCredentialsForm);
+        this.localFullForm.addControl('didDocumentType', this.didDocumentType);
+        this.localFullForm.addControl('didDocument', this.didDocumentForm);
+        this.localFullForm.addControl('didKeys', this.didKeysForm);
+        this.localFullForm.addControl('vcDocumentType', this.vcDocumentType);
+        this.localFullForm.addControl('vcDocument', this.vcDocumentForm);
 
-        this.steps = [{
+        this.remoteFullForm = new UntypedFormGroup({});
+        this.remoteFullForm.addControl('standardRegistry', this.standardRegistryForm);
+        this.remoteFullForm.addControl('locationType', this.locationType);
+        this.remoteFullForm.addControl('hederaCredentials', this.remoteCredentialsForm);
+        this.remoteFullForm.addControl('didDocument', this.remoteDidDocumentForm);
+
+        // Steps
+        const selectSRStep: IStep = {
+            id: 'select_sr',
             label: 'Standard Registries',
             index: 0,
             visibility: () => {
@@ -161,93 +185,197 @@ export class UserProfileComponent implements OnInit {
                 return this.standardRegistryForm.valid;
             },
             next: () => {
-                this.changeStep(1);
+                this.changeStep('select_type');
+            },
+            canPrev: () => {
+                return false;
+            },
+            prev: () => { }
+        };
+        const selectTypeStep: IStep = {
+            id: 'select_type',
+            label: 'Type',
+            index: 1,
+            visibility: () => {
+                return true;
+            },
+            isFinish: () => {
+                return false;
+            },
+            canNext: () => {
+                return this.standardRegistryForm.valid;
+            },
+            next: () => {
+                if (this.locationType.value) {
+                    this.changeStep('remote_config');
+                } else {
+                    this.changeStep('hedera_credentials');
+                }
+            },
+            canPrev: () => {
+                return true;
+            },
+            prev: () => {
+                this.changeStep('select_sr');
             }
-        },
-            {
-                label: 'Hedera Credentials',
-                index: 1,
-                visibility: () => {
+        }
+
+        //Local
+        const hederaCredentialsStep: IStep = {
+            id: 'hedera_credentials',
+            label: 'Hedera Credentials',
+            index: 2,
+            visibility: () => {
+                return !this.locationType.value;
+            },
+            isFinish: () => {
+                return false;
+            },
+            canNext: () => {
+                return this.hederaCredentialsForm.valid;
+            },
+            next: () => {
+                this.changeStep('did_document');
+            },
+            canPrev: () => {
+                return true;
+            },
+            prev: () => {
+                this.changeStep('select_type');
+            }
+        }
+        const didDocumentStep: IStep = {
+            id: 'did_document',
+            label: 'DID Document',
+            index: 3,
+            visibility: () => {
+                return !this.locationType.value;
+            },
+            isFinish: () => {
+                return !this.didDocumentType.value && !this.vcDocumentType.value;
+            },
+            canNext: () => {
+                if (this.didDocumentType.value) {
+                    return this.didDocumentForm.valid;
+                } else {
                     return true;
-                },
-                isFinish: () => {
-                    return false;
-                },
-                canNext: () => {
-                    return this.hederaCredentialsForm.valid;
-                },
-                next: () => {
-                    this.changeStep(2);
                 }
             },
-            {
-                label: 'DID Document',
-                index: 2,
-                visibility: () => {
-                    return true;
-                },
-                isFinish: () => {
-                    return !this.didDocumentType.value && !this.vcDocumentType.value;
-                },
-                canNext: () => {
-                    if (this.didDocumentType.value) {
-                        return this.didDocumentForm.valid;
-                    } else {
-                        return true;
-                    }
-                },
-                next: () => {
-                    if (this.didDocumentType.value) {
-                        this.parseDidDocument(() => {
-                            this.changeStep(3);
-                        });
-                    } else {
-                        if (this.vcDocumentType.value) {
-                            this.changeStep(4);
-                        } else {
-                            this.onSubmit();
-                        }
-                    }
-                }
-            },
-            {
-                label: 'DID Document signing keys',
-                index: 3,
-                visibility: () => {
-                    return this.didDocumentType.value;
-                },
-                isFinish: () => {
-                    return !this.vcDocumentType.value;
-                },
-                canNext: () => {
-                    return this.didKeysForm.valid;
-                },
-                next: () => {
-                    this.parseDidKeys(() => {
-                        if (this.vcDocumentType.value) {
-                            this.changeStep(4);
-                        } else {
-                            this.onSubmit();
-                        }
+            next: () => {
+                if (this.didDocumentType.value) {
+                    this.parseDidDocument(() => {
+                        this.changeStep('did_document_keys');
                     });
+                } else {
+                    if (this.vcDocumentType.value) {
+                        this.changeStep('vc_document');
+                    } else {
+                        this.onSubmit();
+                    }
                 }
             },
-            {
-                label: 'VC Document',
-                index: 4,
-                visibility: () => {
-                    return this.vcDocumentType.value;
-                },
-                isFinish: () => {
-                    return true;
-                },
-                canNext: () => {
-                    return this.vcDocumentForm.valid;
-                },
-                next: () => {
-                    this.onSubmit();
+            canPrev: () => {
+                return true;
+            },
+            prev: () => {
+                this.changeStep('hedera_credentials');
+            }
+        };
+        const didDocumentKeysStep: IStep = {
+            id: 'did_document_keys',
+            label: 'DID Document signing keys',
+            index: 4,
+            visibility: () => {
+                return !this.locationType.value && this.didDocumentType.value;
+            },
+            isFinish: () => {
+                return !this.vcDocumentType.value;
+            },
+            canNext: () => {
+                return this.didKeysForm.valid;
+            },
+            next: () => {
+                this.parseDidKeys(() => {
+                    if (this.vcDocumentType.value) {
+                        this.changeStep('vc_document');
+                    } else {
+                        this.onSubmit();
+                    }
+                });
+            },
+            canPrev: () => {
+                return true;
+            },
+            prev: () => {
+                this.changeStep('did_document');
+            }
+        };
+        const vcDocumentStep: IStep = {
+            id: 'vc_document',
+            label: 'VC Document',
+            index: 5,
+            visibility: () => {
+                return !this.locationType.value && this.vcDocumentType.value;
+            },
+            isFinish: () => {
+                return true;
+            },
+            canNext: () => {
+                return this.vcDocumentForm.valid;
+            },
+            next: () => {
+                this.onSubmit();
+            },
+            canPrev: () => {
+                return true;
+            },
+            prev: () => {
+                if (this.didDocumentType.value) {
+                    this.changeStep('did_document_keys');
+                } else {
+                    this.changeStep('did_document');
                 }
-            }];
+            }
+        }
+
+        //Remote
+        const remoteConfigStep: IStep = {
+            id: 'remote_config',
+            label: 'Config',
+            index: 2,
+            visibility: () => {
+                return this.locationType.value;
+            },
+            isFinish: () => {
+                return true;
+            },
+            canNext: () => {
+                return this.remoteCredentialsForm.valid && this.remoteDidDocumentForm.valid;
+            },
+            next: () => {
+                this.onSubmit();
+            },
+            canPrev: () => {
+                return true;
+            },
+            prev: () => {
+                this.changeStep('select_type');
+            }
+        }
+
+        this.steps = [
+            //Common
+            selectSRStep,
+            selectTypeStep,
+            //Local
+            hederaCredentialsStep,
+            didDocumentStep,
+            didDocumentKeysStep,
+            vcDocumentStep,
+            //Remote
+            remoteConfigStep
+        ];
+        this.currentStep = this.steps[0];
     }
 
     ngOnInit() {
@@ -307,7 +435,7 @@ export class UserProfileComponent implements OnInit {
                     this.headerProps.setLoading(false);
                 }, 200);
             },
-            ({message}) => {
+            ({ message }) => {
                 this.loading = false;
                 this.headerProps.setLoading(false);
                 console.error(message);
@@ -330,8 +458,8 @@ export class UserProfileComponent implements OnInit {
             switch (operationMode) {
                 case OperationMode.Generate:
                     this.taskService.get(taskId).subscribe((task) => {
-                        const {id, key} = task.result;
-                        this.hederaCredentialsForm.patchValue({id, key});
+                        const { id, key } = task.result;
+                        this.hederaCredentialsForm.patchValue({ id, key });
                         this.loading = false;
                     });
                     break;
@@ -382,26 +510,37 @@ export class UserProfileComponent implements OnInit {
         });
     }
 
-    private changeStep(step: number): void {
-        this.currentStep = Math.min(Math.max(step, 0), this.steps.length);
+
+
+
+    //Steps
+
+    private changeStep(id: string): void {
+        this.currentStep = this.steps.find((s) => s.id === id) || this.steps[0];
     }
 
     public onPrev(): void {
-        this.changeStep(this.currentStep - 1);
-    }
-
-    public onNext(): void {
-        if (this.steps[this.currentStep]?.canNext()) {
-            this.steps[this.currentStep].next();
+        if (this.currentStep?.canPrev()) {
+            this.currentStep.prev();
         }
     }
 
+    public onNext(): void {
+        if (this.currentStep?.canNext()) {
+            this.currentStep.next();
+        }
+    }
+
+    public canPrev(): boolean {
+        return this.currentStep?.canPrev() || false;
+    }
+
     public canNext(): boolean {
-        return this.steps[this.currentStep]?.canNext() || false;
+        return this.currentStep?.canNext() || false;
     }
 
     public isFinish(): boolean {
-        return this.steps[this.currentStep]?.isFinish() || false;
+        return this.currentStep?.isFinish() || false;
     }
 
     //New User
@@ -441,7 +580,7 @@ export class UserProfileComponent implements OnInit {
     }
 
     public clearFilters(): void {
-        this.filtersForm.reset({policyName: '', geography: ''});
+        this.filtersForm.reset({ policyName: '', geography: '' });
         this.filteredRegistries = [];
         this.noFilterResults = false;
         this.selectStandardRegistry('');
@@ -493,13 +632,13 @@ export class UserProfileComponent implements OnInit {
         this.loading = true;
         this.otherService.pushGetRandomKey().subscribe(
             (result) => {
-                const {taskId, expectation} = result;
+                const { taskId, expectation } = result;
                 this.taskId = taskId;
                 this.operationMode = OperationMode.Generate;
             },
             (e) => {
                 this.loading = false;
-                this.hederaCredentialsForm.setValue({id: '', key: ''});
+                this.hederaCredentialsForm.setValue({ id: '', key: '' });
             }
         );
     }
@@ -564,8 +703,8 @@ export class UserProfileComponent implements OnInit {
                         }
                         this.didKeys = [];
                         this.didKeysForm = new UntypedFormGroup({});
-                        this.fullForm.removeControl('didKeys');
-                        this.fullForm.addControl('didKeys', this.didKeysForm);
+                        this.localFullForm.removeControl('didKeys');
+                        this.localFullForm.addControl('didKeys', this.didKeysForm);
 
                         const names = Object.keys(result.keys);
                         for (const name of names) {
@@ -666,34 +805,47 @@ export class UserProfileComponent implements OnInit {
     private createDID() {
         this.loading = true;
         this.headerProps.setLoading(true);
-        const data = this.fullForm.value;
         const profile: any = {};
-        profile.parent = data.standardRegistry;
-        profile.hederaAccountId = data.hederaCredentials.id?.trim();
-        profile.hederaAccountKey = data.hederaCredentials.key?.trim();
-        profile.useFireblocksSigning = data.hederaCredentials.useFireblocksSigning;
-        profile.fireblocksConfig = {
-            fireBlocksVaultId: data.hederaCredentials.fireBlocksVaultId,
-            fireBlocksAssetId: data.hederaCredentials.fireBlocksAssetId,
-            fireBlocksApiKey: data.hederaCredentials.fireBlocksApiKey,
-            fireBlocksPrivateiKey: data.hederaCredentials.fireBlocksPrivateiKey
-        }
-        if (data.didDocumentType) {
+
+        if (this.locationType.value) {
+            //Remote
+            const data = this.remoteFullForm.value;
+            profile.type = LocationType.REMOTE;
+            profile.parent = data.standardRegistry;
+            profile.hederaAccountId = data.hederaCredentials.id?.trim();
             profile.didDocument = data.didDocument;
-            profile.didKeys = [];
-            for (const id of Object.keys(data.didKeys)) {
-                profile.didKeys.push({
-                    id: data.didKeys[id].name,
-                    key: data.didKeys[id].value
-                });
+        } else {
+            //Local
+            const data = this.localFullForm.value;
+            profile.type = LocationType.LOCAL;
+            profile.parent = data.standardRegistry;
+            profile.hederaAccountId = data.hederaCredentials.id?.trim();
+            profile.hederaAccountKey = data.hederaCredentials.key?.trim();
+            profile.useFireblocksSigning = data.hederaCredentials.useFireblocksSigning;
+            profile.fireblocksConfig = {
+                fireBlocksVaultId: data.hederaCredentials.fireBlocksVaultId,
+                fireBlocksAssetId: data.hederaCredentials.fireBlocksAssetId,
+                fireBlocksApiKey: data.hederaCredentials.fireBlocksApiKey,
+                fireBlocksPrivateiKey: data.hederaCredentials.fireBlocksPrivateiKey
+            }
+            if (data.didDocumentType) {
+                profile.didDocument = data.didDocument;
+                profile.didKeys = [];
+                for (const id of Object.keys(data.didKeys)) {
+                    profile.didKeys.push({
+                        id: data.didKeys[id].name,
+                        key: data.didKeys[id].value
+                    });
+                }
+            }
+            if (data.vcDocumentType) {
+                profile.vcDocument = data.vcDocument;
             }
         }
-        if (data.vcDocumentType) {
-            profile.vcDocument = data.vcDocument;
-        }
+
         this.profileService.pushSetProfile(profile).subscribe(
             (result) => {
-                const {taskId, expectation} = result;
+                const { taskId, expectation } = result;
                 this.taskId = taskId;
                 this.router.navigate(['task', taskId], {
                     queryParams: {
@@ -701,7 +853,7 @@ export class UserProfileComponent implements OnInit {
                     },
                 });
             },
-            ({message}) => {
+            ({ message }) => {
                 this.loading = false;
                 this.headerProps.setLoading(false);
                 console.error(message);
@@ -720,5 +872,26 @@ export class UserProfileComponent implements OnInit {
         }).onClose.subscribe((data) => {
             this.loadDate();
         });
+    }
+
+    public download() {
+        if (this.profile) {
+            const name = this.profile.username;
+            const data = {
+                username: this.profile.username,
+                hederaAccountId: this.profile.hederaAccountId,
+                topicId: this.profile.topicId,
+                did: this.profile.did,
+                didDocument: this.profile.didDocument,
+                vcDocument: this.profile.vcDocument,
+            }
+            const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute('href', dataStr);
+            downloadAnchorNode.setAttribute('download', name + '.user');
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
     }
 }

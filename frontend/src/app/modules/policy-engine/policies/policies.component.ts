@@ -80,17 +80,17 @@ class MenuButton {
 
 const columns = [{
     id: 'name',
-    permissions: (user: UserPermissions) => {
+    permissions: (user: UserPermissions, type: LocationType) => {
         return true;
     }
 }, {
     id: 'description',
-    permissions: (user: UserPermissions) => {
+    permissions: (user: UserPermissions, type: LocationType) => {
         return true;
     }
 }, {
     id: 'topic',
-    permissions: (user: UserPermissions) => {
+    permissions: (user: UserPermissions, type: LocationType) => {
         return (
             user.POLICIES_POLICY_CREATE ||
             user.POLICIES_POLICY_UPDATE ||
@@ -100,7 +100,7 @@ const columns = [{
     }
 }, {
     id: 'publicLink',
-    permissions: (user: UserPermissions) => {
+    permissions: (user: UserPermissions, type: LocationType) => {
         return (
             user.POLICIES_POLICY_CREATE ||
             user.POLICIES_POLICY_UPDATE ||
@@ -110,7 +110,7 @@ const columns = [{
     }
 }, {
     id: 'roles',
-    permissions: (user: UserPermissions) => {
+    permissions: (user: UserPermissions, type: LocationType) => {
         return !(
             user.POLICIES_POLICY_CREATE ||
             user.POLICIES_POLICY_UPDATE ||
@@ -120,58 +120,70 @@ const columns = [{
     }
 }, {
     id: 'version',
-    permissions: (user: UserPermissions) => {
+    permissions: (user: UserPermissions, type: LocationType) => {
         return true;
     }
 }, {
     id: 'tests',
-    permissions: (user: UserPermissions) => {
-        return (
-            user.POLICIES_POLICY_CREATE ||
-            user.POLICIES_POLICY_UPDATE ||
-            user.POLICIES_POLICY_REVIEW ||
-            user.POLICIES_POLICY_DELETE
-        )
+    permissions: (user: UserPermissions, type: LocationType) => {
+        if (type === LocationType.LOCAL) {
+            return (
+                user.POLICIES_POLICY_CREATE ||
+                user.POLICIES_POLICY_UPDATE ||
+                user.POLICIES_POLICY_REVIEW ||
+                user.POLICIES_POLICY_DELETE
+            )
+        } else {
+            return false;
+        }
     }
 }, {
     id: 'tags',
-    permissions: (user: UserPermissions) => {
+    permissions: (user: UserPermissions, type: LocationType) => {
         return true;
     }
 }, {
     id: 'tokens',
-    permissions: (user: UserPermissions) => {
+    permissions: (user: UserPermissions, type: LocationType) => {
         return user.TOKENS_TOKEN_READ;
     }
 }, {
     id: 'schemas',
-    permissions: (user: UserPermissions) => {
+    permissions: (user: UserPermissions, type: LocationType) => {
         return user.SCHEMAS_SCHEMA_READ;
     }
 }, {
     id: 'status',
-    permissions: (user: UserPermissions) => {
+    permissions: (user: UserPermissions, type: LocationType) => {
         return true;
     }
 }, {
     id: 'instance',
-    permissions: (user: UserPermissions) => {
+    permissions: (user: UserPermissions, type: LocationType) => {
         return true;
     }
 }, {
     id: 'operations',
-    permissions: (user: UserPermissions) => {
-        return (
-            user.POLICIES_POLICY_CREATE ||
-            user.POLICIES_POLICY_UPDATE ||
-            user.POLICIES_POLICY_REVIEW ||
-            user.POLICIES_POLICY_DELETE
-        )
+    permissions: (user: UserPermissions, type: LocationType) => {
+        if (type === LocationType.LOCAL) {
+            return (
+                user.POLICIES_POLICY_CREATE ||
+                user.POLICIES_POLICY_UPDATE ||
+                user.POLICIES_POLICY_REVIEW ||
+                user.POLICIES_POLICY_DELETE
+            )
+        } else {
+            return false;
+        }
     }
 }, {
     id: 'multi-instance',
-    permissions: (user: UserPermissions) => {
-        return user.POLICIES_POLICY_EXECUTE && !user.POLICIES_POLICY_MANAGE;
+    permissions: (user: UserPermissions, type: LocationType) => {
+        if (type === LocationType.LOCAL) {
+            return user.POLICIES_POLICY_EXECUTE && !user.POLICIES_POLICY_MANAGE;
+        } else {
+            return false;
+        }
     }
 }];
 
@@ -293,7 +305,16 @@ export class PoliciesComponent implements OnInit {
 
     public showInstance(policy: any): string | null {
         switch (policy.status) {
-            case PolicyStatus.VIEW:
+            case PolicyStatus.VIEW: {
+                if (
+                    this.user.POLICIES_POLICY_MANAGE ||
+                    this.user.POLICIES_POLICY_EXECUTE
+                ) {
+                    return 'Register';
+                } else {
+                    return null;
+                }
+            }
             case PolicyStatus.PUBLISH:
             case PolicyStatus.DISCONTINUED: {
                 if (this.user.POLICIES_POLICY_MANAGE) {
@@ -626,10 +647,6 @@ export class PoliciesComponent implements OnInit {
             this.owner = this.user.did;
             this.tagSchemas = SchemaHelper.map(tagSchemas);
 
-            this.columns = columns
-                .filter((c) => c.permissions(this.user))
-                .map((c) => c.id);
-
             if (this.isConfirmed) {
                 this.loadAllPolicy();
             } else {
@@ -650,6 +667,9 @@ export class PoliciesComponent implements OnInit {
         this.policyEngineService
             .page(this.pageIndex, this.pageSize, this.tab)
             .subscribe((policiesResponse) => {
+                this.columns = columns
+                    .filter((c) => c.permissions(this.user, this.tab))
+                    .map((c) => c.id);
                 this.policies = policiesResponse.body?.map(policy => {
                     if (policy.discontinuedDate) {
                         policy.discontinuedDate = new Date(policy.discontinuedDate);

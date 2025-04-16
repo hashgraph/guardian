@@ -92,8 +92,8 @@ export class PolicyImport {
             delete policy.createDate;
             policy._id = new ObjectId(policy.id);
             policy.id = policy.id;
-            policy.creator = user.creator;
-            policy.owner = user.owner;
+            policy.creator = null;
+            policy.owner = null;
             policy.name = additionalPolicyConfig?.name || policy.name;
             policy.topicDescription = additionalPolicyConfig?.topicDescription || policy.topicDescription;
             policy.description = additionalPolicyConfig?.description || policy.description;
@@ -344,9 +344,19 @@ export class PolicyImport {
         const errors: any[] = [];
         const files: IFormula[] = [];
         for (const formula of formulas) {
-            const oldUUID = formula.uuid;
-            const newUUID = GenerateUUIDv4();
-            try {
+            if (this.mode === ImportMode.VIEW) {
+                files.push({
+                    uuid: formula.uuid,
+                    name: formula.name,
+                    description: formula.description,
+                    owner: user.creator,
+                    creator: user.creator,
+                    status: EntityStatus.PUBLISHED,
+                    config: formula.config
+                })
+            } else {
+                const oldUUID = formula.uuid;
+                const newUUID = GenerateUUIDv4();
                 files.push({
                     uuid: newUUID,
                     name: formula.name,
@@ -357,13 +367,6 @@ export class PolicyImport {
                     config: formula.config
                 })
                 formulasMap.set(oldUUID, newUUID);
-            } catch (error) {
-                errors.push({
-                    type: 'test',
-                    uuid: oldUUID,
-                    name: oldUUID,
-                    error: error.toString(),
-                })
             }
         }
 
