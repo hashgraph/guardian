@@ -177,6 +177,9 @@
             *ngIf="view == 'policy'"
         >
             <p-tabView>
+                <p-tabPanel [header]="'Export Documents'">
+                    <app-project-data-export></app-project-data-export>
+                </p-tabPanel>
                 <p-tabPanel [header]="'General'">
                     <div class="policy-container">
                         <progress-tracker
@@ -212,9 +215,6 @@
                             </div>
                         </div>
                     </div>
-                </p-tabPanel>
-                <p-tabPanel [header]="'Export Documents'">
-                    
                 </p-tabPanel>
             </p-tabView>
         </div>

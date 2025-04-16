@@ -148,6 +148,7 @@ import { PolicyTestDialog } from './dialogs/policy-test-dialog/policy-test-dialo
 import { NewImportFileDialog } from './dialogs/new-import-file-dialog/new-import-file-dialog.component';
 import { RequestDocumentBlockDialog } from './policy-viewer/blocks/request-document-block/dialog/request-document-block-dialog.component';
 import { DataTransformationConfigComponent } from './policy-configuration/blocks/calculate/data-transformation-config/data-transformation-config.component';
+import { ProjectDataExportComponent } from './project-data-export/project-data-export.component';
 
 @NgModule({
     declarations: [
@@ -254,7 +255,8 @@ import { DataTransformationConfigComponent } from './policy-configuration/blocks
         RequestAddonConfigComponent,
         RequestDocumentBlockAddonComponent,
         RequestDocumentBlockDialog,
-        DataTransformationConfigComponent
+        DataTransformationConfigComponent,
+        ProjectDataExportComponent
     ],
     imports: [
         CommonModule,
