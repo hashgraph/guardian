@@ -1,8 +1,9 @@
 <p-dropdown
     *ngIf="!multiple"
-    dataKey="id" 
-    [(ngModel)]="value"
-    optionValue="value"
+    dataKey="id"
+    [(ngModel)]="selectedId"
+    optionValue="id"
+    optionLabel="name"
     [options]="searchData"
     [disabled]="readonly"
     [filter]="false"
@@ -10,7 +11,7 @@
     placeholder="Select..."
     (onChange)="onChange()"
     appendTo="body"
-    class="guardian-dropdown" 
+    class="guardian-dropdown"
     panelStyleClass="guardian-dropdown-panel"
 >
     <ng-template pTemplate="selectedItem" let-item>
@@ -43,9 +44,10 @@
 
 <p-multiSelect
     *ngIf="multiple"
-    dataKey="id" 
-    [(ngModel)]="value"
-    optionValue="value"
+    dataKey="id"
+    [(ngModel)]="selectedId"
+    optionValue="id"
+    optionLabel="name"
     [options]="searchData"
     [disabled]="readonly"
     [filter]="false"
@@ -54,7 +56,7 @@
     (onChange)="onChange()"
     appendTo="body"
     class="guardian-multiselect"
-    panelStyleClass="guardian-multiselect-panel policy-select-block" 
+    panelStyleClass="guardian-multiselect-panel policy-select-block"
 >
     <ng-template pTemplate="header">
         <div class="components-search">
