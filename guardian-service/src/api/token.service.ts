@@ -580,7 +580,8 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
      * @returns all tokens
      */
     ApiResponse(MessageAPI.SET_TOKEN,
-        async (msg: { item: Token, owner: IOwner }) => {
+        async (msg: { item: Token, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     throw new Error('Invalid Params');
@@ -593,14 +594,14 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 const tokens = await dataBaseServer.findAll(Token);
                 return new MessageResponse(tokens);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.SET_TOKEN_ASYNC,
-        async (msg: { token: Token, owner: IOwner, task: any }) => {
-            const { token, owner, task } = msg;
+        async (msg: { token: Token, owner: IOwner, task: any, userId: string | null }) => {
+            const { token, owner, task, userId } = msg;
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
@@ -610,7 +611,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 const result = await createToken(token, owner, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 notifier.error(error);
             });
 
@@ -618,7 +619,8 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         });
 
     ApiResponse(MessageAPI.UPDATE_TOKEN,
-        async (msg: { token: Token, owner: IOwner }) => {
+        async (msg: { token: Token, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { token, owner } = msg;
                 if (!msg) {
@@ -631,14 +633,14 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
 
                 return new MessageResponse(await updateToken(item, token, owner, dataBaseServer, emptyNotifier(), logger));
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.UPDATE_TOKEN_ASYNC,
-        async (msg: { token: Token, owner: IOwner, task: any }) => {
-            const { token, owner, task } = msg;
+        async (msg: { token: Token, owner: IOwner, task: any, userId: string | null }) => {
+            const { token, owner, task, userId } = msg;
             const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
                 if (!msg) {
@@ -652,7 +654,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 const result = await updateToken(item, token, owner, dataBaseServer, notifier, logger);
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 notifier.error(error);
             });
 
@@ -660,8 +662,8 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         });
 
     ApiResponse(MessageAPI.DELETE_TOKEN_ASYNC,
-        async (msg: { tokenId: string, owner: IOwner, task: any }) => {
-            const { tokenId, owner, task } = msg;
+        async (msg: { tokenId: string, owner: IOwner, task: any, userId: string | null }) => {
+            const { tokenId, owner, task, userId } = msg;
             const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
                 if (!msg) {
@@ -674,34 +676,35 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 const result = await deleteToken(item, owner, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 notifier.error(error);
             });
             return new MessageResponse(task);
         });
 
     ApiResponse(MessageAPI.FREEZE_TOKEN,
-        async (msg: { tokenId: string, username: string, owner: IOwner, freeze: boolean }) => {
+        async (msg: { tokenId: string, username: string, owner: IOwner, freeze: boolean, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { tokenId, username, owner, freeze } = msg;
                 const result = await freezeToken(tokenId, username, owner, freeze, dataBaseServer, emptyNotifier());
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error, 400);
             }
         });
 
     ApiResponse(MessageAPI.FREEZE_TOKEN_ASYNC,
-        async (msg: { tokenId: string, username: string, owner: IOwner, freeze: boolean, task: any }) => {
-            const { tokenId, username, owner, freeze, task } = msg;
+        async (msg: { tokenId: string, username: string, owner: IOwner, freeze: boolean, task: any, userId: string | null  }) => {
+            const { tokenId, username, owner, freeze, task, userId } = msg;
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
                 const result = await freezeToken(tokenId, username, owner, freeze, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 notifier.error(error);
             });
 
@@ -709,27 +712,28 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         });
 
     ApiResponse(MessageAPI.KYC_TOKEN,
-        async (msg: { tokenId: string, username: string, owner: IOwner, grant: boolean }) => {
+        async (msg: { tokenId: string, username: string, owner: IOwner, grant: boolean, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { tokenId, username, owner, grant } = msg;
                 const result = await grantKycToken(tokenId, username, owner, grant, dataBaseServer, emptyNotifier());
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error, 400);
             }
         });
 
     ApiResponse(MessageAPI.KYC_TOKEN_ASYNC,
-        async (msg: { tokenId: string, username: string, owner: IOwner, grant: boolean, task: any }) => {
-            const { tokenId, username, owner, grant, task } = msg;
+        async (msg: { tokenId: string, username: string, owner: IOwner, grant: boolean, task: any, userId: string | null }) => {
+            const { tokenId, username, owner, grant, task, userId } = msg;
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
                 const result = await grantKycToken(tokenId, username, owner, grant, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 notifier.error(error);
             });
 
@@ -737,27 +741,28 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         });
 
     ApiResponse(MessageAPI.ASSOCIATE_TOKEN,
-        async (msg: { tokenId: string, owner: IOwner, associate: boolean }) => {
+        async (msg: { tokenId: string, owner: IOwner, associate: boolean, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { tokenId, owner, associate } = msg;
                 const result = await associateToken(tokenId, owner, associate, dataBaseServer, emptyNotifier());
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error, 400);
             }
         })
 
     ApiResponse(MessageAPI.ASSOCIATE_TOKEN_ASYNC,
-        async (msg: { tokenId: string, owner: IOwner, associate: boolean, task: any }) => {
-            const { tokenId, owner, associate, task } = msg;
+        async (msg: { tokenId: string, owner: IOwner, associate: boolean, task: any, userId: string | null }) => {
+            const { tokenId, owner, associate, task, userId } = msg;
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
                 const result = await associateToken(tokenId, owner, associate, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 notifier.error(error);
             });
 
@@ -765,7 +770,8 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         })
 
     ApiResponse(MessageAPI.GET_INFO_TOKEN,
-        async (msg: { tokenId: string, username: string, owner: IOwner }) => {
+        async (msg: { tokenId: string, username: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { tokenId, username, owner } = msg;
 
@@ -799,13 +805,14 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
 
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error, 400);
             }
         })
 
     ApiResponse(MessageAPI.GET_ASSOCIATED_TOKENS,
-        async (msg: { did: string, pageIndex: number, pageSize: number }) => {
+        async (msg: { did: string, pageIndex: number, pageSize: number, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const wallet = new Wallet();
                 const users = new Users();
@@ -863,7 +870,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
 
                 return new ArrayMessageResponse(result, count);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error, 400);
             }
         })
@@ -1002,7 +1009,8 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
      * Get token serials
      */
     ApiResponse(MessageAPI.GET_SERIALS,
-        async (msg: { tokenId: string, did: string }) => {
+        async (msg: { tokenId: string, did: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const wallet = new Wallet();
                 const users = new Users();
@@ -1036,7 +1044,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                     ));
                 return new MessageResponse(serials[tokenId] || []);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error, 400);
             }
         });

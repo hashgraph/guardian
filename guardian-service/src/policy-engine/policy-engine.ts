@@ -139,7 +139,7 @@ export class PolicyEngine extends NatsService {
             try {
                 await this.generateModel(policy.id.toString());
             } catch (error) {
-                await this.logger.error(error, ['GUARDIAN_SERVICE']);
+                await this.logger.error(error, ['GUARDIAN_SERVICE'], null, policy.owner);
             }
         }));
     }
@@ -377,7 +377,7 @@ export class PolicyEngine extends NatsService {
         notifier.completed();
         if (!model.topicId) {
             notifier.start('Create topic');
-            logger.info('Create Policy: Create New Topic', ['GUARDIAN_SERVICE']);
+            logger.info('Create Policy: Create New Topic', ['GUARDIAN_SERVICE'], user.id);
             const parent = await TopicConfig.fromObject(
                 await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true
             );
@@ -458,7 +458,7 @@ export class PolicyEngine extends NatsService {
         await DatabaseServer.saveArtifacts(artifactObjects);
 
         notifier.completedAndStart('Updating hash');
-        policy = await PolicyImportExportHelper.updatePolicyComponents(policy, logger);
+        policy = await PolicyImportExportHelper.updatePolicyComponents(policy, logger, user.id);
 
         notifier.completed();
         return policy;
@@ -488,7 +488,7 @@ export class PolicyEngine extends NatsService {
          */
         errors: any[];
     }> {
-        await logger.info('Create Policy', ['GUARDIAN_SERVICE']);
+        await logger.info('Create Policy', ['GUARDIAN_SERVICE'], user.id);
 
         const policy = await DatabaseServer.getPolicyById(policyId);
         await this.accessPolicy(policy, user, 'create');
@@ -551,7 +551,7 @@ export class PolicyEngine extends NatsService {
         notifier: INotifier,
         logger: PinoLogger
     ): Promise<boolean> {
-        await logger.info('Delete Policy', ['GUARDIAN_SERVICE']);
+        await logger.info('Delete Policy', ['GUARDIAN_SERVICE'], user.id);
 
         if ((policyToDelete.status !== PolicyType.DEMO)) {
             throw new Error('Policy is not in demo status');
@@ -603,7 +603,7 @@ export class PolicyEngine extends NatsService {
         notifier: INotifier,
         logger: PinoLogger
     ): Promise<boolean> {
-        logger.info('Delete Policy', ['GUARDIAN_SERVICE']);
+        logger.info('Delete Policy', ['GUARDIAN_SERVICE'], user.id);
 
         if ((policyToDelete.status !== PolicyType.DRAFT)) {
             throw new Error('Policy is not in draft status');
@@ -794,7 +794,7 @@ export class PolicyEngine extends NatsService {
         notifier: INotifier,
         logger: PinoLogger
     ): Promise<Policy> {
-        await logger.info('Publish Policy', ['GUARDIAN_SERVICE']);
+        await logger.info('Publish Policy', ['GUARDIAN_SERVICE'], user.id);
         notifier.start('Resolve Hedera account');
         const root = await this.users.getHederaAccount(user.creator);
 
@@ -971,7 +971,7 @@ export class PolicyEngine extends NatsService {
                 policyId: `${model.id}`
             });
 
-            logger.info('Published Policy', ['GUARDIAN_SERVICE']);
+            logger.info('Published Policy', ['GUARDIAN_SERVICE'], user.id);
         } catch (error) {
             model.status = PolicyType.PUBLISH_ERROR;
             model.version = '';
@@ -984,7 +984,7 @@ export class PolicyEngine extends NatsService {
         try {
             await publishPolicyTags(model, user, root);
         } catch (error) {
-            logger.error(error, ['GUARDIAN_SERVICE, TAGS']);
+            logger.error(error, ['GUARDIAN_SERVICE, TAGS'], user.id);
         }
 
         notifier.completedAndStart('Saving in DB');
@@ -992,7 +992,7 @@ export class PolicyEngine extends NatsService {
         let retVal = await DatabaseServer.updatePolicy(model);
 
         notifier.completedAndStart('Updating hash');
-        retVal = await PolicyImportExportHelper.updatePolicyComponents(retVal, logger);
+        retVal = await PolicyImportExportHelper.updatePolicyComponents(retVal, logger, user.id);
 
         notifier.completed();
         return retVal
@@ -1014,9 +1014,9 @@ export class PolicyEngine extends NatsService {
         logger: PinoLogger
     ): Promise<Policy> {
         if (demo) {
-            logger.info('Demo Policy', ['GUARDIAN_SERVICE']);
+            logger.info('Demo Policy', ['GUARDIAN_SERVICE'], user.id);
         } else {
-            logger.info('Dry-run Policy', ['GUARDIAN_SERVICE']);
+            logger.info('Dry-run Policy', ['GUARDIAN_SERVICE'], user.id);
         }
 
         const dryRunId = model.id.toString();
@@ -1120,9 +1120,9 @@ export class PolicyEngine extends NatsService {
             DatabaseServer.updatePolicy(model)
         ]);
 
-        retVal = await PolicyImportExportHelper.updatePolicyComponents(retVal, logger);
+        retVal = await PolicyImportExportHelper.updatePolicyComponents(retVal, logger, user.id);
 
-        logger.info('Run Policy', ['GUARDIAN_SERVICE']);
+        logger.info('Run Policy', ['GUARDIAN_SERVICE'], user.id);
 
         return retVal;
     }
@@ -1237,7 +1237,7 @@ export class PolicyEngine extends NatsService {
             throw new Error('Policy ID in body is empty');
         }
 
-        await logger.info(`Import policy by message`, ['GUARDIAN_SERVICE']);
+        await logger.info(`Import policy by message`, ['GUARDIAN_SERVICE'], user.id);
 
         const root = await this.users.getHederaAccount(user.creator);
 

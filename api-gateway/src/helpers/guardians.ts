@@ -1073,10 +1073,11 @@ export class Guardians extends NatsService {
         });
     }
 
-    //TODO: userId was not implemented, need to understand buffer is Buffer or not
+    //TODO: userId was not implemented, need to understand buffer is Buffer or not// implemented, need to check and remove this line
     /**
      * Add file to IPFS
      * @param buffer File
+     * @param userId
      * @returns CID, URL
      */
     public async addFileIpfs(buffer: any, userId: string | null): Promise<{
@@ -1089,7 +1090,7 @@ export class Guardians extends NatsService {
          */
         url: string
     }> {
-        return await this.sendMessage(MessageAPI.IPFS_ADD_FILE, buffer);
+        return await this.sendMessage(MessageAPI.IPFS_ADD_FILE, {content: buffer, userId});
     }
 
     /**

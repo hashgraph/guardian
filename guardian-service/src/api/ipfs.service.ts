@@ -8,6 +8,7 @@ import { IPFSTaskManager } from '../helpers/ipfs-task-manager.js';
  */
 export async function ipfsAPI(logger: PinoLogger): Promise<void> {
     ApiResponseSubscribe(ExternalMessageEvents.IPFS_ADDED_FILE, async (msg) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 throw new Error('Invalid Params');
@@ -22,11 +23,12 @@ export async function ipfsAPI(logger: PinoLogger): Promise<void> {
                 }
             }
         } catch (error) {
-            await logger.error(error, ['IPFS_SERVICE']);
+            await logger.error(error, ['IPFS_SERVICE'], userId);
         }
     });
 
     ApiResponseSubscribe(ExternalMessageEvents.IPFS_LOADED_FILE, async (msg) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 throw new Error('Invalid Params');
@@ -41,22 +43,25 @@ export async function ipfsAPI(logger: PinoLogger): Promise<void> {
                 }
             }
         } catch (error) {
-            await logger.error(error, ['IPFS_SERVICE']);
+            await logger.error(error, ['IPFS_SERVICE'], userId);
         }
     });
 
+    //TODO: userId was not implemented, need to understand buffer is Buffer or not// implemented, need to check and remove this line
     ApiResponse( MessageAPI.IPFS_ADD_FILE, async (msg) => {
+        const userId = msg?.userId
         try {
-            const result = await IPFS.addFile(msg);
+            const result = await IPFS.addFile(msg.content);
             return new MessageResponse(result);
         }
         catch (error) {
-            await logger.error(error, ['IPFS_CLIENT']);
+            await logger.error(error, ['IPFS_CLIENT'], userId);
             return new MessageError(error);
         }
     })
 
     ApiResponse(MessageAPI.ADD_FILE_DRY_RUN_STORAGE, async (msg) => {
+        const userId = msg?.userId
         try {
             const policyId = msg.policyId;
             const fileBuffer = Buffer.from(msg.buffer.data);
@@ -75,12 +80,13 @@ export async function ipfsAPI(logger: PinoLogger): Promise<void> {
                 url: IPFS.IPFS_PROTOCOL + entity.id
             });
         } catch (error) {
-            await logger.error(error, ['IPFS_CLIENT']);
+            await logger.error(error, ['IPFS_CLIENT'], userId);
             return new MessageError(error);
         }
     })
 
     ApiResponse(MessageAPI.IPFS_GET_FILE, async (msg) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 throw new Error('Invalid payload');
@@ -95,12 +101,13 @@ export async function ipfsAPI(logger: PinoLogger): Promise<void> {
             return new MessageResponse(await IPFS.getFile(msg.cid, msg.responseType, msg.userId));
         }
         catch (error) {
-            await logger.error(error, ['IPFS_CLIENT']);
+            await logger.error(error, ['IPFS_CLIENT'], userId);
             return new MessageResponse({ error: error.message });
         }
     })
 
     ApiResponse(MessageAPI.GET_FILE_DRY_RUN_STORAGE, async (msg): Promise<any> => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 throw new Error('Invalid payload');
@@ -116,7 +123,7 @@ export async function ipfsAPI(logger: PinoLogger): Promise<void> {
 
             return new MessageResponse(file.file);
         } catch (error) {
-            await logger.error(error, ['IPFS_CLIENT']);
+            await logger.error(error, ['IPFS_CLIENT'], userId);
             return new MessageResponse({error: error.message});
         }
     })

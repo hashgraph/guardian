@@ -65,13 +65,13 @@ export async function demoAPI(
 ): Promise<void> {
     ApiResponse(MessageAPI.GENERATE_DEMO_KEY,
         async (msg: { role: string, userId: string }) => {
+            const userId = msg?.userId
             try {
                 const role = msg?.role;
-                const userId = msg?.userId
                 const result = await generateDemoKey(role, emptyNotifier(), userId);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -85,7 +85,7 @@ export async function demoAPI(
                 const result = await generateDemoKey(role, notifier, userId);
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 notifier.error(error);
             });
 
@@ -93,7 +93,8 @@ export async function demoAPI(
         });
 
     ApiResponse(MessageAPI.GET_USER_ROLES,
-        async (msg: { did: string }) => {
+        async (msg: { did: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const did = msg.did;
                 const policies = await dataBaseServer.findAll(Policy);
@@ -111,7 +112,7 @@ export async function demoAPI(
                 };
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         })

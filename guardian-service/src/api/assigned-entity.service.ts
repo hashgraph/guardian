@@ -48,8 +48,10 @@ export async function AssignedEntityAPI(logger: PinoLogger): Promise<void> {
         entityIds: string[],
         assign: boolean,
         did: string,
-        owner: string
+        owner: string,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 throw new Error('Invalid assign parameters');
@@ -71,7 +73,7 @@ export async function AssignedEntityAPI(logger: PinoLogger): Promise<void> {
             }
             return new MessageResponse(assign);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -85,8 +87,10 @@ export async function AssignedEntityAPI(logger: PinoLogger): Promise<void> {
         type: AssignedEntityType,
         entityId: string,
         checkAssign: boolean,
-        did: string
+        did: string,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 throw new Error('Invalid assign parameters');
@@ -105,7 +109,7 @@ export async function AssignedEntityAPI(logger: PinoLogger): Promise<void> {
 
             return new MessageResponse(true);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -117,8 +121,10 @@ export async function AssignedEntityAPI(logger: PinoLogger): Promise<void> {
      */
     ApiResponse(MessageAPI.ASSIGNED_ENTITIES, async (msg: {
         did: string,
-        type?: AssignedEntityType
+        type?: AssignedEntityType,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 throw new Error('Invalid assign parameters');
@@ -127,7 +133,7 @@ export async function AssignedEntityAPI(logger: PinoLogger): Promise<void> {
             const items = await DatabaseServer.getAssignedEntities(did, type);
             return new MessageResponse(items);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -142,8 +148,10 @@ export async function AssignedEntityAPI(logger: PinoLogger): Promise<void> {
         entityIds: string[],
         assign: boolean,
         did: string,
-        owner: string
+        owner: string,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 throw new Error('Invalid assign parameters');
@@ -169,7 +177,7 @@ export async function AssignedEntityAPI(logger: PinoLogger): Promise<void> {
             }
             return new MessageResponse(assign);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });

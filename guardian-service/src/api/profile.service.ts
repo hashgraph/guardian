@@ -200,7 +200,7 @@ async function checkAndPublishSchema(
         });
         if (schema) {
             notifier.info(`Publish System Schema (${entity})`);
-            logger.info(`Publish System Schema (${entity})`, ['GUARDIAN_SERVICE']);
+            logger.info(`Publish System Schema (${entity})`, ['GUARDIAN_SERVICE'], srUser.id);
             schema.creator = userDID;
             schema.owner = userDID;
             const item = await publishSystemSchema(schema, srUser, messageServer, MessageAction.PublishSystemSchema, notifier);
@@ -287,7 +287,7 @@ async function createUserProfile(
     }
     if (!topicConfig) {
         notifier.info('Create user topic');
-        logger.info('Create User Topic', ['GUARDIAN_SERVICE']);
+        logger.info('Create User Topic', ['GUARDIAN_SERVICE'], user.id);
         const topicHelper = new TopicHelper(hederaAccountId, hederaAccountKey, signOptions);
         topicConfig = await topicHelper.create({
             type: TopicType.UserTopic,
@@ -309,7 +309,7 @@ async function createUserProfile(
     // <-- Publish DID Document
     // ------------------------
     notifier.completedAndStart('Publish DID Document');
-    logger.info('Create DID Document', ['GUARDIAN_SERVICE']);
+    logger.info('Create DID Document', ['GUARDIAN_SERVICE'], user.id);
 
     const vcHelper = new VcHelper();
     let currentDidDocument: CommonDidDocument
@@ -340,7 +340,7 @@ async function createUserProfile(
         didRow.topicId = didMessageResult.getTopicId();
         await dataBaseServer.update(DidDocumentCollection, null, didRow);
     } catch (error) {
-        logger.error(error, ['GUARDIAN_SERVICE']);
+        logger.error(error, ['GUARDIAN_SERVICE'], user.id);
         // didRow.status = DidDocumentStatus.FAILED;
         // await new DataBaseHelper(DidDocumentCollection).update(didRow);
     }
@@ -411,7 +411,7 @@ async function createUserProfile(
             }
         }
     } catch (error) {
-        logger.error(error, ['GUARDIAN_SERVICE']);
+        logger.error(error, ['GUARDIAN_SERVICE'], user.id);
     }
     // ------------------
     // Publish Schema -->
@@ -422,7 +422,7 @@ async function createUserProfile(
     // -----------------------
     notifier.completedAndStart('Publish VC Document');
     if (vcDocument) {
-        logger.info('Create VC Document', ['GUARDIAN_SERVICE']);
+        logger.info('Create VC Document', ['GUARDIAN_SERVICE'], user.id);
 
         let credentialSubject: any = { ...vcDocument };
         credentialSubject.id = userDID;
@@ -449,7 +449,7 @@ async function createUserProfile(
             vcDoc.topicId = vcMessageResult.getTopicId();
             await dataBaseServer.update(VcDocumentCollection, null, vcDoc);
         } catch (error) {
-            logger.error(error, ['GUARDIAN_SERVICE']);
+            logger.error(error, ['GUARDIAN_SERVICE'], user.id);
             vcDoc.hederaStatus = DocumentStatus.FAILED;
             await dataBaseServer.update(VcDocumentCollection, null, vcDoc);
         }
@@ -619,7 +619,8 @@ export class ProfileController {
  */
 export function profileAPI(logger: PinoLogger) {
     ApiResponse(MessageAPI.GET_BALANCE,
-        async (msg: { username: string }) => {
+        async (msg: { username: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { username } = msg;
                 const wallet = new Wallet();
@@ -652,14 +653,15 @@ export function profileAPI(logger: PinoLogger) {
                     } : null
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 console.error(error);
                 return new MessageError(error, 500);
             }
         });
 
     ApiResponse(MessageAPI.GET_USER_BALANCE,
-        async (msg: { username: string }) => {
+        async (msg: { username: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { username } = msg;
 
@@ -688,14 +690,15 @@ export function profileAPI(logger: PinoLogger) {
 
                 return new MessageResponse(balance);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 console.error(error);
                 return new MessageError(error, 500);
             }
         });
 
     ApiResponse(MessageAPI.CREATE_USER_PROFILE_COMMON,
-        async (msg: { username: string, profile: any }) => {
+        async (msg: { username: string, profile: any, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { username, profile } = msg;
 
@@ -709,15 +712,15 @@ export function profileAPI(logger: PinoLogger) {
                 const did = await setupUserProfile(username, profile, emptyNotifier(), logger);
                 return new MessageResponse(did);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 console.error(error);
                 return new MessageError(error, 500);
             }
         });
 
     ApiResponse(MessageAPI.CREATE_USER_PROFILE_COMMON_ASYNC,
-        async (msg: { username: string, profile: any, task: any }) => {
-            const { username, profile, task } = msg;
+        async (msg: { username: string, profile: any, task: any, userId: string | null }) => {
+            const { username, profile, task, userId } = msg;
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
@@ -733,7 +736,7 @@ export function profileAPI(logger: PinoLogger) {
                 const did = await setupUserProfile(username, profile, notifier, logger);
                 notifier.result(did);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 notifier.error(error);
             });
 
@@ -741,8 +744,8 @@ export function profileAPI(logger: PinoLogger) {
         });
 
     ApiResponse(MessageAPI.RESTORE_USER_PROFILE_COMMON_ASYNC,
-        async (msg: { username: string, profile: any, task: any }) => {
-            const { username, profile, task } = msg;
+        async (msg: { username: string, profile: any, task: any, userId: string | null }) => {
+            const { username, profile, task, userId } = msg;
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
@@ -793,7 +796,7 @@ export function profileAPI(logger: PinoLogger) {
                 notifier.completed();
                 notifier.result('did');
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 notifier.error(error);
             });
 
@@ -801,8 +804,8 @@ export function profileAPI(logger: PinoLogger) {
         });
 
     ApiResponse(MessageAPI.GET_ALL_USER_TOPICS_ASYNC,
-        async (msg: { username: string, profile: any, task: any }) => {
-            const { username, profile, task } = msg;
+        async (msg: { username: string, profile: any, task: any, userId: string | null}) => {
+            const { username, profile, task, userId } = msg;
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
@@ -843,7 +846,7 @@ export function profileAPI(logger: PinoLogger) {
                 notifier.completed();
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 notifier.error(error);
             });
 
@@ -851,7 +854,8 @@ export function profileAPI(logger: PinoLogger) {
         });
 
     ApiResponse(MessageAPI.VALIDATE_DID_DOCUMENT,
-        async (msg: { document: any }) => {
+        async (msg: { document: any, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { document } = msg;
                 const result = {
@@ -894,13 +898,14 @@ export function profileAPI(logger: PinoLogger) {
                 }
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.VALIDATE_DID_KEY,
-        async (msg: { document: any, keys: any }) => {
+        async (msg: { document: any, keys: any, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { document, keys } = msg;
                 for (const item of keys) {
@@ -923,7 +928,7 @@ export function profileAPI(logger: PinoLogger) {
                     return new MessageResponse(keys);
                 }
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });

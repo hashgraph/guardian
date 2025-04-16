@@ -1255,8 +1255,10 @@ export async function contractAPI(
         owner: IOwner,
         type: ContractType,
         pageIndex?: any,
-        pageSize?: any
+        pageSize?: any,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1294,7 +1296,7 @@ export async function contractAPI(
                 )
             );
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -1302,8 +1304,10 @@ export async function contractAPI(
     ApiResponse(ContractAPI.CREATE_CONTRACT, async (msg: {
         owner: IOwner,
         description: string,
-        type: ContractType
+        type: ContractType,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1386,7 +1390,7 @@ export async function contractAPI(
             await topicHelper.twoWayLink(topic, userTopic, contractMessageResult.getId());
             return new MessageResponse(contract);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -1394,8 +1398,10 @@ export async function contractAPI(
     ApiResponse(ContractAPI.IMPORT_CONTRACT, async (msg: {
         owner: IOwner,
         contractId: string,
-        description: string
+        description: string,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid contract identifier');
@@ -1485,15 +1491,17 @@ export async function contractAPI(
 
             return new MessageResponse(contract);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
 
     ApiResponse(ContractAPI.CONTRACT_PERMISSIONS, async (msg: {
         owner: IOwner,
-        id: string
+        id: string,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1542,13 +1550,14 @@ export async function contractAPI(
             );
             return new MessageResponse(permissions);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
 
     ApiResponse(ContractAPI.REMOVE_CONTRACT,
-        async (msg: { owner: IOwner, id: string }) => {
+        async (msg: { owner: IOwner, id: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -1589,7 +1598,7 @@ export async function contractAPI(
                 }
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -1598,8 +1607,10 @@ export async function contractAPI(
         owner: IOwner,
         contractId?: string,
         pageIndex?: any,
-        pageSize?: any
+        pageSize?: any,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1643,13 +1654,14 @@ export async function contractAPI(
                 )
             );
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
 
     ApiResponse(ContractAPI.ENABLE_WIPE_REQUESTS,
-        async (msg: { owner: IOwner, id: string }) => {
+        async (msg: { owner: IOwner, id: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -1693,13 +1705,14 @@ export async function contractAPI(
 
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(ContractAPI.DISABLE_WIPE_REQUESTS,
-        async (msg: { owner: IOwner, id: string }) => {
+        async (msg: { owner: IOwner, id: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -1743,13 +1756,14 @@ export async function contractAPI(
 
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(ContractAPI.APPROVE_WIPE_REQUEST,
-        async (msg: { owner: IOwner, requestId: string }) => {
+        async (msg: { owner: IOwner, requestId: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -1823,7 +1837,7 @@ export async function contractAPI(
 
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -1831,8 +1845,10 @@ export async function contractAPI(
     ApiResponse(ContractAPI.REJECT_WIPE_REQUEST, async (msg: {
         owner: IOwner,
         requestId: string,
-        ban: boolean
+        ban: boolean,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1903,13 +1919,14 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
 
     ApiResponse(ContractAPI.CLEAR_WIPE_REQUESTS,
-        async (msg: { owner: IOwner, id: string, hederaId?: string }) => {
+        async (msg: { owner: IOwner, id: string, hederaId?: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -1966,7 +1983,7 @@ export async function contractAPI(
 
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -1974,8 +1991,10 @@ export async function contractAPI(
     ApiResponse(ContractAPI.ADD_WIPE_ADMIN, async (msg: {
         owner: IOwner,
         id: string,
-        hederaId: string
+        hederaId: string,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2030,7 +2049,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -2038,8 +2057,10 @@ export async function contractAPI(
     ApiResponse(ContractAPI.REMOVE_WIPE_ADMIN, async (msg: {
         owner: IOwner,
         id: string,
-        hederaId: string
+        hederaId: string,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2094,7 +2115,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -2102,8 +2123,10 @@ export async function contractAPI(
     ApiResponse(ContractAPI.ADD_WIPE_MANAGER, async (msg: {
         owner: IOwner,
         id: string,
-        hederaId: string
+        hederaId: string,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2158,7 +2181,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -2166,8 +2189,10 @@ export async function contractAPI(
     ApiResponse(ContractAPI.REMOVE_WIPE_MANAGER, async (msg: {
         owner: IOwner,
         id: string,
-        hederaId: string
+        hederaId: string,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2222,7 +2247,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -2231,8 +2256,10 @@ export async function contractAPI(
         owner: IOwner,
         id: string,
         hederaId: string
-        tokenId?: string
+        tokenId?: string,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2298,7 +2325,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -2307,8 +2334,10 @@ export async function contractAPI(
         owner: IOwner,
         id: string,
         hederaId: string
-        tokenId?: string
+        tokenId?: string,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2373,13 +2402,14 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
 
     ApiResponse(ContractAPI.SYNC_RETIRE_POOLS,
-        async (msg: { owner: IOwner, id: string }) => {
+        async (msg: { owner: IOwner, id: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -2480,7 +2510,7 @@ export async function contractAPI(
 
                 return new MessageResponse(syncDate);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -2489,8 +2519,10 @@ export async function contractAPI(
         owner: IOwner,
         contractId?: string,
         pageIndex?: any,
-        pageSize?: any
+        pageSize?: any,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2539,7 +2571,7 @@ export async function contractAPI(
             }
             return new MessageResponse(result);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -2549,8 +2581,10 @@ export async function contractAPI(
         tokens?: string[],
         contractId?: string,
         pageIndex?: any,
-        pageSize?: any
+        pageSize?: any,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2610,13 +2644,14 @@ export async function contractAPI(
                 await dataBaseServer.findAndCount(RetirePool, filters, otherOptions)
             );
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
 
     ApiResponse(ContractAPI.CLEAR_RETIRE_REQUESTS,
-        async (msg: { owner: IOwner, id: string }) => {
+        async (msg: { owner: IOwner, id: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -2684,13 +2719,14 @@ export async function contractAPI(
 
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(ContractAPI.CLEAR_RETIRE_POOLS,
-        async (msg: { owner: IOwner, id: string }) => {
+        async (msg: { owner: IOwner, id: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -2758,7 +2794,7 @@ export async function contractAPI(
 
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -2766,8 +2802,10 @@ export async function contractAPI(
     ApiResponse(ContractAPI.SET_RETIRE_POOLS, async (msg: {
         owner: IOwner,
         id: string,
-        options: { tokens: RetireTokenPool[]; immediately: boolean }
+        options: { tokens: RetireTokenPool[]; immediately: boolean },
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid add contract pair parameters');
@@ -2828,13 +2866,14 @@ export async function contractAPI(
                 )
             );
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
 
     ApiResponse(ContractAPI.UNSET_RETIRE_POOLS,
-        async (msg: { owner: IOwner, poolId: string }) => {
+        async (msg: { owner: IOwner, poolId: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid add contract pair parameters');
@@ -2888,13 +2927,14 @@ export async function contractAPI(
 
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(ContractAPI.UNSET_RETIRE_REQUEST,
-        async (msg: { owner: IOwner, requestId: string }) => {
+        async (msg: { owner: IOwner, requestId: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid add contract pair parameters');
@@ -2953,7 +2993,7 @@ export async function contractAPI(
 
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -2961,8 +3001,10 @@ export async function contractAPI(
     ApiResponse(ContractAPI.RETIRE, async (msg: {
         owner: IOwner,
         poolId: string,
-        tokens: RetireTokenRequest[]
+        tokens: RetireTokenRequest[],
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid add contract pair parameters');
@@ -3061,13 +3103,14 @@ export async function contractAPI(
 
             return new MessageResponse(pool.immediately);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
 
     ApiResponse(ContractAPI.APPROVE_RETIRE,
-        async (msg: { owner: IOwner, requestId: string }) => {
+        async (msg: { owner: IOwner, requestId: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid add contract pair parameters');
@@ -3167,13 +3210,14 @@ export async function contractAPI(
 
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(ContractAPI.CANCEL_RETIRE,
-        async (msg: { owner: IOwner, requestId: string }) => {
+        async (msg: { owner: IOwner, requestId: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid add contract pair parameters');
@@ -3227,7 +3271,7 @@ export async function contractAPI(
 
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -3235,8 +3279,10 @@ export async function contractAPI(
     ApiResponse(ContractAPI.ADD_RETIRE_ADMIN, async (msg: {
         owner: IOwner,
         id: string,
-        hederaId: string
+        hederaId: string,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -3291,7 +3337,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -3299,8 +3345,10 @@ export async function contractAPI(
     ApiResponse(ContractAPI.REMOVE_RETIRE_ADMIN, async (msg: {
         owner: IOwner,
         id: string,
-        hederaId: string
+        hederaId: string,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -3355,7 +3403,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -3363,8 +3411,10 @@ export async function contractAPI(
     ApiResponse(ContractAPI.GET_RETIRE_VCS, async (msg: {
         owner: IOwner,
         pageIndex?: any,
-        pageSize?: any
+        pageSize?: any,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -3404,15 +3454,17 @@ export async function contractAPI(
                 await dataBaseServer.findAndCount(VcDocument, filters, otherOptions)
             );
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
 
     ApiResponse(ContractAPI.GET_RETIRE_VCS_FROM_INDEXER, async (msg: {
         owner: IOwner,
-        contractTopicId: string
+        contractTopicId: string,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -3433,7 +3485,7 @@ export async function contractAPI(
 
             return new MessageResponse([messages, messages.length]);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });

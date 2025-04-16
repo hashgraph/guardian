@@ -144,7 +144,8 @@ export async function serDefaultRole(user: IAuthUser, owner: IOwner): Promise<an
  */
 export async function permissionAPI(logger: PinoLogger): Promise<void> {
     ApiResponse(MessageAPI.CREATE_ROLE,
-        async (msg: { role: any, owner: IOwner }) => {
+        async (msg: { role: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { role, owner } = msg;
                 const data = {
@@ -174,13 +175,14 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 });
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.UPDATE_ROLE,
-        async (msg: { role: any, owner: IOwner }) => {
+        async (msg: { role: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { role, owner } = msg;
                 const data = {
@@ -210,13 +212,14 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 });
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.DELETE_ROLE,
-        async (msg: { role: any, owner: IOwner }) => {
+        async (msg: { role: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { role, owner } = msg;
                 const data = {
@@ -246,25 +249,27 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 });
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.SET_ROLE,
-        async (msg: { user: IAuthUser, owner: IOwner }) => {
+        async (msg: { user: IAuthUser, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { user, owner } = msg;
                 const result = await serDefaultRole(user, owner);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.CHECK_KEY_PERMISSIONS,
-        async (msg: { did: string, keyType: KeyType, entityId: string }) => {
+        async (msg: { did: string, keyType: KeyType, entityId: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { did, keyType, entityId } = msg;
 
@@ -300,7 +305,7 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                         return new MessageResponse(false);
                 }
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });

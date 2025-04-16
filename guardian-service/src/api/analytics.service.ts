@@ -246,8 +246,10 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 childrenLvl: string | number,
                 eventsLvl: string | number,
                 idLvl: string | number
-            }
+            },
+            userId: string | null
         }) => {
+            const userId = msg?.userId;
             try {
                 const { user, type, policies, options } = msg;
                 const compareOptions = CompareOptions.from(options);
@@ -264,7 +266,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 const result = comparator.to(results, type);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -278,8 +280,10 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
             eventsLvl: string | number,
             propLvl: string | number,
             childrenLvl: string | number,
-            idLvl: string | number
+            idLvl: string | number,
+            userId: string | null
         }) => {
+            const userId = msg?.userId;
             try {
                 const {
                     type,
@@ -324,7 +328,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageResponse(result);
                 }
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -342,8 +346,10 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                     value: string
                 }
             }[],
-            idLvl: string | number
+            idLvl: string | number,
+            userId: string | null
         }) => {
+            const userId = msg?.userId;
             try {
                 const {
                     user,
@@ -377,7 +383,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageResponse(result);
                 }
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -394,8 +400,10 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 text?: string;
                 owner?: string;
                 threshold?: number;
-            }
+            },
+            userId: string | null
         }) => {
+            const userId = msg?.userId;
             try {
                 const { user, filters } = msg;
                 const {
@@ -464,7 +472,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 }
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -479,8 +487,10 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
             childrenLvl: string | number,
             idLvl: string | number,
             keyLvl: string | number,
-            refLvl: string | number
+            refLvl: string | number,
+            userId: string | null
         }) => {
+            const userId = msg?.userId;
             try {
                 const {
                     user,
@@ -535,7 +545,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Invalid size');
                 }
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -549,8 +559,10 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
         childrenLvl: string | number,
         idLvl: string | number,
         keyLvl: string | number,
-        refLvl: string | number
+        refLvl: string | number,
+        userId: string | null
     }) => {
+        const userId = msg?.userId;
         try {
             const {
                 user,
@@ -609,7 +621,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
             return new MessageResponse(comparisonVpArray);
 
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -621,8 +633,10 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
         eventsLvl: string | number,
         propLvl: string | number,
         childrenLvl: string | number,
-        idLvl: string | number
+        idLvl: string | number,
+        userId: string | null
     }) => {
+        const userId = msg?.userId;
         try {
             const {
                 user,
@@ -675,13 +689,14 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 return new MessageError('Invalid size');
             }
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
 
     ApiResponse(MessageAPI.SEARCH_BLOCKS,
-        async (msg: { config: any, blockId: string, user: IAuthUser }) => {
+        async (msg: { config: any, blockId: string, user: IAuthUser, userId: string | null }) => {
+            const userId = msg?.userId;
             try {
                 const {
                     config,
@@ -727,7 +742,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 result.sort((a, b) => a.hash > b.hash ? -1 : 1);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });

@@ -431,9 +431,9 @@ export class PolicyImport {
         }
     }
 
-    private async saveHash(policy: Policy, logger: PinoLogger) {
+    private async saveHash(policy: Policy, logger: PinoLogger, userId: string | null) {
         this.notifier.completedAndStart('Updating hash');
-        await PolicyImportExportHelper.updatePolicyComponents(policy, logger);
+        await PolicyImportExportHelper.updatePolicyComponents(policy, logger, userId);
     }
 
     private async setSuggestionsConfig(policy: Policy, user: IOwner) {
@@ -529,7 +529,7 @@ export class PolicyImport {
         await this.saveArtifacts(row);
         await this.saveTests(row);
         await this.saveFormulas(row);
-        await this.saveHash(row, logger);
+        await this.saveHash(row, logger, user.id);
         await this.setSuggestionsConfig(row, user);
         await this.importTags(row, tags);
 
@@ -718,7 +718,7 @@ export class PolicyImportExportHelper {
      * @param policy
      * @param logger
      */
-    public static async updatePolicyComponents(policy: Policy, logger: PinoLogger): Promise<Policy> {
+    public static async updatePolicyComponents(policy: Policy, logger: PinoLogger, userId: string | null): Promise<Policy> {
         try {
             const raw = await PolicyLoader.load(policy.id.toString());
             const compareModel = await PolicyLoader.create(raw, HashComparator.options);
@@ -726,7 +726,7 @@ export class PolicyImportExportHelper {
             policy.hash = hash;
             policy.hashMap = hashMap;
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE, HASH']);
+            await logger.error(error, ['GUARDIAN_SERVICE, HASH'], userId);
         }
         const toolIds = new Set<string>()
         PolicyImportExportHelper.findTools(policy.config, toolIds);

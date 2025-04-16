@@ -84,7 +84,8 @@ export async function getProjectsData(documents: VcDocument[], allPolicies: Poli
  */
 export async function projectsAPI(logger: PinoLogger): Promise<void> {
     ApiResponse(MessageAPI.SEARCH_PROJECTS,
-        async (msg: { categoryIds: string[], policyIds: string[] }) => {
+        async (msg: { categoryIds: string[], policyIds: string[], userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { categoryIds, policyIds } = msg;
 
@@ -136,28 +137,28 @@ export async function projectsAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse(projects);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
-    ApiResponse(MessageAPI.GET_POLICY_CATEGORIES, async () => {
+    ApiResponse(MessageAPI.GET_POLICY_CATEGORIES, async ({userId}: {userId: string | null}) => {
         try {
             const policyCategories = await DatabaseServer.getPolicyCategories();
             return new MessageResponse(policyCategories);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
 
-    ApiResponse(MessageAPI.GET_POLICY_PROPERTIES, async () => {
+    ApiResponse(MessageAPI.GET_POLICY_PROPERTIES, async ({userId}: {userId: string | null}) => {
         try {
             const policyProperties = await DatabaseServer.getPolicyProperties();
             return new MessageResponse(policyProperties);
         } catch (error) {
             console.log(error);
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
