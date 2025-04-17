@@ -165,20 +165,21 @@ export class Worker extends NatsService {
         const runTask = async (task) => {
             this.isInUse = true;
             this.currentTaskId = task.id;
+            const userId = task.data?.payload?.userId;
 
-            this.logger.info(`Task started: ${task.id}, ${task.type}`, [this.workerID, 'WORKER']);
+            this.logger.info(`Task started: ${task.id}, ${task.type}`, [this.workerID, 'WORKER'], userId);
 
             const result = await this.processTaskWithTimeout(task);
 
             try {
                 // await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('-'), result);
                 if (result?.error) {
-                    this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [this.workerID, 'WORKER']);
+                    this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [this.workerID, 'WORKER'], userId);
                 } else {
-                    this.logger.info(`Task completed: ${this.currentTaskId}`, [this.workerID, 'WORKER']);
+                    this.logger.info(`Task completed: ${this.currentTaskId}`, [this.workerID, 'WORKER'], userId);
                 }
             } catch (error) {
-                this.logger.error(error.message, [this.workerID, 'WORKER']);
+                this.logger.error(error.message, [this.workerID, 'WORKER'], userId);
                 this.clearState();
 
             }
@@ -222,7 +223,7 @@ export class Worker extends NatsService {
                 const secretManager = SecretManager.New();
                 await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY: ipfsStorageApiKey });
             } catch (error) {
-                this.logger.error(`Update settings error, ${error.message}`, ['WORKER']);
+                this.logger.error(`Update settings error, ${error.message}`, ['WORKER'], msg.userId);
             }
         });
 

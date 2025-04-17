@@ -48,7 +48,7 @@ export class IPFS {
      * @param userId
      * @returns {string} - hash
      */
-    public static async addFile(file: ArrayBuffer, userId: string = null): Promise<{
+    public static async addFile(file: ArrayBuffer, userId: string | null = null): Promise<{
         /**
          * CID
          */
@@ -63,7 +63,8 @@ export class IPFS {
             data: {
                 target: [IPFS.target, MessageAPI.IPFS_ADD_FILE].join('.'),
                 payload: {
-                    content: Buffer.from(file).toString('base64')
+                    content: Buffer.from(file).toString('base64'),
+                    userId
                 }
             }
         }, 10, 0, userId);
