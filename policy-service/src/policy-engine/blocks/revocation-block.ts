@@ -160,6 +160,8 @@ export class RevocationBlock {
         const data = event.data.data;
         const doc = Array.isArray(data) ? data[0] : data;
 
+        const userId = event.user.id
+
         const userCred = await PolicyUtils.getUserCredentials(ref, event.user.did);
         const userHederaCred = await userCred.loadHederaCredentials(ref);
         const signOptions = await userCred.loadSignOptions(ref);
@@ -176,7 +178,8 @@ export class RevocationBlock {
         const policyTopicsMessages = [];
         for (const topic of policyTopics) {
             const topicMessages = await messageServer.getMessages(
-                topic.topicId
+                topic.topicId,
+                userId
             );
             policyTopicsMessages.push(...topicMessages);
         }

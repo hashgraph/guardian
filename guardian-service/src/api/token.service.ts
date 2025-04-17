@@ -33,6 +33,7 @@ export async function createHederaToken(token: any, user: IRootConfig) {
             operatorId: user.hederaAccountId,
             operatorKey: user.hederaAccountKey,
             memo: topic.topicId,
+            payload: { userId: user.id },
             ...token
         }
     }, 20);
@@ -278,7 +279,8 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
                 operatorId: root.hederaAccountId,
                 operatorKey: root.hederaAccountKey,
                 adminKey,
-                changes
+                changes,
+                payload: { userId: user.id }
             }
         }, 20);
 
@@ -354,7 +356,8 @@ async function deleteToken(
                 tokenId: token.tokenId,
                 operatorId: root.hederaAccountId,
                 operatorKey: root.hederaAccountKey,
-                adminKey
+                adminKey,
+                payload: { userId: user.id }
             }
         }, 20);
         notifier.completedAndStart('Save token in DB');
@@ -417,7 +420,8 @@ async function associateToken(
             tokenId,
             userID,
             userKey,
-            associate
+            associate,
+            payload: { userId: user.id }
         }
     }, 20);
 
@@ -475,7 +479,8 @@ async function grantKycToken(
             userHederaAccountId: user.hederaAccountId,
             token,
             kycKey,
-            grant
+            grant,
+            payload: { userId: user.id }
         }
     }, 20, user.id.toString());
 
@@ -487,6 +492,7 @@ async function grantKycToken(
             userID: root.hederaAccountId,
             userKey: root.hederaAccountKey,
             hederaAccountId: user.hederaAccountId,
+            payload: { userId: user.id }
         }
     }, 20, user.id.toString());
 
@@ -545,7 +551,8 @@ async function freezeToken(
             userHederaAccountId: user.hederaAccountId,
             freezeKey,
             token,
-            freeze
+            freeze,
+            payload: { userId: user.id }
         }
     }, 20, user.id.toString());
 
@@ -557,6 +564,7 @@ async function freezeToken(
             userID: root.hederaAccountId,
             userKey: root.hederaAccountKey,
             hederaAccountId: user.hederaAccountId,
+            payload: { userId: user.id }
         }
     }, 20, user.id.toString());
 
@@ -797,7 +805,8 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                     data: {
                         userID: root.hederaAccountId,
                         userKey: root.hederaAccountKey,
-                        hederaAccountId: user.hederaAccountId
+                        hederaAccountId: user.hederaAccountId,
+                        payload: { userId }
                     }
                 }, 20);
 
@@ -837,7 +846,8 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                     data: {
                         userID,
                         userKey,
-                        hederaAccountId: user.hederaAccountId
+                        hederaAccountId: user.hederaAccountId,
+                        payload: { userId }
                     }
                 }, 20);
 
@@ -858,6 +868,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                             data: {
                                 operatorId: userID,
                                 operatorKey: userKey,
+                                payload: { userId }
                             },
                         },
                         20
@@ -1037,7 +1048,8 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                             data: {
                                 operatorId: userID,
                                 operatorKey: userKey,
-                                tokenId
+                                tokenId,
+                                payload: { userId }
                             },
                         },
                         20

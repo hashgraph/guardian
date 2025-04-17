@@ -145,11 +145,13 @@ export async function getSchemaTarget(topicId: string): Promise<any> {
  * @param messageIds
  * @param notifier
  * @param logger
+ * @param userId
  */
 export async function prepareSchemaPreview(
     messageIds: string[],
     notifier: INotifier,
-    logger: PinoLogger
+    logger: PinoLogger,
+    userId: string | null
 ): Promise<any[]> {
     notifier.start('Load schema file');
     const schemas = [];
@@ -165,6 +167,7 @@ export async function prepareSchemaPreview(
     for (const topicId of uniqueTopics) {
         const anotherVersions = await messageServer.getMessages<SchemaMessage>(
             topicId,
+            userId,
             MessageType.Schema,
             MessageAction.PublishSchema
         );
@@ -547,15 +550,17 @@ export class SchemaImport {
 
     /**
      * Import tags by files
-     * @param files
+     * @param topics
+     * @param userId
      */
-    private async importTags(topics: Set<string>): Promise<void> {
+    private async importTags(topics: Set<string>, userId: string | null): Promise<void> {
         this.notifier.start('Load tags');
         const tags: any[] = [];
         const messageServer = new MessageServer(null, null);
         for (const id of topics) {
             const tagMessages = await messageServer.getMessages<TagMessage>(
                 id,
+                userId,
                 MessageType.Tag,
                 MessageAction.PublishTag
             );
@@ -665,7 +670,7 @@ export class SchemaImport {
         await this.updateUUIDs(components);
         await this.validateDefs(components);
         await this.saveSchemas(components);
-        await this.importTags(topics);
+        await this.importTags(topics, user.id);
         this.notifier.completed();
 
         return {

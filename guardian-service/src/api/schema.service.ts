@@ -830,7 +830,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Invalid preview schema parameters');
                 }
 
-                const result = await prepareSchemaPreview(messageIds, emptyNotifier(), logger);
+                const result = await prepareSchemaPreview(messageIds, emptyNotifier(), logger, userId);
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], userId);
@@ -860,7 +860,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     return;
                 }
 
-                const result = await prepareSchemaPreview(messageIds, notifier, logger);
+                const result = await prepareSchemaPreview(messageIds, notifier, logger, userId);
                 notifier.result(result);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], userId);
@@ -1401,7 +1401,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
                 for (const toolId of xlsxResult.getToolIds()) {
                     try {
-                        const tool = await previewToolByMessage(toolId.messageId);
+                        const tool = await previewToolByMessage(toolId.messageId, userId);
                         xlsxResult.updateTool(tool.tool, tool.schemas);
                     } catch (error) {
                         xlsxResult.addErrors([{

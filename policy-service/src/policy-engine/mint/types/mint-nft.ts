@@ -138,6 +138,7 @@ export class MintNFT extends TypedMint {
                             tokenId: this._token.tokenId,
                             limit: 1,
                             order: 'desc',
+                            payload: { userId }
                         },
                     },
                     1,
@@ -191,6 +192,7 @@ export class MintNFT extends TypedMint {
                                         transaction.serials.length
                                 ).fill(this._mintRequest.metadata),
                                 transactionMemo: this._mintRequest.memo,
+                                payload: { userId }
                             },
                         },
                         1, 0, userId
@@ -279,6 +281,7 @@ export class MintNFT extends TypedMint {
                                 treasuryKey: this._token.treasuryKey,
                                 element: transaction.serials,
                                 transactionMemo: this._mintRequest.memo,
+                                payload: { userId }
                             },
                         },
                         1,

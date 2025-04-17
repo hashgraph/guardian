@@ -243,7 +243,7 @@ async function createUserProfile(
                 apiKey: fireblocksConfig.fireBlocksApiKey,
                 privateKey: fireblocksConfig.fireBlocksPrivateiKey,
                 assetId: fireblocksConfig.fireBlocksAssetId,
-                vaultId: fireblocksConfig.fireBlocksVaultId
+                vaultId: fireblocksConfig.fireBlocksVaultId,
             }
         }
     }
@@ -641,7 +641,8 @@ export function profileAPI(logger: PinoLogger) {
                     type: WorkerTaskType.GET_USER_BALANCE,
                     data: {
                         hederaAccountId: user.hederaAccountId,
-                        hederaAccountKey: key
+                        hederaAccountKey: key,
+                        payload: { userId }
                     }
                 }, 20, user.id.toString());
                 return new MessageResponse({
@@ -684,7 +685,8 @@ export function profileAPI(logger: PinoLogger) {
                     type: WorkerTaskType.GET_USER_BALANCE,
                     data: {
                         hederaAccountId: user.hederaAccountId,
-                        hederaAccountKey: key
+                        hederaAccountKey: key,
+                        payload: { userId }
                     }
                 }, 20, user.id.toString());
 
@@ -769,7 +771,8 @@ export function profileAPI(logger: PinoLogger) {
                     PrivateKey.fromString(hederaAccountKey);
                     await workers.addNonRetryableTask({
                         type: WorkerTaskType.GET_USER_BALANCE,
-                        data: { hederaAccountId, hederaAccountKey }
+                        data: { hederaAccountId, hederaAccountKey, payload: { userId }
+                        },
                     }, 20, user.id.toString());
                 } catch (error) {
                     throw new Error(`Invalid Hedera account or key.`);
@@ -841,7 +844,8 @@ export function profileAPI(logger: PinoLogger) {
                     username,
                     hederaAccountId,
                     hederaAccountKey,
-                    did
+                    did,
+                    userId
                 )
                 notifier.completed();
                 notifier.result(result);

@@ -46,7 +46,8 @@ async function generateDemoKey(role: any, notifier: INotifier, userId: string): 
         data: {
             operatorId: OPERATOR_ID,
             operatorKey: OPERATOR_KEY,
-            initialBalance
+            initialBalance,
+            payload: { userId }
         }
     }, 20, userId);
 

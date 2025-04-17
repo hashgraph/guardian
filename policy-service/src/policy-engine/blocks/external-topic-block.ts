@@ -362,9 +362,10 @@ export class ExternalTopicBlock {
      * Search Policy Topic
      * @param topicId
      * @param topicTree
+     * @param userId
      * @private
      */
-    private async searchTopic(topicId: string, topicTree: TopicResult = {}): Promise<TopicResult> {
+    private async searchTopic(topicId: string, topicTree: TopicResult = {}, userId: string | null): Promise<TopicResult> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         if (topicTree.count) {
             topicTree.count++;
@@ -374,7 +375,7 @@ export class ExternalTopicBlock {
         if (topicTree.count > 20) {
             throw new BlockActionError('Max attempts of 20 was reached for request: Get topic info', ref.blockType, ref.uuid);
         }
-        const topicMessage = await MessageServer.getTopic(topicId);
+        const topicMessage = await MessageServer.getTopic(topicId, userId);
         if (!topicTree.root) {
             if (topicMessage && (
                 topicMessage.messageType === TopicType.InstancePolicyTopic ||
@@ -391,7 +392,7 @@ export class ExternalTopicBlock {
                     throw new BlockActionError('Invalid topic', ref.blockType, ref.uuid);
                 }
                 topicTree.policyTopic = topicMessage;
-                const messages: any[] = await MessageServer.getMessages(topicId);
+                const messages: any[] = await MessageServer.getMessages(topicId, userId);
                 topicTree.schemas = messages.filter((m: SchemaMessage) =>
                     m.action === MessageAction.PublishSchema);
                 topicTree.instance = messages.find((m: PolicyMessage) =>
@@ -400,9 +401,9 @@ export class ExternalTopicBlock {
                 return topicTree;
             } else if (topicMessage.messageType === TopicType.InstancePolicyTopic) {
                 topicTree.instanceTopic = topicMessage;
-                return await this.searchTopic(topicMessage.parentId, topicTree);
+                return await this.searchTopic(topicMessage.parentId, topicTree, userId);
             } else if (topicMessage.messageType === TopicType.DynamicTopic) {
-                return await this.searchTopic(topicMessage.parentId, topicTree);
+                return await this.searchTopic(topicMessage.parentId, topicTree, userId);
             }
         }
         throw new BlockActionError('Invalid topic', ref.blockType, ref.uuid);
@@ -422,7 +423,7 @@ export class ExternalTopicBlock {
     ): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         try {
-            const topicTree = await this.searchTopic(topicId);
+            const topicTree = await this.searchTopic(topicId, null, user.id);
             const topic = topicTree.root;
             const policy = topicTree.policyTopic;
             const instance = topicTree.instance;
@@ -648,6 +649,7 @@ export class ExternalTopicBlock {
         const hederaCred = await documentOwnerCred.loadHederaCredentials(ref);
         const messages: VCMessage[] = await MessageServer.getMessages(
             item.documentTopicId,
+            user.id,
             null,
             null,
             item.lastMessage

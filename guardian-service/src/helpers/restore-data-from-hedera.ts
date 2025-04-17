@@ -103,10 +103,10 @@ export class RestoreDataFromHedera {
     /**
      * Read topic
      * @param topicId
-     * @param loadIPFS
+     * @param userId
      * @private
      */
-    private async readTopicMessages(topicId: string): Promise<Message[]> {
+    private async readTopicMessages(topicId: string, userId: string | null): Promise<Message[]> {
         if (typeof topicId !== 'string') {
             throw new Error('Bad topicId');
         }
@@ -119,6 +119,7 @@ export class RestoreDataFromHedera {
                     operatorKey: null,
                     dryRun: false,
                     topic: topicId,
+                    userId
                 },
             },
             10
@@ -127,7 +128,7 @@ export class RestoreDataFromHedera {
         let errors = 0;
         for (const m of messages) {
             try {
-                const r = MessageServer.fromMessage<Message>(m.message);
+                const r = MessageServer.fromMessage<Message>(m.message, userId);
                 r.setAccount(m.payer_account_id);
                 r.setTopicId(topicId);
                 r.setId(m.id);
@@ -274,7 +275,7 @@ export class RestoreDataFromHedera {
                         message.messageType === 'DYNAMIC_TOPIC' &&
                         message.childId
                     ) {
-                        const messages = await this.readTopicMessages(message.childId);
+                        const messages = await this.readTopicMessages(message.childId, user.id);
                         const childTopicMessage = messages[0] as TopicMessage;
                         await this.restoreTopic(
                             {
@@ -349,7 +350,7 @@ export class RestoreDataFromHedera {
         logger: PinoLogger
     ): Promise<void> {
         try {
-            const policyMessages = await this.readTopicMessages(policyTopicId);
+            const policyMessages = await this.readTopicMessages(policyTopicId, user.id);
             const policyTopicMessage = policyMessages[0] as TopicMessage;
             await this.restoreTopic(
                 {
@@ -424,7 +425,7 @@ export class RestoreDataFromHedera {
                     policyObject.instanceTopicId = policyInstanceTopicMessage.childId;
                 }
 
-                const policyInstanceMessages = await this.readTopicMessages(policyObject.instanceTopicId);
+                const policyInstanceMessages = await this.readTopicMessages(policyObject.instanceTopicId, user.id);
                 const p = dataBaseServer.create(PolicyCollection, policyObject);
                 const r = await dataBaseServer.save(PolicyCollection, p);
 
@@ -516,10 +517,10 @@ export class RestoreDataFromHedera {
      * Get main topic messages
      * @private
      */
-    private async getMainTopicMessages(): Promise<Message[]> {
+    private async getMainTopicMessages(userId: string | null): Promise<Message[]> {
         const currentTime = Date.now();
         if (currentTime - this.mainTopicLastUpdate > this.UPDATE_INTERVAL) {
-            this.mainTopicMessages = await this.readTopicMessages(this.MAIN_TOPIC_ID);
+            this.mainTopicMessages = await this.readTopicMessages(this.MAIN_TOPIC_ID, userId);
             this.mainTopicLastUpdate = currentTime;
         }
 
@@ -531,14 +532,17 @@ export class RestoreDataFromHedera {
      * @param username
      * @param hederaAccountID
      * @param hederaAccountKey
+     * @param did
+     * @param userId
      */
     async findAllUserTopics(
         username: string,
         hederaAccountID: string,
         hederaAccountKey: string,
-        did: string
+        did: string,
+        userId: string | null
     ): Promise<any[]> {
-        const mainTopicMessages = await this.getMainTopicMessages();
+        const mainTopicMessages = await this.getMainTopicMessages(userId);
         return mainTopicMessages
             .filter((m: Message) => m.type === MessageType.StandardRegistry)
             .filter((m: RegistrationMessage) => m.did?.includes(did))
@@ -580,7 +584,7 @@ export class RestoreDataFromHedera {
             throw new Error('User is not a Standard Registry.');
         }
 
-        const mainTopicMessages = await this.getMainTopicMessages();
+        const mainTopicMessages = await this.getMainTopicMessages(user.id);
         const registrationMessage = mainTopicMessages
             .filter((m: Message) => m.type === MessageType.StandardRegistry)
             .filter((m: RegistrationMessage) => m.did === did)
@@ -599,7 +603,7 @@ export class RestoreDataFromHedera {
             throw new Error('User not found.');
         }
 
-        const allMessages = await this.readTopicMessages(registrantTopicId);
+        const allMessages = await this.readTopicMessages(registrantTopicId, user.id);
 
         // Restore account
         const topicMessage = this.findMessageByType<TopicMessage>(MessageType.Topic, allMessages);

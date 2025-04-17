@@ -553,6 +553,7 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                     const messageServer = new MessageServer(null, null);
                     const tagMessages = await messageServer.getMessages<TagMessage>(
                         moduleTopicId,
+                        userId,
                         MessageType.Tag,
                         MessageAction.PublishTag
                     );

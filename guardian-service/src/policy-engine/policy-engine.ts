@@ -1255,7 +1255,7 @@ export class PolicyEngine extends NatsService {
         const newVersions: any = [];
         if (message.version) {
             const anotherVersions = await messageServer.getMessages<PolicyMessage>(
-                message.getTopicId(), MessageType.InstancePolicy, MessageAction.PublishPolicy
+                message.getTopicId(), user.id, MessageType.InstancePolicy, MessageAction.PublishPolicy
             );
             for (const element of anotherVersions) {
                 if (element.version && ModelHelper.versionCompare(element.version, message.version) === 1) {
@@ -1319,7 +1319,7 @@ export class PolicyEngine extends NatsService {
             throw new Error('File in body is empty');
         }
 
-        const tagMessages = await messageServer.getMessages<TagMessage>(message.policyTopicId, MessageType.Tag, MessageAction.PublishTag);
+        const tagMessages = await messageServer.getMessages<TagMessage>(message.policyTopicId, user.id, MessageType.Tag, MessageAction.PublishTag);
 
         notifier.completedAndStart('File parsing');
         const policyToImport = await PolicyImportExport.parseZipFile(message.document, true);

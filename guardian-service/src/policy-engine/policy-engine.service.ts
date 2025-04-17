@@ -1459,7 +1459,7 @@ export class PolicyEngineService {
                     const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
                     for (const toolId of xlsxResult.getToolIds()) {
                         try {
-                            const tool = await previewToolByMessage(toolId.messageId);
+                            const tool = await previewToolByMessage(toolId.messageId, userId);
                             xlsxResult.updateTool(tool.tool, tool.schemas);
                         } catch (error) {
                             xlsxResult.addErrors([{

@@ -126,11 +126,10 @@ export async function importSubTools(
 
 /**
  * Import tool by message
- * @param owner
- * @param messages
- * @param notifier
+ * @param messageId
+ * @param userId
  */
-export async function previewToolByMessage(messageId: string): Promise<IToolComponents> {
+export async function previewToolByMessage(messageId: string, userId: string | null): Promise<IToolComponents> {
     const oldTool = await DatabaseServer.getTool({ messageId });
     if (oldTool) {
         const subSchemas = await DatabaseServer.getSchemas({ topicId: oldTool.topicId });
@@ -143,7 +142,7 @@ export async function previewToolByMessage(messageId: string): Promise<IToolComp
     }
 
     messageId = messageId.trim();
-    const message = await MessageServer.getMessage<ToolMessage>(messageId);
+    const message = await MessageServer.getMessage<ToolMessage>(messageId, userId);
     if (!message) {
         throw new Error('Invalid Message');
     }
@@ -255,6 +254,7 @@ export async function importToolByMessage(
     if (message.tagsTopicId) {
         const tagMessages = await messageServer.getMessages<TagMessage>(
             message.tagsTopicId,
+            user.id,
             MessageType.Tag,
             MessageAction.PublishTag
         );

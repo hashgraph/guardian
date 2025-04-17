@@ -75,10 +75,11 @@ export class MessagesReport {
     /**
      * Build report
      * @param messageId
+     * @param userId
      */
-    public async start(messageId: string) {
-        await this.checkMessage(messageId);
-        await this.checkUsers();
+    public async start(messageId: string,  userId: string | null) {
+        await this.checkMessage(messageId, userId);
+        await this.checkUsers(userId);
     }
 
     /**
@@ -96,14 +97,15 @@ export class MessagesReport {
     /**
      * Search messages
      * @param timestamp
+     * @param userId
      */
-    private async checkMessage(timestamp: string) {
+    private async checkMessage(timestamp: string, userId: string | null) {
         if (this.messages.has(timestamp)) {
             return;
         }
         this.messages.set(timestamp, null);
 
-        const message = await MessageServer.getMessage(timestamp);
+        const message = await MessageServer.getMessage(timestamp, userId);
         if (!message) {
             return;
         }
@@ -116,10 +118,10 @@ export class MessagesReport {
         this.users.set(message.getOwner(), null);
 
         await this.checkToken(message);
-        await this.checkTopic(message.getTopicId());
+        await this.checkTopic(message.getTopicId(), userId);
 
         for (const id of message.getRelationships()) {
-            await this.checkMessage(id);
+            await this.checkMessage(id, userId);
         }
     }
 
@@ -156,14 +158,15 @@ export class MessagesReport {
     /**
      * Search topics
      * @param topicId
+     * @param userId
      */
-    private async checkTopic(topicId: string) {
+    private async checkTopic(topicId: string, userId: string | null) {
         if (this.topics.has(topicId)) {
             return;
         }
         this.topics.set(topicId, null);
 
-        const message = await MessageServer.getTopic(topicId);
+        const message = await MessageServer.getTopic(topicId, userId);
         if (!message) {
             return;
         }
@@ -171,22 +174,23 @@ export class MessagesReport {
         this.topics.set(topicId, message.toJson());
 
         if (message.parentId) {
-            await this.checkTopic(message.parentId);
+            await this.checkTopic(message.parentId, userId);
         }
         if (message.rationale) {
-            await this.checkMessage(message.rationale);
+            await this.checkMessage(message.rationale, userId);
         }
 
-        await this.checkSchemas(message);
+        await this.checkSchemas(message, userId);
     }
 
     /**
      * Search schemas
      * @param message
+     * @param userId
      */
-    private async checkSchemas(message: TopicMessage) {
+    private async checkSchemas(message: TopicMessage, userId: string | null) {
         if (message.messageType === TopicType.PolicyTopic) {
-            const messages: any[] = await MessageServer.getMessages(message.getTopicId());
+            const messages: any[] = await MessageServer.getMessages(message.getTopicId(), userId);
             const schemas: SchemaMessage[] = messages.filter((m: SchemaMessage) => m.action === MessageAction.PublishSchema ||
                 m.action === MessageAction.PublishSystemSchema);
             for (const schema of schemas) {
@@ -201,9 +205,9 @@ export class MessagesReport {
 
     /**
      * Search users
-     * @param message
+     * @param userId
      */
-    private async checkUsers() {
+    private async checkUsers(userId: string | null) {
         const topics: Set<string> = new Set<string>();
         for (const did of this.users.keys()) {
             try {
@@ -215,7 +219,7 @@ export class MessagesReport {
         }
         for (const topicId of topics) {
             try {
-                const messages: any[] = await MessageServer.getMessages(topicId);
+                const messages: any[] = await MessageServer.getMessages(topicId, userId);
                 const documents: DIDMessage[] = messages.filter((m: DIDMessage) => m.action === MessageAction.CreateDID);
                 for (const document of documents) {
                     if (this.users.has(document.did) && !this.users.get(document.did)) {
