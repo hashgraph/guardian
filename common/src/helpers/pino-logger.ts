@@ -86,14 +86,13 @@ export class PinoLogger {
      * @param message
      * @param attributes
      */
-    public async debug(message: string, attributes?: string[], userId: string | null = null, userDid: string | null = null): Promise<void> {
+    public async debug(message: string, attributes?: string[], userId: string | null = null): Promise<void> {
         this.logger.debug({
             message,
             attributes,
             type: LogType.INFO,
             datetime: new Date(),
             userId,
-            userDid
         });
     }
 
@@ -102,14 +101,13 @@ export class PinoLogger {
      * @param message
      * @param attributes
      */
-    public async info(message: string, attributes?: string[], userId: string | null = null, userDid: string | null = null): Promise<void> {
+    public async info(message: string, attributes?: string[], userId: string | null = null): Promise<void> {
         this.logger.info({
             message,
             attributes,
             type: LogType.INFO,
             datetime: new Date(),
-            userId,
-            userDid
+            userId
         });
     }
 
@@ -118,14 +116,13 @@ export class PinoLogger {
      * @param message
      * @param attributes
      */
-    public async warn(message: string, attributes?: string[], userId: string | null = null, userDid: string | null = null): Promise<void> {
+    public async warn(message: string, attributes?: string[], userId: string | null = null): Promise<void> {
         this.logger.warn({
             message,
             attributes,
             type: LogType.WARN,
             datetime: new Date(),
-            userId,
-            userDid
+            userId
         });
     }
 
@@ -134,15 +131,14 @@ export class PinoLogger {
      * @param error
      * @param attributes
      */
-    public async error(error: string | Error, attributes?: string[], userId: string | null = null, userDid: string | null = null): Promise<void> {
+    public async error(error: string | Error, attributes?: string[], userId: string | null = null): Promise<void> {
         const message = !error ? 'Unknown error' : (typeof error === 'string' ? error : error.stack);
         this.logger.error({
             message,
             attributes,
             type: LogType.ERROR,
             datetime: new Date(),
-            userId,
-            userDid
+            userId
         });
     }
 }

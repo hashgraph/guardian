@@ -41,9 +41,4 @@ export class Log extends BaseEntity implements ILog {
     @IsOptional()
     @IsString()
     userId?: string;
-
-    @Property({ nullable: true, index: true })
-    @IsOptional()
-    @IsString()
-    userDid?: string;
 }

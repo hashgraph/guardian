@@ -139,7 +139,7 @@ export class PolicyEngine extends NatsService {
             try {
                 await this.generateModel(policy.id.toString());
             } catch (error) {
-                await this.logger.error(error, ['GUARDIAN_SERVICE'], null, policy.owner);
+                await this.logger.error(error, ['GUARDIAN_SERVICE'], policy.ownerId);
             }
         }));
     }
@@ -558,7 +558,7 @@ export class PolicyEngine extends NatsService {
         }
 
         notifier.start('Delete policy instance');
-        await this.destroyModel(policyToDelete.id.toString());
+        await this.destroyModel(policyToDelete.id.toString(), user.id);
         const databaseServer = new DatabaseServer(policyToDelete.id.toString());
         await databaseServer.clear(true);
 
@@ -1180,7 +1180,7 @@ export class PolicyEngine extends NatsService {
         notifier.completed();
         if (isValid) {
             if (policy.status === PolicyType.DRY_RUN) {
-                await this.destroyModel(policyId);
+                await this.destroyModel(policyId, owner.id);
                 await DatabaseServer.clearDryRun(policy.id.toString(), true);
             }
             const newPolicy = await this.publishPolicy(policy, owner, version, notifier, logger);
@@ -1323,6 +1323,7 @@ export class PolicyEngine extends NatsService {
 
         notifier.completedAndStart('File parsing');
         const policyToImport = await PolicyImportExport.parseZipFile(message.document, true);
+        policyToImport.policy.ownerId = user.id;
 
         if (!Array.isArray(policyToImport.tags)) {
             policyToImport.tags = [];
@@ -1363,10 +1364,11 @@ export class PolicyEngine extends NatsService {
     /**
      * Destroy Model
      * @param policyId
+     * @param policyOwnerId
      */
-    public async destroyModel(policyId: string): Promise<void> {
+    public async destroyModel(policyId: string, policyOwnerId: string | null): Promise<void> {
         PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
-        new GuardiansService().sendPolicyMessage(PolicyEvents.DELETE_POLICY, policyId, {});
+        new GuardiansService().sendPolicyMessage(PolicyEvents.DELETE_POLICY, policyId, {policyOwnerId});
     }
 
     /**
@@ -1387,7 +1389,8 @@ export class PolicyEngine extends NatsService {
             try {
                 const r = await this.sendMessageWithTimeout<any>(PolicyEvents.GENERATE_POLICY, 1000, {
                     policyId,
-                    skipRegistration: false
+                    skipRegistration: false,
+                    policyOwnerId: policy.ownerId,
                 });
                 confirmed = r.confirmed;
             } catch (e) {
@@ -1419,9 +1422,10 @@ export class PolicyEngine extends NatsService {
     /**
      * Regenerate policy model
      * @param policyId Policy identifier
+     * @param userId
      */
-    public async regenerateModel(policyId: string): Promise<any> {
-        await this.destroyModel(policyId);
+    public async regenerateModel(policyId: string, userId: string | null): Promise<any> {
+        await this.destroyModel(policyId, userId);
         return await this.generateModel(policyId);
     }
 

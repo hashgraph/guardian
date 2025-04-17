@@ -319,7 +319,8 @@ export class MintService {
         const transferNFT = (serials: number[]): Promise<number[] | null> => {
             MintService.logger.debug(
                 `Transfer ${token?.tokenId} serials: ${JSON.stringify(serials)}`,
-                ['POLICY_SERVICE', mintId.toString()]
+                ['POLICY_SERVICE', mintId.toString()],
+                userId
             );
             return workers.addRetryableTask(
                 {
@@ -349,7 +350,7 @@ export class MintService {
             }
         }
         const mintId = Date.now();
-        MintService.log(`Mint(${mintId}): Start (Count: ${tokenValue})`, ref);
+        MintService.log(`Mint(${mintId}): Start (Count: ${tokenValue})`, ref, userId);
 
         const result: number[] = [];
         const workers = new Workers();
@@ -365,7 +366,8 @@ export class MintService {
             MintService.log(
                 `Mint(${mintId}): Minting and transferring (Chunk: ${i * MintService.BATCH_NFT_MINT_SIZE + 1
                 }/${tasks.length * MintService.BATCH_NFT_MINT_SIZE})`,
-                ref
+                ref,
+                userId
             );
             notifier?.step(
                 `Mint(${token.tokenName}): Minting and transferring (Chunk: ${i * MintService.BATCH_NFT_MINT_SIZE + 1
@@ -393,7 +395,8 @@ export class MintService {
                     `Mint(${mintId}): Error (${PolicyUtils.getErrorMessage(
                         error
                     )})`,
-                    ref
+                    ref,
+                    userId
                 );
                 throw error;
             }
@@ -403,13 +406,15 @@ export class MintService {
 
         MintService.log(
             `Mint(${mintId}): Minted (Count: ${Math.floor(tokenValue)})`,
-            ref
+            ref,
+            userId
         );
         MintService.log(
             `Mint(${mintId}): Transferred ${token.treasuryId} -> ${targetAccount} `,
-            ref
+            ref,
+            userId
         );
-        MintService.log(`Mint(${mintId}): End`, ref);
+        MintService.log(`Mint(${mintId}): End`, ref, userId);
 
         return result;
     }
@@ -436,7 +441,7 @@ export class MintService {
         userId?: string
     ): Promise<number | null> {
         const mintId = Date.now();
-        MintService.log(`Mint(${mintId}): Start (Count: ${tokenValue})`, ref);
+        MintService.log(`Mint(${mintId}): Start (Count: ${tokenValue})`, ref, userId);
 
         let result: number | null = null;
         try {
@@ -470,10 +475,10 @@ export class MintService {
             result = tokenValue;
         } catch (error) {
             result = null;
-            MintService.error(`Mint FT(${mintId}): Mint/Transfer Error (${PolicyUtils.getErrorMessage(error)})`, ref);
+            MintService.error(`Mint FT(${mintId}): Mint/Transfer Error (${PolicyUtils.getErrorMessage(error)})`, ref, userId);
         }
 
-        MintService.log(`Mint(${mintId}): End`, ref);
+        MintService.log(`Mint(${mintId}): End`, ref, userId);
 
         return result;
     }
@@ -603,12 +608,14 @@ export class MintService {
     /**
      * Write log message
      * @param message
+     * @param ref
+     * @param userId
      */
-    public static log(message: string, ref?: AnyBlockType,) {
+    public static log(message: string, ref?: AnyBlockType, userId: string | null = null) {
         if (ref) {
-            MintService.logger.info(message, ['GUARDIAN_SERVICE', ref.uuid, ref.blockType, ref.tag, ref.policyId]);
+            MintService.logger.info(message, ['GUARDIAN_SERVICE', ref.uuid, ref.blockType, ref.tag, ref.policyId], userId);
         } else {
-            MintService.logger.info(message, ['GUARDIAN_SERVICE']);
+            MintService.logger.info(message, ['GUARDIAN_SERVICE'], userId);
         }
 
     }
@@ -617,11 +624,11 @@ export class MintService {
      * Write error message
      * @param message
      */
-    public static error(message: string, ref?: AnyBlockType,) {
+    public static error(message: string, ref?: AnyBlockType, userId: string | null = null) {
         if (ref) {
-            MintService.logger.error(message, ['GUARDIAN_SERVICE', ref.uuid, ref.blockType, ref.tag, ref.policyId]);
+            MintService.logger.error(message, ['GUARDIAN_SERVICE', ref.uuid, ref.blockType, ref.tag, ref.policyId], userId);
         } else {
-            MintService.logger.error(message, ['GUARDIAN_SERVICE']);
+            MintService.logger.error(message, ['GUARDIAN_SERVICE'], userId);
         }
 
     }
@@ -630,11 +637,11 @@ export class MintService {
      * Write warn message
      * @param message
      */
-    public static warn(message: string, ref?: AnyBlockType,) {
+    public static warn(message: string, ref?: AnyBlockType, userId: string | null = null) {
         if (ref) {
-            MintService.logger.warn(message, ['GUARDIAN_SERVICE', ref.uuid, ref.blockType, ref.tag, ref.policyId]);
+            MintService.logger.warn(message, ['GUARDIAN_SERVICE', ref.uuid, ref.blockType, ref.tag, ref.policyId], userId);
         } else {
-            MintService.logger.warn(message, ['GUARDIAN_SERVICE']);
+            MintService.logger.warn(message, ['GUARDIAN_SERVICE'], userId);
         }
 
     }

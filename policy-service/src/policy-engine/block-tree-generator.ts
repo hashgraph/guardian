@@ -333,12 +333,12 @@ export class BlockTreeGenerator extends NatsService {
         });
     }
 
-    public async destroyModel(policyId: string, logger: PinoLogger): Promise<void> {
+    public async destroyModel(policyId: string, logger: PinoLogger, policyOwnerId: string | null): Promise<void> {
         try {
             await RecordUtils.DestroyRecording(policyId);
             await RecordUtils.DestroyRunning(policyId);
         } catch (error) {
-            await logger.error(`Error destroy policy ${error}`, ['POLICY', policyId.toString()]);
+            await logger.error(`Error destroy policy ${error}`, ['POLICY', policyId.toString()], policyOwnerId);
         }
     }
 
@@ -348,12 +348,14 @@ export class BlockTreeGenerator extends NatsService {
      * @param skipRegistration
      * @param policyValidator
      * @param logger
+     * @param policyOwnerId
      */
     public async generate(
         policy: Policy,
         skipRegistration: boolean,
         policyValidator: PolicyValidator,
-        logger: PinoLogger
+        logger: PinoLogger,
+        policyOwnerId: string | null
     ): Promise<IPolicyBlock | { type: 'error', message: string }> {
         if (!policy || (typeof policy !== 'object')) {
             throw new Error('Policy was not exist');
@@ -392,7 +394,7 @@ export class BlockTreeGenerator extends NatsService {
 
             return rootInstance;
         } catch (error) {
-            await logger.error(`Error build policy ${error}`, ['POLICY', policy.name, policyId.toString()]);
+            await logger.error(`Error build policy ${error}`, ['POLICY', policy.name, policyId.toString()], policyOwnerId);
             policyValidator.addError(typeof error === 'string' ? error : error.message);
             return {
                 type: 'error',

@@ -24,8 +24,4 @@ export interface ILog {
      * User Id
      */
     userId?: string | null;
-    /**
-     * User Did
-     */
-    userDid?: string | null;
 }

@@ -1123,7 +1123,7 @@ export class PolicyEngineService {
                     let retVal = await DatabaseServer.updatePolicy(model);
                     retVal = await PolicyImportExportHelper.updatePolicyComponents(retVal, logger, userId);
 
-                    await this.policyEngine.destroyModel(model.id.toString());
+                    await this.policyEngine.destroyModel(model.id.toString(), userId);
 
                     const databaseServer = new DatabaseServer(model.id.toString());
                     await databaseServer.clear(true);
@@ -1251,6 +1251,7 @@ export class PolicyEngineService {
                     }
                     await logger.info(`Import policy by file`, ['GUARDIAN_SERVICE'], userId);
                     const policyToImport = await PolicyImportExport.parseZipFile(Buffer.from(zip.data), true);
+                    policyToImport.policy.ownerId = userId
                     const result = await PolicyImportExportHelper.importPolicy(
                         policyToImport,
                         owner,
@@ -1295,6 +1296,7 @@ export class PolicyEngineService {
                     await logger.info(`Import policy by file`, ['GUARDIAN_SERVICE'], userId);
                     notifier.start('File parsing');
                     const policyToImport = await PolicyImportExport.parseZipFile(Buffer.from(zip.data), true);
+                    policyToImport.policy.ownerId = userId
                     notifier.completed();
                     const result = await PolicyImportExportHelper.importPolicy(
                         policyToImport,
@@ -1845,7 +1847,8 @@ export class PolicyEngineService {
                         emptyNotifier()
                     );
                     await this.policyEngine.regenerateModel(
-                        migrationConfig.policies.dst
+                        migrationConfig.policies.dst,
+                        userId
                     );
                     if (migrationErrors.length > 0) {
                         await logger.warn(
@@ -1876,7 +1879,7 @@ export class PolicyEngineService {
                                     notifier
                                 );
                             await this.policyEngine.regenerateModel(
-                                migrationConfig.policies.dst
+                                migrationConfig.policies.dst, userId
                             );
                             if (migrationErrors.length > 0) {
                                 await logger.warn(

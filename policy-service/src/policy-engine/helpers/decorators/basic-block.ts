@@ -683,7 +683,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @protected
              */
             protected log(message: string) {
-                this.logger.info(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId]);
+                this.logger.info(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId], this.policyInstance.ownerId);
             }
 
             /**
@@ -692,7 +692,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @protected
              */
             protected error(message: string) {
-                this.logger.error(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId]);
+                this.logger.error(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId], this.policyInstance.ownerId);
             }
 
             /**
@@ -701,7 +701,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @protected
              */
             protected warn(message: string) {
-                this.logger.warn(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId]);
+                this.logger.warn(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId], this.policyInstance.ownerId);
             }
 
             /**
