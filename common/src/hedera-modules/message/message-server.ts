@@ -120,10 +120,11 @@ export class MessageServer {
     /**
      * Message starting
      * @param name
+     * @param userId
      */
-    public async messageStartLog(name: string): Promise<string> {
+    public async messageStartLog(name: string, userId: string | null): Promise<string> {
         const id = GenerateUUIDv4();
-        await new TransactionLogger().messageLog(id, name);
+        await new TransactionLogger().messageLog(id, name, userId);
         return id;
     }
 
@@ -131,9 +132,10 @@ export class MessageServer {
      * Message end log
      * @param id
      * @param name
+     * @param userId
      */
-    public async messageEndLog(id: string, name: string): Promise<void> {
-        await new TransactionLogger().messageLog(id, name);
+    public async messageEndLog(id: string, name: string, userId: string | null): Promise<void> {
+        await new TransactionLogger().messageLog(id, name, userId);
     }
 
     /**
@@ -232,12 +234,12 @@ export class MessageServer {
             this.clientOptions.operatorKey
         );
         if (buffers && buffers.length) {
-            const time = await this.messageStartLog('IPFS');
+            const time = await this.messageStartLog('IPFS', userId);
             const promises = buffers.map(buffer => {
                 return this.addFile(buffer, userId);
             });
             const urls = await Promise.all(promises);
-            await this.messageEndLog(time, 'IPFS');
+            await this.messageEndLog(time, 'IPFS', userId);
             message.setUrls(urls);
         } else {
             message.setUrls([]);
@@ -433,7 +435,7 @@ export class MessageServer {
         }
 
         message.setLang(MessageServer.lang);
-        const time = await this.messageStartLog('Hedera');
+        const time = await this.messageStartLog('Hedera', userId);
         const buffer = message.toMessage();
       const timestamp = await new Workers().addRetryableTask({
             type: WorkerTaskType.SEND_HEDERA,
@@ -448,10 +450,10 @@ export class MessageServer {
                 signOptions: this.signOptions,
                 memo: memo || MessageMemo.getMessageMemo(message),
                 dryRun: this.dryRun,
-                payload: { userId }
+                payload: { userId },
             }
         }, 10, 0, userId);
-        await this.messageEndLog(time, 'Hedera');
+        await this.messageEndLog(time, 'Hedera', userId);
       message.setId(timestamp);
         message.setTopicId(this.topicId);
         return message;
