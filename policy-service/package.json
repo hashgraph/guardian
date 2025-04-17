@@ -22,7 +22,7 @@
         "@meeco/cryppo": "2.0.2",
         "@mikro-orm/core": "6.2.2",
         "@mikro-orm/mongodb": "6.2.2",
-        "@nestjs/common": "^9.4.1",
+        "@nestjs/common": "^11.0.16",
         "@nestjs/core": "^9.4.1",
         "@nestjs/microservices": "^9.4.1",
         "@transmute/credentials-context": "0.7.0-unstable.80",
