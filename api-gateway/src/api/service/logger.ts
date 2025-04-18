@@ -68,6 +68,12 @@ export class LoggerApi {
     ): Promise<LogResultDTO> {
         try {
             const filters: any = {};
+
+            filters.$or = [
+                { userId: user.id },
+                { userId: null }
+            ];
+
             const pageParameters: IPageParameters = {};
             if (!body) {
                 body = {};
