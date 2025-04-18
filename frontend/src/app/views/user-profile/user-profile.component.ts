@@ -151,6 +151,7 @@ export class UserProfileComponent implements OnInit {
         this.vcDocumentForm = new UntypedFormGroup({});
         this.remoteCredentialsForm = new UntypedFormGroup({
             id: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()]),
+            topicId: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()]),
         });
         this.remoteDidDocumentForm = new UntypedFormControl('', [Validators.required]);
 
@@ -648,26 +649,39 @@ export class UserProfileComponent implements OnInit {
     }
 
     public get validForm(): boolean {
-        if (!this.standardRegistryForm.valid) {
-            return false;
-        }
-        if (!this.hederaCredentialsForm.valid) {
-            return false;
-        }
-        if (this.didDocumentType.value) {
-            if (!this.didDocumentForm.valid) {
+        if (this.locationType.value) {
+            if (!this.standardRegistryForm.valid) {
                 return false;
             }
-            if (!this.didKeysForm.valid) {
+            if (!this.remoteCredentialsForm.valid) {
                 return false;
             }
-        }
-        if (this.vcDocumentType.value) {
-            if (!this.vcDocumentForm.valid) {
+            if (!this.remoteDidDocumentForm.valid) {
                 return false;
             }
+            return true;
+        } else {
+            if (!this.standardRegistryForm.valid) {
+                return false;
+            }
+            if (!this.hederaCredentialsForm.valid) {
+                return false;
+            }
+            if (this.didDocumentType.value) {
+                if (!this.didDocumentForm.valid) {
+                    return false;
+                }
+                if (!this.didKeysForm.valid) {
+                    return false;
+                }
+            }
+            if (this.vcDocumentType.value) {
+                if (!this.vcDocumentForm.valid) {
+                    return false;
+                }
+            }
+            return true;
         }
-        return true;
     }
 
     private onSubmit() {
@@ -814,6 +828,7 @@ export class UserProfileComponent implements OnInit {
             profile.parent = data.standardRegistry;
             profile.hederaAccountId = data.hederaCredentials.id?.trim();
             profile.didDocument = data.didDocument;
+            profile.topicId = data.topicId;
         } else {
             //Local
             const data = this.localFullForm.value;
@@ -882,8 +897,8 @@ export class UserProfileComponent implements OnInit {
                 hederaAccountId: this.profile.hederaAccountId,
                 topicId: this.profile.topicId,
                 did: this.profile.did,
-                didDocument: this.profile.didDocument,
-                vcDocument: this.profile.vcDocument,
+                didDocument: this.profile.didDocument?.document,
+                vcDocument: this.profile.vcDocument?.document,
             }
             const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));
             const downloadAnchorNode = document.createElement('a');
@@ -893,5 +908,19 @@ export class UserProfileComponent implements OnInit {
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
         }
+    }
+
+    public importFromFile(event: any) {
+        const reader = new FileReader()
+        reader.readAsText(event);
+        reader.addEventListener('load', (e: any) => {
+            const json = e.target.result;
+            const config = JSON.parse(json);
+            this.remoteCredentialsForm.setValue({
+                id: config.hederaAccountId,
+                topicId: config.hederaAccountId
+            })
+            this.remoteDidDocumentForm.setValue(JSON.stringify(config.didDocument))
+        });
     }
 }

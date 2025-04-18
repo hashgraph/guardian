@@ -38,7 +38,7 @@ import { PolicyDataMigrator } from './helpers/policy-data-migrator.js';
 import { PolicyDataLoader, VcDocumentLoader, VpDocumentLoader } from './helpers/policy-data/loaders/index.js';
 import { PolicyDataImportExport } from './helpers/policy-data/policy-data-import-export.js';
 import { PolicyComponentsUtils } from './policy-components-utils.js';
-import { PolicyEngine } from './policy-engine.js';
+import { PolicyAccessCode, PolicyEngine } from './policy-engine.js';
 import { IPolicyUser } from './policy-user.js';
 import { getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage, SchemaImportExportHelper } from '../helpers/import-helpers/index.js';
 
@@ -701,6 +701,7 @@ export class PolicyEngineService {
                     }
                     await this.policyEngine.addAccessFilters(_filters, owner);
                     await this.policyEngine.addLocationFilters(_filters, type);
+                    console.debug(JSON.stringify(_filters,null,4))
                     const [policies, count] = await DatabaseServer.getPoliciesAndCount(_filters, otherOptions);
                     for (const policy of policies) {
                         await PolicyComponentsUtils.GetPolicyInfo(policy, owner.creator);
@@ -846,10 +847,10 @@ export class PolicyEngineService {
                     const { policyId, owner, action } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     const code = await this.policyEngine.accessPolicyCode(policy, owner);
-                    if (code === 1) {
+                    if (code === PolicyAccessCode.NOT_EXIST) {
                         return new MessageError('Policy does not exist.', 404);
                     }
-                    if (code === 2) {
+                    if (code === PolicyAccessCode.UNAVAILABLE) {
                         return new MessageError(`Insufficient permissions to ${action} the policy.`, 403);
                     }
                     return new MessageResponse(policy);

@@ -7,6 +7,7 @@ export enum WorkerTaskType {
     SEND_HEDERA = 'send-hedera',
     CREATE_ACCOUNT = 'create-account',
     GET_USER_BALANCE = 'get-user-balance',
+    GET_USER_BALANCE_REST = 'get-user-balance-rest',
     GET_ACCOUNT_INFO = 'get-account-info',
     CREATE_TOKEN = 'create-token',
     UPDATE_TOKEN = 'update-token',

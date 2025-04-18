@@ -374,6 +374,7 @@ export class PoliciesComponent implements OnInit {
             case PolicyStatus.DISCONTINUED:
             case PolicyStatus.PUBLISH_ERROR:
                 return 'red';
+            case PolicyStatus.VIEW:
             case PolicyStatus.PUBLISH:
                 return expired ? 'yellow' : 'green';
             default:
@@ -393,6 +394,8 @@ export class PoliciesComponent implements OnInit {
                 return `Published${expired ? '*' : ''}`;
             case PolicyStatus.DISCONTINUED:
                 return `Discontinued`;
+            case PolicyStatus.VIEW:
+                return `View`;
             default:
                 return 'Incorrect status';
         }

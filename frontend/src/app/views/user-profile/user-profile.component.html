@@ -418,6 +418,14 @@
                                 Hedera Credentials
                             </div>
                             <div class="hedera-credentials-form-container">
+
+                                <app-file-drag-n-drop 
+                                    class="drag-n-drop"
+                                    [multiple]="false"
+                                    [fileExtension]="'user'" 
+                                    (onFileLoaded)="importFromFile($event)"
+                                    [dropZoneLabel]="'Add user .user file'"></app-file-drag-n-drop>
+
                                 <form [formGroup]="remoteCredentialsForm" class="hedera-form">
                                     <div class="input-field-container">
                                         <label class="form-label" htmlFor="operatorId">
@@ -431,9 +439,24 @@
                                             type="text"
                                         />
                                     </div>
+                                    <div class="input-field-container">
+                                        <label class="form-label" htmlFor="operatorId">
+                                            * TOPIC ID:
+                                        </label>
+                                        <input
+                                            formControlName="topicId"
+                                            id="topicId"
+                                            pInputText
+                                            placeholder="0.0.1548173"
+                                            type="text"
+                                        />
+                                    </div>
                                 </form>
                                 <form class="hedera-form">
                                     <div class="form-group example-full-width">
+                                        <label class="form-label" htmlFor="operatorId">
+                                            * DID DOCUMENT:
+                                        </label>
                                         <textarea
                                             pInputTextarea
                                             id="didDocumentTextarea"

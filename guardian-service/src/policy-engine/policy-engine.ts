@@ -93,6 +93,12 @@ interface IPublishResult {
     errors: ISerializedErrors;
 }
 
+export enum PolicyAccessCode {
+    AVAILABLE = 0,
+    NOT_EXIST = 1,
+    UNAVAILABLE = 2
+}
+
 /**
  * Policy engine service
  */
@@ -191,44 +197,51 @@ export class PolicyEngine extends NatsService {
      * @param policy
      * @param user
      */
-    public async accessPolicyCode(policy: Policy, user: IOwner): Promise<number> {
+    public async accessPolicyCode(policy: Policy, user: IOwner): Promise<PolicyAccessCode> {
         if (!policy) {
             //Policy does not exist
-            return 1;
+            return PolicyAccessCode.NOT_EXIST;
+        }
+        if (policy.locationType === LocationType.REMOTE) {
+            if (policy.status === PolicyStatus.VIEW) {
+                return PolicyAccessCode.AVAILABLE;
+            } else {
+                return PolicyAccessCode.UNAVAILABLE;
+            }
         }
         if (user.owner !== policy.owner) {
             //Insufficient permissions
-            return 2;
+            return PolicyAccessCode.UNAVAILABLE;
         }
         if (user.creator === policy.creator) {
-            return 0;
+            return PolicyAccessCode.AVAILABLE;
         }
         const published = (policy.status === PolicyStatus.PUBLISH || policy.status === PolicyStatus.DISCONTINUED);
         const assigned = await DatabaseServer.getAssignedEntity(AssignedEntityType.Policy, policy.id, user.creator);
 
         switch (user.access) {
             case AccessType.ALL: {
-                return 0;
+                return PolicyAccessCode.AVAILABLE;
             }
             case AccessType.ASSIGNED_OR_PUBLISHED: {
-                return (published || assigned) ? 0 : 2;
+                return (published || assigned) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
             }
             case AccessType.PUBLISHED: {
-                return (published) ? 0 : 2;
+                return (published) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
             }
             case AccessType.ASSIGNED: {
-                return (assigned) ? 0 : 2;
+                return (assigned) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
             }
             case AccessType.ASSIGNED_AND_PUBLISHED: {
-                return (published && assigned) ? 0 : 2;
+                return (published && assigned) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
             }
             case AccessType.NONE: {
                 //Insufficient permissions
-                return 2;
+                return PolicyAccessCode.UNAVAILABLE;
             }
             default: {
                 //Insufficient permissions
-                return 2;
+                return PolicyAccessCode.UNAVAILABLE;
             }
         }
     }
@@ -240,10 +253,10 @@ export class PolicyEngine extends NatsService {
      */
     public async accessPolicy(policy: Policy, user: IOwner, action: string): Promise<boolean> {
         const code = await this.accessPolicyCode(policy, user);
-        if (code === 1) {
+        if (code === PolicyAccessCode.NOT_EXIST) {
             throw new Error('Policy does not exist.');
         }
-        if (code === 2) {
+        if (code === PolicyAccessCode.UNAVAILABLE) {
             throw new Error(`Insufficient permissions to ${action} the policy.`);
         }
         return true;
@@ -255,7 +268,8 @@ export class PolicyEngine extends NatsService {
      * @param user
      */
     public async addAccessFilters(filters: { [field: string]: any }, user: IOwner): Promise<any> {
-        filters.owner = user.owner;
+        const subFilters: any = {};
+        subFilters.owner = user.owner;
         switch (user.access) {
             case AccessType.ALL: {
                 break;
@@ -263,38 +277,42 @@ export class PolicyEngine extends NatsService {
             case AccessType.ASSIGNED_OR_PUBLISHED: {
                 const assigned = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
                 const assignedMap = assigned.map((e) => e.entityId);
-                filters.$or = [
+                subFilters.$or = [
                     { status: { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] } },
                     { id: { $in: assignedMap } }
                 ];
                 break;
             }
             case AccessType.PUBLISHED: {
-                filters.status = { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] };
+                subFilters.status = { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] };
                 break;
             }
             case AccessType.ASSIGNED: {
                 const assigned = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
                 const assignedMap = assigned.map((e) => e.entityId);
-                filters.id = { $in: assignedMap };
+                subFilters.id = { $in: assignedMap };
                 break;
             }
             case AccessType.ASSIGNED_AND_PUBLISHED: {
                 const assigned = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
                 const assignedMap = assigned.map((e) => e.entityId);
-                filters.id = { $in: assignedMap };
-                filters.status = { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] };
+                subFilters.id = { $in: assignedMap };
+                subFilters.status = { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] };
                 break;
             }
             case AccessType.NONE: {
-                filters.id = { $in: [] };
+                subFilters.id = { $in: [] };
                 break;
             }
             default: {
-                filters.id = { $in: [] };
+                subFilters.id = { $in: [] };
                 break;
             }
         }
+        filters.$or = [{
+            locationType: { $eq: LocationType.REMOTE },
+            status: PolicyStatus.VIEW
+        }, subFilters]
     }
 
     /**

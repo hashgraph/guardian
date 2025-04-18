@@ -1,5 +1,5 @@
 import { DatabaseServer, DidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method, IAuthUser, KeyType, PolicyRoles, Users, Wallet } from '@guardian/common';
-import { ISignOptions, Permissions, PolicyRole, PolicyStatus, SignType } from '@guardian/interfaces';
+import { ISignOptions, LocationType, Permissions, PolicyRole, PolicyStatus, SignType } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyDocument, IPolicyInstance } from './policy-engine.interface.js';
 
 /**
@@ -60,6 +60,14 @@ export class PolicyUser {
      * Permissions
      */
     public readonly permissions: string[];
+    /**
+     * Location
+     */
+    public readonly location: LocationType;
+    /**
+     * Location
+     */
+    public readonly policyLocation: LocationType;
 
     constructor(
         arg: IAuthUser | string,
@@ -69,10 +77,12 @@ export class PolicyUser {
             this.did = arg;
             this.username = null;
             this.permissions = [];
+            this.location = LocationType.LOCAL;
         } else {
             this.did = arg.did;
             this.username = arg.username;
             this.permissions = arg.permissions || [];
+            this.location = arg.location || LocationType.LOCAL;
         }
         this.role = null;
         this.group = null;
@@ -80,6 +90,7 @@ export class PolicyUser {
         this.policyId = instance.policyId;
         this.policyOwner = instance.policyOwner;
         this.policyStatus = instance.policyStatus;
+        this.policyLocation = instance.locationType;
     }
 
     public get id(): string {
@@ -142,8 +153,10 @@ export class PolicyUser {
 
     public get isAdmin(): boolean {
         return (
-            this._did === this.policyOwner ||
-            this.permissions.includes(Permissions.POLICIES_POLICY_MANAGE)
+            this.policyLocation !== LocationType.REMOTE && (
+                this._did === this.policyOwner ||
+                this.permissions.includes(Permissions.POLICIES_POLICY_MANAGE)
+            )
         );
     }
 
