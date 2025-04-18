@@ -68,9 +68,24 @@ export class LoggerService {
         try {
             const nameFilter = `.*${msg.name || ''}.*`;
             const existingAttributes = msg.existingAttributes || [];
+            const userId = msg.userId;
 
-            const aggregateAttrResult =
-                await logRepository.aggregate(Log, logRepository.getAttributesAggregationFilters(MAP_ATTRIBUTES_AGGREGATION_FILTERS.RESULT, nameFilter, existingAttributes) as FilterObject<any>[]);
+            const pipeline = logRepository.getAttributesAggregationFilters(
+                MAP_ATTRIBUTES_AGGREGATION_FILTERS.RESULT,
+                nameFilter,
+                existingAttributes
+            ) as FilterObject<any>[];
+
+            pipeline.unshift({
+                $match: {
+                    $or: [
+                        { userId },
+                        { userId: null }
+                    ]
+                }
+            });
+
+            const aggregateAttrResult = await logRepository.aggregate(Log, pipeline);
 
             return new MessageResponse(aggregateAttrResult[0].uniqueValues?.sort() || []);
         }
