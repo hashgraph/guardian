@@ -68,6 +68,7 @@ export class LabelAnalyticsDTO implements LabelAnalytics {
     @ApiProperty({
         description: 'Label Config',
         type: 'object',
+        additionalProperties: true,
     })
     config?: any;
 }

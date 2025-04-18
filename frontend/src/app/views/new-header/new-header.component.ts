@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input, OnInit, AfterViewInit, ElementRef, ViewChild, NgZone, AfterViewChecked} from '@angular/core';
 import {getMenuItems, NavbarMenuItem} from './menu.model';
 import {IUser, UserCategory, UserPermissions, UserRole} from '@guardian/interfaces';
 import {AuthStateService} from '../../services/auth-state.service';
@@ -15,7 +15,7 @@ import {BrandingService} from '../../services/branding.service';
     templateUrl: './new-header.component.html',
     styleUrls: ['./new-header.component.scss'],
 })
-export class NewHeaderComponent implements OnInit {
+export class NewHeaderComponent implements OnInit, AfterViewChecked {
     public isLogin: boolean = false;
     public user: UserPermissions = new UserPermissions();
     public username: string | null = null;
@@ -33,6 +33,10 @@ export class NewHeaderComponent implements OnInit {
     private authSubscription!: any;
 
     @Input() remoteContainerMethod: any;
+
+    @ViewChild('usernameSpan', { static: false }) usernameSpanRef!: ElementRef;
+    public isUsernameOverflowing: boolean = false;
+    private usernameChecked = false;
 
     constructor(
         public authState: AuthStateService,
@@ -77,6 +81,22 @@ export class NewHeaderComponent implements OnInit {
         this.authSubscription = this.auth.subscribe((token) => {
             if (token) {
                 this.getBalance();
+            }
+        });
+    }
+
+    ngAfterViewChecked(): void {
+        if (!this.usernameChecked && this.usernameSpanRef?.nativeElement && this.username) {
+            this.checkUsernameOverflow();
+            this.usernameChecked = true;
+        }
+    }
+
+    ngAfterViewInit(): void {
+        setTimeout(() => {
+            if (!this.usernameSpanRef) {
+            } else {
+                this.checkUsernameOverflow();
             }
         });
     }
@@ -164,6 +184,14 @@ export class NewHeaderComponent implements OnInit {
         });
     }
 
+    private checkUsernameOverflow(): void {
+        if (!this.usernameSpanRef) {
+            return;
+        }
+        const el = this.usernameSpanRef.nativeElement;
+        this.isUsernameOverflowing = el.scrollWidth > el.clientWidth;
+    }
+
     private setStatus(isLogin: boolean, user: any) {
         const username = user ? user.username : null;
         if (this.isLogin !== isLogin || this.username !== username) {
@@ -172,6 +200,8 @@ export class NewHeaderComponent implements OnInit {
             this.user = new UserPermissions(user);
             this.menuItems = getMenuItems(this.user);
         }
+
+        setTimeout(() => this.checkUsernameOverflow());
     }
 
     public logOut() {

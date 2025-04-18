@@ -20,7 +20,7 @@ SECRET_MANAGER can assume the following values:  ['hcp', 'aws', 'azure']
 On the other hand the following variables have been mantained for compliance backward reason, and possible developed guardian extensions, but are not used for the Guardian Secret Manager implementation.
 
     VAULT_PROVIDER="database"               #Always set to "database"
-    HASHICORP_TOKEN="1234"                  #just written in NodeVault.VaultOptions never used
+    HASHICORP_TOKEN="Q5D>3nu+Z#TbN.@9PWHSyL"                  #just written in NodeVault.VaultOptions never used
     HASHICORP_ADDRESS="http://vault:8200"   #just written in NodeVault.VaultOptions never used
     HASHICORP_NAMESPACE="admin"             #just written in NodeVault.VaultOptions never used
     #HASHICORP_UNSEAL_KEY=""                #unused at the moment

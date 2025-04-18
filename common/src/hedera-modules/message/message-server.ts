@@ -408,7 +408,7 @@ export class MessageServer {
                     result.push(item);
                 }
             } catch (error) {
-                continue;
+                console.error(error.message);
             }
         }
         return result as T[];
@@ -510,7 +510,7 @@ export class MessageServer {
                         result.push(item);
                     }
                 } catch (error) {
-                    continue;
+                    console.error(error.message);
                 }
             }
             return result;
@@ -694,7 +694,7 @@ export class MessageServer {
             }
         }, 10);
 
-        new PinoLogger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE']);
+        new PinoLogger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE', operatorId]);
         const result: Message[] = [];
         for (const message of messages) {
             try {
@@ -714,7 +714,7 @@ export class MessageServer {
                     result.push(item);
                 }
             } catch (error) {
-                continue;
+                console.error(error.message);
             }
         }
         return result;
