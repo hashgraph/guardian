@@ -3,9 +3,13 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
 
-    let moduleId1, moduleId2
+    const SRUsername = Cypress.env('SRUser');
+    const moduleName = "FirstAPIModule";
+
+    let lastModule, prelastModule;
+    let moduleId, moduleId2;
+
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
@@ -16,19 +20,51 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                moduleId1 = response.body.at(0).id;
-                moduleId2 = response.body.at(1).id;
+                lastModule = response.body.at(0).id;
+                prelastModule = response.body.at(1).id;
+                response.body.forEach(element => {
+                    if (element.name === moduleName)
+                        moduleId = element.id;
+                    else if (new RegExp("^" + moduleName + "_\\d+$", "g").test(element.name))
+                        moduleId2 = element.id;
+                });
             });
         });
     })
 
-    it("Compare modules", { tags: ['smoke'] }, () => {
+    it("Compare any modules", { tags: ['smoke'] }, () => {
         Authorization.getAccessTokenByRefreshToken().then((authorization) => {
             cy.request({
                 method: METHOD.POST,
                 url: API.ApiServer + API.ModuleCompare,
                 body: {
-                    moduleId1: moduleId1,
+                    moduleId1: lastModule,
+                    moduleId2: prelastModule,
+                    eventsLvl: 1,
+                    propLvl: 2,
+                    childrenLvl: 2,
+                    idLvl: 0
+                },
+                headers: {
+                    authorization,
+                }
+            }).then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.OK);
+
+                expect(response.body.left.id).to.eq(lastModule);
+                expect(response.body.right.id).to.eq(prelastModule);
+                expect(response.body.total).to.match(new RegExp("^([0-9][0-9])|100$"));
+            })
+        })
+    });
+
+    it("Compare modules", () => {
+        Authorization.getAccessTokenByRefreshToken().then((authorization) => {
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.ModuleCompare,
+                body: {
+                    moduleId1: moduleId,
                     moduleId2: moduleId2,
                     eventsLvl: 1,
                     propLvl: 2,
@@ -40,9 +76,18 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
                 }
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                expect(response.body.left.id).to.eq(moduleId1);
+
+                expect(response.body.left).eql({
+                    id: moduleId,
+                    name: moduleName,
+                    description: moduleName + " desc"
+                });
+
                 expect(response.body.right.id).to.eq(moduleId2);
-                expect(response.body.total).not.null;
+                expect(response.body.right.description).to.eq(moduleName + " desc");
+                expect(response.body.right.name).to.match(new RegExp("^" + moduleName + "_\\d+$", "g"));
+
+                expect(response.body.total).eql(100);
             })
         })
     });
@@ -115,7 +160,7 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
                 method: METHOD.POST,
                 url: API.ApiServer + API.ModuleCompare + API.ExportCSV,
                 body: {
-                    moduleId1: moduleId1,
+                    moduleId1: moduleId,
                     moduleId2: moduleId2,
                     eventsLvl: 1,
                     propLvl: 2,
