@@ -1710,28 +1710,59 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
-     * Get Block State
-     * @param policyId
-     * @param uuid
-     *
-     * @virtual
-     */
-    public async getBlockState(policyId: string, uuid: string): Promise<BlockState | null> {
-        return await this.findOne(BlockState, {
-            policyId,
-            blockId: uuid
-        });
-    }
-
-    /**
      * Get block states
      * @param policyId Policy identifier
      * @returns Block states
      */
     public async getBlockStates(policyId: string): Promise<BlockState[]> {
-        return await this.find(BlockState, {
-            policyId
+        return await this.find(BlockState, { policyId });
+    }
+
+    /**
+     * Get Block State
+     * @param policyId
+     * @param blockId
+     * @param blockTag
+     *
+     * @virtual
+     */
+    public async getBlockState(
+        policyId: string,
+        blockId: string,
+        blockTag: string
+    ): Promise<BlockState | null> {
+        return await this.findOne(BlockState, {
+            policyId,
+            $or: [{
+                blockId
+            }, {
+                blockTag
+            }]
+
         });
+    }
+
+    /**
+     * Save Block State
+     * @param policyId
+     * @param blockId
+     * @param blockTag
+     * @param state
+     *
+     * @virtual
+     */
+    public async saveBlockState(
+        policyId: string,
+        blockId: string,
+        blockTag: string,
+        state: unknown
+    ): Promise<void> {
+        let stateEntity = await this.findOne(BlockState, { policyId, blockId });
+        if (!stateEntity) {
+            stateEntity = this.create(BlockState, { policyId, blockId });
+        }
+        stateEntity.blockState = JSON.stringify(state);
+        await this.save(BlockState, stateEntity);
     }
 
     /**
@@ -3457,29 +3488,6 @@ export class DatabaseServer extends AbstractDatabaseServer {
             });
         }
         await this.save(BlockCache, stateEntity);
-    }
-
-    /**
-     * Save Block State
-     * @param policyId
-     * @param uuid
-     * @param state
-     *
-     * @virtual
-     */
-    public async saveBlockState(policyId: string, uuid: string, state: unknown): Promise<void> {
-        let stateEntity = await this.findOne(BlockState, {
-            policyId,
-            blockId: uuid
-        });
-        if (!stateEntity) {
-            stateEntity = this.create(BlockState, {
-                policyId,
-                blockId: uuid
-            });
-        }
-        stateEntity.blockState = JSON.stringify(state);
-        await this.save(BlockState, stateEntity);
     }
 
     /**

@@ -530,8 +530,7 @@ export class PolicyComponentsUtils {
                 blockList
             );
         } else {
-            blockList =
-                PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
+            blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
         }
         blockList.push(component.uuid);
 
@@ -856,8 +855,7 @@ export class PolicyComponentsUtils {
      * @param policyId
      */
     public static async UnregisterBlocks(policyId: string) {
-        const blockList =
-            PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
+        const blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
         for (const uuid of blockList) {
             const component = PolicyComponentsUtils.BlockByBlockId.get(uuid);
             if (component) {
@@ -1001,9 +999,7 @@ export class PolicyComponentsUtils {
      * Get block instance by uuid
      * @param uuid
      */
-    public static GetBlockByUUID<
-        T extends IPolicyInterfaceBlock | IPolicyBlock
-    >(uuid: string): T {
+    public static GetBlockByUUID<T extends IPolicyInterfaceBlock | IPolicyBlock>(uuid: string): T {
         return PolicyComponentsUtils.BlockByBlockId.get(uuid) as T;
     }
 
@@ -1016,8 +1012,7 @@ export class PolicyComponentsUtils {
         policyId: string,
         tag: string
     ): T {
-        const uuid =
-            PolicyComponentsUtils.TagMapByPolicyId.get(policyId).get(tag);
+        const uuid = PolicyComponentsUtils.TagMapByPolicyId.get(policyId).get(tag);
         return PolicyComponentsUtils.BlockByBlockId.get(uuid) as T;
     }
 
@@ -1477,6 +1472,16 @@ export class PolicyComponentsUtils {
     public static backup(policyId: string) {
         if (PolicyComponentsUtils.BackupControllers.has(policyId)) {
             PolicyComponentsUtils.BackupControllers.get(policyId).backup();
+        }
+    }
+
+    public static async restoreState(policyId: string) {
+        const blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
+        for (const uuid of blockList) {
+            const component = PolicyComponentsUtils.BlockByBlockId.get(uuid);
+            if (component) {
+                await component.restoreState();
+            }
         }
     }
 }

@@ -1434,21 +1434,23 @@ export abstract class AbstractDatabaseServer {
     /**
      * Save Block State
      * @param policyId
-     * @param uuid
+     * @param blockId
+     * @param blockTag
      * @param state
      *
      * @virtual
      */
-    public abstract saveBlockState(policyId: string, uuid: string, state: unknown): Promise<void>;
+    public abstract saveBlockState(policyId: string, blockId: string, blockTag: string, state: unknown): Promise<void>;
 
     /**
      * Get Block State
      * @param policyId
-     * @param uuid
+     * @param blockId
+     * @param blockTag
      *
      * @virtual
      */
-    public abstract getBlockState(policyId: string, uuid: string): Promise<BlockState | null>;
+    public abstract getBlockState(policyId: string, blockId: string, blockTag: string): Promise<BlockState | null>;
 
     /**
      * Get block states

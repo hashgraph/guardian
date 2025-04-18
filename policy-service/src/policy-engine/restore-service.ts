@@ -1,6 +1,7 @@
 import { IPolicyDiff, PolicyBackup, PolicyRestore } from "./db-restore/index.js";
 import { FileHelper } from "./db-restore/file-helper.js";
 import { DatabaseServer, ITopicMessage, MessageAction, MessageServer, MessageType, Policy, PolicyDiffMessage, TopicConfig, TopicListener, Users, Wallet } from "@guardian/common";
+import { PolicyComponentsUtils } from "./policy-components-utils.js";
 
 class Timer {
     private readonly min: number;
@@ -189,6 +190,7 @@ export class PolicyRestoreService {
             await MessageServer.loadDocument(message);
             const file = await FileHelper.unZipFile(message.document);
             await this.controller.restore(file);
+            await PolicyComponentsUtils.restoreState(this.policyId);
             console.debug('--- task --');
         } catch (error) {
             console.log(error);

@@ -36,6 +36,15 @@ export class BlockState extends RestoreEntity {
     blockId?: string;
 
     /**
+     * Block id
+     */
+    @Property({
+        nullable: true,
+        index: true
+    })
+    blockTag?: string;
+
+    /**
      * block state
      */
     @Property({ nullable: true })
@@ -49,6 +58,7 @@ export class BlockState extends RestoreEntity {
     async createDocument() {
         const prop: any = {};
         prop.blockId = this.blockId;
+        prop.blockTag = this.blockTag;
         prop.savedState = this.savedState;
         prop.policyId = this.policyId;
         this._updatePropHash(prop);

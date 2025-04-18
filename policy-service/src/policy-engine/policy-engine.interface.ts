@@ -308,6 +308,11 @@ export interface IPolicyBlock {
     saveState(): Promise<void>;
 
     /**
+     * Restore block state
+     */
+    restoreState(): Promise<void>;
+
+    /**
      * Before init callback
      */
     beforeInit(): Promise<void>;

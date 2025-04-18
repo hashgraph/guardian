@@ -534,8 +534,8 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             public async saveState(): Promise<void> {
                 const stateFields = PolicyComponentsUtils.GetStateFields(this);
-                if (stateFields && (Object.keys(stateFields).length > 0) && this.policyId) {
-                    await this.databaseServer.saveBlockState(this.policyId, this.uuid, stateFields);
+                if (this.policyId && stateFields && (Object.keys(stateFields).length > 0)) {
+                    await this.databaseServer.saveBlockState(this.policyId, this.uuid, this.tag, stateFields);
                 }
             }
 
@@ -543,7 +543,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Restore block state
              */
             public async restoreState(): Promise<void> {
-                const stateEntity = await this.databaseServer.getBlockState(this.policyId, this.uuid);
+                const stateEntity = await this.databaseServer.getBlockState(this.policyId, this.uuid, this.tag);
 
                 if (!stateEntity) {
                     return;
