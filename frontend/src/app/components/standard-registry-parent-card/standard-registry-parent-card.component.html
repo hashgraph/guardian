@@ -1,0 +1,21 @@
+<p-card class="sr-card">
+    <p-chip [label]="active ? 'Active': 'Inactive'" [ngClass]="{ 'active': active, 'inactive': !active }" />
+
+    <div class="sr-content">
+        <div class="sr-main-info">
+            <div class="sr-name">{{registry.username}}</div>
+            <div class="sr-policy-count">
+                {{registry.policies.length}} policies
+                <i class="pi pi-chevron-down"></i>
+            </div>
+        </div>
+        <div class="sr-account-id">{{registry.hederaAccountId}}</div>
+    </div>
+    <div class="sr-action">
+        <p-button
+            (click)="onMoreInfoClick()"
+            label="More info"
+            class="p-button-outlined p-button-info">
+        </p-button>
+    </div>
+  </p-card>

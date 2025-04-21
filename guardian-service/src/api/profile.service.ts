@@ -687,12 +687,12 @@ export function profileAPI(logger: PinoLogger) {
             }
         });
 
-    ApiResponse(MessageAPI.USER_UPDATE_STANDART_REGISTRY,
-        async (msg: { username: string, standartRegistryDid: string }) => {
+    ApiResponse(MessageAPI.USER_UPDATE_STANDARD_REGISTRY,
+        async (msg: { username: string, standardRegistryDid: string }) => {
             try {
-                const { username, standartRegistryDid } = msg;
+                const { username, standardRegistryDid } = msg;
                 const users = new Users();
-                await users.updateUserParent(username, standartRegistryDid);
+                await users.updateUserParent(username, standardRegistryDid);
                 return new MessageResponse(username);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -701,33 +701,36 @@ export function profileAPI(logger: PinoLogger) {
             }
         });
     
-    ApiResponse(MessageAPI.USER_ADD_STANDART_REGISTRY,
-        async (msg: { username: string, standartRegistryDid: string }) => {
+    ApiResponse(MessageAPI.USER_ADD_STANDARD_REGISTRY,
+        async (msg: { username: string, standardRegistryDids: string[] }) => {
             try {
-                const { username, standartRegistryDid } = msg;
+                const { username, standardRegistryDids } = msg;
                 const users = new Users();
 
-                await users.addUserParent(username, standartRegistryDid);
-                const user = await users.getUser(username);
+                for (const standardRegistryDid of standardRegistryDids) {
+                    await users.addUserParent(username, standardRegistryDid);
+                    const user = await users.getUser(username);
 
-                const row = await new DatabaseServer().findOne(Topic, {
-                    owner: standartRegistryDid,
-                    type: TopicType.UserTopic
-                });
-                const userTopic = await new DatabaseServer().findOne(Topic, {
-                    owner: user.did,
-                    type: TopicType.UserTopic
-                });
-                const topicConfig = await TopicConfig.fromObject(row, true);
+                    const row = await new DatabaseServer().findOne(Topic, {
+                        owner: standardRegistryDid,
+                        type: TopicType.UserTopic
+                    });
+                    const userTopic = await new DatabaseServer().findOne(Topic, {
+                        owner: user.did,
+                        type: TopicType.UserTopic
+                    });
+                    const topicConfig = await TopicConfig.fromObject(row, true);
+                    
+                    const root = await users.getHederaAccount(user.did);
+                    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
+                    messageServer.setTopicObject(topicConfig);
+
+                    const message = new UserMessage(MessageAction.AddParent);
+                    message.setDocument({...user, topicId: userTopic.topicId});
+                    await messageServer.sendMessage(message);
+                }
                 
-                const root = await users.getHederaAccount(user.did);
-                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
-                messageServer.setTopicObject(topicConfig);
-
-                const message = new UserMessage(MessageAction.AddParent);
-                message.setDocument({...user, topicId: userTopic.topicId});
-                await messageServer.sendMessage(message);
-                return new MessageResponse(user);
+                return new MessageResponse(standardRegistryDids);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 console.error(error);

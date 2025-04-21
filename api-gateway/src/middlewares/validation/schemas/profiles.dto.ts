@@ -53,11 +53,21 @@ export class UserDTO implements IUser {
     @ApiProperty({
         type: 'string',
         required: false,
-        example: Examples.DID
+        example: [Examples.DID]
     })
     @IsOptional()
     @IsString()
     parent?: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        isArray: true,
+        example: Examples.DID
+    })
+    @IsOptional()
+    @IsString()
+    parents?: string[];
 
     @ApiProperty({
         type: 'string',
