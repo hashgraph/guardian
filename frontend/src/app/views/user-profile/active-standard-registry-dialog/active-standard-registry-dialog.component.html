@@ -1,0 +1,33 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{title}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body active-standart-registry">
+    <div class="content">
+        <div>Please confirm that you want to activate SR {{currentActive}} </div>
+        <div>This will deactivate the current active SR {{potentialActive}} </div>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button (click)="onClose()"
+                    class="button secondary"
+                    label="Cancel"
+                    pButton
+            ></button>
+        </div>
+        <div>
+            <button
+                (click)="onSubmit()"
+                 class="button active-sr-btn"
+                 label="Confirm"
+                 pButton>
+            </button>
+        </div>
+    </div>
+</div>

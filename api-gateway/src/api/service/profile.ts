@@ -98,6 +98,7 @@ export class ProfileApi {
                 permissions: user.permissions,
                 did: user.did,
                 parent: user.parent,
+                parents: user.parents,
                 hederaAccountId: user.hederaAccountId,
                 confirmed: !!(didDocument && didDocument.status === DidDocumentStatus.CREATE),
                 failed: !!(didDocument && didDocument.status === DidDocumentStatus.FAILED),
@@ -197,7 +198,7 @@ export class ProfileApi {
     })
     @ApiExtraModels(UserDidDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.NO_CONTENT)
-    async setUserStandartRegistry(
+    async setUserStandardRegistry(
         @AuthUser() user: IAuthUser,
         @Body() parent: any,
         @Req() req
@@ -205,7 +206,11 @@ export class ProfileApi {
         const { username } = user;
         const guardians = new Guardians();
         try {
-            await guardians.updateUserStandartRegistry(username, parent.did);
+            await guardians.updateUserStandardRegistry(username, parent.did);
+
+            const invalidedCacheTags = [`/${PREFIXES.PROFILES}/${user.username}`];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
         } catch (error) {
             throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
         }
@@ -243,14 +248,18 @@ export class ProfileApi {
     })
     @ApiExtraModels(UserDidDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.NO_CONTENT)
-    async addUserStandartRegistry(
+    async addUserStandardRegistry(
         @AuthUser() user: IAuthUser,
         @Body() parent: any,
         @Req() req
     ): Promise<void> {
         const guardians = new Guardians();
         try {
-            await guardians.addUserStandartRegistry(user.username, parent.did);
+            await guardians.addUserStandardRegistry(user.username, parent.did);
+
+            const invalidedCacheTags = [`/${PREFIXES.PROFILES}/${user.username}`];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
         } catch (error) {
             throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
         }

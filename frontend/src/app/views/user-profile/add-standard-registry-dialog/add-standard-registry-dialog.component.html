@@ -1,0 +1,68 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{title}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div class="content">
+        <div *ngIf="loading" class="loading">
+            <div class="preloader-image preloader-image-l-size"></div>
+        </div>
+        <div class="form-input-container w-full">
+            <label for="standardRegistries" class="dd-label">Select available Standard Registries</label>
+            <p-multiSelect
+                id="standardRegistries"
+                [(ngModel)]="selectedStandardRegistryDids"
+                [options]="getFormattedSrs()"
+                [showHeader]="false"
+                optionLabel="label"
+                optionValue="value"
+                display="chip"
+                [style.width]="'100%'">
+                    <ng-template pTemplate="selectedItems" let-selectedItems>
+                        <ng-container *ngIf="!selectedItems?.length">
+                            <span class="p-placeholder">Select standard registry</span>
+                          </ng-container>
+                        <ng-container *ngIf="selectedItems?.length <= 3; else tooManySelected">
+                            <ng-container *ngFor="let item of selectedStandardRegistryObj">
+                                <div class="p-multiselect-token">
+                                    {{ item.username }}
+                                </div>
+                            </ng-container>
+                        </ng-container>
+                        <ng-template #tooManySelected>
+                            <div class="p-multiselect-label">{{ selectedItems.length }} Selected </div>
+                        </ng-template>
+                    </ng-template>
+            </p-multiSelect>
+        </div>
+        <div *ngIf="selectedStandardRegistryDids.length">
+            <h4>Selected Standard Registries</h4>
+            <p *ngFor="let sr of selectedStandardRegistryObj" class="selected-sr">{{sr.username}}
+                <small class="policies-count">{{ sr.policies.length ? sr.policies.length + ' policies' : 'No policies' }}</small>
+            </p>
+        </div>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button (click)="onClose()"
+                    class="button secondary"
+                    label="Cancel"
+                    pButton
+            ></button>
+        </div>
+        <div>
+            <button
+                (click)="onAddStandardRegistries()"
+                 class="button add-sr-btn"
+                 label="Confirm"
+                 pButton>
+            </button>
+        </div>
+    </div>
+</div>

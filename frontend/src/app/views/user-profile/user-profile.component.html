@@ -3,86 +3,122 @@
         <div class="preloader-image preloader-image-l-size"></div>
     </div>
 
-    <async-progress
-        (completed)="onAsyncCompleted()"
-        (error)="onAsyncError($event)"
-        *ngIf="loading && taskId"
-        [taskId]="taskId"
-    ></async-progress>
+    <async-progress (completed)="onAsyncCompleted()" (error)="onAsyncError($event)" *ngIf="loading && taskId"
+        [taskId]="taskId"></async-progress>
 
     <ng-container *ngIf="isConfirmed; else elseTemplate">
         <div *ngIf="profile" class="profile">
             <div class="header">
                 <h1>Profile</h1>
             </div>
-            <div class="user-info-container">
-                <div class="item-header">Account</div>
-                <div class="item">
-                    <span>User Name</span>
-                    <span class="value-text">{{ profile!.username }}</span>
-                </div>
-                <div class="item">
-                    <span>Password</span>
-                    <div (click)="changePassword(profile)" class="view-document-button">
-                        <span>Change Password</span>
-                    </div>
-                </div>
+            <p-tabView>
+                <p-tabPanel header="User info" class="main-tabs">
+                    <div class="user-info-container">
+                        <div class="item-header">Account</div>
+                        <div class="item">
+                            <span>User Name</span>
+                            <span class="value-text">{{ profile!.username }}</span>
+                        </div>
+                        <div class="item">
+                            <span>Password</span>
+                            <div (click)="changePassword(profile)" class="view-document-button">
+                                <span>Change Password</span>
+                            </div>
+                        </div>
 
-                <div class="item-header">Hedera</div>
-                <div class="item">
-                    <span>Hedera Account ID</span>
-                    <div>
-                        <hedera-explorer [params]="profile.hederaAccountId || ''" type="accounts">
-                            {{ profile.hederaAccountId }}
-                        </hedera-explorer>
-                    </div>
-                </div>
-                <div *ngIf="profile.topicId" class="item">
-                    <span>User Topic</span>
-                    <div>
-                        <hedera-explorer [params]="profile.topicId" type="topics">
-                            {{ profile.topicId }}
-                        </hedera-explorer>
-                    </div>
-                </div>
-                <div class="item">
-                    <span>Balance</span>
-                    <span class="value-text">{{ balance }}</span>
-                </div>
+                        <div class="item-header">Hedera</div>
+                        <div class="item">
+                            <span>Hedera Account ID</span>
+                            <div>
+                                <hedera-explorer [params]="profile.hederaAccountId || ''" type="accounts">
+                                    {{ profile.hederaAccountId }}
+                                </hedera-explorer>
+                            </div>
+                        </div>
+                        <div *ngIf="profile.topicId" class="item">
+                            <span>User Topic</span>
+                            <div>
+                                <hedera-explorer [params]="profile.topicId" type="topics">
+                                    {{ profile.topicId }}
+                                </hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <span>Balance</span>
+                            <span class="value-text">{{ balance }}</span>
+                        </div>
+
+                        <div class="item-header">Hedera</div>
+                        <div class="item">
+                            <span>Hedera Account ID</span>
+                            <div>
+                                <hedera-explorer [params]="profile.hederaAccountId || ''" type="accounts">
+                                    {{ profile.hederaAccountId }}
+                                </hedera-explorer>
+                            </div>
+                        </div>
+                        <div *ngIf="profile.topicId" class="item">
+                            <span>User Topic</span>
+                            <div>
+                                <hedera-explorer [params]="profile.topicId" type="topics">
+                                    {{ profile.topicId }}
+                                </hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <span>Balance</span>
+                            <span class="value-text">{{ balance }}</span>
+                        </div>
 
 
-                <div class="item-header">Documents</div>
-                <div class="item">
-                    <span>Standard Registry</span>
-                    <span class="value-text">{{ profile.parent }}</span>
-                </div>
-                <div class="item">
-                    <span>DID</span>
-                    <span class="value-text">{{ profile.did }}</span>
-                </div>
-                <div class="item">
-                    <span>DID Document</span>
-                    <div
-                        (click)="openDIDDocument(didDocument, 'DID Document')"
-                        class="view-document-button"
-                    >
-                        <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color">
-                        </svg-icon>
-                        <span>View document</span>
+                        <div class="item-header">Documents</div>
+                        <div class="item">
+                            <span>Standard Registry</span>
+                            <span class="value-text">{{ profile.parent }}</span>
+                        </div>
+                        <div class="item">
+                            <span>DID</span>
+                            <span class="value-text">{{ profile.did }}</span>
+                        </div>
+                        <div class="item">
+                            <span>DID Document</span>
+                            <div (click)="openDIDDocument(didDocument, 'DID Document')" class="view-document-button">
+                                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg"
+                                    svgClass="primary-color">
+                                </svg-icon>
+                                <span>View document</span>
+                            </div>
+                        </div>
+                        <div *ngIf="vcDocument" class="item">
+                            <span>VC Document</span>
+                            <div (click)="openVCDocument(vcDocument, 'VC Document')" class="view-document-button">
+                                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg"
+                                    svgClass="primary-color">
+                                </svg-icon>
+                                <span>View document</span>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div *ngIf="vcDocument" class="item">
-                    <span>VC Document</span>
-                    <div
-                        (click)="openVCDocument(vcDocument, 'VC Document')"
-                        class="view-document-button"
-                    >
-                        <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color">
-                        </svg-icon>
-                        <span>View document</span>
+                </p-tabPanel>
+                <p-tabPanel header="Standard Registries">
+                    <div class="add-registries-button">
+                        <p-button (click)="addStandardRegistry()"
+                            [disabled]="potentialStandardRegistryParents.length == 0"
+                            label="Add Standard Registry"></p-button>
                     </div>
-                </div>
-            </div>
+                    <ng-container>
+                        <ul class="standard-registry">
+                            <app-standard-registry-parent-card
+                                *ngFor="let registry of standardRegistriesAsParentList; trackBy: trackByDid"
+                                [active]="isActiveStandardRegistry(registry.did)"
+                                (registrySelected)="selectStandardRegistryShowMore($event)" [registry]="registry">
+                            </app-standard-registry-parent-card>
+                        </ul>
+                    </ng-container>
+                </p-tabPanel>
+
+            </p-tabView>
+
         </div>
     </ng-container>
     <ng-template #elseTemplate>
@@ -91,17 +127,11 @@
 
             <div class="content-main-block-container">
                 <div class="progress-container">
-                    <div
-                        *ngFor="let step of visibleSteps"
-                        [ngClass]="{ active: step.index === currentStep }"
-                        class="step-item"
-                    >
-                        <i
-                            [ngClass]="step.index === currentStep
+                    <div *ngFor="let step of visibleSteps" [ngClass]="{ active: step.index === currentStep }"
+                        class="step-item">
+                        <i [ngClass]="step.index === currentStep
                                 ? 'pi-check'
-                                : 'pi-angle-right'"
-                            class="pi"
-                        ></i>
+                                : 'pi-angle-right'" class="pi"></i>
                         <p>{{ step.label }}</p>
                     </div>
                 </div>
@@ -111,51 +141,31 @@
 
                         <ng-container *ngIf="currentStep === 0">
                             <div class="user-onboarding-wizard__header">
-                                <form
-                                    *ngIf="hasRegistries"
-                                    [formGroup]="filtersForm"
-                                    class="user-onboarding-wizard__filters"
-                                >
+                                <form *ngIf="hasRegistries" [formGroup]="filtersForm"
+                                    class="user-onboarding-wizard__filters">
                                     <div class="search-inputs">
                                         <label class="form-label" htmlFor="policyName">
                                             Filter by
                                         </label>
 
                                         <span class="p-input-icon-right">
-                                            <input
-                                                formControlName="policyName"
-                                                id="policyName"
-                                                pInputText
-                                                placeholder="Policy name"
-                                                type="text"
-                                            />
+                                            <input formControlName="policyName" id="policyName" pInputText
+                                                placeholder="Policy name" type="text" />
                                             <i class="pi pi-search"></i>
                                         </span>
 
                                         <span class="p-input-icon-right">
-                                            <input
-                                                formControlName="geography"
-                                                pInputText
-                                                placeholder="Geography"
-                                                type="text"
-                                            />
+                                            <input formControlName="geography" pInputText placeholder="Geography"
+                                                type="text" />
                                             <i class="pi pi-search"></i>
                                         </span>
                                     </div>
 
                                     <div class="user-onboarding-wizard__filter-btns">
-                                        <p-button
-                                            (click)="applyFilters()"
-                                            [disabled]="isFilterButtonDisabled"
-                                            class="apply-filters-button"
-                                            label="Apply"
-                                        ></p-button>
-                                        <p-button
-                                            (click)="clearFilters()"
-                                            [disabled]="!filtersForm.dirty"
-                                            class="clear-filters-button"
-                                            [outlined]=true
-                                        >Clear filters
+                                        <p-button (click)="applyFilters()" [disabled]="isFilterButtonDisabled"
+                                            class="apply-filters-button" label="Apply"></p-button>
+                                        <p-button (click)="clearFilters()" [disabled]="!filtersForm.dirty"
+                                            class="clear-filters-button" [outlined]=true>Clear filters
                                         </p-button>
                                     </div>
                                 </form>
@@ -169,8 +179,7 @@
                                     </p>
 
                                     <ul class="standard-registry">
-                                        <app-standard-registry-card
-                                            (registrySelected)="selectStandardRegistry($event)"
+                                        <app-standard-registry-card (registrySelected)="selectStandardRegistry($event)"
                                             *ngFor="let registry of standardRegistriesList; trackBy: trackByDid"
                                             [isRegistrySelected]="isRegistrySelected(registry.did)"
                                             [registry]="registry"></app-standard-registry-card>
@@ -196,92 +205,54 @@
                                         <label class="form-label" htmlFor="operatorId">
                                             * OPERATOR ID (Hedera Account):
                                         </label>
-                                        <input
-                                            formControlName="id"
-                                            id="operatorId"
-                                            pInputText
-                                            placeholder="0.0.1548173"
-                                            type="text"
-                                        />
+                                        <input formControlName="id" id="operatorId" pInputText placeholder="0.0.1548173"
+                                            type="text" />
                                     </div>
                                     <div class="input-field-container">
                                         <label class="form-label" htmlFor="operatorKey">
                                             * OPERATOR KEY (Hedera Account Private Key):
                                         </label>
-                                        <input
-                                            formControlName="key"
-                                            id="operatorKey"
-                                            pInputText
-                                            placeholder="302e020100300506032b657004220420e..."
-                                            type="text"
-                                        />
+                                        <input formControlName="key" id="operatorKey" pInputText
+                                            placeholder="302e020100300506032b657004220420e..." type="text" />
                                     </div>
                                     <div class="input-field-container">
-                                        <p-checkbox
-                                            [binary]="true"
-                                            formControlName="useFireblocksSigning"
-                                            inputId="useFireblocksSigning"
-                                            label="Use fireblocks signing"
-                                        ></p-checkbox>
+                                        <p-checkbox [binary]="true" formControlName="useFireblocksSigning"
+                                            inputId="useFireblocksSigning" label="Use fireblocks signing"></p-checkbox>
                                     </div>
                                     <ng-container *ngIf="hederaCredentialsForm.get('useFireblocksSigning')?.value">
                                         <div class="input-field-container">
                                             <label class="form-label" htmlFor="fireBlocksVaultId">
                                                 * Fireblocks Vault ID:
                                             </label>
-                                            <input
-                                                formControlName="fireBlocksVaultId"
-                                                id="fireBlocksVaultId"
-                                                placeholder="0"
-                                                pInputText
-                                                type="text"
-                                            />
+                                            <input formControlName="fireBlocksVaultId" id="fireBlocksVaultId"
+                                                placeholder="0" pInputText type="text" />
                                         </div>
                                         <div class="input-field-container">
                                             <label class="form-label" htmlFor="fireBlocksAssetId">
                                                 * Fireblocks Asset ID:
                                             </label>
-                                            <input
-                                                formControlName="fireBlocksAssetId"
-                                                id="fireBlocksAssetId"
-                                                placeholder="ASSET_NAME"
-                                                pInputText
-                                                type="text"
-                                            />
+                                            <input formControlName="fireBlocksAssetId" id="fireBlocksAssetId"
+                                                placeholder="ASSET_NAME" pInputText type="text" />
                                         </div>
                                         <div class="input-field-container">
                                             <label class="form-label" htmlFor="fireBlocksApiKey">
                                                 * Fireblocks API Key:
                                             </label>
-                                            <input
-                                                formControlName="fireBlocksApiKey"
-                                                id="fireBlocksApiKey"
-                                                autocomplete="off"
-                                                pInputText
-                                                placeholder="00000000-0000-0000-0000-000000000000"
-                                                type="text"
-                                            />
+                                            <input formControlName="fireBlocksApiKey" id="fireBlocksApiKey"
+                                                autocomplete="off" pInputText
+                                                placeholder="00000000-0000-0000-0000-000000000000" type="text" />
                                         </div>
                                         <div class="input-field-container">
                                             <label class="form-label" htmlFor="fireBlocksPrivateiKey">
                                                 * Fireblocks Private Key:
                                             </label>
-                                            <textarea
-                                                formControlName="fireBlocksPrivateiKey"
-                                                id="fireBlocksPrivateiKey"
-                                                autocomplete="off"
-                                                pInputText
-                                                placeholder="-----BEGIN PRIVATE KEY----- ..."
-                                                type="text"
-                                            ></textarea>
+                                            <textarea formControlName="fireBlocksPrivateiKey" id="fireBlocksPrivateiKey"
+                                                autocomplete="off" pInputText
+                                                placeholder="-----BEGIN PRIVATE KEY----- ..." type="text"></textarea>
                                         </div>
                                     </ng-container>
-                                    <p-button
-                                        (click)="randomKey()"
-                                        class="generate-btn"
-                                        label="Generate"
-                                        [outlined]=true
-                                    >
+                                    <p-button (click)="randomKey()" class="generate-btn" label="Generate"
+                                        [outlined]=true>
                                     </p-button>
                                 </form>
                             </div>
@@ -296,19 +267,13 @@
                                 <form class="hedera-form">
                                     <div class="boolean-option-group">
                                         <div>
-                                            <p-radioButton
-                                                name="didType"
-                                                [value]="false"
-                                                [formControl]="didDocumentType"
-                                                class="boolean-option">
+                                            <p-radioButton name="didType" [value]="false"
+                                                [formControl]="didDocumentType" class="boolean-option">
                                             </p-radioButton>
                                             <label>Generate new DID document.</label>
                                         </div>
                                         <div>
-                                            <p-radioButton
-                                                name="didType"
-                                                [value]="true"
-                                                [formControl]="didDocumentType"
+                                            <p-radioButton name="didType" [value]="true" [formControl]="didDocumentType"
                                                 class="boolean-option">
                                             </p-radioButton>
                                             <label>Custom DID document.</label>
@@ -316,14 +281,10 @@
                                     </div>
 
                                     <div class="form-group example-full-width"
-                                         [attr.active-field]="didDocumentType.value">
-                                        <textarea
-                                            pInputTextarea
-                                            id="didDocumentTextarea"
-                                            [formControl]="didDocumentForm"
-                                            class="full-width"
-                                            placeholder="DID Document: *"
-                                            style="height: 150px">
+                                        [attr.active-field]="didDocumentType.value">
+                                        <textarea pInputTextarea id="didDocumentTextarea"
+                                            [formControl]="didDocumentForm" class="full-width"
+                                            placeholder="DID Document: *" style="height: 150px">
     </textarea>
                                         <small *ngIf="didDocumentForm.hasError('incorrect')" class="p-error">
                                             Invalid DID Document.
@@ -348,25 +309,16 @@
                                         </label>
                                         <div class="form-group example-full-width">
                                             <label [htmlFor]="'methodDropdown'" class="form-label">* Method:</label>
-                                            <p-dropdown
-                                                [options]="item.keyNames"
-                                                [formControl]="item.keyNameControl"
-                                                optionLabel="name"
-                                                optionValue="id"
-                                                [appendTo]="'body'"
-                                                placeholder="Select a method"
-                                                inputId="methodDropdown"
+                                            <p-dropdown [options]="item.keyNames" [formControl]="item.keyNameControl"
+                                                optionLabel="name" optionValue="id" [appendTo]="'body'"
+                                                placeholder="Select a method" inputId="methodDropdown"
                                                 class="full-width">
                                             </p-dropdown>
                                         </div>
                                         <div class="form-group example-full-width">
                                             <label for="keyInput" class="form-label">* Key:</label>
-                                            <input
-                                                pInputText
-                                                id="keyInput"
-                                                placeholder="FRs4qVjqvP9Dh..."
-                                                [formControl]="item.keyValueControl"
-                                                class="full-width">
+                                            <input pInputText id="keyInput" placeholder="FRs4qVjqvP9Dh..."
+                                                [formControl]="item.keyValueControl" class="full-width">
                                             <small *ngIf="item.keyValueControl.hasError('incorrect')" class="p-error">
                                                 Invalid DID Key
                                             </small>
@@ -382,13 +334,8 @@
                             </div>
                             <div *ngIf="schema" class="hedera-credentials-form-container">
                                 <form class="hedera-form">
-                                    <app-schema-form
-                                        (change)="onChangeVcForm()"
-                                        [formGroup]="vcDocumentForm"
-                                        [private-fields]="privateFields"
-                                        [schema]="schema"
-                                        [showButtons]="false"
-                                    >
+                                    <app-schema-form (change)="onChangeVcForm()" [formGroup]="vcDocumentForm"
+                                        [private-fields]="privateFields" [schema]="schema" [showButtons]="false">
                                     </app-schema-form>
                                 </form>
                             </div>
@@ -402,28 +349,16 @@
             <div class="user-profile-setup-buttons-container">
                 <div class="user-profile-finish-buttons">
                     <div *ngIf="currentStep !== 0" class="previous-button">
-                        <p-button
-                            (click)="onPrev()"
-                            label="Previous"
-                            [outlined]=true
-                        ></p-button>
+                        <p-button (click)="onPrev()" label="Previous" [outlined]=true></p-button>
                     </div>
 
                     <div *ngIf="!isFinish()" class="user-profile-next-button">
-                        <p-button
-                            (click)="onNext()"
-                            [disabled]="!canNext()"
-                            label="Next"
-                        >
+                        <p-button (click)="onNext()" [disabled]="!canNext()" label="Next">
                         </p-button>
                     </div>
 
                     <div *ngIf="isFinish()" class="confirm-button">
-                        <p-button
-                            (click)="onNext()"
-                            [disabled]="!validForm"
-                            label="Submit"
-                        >
+                        <p-button (click)="onNext()" [disabled]="!validForm" label="Submit">
                         </p-button>
                     </div>
                 </div>
@@ -436,13 +371,7 @@
         <div *ngIf="isFailed" class="error-list">
             <p>An error occurred while creating the document.</p>
             <p>Please try again later.</p>
-            <button
-                (click)="retry()"
-                class="generate-btn"
-                color="primary"
-                mat-raised-button
-                type="button"
-            >
+            <button (click)="retry()" class="generate-btn" color="primary" mat-raised-button type="button">
                 Retry
             </button>
         </div>

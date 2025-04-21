@@ -1,0 +1,49 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{title}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body info-standart-registry">
+    <div class="content">
+        <div class="registry-row">
+            <div class="default-label">
+                {{standardRegistry.username}}
+            </div>
+            <h3>{{standardRegistry.hederaAccountId}}</h3>
+        </div>
+        <div class="registry-row">
+            <div class="default-label">Set as Active</div>
+            <div>
+                <p-inputSwitch [disabled]="disabledSwitcher" [(ngModel)]="isActive" (onChange)="onToggleChange()"></p-inputSwitch>
+            </div>
+        </div>
+        <div class="registry-row">
+            <div class="registry-row__label">
+                Standard registry DID
+            </div>
+            <div class="registry-row__value">
+                {{standardRegistry.did}}
+            </div>
+        </div>
+        <div *ngFor="let row of groupedFields" class="registry-row double">
+            <div *ngFor="let field of row">
+              <div class="registry-row__label">{{ field.name }}</div>
+              <div class="registry-row__value">{{ field.value }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button (click)="onClose()"
+                    class="button secondary"
+                    label="Cancel"
+                    pButton
+            ></button>
+        </div>
+    </div>
+</div>

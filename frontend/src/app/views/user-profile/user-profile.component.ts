@@ -17,6 +17,8 @@ import {noWhitespaceValidator} from 'src/app/validators/no-whitespace-validator'
 import {DialogService} from 'primeng/dynamicdialog';
 import {ValidateIfFieldEqual} from '../../validators/validate-if-field-equal';
 import {ChangePasswordComponent} from '../login/change-password/change-password.component';
+import { AddStandardRegistryDialogComponent } from './add-standard-registry-dialog/add-standard-registry-dialog.component';
+import { InfoStandardRegistryDialogComponent } from './info-standard-registry-dialog/info-standard-registry-dialog.component';
 
 enum OperationMode {
     None,
@@ -64,6 +66,24 @@ export class UserProfileComponent implements OnInit {
         return this.filteredRegistries.length > 0
             ? this.filteredRegistries
             : this.standardRegistries;
+    }
+
+    public get standardRegistriesAsParentList(): IStandardRegistryResponse[] {
+        const res = this.standardRegistries.length > 0 && this.profile?.parents
+            ? this.standardRegistries.filter((sr:IStandardRegistryResponse) => this.profile?.parents?.includes(sr.did))
+            : [];
+            return res;
+    }
+
+    public get potentialStandardRegistryParents(): IStandardRegistryResponse[] {
+        const res = this.standardRegistries.length
+            ? this.standardRegistries.filter((sr:IStandardRegistryResponse) => !this.profile?.parents?.includes(sr.did))
+            : [];
+        return res;
+    }
+
+    public isActiveStandardRegistry(did: string): boolean {
+        return this.profile?.parent === did;
     }
 
     public get isFilterButtonDisabled(): boolean {
@@ -447,6 +467,32 @@ export class UserProfileComponent implements OnInit {
         this.selectStandardRegistry('');
     }
 
+    public selectStandardRegistryShowMore(did: string): void {
+        const sr = this.standardRegistries.find(sr => sr.did === did);
+        const activeSr = this.standardRegistries.length
+                ? this.standardRegistries.find((sr) => sr.did === this.profile?.parent)
+                : undefined;
+        if(sr) {
+            this.dialogService.open(InfoStandardRegistryDialogComponent, {
+                styleClass: 'guardian-dialog',
+                width: '720px',
+                height: '640px',
+                modal: true,
+                showHeader: false,
+                data: {
+                    title: 'Standard Registry Details',
+                    standardRegistry: sr,
+                    activeSr
+                }
+            }).onClose.subscribe((data) => {
+                if(data?.update) {
+                    this.profile = { ...this.profile, parent: data.parent };
+                    this.cdRef.detectChanges();
+                }
+            });
+        }
+    }
+
     public selectStandardRegistry(did: string): void {
         this.standardRegistryForm.setValue(did);
     }
@@ -719,6 +765,24 @@ export class UserProfileComponent implements OnInit {
             }
         }).onClose.subscribe((data) => {
             this.loadDate();
+        });
+    }
+
+    public addStandardRegistry() {
+        this.dialogService.open(AddStandardRegistryDialogComponent, {
+            styleClass: 'guardian-dialog',
+            width: '720px',
+            height: '504px',
+            modal: true,
+            showHeader: false,
+            data: {
+                title: 'Add Standard Registry',
+                standardRegistries: this.potentialStandardRegistryParents
+            }
+        }).onClose.subscribe((data) => {
+            if(data?.update) {
+                this.loadDate();
+            }
         });
     }
 }
