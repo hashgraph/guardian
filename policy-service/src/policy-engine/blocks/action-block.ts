@@ -1,7 +1,7 @@
 import { EventBlock } from '../helpers/decorators/index.js';
-import { UserType, Schema } from '@guardian/interfaces';
+import { UserType, Schema, LocationType } from '@guardian/interfaces';
 import { findOptions } from '../helpers/find-options.js';
-import { IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyInterfaceBlock } from '../policy-engine.interface.js';
+import { IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyGetData, IPolicyInterfaceBlock } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
@@ -16,6 +16,7 @@ import { KeyType } from '@guardian/common';
 @EventBlock({
     blockType: 'interfaceActionBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Action',
         title: `Add 'Action' Block`,
@@ -39,12 +40,17 @@ export class InterfaceDocumentActionBlock {
      * Get block data
      * @param user
      */
-    async getData(user: PolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
-        const data: any = {
+        const data: IPolicyGetData = {
             id: ref.uuid,
             blockType: ref.blockType,
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            ),
             type: ref.options.type,
             uiMetaData: ref.options.uiMetaData,
             user: ref.options.user

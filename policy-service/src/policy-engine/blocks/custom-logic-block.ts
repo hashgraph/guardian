@@ -5,7 +5,7 @@ import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyAddonBlock, IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { DIDMessage, HederaDidDocument, MessageAction, MessageServer, VcHelper } from '@guardian/common';
-import { ArtifactType, SchemaHelper } from '@guardian/interfaces';
+import { ArtifactType, LocationType, SchemaHelper } from '@guardian/interfaces';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUser, UserCredentials } from '../policy-user.js';
@@ -32,6 +32,7 @@ interface IMetadata {
 @BasicBlock({
     blockType: 'customLogicBlock',
     commonBlock: true,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Custom Logic',
         title: `Add 'Custom Logic' Block`,

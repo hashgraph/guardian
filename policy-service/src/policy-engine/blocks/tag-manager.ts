@@ -1,10 +1,10 @@
 import { BasicBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
-import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
+import { AnyBlockType, IPolicyDocument, IPolicyGetData } from '../policy-engine.interface.js';
 import { IHederaCredentials, PolicyUser } from '../policy-user.js';
 import { BlockActionError } from '../errors/index.js';
-import { ISignOptions, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
+import { ISignOptions, LocationType, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
 import { DatabaseServer, MessageAction, MessageServer, MessageType, Tag, TagMessage, TopicConfig, VcHelper, } from '@guardian/common';
 import { PolicyUtils } from '../helpers/utils.js';
 import { PopulatePath } from '@mikro-orm/mongodb';
@@ -15,6 +15,7 @@ import { PopulatePath } from '@mikro-orm/mongodb';
 @BasicBlock({
     blockType: 'tagsManager',
     commonBlock: true,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Tags Manager',
         title: `Add 'Tags Manager' Block`,
@@ -85,7 +86,7 @@ export class TagsManagerBlock {
      * Get block data
      * @param user
      */
-    async getData(user: PolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const schema = await DatabaseServer.getSchemas({
             system: false,
@@ -103,9 +104,14 @@ export class TagsManagerBlock {
                 'documentFileId'
             ] as unknown as PopulatePath.ALL[]
         });
-        const data: any = {
+        const data: IPolicyGetData = {
             id: ref.uuid,
             blockType: ref.blockType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            ),
+            actionType: ref.actionType,
             tagSchemas: schema
         }
         return data;

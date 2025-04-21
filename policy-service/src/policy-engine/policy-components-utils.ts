@@ -8,7 +8,7 @@ import {
     PolicyOutputEventType,
     PolicyTagMap
 } from './interfaces/index.js';
-import { BlockType, GenerateUUIDv4, ModuleStatus, PolicyEvents, PolicyHelper, PolicyStatus } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, LocationType, ModuleStatus, PolicyEvents, PolicyHelper, PolicyStatus } from '@guardian/interfaces';
 import {
     AnyBlockType,
     IPolicyBlock,
@@ -20,7 +20,7 @@ import {
     ISerializedBlock,
     ISerializedBlockExtend
 } from './policy-engine.interface.js';
-import { DatabaseServer, Policy, PolicyRoles, PolicyTool, Users } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, Policy, PolicyRoles, PolicyTool, Users } from '@guardian/common';
 import { STATE_KEY } from './helpers/constants.js';
 import { GetBlockByType } from './blocks/get-block-by-type.js';
 import { GetOtherOptions } from './helpers/get-other-options.js';
@@ -1483,5 +1483,78 @@ export class PolicyComponentsUtils {
                 await component.restoreState();
             }
         }
+    }
+
+
+
+    public static async isAvailableGetData(block: IPolicyInterfaceBlock | null, user: PolicyUser): Promise<MessageError<any> | null> {
+        if (!block) {
+            return new MessageError('Block Unavailable', 503);
+        }
+        if (!(await block.isAvailable(user))) {
+            return new MessageError('Block Unavailable', 503);
+        }
+        if (typeof block.getData !== 'function') {
+            return new MessageError('Block is not supporting get data functions', 500);
+        }
+        return null;
+    }
+
+    public static async blockGetData(block: IPolicyInterfaceBlock, user: PolicyUser, params: any): Promise<MessageResponse<any>> {
+        const result = await block.getData(user, block.uuid, params);
+        return new MessageResponse(result);
+    }
+
+    public static async isAvailableSetData(block: IPolicyInterfaceBlock | null, user: PolicyUser): Promise<MessageError<any> | null> {
+        if (!block) {
+            return new MessageError('Block Unavailable', 503);
+        }
+        if (!(await block.isAvailable(user))) {
+            return new MessageError('Block Unavailable', 503);
+        }
+        if (typeof block.setData !== 'function') {
+            return new MessageError('Block is not supporting set data functions', 500);
+        }
+        return null;
+    }
+
+    public static async blockSetData(block: IPolicyInterfaceBlock, user: PolicyUser, data: any): Promise<MessageResponse<any> | MessageError<any>> {
+        if (block.actionType === LocationType.LOCAL) {
+            const result = await block.setData(user, data);
+            return new MessageResponse(result);
+        }
+
+        if (user.location === LocationType.REMOTE) {
+            return new MessageError('Invalid action for remote user', 503);
+        }
+
+        if (block.locationType === LocationType.REMOTE) {
+            const result = await PolicyComponentsUtils.sendRemoteAction(block, user, data);
+            return new MessageResponse(result);
+        }
+
+        const result = await block.setData(user, data);
+        return new MessageResponse(result);
+    }
+
+    public static isAvailableReceiveData(block: IPolicyInterfaceBlock | IPolicyBlock | null, policyId: string): boolean {
+        if (!block) {
+            return false;
+        }
+        if (typeof (block as any).receiveData !== 'function') {
+            return false;
+        }
+        if (block.policyId !== policyId) {
+            return false;
+        }
+        return true;
+    }
+
+    public static async blockReceiveData(block: IPolicyInterfaceBlock | IPolicyBlock, data: any): Promise<any> {
+        return await (block as any).receiveData(data);
+    }
+
+    public static async sendRemoteAction(block: IPolicyInterfaceBlock, user: PolicyUser, data: any): Promise<any> {
+
     }
 }

@@ -7,6 +7,7 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType, } from '../i
 import { ChildrenType, ControlType, PropertyType, } from '../interfaces/block-about.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType, } from '../interfaces/external-event.js';
+import { LocationType } from '@guardian/interfaces';
 
 export const RevokedStatus = 'Revoked';
 
@@ -15,6 +16,7 @@ export const RevokedStatus = 'Revoked';
  */
 @BasicBlock({
     blockType: 'revocationBlock',
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Revocation',
         title: `Add 'Revocation' Block`,

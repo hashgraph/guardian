@@ -51,6 +51,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
     };
     enableSorting: boolean = false;
     hasHistory: boolean = false;
+    readonly: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -119,6 +120,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
 
     async setData(data: any) {
         if (data) {
+            this.readonly = !!data.readonly;
             const fields: any[] = data.fields || [];
             const _fieldMap: any = {};
             const _fields: any[] = [];

@@ -29,6 +29,7 @@ export class PaginationAddonBlockComponent implements OnInit {
     size: number;
     itemsPerPage: number;
     page: number;
+    readonly: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -82,6 +83,7 @@ export class PaginationAddonBlockComponent implements OnInit {
 
     setData(data: any) {
         if (data) {
+            this.readonly = !!data.readonly;
             this.size = data.size;
             this.itemsPerPage = data.itemsPerPage;
             this.page = data.page;

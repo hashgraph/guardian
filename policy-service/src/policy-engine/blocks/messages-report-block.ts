@@ -1,6 +1,6 @@
 import { Report } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { AnyBlockType, IPolicyReportBlock } from '../policy-engine.interface.js';
+import { AnyBlockType, IPolicyGetData, IPolicyReportBlock } from '../policy-engine.interface.js';
 import { BlockActionError } from '../errors/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyInputEventType } from '../interfaces/index.js';
@@ -8,6 +8,7 @@ import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { IReport, MessagesReport } from '../helpers/messages-report.js';
 import { PolicyUtils } from '../helpers/utils.js';
+import { LocationType } from '@guardian/interfaces';
 
 /**
  * Report block
@@ -15,6 +16,7 @@ import { PolicyUtils } from '../helpers/utils.js';
 @Report({
     blockType: 'messagesReportBlock',
     commonBlock: false,
+    actionType: LocationType.LOCAL,
     about: {
         label: 'Messages Report',
         title: `Add 'Messages Report' Block`,
@@ -82,13 +84,20 @@ export class MessagesReportBlock {
      * @param user
      * @param uuid
      */
-    async getData(user: PolicyUser, uuid: string): Promise<any> {
+    async getData(user: PolicyUser, uuid: string): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
             const target = await ref.getCache<string>(this.USER_FILTER_VALUE, user);
             const report = await ref.getCache<IReport>(this.USER_REPORT, user);
             const status = await ref.getCache<string>(this.USER_REPORT_STATUS, user);
             return {
+                id: ref.uuid,
+                blockType: ref.blockType,
+                actionType: ref.actionType,
+                readonly: (
+                    ref.actionType === LocationType.REMOTE &&
+                    user.location === LocationType.REMOTE
+                ),
                 target,
                 report,
                 status

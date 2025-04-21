@@ -122,11 +122,6 @@ export async function setupUserProfile(
     if (user.did) {
         throw new MessageError('User DID already exists', 500);
     }
-
-    console.debug('---- setupUserProfile ')
-    console.debug(JSON.stringify(profile, null, 4));
-    console.debug('---- setupUserProfile ')
-
     if (!profile.hederaAccountId) {
         throw new MessageError('Invalid Hedera Account Id', 403);
     }
@@ -566,7 +561,8 @@ export async function saveUserProfile(
         did,
         parent: profile.parent,
         hederaAccountId: profile.hederaAccountId,
-        useFireblocksSigning: profile.useFireblocksSigning
+        useFireblocksSigning: profile.useFireblocksSigning,
+        location: LocationType.LOCAL
     });
 
     notifier.completedAndStart('Update permissions');
@@ -605,6 +601,7 @@ export async function saveRemoteUserProfile(
         did,
         parent: profile.parent,
         hederaAccountId: profile.hederaAccountId,
+        location: LocationType.REMOTE
     });
 
     notifier.completedAndStart('Update permissions');

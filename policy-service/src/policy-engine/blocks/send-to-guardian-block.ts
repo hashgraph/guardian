@@ -1,6 +1,6 @@
 import { BlockActionError } from '../errors/index.js';
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
-import { DocumentStatus } from '@guardian/interfaces';
+import { DocumentStatus, LocationType } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
@@ -28,6 +28,7 @@ enum Operation {
 @BasicBlock({
     blockType: 'sendToGuardianBlock',
     commonBlock: true,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Send',
         title: `Add 'Send' Block`,

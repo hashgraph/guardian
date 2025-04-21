@@ -1,8 +1,8 @@
-import { CheckResult, removeObjectProperties, Schema, SchemaHelper } from '@guardian/interfaces';
+import { CheckResult, LocationType, removeObjectProperties, Schema, SchemaHelper } from '@guardian/interfaces';
 import { PolicyUtils } from '../helpers/utils.js';
 import { BlockActionError } from '../errors/index.js';
 import { ActionCallback, StateField } from '../helpers/decorators/index.js';
-import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyRequestBlock, IPolicyValidatorBlock } from '../policy-engine.interface.js';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyGetData, IPolicyRequestBlock, IPolicyValidatorBlock } from '../policy-engine.interface.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { EventBlock } from '../helpers/decorators/event-block.js';
@@ -18,6 +18,7 @@ import deepEqual from 'deep-equal';
 @EventBlock({
     blockType: 'requestVcDocumentBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Request',
         title: `Add 'Request' Block`,
@@ -125,7 +126,7 @@ export class RequestVcDocumentBlock {
      * Get block data
      * @param user
      */
-    async getData(user: PolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const options = PolicyComponentsUtils.GetBlockUniqueOptionsObject(this);
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         const sources = await ref.getSources(user);
@@ -134,6 +135,11 @@ export class RequestVcDocumentBlock {
         return {
             id: ref.uuid,
             blockType: ref.blockType,
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            ),
             schema: { ...this._schema, fields: [], conditions: [] },
             presetSchema: options.presetSchema,
             presetFields: options.presetFields,

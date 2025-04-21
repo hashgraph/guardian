@@ -112,6 +112,10 @@ export interface IPolicyBlock {
      */
     about?: string;
     /**
+     * Action location
+     */
+    actionType?: LocationType;
+    /**
      * Block permissions
      */
     readonly permissions: string[];
@@ -1061,4 +1065,29 @@ export interface IPolicyNavigationStep {
      * Data
      */
     level: number;
+}
+
+
+/**
+ * Block get data
+ */
+export interface IPolicyGetData {
+    /**
+     * Block ID
+     */
+    id: string;
+    /**
+     * Block Type
+     */
+    blockType: string;
+    /**
+     * Action Type
+     */
+    actionType: LocationType;
+    /**
+     * Readonly
+     */
+    readonly: boolean;
+
+    [x: string]: any;
 }

@@ -701,7 +701,6 @@ export class PolicyEngineService {
                     }
                     await this.policyEngine.addAccessFilters(_filters, owner);
                     await this.policyEngine.addLocationFilters(_filters, type);
-                    console.debug(JSON.stringify(_filters,null,4))
                     const [policies, count] = await DatabaseServer.getPoliciesAndCount(_filters, otherOptions);
                     for (const policy of policies) {
                         await PolicyComponentsUtils.GetPolicyInfo(policy, owner.creator);

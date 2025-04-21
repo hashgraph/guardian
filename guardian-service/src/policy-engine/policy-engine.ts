@@ -257,6 +257,7 @@ export class PolicyEngine extends NatsService {
             throw new Error('Policy does not exist.');
         }
         if (code === PolicyAccessCode.UNAVAILABLE) {
+            console.debug('-- 2', policy)
             throw new Error(`Insufficient permissions to ${action} the policy.`);
         }
         return true;

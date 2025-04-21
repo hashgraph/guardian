@@ -27,6 +27,7 @@ export class CreateTokenBlockComponent implements OnInit {
     description: any;
     isExist: boolean = false;
     contracts: { contractId: string }[] = [];
+    readonly: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -95,6 +96,7 @@ export class CreateTokenBlockComponent implements OnInit {
 
     setData(data: any) {
         if (data) {
+            this.readonly = !!data.readonly;
             this.dataForm = this.fb.group({
                 tokenName: ['Token Name', Validators.required],
                 tokenSymbol: ['F', Validators.required],

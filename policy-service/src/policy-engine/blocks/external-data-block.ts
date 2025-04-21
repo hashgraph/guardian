@@ -1,5 +1,5 @@
 import { ActionCallback, ExternalData } from '../helpers/decorators/index.js';
-import { DocumentSignature, Schema } from '@guardian/interfaces';
+import { DocumentSignature, LocationType, Schema } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyOutputEventType } from '../interfaces/index.js';
@@ -21,6 +21,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 @ExternalData({
     blockType: 'externalDataBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'External Data',
         title: `Add 'External Data' Block`,

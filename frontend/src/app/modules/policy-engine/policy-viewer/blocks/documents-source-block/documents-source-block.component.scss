@@ -358,3 +358,8 @@ tr.revoked td:not(.mat-column-history) {
 .text-container {
     overflow: hidden;
 }
+
+*[readonly-block="true"] {
+    pointer-events: none !important;
+    filter: grayscale(1);
+}

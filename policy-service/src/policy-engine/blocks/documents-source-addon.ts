@@ -7,12 +7,14 @@ import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils, QueryType } from '../helpers/utils.js';
 import ObjGet from 'lodash.get';
 import ObjSet from 'lodash.set';
+import { LocationType } from '@guardian/interfaces';
 
 /**
  * Documents source addon
  */
 @SourceAddon({
     blockType: 'documentsSourceAddon',
+    actionType: LocationType.LOCAL,
     about: {
         label: 'Source',
         title: `Add 'DocumentsSourceAddon' Addon`,

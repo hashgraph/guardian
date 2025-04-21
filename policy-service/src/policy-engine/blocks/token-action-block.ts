@@ -2,12 +2,13 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../in
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
-import { IPolicyBlock, IPolicyEventState } from '../policy-engine.interface.js';
+import { IPolicyBlock, IPolicyEventState, IPolicyGetData } from '../policy-engine.interface.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { IHederaCredentials, PolicyUser } from '../policy-user.js';
 import { BlockActionError } from '../errors/index.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { LocationType } from '@guardian/interfaces';
 
 /**
  * Information block
@@ -15,6 +16,7 @@ import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.j
 @BasicBlock({
     blockType: 'tokenActionBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Token Action',
         title: `Add 'Token Action' Block`,
@@ -42,9 +44,18 @@ export class TokenActionBlock {
      * Get block data
      * @param user
      */
-    async getData(user: PolicyUser): Promise<any> {
-        const { options } = PolicyComponentsUtils.GetBlockRef(this);
-        return { uiMetaData: options.uiMetaData };
+    async getData(user: PolicyUser): Promise<IPolicyGetData> {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        return {
+            id: ref.uuid,
+            blockType: ref.blockType,
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            ),
+            uiMetaData: ref.options?.uiMetaData
+        };
     }
 
     /**

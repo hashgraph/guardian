@@ -1,6 +1,6 @@
 import { ActionCallback, TokenBlock } from '../helpers/decorators/index.js';
 import { BlockActionError } from '../errors/index.js';
-import { DocumentSignature, SchemaEntity, SchemaHelper, DocumentCategoryType } from '@guardian/interfaces';
+import { DocumentSignature, SchemaEntity, SchemaHelper, DocumentCategoryType, LocationType } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { HederaDidDocument, MessageAction, MessageMemo, MessageServer, Token as TokenCollection, VcDocumentDefinition as VcDocument, VcHelper, VCMessage, VPMessage, } from '@guardian/common';
@@ -19,6 +19,7 @@ import { MintService } from '../mint/mint-service.js';
 @TokenBlock({
     blockType: 'mintDocumentBlock',
     commonBlock: true,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Mint',
         title: `Add 'Mint' Block`,

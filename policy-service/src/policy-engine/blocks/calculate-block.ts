@@ -1,4 +1,4 @@
-import { IVC, SchemaHelper } from '@guardian/interfaces';
+import { IVC, LocationType, SchemaHelper } from '@guardian/interfaces';
 import { ActionCallback, CalculateBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
@@ -28,6 +28,7 @@ interface IMetadata {
 @CalculateBlock({
     blockType: 'calculateContainerBlock',
     commonBlock: true,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Calculate',
         title: `Add 'Calculate' Block`,

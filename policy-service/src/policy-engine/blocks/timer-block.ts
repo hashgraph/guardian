@@ -8,7 +8,7 @@ import { IPolicyEvent } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { PolicyStatus } from '@guardian/interfaces';
+import { LocationType, PolicyStatus } from '@guardian/interfaces';
 
 /**
  * Timer block
@@ -16,6 +16,7 @@ import { PolicyStatus } from '@guardian/interfaces';
 @BasicBlock({
     blockType: 'timerBlock',
     commonBlock: true,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Timer',
         title: `Add 'Timer' Block`,

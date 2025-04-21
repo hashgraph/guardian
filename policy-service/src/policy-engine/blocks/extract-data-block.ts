@@ -5,7 +5,7 @@ import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyUtils } from '../helpers/utils.js';
-import { Schema } from '@guardian/interfaces';
+import { LocationType, Schema } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
@@ -15,6 +15,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 @BasicBlock({
     blockType: 'extractDataBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Extract Data',
         title: `Add 'Extract Data' Block`,

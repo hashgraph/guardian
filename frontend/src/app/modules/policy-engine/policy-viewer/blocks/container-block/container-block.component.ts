@@ -22,7 +22,7 @@ export class ContainerBlockComponent implements OnInit, OnDestroy {
     loading: boolean = true;
     socket: any;
     params: any;
-
+    readonly: boolean = false;
     blocks: any;
     activeBlockId: any;
     activeBlock: any;
@@ -111,6 +111,7 @@ export class ContainerBlockComponent implements OnInit, OnDestroy {
 
     setData(data: any) {
         if (data) {
+            this.readonly = !!data.readonly;
             const uiMetaData = data.uiMetaData || {};
             this.isActive = true;
             this.type = uiMetaData.type;

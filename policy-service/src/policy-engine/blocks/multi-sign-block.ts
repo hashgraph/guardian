@@ -3,13 +3,13 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
-import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyGetData } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
 import { BlockActionError } from '../errors/index.js';
 import { MessageAction, MessageServer, PolicyRoles, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcHelper, VPMessage, } from '@guardian/common';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { Inject } from '../../helpers/decorators/inject.js';
-import { DocumentCategoryType } from '@guardian/interfaces';
+import { DocumentCategoryType, LocationType } from '@guardian/interfaces';
 
 /**
  * Sign Status
@@ -26,6 +26,7 @@ enum DocumentStatus {
 @EventBlock({
     blockType: 'multiSignBlock',
     commonBlock: true,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Multiple Signature',
         title: `Add 'Multiple Signature' Block`,
@@ -103,11 +104,16 @@ export class MultiSignBlock {
      * Get block data
      * @param user
      */
-    async getData(user: PolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const data: any = {
+        const data: IPolicyGetData = {
             id: ref.uuid,
             blockType: ref.blockType,
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            ),
             type: ref.options.type,
             uiMetaData: ref.options.uiMetaData,
             user: ref.options.user

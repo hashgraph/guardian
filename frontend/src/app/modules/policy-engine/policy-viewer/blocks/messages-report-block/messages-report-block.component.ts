@@ -184,10 +184,10 @@ class Line {
  * Component for display block of 'messagesReportBlock' types.
  */
 @Component({
-               selector: 'app-messages-report-block',
-               templateUrl: './messages-report-block.component.html',
-               styleUrls: ['./messages-report-block.component.scss']
-           })
+    selector: 'app-messages-report-block',
+    templateUrl: './messages-report-block.component.html',
+    styleUrls: ['./messages-report-block.component.scss']
+})
 export class MessagesReportBlockComponent implements OnInit {
     private _topics1!: any[];
     private _topics2!: any[];
@@ -217,8 +217,9 @@ export class MessagesReportBlockComponent implements OnInit {
     public roles!: any[];
     public selected: any;
     public searchForm = this.fb.group({
-                                          value: ['', Validators.required]
-                                      });
+        value: ['', Validators.required]
+    });
+    public readonly: boolean = false;
 
     constructor(
         private element: ElementRef,
@@ -315,6 +316,7 @@ export class MessagesReportBlockComponent implements OnInit {
         this._gridTemplateColumns2 = '';
 
         if (data) {
+            this.readonly = !!data.readonly;
             this.status = data.status;
             this.report = data.report;
             this.target = data.target;
@@ -333,7 +335,7 @@ export class MessagesReportBlockComponent implements OnInit {
     private createSmallReport() {
         for (const topic of this._topics1) {
             if (topic.message?.messageType === 'INSTANCE_POLICY_TOPIC') {
-                const t = {...topic};
+                const t = { ...topic };
                 t.__parent = null;
                 t.__offset = 20;
                 t.__order = this._topics2.length + 1;
@@ -360,7 +362,7 @@ export class MessagesReportBlockComponent implements OnInit {
     private getAllMessages(topic: any, messages: any[]): any[] {
         if (topic.messages) {
             for (const message of topic.messages) {
-                messages.push({...message});
+                messages.push({ ...message });
             }
         }
         if (topic.children) {
@@ -659,7 +661,7 @@ export class MessagesReportBlockComponent implements OnInit {
         const documents: any[] = [];
         if (message.document && message.document.verifiableCredential) {
             for (const vc of message.document.verifiableCredential) {
-                const item: any = {document: vc};
+                const item: any = { document: vc };
                 item.__schema = this.searchSchema(item);
                 item.__issuer = this.getIssuer(item);
                 if (item.__schema) {
@@ -851,7 +853,7 @@ export class MessagesReportBlockComponent implements OnInit {
         this.loading = true;
         let filterValue = this.searchForm.value.value || '';
         filterValue = filterValue.trim();
-        this.policyEngineService.setBlockData(this.id, this.policyId, {filterValue}).subscribe(() => {
+        this.policyEngineService.setBlockData(this.id, this.policyId, { filterValue }).subscribe(() => {
             this.loadData();
         }, (e) => {
             console.error(e.error);

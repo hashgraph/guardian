@@ -1,6 +1,6 @@
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { BlockActionError } from '../errors/index.js';
-import { DocumentCategoryType, DocumentSignature, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
+import { DocumentCategoryType, DocumentSignature, LocationType, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { Token as TokenCollection, VcHelper, VcDocumentDefinition as VcDocument, MessageServer, VCMessage, MessageAction, VPMessage, HederaDidDocument } from '@guardian/common';
@@ -18,6 +18,7 @@ import { MintService } from '../mint/mint-service.js';
 @BasicBlock({
     blockType: 'retirementDocumentBlock',
     commonBlock: true,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Wipe',
         title: `Add 'Wipe' Block`,

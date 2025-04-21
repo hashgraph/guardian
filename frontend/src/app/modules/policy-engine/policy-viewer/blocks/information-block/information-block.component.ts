@@ -25,6 +25,7 @@ export class InformationBlockComponent implements OnInit {
     type: any;
     title: any;
     description: any;
+    readonly: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -87,6 +88,7 @@ export class InformationBlockComponent implements OnInit {
 
     setData(data: any) {
         if (data) {
+            this.readonly = !!data.readonly;
             const uiMetaData = data.uiMetaData || {};
 
             this.type = uiMetaData.type;

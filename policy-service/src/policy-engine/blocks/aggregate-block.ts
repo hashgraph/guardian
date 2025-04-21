@@ -8,6 +8,7 @@ import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/polic
 import ObjGet from 'lodash.get';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { LocationType } from '@guardian/interfaces';
 
 /**
  * Aggregate block
@@ -15,6 +16,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 @BasicBlock({
     blockType: 'aggregateDocumentBlock',
     commonBlock: true,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Aggregate Data',
         title: `Add 'Aggregate' Block`,

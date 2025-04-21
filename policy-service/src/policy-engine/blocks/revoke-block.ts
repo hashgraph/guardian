@@ -7,6 +7,7 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../in
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { LocationType } from '@guardian/interfaces';
 
 export const RevokedStatus = 'Revoked';
 
@@ -15,6 +16,7 @@ export const RevokedStatus = 'Revoked';
  */
 @EventBlock({
     blockType: 'revokeBlock',
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Revoke Document',
         title: `Add 'Revoke' Block`,

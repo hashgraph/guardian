@@ -73,11 +73,11 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             /**
              * Block type
              */
-            static blockType = defaultOptions.blockType;
+            public static blockType = defaultOptions.blockType;
             /**
              * Block about
              */
-            static about = defaultOptions.about;
+            public static about = defaultOptions.about;
             /**
              * Old data state
              * @protected
@@ -149,6 +149,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Database service
              */
             public readonly databaseServer: DatabaseServer;
+            /**
+             * Block about
+             */
+            public readonly actionType: LocationType;
 
             constructor(
                 _uuid: string,
@@ -208,6 +212,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
 
                 this.variables = defaultOptions.variables || [];
+                this.actionType = defaultOptions.actionType || LocationType.REMOTE;
             }
 
             /**

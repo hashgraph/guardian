@@ -3,9 +3,9 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { PolicyUser } from '../policy-user.js';
-import { DocumentCategoryType, GroupAccessType, GroupRelationshipType, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
+import { DocumentCategoryType, GroupAccessType, GroupRelationshipType, LocationType, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
-import { AnyBlockType } from '../policy-engine.interface.js';
+import { AnyBlockType, IPolicyGetData } from '../policy-engine.interface.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { VcHelper, MessageAction, MessageServer, RoleMessage, IAuthUser } from '@guardian/common';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
@@ -105,6 +105,7 @@ interface IGroupConfig {
 @EventBlock({
     blockType: 'policyRolesBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Roles',
         title: `Add 'Choice Of Roles' Block`,
@@ -373,7 +374,7 @@ export class PolicyRolesBlock {
      * Get block data
      * @param user
      */
-    async getData(user: PolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const roles: string[] = Array.isArray(ref.options.roles) ? ref.options.roles : [];
         const groups: string[] = Array.isArray(ref.options.groups) ? ref.options.groups : [];
@@ -388,6 +389,13 @@ export class PolicyRolesBlock {
             }
         }
         return {
+            id: ref.uuid,
+            blockType: ref.blockType,
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            ),
             roles,
             groups,
             groupMap,

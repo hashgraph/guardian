@@ -33,6 +33,7 @@ export class FiltersAddonBlockComponent implements OnInit {
     queryType: string = 'equal';
     valid: boolean = true;
     canBeEmpty: boolean = false;
+    readonly: boolean = false;
 
     userDefinedOptions = [
         { name: 'Equal', value: 'eq' },
@@ -138,6 +139,7 @@ export class FiltersAddonBlockComponent implements OnInit {
         this.currentValue = null;
         this.valid = true;
         if (data) {
+            this.readonly = !!data.readonly;
             this.data = data.data;
             this.type = data.type;
             this.target = data.targetBlock;

@@ -1,10 +1,10 @@
 import { CronJob } from 'cron';
 import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
-import { IVC, Schema, SchemaField, SchemaHelper, TopicType } from '@guardian/interfaces';
+import { IVC, LocationType, Schema, SchemaField, SchemaHelper, TopicType } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
-import { AnyBlockType, IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '../policy-engine.interface.js';
+import { AnyBlockType, IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyGetData, IPolicyValidatorBlock } from '../policy-engine.interface.js';
 import { BlockActionError } from '../errors/index.js';
 import { IHederaCredentials, PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
@@ -87,6 +87,7 @@ enum SchemaStatus {
 @EventBlock({
     blockType: 'externalTopicBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'External Topic',
         title: `Add 'External Topic' Block`,
@@ -897,11 +898,18 @@ export class ExternalTopicBlock {
      * Get block data
      * @param user
      */
-    public async getData(user: PolicyUser): Promise<any> {
+    public async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const item = await ref.databaseServer.getExternalTopic(ref.policyId, ref.uuid, user.did);
         if (item) {
             return {
+                id: ref.uuid,
+                blockType: ref.blockType,
+                actionType: ref.actionType,
+                readonly: (
+                    ref.actionType === LocationType.REMOTE &&
+                    user.location === LocationType.REMOTE
+                ),
                 documentTopicId: item.documentTopicId,
                 policyTopicId: item.policyTopicId,
                 instanceTopicId: item.instanceTopicId,
@@ -914,7 +922,7 @@ export class ExternalTopicBlock {
                 status: item.status
             };
         } else {
-            return {};
+            return {} as any;
         }
     }
 }

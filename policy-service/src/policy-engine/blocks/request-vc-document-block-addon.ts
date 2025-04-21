@@ -8,6 +8,7 @@ import {
     IPolicyAddonBlock,
     IPolicyDocument,
     IPolicyEventState,
+    IPolicyGetData,
     IPolicyRequestBlock,
     IPolicySourceBlock,
     IPolicyValidatorBlock,
@@ -26,6 +27,7 @@ import {
     SchemaHelper,
     CheckResult,
     removeObjectProperties,
+    LocationType,
 } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/block-action-error.js';
 import { PolicyUtils } from '../helpers/utils.js';
@@ -38,6 +40,7 @@ import deepEqual from 'deep-equal';
 @EventBlock({
     blockType: 'requestVcDocumentBlockAddon',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Request',
         title: `Add 'Request' Block`,
@@ -131,11 +134,16 @@ export class RequestVcDocumentBlockAddon {
      * Get block data
      * @param user
      */
-    async getData(user: PolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const data: any = {
+        const data: IPolicyGetData = {
             id: ref.uuid,
             blockType: ref.blockType,
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            ),
             ...ref.options,
             schema: { ...this._schema, fields: [], conditions: [] },
         };

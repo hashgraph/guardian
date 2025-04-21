@@ -23,6 +23,7 @@ import {
 import { PolicyUtils } from '../helpers/utils.js';
 import { NotificationHelper, Users } from '@guardian/common';
 import {
+    LocationType,
     NotificationAction,
     NotificationType,
     UserOption,
@@ -33,6 +34,7 @@ import {
  */
 @BasicBlock({
     blockType: 'notificationBlock',
+    actionType: LocationType.LOCAL,
     about: {
         label: 'Notification',
         title: `Add 'Notification' Block`,

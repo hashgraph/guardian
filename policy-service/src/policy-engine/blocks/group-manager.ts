@@ -1,6 +1,6 @@
 import { EventBlock } from '../helpers/decorators/index.js';
-import { GroupAccessType, GroupRelationshipType } from '@guardian/interfaces';
-import { IPolicyInterfaceBlock } from '../policy-engine.interface.js';
+import { GroupAccessType, GroupRelationshipType, LocationType } from '@guardian/interfaces';
+import { IPolicyGetData, IPolicyInterfaceBlock } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyInputEventType } from '../interfaces/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
@@ -15,6 +15,7 @@ import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.j
 @EventBlock({
     blockType: 'groupManagerBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Group Manager',
         title: `Add 'Group Manager' Block`,
@@ -168,7 +169,7 @@ export class GroupManagerBlock {
      * Get block data
      * @param user
      */
-    async getData(user: PolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         if (!user && !user.did) {
             throw new Error(`Permission denied`);
@@ -181,7 +182,16 @@ export class GroupManagerBlock {
             data.push(await this.groupMapping(ref, user, group));
         }
 
-        return { data };
+        return {
+            id: ref.uuid,
+            blockType: ref.blockType,
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            ),
+            data
+        };
     }
 
     /**

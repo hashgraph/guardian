@@ -41,6 +41,7 @@ export class ReportBlockComponent implements OnInit {
     searchForm = this.fb.group({
         value: ['', Validators.required]
     });
+    readonly: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -104,6 +105,7 @@ export class ReportBlockComponent implements OnInit {
     }
 
     setData(data: any) {
+        this.readonly = !!data?.readonly;
         if (data && data.data) {
             this.chainVisible = true;
             this.loadTrustChainData(data);

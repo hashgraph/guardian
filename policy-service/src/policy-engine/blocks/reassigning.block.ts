@@ -9,6 +9,7 @@ import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { Inject } from '../../helpers/decorators/inject.js';
+import { LocationType } from '@guardian/interfaces';
 
 /**
  * Reassigning block
@@ -16,6 +17,7 @@ import { Inject } from '../../helpers/decorators/inject.js';
 @BasicBlock({
     blockType: 'reassigningBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Reassigning',
         title: `Add 'Reassigning' Block`,

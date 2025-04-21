@@ -1,4 +1,4 @@
-<div class="content-{{type}}" [hidden]="!isExist">
+<div class="content-{{type}}" [hidden]="!isExist" [attr.readonly-block]="readonly">
     <ng-container *ngIf="type=='page'">
         <div class="upload-area">
             <div class="page-header">

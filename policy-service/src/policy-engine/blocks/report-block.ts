@@ -1,7 +1,7 @@
 import { Report } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { IPolicyReportBlock } from '../policy-engine.interface.js';
-import { IImpactReport, IPolicyReport, IReport, IReportItem, IVCReport, SchemaEntity, } from '@guardian/interfaces';
+import { IPolicyGetData, IPolicyReportBlock } from '../policy-engine.interface.js';
+import { IImpactReport, IPolicyReport, IReport, IReportItem, IVCReport, LocationType, SchemaEntity, } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyInputEventType } from '../interfaces/index.js';
@@ -17,6 +17,7 @@ import { FilterObject } from '@mikro-orm/core';
 @Report({
     blockType: 'reportBlock',
     commonBlock: false,
+    actionType: LocationType.LOCAL,
     about: {
         label: 'Report',
         title: `Add 'Report' Block`,
@@ -394,12 +395,19 @@ export class ReportBlock {
      * @param user
      * @param uuid
      */
-    async getData(user: PolicyUser, uuid: string): Promise<any> {
+    async getData(user: PolicyUser, uuid: string): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
             const blockState = this.state[user.id] || {};
             if (!blockState.lastValue) {
                 return {
+                    id: ref.uuid,
+                    blockType: ref.blockType,
+                    actionType: ref.actionType,
+                    readonly: (
+                        ref.actionType === LocationType.REMOTE &&
+                        user.location === LocationType.REMOTE
+                    ),
                     hash: null,
                     uiMetaData: ref.options.uiMetaData,
                     data: null
@@ -472,6 +480,13 @@ export class ReportBlock {
             }
 
             return {
+                id: ref.uuid,
+                blockType: ref.blockType,
+                actionType: ref.actionType,
+                readonly: (
+                    ref.actionType === LocationType.REMOTE &&
+                    user.location === LocationType.REMOTE
+                ),
                 hash,
                 uiMetaData: ref.options.uiMetaData,
                 data: report

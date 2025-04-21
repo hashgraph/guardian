@@ -4,6 +4,7 @@ import { ActionCallback, StateField } from '../helpers/decorators/index.js';
 import {
     IPolicyDocument,
     IPolicyEventState,
+    IPolicyGetData,
     IPolicyRequestBlock,
 } from '../policy-engine.interface.js';
 import {
@@ -26,6 +27,7 @@ import {
     ExternalEvent,
     ExternalEventType,
 } from '../interfaces/external-event.js';
+import { LocationType } from '@guardian/interfaces';
 
 /**
  * Create Token block
@@ -33,6 +35,7 @@ import {
 @EventBlock({
     blockType: 'createTokenBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Create Token',
         title: `Add 'Create Token' Block`,
@@ -111,9 +114,8 @@ export class CreateTokenBlock {
      * Get block data
      * @param user
      */
-    async getData(user: PolicyUser): Promise<any> {
-        const ref =
-            PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+    async getData(user: PolicyUser): Promise<IPolicyGetData> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         if (ref.options.autorun) {
             throw new BlockActionError(
                 `Block is autorunable and doesn't return any data`,
@@ -131,6 +133,11 @@ export class CreateTokenBlock {
         return {
             id: ref.uuid,
             blockType: ref.blockType,
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            ),
             active: ref.isBlockActive(user),
             data: tokenTemplate,
             ...ref.options,
@@ -238,8 +245,7 @@ export class CreateTokenBlock {
         ],
     })
     async setData(user: PolicyUser, template: any): Promise<any> {
-        const ref =
-            PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         ref.log(`setData`);
 
         if (ref.options.autorun) {

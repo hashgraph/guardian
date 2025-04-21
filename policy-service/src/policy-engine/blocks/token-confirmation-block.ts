@@ -2,13 +2,14 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../in
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { ActionCallback, EventBlock, StateField } from '../helpers/decorators/index.js';
-import { IPolicyBlock, IPolicyEventState } from '../policy-engine.interface.js';
+import { IPolicyBlock, IPolicyEventState, IPolicyGetData } from '../policy-engine.interface.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { Token as TokenCollection } from '@guardian/common';
 import { BlockActionError } from '../errors/index.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { LocationType } from '@guardian/interfaces';
 
 /**
  * Information block
@@ -16,6 +17,7 @@ import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.j
 @EventBlock({
     blockType: 'tokenConfirmationBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Token Confirmation',
         title: `Add 'Token Confirmation' Block`,
@@ -89,13 +91,18 @@ export class TokenConfirmationBlock {
      * Get block data
      * @param user
      */
-    async getData(user: PolicyUser) {
+    async getData(user: PolicyUser):Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         const blockState: any = this.state[user?.id] || {};
         const token = await this.getToken();
-        const block: any = {
+        const block: IPolicyGetData = {
             id: ref.uuid,
             blockType: 'tokenConfirmationBlock',
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            ),
             action: ref.options.action,
             accountId: blockState.accountId,
             tokenName: token.tokenName,

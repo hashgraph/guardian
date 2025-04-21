@@ -12,7 +12,7 @@ import {
     VcHelper,
     VcDocumentDefinition as VcDocument,
 } from '@guardian/common';
-import { SchemaEntity } from '@guardian/interfaces';
+import { LocationType, SchemaEntity } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { Inject } from '../../helpers/decorators/inject.js';
@@ -23,6 +23,7 @@ import { Inject } from '../../helpers/decorators/inject.js';
 @BasicBlock({
     blockType: 'splitBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Split Block',
         title: `Add 'Split' Block`,
