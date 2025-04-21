@@ -1757,9 +1757,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
         blockTag: string,
         state: unknown
     ): Promise<void> {
-        let stateEntity = await this.findOne(BlockState, { policyId, blockId });
+        let stateEntity = await this.getBlockState(policyId, blockId, blockTag);
         if (!stateEntity) {
-            stateEntity = this.create(BlockState, { policyId, blockId });
+            stateEntity = this.create(BlockState, { policyId, blockId, blockTag });
         }
         stateEntity.blockState = JSON.stringify(state);
         await this.save(BlockState, stateEntity);
