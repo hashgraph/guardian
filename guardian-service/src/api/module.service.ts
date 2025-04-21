@@ -173,7 +173,7 @@ export async function publishModule(
     model.status = ModuleStatus.PUBLISHED;
 
     notifier.completedAndStart('Link topic and module');
-    await topicHelper.twoWayLink(rootTopic, userTopic, result.getId());
+    await topicHelper.twoWayLink(rootTopic, userTopic, result.getId(), user.id);
 
     logger.info('Published module', ['GUARDIAN_SERVICE'], user.id);
 

@@ -210,6 +210,15 @@ export class UserCredentials {
      */
     private _hederaAccountId: string;
 
+    /**
+     * User id
+     */
+    private _userId: string;
+
+    public get userId(): string {
+        return this._userId;
+    }
+
     public get did(): string {
         return this._did;
     }
@@ -240,6 +249,9 @@ export class UserCredentials {
         if (!this._did || !this._hederaAccountId) {
             throw new Error('Hedera Account not found.');
         }
+
+        this._userId = userFull.id;
+
         return this;
     }
 

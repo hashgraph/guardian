@@ -1417,7 +1417,7 @@ export async function contractAPI(
                 await DatabaseServer.getTopicByType(owner.owner, TopicType.UserTopic),
                 true
             );
-            await topicHelper.twoWayLink(topic, userTopic, contractMessageResult.getId());
+            await topicHelper.twoWayLink(topic, userTopic, contractMessageResult.getId(), userId);
             return new MessageResponse(contract);
         } catch (error) {
             await logger.error(error, ['GUARDIAN_SERVICE'], userId);

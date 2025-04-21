@@ -259,6 +259,7 @@ export class MintBlock {
      * @param documents
      * @param messages
      * @param additionalMessages
+     * @param userId
      * @private
      */
     private async mintProcessing(
@@ -269,6 +270,7 @@ export class MintBlock {
         documents: VcDocument[],
         messages: string[],
         additionalMessages: string[],
+        userId: string | null,
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyTokenBlock>(this);
 
@@ -332,9 +334,10 @@ export class MintBlock {
         vpMessage.setDocument(vp);
         vpMessage.setRelationships(messages);
         vpMessage.setUser(null);
+
         const vpMessageResult = await messageServer
             .setTopicObject(topic)
-            .sendMessage(vpMessage, null, null, user.id);
+            .sendMessage(vpMessage, null, null, userId);
         const vpMessageId = vpMessageResult.getId();
         const vpDocument = PolicyUtils.createVP(ref, user, vp);
         vpDocument.type = DocumentCategoryType.MINT;
@@ -462,7 +465,11 @@ export class MintBlock {
         const additionalMessages = this.getAdditionalMessages(additionalDocs);
         const topicId = topics[0];
         const accountId = await this.getAccount(ref, docs, accounts);
-        const [vp, amount] = await this.mintProcessing(token, topicId, user, accountId, vcs, messages, additionalMessages);
+
+        const credentials = await UserCredentials.create(ref, user.did);
+        const userId = credentials.userId
+
+        const [vp, amount] = await this.mintProcessing(token, topicId, user, accountId, vcs, messages, additionalMessages, userId);
 
         const state: IPolicyEventState = event.data;
         state.result = vp;

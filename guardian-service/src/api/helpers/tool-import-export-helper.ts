@@ -406,7 +406,7 @@ export async function importToolByFile(
         .sendMessage(message, null, null, user.id);
 
     notifier.completedAndStart('Link topic and tool');
-    await topicHelper.twoWayLink(topic, parent, messageStatus.getId());
+    await topicHelper.twoWayLink(topic, parent, messageStatus.getId(), user.id);
 
     await DatabaseServer.saveTopic(topic.toObject());
     tool.topicId = topic.topicId;

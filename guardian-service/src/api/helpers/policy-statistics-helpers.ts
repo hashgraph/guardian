@@ -226,7 +226,7 @@ export async function getOrCreateTopic(item: PolicyStatistic, userId: string | n
         policyUUID: policy.uuid
     }, userId, { admin: true, submit: false });
     await topic.saveKeys();
-    await topicHelper.twoWayLink(topic, rootTopic, null);
+    await topicHelper.twoWayLink(topic, rootTopic, null, userId);
     await DatabaseServer.saveTopic(topic.toObject());
     return topic;
 }

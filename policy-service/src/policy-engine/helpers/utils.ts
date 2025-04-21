@@ -859,7 +859,7 @@ export class PolicyUtils {
             if (!ref.dryRun) {
                 await topic.saveKeys();
             }
-            await topicHelper.twoWayLink(topic, rootTopic, null);
+            await topicHelper.twoWayLink(topic, rootTopic, null, userId);
             await ref.databaseServer.saveTopic(topic.toObject());
         }
 

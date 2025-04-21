@@ -403,7 +403,7 @@ export class PolicyEngine extends NatsService {
                 .sendMessage(message, null, null, user.id);
 
             notifier.completedAndStart('Link topic and policy');
-            await topicHelper.twoWayLink(topic, parent, messageStatus.getId());
+            await topicHelper.twoWayLink(topic, parent, messageStatus.getId(), user.id);
 
             notifier.completedAndStart('Publish schemas');
             const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
@@ -1072,7 +1072,7 @@ export class PolicyEngine extends NatsService {
         const result = await messageServer.sendMessage(message,null, null, user.id);
 
         //Link topic and message
-        await topicHelper.twoWayLink(rootTopic, topic, result.getId());
+        await topicHelper.twoWayLink(rootTopic, topic, result.getId(), user.id);
 
         //Create Policy VC
         const messageId = result.getId();
