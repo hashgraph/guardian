@@ -131,7 +131,7 @@ export class RetirementBlock {
         vcMessage.setUser(null);
         const vcMessageResult = await messageServer
             .setTopicObject(topic)
-            .sendMessage(vcMessage);
+            .sendMessage(vcMessage, null, null, user.id);
 
         const vcDocument = PolicyUtils.createVC(ref, user, wipeVC);
         vcDocument.type = DocumentCategoryType.RETIREMENT;
@@ -150,7 +150,7 @@ export class RetirementBlock {
 
         const vpMessageResult = await messageServer
             .setTopicObject(topic)
-            .sendMessage(vpMessage);
+            .sendMessage(vpMessage, null, null, user.id);
 
         const vpDocument = PolicyUtils.createVP(ref, user, vp);
         vpDocument.type = DocumentCategoryType.RETIREMENT;
@@ -159,7 +159,7 @@ export class RetirementBlock {
         vpDocument.relationships = relationships;
         await ref.databaseServer.saveVP(vpDocument);
 
-        await MintService.wipe(ref, token, tokenValue, hederaCred, targetAccountId, vpMessageResult.getId());
+        await MintService.wipe(ref, token, tokenValue, hederaCred, targetAccountId, vpMessageResult.getId(), user.id);
 
         return [vpDocument, tokenValue];
     }

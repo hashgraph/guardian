@@ -21,6 +21,7 @@ export class RemoteDidLoader extends DocumentLoader {
                     operatorKey: null,
                     dryRun: false,
                     topic: topicId,
+                    payload: { userId: null }
                 },
             },
             10

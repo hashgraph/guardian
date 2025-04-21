@@ -355,7 +355,7 @@ export class SchemaImport {
                 owner: user.creator,
                 policyId: null,
                 policyUUID: null
-            });
+            }, user.id);
             await this.topicRow.saveKeys();
             await DatabaseServer.saveTopic(this.topicRow.toObject());
             await this.topicHelper.twoWayLink(this.topicRow, null, null, this.owner.id);

@@ -126,7 +126,7 @@ export class MintService {
                 amount: tokenValue,
                 memo: transactionMemo,
                 target: targetAccount,
-            }, signOptions);
+            }, signOptions, policyOwner?.id);
             if (multipleConfig.type === 'Main') {
                 const user = await PolicyUtils.getUserCredentials(
                     ref,
@@ -174,7 +174,7 @@ export class MintService {
                 );
                 MintService.activeMintProcesses.add(mintNFT.mintRequestId);
                 mintNFT
-                    .mint()
+                    .mint(null, policyOwner?.id)
                     .catch((error) =>
                         MintService.error(PolicyUtils.getErrorMessage(error))
                     )
@@ -201,7 +201,7 @@ export class MintService {
                 );
                 MintService.activeMintProcesses.add(mintFT.mintRequestId);
                 mintFT
-                    .mint()
+                    .mint(null, policyOwner?.id)
                     .catch((error) =>
                         MintService.error(PolicyUtils.getErrorMessage(error))
                     )
@@ -354,7 +354,7 @@ export class MintService {
                             NotificationHelper.init([rootId, userId, ownerId]),
                             _userId
                         )
-                    ).mint();
+                    ).mint(null, userId);
                     break;
                 case TokenType.NON_FUNGIBLE:
                     processed = await (
@@ -366,7 +366,7 @@ export class MintService {
                             NotificationHelper.init([rootId, userId, ownerId]),
                             _userId
                         )
-                    ).mint();
+                    ).mint(null, userId);
                     break;
                 default:
                     throw new Error('Unknown token type');
@@ -387,13 +387,15 @@ export class MintService {
      * @param root
      * @param data
      * @param signOptions
+     * @param userId
      */
     private static async sendMessage(
         ref: AnyBlockType,
         multipleConfig: MultiPolicy,
         root: IHederaCredentials,
         data: any,
-        signOptions: ISignOptions
+        signOptions: ISignOptions,
+        userId?: string | null
     ) {
         const message = new SynchronizationMessage(MessageAction.Mint);
         message.setDocument(multipleConfig, data);
@@ -408,18 +410,19 @@ export class MintService {
             null,
             null
         );
-        await messageServer.setTopicObject(topic).sendMessage(message);
+        await messageServer.setTopicObject(topic).sendMessage(message, null, null, userId);
     }
 
     /**
      * Mint
-     * @param ref
      * @param token
      * @param tokenValue
-     * @param documentOwner
      * @param root
      * @param targetAccount
-     * @param uuid
+     * @param ids
+     * @param vpMessageId
+     * @param userId
+     * @param notifier
      */
     public static async multiMint(
         root: IHederaCredentials,
@@ -428,6 +431,7 @@ export class MintService {
         targetAccount: string,
         ids: string[],
         vpMessageId: string,
+        userId: string | null,
         notifier?: NotificationHelper
     ): Promise<void> {
         const messageIds = ids.join(',');
@@ -474,7 +478,7 @@ export class MintService {
             );
             MintService.activeMintProcesses.add(mintNFT.mintRequestId);
             mintNFT
-                .mint()
+                .mint(null, userId)
                 .catch((error) =>
                     MintService.error(PolicyUtils.getErrorMessage(error))
                 )
@@ -501,7 +505,7 @@ export class MintService {
             );
             MintService.activeMintProcesses.add(mintFT.mintRequestId);
             mintFT
-                .mint()
+                .mint(null, userId)
                 .catch((error) =>
                     MintService.error(PolicyUtils.getErrorMessage(error))
                 )
@@ -524,11 +528,13 @@ export class MintService {
 
     /**
      * Wipe
+     * @param ref
      * @param token
      * @param tokenValue
      * @param root
      * @param targetAccount
      * @param uuid
+     * @param userId
      */
     public static async wipe(
         ref: AnyBlockType,
@@ -536,7 +542,8 @@ export class MintService {
         tokenValue: number,
         root: IHederaCredentials,
         targetAccount: string,
-        uuid: string
+        uuid: string,
+        userId: string | null
     ): Promise<void> {
         const workers = new Workers();
         if (token.wipeContractId) {
@@ -567,6 +574,7 @@ export class MintService {
                                 value: tokenValue,
                             },
                         ],
+                        payload: { userId }
                     },
                 },
                 20
@@ -589,6 +597,7 @@ export class MintService {
                         targetAccount,
                         tokenValue,
                         uuid,
+                        payload: { userId }
                     },
                 },
                 10

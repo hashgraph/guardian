@@ -39,6 +39,7 @@ export class RevokeBlock {
      * @param messageServer
      * @param ref
      * @param revokeMessage
+     * @param userId
      * @param parentId
      */
     async sendToHedera(
@@ -46,13 +47,14 @@ export class RevokeBlock {
         messageServer: MessageServer,
         ref: AnyBlockType,
         revokeMessage: string,
+        userId: string | null,
         parentId?: string[]
     ) {
         const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId);
         message.revoke(revokeMessage, parentId);
         await messageServer
             .setTopicObject(topic)
-            .sendMessage(message, false);
+            .sendMessage(message, false, null, userId);
     }
 
     /**
@@ -160,6 +162,7 @@ export class RevokeBlock {
                     messageServer,
                     ref,
                     doc.comment,
+                    userId,
                     relatedMessage.parentIds
                 );
             }

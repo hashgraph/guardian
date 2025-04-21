@@ -429,7 +429,7 @@ export class MessageServer {
      * @param userId
      * @private
      */
-    private async sendHedera<T extends Message>(message: T, memo?: string, userId?: string): Promise<T> {
+    private async sendHedera<T extends Message>(message: T, memo?: string, userId: string = null): Promise<T> {
         if (!this.topicId) {
             throw new Error('Topic is not set');
         }
@@ -612,8 +612,9 @@ export class MessageServer {
     /**
      * Find topic
      * @param messageId
+     * @param userId
      */
-    public async findTopic(messageId: string): Promise<string> {
+    public async findTopic(messageId: string, userId: string | null): Promise<string> {
         try {
             if (messageId && typeof messageId === 'string') {
                 const timeStamp = messageId.trim();
@@ -625,7 +626,8 @@ export class MessageServer {
                         operatorId,
                         operatorKey,
                         dryRun,
-                        timeStamp
+                        timeStamp,
+                        payload: { userId }
                     }
                 }, 10);
                 return topicId;
@@ -656,7 +658,8 @@ export class MessageServer {
                 operatorId,
                 operatorKey,
                 dryRun,
-                timeStamp
+                timeStamp,
+                payload: { userId }
             }
         }, 10, null, userId);
 

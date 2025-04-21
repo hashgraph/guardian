@@ -128,7 +128,7 @@ export class TokenConfirmationBlock {
         }
 
         if (data.action === 'confirm') {
-            await this.confirm(ref, data, blockState, data.action === 'skip');
+            await this.confirm(ref, data, blockState, user.id);
         }
 
         ref.triggerEvents(PolicyOutputEventType.Confirm, blockState.user, blockState.data);
@@ -144,14 +144,15 @@ export class TokenConfirmationBlock {
      * @param {IPolicyBlock} ref
      * @param {any} data
      * @param {any} state
+     * @param userId
      */
-    private async confirm(ref: IPolicyBlock, data: any, state: any, skip: boolean = false) {
+    private async confirm(ref: IPolicyBlock, data: any, state: any, userId: string | null) {
         const account = {
             hederaAccountId: state.accountId,
             hederaAccountKey: data.hederaAccountKey
         }
 
-        await PolicyUtils.checkAccountId(account);
+        await PolicyUtils.checkAccountId(account, userId);
         if (!account.hederaAccountKey) {
             throw new BlockActionError(`Key value is unknown`, ref.blockType, ref.uuid)
         }
@@ -171,11 +172,11 @@ export class TokenConfirmationBlock {
 
         switch (ref.options.action) {
             case 'associate': {
-                await PolicyUtils.associate(ref, token, account);
+                await PolicyUtils.associate(ref, token, account, userId);
                 break;
             }
             case 'dissociate': {
-                await PolicyUtils.dissociate(ref, token, account);
+                await PolicyUtils.dissociate(ref, token, account, userId);
                 break;
             }
             default:

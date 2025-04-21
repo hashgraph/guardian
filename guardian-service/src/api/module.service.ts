@@ -146,7 +146,7 @@ export async function publishModule(
         owner: user.owner,
         policyId: null,
         policyUUID: null
-    });
+    }, user.id);
     await rootTopic.saveKeys();
     await DatabaseServer.saveTopic(rootTopic.toObject());
 
@@ -168,7 +168,7 @@ export async function publishModule(
     const message = new ModuleMessage(MessageType.Module, MessageAction.PublishModule);
     message.setDocument(model, buffer);
     const result = await messageServer
-        .sendMessage(message);
+        .sendMessage(message, null, null, user.id);
     model.messageId = result.getId();
     model.status = ModuleStatus.PUBLISHED;
 

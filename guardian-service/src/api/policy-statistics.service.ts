@@ -283,12 +283,12 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 const statMessage = new StatisticMessage(MessageAction.PublishPolicyStatistic);
                 statMessage.setDocument(item);
 
-                const topic = await getOrCreateTopic(item);
+                const topic = await getOrCreateTopic(item, userId);
                 const user = await (new Users()).getHederaAccount(owner.creator);
                 const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
                 const statMessageResult = await messageServer
                     .setTopicObject(topic)
-                    .sendMessage(statMessage);
+                    .sendMessage(statMessage, null, null, userId);
 
                 item.topicId = topic.topicId;
                 item.messageId = statMessageResult.getId();
@@ -441,7 +441,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 const schemaObject = new Schema(schema);
                 const vcObject = await generateVcDocument(assessment.document, schemaObject, owner);
 
-                const topic = await getOrCreateTopic(item);
+                const topic = await getOrCreateTopic(item, userId);
                 const user = await (new Users()).getHederaAccount(owner.creator);
                 const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
 
@@ -452,7 +452,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 vcMessage.setRelationships(assessment.relationships);
                 const vcMessageResult = await messageServer
                     .setTopicObject(topic)
-                    .sendMessage(vcMessage);
+                    .sendMessage(vcMessage, null, null, userId);
 
                 const row = await DatabaseServer.createStatisticAssessment({
                     definitionId: item.id,

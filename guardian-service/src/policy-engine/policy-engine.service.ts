@@ -356,11 +356,13 @@ export class PolicyEngineService {
                     if (error) {
                         throw new Error(error);
                     }
+                    console.log('this.channel.getMessagesPolicyEngineEvents.POLICY_BLOCKS1')
                     const blockData = await new GuardiansService()
                         .sendBlockMessage(PolicyEvents.GET_ROOT_BLOCK_DATA, policyId, {
                             user,
                             policyId
                         }) as any;
+                    console.log('this.channel.getMessagesPolicyEngineEvents.POLICY_BLOCKS2')
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], userId);
@@ -1080,7 +1082,7 @@ export class PolicyEngineService {
                     const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(model.topicId), true);
                     await messageServer
                         .setTopicObject(topic)
-                        .sendMessage(message);
+                        .sendMessage(message, null, null, userId);
                     await DatabaseServer.updatePolicy(model);
 
                     await new GuardiansService().sendPolicyMessage(PolicyEvents.REFRESH_MODEL, policyId, {});
@@ -1844,6 +1846,7 @@ export class PolicyEngineService {
                     const migrationErrors = await PolicyDataMigrator.migrate(
                         owner.owner,
                         migrationConfig,
+                        userId,
                         emptyNotifier()
                     );
                     await this.policyEngine.regenerateModel(
@@ -1876,6 +1879,7 @@ export class PolicyEngineService {
                                 await PolicyDataMigrator.migrate(
                                     owner.owner,
                                     migrationConfig,
+                                    userId,
                                     notifier
                                 );
                             await this.policyEngine.regenerateModel(

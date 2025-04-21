@@ -119,7 +119,8 @@ export class SynchronizationService {
                     operatorId: null,
                     operatorKey: null,
                     dryRun: false,
-                    topic: policy.synchronizationTopicId
+                    topic: policy.synchronizationTopicId,
+                    payload: { userId: policyOwnerId },
                 }
             }, 10);
 
@@ -235,7 +236,8 @@ export class SynchronizationService {
                         transaction.target,
                         messageIds,
                         transaction.vpMessageId,
-                        notifier,
+                        policyOwner?.id,
+                        notifier
                     ).catch(error => {
                         this.logger.error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE'], policyOwnerId);
                     });
@@ -294,7 +296,7 @@ export class SynchronizationService {
                     i++;
                 }
             }
-            await this.updateMessages(messageServer, updateMessages);
+            await this.updateMessages(messageServer, updateMessages, policyOwnerId);
 
             transaction.status = 'Completed';
             await DatabaseServer.updateMultiPolicyTransactions(transaction);
@@ -313,14 +315,16 @@ export class SynchronizationService {
      * Update Messages
      * @param messageServer
      * @param updateMessages
+     * @param userId
      * @private
      */
     private async updateMessages(
         messageServer: MessageServer,
-        updateMessages: SynchronizationMessage[]
+        updateMessages: SynchronizationMessage[],
+        userId?: string | null,
     ): Promise<boolean> {
         for (const message of updateMessages) {
-            await messageServer.sendMessage(message);
+            await messageServer.sendMessage(message, null, null, userId);
         }
         return true;
     }

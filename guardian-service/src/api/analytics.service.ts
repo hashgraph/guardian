@@ -190,11 +190,11 @@ async function localSearch(
     })
 }
 
-async function globalSearch(options: any): Promise<ISearchResult[]> {
+async function globalSearch(options: any, userId: string | null): Promise<ISearchResult[]> {
     const policies = await new Workers().addNonRetryableTask({
         type: WorkerTaskType.ANALYTICS_SEARCH_POLICIES,
         data: {
-            payload: { options }
+            payload: { options, userId }
         }
     }, 2);
     if (!policies) {
@@ -453,7 +453,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
 
                 let policies: ISearchResult[];
                 if (type === 'Global') {
-                    policies = await globalSearch(options)
+                    policies = await globalSearch(options, userId)
                 } else {
                     policies = await localSearch(user, type, options)
                 }
@@ -748,11 +748,12 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
         });
 
     ApiResponse(MessageAPI.GET_INDEXER_AVAILABILITY,
-        async () => {
+        async (msg: { userId: string | null }) => {
+            const userId = msg?.userId;
             try {
                 const result = await new Workers().addNonRetryableTask({
                     type: WorkerTaskType.ANALYTICS_GET_INDEXER_AVAILABILITY,
-                    data: {}
+                    data: {payload: { userId }}
                 }, 2);
 
                 return new MessageResponse(result);

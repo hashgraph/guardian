@@ -32,7 +32,7 @@ async function publishPolicyLabel(
     item.config = publishLabelConfig(item.config);
 
     notifier.start('Create topic');
-    const topic = await getOrCreateTopic(item);
+    const topic = await getOrCreateTopic(item, owner.id);
     const user = await (new Users()).getHederaAccount(owner.creator);
     const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
     messageServer.setTopicObject(topic);
@@ -64,7 +64,7 @@ async function publishPolicyLabel(
     const statMessage = new LabelMessage(MessageAction.PublishPolicyLabel);
     statMessage.setDocument(item, buffer);
     const statMessageResult = await messageServer
-        .sendMessage(statMessage);
+        .sendMessage(statMessage, null, null, owner.id);
 
     item.topicId = topic.topicId;
     item.messageId = statMessageResult.getId();
@@ -739,7 +739,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 const vcs = validator.getVCs();
                 const vpObject = await generateVpDocument(vcs, schemaObjects, owner);
 
-                const topic = await getOrCreateTopic(item);
+                const topic = await getOrCreateTopic(item, userId);
                 const user = await (new Users()).getHederaAccount(owner.creator);
                 const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
 
@@ -750,7 +750,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 vpMessage.setRelationships(ids);
                 const vpMessageResult = await messageServer
                     .setTopicObject(topic)
-                    .sendMessage(vpMessage);
+                    .sendMessage(vpMessage, null, null, userId);
 
                 const row = await DatabaseServer.createLabelDocument({
                     definitionId: item.id,

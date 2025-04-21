@@ -248,7 +248,6 @@ async function createUserProfile(
         }
     }
     const messageServer = new MessageServer(hederaAccountId, hederaAccountKey, signOptions);
-    console.log('hederaAccountId', hederaAccountId);
 
     // ------------------------
     // <-- Check hedera key
@@ -259,7 +258,7 @@ async function createUserProfile(
         PrivateKey.fromString(hederaAccountKey);
         await workers.addNonRetryableTask({
             type: WorkerTaskType.GET_USER_BALANCE,
-            data: { hederaAccountId, hederaAccountKey }
+            data: { hederaAccountId, hederaAccountKey, payload: { userId: user.id } }
         }, 20, user.id.toString());
     } catch (error) {
         throw new Error(`Invalid Hedera account or key.`);
@@ -296,7 +295,7 @@ async function createUserProfile(
             owner: null,
             policyId: null,
             policyUUID: null
-        });
+        }, user.id);
         await topicHelper.oneWayLink(topicConfig, globalTopic, user.id.toString());
         newTopic = await dataBaseServer.save(Topic, topicConfig.toObject());
     }

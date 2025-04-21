@@ -89,14 +89,15 @@ export class HttpRequestBlock {
      * @param url
      * @param headers
      * @param body
+     * @param userId
      */
-    async requestDocument(method, url, headers, body): Promise<VcDocument> {
+    async requestDocument(method, url, headers, body, userId: string | null): Promise<VcDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
 
         const res = await new Workers().addNonRetryableTask({
             type: WorkerTaskType.HTTP_REQUEST,
             data: {
-                payload: { method, url, headers, body }
+                payload: { method, url, headers, body, userId }
             }
         }, 10);
         if (!res) {
@@ -162,7 +163,8 @@ export class HttpRequestBlock {
         }
         const requestBody = this.replaceVariablesInString(JSON.stringify(inputObject), variablesObj);
 
-        const doc = await this.requestDocument(method, url, headers, requestBody ? JSON.parse(requestBody) : undefined);
+        const doc =
+            await this.requestDocument(method, url, headers, requestBody ? JSON.parse(requestBody) : undefined, event?.user?.id);
         const item = PolicyUtils.createVC(ref, event.user, doc);
 
         const state: IPolicyEventState = { data: item };

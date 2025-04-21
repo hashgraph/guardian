@@ -120,7 +120,7 @@ export async function serDefaultRole(user: IAuthUser, owner: IOwner): Promise<an
     const message = new UserPermissionsMessage(MessageAction.SetRole);
     message.setRole(data);
     message.setDocument(document);
-    await messageServer.sendMessage(message);
+    await messageServer.sendMessage(message, null, null, owner.id);
 
     const result = await new DatabaseServer().save(VcDocumentCollection, {
         hash: message.hash,
@@ -160,7 +160,7 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 const message = new GuardianRoleMessage(MessageAction.CreateRole);
                 message.setRole(data);
                 message.setDocument(document);
-                await messageServer.sendMessage(message);
+                await messageServer.sendMessage(message, null, null, userId);
                 const result = await new DatabaseServer().save(VcDocumentCollection, {
                     hash: message.hash,
                     owner: owner.owner,
@@ -197,7 +197,7 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 const message = new GuardianRoleMessage(MessageAction.UpdateRole);
                 message.setRole(data);
                 message.setDocument(document);
-                await messageServer.sendMessage(message);
+                await messageServer.sendMessage(message, null, null, userId);
                 const result = await new DatabaseServer().save(VcDocumentCollection, {
                     hash: message.hash,
                     owner: owner.owner,
@@ -234,7 +234,7 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 const message = new GuardianRoleMessage(MessageAction.DeleteRole);
                 message.setRole(data);
                 message.setDocument(document);
-                await messageServer.sendMessage(message);
+                await messageServer.sendMessage(message, null, null, userId);
                 const result = await new DatabaseServer().save(VcDocumentCollection, {
                     hash: message.hash,
                     owner: owner.owner,

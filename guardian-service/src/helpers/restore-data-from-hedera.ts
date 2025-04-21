@@ -119,7 +119,7 @@ export class RestoreDataFromHedera {
                     operatorKey: null,
                     dryRun: false,
                     topic: topicId,
-                    userId
+                    payload: { userId }
                 },
             },
             10

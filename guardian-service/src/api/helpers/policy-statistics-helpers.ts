@@ -200,7 +200,7 @@ export async function generateVcDocument(document: any, schema: Schema, owner: I
     return vcObject;
 }
 
-export async function getOrCreateTopic(item: PolicyStatistic): Promise<TopicConfig> {
+export async function getOrCreateTopic(item: PolicyStatistic, userId: string | null): Promise<TopicConfig> {
     let topic: TopicConfig;
     if (item.topicId) {
         topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true);
@@ -224,7 +224,7 @@ export async function getOrCreateTopic(item: PolicyStatistic): Promise<TopicConf
         description: 'POLICY_STATISTICS',
         policyId: policy.id,
         policyUUID: policy.uuid
-    }, { admin: true, submit: false });
+    }, userId, { admin: true, submit: false });
     await topic.saveKeys();
     await topicHelper.twoWayLink(topic, rootTopic, null);
     await DatabaseServer.saveTopic(topic.toObject());

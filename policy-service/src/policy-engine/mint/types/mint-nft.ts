@@ -138,7 +138,7 @@ export class MintNFT extends TypedMint {
                             tokenId: this._token.tokenId,
                             limit: 1,
                             order: 'desc',
-                            payload: { userId }
+                            payload: { userId },
                         },
                     },
                     1,
@@ -329,7 +329,7 @@ export class MintNFT extends TypedMint {
     /**
      * Resolve pending transactions
      */
-    protected override async resolvePendingTransactions() {
+    protected override async resolvePendingTransactions(userId: string | null) {
         if (this._mintRequest.isMintNeeded) {
             const mintedSerials = await new Workers().addRetryableTask(
                 {
@@ -342,6 +342,7 @@ export class MintNFT extends TypedMint {
                         serialnumber: this._mintRequest.startSerial
                             ? `gte:${this._mintRequest.startSerial}`
                             : null,
+                        payload: { userId }
                     },
                 },
                 1,
@@ -391,6 +392,7 @@ export class MintNFT extends TypedMint {
                         serialnumber: this._mintRequest.startSerial
                             ? `gte:${this._mintRequest.startSerial}`
                             : null,
+                        payload: { userId }
                     },
                 },
                 1,
@@ -417,7 +419,7 @@ export class MintNFT extends TypedMint {
      * Mint tokens
      * @returns Processed
      */
-    override async mint(): Promise<boolean> {
-        return await super.mint(true);
+    override async mint(isProgressNeeded: boolean = false, userId: string | null): Promise<boolean> {
+        return await super.mint(isProgressNeeded, userId);
     }
 }

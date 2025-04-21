@@ -337,7 +337,7 @@ export class PolicyEngine extends NatsService {
         notifier: INotifier,
         logger: PinoLogger
     ): Promise<Policy> {
-        logger.info('Create Policy', ['GUARDIAN_SERVICE']);
+        logger.info('Create Policy', ['GUARDIAN_SERVICE'], user.id);
         notifier.start('Save in DB');
         if (data) {
             delete data._id;
@@ -389,7 +389,7 @@ export class PolicyEngine extends NatsService {
                 owner: user.owner,
                 policyId: null,
                 policyUUID: null
-            });
+            }, user.id);
             await topic.saveKeys();
 
             model.topicId = topic.topicId;
@@ -400,7 +400,7 @@ export class PolicyEngine extends NatsService {
             message.setDocument(model);
             const messageStatus = await messageServer
                 .setTopicObject(parent)
-                .sendMessage(message);
+                .sendMessage(message, null, null, user.id);
 
             notifier.completedAndStart('Link topic and policy');
             await topicHelper.twoWayLink(topic, parent, messageStatus.getId());
@@ -639,7 +639,7 @@ export class PolicyEngine extends NatsService {
         const message = new PolicyMessage(MessageType.Policy, MessageAction.DeletePolicy);
         message.setDocument(policyToDelete);
         await messageServer.setTopicObject(topic)
-            .sendMessage(message);
+            .sendMessage(message, null, null, user.id);
 
         notifier.completedAndStart('Delete policy from DB');
         await DatabaseServer.deletePolicy(policyToDelete.id);
@@ -852,7 +852,7 @@ export class PolicyEngine extends NatsService {
                 let _token = token;
                 if (token.draftToken) {
                     const oldId = token.tokenId;
-                    const newToken = await createHederaToken({ ...token, changeSupply: true }, root);
+                    const newToken = await createHederaToken({ ...token, changeSupply: true }, root, user.id);
 
                     _token = await new DatabaseServer().update(Token, token?.id, newToken);
 
@@ -878,7 +878,7 @@ export class PolicyEngine extends NatsService {
                     owner: user.creator,
                     policyId: model.id.toString(),
                     policyUUID: model.uuid
-                });
+                }, user.id);
                 await rootTopic.saveKeys();
                 await DatabaseServer.saveTopic(rootTopic.toObject());
                 model.instanceTopicId = rootTopic.topicId;
@@ -906,7 +906,7 @@ export class PolicyEngine extends NatsService {
                     owner: user.creator,
                     policyId: model.id.toString(),
                     policyUUID: model.uuid
-                }, { admin: true, submit: false });
+                }, user.id, { admin: true, submit: false });
                 await synchronizationTopic.saveKeys();
                 await DatabaseServer.saveTopic(synchronizationTopic.toObject());
                 model.synchronizationTopicId = synchronizationTopic.topicId;
@@ -1049,7 +1049,7 @@ export class PolicyEngine extends NatsService {
             owner: user.owner,
             policyId: dryRunId,
             policyUUID: model.uuid
-        });
+        }, user.id);
 
         await Promise.all([
             rootTopic.saveKeys(),
@@ -1069,7 +1069,7 @@ export class PolicyEngine extends NatsService {
         });
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
-        const result = await messageServer.sendMessage(message);
+        const result = await messageServer.sendMessage(message,null, null, user.id);
 
         //Link topic and message
         await topicHelper.twoWayLink(rootTopic, topic, result.getId());
@@ -1480,7 +1480,7 @@ export class PolicyEngine extends NatsService {
         const topic = new TopicConfig({ topicId: multipleConfig.synchronizationTopicId }, null, null);
         await messageServer
             .setTopicObject(topic)
-            .sendMessage(message);
+            .sendMessage(message, null, null, policy.ownerId);
 
         return await DatabaseServer.saveMultiPolicy(multipleConfig);
     }

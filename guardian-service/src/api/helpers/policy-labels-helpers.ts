@@ -32,7 +32,7 @@ export function publishLabelConfig(data?: IPolicyLabelConfig): IPolicyLabelConfi
     return data;
 }
 
-export async function getOrCreateTopic(item: PolicyLabel): Promise<TopicConfig> {
+export async function getOrCreateTopic(item: PolicyLabel, userId: string | null): Promise<TopicConfig> {
     let topic: TopicConfig;
     if (item.topicId) {
         topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true);
@@ -56,7 +56,7 @@ export async function getOrCreateTopic(item: PolicyLabel): Promise<TopicConfig> 
         description: 'POLICY_LABELS',
         policyId: policy.id,
         policyUUID: policy.uuid
-    }, { admin: true, submit: false });
+    }, userId, { admin: true, submit: false });
     await topic.saveKeys();
     await topicHelper.twoWayLink(topic, rootTopic, null);
     await DatabaseServer.saveTopic(topic.toObject());

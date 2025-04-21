@@ -406,7 +406,7 @@ export class CustomLogicBlock {
                 return await ref.components.generateUUID();
             }
             if (idType === 'DID') {
-                const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null);
+                const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null, user.id);
 
                 const didObject = await ref.components.generateDID(topic.topicId);
 
@@ -423,7 +423,7 @@ export class CustomLogicBlock {
                 );
                 const messageResult = await client
                     .setTopicObject(topic)
-                    .sendMessage(message);
+                    .sendMessage(message, null, null, user.id);
 
                 const item = PolicyUtils.createDID(ref, user, didObject);
                 item.messageId = messageResult.getId();

@@ -138,7 +138,7 @@ export class CreateTokenBlock {
     }
 
     private async _createToken(
-        user,
+        user: PolicyUser,
         ref: IPolicyRequestBlock,
         template: any,
         docs: IPolicyDocument | IPolicyDocument[]
@@ -169,7 +169,8 @@ export class CreateTokenBlock {
         const createdToken = await PolicyUtils.createTokenByTemplate(
             ref,
             template,
-            policyOwnerCred
+            policyOwnerCred,
+            user.id
         );
         // #endregion
 
@@ -185,7 +186,7 @@ export class CreateTokenBlock {
         ).setTopicObject(rootTopic);
         const tokenMessage = new TokenMessage(MessageAction.CreateToken);
         tokenMessage.setDocument(createdToken);
-        await messageServer.sendMessage(tokenMessage);
+        await messageServer.sendMessage(tokenMessage, null, null, user.id);
         // #endregion
 
         // #region Set token in document

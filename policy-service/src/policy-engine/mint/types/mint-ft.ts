@@ -72,7 +72,7 @@ export class MintFT extends TypedMint {
     /**
      * Resolve pending transactions
      */
-    protected override async resolvePendingTransactions(): Promise<void> {
+    protected override async resolvePendingTransactions(userId: string | null): Promise<void> {
         if (this._mintRequest.isMintNeeded) {
             const mintTransaction = await this._db.getMintTransaction({
                 mintRequestId: this._mintRequest.id,
@@ -92,6 +92,7 @@ export class MintFT extends TypedMint {
                                 memo_base64: btoa(this._mintRequest.memo),
                             },
                             limit: 1,
+                            payload: { userId }
                         },
                     },
                     1,
@@ -126,6 +127,7 @@ export class MintFT extends TypedMint {
                                     memo_base64: btoa(this._mintRequest.memo),
                                 },
                                 limit: 1,
+                                payload: { userId }
                             },
                         },
                         1,
@@ -178,6 +180,7 @@ export class MintFT extends TypedMint {
                             limit: 1,
                             order: 'desc',
                             transactiontype: 'TOKENMINT',
+                            payload: { userId }
                         },
                     },
                     1,
@@ -212,6 +215,7 @@ export class MintFT extends TypedMint {
                         supplyKey: this._token.supplyKey,
                         tokenValue: this._mintRequest.amount,
                         transactionMemo: this._mintRequest.memo,
+                        payload: { userId }
                     },
                 },
                 10, 0, userId
@@ -255,6 +259,7 @@ export class MintFT extends TypedMint {
                             limit: 1,
                             order: 'desc',
                             transactiontype: 'CRYPTOTRANSFER',
+                            payload: { userId }
                         },
                     },
                     1,
@@ -291,6 +296,7 @@ export class MintFT extends TypedMint {
                         treasuryKey: this._token.treasuryKey,
                         tokenValue: this._mintRequest.amount,
                         transactionMemo: this._mintRequest.memo,
+                        payload: { userId }
                     },
                 },
                 10, 0, userId
@@ -311,7 +317,7 @@ export class MintFT extends TypedMint {
      * Mint tokens
      * @returns Processed
      */
-    override async mint(): Promise<boolean> {
-        return await super.mint(false);
+    override async mint(isProgressNeeded: boolean = false, userId: string | null): Promise<boolean> {
+        return await super.mint(isProgressNeeded, userId);
     }
 }

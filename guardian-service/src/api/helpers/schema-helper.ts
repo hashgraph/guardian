@@ -364,7 +364,7 @@ export async function createSchema(
             owner: user.creator,
             policyId: null,
             policyUUID: null
-        });
+        }, user.id);
         await topic.saveKeys();
         await DatabaseServer.saveTopic(topic.toObject());
         await topicHelper.twoWayLink(topic, null, null, user.id);

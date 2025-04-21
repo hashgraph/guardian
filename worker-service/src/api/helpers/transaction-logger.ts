@@ -28,18 +28,21 @@ export class TransactionLogger {
      * @param client
      * @param network
      * @param transactionName
+     * @param userId
      */
     public static getTransactionData(
         id: string,
         client: Client,
         network: string,
-        transactionName: string
+        transactionName: string,
+        userId: string | null
     ): any {
         return {
             id,
             network,
             operatorAccountId: client?.operatorAccountId?.toString(),
-            transactionName
+            transactionName,
+            payload: { userId }
         }
     }
 

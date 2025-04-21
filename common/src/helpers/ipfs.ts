@@ -48,7 +48,7 @@ export class IPFS {
      * @param userId
      * @returns {string} - hash
      */
-    public static async addFile(file: ArrayBuffer, userId: string | null = null): Promise<{
+    public static async addFile(file: ArrayBuffer, userId: string | null): Promise<{
         /**
          * CID
          */
@@ -89,7 +89,7 @@ export class IPFS {
             type: WorkerTaskType.GET_FILE,
             data: {
                 target: [IPFS.target, MessageAPI.IPFS_GET_FILE].join('.'),
-                payload: { cid, responseType }
+                payload: { cid, responseType, userId }
             }
         }, 10, userId);
         if (!res) {

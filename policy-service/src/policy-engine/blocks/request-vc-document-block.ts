@@ -321,7 +321,7 @@ export class RequestVcDocumentBlock {
                 return await ref.components.generateUUID();
             }
             if (idType === 'DID') {
-                const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null);
+                const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null, user.id);
                 const didObject = await ref.components.generateDID(topic.topicId);
 
                 const message = new DIDMessage(MessageAction.CreateDID);

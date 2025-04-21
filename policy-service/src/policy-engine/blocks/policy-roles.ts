@@ -357,7 +357,7 @@ export class PolicyRolesBlock {
         vcMessage.setRole(group);
         const vcMessageResult = await messageServer
             .setTopicObject(rootTopic)
-            .sendMessage(vcMessage);
+            .sendMessage(vcMessage, null, null, user.id);
 
         const vcDocument = PolicyUtils.createVC(ref, user, userVC);
         vcDocument.type = DocumentCategoryType.USER_ROLE;

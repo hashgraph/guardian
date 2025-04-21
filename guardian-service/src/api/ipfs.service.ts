@@ -51,7 +51,7 @@ export async function ipfsAPI(logger: PinoLogger): Promise<void> {
     ApiResponse( MessageAPI.IPFS_ADD_FILE, async (msg) => {
         const userId = msg?.userId
         try {
-            const result = await IPFS.addFile(msg.content);
+            const result = await IPFS.addFile(msg.content, userId);
             return new MessageResponse(result);
         }
         catch (error) {

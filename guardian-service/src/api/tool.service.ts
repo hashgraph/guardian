@@ -153,7 +153,7 @@ export async function publishTool(
             owner: user.owner,
             policyId: tool.id.toString(),
             policyUUID: tool.uuid
-        }, { admin: true, submit: false });
+        }, user.id, { admin: true, submit: false });
         await tagsTopic.saveKeys();
         await DatabaseServer.saveTopic(tagsTopic.toObject());
         tool.tagsTopicId = tagsTopic.topicId;
@@ -309,7 +309,7 @@ export async function createTool(
                 owner: user.owner,
                 targetId: tool.id.toString(),
                 targetUUID: tool.uuid
-            }, { admin: true, submit: true });
+            }, user.id, { admin: true, submit: true });
             await topic.saveKeys();
 
             notifier.completedAndStart('Create tool in Hedera');
@@ -318,7 +318,7 @@ export async function createTool(
             message.setDocument(tool);
             const messageStatus = await messageServer
                 .setTopicObject(parent)
-                .sendMessage(message);
+                .sendMessage(message, null, null, user.id);
 
             notifier.completedAndStart('Link topic and tool');
             await topicHelper.twoWayLink(topic, parent, messageStatus.getId());

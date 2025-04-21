@@ -122,7 +122,7 @@ export class GroupManagerBlock {
             message.setMessageStatus(MessageStatus.WITHDRAW, text);
             await messageServer
                 .setTopicObject(topic)
-                .sendMessage(message, false);
+                .sendMessage(message, false, null, user.id);
         }
 
         const target = await PolicyComponentsUtils.GetPolicyUserByGroup(member, ref);

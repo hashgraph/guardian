@@ -280,7 +280,8 @@ export class RequestVcDocumentBlockAddon {
                     ref,
                     'root',
                     null,
-                    null
+                    null,
+                    user.id
                 );
                 const didObject = await ref.components.generateDID(
                     topic.topicId

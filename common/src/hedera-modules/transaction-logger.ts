@@ -177,7 +177,8 @@ export class TransactionLogger extends NatsService {
                         type: WorkerTaskType.GET_USER_BALANCE,
                         data: {
                             hederaAccountId: OPERATOR_ID,
-                            hederaAccountKey: OPERATOR_KEY
+                            hederaAccountKey: OPERATOR_KEY,
+                            payload: { userId }
                         }
                     }, 20, null);
                     attr.push(balance);

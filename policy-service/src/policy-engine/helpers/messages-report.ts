@@ -117,7 +117,7 @@ export class MessagesReport {
         this.messages.set(timestamp, message.toJson());
         this.users.set(message.getOwner(), null);
 
-        await this.checkToken(message);
+        await this.checkToken(message, userId);
         await this.checkTopic(message.getTopicId(), userId);
 
         for (const id of message.getRelationships()) {
@@ -128,8 +128,9 @@ export class MessagesReport {
     /**
      * Search tokens
      * @param message
+     * @param userId
      */
-    private async checkToken(message: Message) {
+    private async checkToken(message: Message, userId: string | null) {
         if (message.type === MessageType.VCDocument) {
             const document = (message as VCMessage).document;
             if (document &&
@@ -139,7 +140,7 @@ export class MessagesReport {
                 const tokenId = document.credentialSubject[0].tokenId;
                 if (tokenId && !this.tokens.has(tokenId)) {
                     this.tokens.set(tokenId, null);
-                    const info = await this.getToken(tokenId);
+                    const info = await this.getToken(tokenId, userId);
                     if (info) {
                         this.tokens.set(tokenId, {
                             name: info.name,
@@ -237,13 +238,14 @@ export class MessagesReport {
     /**
      * Get token information
      * @param tokenId
+     * @param userId
      */
-    public async getToken(tokenId: string): Promise<any> {
+    public async getToken(tokenId: string, userId: string | null): Promise<any> {
         try {
             const workers = new Workers();
             const info = await workers.addRetryableTask({
                 type: WorkerTaskType.GET_TOKEN_INFO,
-                data: { tokenId }
+                data: { tokenId, payload: { userId } }
             }, 10);
             return info;
         } catch (error) {

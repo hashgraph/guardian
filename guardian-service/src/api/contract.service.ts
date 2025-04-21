@@ -96,13 +96,15 @@ const retireEventsAbi = new ethers.Interface([
 
 async function getContractMessage(
     workers,
-    contractId
+    contractId,
+    userId: string | null
 ): Promise<[ContractMessage, string]> {
     const { memo } = await workers.addNonRetryableTask(
         {
             type: WorkerTaskType.GET_CONTRACT_INFO,
             data: {
                 contractId,
+                payload: { userId }
             },
         },
         20,
@@ -115,6 +117,7 @@ async function getContractMessage(
             data: {
                 topic: memo,
                 index: 1,
+                payload: { userId }
             },
         },
         10
@@ -129,7 +132,8 @@ async function checkContractsCompatibility(
     workers: Workers,
     databaseServer: DatabaseServer,
     retireContract: { version: string },
-    tokens: { token: string }[]
+    tokens: { token: string }[],
+    userId: string | null
 ) {
     if (retireContract.version === '1.0.0') {
         const tokenInfo = await DatabaseServer.getTokens({
@@ -148,7 +152,8 @@ async function checkContractsCompatibility(
             if (!wipeContract) {
                 [wipeContract] = await getContractMessage(
                     workers,
-                    token.wipeContractId
+                    token.wipeContractId,
+                    userId
                 ) as unknown as [{ version: string }];
             }
             if (wipeContract.version !== '1.0.0') {
@@ -179,7 +184,8 @@ async function setPool(
     workers: Workers,
     dataBaseServer: DatabaseServer,
     contractId: string,
-    options: { tokens: RetireTokenPool[]; immediately: boolean }
+    options: { tokens: RetireTokenPool[]; immediately: boolean },
+    userId: string | null
 ) {
     const pool = JSON.parse(JSON.stringify(options));
     pool.contractId = contractId;
@@ -188,7 +194,7 @@ async function setPool(
             const tokenInfo = await workers.addRetryableTask(
                 {
                     type: WorkerTaskType.GET_TOKEN_INFO,
-                    data: { tokenId: item.token },
+                    data: { tokenId: item.token, payload: { userId } },
                 },
                 10
             );
@@ -197,11 +203,12 @@ async function setPool(
             let isWiper = false;
             let contractMessage;
             try {
-                [contractMessage] = await getContractMessage(workers, wipeContractId);
+                [contractMessage] = await getContractMessage(workers, wipeContractId, userId);
                 isWiper = await isContractWiper(
                     workers,
                     contractMessage,
                     contractId,
+                    userId,
                     item.token
                 );
                 // tslint:disable-next-line:no-empty
@@ -334,7 +341,8 @@ export async function setPoolContract(
     hederaAccountId: string,
     hederaAccountKey: string,
     tokens: RetireTokenPool[],
-    immediately: boolean = false
+    immediately: boolean = false,
+    userId: string | null
 ) {
     return await customContractCall(
         ContractAPI.SET_RETIRE_POOLS,
@@ -348,7 +356,8 @@ export async function setPoolContract(
                 token.count,
             ]),
             immediately,
-        ])
+        ]),
+        userId
     );
 }
 
@@ -357,14 +366,15 @@ async function setRetireRequest(
     dataBaseServer: DatabaseServer,
     contractId: string,
     user: string,
-    tokens: RetireTokenRequest[]
+    tokens: RetireTokenRequest[],
+    userId: string | null
 ) {
     const newTokens = await Promise.all(
         tokens.map(async (token) => {
             const fullTokenInfo = await workers.addRetryableTask(
                 {
                     type: WorkerTaskType.GET_TOKEN_INFO,
-                    data: { tokenId: token.token },
+                    data: { tokenId: token.token, payload: { userId } },
                 },
                 10
             );
@@ -460,7 +470,9 @@ export async function syncWipeContracts(
                 contractId,
                 version: contractVersions.get(contractId)
             },
-            lastSyncEventTimeStamp
+            lastSyncEventTimeStamp,
+            null,
+            null
         );
     }
 }
@@ -471,7 +483,8 @@ export async function syncWipeContract(
     users: Users,
     contract: { contractId: string, version: string },
     timestamp?: string,
-    sendNotifications: boolean = true
+    sendNotifications: boolean = true,
+    userId: string | null = null
 ) {
     const { contractId, version } = contract;
     const isFirstVersion = version === '1.0.0';
@@ -487,6 +500,7 @@ export async function syncWipeContract(
                 data: {
                     contractId,
                     timestamp: timestamp ? `gt:${timestamp}` : null,
+                    payload: { userId }
                 },
             },
             20,
@@ -737,7 +751,9 @@ export async function syncRetireContracts(
             workers,
             users,
             contractId,
-            lastSyncEventTimeStamp
+            lastSyncEventTimeStamp,
+            null,
+            null
         );
     }
 }
@@ -748,7 +764,8 @@ export async function syncRetireContract(
     users: Users,
     contractId: string,
     timestamp?: string,
-    sendNotifications: boolean = true
+    sendNotifications: boolean = true,
+    userId?: string | null
 ) {
     const timestamps = [timestamp];
     let lastTimeStamp;
@@ -761,6 +778,7 @@ export async function syncRetireContract(
                 data: {
                     contractId,
                     timestamp: timestamp ? `gt:${timestamp}` : null,
+                    payload: { userId }
                 },
             },
             20,
@@ -826,6 +844,13 @@ export async function syncRetireContract(
                         token: TokenId.fromSolidityAddress(item[0]).toString(),
                         count: Number(item[1]),
                     }));
+
+                    const userAccount = AccountId.fromSolidityAddress(
+                        data[0]
+                    ).toString();
+
+                    const userIdByAccount = (await users.getUserByAccount(userAccount)).id;
+
                     await setPool(
                         workers,
                         dataBaseServer,
@@ -833,7 +858,8 @@ export async function syncRetireContract(
                         {
                             tokens,
                             immediately: data[1],
-                        }
+                        },
+                        userIdByAccount
                     );
                     if (!sendNotifications) {
                         break;
@@ -921,7 +947,8 @@ export async function syncRetireContract(
                             ).toString(),
                             count: Number(item[1]),
                             serials: item[2].map((serial) => Number(serial)),
-                        }))
+                        })),
+                        userId
                     );
                     if (!sendNotifications) {
                         break;
@@ -1034,6 +1061,7 @@ async function isContractWiper(
     workers: Workers,
     contract: { contractId: string, version: string },
     retireContractId: string,
+    userId: string | null,
     token?: string
 ): Promise<boolean> {
     if (!contract.contractId || !retireContractId) {
@@ -1051,6 +1079,7 @@ async function isContractWiper(
                     contractId: contract.contractId,
                     timestamp: timestamp ? `lt:${timestamp}` : null,
                     order: 'desc',
+                    payload: { userId }
                 },
             },
             20,
@@ -1233,7 +1262,7 @@ async function saveRetireVC(
 
     const vcMessage = new VCMessage(MessageAction.CreateVC);
     vcMessage.setDocument(vcObject);
-    await messageServer.sendMessage(vcMessage);
+    await messageServer.sendMessage(vcMessage, null, null, owner.id);
 
     await dataBaseServer.save(VcDocumentCollection, {
         hash: vcMessage.hash,
@@ -1336,6 +1365,7 @@ export async function contractAPI(
                     policyId: null,
                     policyUUID: null,
                 },
+                userId,
                 {
                     admin: true,
                     submit: false,
@@ -1382,7 +1412,7 @@ export async function contractAPI(
             );
             const contractMessageResult = await messageServer
                 .setTopicObject(topic)
-                .sendMessage(contractMessage);
+                .sendMessage(contractMessage, null, null, userId);
             const userTopic = await TopicConfig.fromObject(
                 await DatabaseServer.getTopicByType(owner.owner, TopicType.UserTopic),
                 true
@@ -1432,7 +1462,7 @@ export async function contractAPI(
                 rootKey
             );
 
-            const [contractMessage, memo] = await getContractMessage(workers, contractId) as [ContractMessage & {version: string}, string];
+            const [contractMessage, memo] = await getContractMessage(workers, contractId, userId) as [ContractMessage & {version: string}, string];
 
             const existingContract = await dataBaseServer.findOne(Contract, {
                 contractId,
@@ -1473,7 +1503,8 @@ export async function contractAPI(
                     users,
                     contractId,
                     existingContract?.lastSyncEventTimeStamp,
-                    false
+                    false,
+                    userId
                 );
             } else if (
                 !existingContract &&
@@ -1485,7 +1516,8 @@ export async function contractAPI(
                     users,
                     contract,
                     existingContract?.lastSyncEventTimeStamp,
-                    false
+                    false,
+                    userId
                 );
             }
 
@@ -2449,7 +2481,7 @@ export async function contractAPI(
                         const tokenInfo = await workers.addRetryableTask(
                             {
                                 type: WorkerTaskType.GET_TOKEN_INFO,
-                                data: { tokenId: token.token },
+                                data: { tokenId: token.token, payload: { userId } },
                             },
                             10
                         );
@@ -2461,12 +2493,13 @@ export async function contractAPI(
                         let contractMessage;
                         let isWiper = false;
                         try {
-                            [contractMessage] = await getContractMessage(workers, token.contract);
+                            [contractMessage] = await getContractMessage(workers, token.contract, userId);
                             isWiper = await isContractWiper(
                                 workers,
                                 contractMessage,
                                 contractId,
-                                token.token,
+                                userId,
+                                token.token
                             );
                         // tslint:disable-next-line:no-empty
                         } catch {}
@@ -2841,7 +2874,7 @@ export async function contractAPI(
                 owner.creator
             );
 
-            const error = await checkContractsCompatibility(workers, dataBaseServer, contract, options.tokens);
+            const error = await checkContractsCompatibility(workers, dataBaseServer, contract, options.tokens, userId);
             if (error) {
                 throw new Error(error);
             }
@@ -2852,7 +2885,8 @@ export async function contractAPI(
                 root.hederaAccountId,
                 rootKey,
                 options.tokens,
-                options.immediately
+                options.immediately,
+                userId
             );
 
             return new MessageResponse(
@@ -2862,7 +2896,8 @@ export async function contractAPI(
                     // retirePoolRepository,
                     dataBaseServer,
                     contractId,
-                    options
+                    options,
+                    userId
                 )
             );
         } catch (error) {
@@ -3045,7 +3080,7 @@ export async function contractAPI(
                 contractId: pool.contractId
             }) as Contract & { version: string }
 
-            const error = await checkContractsCompatibility(workers, dataBaseServer, contract, tokens);
+            const error = await checkContractsCompatibility(workers, dataBaseServer, contract, tokens, userId);
             if (error) {
                 throw new Error(error);
             }
@@ -3074,7 +3109,8 @@ export async function contractAPI(
                         token.count,
                         token.serials,
                     ]),
-                ])
+                ]),
+                userId
             );
 
             const srUser = EntityOwner.sr(sr.id, sr.did);
@@ -3147,7 +3183,7 @@ export async function contractAPI(
                     contractId: request.contractId
                 }, { field: ['version'] }) as Contract & { version: string };
 
-                const error = await checkContractsCompatibility(workers, dataBaseServer, contract, request.tokens);
+                const error = await checkContractsCompatibility(workers, dataBaseServer, contract, request.tokens, userId);
                 if (error) {
                     throw new Error(error);
                 }
@@ -3192,7 +3228,8 @@ export async function contractAPI(
                                 token.count,
                                 token.serials,
                             ])
-                        ])
+                        ]),
+                        userId
                     );
                 }
 
@@ -3479,7 +3516,7 @@ export async function contractAPI(
             const messages = await new Workers().addNonRetryableTask({
                 type: WorkerTaskType.ANALYTICS_GET_RETIRE_DOCUMENTS,
                 data: {
-                    payload: { options: { topicId: contractTopicId } }
+                    payload: { options: { topicId: contractTopicId }, userId }
                 }
             }, 2);
 

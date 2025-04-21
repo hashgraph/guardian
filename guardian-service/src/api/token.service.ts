@@ -9,8 +9,9 @@ import { FilterObject } from '@mikro-orm/core';
  * Create token in Hedera network
  * @param token
  * @param user
+ * @param userId
  */
-export async function createHederaToken(token: any, user: IRootConfig) {
+export async function createHederaToken(token: any, user: IRootConfig, userId: string | null) {
     const topicHelper = new TopicHelper(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
     const topic = await topicHelper.create({
         type: TopicType.TokenTopic,
@@ -19,7 +20,9 @@ export async function createHederaToken(token: any, user: IRootConfig) {
         owner: user.did,
         policyId: null,
         policyUUID: null
-    }, {
+    },
+    userId,
+    {
         admin: true,
         submit: false
     });
@@ -180,7 +183,7 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
     };
 
     if (!token.draftToken) {
-        rawTokenObject = await createHederaToken(rawTokenObject, root);
+        rawTokenObject = await createHederaToken(rawTokenObject, root, user.id);
     }
 
     notifier.completedAndStart('Create and save token in DB');
@@ -221,7 +224,7 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
 
         notifier.completedAndStart('Create and save token in DB');
 
-        const newTokenObject = await createHederaToken(newToken, root);
+        const newTokenObject = await createHederaToken(newToken, root, user.id);
         const tokenObject = Object.assign(oldToken, newTokenObject);
 
         const result = await dataBaseServer.update(Token, oldToken?.id, tokenObject);

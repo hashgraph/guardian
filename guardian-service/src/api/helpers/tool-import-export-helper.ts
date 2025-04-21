@@ -394,7 +394,7 @@ export async function importToolByFile(
         owner: user.owner,
         targetId: null,
         targetUUID: null
-    }, { admin: true, submit: true });
+    }, user.id, { admin: true, submit: true });
     await topic.saveKeys();
 
     notifier.completedAndStart('Create tool in Hedera');
@@ -403,7 +403,7 @@ export async function importToolByFile(
     message.setDocument(tool);
     const messageStatus = await messageServer
         .setTopicObject(parent)
-        .sendMessage(message);
+        .sendMessage(message, null, null, user.id);
 
     notifier.completedAndStart('Link topic and tool');
     await topicHelper.twoWayLink(topic, parent, messageStatus.getId());

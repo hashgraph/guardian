@@ -312,7 +312,7 @@ export class MintBlock {
         vcMessage.setUser(null);
         const vcMessageResult = await messageServer
             .setTopicObject(topic)
-            .sendMessage(vcMessage);
+            .sendMessage(vcMessage, null, null, user.id);
         const mintVcDocument = PolicyUtils.createVC(ref, user, mintVC);
         mintVcDocument.type = DocumentCategoryType.MINT;
         mintVcDocument.schema = `#${mintVC.getSubjectType()}`;
@@ -334,7 +334,7 @@ export class MintBlock {
         vpMessage.setUser(null);
         const vpMessageResult = await messageServer
             .setTopicObject(topic)
-            .sendMessage(vpMessage);
+            .sendMessage(vpMessage, null, null, user.id);
         const vpMessageId = vpMessageResult.getId();
         const vpDocument = PolicyUtils.createVP(ref, user, vp);
         vpDocument.type = DocumentCategoryType.MINT;

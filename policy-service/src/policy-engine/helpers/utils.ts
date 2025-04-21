@@ -439,12 +439,14 @@ export class PolicyUtils {
      * @param ref Block Ref
      * @param hederaAccountId Hedera Account Identifier
      * @param user Client User
+     * @param userId
      * @returns Token's map
      */
     public static async getHederaAccountInfo(
         ref: AnyBlockType,
         hederaAccountId: string,
-        user: IHederaCredentials
+        user: IHederaCredentials,
+        userId: string | null
     ): Promise<any> {
         if (ref.dryRun) {
             return await ref.databaseServer.getVirtualHederaAccountInfo(hederaAccountId);
@@ -455,7 +457,8 @@ export class PolicyUtils {
                 data: {
                     userID: user.hederaAccountId,
                     userKey: user.hederaAccountKey,
-                    hederaAccountId
+                    hederaAccountId,
+                    payload: { userId }
                 }
             }, 20);
         }
@@ -466,11 +469,13 @@ export class PolicyUtils {
      * @param ref
      * @param token
      * @param user
+     * @param userId
      */
     public static async associate(
         ref: AnyBlockType,
         token: Token,
-        user: IHederaCredentials
+        user: IHederaCredentials,
+        userId: string | null
     ): Promise<boolean> {
         if (ref.dryRun) {
             return await ref.databaseServer.virtualAssociate(user.hederaAccountId, token);
@@ -483,7 +488,8 @@ export class PolicyUtils {
                     userID: user.hederaAccountId,
                     userKey: user.hederaAccountKey,
                     associate: true,
-                    dryRun: ref.dryRun
+                    dryRun: ref.dryRun,
+                    payload: { userId }
                 }
             }, 20);
             const userProfile = await new Users().getUserByAccount(
@@ -503,11 +509,13 @@ export class PolicyUtils {
      * @param ref
      * @param token
      * @param user
+     * @param userId
      */
     public static async dissociate(
         ref: AnyBlockType,
         token: Token,
-        user: IHederaCredentials
+        user: IHederaCredentials,
+        userId: string | null
     ): Promise<boolean> {
         if (ref.dryRun) {
             return await ref.databaseServer.virtualDissociate(user.hederaAccountId, token.tokenId);
@@ -520,7 +528,8 @@ export class PolicyUtils {
                     userID: user.hederaAccountId,
                     userKey: user.hederaAccountKey,
                     associate: false,
-                    dryRun: ref.dryRun
+                    dryRun: ref.dryRun,
+                    payload: { userId }
                 }
             }, 20);
             const userProfile = await new Users().getUserByAccount(
@@ -537,15 +546,18 @@ export class PolicyUtils {
 
     /**
      * freeze
+     * @param ref
      * @param token
      * @param user
      * @param root
+     * @param userId
      */
     public static async freeze(
         ref: AnyBlockType,
         token: Token,
         user: IHederaCredentials,
-        root: IHederaCredentials
+        root: IHederaCredentials,
+        userId: string | null
     ): Promise<boolean> {
         if (ref.dryRun) {
             return await ref.databaseServer.virtualFreeze(user.hederaAccountId, token.tokenId);
@@ -560,7 +572,8 @@ export class PolicyUtils {
                     freezeKey,
                     token,
                     freeze: true,
-                    dryRun: ref.dryRun
+                    dryRun: ref.dryRun,
+                    payload: { userId }
                 }
             }, 20);
         }
@@ -568,15 +581,18 @@ export class PolicyUtils {
 
     /**
      * unfreeze
+     * @param ref
      * @param token
      * @param user
      * @param root
+     * @param userId
      */
     public static async unfreeze(
         ref: AnyBlockType,
         token: Token,
         user: IHederaCredentials,
-        root: IHederaCredentials
+        root: IHederaCredentials,
+        userId: string | null
     ): Promise<boolean> {
         if (ref.dryRun) {
             return await ref.databaseServer.virtualUnfreeze(user.hederaAccountId, token.tokenId);
@@ -591,7 +607,8 @@ export class PolicyUtils {
                     freezeKey,
                     token,
                     freeze: false,
-                    dryRun: ref.dryRun
+                    dryRun: ref.dryRun,
+                    payload: { userId }
                 }
             }, 20);
         }
@@ -599,15 +616,18 @@ export class PolicyUtils {
 
     /**
      * grantKyc
+     * @param ref
      * @param token
      * @param user
      * @param root
+     * @param userId
      */
     public static async grantKyc(
         ref: AnyBlockType,
         token: Token,
         user: IHederaCredentials,
-        root: IHederaCredentials
+        root: IHederaCredentials,
+        userId: string | null
     ): Promise<boolean> {
         if (ref.dryRun) {
             return await ref.databaseServer.virtualGrantKyc(user.hederaAccountId, token.tokenId);
@@ -623,7 +643,8 @@ export class PolicyUtils {
                     token,
                     kycKey,
                     grant: true,
-                    dryRun: ref.dryRun
+                    dryRun: ref.dryRun,
+                    payload: { userId }
                 }
             }, 20);
         }
@@ -631,15 +652,18 @@ export class PolicyUtils {
 
     /**
      * revokeKyc
+     * @param ref
      * @param token
      * @param user
      * @param root
+     * @param userId
      */
     public static async revokeKyc(
         ref: AnyBlockType,
         token: Token,
         user: IHederaCredentials,
-        root: IHederaCredentials
+        root: IHederaCredentials,
+        userId: string | null
     ): Promise<boolean> {
         if (ref.dryRun) {
             return await ref.databaseServer.virtualRevokeKyc(user.hederaAccountId, token.tokenId);
@@ -655,7 +679,8 @@ export class PolicyUtils {
                     token,
                     kycKey,
                     grant: false,
-                    dryRun: ref.dryRun
+                    dryRun: ref.dryRun,
+                    payload: { userId }
                 }
             }, 20);
         }
@@ -666,12 +691,14 @@ export class PolicyUtils {
      * @param ref
      * @param tokenTemplate
      * @param user
+     * @param userId
      * @returns
      */
     public static async createTokenByTemplate(
         ref: AnyBlockType,
         tokenTemplate: any,
-        user: UserCredentials
+        user: UserCredentials,
+        userId: string | null
     ): Promise<Token> {
         let tokenId;
         const owner = user.did;
@@ -685,6 +712,7 @@ export class PolicyUtils {
                 data: {
                     operatorId: user.hederaAccountId,
                     operatorKey: hederaAccountKey,
+                    payload: { userId },
                     ...tokenTemplate
                 }
             }, 20);
@@ -745,13 +773,15 @@ export class PolicyUtils {
     /**
      * revokeKyc
      * @param account
+     * @param userId
      */
-    public static async checkAccountId(account: IHederaCredentials): Promise<void> {
+    public static async checkAccountId(account: IHederaCredentials, userId: string | null): Promise<void> {
         const workers = new Workers();
         return await workers.addNonRetryableTask({
             type: WorkerTaskType.CHECK_ACCOUNT,
             data: {
                 hederaAccountId: account.hederaAccountId,
+                payload: { userId }
             }
         }, 20);
     }
@@ -762,12 +792,14 @@ export class PolicyUtils {
      * @param topicName
      * @param root
      * @param user
+     * @param userId
      */
     public static async getOrCreateTopic(
         ref: AnyBlockType,
         topicName: string,
         root: UserCredentials,
         user: UserCredentials,
+        userId: string | null,
         memoObj?: any
     ): Promise<TopicConfig> {
         const rootTopic = await TopicConfig.fromObject(
@@ -823,7 +855,7 @@ export class PolicyUtils {
                 memoObj: config.memoObj === 'doc'
                     ? memoObj
                     : config
-            });
+            }, userId, null);
             if (!ref.dryRun) {
                 await topic.saveKeys();
             }

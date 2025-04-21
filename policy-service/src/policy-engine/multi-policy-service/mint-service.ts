@@ -85,6 +85,7 @@ export class MintService {
         const notifier = NotificationHelper.init(
             [documentOwnerUser?.id, policyOwner?.id],
         );
+
         if (multipleConfig) {
             const hash = VcDocument.toCredentialHash(documents, (value: any) => {
                 delete value.id;
@@ -130,7 +131,7 @@ export class MintService {
                         'Minting tokens',
                         `Start minting ${token.tokenName}`
                     ),
-                    userId
+                    policyOwner?.id
                 );
                 await MintService.updateDocuments(messageId, { tokenId: token.tokenId, serials }, ref);
             } else {
@@ -312,6 +313,7 @@ export class MintService {
                         supplyKey: token.supplyKey,
                         metaData,
                         transactionMemo,
+                        payload: { userId }
                     },
                 },
                 1, 10, userId
@@ -337,6 +339,7 @@ export class MintService {
                         treasuryKey: token.treasuryKey,
                         element: serials,
                         transactionMemo,
+                        payload: { userId }
                     },
                 },
                 1, 10, userId
@@ -455,7 +458,8 @@ export class MintService {
                     tokenId: token.tokenId,
                     supplyKey: token.supplyKey,
                     tokenValue,
-                    transactionMemo
+                    transactionMemo,
+                    payload: { userId }
                 }
             }, 10, 0, userId);
             await workers.addRetryableTask({
@@ -469,7 +473,8 @@ export class MintService {
                     treasuryId: token.treasuryId,
                     treasuryKey: token.treasuryKey,
                     tokenValue,
-                    transactionMemo
+                    transactionMemo,
+                    payload: { userId }
                 }
             }, 10, 0, userId);
             result = tokenValue;
@@ -511,11 +516,13 @@ export class MintService {
 
     /**
      * Wipe
+     * @param ref
      * @param token
      * @param tokenValue
      * @param root
      * @param targetAccount
      * @param uuid
+     * @param userId
      */
     public static async wipe(
         ref: AnyBlockType,
@@ -523,7 +530,8 @@ export class MintService {
         tokenValue: number,
         root: IHederaCredentials,
         targetAccount: string,
-        uuid: string
+        uuid: string,
+        userId: string | null
     ): Promise<void> {
         const workers = new Workers();
         if (token.wipeContractId) {
@@ -554,6 +562,7 @@ export class MintService {
                                 value: tokenValue
                             }
                         ],
+                        payload: { userId }
                     },
                 },
                 20
@@ -574,7 +583,8 @@ export class MintService {
                     wipeKey,
                     targetAccount,
                     tokenValue,
-                    uuid
+                    uuid,
+                    payload: { userId }
                 }
             }, 10);
         }

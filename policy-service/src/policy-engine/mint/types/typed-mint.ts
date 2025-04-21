@@ -129,7 +129,7 @@ export abstract class TypedMint {
     /**
      * Resolve pending transactions
      */
-    protected abstract resolvePendingTransactions(): Promise<void>;
+    protected abstract resolvePendingTransactions(userId: string | null): Promise<void>;
 
     /**
      * Resolve pending transactions check
@@ -223,14 +223,14 @@ export abstract class TypedMint {
         }
         return notification;
     }
-
+ь
     /**
      * Mint tokens
      * @param isProgressNeeded Is progress needed
      * @param userId
      * @returns Processed
      */
-    protected async mint(isProgressNeeded: boolean, userId?: string): Promise<boolean> {
+    protected async mint(isProgressNeeded: boolean, userId: string | null): Promise<boolean> {
         if (
             !this._mintRequest.isMintNeeded &&
             !this._mintRequest.isTransferNeeded
@@ -239,7 +239,7 @@ export abstract class TypedMint {
         }
 
         if (await this._resolvePendingTransactionsCheck()) {
-            await this.resolvePendingTransactions();
+            await this.resolvePendingTransactions(userId);
             await this._handleResolveResult();
         }
 
@@ -325,7 +325,7 @@ export abstract class TypedMint {
             try {
                 this._mintRequest.processDate = new Date();
                 await this._db.saveMintRequest(this._mintRequest);
-                await this.transferTokens(notifier);
+                await this.transferTokens(notifier, userId);
             } catch (error) {
                 const errorMessage = PolicyUtils.getErrorMessage(error);
                 notifier?.stop();

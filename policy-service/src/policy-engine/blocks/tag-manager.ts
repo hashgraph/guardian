@@ -185,7 +185,7 @@ export class TagsManagerBlock {
                     tag.status = 'Published';
                     const hederaCred = await userCred.loadHederaCredentials(ref);
                     const signOptions = await userCred.loadSignOptions(ref);
-                    await this.publishTag(tag, target.topicId, hederaCred, signOptions);
+                    await this.publishTag(tag, target.topicId, hederaCred, signOptions, user.id);
                 } else {
                     tag.target = null;
                     tag.localTarget = target.id;
@@ -256,7 +256,7 @@ export class TagsManagerBlock {
                 await ref.databaseServer.removeTag(item);
 
                 if (item.topicId && item.status === 'Published') {
-                    await this.deleteTag(item, item.topicId, user.did);
+                    await this.deleteTag(item, item.topicId, user.did, user.id);
                 }
 
                 break;
@@ -288,8 +288,9 @@ export class TagsManagerBlock {
      * @param topicId
      * @param owner
      * @param signOptions
+     * @param userId
      */
-    private async publishTag(item: Tag, topicId: string, owner: IHederaCredentials, signOptions: ISignOptions): Promise<Tag> {
+    private async publishTag(item: Tag, topicId: string, owner: IHederaCredentials, signOptions: ISignOptions, userId: string | null): Promise<Tag> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const messageServer = new MessageServer(owner.hederaAccountId, owner.hederaAccountKey, signOptions, ref.dryRun);
         const topic = await ref.databaseServer.getTopicById(topicId);
@@ -302,7 +303,7 @@ export class TagsManagerBlock {
         message.setDocument(item);
         const result = await messageServer
             .setTopicObject(topicConfig)
-            .sendMessage(message);
+            .sendMessage(message, null, null, userId);
 
         item.messageId = result.getId();
         item.topicId = result.getTopicId();
@@ -311,9 +312,12 @@ export class TagsManagerBlock {
 
     /**
      * Delete tag
-     * @param tag
+     * @param item
+     * @param topicId
+     * @param owner
+     * @param userId
      */
-    private async deleteTag(item: Tag, topicId: string, owner: string): Promise<Tag> {
+    private async deleteTag(item: Tag, topicId: string, owner: string, userId: string | null): Promise<Tag> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const user = await PolicyUtils.getUserCredentials(ref, owner);
         const userCred = await user.loadHederaCredentials(ref);
@@ -329,7 +333,7 @@ export class TagsManagerBlock {
         message.setDocument(item);
         const result = await messageServer
             .setTopicObject(topicConfig)
-            .sendMessage(message);
+            .sendMessage(message, null, null, userId);
 
         item.messageId = result.getId();
         item.topicId = result.getTopicId();

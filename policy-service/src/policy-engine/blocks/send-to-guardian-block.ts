@@ -392,11 +392,13 @@ export class SendToGuardianBlock {
      * @param document
      * @param message
      * @param ref
+     * @param userId
      */
     private async sendToHedera(
         document: IPolicyDocument,
         message: Message,
-        ref: AnyBlockType
+        ref: AnyBlockType,
+        userId: string | null
     ): Promise<IPolicyDocument> {
         try {
             const root = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
@@ -414,7 +416,7 @@ export class SendToGuardianBlock {
                 throw new Error(`Topic owner not found`);
             }
 
-            const topic = await PolicyUtils.getOrCreateTopic(ref, ref.options.topic, root, topicOwner, document);
+            const topic = await PolicyUtils.getOrCreateTopic(ref, ref.options.topic, root, topicOwner, userId, document);
 
             const userHederaCred = await user.loadHederaCredentials(ref);
             const signOptions = await user.loadSignOptions(ref);
@@ -424,7 +426,7 @@ export class SendToGuardianBlock {
             const memo = MessageMemo.parseMemo(true, ref.options.memo, document);
             const vcMessageResult = await messageServer
                 .setTopicObject(topic)
-                .sendMessage(message, true, memo);
+                .sendMessage(message, true, memo, userId);
 
             document.hederaStatus = DocumentStatus.ISSUE;
             document.messageId = vcMessageResult.getId();
@@ -449,6 +451,9 @@ export class SendToGuardianBlock {
         //
         let message: Message;
         let docObject: VcDocument | VpDocument | HederaDidDocument;
+
+        const owner = await PolicyUtils.getUserByIssuer(ref, document);
+
         if (type === DocumentType.DID) {
             const did = HederaDidDocument.fromJsonTree(document.document);
             const didMessage = new DIDMessage(MessageAction.CreateDID);
@@ -457,7 +462,7 @@ export class SendToGuardianBlock {
             message = didMessage;
             docObject = did;
         } else if (type === DocumentType.VerifiableCredential) {
-            const owner = await PolicyUtils.getUserByIssuer(ref, document);
+            // const owner = await PolicyUtils.getUserByIssuer(ref, document);
             const vc = VcDocument.fromJsonTree(document.document);
             const vcMessage = new VCMessage(MessageAction.CreateVC);
             vcMessage.setDocument(vc);
@@ -467,7 +472,7 @@ export class SendToGuardianBlock {
             message = vcMessage;
             docObject = vc;
         } else if (type === DocumentType.VerifiablePresentation) {
-            const owner = await PolicyUtils.getUserByIssuer(ref, document);
+            // const owner = await PolicyUtils.getUserByIssuer(ref, document);
             const vp = VpDocument.fromJsonTree(document.document);
             const vpMessage = new VPMessage(MessageAction.CreateVP);
             vpMessage.setDocument(vp);
@@ -500,7 +505,7 @@ export class SendToGuardianBlock {
         const messageHash = message.toHash();
         if (ref.options.dataType) {
             if (ref.options.dataType === 'hedera') {
-                document = await this.sendToHedera(document, message, ref);
+                document = await this.sendToHedera(document, message, ref, owner.id);
                 document.messageHash = messageHash;
                 document = await this.updateMessage(document, type, ref);
             } else {
@@ -509,7 +514,7 @@ export class SendToGuardianBlock {
             }
         } else if (ref.options.dataSource === 'auto' || !ref.options.dataSource) {
             if (document.messageHash !== messageHash) {
-                document = await this.sendToHedera(document, message, ref);
+                document = await this.sendToHedera(document, message, ref, owner.id);
                 document.messageHash = messageHash;
             }
             document.hash = hash;
@@ -518,7 +523,7 @@ export class SendToGuardianBlock {
             document.hash = hash;
             document = await this.sendToDatabase(document, type, ref);
         } else if (ref.options.dataSource === 'hedera') {
-            document = await this.sendToHedera(document, message, ref);
+            document = await this.sendToHedera(document, message, ref, owner.id);
             document.messageHash = messageHash;
             document = await this.updateMessage(document, type, ref);
         } else {
