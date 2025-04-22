@@ -20,7 +20,7 @@ context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.ListOfAllModules + response.body.at(2).uuid,
+                    url: API.ApiServer + API.ListOfAllModules + response.body.at(1).uuid,
                     headers: {
                         authorization,
                     },
