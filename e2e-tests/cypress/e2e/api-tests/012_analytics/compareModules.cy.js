@@ -7,8 +7,14 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const moduleName = "FirstAPIModule";
 
+    //for any modules compare
     let lastModule, prelastModule;
+
+    //for partly equal comparing
     let moduleId, moduleId2;
+
+    //for full equal comparing
+    let moduleIdClone;
 
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -29,6 +35,23 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
                         moduleId2 = element.id;
                 });
             });
+            cy.fixture("exportedModule.module", "binary").then((binary) => Cypress.Blob.binaryStringToBlob(binary))
+                .then((file) => {
+                    cy.request({
+                        method: METHOD.POST,
+                        url: API.ApiServer + API.ListOfAllModules + API.ImportFile,
+                        body: file,
+                        headers: {
+                            "content-type": "binary/octet-stream",
+                            authorization,
+                        },
+                        timeout: 180000,
+                    }).then((response) => {
+                        expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                        let moduleOnPreview = JSON.parse(Cypress.Blob.arrayBufferToBinaryString(response.body));
+                        moduleIdClone = moduleOnPreview.id;
+                    })
+                })
         });
     })
 
@@ -58,7 +81,7 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
         })
     });
 
-    it("Compare modules", () => {
+    it("Compare partly equal modules", () => {
         Authorization.getAccessTokenByRefreshToken().then((authorization) => {
             cy.request({
                 method: METHOD.POST,
@@ -84,6 +107,42 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
                 });
 
                 expect(response.body.right.id).to.eq(moduleId2);
+                expect(response.body.right.description).to.eq(moduleName + " desc");
+                expect(response.body.right.name).to.match(new RegExp("^" + moduleName + "_\\d+$", "g"));
+
+                expect(response.body.blocks.report.at(0).total_rate).eql("100%");
+                expect(response.body.blocks.report.at(0).type).eql("PARTLY");
+                expect(response.body.total).to.match(new RegExp("^([0-9][0-9])$"));
+            })
+        })
+    });
+
+    it("Compare full equal modules", () => {
+        Authorization.getAccessTokenByRefreshToken().then((authorization) => {
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.ModuleCompare,
+                body: {
+                    moduleId1: moduleId,
+                    moduleId2: moduleIdClone,
+                    eventsLvl: 1,
+                    propLvl: 2,
+                    childrenLvl: 2,
+                    idLvl: 0
+                },
+                headers: {
+                    authorization,
+                }
+            }).then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.OK);
+
+                expect(response.body.left).eql({
+                    id: moduleId,
+                    name: moduleName,
+                    description: moduleName + " desc"
+                });
+
+                expect(response.body.right.id).to.eq(moduleIdClone);
                 expect(response.body.right.description).to.eq(moduleName + " desc");
                 expect(response.body.right.name).to.match(new RegExp("^" + moduleName + "_\\d+$", "g"));
 

@@ -3,31 +3,29 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
+
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
-    const moduleName = Math.floor(Math.random() * 999) + "APIModuleExp";
-    let moduleUuid;
 
-    before(() => {
+    let publishedModule, draftModule;
+
+    before("Get published module", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
-                method: METHOD.POST,
+                method: METHOD.GET,
                 url: API.ApiServer + API.ListOfAllModules,
                 headers: {
                     authorization,
                 },
-                body: {
-                    "name": moduleName,
-                    "description": moduleName,
-                    "menu": "show",
-                    "config": {
-                        "blockType": "module"
-                    }
-                },
             }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.SUCCESS);
-                moduleUuid = response.body.uuid;
-            });
+                expect(response.status).eql(STATUS_CODE.OK);
+                response.body.forEach(item => {
+                    if (item.status === "PUBLISHED")
+                        publishedModule = item;
+                    else
+                        draftModule = item;
+                })
+            })
         })
     });
 
@@ -35,14 +33,38 @@ context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.ListOfAllModules + moduleUuid + "/" + API.ExportMessage,
+                url: API.ApiServer + API.ListOfAllModules + publishedModule.uuid + "/" + API.ExportMessage,
                 headers: {
                     authorization,
                 },
                 timeout: 600000
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body).to.be.not.eql("");
+                expect(response.body).to.have.property("uuid");
+                expect(response.body).to.have.property("name");
+                expect(response.body).to.have.property("description");
+                expect(response.body).to.have.property("owner");
+                expect(response.body.messageId).to.match(new RegExp("^\\d+\.\\d+$", "g"));
+            });
+        })
+    });
+
+    it("Returns the Hedera message ID for the specified module not published onto IPFS", () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.ListOfAllModules + draftModule.uuid + "/" + API.ExportMessage,
+                headers: {
+                    authorization,
+                },
+                timeout: 600000
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.OK);
+                expect(response.body).to.have.property("uuid");
+                expect(response.body).to.have.property("name");
+                expect(response.body).to.have.property("description");
+                expect(response.body).to.have.property("owner");
+                expect(response.body).to.not.have.property("messageId");
             });
         })
     });
@@ -51,7 +73,7 @@ context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.ListOfAllModules + moduleUuid + "/" + API.ExportMessage,
+                url: API.ApiServer + API.ListOfAllModules + publishedModule.uuid + "/" + API.ExportMessage,
                 headers: {
                     authorization
                 },
@@ -65,7 +87,7 @@ context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
     it("Returns the Hedera message ID for the specified module published onto IPFS without auth token - Negative", () => {
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.ListOfAllModules + moduleUuid + "/" + API.ExportMessage,
+            url: API.ApiServer + API.ListOfAllModules + publishedModule.uuid + "/" + API.ExportMessage,
             failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
@@ -75,7 +97,7 @@ context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
     it("Returns the Hedera message ID for the specified module published onto IPFS with invalid auth token - Negative", () => {
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.ListOfAllModules + moduleUuid + "/" + API.ExportMessage,
+            url: API.ApiServer + API.ListOfAllModules + publishedModule.uuid + "/" + API.ExportMessage,
             headers: {
                 authorization: "Bearer wqe",
             },
@@ -88,7 +110,7 @@ context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
     it("Returns the Hedera message ID for the specified module published onto IPFS with empty auth token - Negative", () => {
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.ListOfAllModules + moduleUuid + "/" + API.ExportMessage,
+            url: API.ApiServer + API.ListOfAllModules + publishedModule.uuid + "/" + API.ExportMessage,
             headers: {
                 authorization: "",
             },

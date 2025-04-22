@@ -3,10 +3,28 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
+
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 
-    it("Imports new module and all associated artifacts from IPFS into the local DB", () => {
+    let did;
+
+    before("Get user data", () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.Profiles + SRUsername,
+                headers: {
+                    authorization,
+                },
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.OK);
+                did = response.body.did;
+            })
+        })
+    })
+
+    it("Imports new module and all associated artifacts from IPFS into the local DB", { tags: ['smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
@@ -20,11 +38,41 @@ context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
                 timeout: 180000
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
-                expect(response.body).to.have.property("name");
-                expect(response.body).to.have.property("description");
-                expect(response.body).to.have.property("creator");
-                expect(response.body).to.have.property("owner");
-                expect(response.body.config.blockType).eql("module");
+
+                expect(response.body).to.have.property("_id");
+                expect(response.body).to.have.property("configFileId");
+                expect(response.body).to.have.property("createDate");
+                expect(response.body).to.have.property("id");
+                expect(response.body).to.have.property("updateDate");
+                expect(response.body).to.have.property("uuid");
+                expect(response.body._id).eql(response.body.id);
+
+                expect(response.body.codeVersion).eql("1.0.0");
+                expect(response.body.config).eql({
+                    artifacts: [
+                    ],
+                    blockType: "module",
+                    children: [
+                    ],
+                    events: [
+                    ],
+                    innerEvents: [
+                    ],
+                    inputEvents: [
+                    ],
+                    outputEvents: [
+                    ],
+                    permissions: [
+                    ],
+                    variables: [
+                    ]
+                });
+                expect(response.body.creator).eql(did);
+                expect(response.body.description).eql("");
+                expect(response.body.name).eql("ComparedModuleIPFS");
+                expect(response.body.owner).eql(did);
+                expect(response.body.status).eql("DRAFT");
+                expect(response.body.type).eql("CUSTOM");
             });
         });
     })

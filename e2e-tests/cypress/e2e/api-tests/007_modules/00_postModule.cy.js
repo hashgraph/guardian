@@ -32,7 +32,6 @@ context("Create Module", { tags: ['modules', 'thirdPool', 'all'] }, () => {
                 body: {
                     "name": moduleName,
                     "description": moduleName + " desc",
-                    "menu": "show",
                     "config": {
                         "blockType": "module"
                     }

@@ -3,14 +3,14 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 context("Delete Module", { tags: ['modules', 'thirdPool', 'all'] }, () => {
+
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
     const moduleName = Math.floor(Math.random() * 999) + "APIModule";
-    const moduleName2 = Math.floor(Math.random() * 999) + "APIModule";
 
-    let moduleId, moduleId2;
+    let moduleId;
 
-    before(() => {
+    before("Create module for delete", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
@@ -21,7 +21,6 @@ context("Delete Module", { tags: ['modules', 'thirdPool', 'all'] }, () => {
                 body: {
                     name: moduleName,
                     description: moduleName,
-                    menu: "show",
                     config: {
                         blockType: "module"
                     }
@@ -29,24 +28,6 @@ context("Delete Module", { tags: ['modules', 'thirdPool', 'all'] }, () => {
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
                 moduleId = response.body.uuid;
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.ListOfAllModules,
-                    headers: {
-                        authorization,
-                    },
-                    body: {
-                        "name": moduleName2,
-                        "description": moduleName2,
-                        "menu": "show",
-                        "config": {
-                            "blockType": "module"
-                        }
-                    },
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.SUCCESS);
-                    moduleId2 = response.body.uuid;
-                });
             });
         })
     });
@@ -121,7 +102,7 @@ context("Delete Module", { tags: ['modules', 'thirdPool', 'all'] }, () => {
     it("Deletes the module with the provided module ID", { tags: ['smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
-                url: API.ApiServer + API.ListOfAllModules + moduleId2,
+                url: API.ApiServer + API.ListOfAllModules + moduleId,
                 method: METHOD.DELETE,
                 headers: {
                     authorization,
@@ -132,10 +113,28 @@ context("Delete Module", { tags: ['modules', 'thirdPool', 'all'] }, () => {
         })
     });
 
+    it("Verify deletion", () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.ListOfAllModules,
+                headers: {
+                    authorization,
+                },
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.OK);
+                response.body.forEach(item => {
+                    if (item.name === moduleName)
+                        throw new Error("Deleted module exist!")
+                })
+            })
+        });
+    })
+
     it("Deletes already deleted module - Negative", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
-                url: API.ApiServer + API.ListOfAllModules + moduleId2,
+                url: API.ApiServer + API.ListOfAllModules + moduleId,
                 method: METHOD.DELETE,
                 headers: {
                     authorization,
