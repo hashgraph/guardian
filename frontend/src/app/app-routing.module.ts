@@ -282,7 +282,6 @@ const routes: Routes = [
         data: {
             roles: [UserRole.STANDARD_REGISTRY, UserRole.USER],
             permissions: [
-                Permissions.SETTINGS_SETTINGS_READ,
                 Permissions.LOG_LOG_READ
             ]
         }
