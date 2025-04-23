@@ -111,7 +111,8 @@
                             <app-standard-registry-parent-card
                                 *ngFor="let registry of standardRegistriesAsParentList; trackBy: trackByDid"
                                 [active]="isActiveStandardRegistry(registry.did)"
-                                (registrySelected)="selectStandardRegistryShowMore($event)" [registry]="registry">
+                                (registrySelected)="selectStandardRegistryShowMore($event)"
+                                (setActive)="updateActiveSr($event)" [activeSr]="activeSr" [registry]="registry">
                             </app-standard-registry-parent-card>
                         </ul>
                     </ng-container>

@@ -1,5 +1,7 @@
 
 .sr-card {
+    position: relative;
+
     ::ng-deep .p-card {
         border-radius: 8px;
         border: 1px solid var(--color-grey-3);
@@ -10,6 +12,7 @@
         flex-direction: column;
         display: flex;
         gap: 16px;
+        padding-bottom: 0;
     }
 
     ::ng-deep .p-chip {
@@ -43,18 +46,8 @@
         line-height: 20px;
     }
 
-    .sr-action {
-        ::ng-deep .p-button {
-            color: var(--color-primary);
-            font-size: 14px;
-            font-weight: 500;
-            background-color: #ffffff;
-            border: 1px solid var(--color-primary);
-            border-radius: 6px;
-        }
-    }
-
     .sr-policy-count {
+        cursor: pointer;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -64,4 +57,19 @@
             top: 2px;
         }
     }
+
+    .set-active-btn {
+        margin-left: 8px;
+    }
+
+    .sr-action button {
+        height: 28px;
+        padding: 6px 16px;
+    }
+}
+
+.dropdown-item {
+    padding: 8px 16px;
+    font-size: 15px;
+    white-space: nowrap;
 }

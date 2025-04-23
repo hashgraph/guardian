@@ -86,6 +86,12 @@ export class UserProfileComponent implements OnInit {
         return this.profile?.parent === did;
     }
 
+    public get activeSr() {
+        return this.standardRegistries.length
+                ? this.standardRegistries.find((sr) => sr.did === this.profile?.parent)
+                : undefined;
+    }
+
     public get isFilterButtonDisabled(): boolean {
         return (
             this.filters.policyName.length === 0 &&
@@ -486,11 +492,15 @@ export class UserProfileComponent implements OnInit {
                 }
             }).onClose.subscribe((data) => {
                 if(data?.update) {
-                    this.profile = { ...this.profile, parent: data.parent };
-                    this.cdRef.detectChanges();
+                    this.updateActiveSr(data.parent);
                 }
             });
         }
+    }
+
+    public updateActiveSr(nextActiveSrDid: string) {
+        this.profile = { ...this.profile, parent: nextActiveSrDid };
+        this.cdRef.detectChanges();
     }
 
     public selectStandardRegistry(did: string): void {
