@@ -67,6 +67,10 @@ export class PolicyMessage extends Message {
      * 
      */
     public restoreTopicId: string;
+    /**
+     * 
+     */
+    public actionsTopicId: string;
 
     constructor(type: MessageType.Policy | MessageType.InstancePolicy, action: MessageAction) {
         super(action, type);
@@ -93,6 +97,7 @@ export class PolicyMessage extends Message {
         this.discontinuedDate = model.discontinuedDate;
         this.availability = model.availability;
         this.restoreTopicId = model.restoreTopicId;
+        this.actionsTopicId = model.actionsTopicId;
         this.document = zip;
     }
 
@@ -125,6 +130,7 @@ export class PolicyMessage extends Message {
             synchronizationTopicId: this.synchronizationTopicId,
             availability: this.availability,
             restoreTopicId: this.restoreTopicId,
+            actionsTopicId: this.actionsTopicId,
             cid: this.getDocumentUrl(UrlType.cid),
             uri: this.getDocumentUrl(UrlType.url)
         };
@@ -200,6 +206,7 @@ export class PolicyMessage extends Message {
         message.synchronizationTopicId = json.synchronizationTopicId;
         message.availability = json.availability;
         message.restoreTopicId = json.restoreTopicId;
+        message.actionsTopicId = json.actionsTopicId;
         if ([MessageAction.DeferredDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(json.action)
             && json.effectiveDate) {
             message.discontinuedDate = new Date(json.effectiveDate)
@@ -257,6 +264,7 @@ export class PolicyMessage extends Message {
         result.synchronizationTopicId = this.synchronizationTopicId;
         result.availability = this.availability;
         result.restoreTopicId = this.restoreTopicId;
+        result.actionsTopicId = this.actionsTopicId;
         if ([MessageAction.DeferredDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(this.action)) {
             result.effectiveDate = this.discontinuedDate;
         }

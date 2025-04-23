@@ -124,6 +124,10 @@ export interface PolicyMessageBody extends MessageBody {
      */
     restoreTopicId: string;
     /**
+     * 
+     */
+    actionsTopicId: string;
+    /**
      * Effective Date
      */
     effectiveDate?: string;
@@ -777,6 +781,44 @@ export interface PolicyDiffMessageBody extends MessageBody {
      * Instance topic ID
      */
     instanceTopicId: string;
+    /**
+     * CID
+     */
+    cid: string;
+    /**
+     * URI
+     */
+    uri: string;
+}
+
+/**
+ * 
+ */
+export interface PolicyActionMessageBody extends MessageBody {
+    /**
+     * 
+     */
+    uuid: string;
+    /**
+     * 
+     */
+    owner: string;
+    /**
+    * 
+    */
+    policyId: string;
+    /**
+    * 
+    */
+    accountId: string;
+    /**
+    * 
+    */
+    blockTag: string;
+    /**
+    * 
+    */
+    parent: string;
     /**
      * CID
      */

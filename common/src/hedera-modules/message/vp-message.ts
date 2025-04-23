@@ -6,6 +6,7 @@ import { MessageType } from './message-type.js';
 import { VpMessageBody } from './message-body.interface.js';
 import { Hashing } from '../hashing.js';
 import { IPFS } from '../../helpers/index.js';
+import { ITopicMessage } from '../../topic-listener/topic-listener.js';
 
 /**
  * VP message
@@ -125,6 +126,27 @@ export class VPMessage extends Message {
     public loadDocuments(documents: string[]): VPMessage {
         this.document = JSON.parse(documents[0]);
         return this;
+    }
+
+    /**
+     * From message
+     * @param message
+     */
+    public static from(data: ITopicMessage): VPMessage {
+        if (!data) {
+            throw new Error('Message Object is empty');
+        }
+        if (!data.message) {
+            throw new Error('Message Object is empty');
+        }
+
+        const json = JSON.parse(data.message);
+        const message = VPMessage.fromMessageObject(json);
+        message.setAccount(data.owner);
+        message.setIndex(data.sequenceNumber);
+        message.setId(data.consensusTimestamp);
+        message.setTopicId(data.topicId);
+        return message;
     }
 
     /**

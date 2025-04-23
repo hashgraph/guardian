@@ -31,6 +31,7 @@ import { BlockTreeGenerator } from './block-tree-generator.js';
 import { PolicyNavigationMap } from './interfaces/block-state.js';
 import { ComponentsService } from './helpers/components-service.js';
 import { PolicyBackupService, PolicyRestoreService } from './restore-service.js';
+import { PolicyActionsService } from './actions-service.js';
 
 /**
  * Policy tag helper
@@ -320,6 +321,12 @@ export class PolicyComponentsUtils {
      */
     private static readonly RestoreControllers: Map<string, PolicyRestoreService> = new Map();
 
+    /**
+     * Actions Controllers
+     * policyId -> PolicyActions
+     * @private
+     */
+    private static readonly ActionsControllers: Map<string, PolicyActionsService> = new Map();
 
     /**
      * Get document cache fields
@@ -1309,6 +1316,37 @@ export class PolicyComponentsUtils {
     }
 
     /**
+     * Get user by account
+     * @param account
+     * @param instance
+     */
+    public static async GetPolicyUserByAccount(
+        account: string,
+        instance: IPolicyInstance | AnyBlockType
+    ): Promise<PolicyUser> {
+        if (!account) {
+            return null;
+        }
+
+        const regUser = await (new Users()).getUserByAccount(account);
+        if (!regUser || !regUser.did) {
+            return null;
+        }
+
+        const userFull = new PolicyUser(regUser, instance);
+        const groups = await instance
+            .components
+            .databaseServer
+            .getGroupsByUser(instance.policyId, userFull.did);
+        for (const group of groups) {
+            if (group.active !== false) {
+                return userFull.setCurrentGroup(group);
+            }
+        }
+        return userFull;
+    }
+
+    /**
      * Get user by name
      * @param username
      * @param instance
@@ -1437,7 +1475,7 @@ export class PolicyComponentsUtils {
      * Register Backup Controller
      * @param policyId
      */
-    public static RegisterBackup(policyId: string, controller: PolicyBackupService) {
+    public static RegisterBackupService(policyId: string, controller: PolicyBackupService) {
         PolicyComponentsUtils.BackupControllers.set(policyId, controller);
     }
 
@@ -1445,15 +1483,23 @@ export class PolicyComponentsUtils {
      * Register Restore Controller
      * @param policyId
      */
-    public static RegisterRestore(policyId: string, controller: PolicyRestoreService) {
+    public static RegisterRestoreService(policyId: string, controller: PolicyRestoreService) {
         PolicyComponentsUtils.RestoreControllers.set(policyId, controller);
+    }
+
+    /**
+     * Register Actions Controller
+     * @param policyId
+     */
+    public static RegisterActionsService(policyId: string, controller: PolicyActionsService) {
+        PolicyComponentsUtils.ActionsControllers.set(policyId, controller);
     }
 
     /**
      * Unregister Backup Controller
      * @param policyId
      */
-    public static UnregisterBackup(policyId: string) {
+    public static UnregisterBackupService(policyId: string) {
         PolicyComponentsUtils.BackupControllers.delete(policyId);
     }
 
@@ -1461,8 +1507,16 @@ export class PolicyComponentsUtils {
      * Unregister Restore Controller
      * @param policyId
      */
-    public static UnregisterRestore(policyId: string) {
+    public static UnregisterRestoreService(policyId: string) {
         PolicyComponentsUtils.RestoreControllers.delete(policyId);
+    }
+
+    /**
+     * Unregister Actions Controller
+     * @param policyId
+     */
+    public static UnregisterActionsService(policyId: string) {
+        PolicyComponentsUtils.ActionsControllers.delete(policyId);
     }
 
     /**
@@ -1485,9 +1539,10 @@ export class PolicyComponentsUtils {
         }
     }
 
-
-
-    public static async isAvailableGetData(block: IPolicyInterfaceBlock | null, user: PolicyUser): Promise<MessageError<any> | null> {
+    public static async isAvailableGetData(
+        block: IPolicyInterfaceBlock | null,
+        user: PolicyUser
+    ): Promise<MessageError<any> | null> {
         if (!block) {
             return new MessageError('Block Unavailable', 503);
         }
@@ -1500,12 +1555,19 @@ export class PolicyComponentsUtils {
         return null;
     }
 
-    public static async blockGetData(block: IPolicyInterfaceBlock, user: PolicyUser, params: any): Promise<MessageResponse<any>> {
+    public static async blockGetData(
+        block: IPolicyInterfaceBlock,
+        user: PolicyUser,
+        params: any
+    ): Promise<MessageResponse<any>> {
         const result = await block.getData(user, block.uuid, params);
         return new MessageResponse(result);
     }
 
-    public static async isAvailableSetData(block: IPolicyInterfaceBlock | null, user: PolicyUser): Promise<MessageError<any> | null> {
+    public static async isAvailableSetData(
+        block: IPolicyInterfaceBlock | null,
+        user: PolicyUser
+    ): Promise<MessageError<any> | null> {
         if (!block) {
             return new MessageError('Block Unavailable', 503);
         }
@@ -1518,7 +1580,11 @@ export class PolicyComponentsUtils {
         return null;
     }
 
-    public static async blockSetData(block: IPolicyInterfaceBlock, user: PolicyUser, data: any): Promise<MessageResponse<any> | MessageError<any>> {
+    public static async blockSetData(
+        block: IPolicyInterfaceBlock,
+        user: PolicyUser,
+        data: any
+    ): Promise<MessageResponse<any> | MessageError<any>> {
         if (block.actionType === LocationType.LOCAL) {
             const result = await block.setData(user, data);
             return new MessageResponse(result);
@@ -1529,12 +1595,17 @@ export class PolicyComponentsUtils {
         }
 
         if (block.locationType === LocationType.REMOTE) {
-            const result = await PolicyComponentsUtils.sendRemoteAction(block, user, data);
+            const controller = PolicyComponentsUtils.ActionsControllers.get(block.policyId);
+            if (controller) {
+                const result = await controller.sendRemoteAction(block, user, data);
+                return new MessageResponse(result);
+            } else {
+                return new MessageError('Invalid policy controller', 500);
+            }
+        } else {
+            const result = await block.setData(user, data);
             return new MessageResponse(result);
         }
-
-        const result = await block.setData(user, data);
-        return new MessageResponse(result);
     }
 
     public static isAvailableReceiveData(block: IPolicyInterfaceBlock | IPolicyBlock | null, policyId: string): boolean {
@@ -1554,7 +1625,5 @@ export class PolicyComponentsUtils {
         return await (block as any).receiveData(data);
     }
 
-    public static async sendRemoteAction(block: IPolicyInterfaceBlock, user: PolicyUser, data: any): Promise<any> {
 
-    }
 }

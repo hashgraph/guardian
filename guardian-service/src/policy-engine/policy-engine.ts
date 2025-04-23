@@ -990,8 +990,8 @@ export class PolicyEngine extends NatsService {
                 notifier.completedAndStart('Create restore topic');
                 const diffTopic = await topicHelper.create({
                     type: TopicType.RestoreTopic,
-                    name: model.name || TopicType.RestoreTopic,
-                    description: model.topicDescription || TopicType.RestoreTopic,
+                    name: TopicType.RestoreTopic,
+                    description: TopicType.RestoreTopic,
                     owner: user.owner,
                     policyId: model.id.toString(),
                     policyUUID: model.uuid
@@ -1009,6 +1009,32 @@ export class PolicyEngine extends NatsService {
                     await createDiffTopic();
                 }
             }
+
+            const createActionsTopic = async () => {
+                notifier.completedAndStart('Create actions topic');
+                const actionsTopic = await topicHelper.create({
+                    type: TopicType.ActionsTopic,
+                    name: TopicType.ActionsTopic,
+                    description: TopicType.ActionsTopic,
+                    owner: user.owner,
+                    policyId: model.id.toString(),
+                    policyUUID: model.uuid
+                }, { admin: true, submit: false });
+                await actionsTopic.saveKeys();
+                await DatabaseServer.saveTopic(actionsTopic.toObject());
+                model.actionsTopicId = actionsTopic.topicId;
+            }
+            if (model.availability === PolicyAvailability.PUBLIC) {
+                if (model.status === PolicyStatus.PUBLISH_ERROR) {
+                    if (!!model.actionsTopicId) {
+                        await createActionsTopic();
+                    }
+                } else {
+                    await createActionsTopic();
+                }
+            }
+
+
 
             const zip = await PolicyImportExport.generate(model);
             const buffer = await zip.generateAsync({

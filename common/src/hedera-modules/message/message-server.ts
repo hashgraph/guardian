@@ -27,6 +27,7 @@ import { StatisticMessage } from './statistic-message.js';
 import { LabelMessage } from './label-message.js';
 import { FormulaMessage } from './formula-message.js';
 import { PolicyDiffMessage } from './policy-diff-message.js';
+import { PolicyActionMessage } from './policy-action-message.js';
 
 /**
  * Message server
@@ -322,6 +323,9 @@ export class MessageServer {
                 break;
             case MessageType.PolicyDiff:
                 message = PolicyDiffMessage.fromMessageObject(json);
+                break;
+            case MessageType.PolicyAction:
+                message = PolicyActionMessage.fromMessageObject(json);
                 break;
             // Default schemas
             case 'schema-document':

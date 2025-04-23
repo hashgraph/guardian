@@ -102,7 +102,7 @@ export class PolicyBackupService {
         const topicConfig = await DatabaseServer.getTopicById(this.topicId);
         const topic = await TopicConfig.fromObjectV2(topicConfig);
         if (!topic) {
-            throw Error('Invalid topic');
+            throw Error('Invalid restore topic');
         }
         this.userId = root.id;
 

@@ -57,6 +57,7 @@ async function preparePolicyPreviewMessage(
     policyToImport.topicId = message.getTopicId();
     policyToImport.availability = message.availability;
     policyToImport.restoreTopicId = message.restoreTopicId;
+    policyToImport.actionsTopicId = message.actionsTopicId;
 
     notifier.completed();
     return policyToImport;
@@ -232,7 +233,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 if (policyToImport.availability !== PolicyAvailability.PUBLIC) {
                     return new MessageError(`Policy is private.`);
                 }
-                if (!policyToImport.restoreTopicId) {
+                if (!policyToImport.restoreTopicId || !policyToImport.actionsTopicId) {
                     return new MessageError(`Policy is private.`);
                 }
                 const externalPolicy = await DatabaseServer.createExternalPolicy({

@@ -246,6 +246,12 @@ export class Policy extends BaseEntity {
     locationType?: LocationType;
 
     /**
+     * TopicId
+     */
+    @Property({ nullable: true })
+    actionsTopicId?: string;
+
+    /**
      * Set policy defaults
      */
     @BeforeCreate()

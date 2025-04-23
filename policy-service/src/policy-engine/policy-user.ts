@@ -73,7 +73,6 @@ export class PolicyUser {
         arg: IAuthUser | string,
         instance: IPolicyInstance | AnyBlockType
     ) {
-        console.debug('--- PolicyUser', arg);
         if (typeof arg === 'string') {
             this.did = arg;
             this.username = null;

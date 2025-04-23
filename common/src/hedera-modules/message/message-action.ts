@@ -42,4 +42,10 @@ export enum MessageAction {
     PublishFormula = 'publish-formula',
     PublishPolicyDiff = 'publish-diff',
     PublishPolicyBackup = 'publish-backup',
+    CreatePolicyAction = 'create-policy-action',
+    UpdatePolicyAction = 'update-policy-action',
+    ErrorPolicyAction = 'error-policy-action',
+    CreatePolicyRequest = 'create-policy-request',
+    UpdatePolicyRequest = 'update-policy-request',
+    ErrorPolicyRequest = 'error-policy-request',
 }

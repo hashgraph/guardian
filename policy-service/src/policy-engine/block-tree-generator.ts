@@ -9,6 +9,7 @@ import { IPolicyBlock, IPolicyInstance, IPolicyInterfaceBlock, IPolicyNavigation
 import { PolicyUser } from './policy-user.js';
 import { RecordUtils } from './record-utils.js';
 import { PolicyBackupService, PolicyRestoreService } from './restore-service.js';
+import { PolicyActionsService } from './actions-service.js';
 
 /**
  * Block tree generator
@@ -348,26 +349,38 @@ export class BlockTreeGenerator extends NatsService {
     /**
      * Init restore
      */
-    async initPolicyRestore(policyId: string, policy: Policy): Promise<void> {
+    async initPolicyRestore(
+        policyId: string, 
+        policyInstance: IPolicyInterfaceBlock, 
+        policy: Policy
+    ): Promise<void> {
         try {
             if (
                 policy.status === PolicyStatus.PUBLISH &&
-                policy.availability === PolicyAvailability.PUBLIC &&
-                policy.restoreTopicId
+                policy.availability === PolicyAvailability.PUBLIC
             ) {
-                const service = new PolicyBackupService(policyId, policy);
-                await service.init();
-                PolicyComponentsUtils.RegisterBackup(policyId, service);
+                if(policy.restoreTopicId) {
+                    const service = new PolicyBackupService(policyId, policy);
+                    await service.init();
+                    PolicyComponentsUtils.RegisterBackupService(policyId, service);
+                }
+                if(policy.actionsTopicId) {
+                    const service = new PolicyActionsService(policyId, policyInstance, policy);
+                    await service.init();
+                    PolicyComponentsUtils.RegisterActionsService(policyId, service);
+                }
             }
-            console.debug('policyId', policyId)
-            if (
-                policy.status === PolicyStatus.VIEW &&
-                policy.restoreTopicId
-            ) {
-                console.debug('PolicyRestoreService')
-                const service = new PolicyRestoreService(policyId, policy);
-                await service.init();
-                PolicyComponentsUtils.RegisterRestore(policyId, service);
+            if (policy.status === PolicyStatus.VIEW) {
+                if(policy.restoreTopicId) {
+                    const service = new PolicyRestoreService(policyId, policy);
+                    await service.init();
+                    PolicyComponentsUtils.RegisterRestoreService(policyId, service);
+                }
+                if(policy.actionsTopicId) {
+                    const service = new PolicyActionsService(policyId, policyInstance, policy);
+                    await service.init();
+                    PolicyComponentsUtils.RegisterActionsService(policyId, service);
+                }
             }
         } catch (error) {
             console.log(error);
@@ -419,7 +432,7 @@ export class BlockTreeGenerator extends NatsService {
             }
             await this.initPolicyEvents(policyId, rootInstance, policy);
             await this.initRecordEvents(policyId);
-            await this.initPolicyRestore(policyId, policy);
+            await this.initPolicyRestore(policyId, rootInstance, policy);
 
             await PolicyComponentsUtils.RegisterNavigation(policyId, policy.policyNavigation);
 
@@ -440,8 +453,9 @@ export class BlockTreeGenerator extends NatsService {
             await RecordUtils.DestroyRunning(policyId);
             await PolicyComponentsUtils.UnregisterBlocks(policyId);
             await PolicyComponentsUtils.UnregisterPolicy(policyId);
-            PolicyComponentsUtils.UnregisterBackup(policyId);
-            PolicyComponentsUtils.UnregisterRestore(policyId);
+            PolicyComponentsUtils.UnregisterBackupService(policyId);
+            PolicyComponentsUtils.UnregisterRestoreService(policyId);
+            PolicyComponentsUtils.UnregisterActionsService(policyId);
             this.models.delete(policyId);
         } catch (error) {
             await logger.error(`Error destroy policy ${error}`, ['POLICY', policyId.toString()]);
