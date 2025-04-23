@@ -151,6 +151,28 @@ export class PolicyImport {
                 topicId: policy.topicId
             }, null, null);
             await DatabaseServer.saveTopic(this.topicRow.toObject());
+
+            const restoreTopic = new TopicConfig({
+                type: TopicType.RestoreTopic,
+                name: TopicType.RestoreTopic,
+                description: TopicType.RestoreTopic,
+                owner: user.owner,
+                policyId: policy.id,
+                policyUUID: policy.uuid,
+                topicId: policy.restoreTopicId
+            }, null, null);
+            await DatabaseServer.saveTopic(restoreTopic.toObject());
+
+            const actionsTopic = new TopicConfig({
+                type: TopicType.ActionsTopic,
+                name: TopicType.ActionsTopic,
+                description: TopicType.ActionsTopic,
+                owner: user.owner,
+                policyId: policy.id,
+                policyUUID: policy.uuid,
+                topicId: policy.actionsTopicId
+            }, null, null);
+            await DatabaseServer.saveTopic(actionsTopic.toObject());
         } else {
             if (versionOfTopicId) {
                 this.topicRow = await TopicConfig.fromObject(

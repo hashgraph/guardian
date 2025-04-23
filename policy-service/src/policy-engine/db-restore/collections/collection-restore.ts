@@ -22,8 +22,6 @@ export abstract class CollectionRestore<T extends RestoreEntity> {
             hash = this.actionHash(hash, action, row);
         }
 
-        console.debug('------- restoreBackup', this.policyId)
-        console.debug('------- insertDocuments', this.policyId, rows.length)
         await this.insertDocuments(rows);
 
         console.log(backup.hash, hash)
