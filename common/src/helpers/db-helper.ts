@@ -926,17 +926,23 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
         const repository = this._em.getRepository(this.entityClass);
         const filter: any = {};
         const result: T[] = [];
+        const map = new Map<any, any>();
         for (const entity of entities) {
             filter[keyField] = entity[keyField];
             const entityToUpdate = await repository.findOne(filter);
-            if(entityToUpdate) {
+            map.set(entity, entityToUpdate);
+        }
+        for (const entity of entities) {
+            const entityToUpdate = map.get(entity);
+            if (entityToUpdate) {
                 for (const systemFileField of DataBaseHelper._systemFileFields) {
                     if (entity[systemFileField]) {
                         entity[systemFileField] = entityToUpdate[systemFileField];
                     }
                 }
                 if (entity._id) {
-                    entity._id = entityToUpdate._id;
+                    delete entity._id;
+                    delete entity.id;
                 }
                 wrap(entityToUpdate)
                     .assign(
