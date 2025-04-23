@@ -1083,7 +1083,7 @@ export class PolicyEngineService {
                     const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(model.topicId), true);
                     await messageServer
                         .setTopicObject(topic)
-                        .sendMessage(message, null, null, userId);
+                        .sendMessage(message, true, null, userId);
                     await DatabaseServer.updatePolicy(model);
 
                     await new GuardiansService().sendPolicyMessage(PolicyEvents.REFRESH_MODEL, policyId, {});

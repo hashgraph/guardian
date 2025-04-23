@@ -423,7 +423,7 @@ export class CustomLogicBlock {
                 );
                 const messageResult = await client
                     .setTopicObject(topic)
-                    .sendMessage(message, null, null, user.id);
+                    .sendMessage(message, true, null, user.id);
 
                 const item = PolicyUtils.createDID(ref, user, didObject);
                 item.messageId = messageResult.getId();

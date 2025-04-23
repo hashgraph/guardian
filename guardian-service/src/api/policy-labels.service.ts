@@ -64,7 +64,7 @@ async function publishPolicyLabel(
     const statMessage = new LabelMessage(MessageAction.PublishPolicyLabel);
     statMessage.setDocument(item, buffer);
     const statMessageResult = await messageServer
-        .sendMessage(statMessage, null, null, owner.id);
+        .sendMessage(statMessage, true, null, owner.id);
 
     item.topicId = topic.topicId;
     item.messageId = statMessageResult.getId();
@@ -750,7 +750,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 vpMessage.setRelationships(ids);
                 const vpMessageResult = await messageServer
                     .setTopicObject(topic)
-                    .sendMessage(vpMessage, null, null, userId);
+                    .sendMessage(vpMessage, true, null, userId);
 
                 const row = await DatabaseServer.createLabelDocument({
                     definitionId: item.id,

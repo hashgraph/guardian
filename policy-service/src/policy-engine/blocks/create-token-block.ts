@@ -186,7 +186,7 @@ export class CreateTokenBlock {
         ).setTopicObject(rootTopic);
         const tokenMessage = new TokenMessage(MessageAction.CreateToken);
         tokenMessage.setDocument(createdToken);
-        await messageServer.sendMessage(tokenMessage, null, null, user.id);
+        await messageServer.sendMessage(tokenMessage, true, null, user.id);
         // #endregion
 
         // #region Set token in document

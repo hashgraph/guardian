@@ -166,7 +166,7 @@ export class PolicyImport {
             message.setDocument(policy);
             const createPolicyMessage = await this.messageServer
                 .setTopicObject(this.parentTopic)
-                .sendMessage(message, null, null, user.id);
+                .sendMessage(message, true, null, user.id);
 
             this.notifier.completedAndStart('Create policy topic');
             this.topicRow = await this.topicHelper.create({

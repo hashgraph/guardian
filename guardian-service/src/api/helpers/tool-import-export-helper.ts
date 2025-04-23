@@ -403,7 +403,7 @@ export async function importToolByFile(
     message.setDocument(tool);
     const messageStatus = await messageServer
         .setTopicObject(parent)
-        .sendMessage(message, null, null, user.id);
+        .sendMessage(message, true, null, user.id);
 
     notifier.completedAndStart('Link topic and tool');
     await topicHelper.twoWayLink(topic, parent, messageStatus.getId(), user.id);

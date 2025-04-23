@@ -288,7 +288,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
                 const statMessageResult = await messageServer
                     .setTopicObject(topic)
-                    .sendMessage(statMessage, null, null, userId);
+                    .sendMessage(statMessage, true, null, userId);
 
                 item.topicId = topic.topicId;
                 item.messageId = statMessageResult.getId();
@@ -452,7 +452,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 vcMessage.setRelationships(assessment.relationships);
                 const vcMessageResult = await messageServer
                     .setTopicObject(topic)
-                    .sendMessage(vcMessage, null, null, userId);
+                    .sendMessage(vcMessage, true, null, userId);
 
                 const row = await DatabaseServer.createStatisticAssessment({
                     definitionId: item.id,

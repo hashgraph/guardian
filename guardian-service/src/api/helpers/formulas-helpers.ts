@@ -117,7 +117,7 @@ export async function publishFormula(
     const publishMessage = new FormulaMessage(MessageAction.PublishFormula);
     publishMessage.setDocument(item, buffer);
     const statMessageResult = await messageServer
-        .sendMessage(publishMessage, null, null, owner.id);
+        .sendMessage(publishMessage, true, null, owner.id);
 
     item.messageId = statMessageResult.getId();
 

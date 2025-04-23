@@ -303,7 +303,7 @@ export class TagsManagerBlock {
         message.setDocument(item);
         const result = await messageServer
             .setTopicObject(topicConfig)
-            .sendMessage(message, null, null, userId);
+            .sendMessage(message, true, null, userId);
 
         item.messageId = result.getId();
         item.topicId = result.getTopicId();
@@ -333,7 +333,7 @@ export class TagsManagerBlock {
         message.setDocument(item);
         const result = await messageServer
             .setTopicObject(topicConfig)
-            .sendMessage(message, null, null, userId);
+            .sendMessage(message, true, null, userId);
 
         item.messageId = result.getId();
         item.topicId = result.getTopicId();

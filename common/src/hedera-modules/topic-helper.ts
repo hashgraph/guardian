@@ -211,7 +211,7 @@ export class TopicHelper {
             });
             await messageServer
                 .setTopicObject(parent)
-                .sendMessage(message2, null, null, userId);
+                .sendMessage(message2, true, null, userId);
         }
     }
 }

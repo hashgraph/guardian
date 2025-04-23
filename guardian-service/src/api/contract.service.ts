@@ -470,9 +470,7 @@ export async function syncWipeContracts(
                 contractId,
                 version: contractVersions.get(contractId)
             },
-            lastSyncEventTimeStamp,
-            null,
-            null
+            lastSyncEventTimeStamp
         );
     }
 }
@@ -751,9 +749,7 @@ export async function syncRetireContracts(
             workers,
             users,
             contractId,
-            lastSyncEventTimeStamp,
-            null,
-            null
+            lastSyncEventTimeStamp
         );
     }
 }
@@ -1262,7 +1258,7 @@ async function saveRetireVC(
 
     const vcMessage = new VCMessage(MessageAction.CreateVC);
     vcMessage.setDocument(vcObject);
-    await messageServer.sendMessage(vcMessage, null, null, owner.id);
+    await messageServer.sendMessage(vcMessage, true, null, owner.id);
 
     await dataBaseServer.save(VcDocumentCollection, {
         hash: vcMessage.hash,
@@ -1412,7 +1408,7 @@ export async function contractAPI(
             );
             const contractMessageResult = await messageServer
                 .setTopicObject(topic)
-                .sendMessage(contractMessage, null, null, userId);
+                .sendMessage(contractMessage, true, null, userId);
             const userTopic = await TopicConfig.fromObject(
                 await DatabaseServer.getTopicByType(owner.owner, TopicType.UserTopic),
                 true

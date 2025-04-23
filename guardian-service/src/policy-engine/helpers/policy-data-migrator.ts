@@ -802,7 +802,7 @@ export class PolicyDataMigrator {
             MessageAction.CreateContract
         );
         contractMessage.setDocument(contract);
-        await this._ms.setTopicObject(topic).sendMessage(contractMessage, null, null, userId);
+        await this._ms.setTopicObject(topic).sendMessage(contractMessage, true, null, userId);
 
         this._createdWipeContractId = contract.contractId;
         return this._createdWipeContractId;

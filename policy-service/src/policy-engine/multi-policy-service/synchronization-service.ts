@@ -324,7 +324,7 @@ export class SynchronizationService {
         userId?: string | null,
     ): Promise<boolean> {
         for (const message of updateMessages) {
-            await messageServer.sendMessage(message, null, null, userId);
+            await messageServer.sendMessage(message, true, null, userId);
         }
         return true;
     }

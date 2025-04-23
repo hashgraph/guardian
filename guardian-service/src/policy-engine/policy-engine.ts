@@ -400,7 +400,7 @@ export class PolicyEngine extends NatsService {
             message.setDocument(model);
             const messageStatus = await messageServer
                 .setTopicObject(parent)
-                .sendMessage(message, null, null, user.id);
+                .sendMessage(message, true, null, user.id);
 
             notifier.completedAndStart('Link topic and policy');
             await topicHelper.twoWayLink(topic, parent, messageStatus.getId(), user.id);
@@ -639,7 +639,7 @@ export class PolicyEngine extends NatsService {
         const message = new PolicyMessage(MessageType.Policy, MessageAction.DeletePolicy);
         message.setDocument(policyToDelete);
         await messageServer.setTopicObject(topic)
-            .sendMessage(message, null, null, user.id);
+            .sendMessage(message, true, null, user.id);
 
         notifier.completedAndStart('Delete policy from DB');
         await DatabaseServer.deletePolicy(policyToDelete.id);
@@ -1480,7 +1480,7 @@ export class PolicyEngine extends NatsService {
         const topic = new TopicConfig({ topicId: multipleConfig.synchronizationTopicId }, null, null);
         await messageServer
             .setTopicObject(topic)
-            .sendMessage(message, null, null, policy.ownerId);
+            .sendMessage(message, true, null, policy.ownerId);
 
         return await DatabaseServer.saveMultiPolicy(multipleConfig);
     }

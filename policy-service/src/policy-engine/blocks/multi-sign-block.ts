@@ -237,7 +237,7 @@ export class MultiSignBlock {
 
             const vpMessageResult = await messageServer
                 .setTopicObject(topic)
-                .sendMessage(vpMessage, null, null, currentUser.id);
+                .sendMessage(vpMessage, true, null, currentUser.id);
             const vpMessageId = vpMessageResult.getId();
             const vpDocument = PolicyUtils.createVP(ref, docOwner, vp);
             vpDocument.type = DocumentCategoryType.MULTI_SIGN;

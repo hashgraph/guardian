@@ -131,7 +131,7 @@ export class RetirementBlock {
         vcMessage.setUser(null);
         const vcMessageResult = await messageServer
             .setTopicObject(topic)
-            .sendMessage(vcMessage, null, null, user.id);
+            .sendMessage(vcMessage, true, null, user.id);
 
         const vcDocument = PolicyUtils.createVC(ref, user, wipeVC);
         vcDocument.type = DocumentCategoryType.RETIREMENT;
@@ -150,7 +150,7 @@ export class RetirementBlock {
 
         const vpMessageResult = await messageServer
             .setTopicObject(topic)
-            .sendMessage(vpMessage, null, null, user.id);
+            .sendMessage(vpMessage, true, null, user.id);
 
         const vpDocument = PolicyUtils.createVP(ref, user, vp);
         vpDocument.type = DocumentCategoryType.RETIREMENT;
