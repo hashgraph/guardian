@@ -534,7 +534,8 @@ async function createDefaultRoles(
             Permissions.TAGS_TAG_READ,
             Permissions.TAGS_TAG_CREATE,
             Permissions.SUGGESTIONS_SUGGESTIONS_READ,
-            Permissions.ACCESS_POLICY_ASSIGNED
+            Permissions.ACCESS_POLICY_ASSIGNED,
+            Permissions.LOG_LOG_READ,
         ]
     }, {
         name: 'Policy Manager',
@@ -548,7 +549,8 @@ async function createDefaultRoles(
             Permissions.ACCOUNTS_ACCOUNT_READ,
             Permissions.TAGS_TAG_READ,
             Permissions.TAGS_TAG_CREATE,
-            Permissions.ACCESS_POLICY_ASSIGNED_AND_PUBLISHED
+            Permissions.ACCESS_POLICY_ASSIGNED_AND_PUBLISHED,
+            Permissions.LOG_LOG_READ,
         ]
     }, {
         name: 'Policy User',

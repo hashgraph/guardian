@@ -725,12 +725,13 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_PUBLISH_POLICIES,
-            async (): Promise<IMessageResponse<Policy[]>> => {
+            async (msg: { userId: string | null }): Promise<IMessageResponse<Policy[]>> => {
+                const userId = msg?.userId
                 try {
                     const publishPolicies = await DatabaseServer.getPublishPolicies();
                     return new MessageResponse(publishPolicies);
                 } catch (error) {
-                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });

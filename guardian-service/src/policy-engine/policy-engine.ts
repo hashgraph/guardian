@@ -1069,7 +1069,7 @@ export class PolicyEngine extends NatsService {
         });
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
-        const result = await messageServer.sendMessage(message,true, null, user.id);
+        const result = await messageServer.sendMessage(message, true, null, user.id);
 
         //Link topic and message
         await topicHelper.twoWayLink(rootTopic, topic, result.getId(), user.id);

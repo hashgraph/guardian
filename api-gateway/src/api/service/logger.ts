@@ -4,7 +4,7 @@ import { IPageParameters, MessageAPI, Permissions } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
 import {Auth, AuthUser} from '#auth';
 import { InternalServerErrorDTO, LogFilterDTO, LogResultDTO } from '#middlewares';
-import { UseCache, InternalException } from '#helpers';
+import {UseCache, InternalException, UsersService} from '#helpers';
 import axios from 'axios';
 import {IAuthUser, PinoLogger} from '@guardian/common';
 import process from 'process';
@@ -32,7 +32,10 @@ export class LoggerService {
 @Controller('logs')
 @ApiTags('logs')
 export class LoggerApi {
-    constructor(private readonly loggerService: LoggerService, private readonly logger: PinoLogger) {
+    constructor(private readonly loggerService: LoggerService,
+                private readonly logger: PinoLogger,
+                private readonly usersService: UsersService
+    ) {
     }
 
     /**
@@ -66,13 +69,40 @@ export class LoggerApi {
         @AuthUser() user: IAuthUser,
         @Body() body: LogFilterDTO
     ): Promise<LogResultDTO> {
+        const userId = user?.id;
         try {
+            const userDid = user.did;
+            const parentDid = user.parent;
+            const permissions = user.permissions || [];
+            const userIds: (string | null)[] = [userId];
+
             const filters: any = {};
 
-            filters.$or = [
-                { userId: user.id },
-                { userId: null }
-            ];
+            const hasSystemAccess = permissions.includes(Permissions.LOG_SYSTEM_READ);
+            const hasUsersAccess = permissions.includes(Permissions.LOG_USERS_READ);
+
+            if (hasSystemAccess && userDid) {
+                userIds.push(null)
+
+                if (parentDid) {
+                    const parentUser = await this.usersService.getUserById(user.parent, userId);
+
+                    if (parentUser?.id) {
+                        userIds.push(parentUser.id);
+                    }
+                }
+            }
+
+            if (hasUsersAccess && parentDid) {
+                const usersByParentDid = await this.usersService.getUsersByParentDid(parentDid, userId);
+
+                for (const u of usersByParentDid) {
+                    userIds.push(u.id);
+                }
+
+            }
+
+            filters.$or = userIds.map(id => ({ userId: id }))
 
             const pageParameters: IPageParameters = {};
             if (!body) {
@@ -110,7 +140,7 @@ export class LoggerApi {
                 logs: logs.data
             };
         } catch (error) {
-            await InternalException(error, this.logger, user.id);
+            await InternalException(error, this.logger, userId);
         }
     }
 

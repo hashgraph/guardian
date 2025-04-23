@@ -263,3 +263,107 @@ export class EntityAccess implements IEntity {
         }
     }
 }
+
+export class EntityLog implements IEntity {
+    public readonly parent: ICategory;
+    public readonly id: PermissionEntities;
+    public readonly name: string;
+    public readonly type: string;
+    public readonly actions: ActionGroup[];
+    public readonly map = new Map<PermissionActions, ActionGroup>();
+    public readonly canAll = true;
+
+    public all: boolean = false;
+
+    private static readonly logActionIndexes = new Map<PermissionActions, number>([
+        [PermissionActions.READ, 0],
+        [PermissionActions.SYSTEM, 1],
+        [PermissionActions.USERS, 2]
+    ]);
+
+    constructor(permission: IPermission, parent: ICategory) {
+        this.parent = parent;
+        this.id = permission.entity;
+        this.name = entityNames.get(permission.entity) || permission.entity || '';
+        this.type = 'checkbox';
+        this.actions = new Array(3);
+    }
+
+    public get control(): UntypedFormControl {
+        return null as any;
+    }
+
+    public addAction(permission: IPermission): ActionGroup {
+        const action = new ActionGroup(permission, this);
+        const index = EntityLog.logActionIndexes.get(permission.action);
+        if (index === undefined) {
+            throw new Error(`Unhandled permission ${permission.name}`);
+        }
+        this.actions[index] = action;
+        this.map.set(permission.action, action);
+        return action;
+    }
+
+    public selectAll(): void {
+        let _all = true;
+        for (const action of this.actions) {
+            if (action && !action.control.disabled) {
+                _all = _all && action.control.value;
+            }
+        }
+        _all = !_all;
+        for (const action of this.actions) {
+            if (action && !action.control.disabled) {
+                action.setValue(_all);
+            }
+        }
+        this.all = _all;
+    }
+
+    public checkAll(): void {
+        let _all = true;
+        for (const action of this.actions) {
+            if (action && !action.control.disabled) {
+                _all = _all && action.control.value;
+            }
+        }
+        this.all = _all;
+    }
+
+    public checkCount(): void {
+        this.parent.checkCount();
+    }
+
+    public disable(): void {
+        for (const action of this.actions) {
+            if (action) {
+                action.disable();
+            }
+        }
+    }
+
+    public clearValue(): void {
+        for (const action of this.actions) {
+            if (action) {
+                action.clearValue();
+            }
+        }
+    }
+
+    public addValue(permissions: Permissions[]): void {
+        for (const action of this.actions) {
+            if (action) {
+                action.addValue(permissions);
+            }
+        }
+        this.checkAll()
+    }
+
+    public mergeValue(permissions: Permissions[]): void {
+        for (const action of this.actions) {
+            if (action) {
+                action.addValue(permissions);
+            }
+        }
+    }
+}

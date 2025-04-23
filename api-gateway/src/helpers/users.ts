@@ -135,6 +135,16 @@ export class Users extends NatsService {
     }
 
     /**
+     * Return users by parent did
+     * @param did
+     * @param userId
+     */
+    public async getUsersByParentDid(did: string, userId: string | null): Promise<IAuthUser[]> {
+        return await this.sendMessage(AuthEvents.GET_USERS_BY_SR_ID, { did, userId });
+    }
+
+
+    /**
      * Update current user entity
      * @param username
      * @param item
@@ -420,6 +430,15 @@ export class UsersService {
      */
     public async getUsersByRole(role: UserRole, userId: string | null): Promise<IAuthUser[]> {
         return await this.users.getUsersByRole(role, userId);
+    }
+
+    /**
+     * Return users by parent did
+     * @param did
+     * @param userId
+     */
+    public async getUsersByParentDid(did: string, userId: string | null): Promise<IAuthUser[]> {
+        return await this.users.getUsersByParentDid(did, userId);
     }
 
     /**
