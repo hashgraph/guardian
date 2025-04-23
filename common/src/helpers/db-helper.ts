@@ -935,6 +935,9 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
                         entity[systemFileField] = entityToUpdate[systemFileField];
                     }
                 }
+                if (entity._id) {
+                    entity._id = entityToUpdate._id;
+                }
                 wrap(entityToUpdate)
                     .assign(
                         { ...entity, updateDate: new Date() } as EntityData<T>,
