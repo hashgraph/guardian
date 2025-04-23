@@ -317,11 +317,14 @@ export class RequestVcDocumentBlock {
     ): Promise<string | undefined> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
+            const credentials = await UserCredentials.create(ref, user.did);
+            const userId = credentials.userId;
+
             if (idType === 'UUID') {
                 return await ref.components.generateUUID();
             }
             if (idType === 'DID') {
-                const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null, user.id);
+                const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null, userId);
                 const didObject = await ref.components.generateDID(topic.topicId);
 
                 const message = new DIDMessage(MessageAction.CreateDID);
@@ -337,7 +340,7 @@ export class RequestVcDocumentBlock {
                 );
                 const messageResult = await client
                     .setTopicObject(topic)
-                    .sendMessage(message);
+                    .sendMessage(message, true, null, userId);
 
                 const item = PolicyUtils.createDID(ref, user, didObject);
                 item.messageId = messageResult.getId();

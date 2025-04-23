@@ -192,11 +192,11 @@ export class MintFT extends TypedMint {
                         startTransactions[0]?.consensus_timestamp;
                         await this._db.saveMintRequest(this._mintRequest);
                     } catch (error) {
-                        this.error(error);
+                        this.error(error, userId);
                     }
-                }).catch(error => this.error(error));
+                }).catch(error => this.error(error, userId));
             } catch (error) {
-                this.error(error);
+                this.error(error, userId);
             }
         }
 
@@ -271,11 +271,11 @@ export class MintFT extends TypedMint {
                         startTransactions[0]?.consensus_timestamp;
                         await this._db.saveMintRequest(this._mintRequest);
                     } catch (error) {
-                        this.error(error);
+                        this.error(error, userId);
                     }
-                }).catch(error => this.error(error));
+                }).catch(error => this.error(error, userId));
             } catch (error) {
-                this.error(error);
+                this.error(error, userId);
             }
         }
 

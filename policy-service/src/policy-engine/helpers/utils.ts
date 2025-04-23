@@ -707,6 +707,7 @@ export class PolicyUtils {
         if (!ref.dryRun) {
             const workers = new Workers();
             const hederaAccountKey = await user.loadHederaKey(ref);
+
             const createdToken = await workers.addRetryableTask({
                 type: WorkerTaskType.CREATE_TOKEN,
                 data: {

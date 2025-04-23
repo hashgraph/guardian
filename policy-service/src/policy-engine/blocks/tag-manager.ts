@@ -2,7 +2,7 @@ import { BasicBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
-import { IHederaCredentials, PolicyUser } from '../policy-user.js';
+import {IHederaCredentials, PolicyUser, UserCredentials} from '../policy-user.js';
 import { BlockActionError } from '../errors/index.js';
 import { ISignOptions, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
 import { DatabaseServer, MessageAction, MessageServer, MessageType, Tag, TagMessage, TopicConfig, VcHelper, } from '@guardian/common';
@@ -122,6 +122,9 @@ export class TagsManagerBlock {
             throw new BlockActionError(`Operation is unknown`, ref.blockType, ref.uuid);
         }
 
+        const credentials = await UserCredentials.create(ref, user.did);
+        const userId = credentials.userId;
+
         switch (blockData.operation) {
             case 'create': {
                 const { tag } = blockData;
@@ -185,7 +188,7 @@ export class TagsManagerBlock {
                     tag.status = 'Published';
                     const hederaCred = await userCred.loadHederaCredentials(ref);
                     const signOptions = await userCred.loadSignOptions(ref);
-                    await this.publishTag(tag, target.topicId, hederaCred, signOptions, user.id);
+                    await this.publishTag(tag, target.topicId, hederaCred, signOptions, userId);
                 } else {
                     tag.target = null;
                     tag.localTarget = target.id;
@@ -256,7 +259,7 @@ export class TagsManagerBlock {
                 await ref.databaseServer.removeTag(item);
 
                 if (item.topicId && item.status === 'Published') {
-                    await this.deleteTag(item, item.topicId, user.did, user.id);
+                    await this.deleteTag(item, item.topicId, user.did, userId);
                 }
 
                 break;

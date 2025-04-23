@@ -149,11 +149,11 @@ export class MintNFT extends TypedMint {
                         this._mintRequest.startSerial = startSerial[0] || 0;
                         await this._db.saveMintRequest(this._mintRequest);
                     } catch (error) {
-                        this.error(error);
+                        this.error(error, userId);
                     }
-                }).catch((error) => this.error(error));
+                }).catch((error) => this.error(error, userId));
             } catch (error) {
-                this.error(error);
+                this.error(error, userId);
             }
         }
 

@@ -1184,7 +1184,8 @@ async function saveRetireVC(
     hederaAccountId: string,
     hederaAccountKey: string,
     userHederaAccountId: string,
-    tokens: (RetireTokenRequest & { decimals: number })[]
+    tokens: (RetireTokenRequest & { decimals: number })[],
+    userId: string | null
 ) {
     const contract = await dataBaseServer.findOne(Contract, {
         contractId,
@@ -1258,7 +1259,7 @@ async function saveRetireVC(
 
     const vcMessage = new VCMessage(MessageAction.CreateVC);
     vcMessage.setDocument(vcObject);
-    await messageServer.sendMessage(vcMessage, true, null, owner.id);
+    await messageServer.sendMessage(vcMessage, true, null, userId);
 
     await dataBaseServer.save(VcDocumentCollection, {
         hash: vcMessage.hash,
@@ -3129,7 +3130,8 @@ export async function contractAPI(
                         );
                         newToken.decimals = poolToken.decimals;
                         return newToken;
-                    })
+                    }),
+                    userId
                 );
             }
 
@@ -3236,7 +3238,8 @@ export async function contractAPI(
                     root.hederaAccountId,
                     rootKey,
                     request.user,
-                    request.tokens
+                    request.tokens,
+                    userId
                 );
 
                 await dataBaseServer.remove(RetireRequest, request);

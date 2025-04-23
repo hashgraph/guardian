@@ -7,6 +7,7 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../in
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import {UserCredentials} from '../../policy-engine/policy-user.js';
 
 export const RevokedStatus = 'Revoked';
 
@@ -133,7 +134,8 @@ export class RevokeBlock {
         const data = event.data.data;
         const doc = Array.isArray(data) ? data[0] : data;
 
-        const userId = event.user.id
+        const credentials = await UserCredentials.create(ref, event.user.id);
+        const userId = credentials.userId;
 
         const userCred = await PolicyUtils.getUserCredentials(ref, event.user.did);
         const userHederaCred = await userCred.loadHederaCredentials(ref);

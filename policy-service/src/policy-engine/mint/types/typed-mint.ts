@@ -245,7 +245,7 @@ export abstract class TypedMint {
 
         let processed = false;
         if (this._mintRequest.isMintNeeded) {
-            MintService.log(`Mint (${this._token.tokenId}) started`, this._ref);
+            MintService.log(`Mint (${this._token.tokenId}) started`, this._ref, userId);
 
             let notifier;
             if (isProgressNeeded) {
@@ -284,7 +284,8 @@ export abstract class TypedMint {
 
             MintService.log(
                 `Mint (${this._token.tokenId}) completed`,
-                this._ref
+                this._ref,
+                userId
             );
             notifier?.finish();
 
@@ -311,7 +312,8 @@ export abstract class TypedMint {
         if (this._mintRequest.isTransferNeeded) {
             MintService.log(
                 `Transfer (${this._token.tokenId}) started`,
-                this._ref
+                this._ref,
+                userId
             );
 
             let notifier;
@@ -351,7 +353,8 @@ export abstract class TypedMint {
 
             MintService.log(
                 `Transfer (${this._token.tokenId}) completed`,
-                this._ref
+                this._ref,
+                userId
             );
             notifier?.finish();
 
@@ -378,8 +381,9 @@ export abstract class TypedMint {
     /**
      * Log error
      * @param error Error
+     * @param userId
      */
-    protected error(error: any) {
-        MintService.error(PolicyUtils.getErrorMessage(error), this._ref);
+    protected error(error: any, userId: string | null) {
+        MintService.error(PolicyUtils.getErrorMessage(error), this._ref, userId);
     }
 }

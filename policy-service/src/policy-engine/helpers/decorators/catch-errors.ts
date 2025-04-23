@@ -2,6 +2,7 @@ import { BlockErrorActions } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../../policy-components-utils.js';
 import { PinoLogger } from '@guardian/common';
 import { PolicyOutputEventType } from '../../interfaces/index.js';
+import {UserCredentials} from '../../policy-user.js';
 
 /**
  * Catch errors decorator
@@ -13,12 +14,16 @@ export function CatchErrors() {
         descriptor.value = new Proxy(_target[propertyKey], {
             async apply(target: any, thisArg: any, argArray: any[]): Promise<any> {
                 const user = argArray[0].user;
+
+                const credentials = await UserCredentials.create(thisArg.blockType, user.did);
+                const userId = credentials.userId;
+
                 const data = argArray[0].data;
                 const f = async () => {
                     try {
                         await target.apply(thisArg, argArray);
                     } catch (error) {
-                        await new PinoLogger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId]);
+                        await new PinoLogger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId], userId);
                         PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user);
                         thisArg.triggerEvents(PolicyOutputEventType.ErrorEvent, user, data);
                         switch (thisArg.options.onErrorAction) {

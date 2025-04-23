@@ -11,6 +11,7 @@ import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { DocumentType } from '../interfaces/document.type.js';
 import { FilterQuery } from '@mikro-orm/core';
+import {UserCredentials} from '../../policy-engine/policy-user.js';
 
 /**
  * Document Operations
@@ -454,6 +455,9 @@ export class SendToGuardianBlock {
 
         const owner = await PolicyUtils.getUserByIssuer(ref, document);
 
+        const credentials = await UserCredentials.create(ref, owner.did);
+        const userId = credentials.userId;
+
         if (type === DocumentType.DID) {
             const did = HederaDidDocument.fromJsonTree(document.document);
             const didMessage = new DIDMessage(MessageAction.CreateDID);
@@ -505,7 +509,7 @@ export class SendToGuardianBlock {
         const messageHash = message.toHash();
         if (ref.options.dataType) {
             if (ref.options.dataType === 'hedera') {
-                document = await this.sendToHedera(document, message, ref, owner.id);
+                document = await this.sendToHedera(document, message, ref, userId);
                 document.messageHash = messageHash;
                 document = await this.updateMessage(document, type, ref);
             } else {
@@ -514,7 +518,7 @@ export class SendToGuardianBlock {
             }
         } else if (ref.options.dataSource === 'auto' || !ref.options.dataSource) {
             if (document.messageHash !== messageHash) {
-                document = await this.sendToHedera(document, message, ref, owner.id);
+                document = await this.sendToHedera(document, message, ref, userId);
                 document.messageHash = messageHash;
             }
             document.hash = hash;
@@ -523,7 +527,7 @@ export class SendToGuardianBlock {
             document.hash = hash;
             document = await this.sendToDatabase(document, type, ref);
         } else if (ref.options.dataSource === 'hedera') {
-            document = await this.sendToHedera(document, message, ref, owner.id);
+            document = await this.sendToHedera(document, message, ref, userId);
             document.messageHash = messageHash;
             document = await this.updateMessage(document, type, ref);
         } else {

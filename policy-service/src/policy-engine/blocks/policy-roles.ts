@@ -2,7 +2,7 @@ import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
-import { PolicyUser } from '../policy-user.js';
+import {PolicyUser, UserCredentials} from '../policy-user.js';
 import { DocumentCategoryType, GroupAccessType, GroupRelationshipType, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
@@ -316,6 +316,9 @@ export class PolicyRolesBlock {
             return null;
         }
 
+        const credentials = await UserCredentials.create(ref, user.did);
+        const userId = credentials.userId;
+
         const userCred = await PolicyUtils.getUserCredentials(ref, group.owner);
         const hederaCred = await userCred.loadHederaCredentials(ref);
         const signOptions = await userCred.loadSignOptions(ref)
@@ -357,7 +360,7 @@ export class PolicyRolesBlock {
         vcMessage.setRole(group);
         const vcMessageResult = await messageServer
             .setTopicObject(rootTopic)
-            .sendMessage(vcMessage, true, null, user.id);
+            .sendMessage(vcMessage, true, null, userId);
 
         const vcDocument = PolicyUtils.createVC(ref, user, userVC);
         vcDocument.type = DocumentCategoryType.USER_ROLE;

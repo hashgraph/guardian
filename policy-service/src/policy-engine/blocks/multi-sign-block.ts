@@ -4,7 +4,7 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
-import { PolicyUser } from '../policy-user.js';
+import {PolicyUser, UserCredentials} from '../policy-user.js';
 import { BlockActionError } from '../errors/index.js';
 import { MessageAction, MessageServer, PolicyRoles, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcHelper, VPMessage, } from '@guardian/common';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
@@ -192,6 +192,9 @@ export class MultiSignBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const data = await ref.databaseServer.getMultiSignDocuments(ref.uuid, documentId, currentUser.group);
 
+        const credentials = await UserCredentials.create(ref, currentUser.did);
+        const userId = credentials.userId;
+
         let signed = 0;
         let declined = 0;
         for (const u of data) {
@@ -237,7 +240,7 @@ export class MultiSignBlock {
 
             const vpMessageResult = await messageServer
                 .setTopicObject(topic)
-                .sendMessage(vpMessage, true, null, currentUser.id);
+                .sendMessage(vpMessage, true, null, userId);
             const vpMessageId = vpMessageResult.getId();
             const vpDocument = PolicyUtils.createVP(ref, docOwner, vp);
             vpDocument.type = DocumentCategoryType.MULTI_SIGN;

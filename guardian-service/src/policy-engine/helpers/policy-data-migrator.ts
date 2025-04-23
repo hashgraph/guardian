@@ -542,7 +542,8 @@ export class PolicyDataMigrator {
                 roleVcs,
                 this._migrateRoleVc.bind(this),
                 this._db.saveVC.bind(this._db),
-                errors
+                errors,
+                userId
             );
             await this._migratePolicyStates(states);
         } else {
@@ -554,20 +555,23 @@ export class PolicyDataMigrator {
             (vc: VcDocument) =>
                 this._migrateVcDocument(vc, vcs, roles, dynamicTokens, errors, userId),
             this._db.saveVC.bind(this._db),
-            errors
+            errors,
+            userId
         );
         if (migrateState) {
             await this._migrateDocument(
                 multiSignDocuments,
                 this._migrateMultiSignDocument.bind(this),
                 this._db.setMultiSigDocument.bind(this._db),
-                errors
+                errors,
+                userId
             );
             await this._migrateDocument(
                 documentStates,
                 this._migrateDocumentState.bind(this),
                 this._db.saveDocumentState.bind(this._db),
-                errors
+                errors,
+                userId
             );
             await this._migrateDocument(
                 aggregateVCs,
@@ -578,7 +582,8 @@ export class PolicyDataMigrator {
                         doc.blockId
                     );
                 },
-                errors
+                errors,
+                userId
             );
             await this._migrateDocument(
                 splitDocuments,
@@ -586,7 +591,8 @@ export class PolicyDataMigrator {
                 async (doc) => {
                     await this._db.setResidue(doc as any);
                 },
-                errors
+                errors,
+                userId
             );
         }
         this._notifier?.completedAndStart(`Migrate ${vps.length} VP documents`);
@@ -594,7 +600,8 @@ export class PolicyDataMigrator {
             vps,
             this._migrateVpDocument.bind(this),
             this._db.saveVP.bind(this._db),
-            errors
+            errors,
+            userId
         );
         await this._migrateMintRequests(mintRequests, mintTransactions);
 
@@ -919,17 +926,19 @@ export class PolicyDataMigrator {
      * @param migrateFn Migrate function
      * @param saveFn Save function
      * @param errors Errors
+     * @param userId
      */
     private async _migrateDocument<T extends BaseEntity>(
         documents: T[],
-        migrateFn: (document: T) => Promise<T>,
+        migrateFn: (document: T,  userId: string | null) => Promise<T>,
         saveFn: (document: Partial<T>) => Promise<T | void>,
-        errors: DocumentError[]
+        errors: DocumentError[],
+        userId: string | null
     ) {
         const notEmptyDocuments = (documents as any[]).filter((item) => !!item);
         for (const document of notEmptyDocuments) {
             try {
-                const newDocument = await migrateFn(document);
+                const newDocument = await migrateFn(document, userId);
                 if (!newDocument) {
                     continue;
                 }
@@ -1052,7 +1061,7 @@ export class PolicyDataMigrator {
             const message = vcMessage;
             const vcMessageResult = await this._ms
                 .setTopicObject(this._policyInstanceTopic)
-                .sendMessage(message, true);
+                .sendMessage(message, true, null, userId);
             doc.messageId = vcMessageResult.getId();
             doc.topicId = vcMessageResult.getTopicId();
             doc.messageHash = vcMessageResult.toHash();
@@ -1150,9 +1159,10 @@ export class PolicyDataMigrator {
     /**
      * Migrate VP document
      * @param doc VP
+     * @param userId
      * @returns VP
      */
-    private async _migrateVpDocument(doc: VpDocument & { group: string }) {
+    private async _migrateVpDocument(doc: VpDocument & { group: string }, userId: string | null) {
         doc.owner = await this._replaceDidTopicId(doc.owner);
         if (doc.group) {
             const srcGroup = await this._db.getGroupByID(
@@ -1224,7 +1234,7 @@ export class PolicyDataMigrator {
             vpMessage.setRelationships([...doc.relationships, doc.messageId]);
             const vpMessageResult = await this._ms
                 .setTopicObject(this._policyInstanceTopic)
-                .sendMessage(vpMessage);
+                .sendMessage(vpMessage, true, null, userId);
             const vpMessageId = vpMessageResult.getId();
             this.vpIds.set(doc.messageId, vpMessageId);
             doc.messageId = vpMessageId;

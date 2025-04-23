@@ -36,7 +36,7 @@ export async function createHederaToken(token: any, user: IRootConfig, userId: s
             operatorId: user.hederaAccountId,
             operatorKey: user.hederaAccountKey,
             memo: topic.topicId,
-            payload: { userId: user.id },
+            payload: { userId },
             ...token
         }
     }, 20);

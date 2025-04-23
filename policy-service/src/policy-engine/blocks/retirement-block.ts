@@ -111,6 +111,9 @@ export class RetirementBlock {
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
+        const credentials = await UserCredentials.create(ref, user.did);
+        const userId = credentials.userId;
+
         const didDocument = await root.loadDidDocument(ref);
         const hederaCred = await root.loadHederaCredentials(ref);
         const signOptions = await root.loadSignOptions(ref);
@@ -131,7 +134,7 @@ export class RetirementBlock {
         vcMessage.setUser(null);
         const vcMessageResult = await messageServer
             .setTopicObject(topic)
-            .sendMessage(vcMessage, true, null, user.id);
+            .sendMessage(vcMessage, true, null, userId);
 
         const vcDocument = PolicyUtils.createVC(ref, user, wipeVC);
         vcDocument.type = DocumentCategoryType.RETIREMENT;
@@ -150,7 +153,7 @@ export class RetirementBlock {
 
         const vpMessageResult = await messageServer
             .setTopicObject(topic)
-            .sendMessage(vpMessage, true, null, user.id);
+            .sendMessage(vpMessage, true, null, userId);
 
         const vpDocument = PolicyUtils.createVP(ref, user, vp);
         vpDocument.type = DocumentCategoryType.RETIREMENT;
@@ -159,7 +162,7 @@ export class RetirementBlock {
         vpDocument.relationships = relationships;
         await ref.databaseServer.saveVP(vpDocument);
 
-        await MintService.wipe(ref, token, tokenValue, hederaCred, targetAccountId, vpMessageResult.getId(), user.id);
+        await MintService.wipe(ref, token, tokenValue, hederaCred, targetAccountId, vpMessageResult.getId(), userId);
 
         return [vpDocument, tokenValue];
     }

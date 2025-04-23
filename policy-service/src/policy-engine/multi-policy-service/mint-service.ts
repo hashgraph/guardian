@@ -100,7 +100,7 @@ export class MintService {
                 amount: tokenValue,
                 memo: transactionMemo,
                 target: targetAccount,
-                userId
+                userId: policyOwner?.id
             }, signOptions);
             if (multipleConfig.type === 'Main') {
                 const user = await PolicyUtils.getUserCredentials(ref, documentOwner.did);

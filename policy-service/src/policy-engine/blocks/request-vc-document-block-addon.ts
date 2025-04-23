@@ -272,6 +272,9 @@ export class RequestVcDocumentBlockAddon {
     ): Promise<string | undefined> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
+            const credentials = await UserCredentials.create(ref, user.did);
+            const userId = credentials.userId;
+
             if (idType === 'UUID') {
                 return await ref.components.generateUUID();
             }
@@ -302,7 +305,7 @@ export class RequestVcDocumentBlockAddon {
                 );
                 const messageResult = await client
                     .setTopicObject(topic)
-                    .sendMessage(message);
+                    .sendMessage(message, true, null, userId);
 
                 const item = PolicyUtils.createDID(ref, user, didObject);
                 item.messageId = messageResult.getId();

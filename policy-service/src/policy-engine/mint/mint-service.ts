@@ -176,7 +176,7 @@ export class MintService {
                 mintNFT
                     .mint(null, policyOwner?.id)
                     .catch((error) =>
-                        MintService.error(PolicyUtils.getErrorMessage(error))
+                        MintService.error(PolicyUtils.getErrorMessage(error), null, policyOwner?.id)
                     )
                     .finally(() => {
                         MintService.activeMintProcesses.delete(
@@ -203,7 +203,7 @@ export class MintService {
                 mintFT
                     .mint(null, policyOwner?.id)
                     .catch((error) =>
-                        MintService.error(PolicyUtils.getErrorMessage(error))
+                        MintService.error(PolicyUtils.getErrorMessage(error), null, policyOwner?.id)
                     )
                     .finally(() => {
                         MintService.activeMintProcesses.delete(
@@ -480,7 +480,7 @@ export class MintService {
             mintNFT
                 .mint(null, userId)
                 .catch((error) =>
-                    MintService.error(PolicyUtils.getErrorMessage(error))
+                    MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
                 )
                 .finally(() => {
                     MintService.activeMintProcesses.delete(
@@ -507,7 +507,7 @@ export class MintService {
             mintFT
                 .mint(null, userId)
                 .catch((error) =>
-                    MintService.error(PolicyUtils.getErrorMessage(error))
+                    MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
                 )
                 .finally(() => {
                     MintService.activeMintProcesses.delete(
@@ -623,8 +623,10 @@ export class MintService {
     /**
      * Write log message
      * @param message
+     * @param ref
+     * @param userId
      */
-    public static log(message: string, ref?: AnyBlockType) {
+    public static log(message: string, ref: AnyBlockType, userId: string | null) {
         if (ref) {
             MintService.logger.info(message, [
                 'POLICY_SERVICE',
@@ -632,17 +634,19 @@ export class MintService {
                 ref.blockType,
                 ref.tag,
                 ref.policyId,
-            ]);
+            ], userId);
         } else {
-            MintService.logger.info(message, ['POLICY_SERVICE']);
+            MintService.logger.info(message, ['POLICY_SERVICE'], userId);
         }
     }
 
     /**
      * Write error message
      * @param message
+     * @param ref
+     * @param userId
      */
-    public static error(message: string, ref?: AnyBlockType) {
+    public static error(message: string, ref: AnyBlockType, userId: string | null) {
         if (ref) {
             MintService.logger.error(message, [
                 'POLICY_SERVICE',
@@ -650,17 +654,19 @@ export class MintService {
                 ref.blockType,
                 ref.tag,
                 ref.policyId,
-            ]);
+            ], userId);
         } else {
-            MintService.logger.error(message, ['POLICY_SERVICE']);
+            MintService.logger.error(message, ['POLICY_SERVICE'], userId);
         }
     }
 
     /**
      * Write warn message
      * @param message
+     * @param ref
+     * @param userId
      */
-    public static warn(message: string, ref?: AnyBlockType) {
+    public static warn(message: string, ref: AnyBlockType, userId: string | null) {
         if (ref) {
             MintService.logger.warn(message, [
                 'POLICY_SERVICE',
@@ -668,9 +674,9 @@ export class MintService {
                 ref.blockType,
                 ref.tag,
                 ref.policyId,
-            ]);
+            ], userId);
         } else {
-            MintService.logger.warn(message, ['POLICY_SERVICE']);
+            MintService.logger.warn(message, ['POLICY_SERVICE'], userId);
         }
     }
 }

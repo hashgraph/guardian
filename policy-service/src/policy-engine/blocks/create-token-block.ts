@@ -14,7 +14,7 @@ import {
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { EventBlock } from '../helpers/decorators/event-block.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { PolicyUser } from '../policy-user.js';
+import {PolicyUser, UserCredentials} from '../policy-user.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import {
     insertVariables,
@@ -156,6 +156,9 @@ export class CreateTokenBlock {
             ref.policyOwner
         );
 
+        const credentials = await UserCredentials.create(ref, user.did);
+        const userId = credentials.userId;
+
         if (!docs) {
             throw new BlockActionError(
                 'Documents is not defined',
@@ -170,7 +173,7 @@ export class CreateTokenBlock {
             ref,
             template,
             policyOwnerCred,
-            user.id
+            userId
         );
         // #endregion
 
@@ -186,7 +189,7 @@ export class CreateTokenBlock {
         ).setTopicObject(rootTopic);
         const tokenMessage = new TokenMessage(MessageAction.CreateToken);
         tokenMessage.setDocument(createdToken);
-        await messageServer.sendMessage(tokenMessage, true, null, user.id);
+        await messageServer.sendMessage(tokenMessage, true, null, userId);
         // #endregion
 
         // #region Set token in document
