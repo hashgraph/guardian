@@ -99,6 +99,32 @@
             }
         }
 
+        .filter-related {
+            height: 40;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            border-radius: 8px;
+            border: 1px solid var(--color-grey-3, #E1E7EF);
+
+            p {
+                margin: 0;
+            }
+
+            i {
+                margin-top: 2px;
+                cursor: pointer;
+            }
+
+            &.disabled {
+                background-color: var(--color-grey-1, #F9FAFC);
+
+                i {
+                    color: var(--color-grey-3, #E1E7EF)
+                }
+            }
+        }
+
         .type-dropdown {
             max-width: 260px;
             width: 100%;
@@ -138,7 +164,7 @@
                     border-radius: 8px;
                 }
             }
-        } 
+        }
 
         .p-input-icon-right {
             width: 100%;
@@ -209,6 +235,7 @@
         height: 100%;
         min-height: 400px;
         width: 100%;
+        margin-top: 8px;
         position: relative;
 
         .related-button {
@@ -425,4 +452,64 @@ a {
     color: var(--color-primary);
     cursor: pointer;
     text-decoration: underline;
+}
+
+.progress-footer-container {
+    position: relative;
+    height: 64px;
+    z-index: 2;
+}
+
+.progress-footer {
+    padding: 12px 48px;
+    padding-left: calc(var(--header-width-expand) + 48px);
+    display: flex;
+    justify-content: space-between;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    border-top: 1px solid var(--color-grey-3, #E1E7EF);
+    background: #FFF;
+
+    p {
+        margin: 0;
+        align-content: center;
+    }
+
+    div {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    ::ng-deep {
+        .p-button {
+            padding: 5px 12px;
+            min-width: 120px;
+        }
+    }
+}
+
+.text-highlight {
+    font-weight: 700;
+}
+
+.loading {
+    position: fixed;
+    z-index: 101;
+    top: var(--header-height);
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.loading-progress {
+    width: 80%;
+    height: 80%;
 }

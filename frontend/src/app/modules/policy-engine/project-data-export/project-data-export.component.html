@@ -1,9 +1,4 @@
 <div class="project-export-container">
-    <div *ngIf="loading" class="guardian-loading">
-        <div class="guardian-loading-image"></div>
-    </div>
-
-
     <div class="guardian-user-page-toolbar">
         <div class="guardian-user-page-filters">
             
@@ -13,7 +8,7 @@
                     <span class="p-input-icon-right">
                         <input
                             class="search-policy-input"
-                            formControlName="searchText"
+                            formControlName="textSearch"
                             pInputText
                             placeholder="Search by keyword"
                             type="text" />
@@ -55,7 +50,7 @@
                                 [(ngModel)]="selectedSchemas" 
                                 class="sort-by-dropdown"
                                 optionLabel="name"
-                                optionValue="id"
+                                optionValue="iri"
                                 placeholder="Schemas"
                                 appendTo="body"
                             >
@@ -76,9 +71,7 @@
                                 [options]="owners"
                                 [(ngModel)]="selectedOwners" 
                                 class="sort-by-dropdown"
-                                optionLabel="name"
-                                optionValue="id"
-                                placeholder="Schemas"
+                                placeholder="Owner"
                                 appendTo="body"
                             >
                                 <ng-template let-value pTemplate="selectedItems">
@@ -99,9 +92,7 @@
                             [options]="tokens"
                             [(ngModel)]="selectedTokens" 
                             class="sort-by-dropdown"
-                            optionLabel="name"
-                            optionValue="id"
-                            placeholder="Schemas"
+                            placeholder="Tokens"
                             appendTo="body"
                         >
                             <ng-template let-value pTemplate="selectedItems">
@@ -114,6 +105,14 @@
                         </p-multiSelect>
                     </div>
                     <div class="filter">
+                        <div class="filter-related" [ngClass]="{'disabled': !related || related.length <= 0}">
+                            <p class="filter-label">
+                                Search based on
+                                <span *ngIf="related && related.length > 0">{{ related.length }} selected documents</span>
+                                <span *ngIf="!related || related.length <= 0"> - </span>
+                            </p>
+                            <i (click)="onClearRelatedFilter()" class="pi pi-times-circle"></i>
+                        </div>
                     </div>
                 </div>
                 <div class="filter-row" style="justify-content: flex-end">
@@ -126,6 +125,7 @@
                 </div>
             </div>
         </form>
+        </div>
     </div>
 
     <div class="guardian-user-page-grid">
@@ -158,17 +158,23 @@
                                     [showDelay]="1000"
                                     [ngSwitch]="column.id"
                                 >
-                                    <ng-container *ngSwitchCase="'operations'">
-                                        <button
-                                            *ngIf="row.messageId"
-                                            (click)="setRelated(row)"
-                                            class="related-button"
-                                            label="Find all related"
-                                            pButton>
-                                        </button>
+                                    <ng-container *ngSwitchCase="'select'">
+                                        <p-checkbox
+                                            *ngIf="!isRelated(row)"
+                                            [inputId]="row.messageId"
+                                            name="group"
+                                            [value]="row"
+                                            [(ngModel)]="selectedRows"
+                                        />
+                                        <p-checkbox
+                                            *ngIf="isRelated(row)"
+                                            [binary]="true"
+                                            [disabled]="true"
+                                            [(ngModel)]="alreadyRelated"
+                                        />
                                     </ng-container>
                                     <ng-container *ngSwitchDefault>
-                                        <span class="text-truncate">{{row[column.id]}}</span>
+                                        <span [ngClass]="{'text-highlight': isRelated(row)}" class="text-truncate">{{row[column.id]}}</span>
                                     </ng-container>
                                 </td>
                             </ng-container>
@@ -197,4 +203,38 @@
             </div>
         </ng-template>
     </div>
+            
+    <div class="progress-footer-container">
+        <div class="progress-footer">
+            <div>
+                <p *ngIf="selectedRows && selectedRows.length > 0">{{ selectedRows.length }} documents selected </p>
+            </div>
+            <div>
+                <button 
+                    *ngIf="selectedRows && selectedRows.length > 0"
+                    (click)="onFindRelated()"
+                    class="button secondary" 
+                    label="Find all related" 
+                    pButton
+                    type="button">
+                </button>
+                <button 
+                    (click)="onExport()"
+                    [disabled]="!page || page.length <= 0" 
+                    class="button primary"
+                    [label]="(selectedRows && selectedRows.length > 0) ? 'Export selected to CSV' : 'Export to CSV'" 
+                    pButton
+                    type="button">
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
 </div>

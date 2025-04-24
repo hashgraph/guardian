@@ -610,7 +610,8 @@ input:checked+.slider:before {
 .secondary[disabled],
 .button[disabled]:hover,
 .secondary[disabled]:hover {
-    background: var(--color-grey-3) !important;
+    background: var(--color-grey-1) !important;
+    border: 1px solid var(--color-grey-3) !important;
     color: var(--color-grey-5) !important;
     cursor: no-drop;
     filter: brightness(1);

@@ -1,12 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, ISchema, PolicyType, UserPermissions } from '@guardian/interfaces';
+import { ISchema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
-import { FormulasService } from 'src/app/services/formulas.service';
-import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { SchemaService } from 'src/app/services/schema.service';
 
@@ -42,8 +40,10 @@ export class ProjectDataExportComponent implements OnInit {
     public showMoreFilters = true;
 
     public schemas: ISchema[] = [];
-    public owners: ISchema[] = [];
-    public tokens: ISchema[] = [];
+    public owners: string[] = [];
+    public tokens: string[] = [];
+    
+    public selectedRows: any[] = [];
 
     public selectedSchemas!: ISchema[];
     public selectedOwners!: ISchema[];
@@ -51,23 +51,31 @@ export class ProjectDataExportComponent implements OnInit {
 
     private subscription = new Subscription();
 
+    public alreadyRelated: boolean = true;
+
     public filtersForm = new UntypedFormGroup({
         textSearch: new UntypedFormControl(''),
         schemas: new UntypedFormControl([]),
         owners: new UntypedFormControl([]),
         tokens: new UntypedFormControl([]),
-        related: new UntypedFormControl(''),
+        related: new UntypedFormControl([]),
     });
     
     constructor(
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
         private schemaService: SchemaService,
-        private dialogService: DialogService,
         private router: Router,
         private route: ActivatedRoute
     ) {
         this.columns = [
+            {
+                id: 'select',
+                title: '',
+                type: 'checkbox',
+                size: '64',
+                tooltip: true
+            },
             {
                 id: 'documentFileId',
                 title: 'File Id',
@@ -95,13 +103,6 @@ export class ProjectDataExportComponent implements OnInit {
                 type: 'text',
                 size: 'auto',
                 tooltip: true
-            },
-            {
-                id: 'operations',
-                title: ' ',
-                type: 'text',
-                size: '220',
-                tooltip: false
             }
         ]
     }
@@ -119,6 +120,7 @@ export class ProjectDataExportComponent implements OnInit {
         this.pageIndex = 0;
         this.pageSize = 10;
         this.pageCount = 0;
+
         this.subscription.add(
             this.route.queryParams.subscribe((queryParams) => {
                 this.loadProfile();
@@ -129,12 +131,40 @@ export class ProjectDataExportComponent implements OnInit {
     ngOnDestroy(): void {
         this.subscription.unsubscribe();
     }
+    
+    public get related(): string[] {
+        return this.filtersForm?.get('related')?.value || [];
+    }
+
+    public isRelated(row: any): boolean {
+        return this.related?.some((id) => row.messageId == id);
+    }
+
+    public onClearRelatedFilter() {
+        this.filtersForm?.get('related')?.setValue([]);
+        this.applyFilters();
+    }
 
     private loadFiltersData() {
-        this.schemaService.getSchemasByPolicy(this.currentPolicy.id).subscribe(data => {
-            if (data) {
-                this.schemas = data;
+        forkJoin([
+            this.schemaService.getSchemasByPolicy(this.currentPolicy.id),
+            this.policyEngineService.getPolicyDocumentOwners(this.currentPolicy.id),
+            this.policyEngineService.getPolicyTokens(this.currentPolicy.id),
+        ]).subscribe((value) => {
+            const schemas: ISchema[] = value[0] || [];
+            const owners: string[] = value[1] || [];
+            const tokens: string[] = value[2] || [];
+
+            if (schemas) {
+                this.schemas = schemas;
             }
+            if (owners) {
+                this.owners = owners;
+            }
+            if (tokens) {
+                this.tokens = tokens;
+            }
+            
             this.loadData();
         });
     }
@@ -198,18 +228,14 @@ export class ProjectDataExportComponent implements OnInit {
             options.tokens = filters.tokens;
             this.filtersCount++;
         }
-        if (filters.related) {
+        if (filters.related && filters.related.length > 0) {
             options.related = filters.related;
             this.filtersCount++;
         }
 
-        console.log(options);
-        
-
         this.loading = true;
-
         this.policyEngineService
-            .documentsExport(
+            .searchDocuments(
                 this.currentPolicy.id,
                 options,
                 this.pageIndex,
@@ -223,11 +249,9 @@ export class ProjectDataExportComponent implements OnInit {
                     this.pageCount = count;
             
                     for (const item of this.page) {
-                        item.issuanceDate = item.document?.issuanceDate;
-                        item.schemaName = this.schemas.find(schema => schema.iri == item.schema)?.description || item.schema;
+                        item.issuanceDate = item.document?.issuanceDate || item.createDate;
+                        item.schemaName = this.schemas.find(schema => schema.iri == item.schema)?.name || item.schema || 'NONE';
                     }
-                    console.log(this.page);
-                    
             
                     setTimeout(() => {
                         this.loading = false;
@@ -254,22 +278,6 @@ export class ProjectDataExportComponent implements OnInit {
         this.loadData();
     }
 
-    public onFilter(event: any) {
-        if (event.value === null) {
-            this.currentPolicy = this.allPolicies[0];
-        }
-        this.pageIndex = 0;
-        const policy = this.currentPolicy?.id || 'all'
-        this.router.navigate(['/formulas'], { queryParams: { policy } });
-        this.loadData();
-    }
-
-    public onExport(item: any) {
-    }
-
-    public onDelete(item: any) {
-    }
-
     public clearFilters(): void {
         this.filtersForm.setValue({
             textSearch: '',
@@ -286,14 +294,96 @@ export class ProjectDataExportComponent implements OnInit {
     }
 
     public applyFilters(): void {
+        this.pageIndex = 0;
         this.loadData();
     }
 
-    public setRelated(item: any): void {
-        const relatedId = item.messageId;
-        if (relatedId) {
-            this.filtersForm.get('related')?.setValue(relatedId);
-            this.loadData();
+    public onFindRelated() {
+        if (this.selectedRows && this.selectedRows.length >= 0) {
+            const messageIds: string[] = [];
+            for (const row of this.selectedRows) {
+                if (row.messageId) {
+                    messageIds.push(row.messageId);
+                }
+            }
+
+            if (messageIds.length > 0) {
+                this.filtersForm.get('related')?.setValue(messageIds);
+                this.applyFilters();
+            }
+
+            this.selectedRows = [];
+        }
+    }
+
+    public onExport() {
+        this.filtersCount = 0;
+        const filters = this.filtersForm.value;
+        const options: any = {};
+
+        if (this.selectedRows && this.selectedRows.length > 0) {
+            options.ids = this.selectedRows.map(row => row.id);
+        }
+        else {
+            if (filters.textSearch) {
+                options.textSearch = filters.textSearch;
+            }
+            if (filters.schemas && filters.schemas.length > 0) {
+                options.schemas = filters.schemas;
+                this.filtersCount++;
+            }
+            if (filters.owners && filters.owners.length > 0) {
+                options.owners = filters.owners;
+                this.filtersCount++;
+            }
+            if (filters.tokens && filters.tokens.length > 0) {
+                options.tokens = filters.tokens;
+                this.filtersCount++;
+            }
+            if (filters.related && filters.related.length > 0) {
+                options.related = filters.related;
+                this.filtersCount++;
+            }
+        }
+
+        this.loading = true;
+        this.policyEngineService
+            .exportDocuments(
+                this.currentPolicy.id,
+                options,
+            )
+            .subscribe({
+                next: (response) => {
+                    if (response) {
+                        console.log(response.body);
+                        
+                        this.downloadObjectAsJson(response.body, 'report');
+                    }
+            
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                },
+                error: (e) => {
+                    this.loading = false;
+                    console.error(e);
+                }
+            });
+    }
+
+    private downloadObjectAsJson(csvContent: string, exportName: string) {
+        const data = csvContent;
+    
+        const blob = new Blob([data], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', exportName + '.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     }
 }
