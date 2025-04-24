@@ -685,6 +685,12 @@ export class EntityApi extends ApiClient {
         example: '0.0.1960',
         required: false,
     })
+    @ApiQuery({
+        name: 'topicId',
+        description: 'Topic identifier',
+        example: '0.0.1960',
+        required: false,
+    })
     @HttpCode(HttpStatus.OK)
     async getTokens(
         @Query('pageIndex') pageIndex?: number,
@@ -693,6 +699,7 @@ export class EntityApi extends ApiClient {
         @Query('orderDir') orderDir?: string,
         @Query('tokenId') tokenId?: string,
         @Query('treasury') treasury?: string,
+        @Query('topicId') topicId?: string,
     ) {
         return await this.send(IndexerMessageAPI.GET_TOKENS, {
             pageIndex,
@@ -701,6 +708,7 @@ export class EntityApi extends ApiClient {
             orderDir,
             tokenId,
             treasury,
+            topicId,
         });
     }
 
