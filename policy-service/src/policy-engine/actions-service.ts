@@ -25,7 +25,7 @@ export class PolicyActionsService {
     public async init(): Promise<void> {
         console.debug('--- PolicyActionsService init')
         const topicConfig = await DatabaseServer.getTopicById(this.topicId);
-        this.topic = await TopicConfig.fromObjectV2(topicConfig);
+        this.topic = await TopicConfig.fromObject(topicConfig);
         if (!this.topic) {
             throw Error('Invalid action topic');
         }
