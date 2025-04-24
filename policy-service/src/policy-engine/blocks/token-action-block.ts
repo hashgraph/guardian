@@ -96,34 +96,35 @@ export class TokenActionBlock {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
 
-        await PolicyUtils.checkAccountId(account, event.user.id);
-
         const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
         const ownerCredentials = await policyOwner.loadHederaCredentials(ref);
+        const userId = policyOwner.userId;
+
+        await PolicyUtils.checkAccountId(account, userId);
 
         switch (ref.options.action) {
             case 'associate': {
-                await PolicyUtils.associate(ref, token, account, event.user.id);
+                await PolicyUtils.associate(ref, token, account, userId);
                 break;
             }
             case 'dissociate': {
-                await PolicyUtils.dissociate(ref, token, account, event.user.id);
+                await PolicyUtils.dissociate(ref, token, account, userId);
                 break;
             }
             case 'freeze': {
-                await PolicyUtils.freeze(ref, token, account, ownerCredentials, event.user.id);
+                await PolicyUtils.freeze(ref, token, account, ownerCredentials, userId);
                 break;
             }
             case 'unfreeze': {
-                await PolicyUtils.unfreeze(ref, token, account, ownerCredentials, event.user.id);
+                await PolicyUtils.unfreeze(ref, token, account, ownerCredentials, userId);
                 break;
             }
             case 'grantKyc': {
-                await PolicyUtils.grantKyc(ref, token, account, ownerCredentials, event.user.id);
+                await PolicyUtils.grantKyc(ref, token, account, ownerCredentials, userId);
                 break;
             }
             case 'revokeKyc': {
-                await PolicyUtils.revokeKyc(ref, token, account, ownerCredentials, event.user.id);
+                await PolicyUtils.revokeKyc(ref, token, account, ownerCredentials, userId);
                 break;
             }
             default:

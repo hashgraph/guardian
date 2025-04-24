@@ -7,7 +7,7 @@ import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { Token as TokenCollection } from '@guardian/common';
 import { BlockActionError } from '../errors/index.js';
-import { PolicyUser } from '../policy-user.js';
+import {PolicyUser, UserCredentials} from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
@@ -114,6 +114,9 @@ export class TokenConfirmationBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`setData`);
 
+        const credentials = await UserCredentials.create(ref, user.did);
+        const userId = credentials.userId;
+
         if (!data) {
             throw new BlockActionError(`Data is unknown`, ref.blockType, ref.uuid)
         }
@@ -128,7 +131,7 @@ export class TokenConfirmationBlock {
         }
 
         if (data.action === 'confirm') {
-            await this.confirm(ref, data, blockState, user.id);
+            await this.confirm(ref, data, blockState, userId);
         }
 
         ref.triggerEvents(PolicyOutputEventType.Confirm, blockState.user, blockState.data);
