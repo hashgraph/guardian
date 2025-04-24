@@ -154,7 +154,7 @@
 
             <ng-container *ngIf="helpText; else notHelpText">
                 <div class="checkbox-field-container">
-                    <p-checkbox [formControl]="field.controlBold"></p-checkbox>
+                    <p-checkbox binary="true" [formControl]="field.controlBold"></p-checkbox>
                     <label class="checkbox-label">Bold</label>
                 </div>
 

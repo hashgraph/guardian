@@ -1,4 +1,4 @@
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { Component, ElementRef, HostListener, Input, OnInit } from '@angular/core';
 import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -8,6 +8,11 @@ import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialo
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { DatePipe } from '@angular/common';
+import { ContractType } from '@guardian/interfaces';
+import { forkJoin, Observable } from 'rxjs';
+import { AnalyticsService } from 'src/app/services/analytics.service';
+import { ContractService } from 'src/app/services/contract.service';
 
 /**
  * Dashboard Type
@@ -221,6 +226,13 @@ export class MessagesReportBlockComponent implements OnInit {
     });
     public readonly: boolean = false;
 
+    gridSize: number = 0;
+    mintTokenId: string;
+    mintTokenSerials: string[] = [];
+    groupedByContractRetirements: any = [];
+    indexerAvailable: boolean = false;
+    retirementMessages: any[] = [];
+
     constructor(
         private element: ElementRef,
         private fb: UntypedFormBuilder,
@@ -228,7 +240,10 @@ export class MessagesReportBlockComponent implements OnInit {
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
         private dialogService: DialogService,
-        private sanitizer: DomSanitizer
+        private sanitizer: DomSanitizer,
+        private contractService: ContractService,
+        private analyticsService: AnalyticsService,
+        private datePipe: DatePipe
     ) {
     }
 
@@ -323,6 +338,7 @@ export class MessagesReportBlockComponent implements OnInit {
             if (this.report) {
                 this.createReport(this.report);
                 this.createSmallReport();
+                this.loadRetirementMessages();
             }
         }
         this.removeLines();
@@ -348,14 +364,15 @@ export class MessagesReportBlockComponent implements OnInit {
                 this._messages2.push(message);
             }
         }
-        let gridSize = 0;
+
+        this.gridSize = 0;
         this._messages2.sort((a, b) => a.__order > b.__order ? 1 : -1);
         for (let index = 0; index < this._messages2.length; index++) {
             const message = this._messages2[index];
             message.__order = index + 1;
-            gridSize = Math.max(gridSize, message.__order);
+            this.gridSize = Math.max(this.gridSize, message.__order);
         }
-        this._gridTemplateColumns2 = 'repeat(' + gridSize + ', 230px)';
+        this._gridTemplateColumns2 = 'repeat(' + this.gridSize + ', 230px)';
         this._gridTemplateRows2 = 'repeat(' + this._topics2.length + ', 100px) 30px';
     }
 
@@ -401,7 +418,7 @@ export class MessagesReportBlockComponent implements OnInit {
     }
 
     private parseMessages() {
-        let gridSize = 0;
+        this.gridSize = 0;
         for (const topic of this._topics1) {
             if (topic.message) {
                 this.parseMessage(topic, topic.message);
@@ -409,7 +426,7 @@ export class MessagesReportBlockComponent implements OnInit {
             for (const message of topic.messages) {
                 this.parseMessage(topic, message);
                 this._messages1.push(message);
-                gridSize = Math.max(gridSize, message.__order);
+                this.gridSize = Math.max(this.gridSize, message.__order);
             }
             if (topic.__parent) {
                 topic.__start = 100 * topic.__parent.__order;
@@ -432,7 +449,7 @@ export class MessagesReportBlockComponent implements OnInit {
                 topic.message.__rationale = topic.__rationale;
             }
         }
-        this._gridTemplateColumns1 = 'repeat(' + gridSize + ', 230px)';
+        this._gridTemplateColumns1 = 'repeat(' + this.gridSize + ', 230px)';
         this._gridTemplateRows1 = 'repeat(' + this._topics1.length + ', 100px) 30px';
     }
 
@@ -918,5 +935,89 @@ export class MessagesReportBlockComponent implements OnInit {
             const height = window.innerHeight - box.top - 5;
             container.style.height = height + 'px';
         }
+    }
+
+    private loadRetirementMessages() {
+        this._messages2.forEach(message => {
+            if (message.__ifMintMessage) {
+                this.mintTokenId = message.__tokenId;
+            }
+        });
+
+        this.contractService
+            .getContracts({
+                type: ContractType.RETIRE
+            })
+            .subscribe(
+                (policiesResponse) => {
+                    const contracts = policiesResponse.body || [];
+                    const tokenContractTopicIds: string[] = [];
+
+                    if (contracts && contracts.length > 0) {
+                        contracts.forEach(contract => {
+                            if (contract.wipeTokenIds && contract.wipeTokenIds.length > 0 &&
+                                contract.wipeTokenIds.some((tokenId: string) => tokenId == this.mintTokenId)) {
+                                tokenContractTopicIds.push(contract.topicId);
+                            }
+                        });
+                    }
+
+                    this.analyticsService.checkIndexer().subscribe(indexerAvailable => {
+                        this.indexerAvailable = indexerAvailable;
+                        if (indexerAvailable && tokenContractTopicIds.length > 0) {
+                            const indexerCalls: Observable<HttpResponse<any>>[] = [];
+                            tokenContractTopicIds.forEach(id => {
+                                indexerCalls.push(this.contractService.getRetireVCsFromIndexer(id))
+                            })
+
+                            this.loading = true;
+                            forkJoin(indexerCalls).subscribe((results: any) => {
+                                this.loading = false;
+                                const retires = results.map((item: any) => item.body)
+
+                                let allRetireMessages: any = [];
+                                retires.forEach((retirements: any[]) => {
+                                    retirements.forEach((item: any) => {
+                                        if (item.documents[0].credentialSubject[0].tokens.some((token: any) => token.tokenId === this.mintTokenId)) {
+                                            item.id = item.consensusTimestamp;
+                                            item.__ifRetireMessage = true;
+                                            item.__timestamp = this.datePipe.transform(new Date(item.documents[0].issuanceDate), 'yyyy-MM-dd, hh:mm:ss');
+                                            allRetireMessages.push(item);
+                                        }
+                                    });
+                                });
+
+                                allRetireMessages.sort((a: any, b: any) => new Date(a.documents[0].issuanceDate).getTime() - new Date(b.documents[0].issuanceDate).getTime());
+
+                                // For different topics different ordering
+                                let lastOrderMessageTopic1 = this._topics1?.[this._topics1.length - 1]?.messages.reduce((acc: number, item: any) => item.__order > acc ? item.__order : acc, 0) + 1;
+                                allRetireMessages.forEach((element: any) => {
+                                    var newElement = { ...element, __order: lastOrderMessageTopic1 }
+                                    this._messages1.push(newElement);
+                                    this._topics1[this._topics1.length - 1].messages.push(newElement);
+
+                                    lastOrderMessageTopic1++;
+                                });
+                                let lastOrderMessageTopic2 = this._topics2?.[0]?.messages.reduce((acc: number, item: any) => item.__order > acc ? item.__order : acc, 0) + 1;
+                                allRetireMessages.forEach((element: any) => {
+                                    var newElement = { ...element, __order: lastOrderMessageTopic2 }
+                                    this._messages2.push(newElement);
+                                    this._topics2[0].messages.push(newElement);
+                                    lastOrderMessageTopic2++;
+                                });
+
+                                // Todo: Need filtration by serials and token user
+                                this.retirementMessages = [...allRetireMessages];
+
+                                this._gridTemplateColumns1 = 'repeat(' + (this.gridSize + this.retirementMessages.length + 1) + ', 230px)';
+                                this._gridTemplateColumns2 = 'repeat(' + (this.gridSize + this.retirementMessages.length) + ', 230px)';
+                            })
+                        }
+                    })
+                },
+                (e) => {
+                    this.loading = false;
+                }
+            );
     }
 }
