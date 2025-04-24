@@ -60,7 +60,6 @@ export abstract class CollectionBackup<T extends RestoreEntity> {
         oldCollectionDiff: ICollectionDiff<T>,
         lastUpdate: Date
     ): Promise<DiffResult<T>> {
-        console.debug('---- createCollectionDiff')
         const backup = oldCollectionDiff?.actions || [];
 
         const rows = this.findDocuments(lastUpdate);

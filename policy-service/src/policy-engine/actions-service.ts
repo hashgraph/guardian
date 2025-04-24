@@ -31,7 +31,7 @@ export class PolicyActionsService {
         }
 
         this.topicListener = new TopicListener(this.topicId);
-        this.topicListener.setListenerName(this.policyId);
+        this.topicListener.setListenerName(`policy_actions_${this.policyId}`);
         await this.topicListener.subscribe(this.loadTask.bind(this));
     }
 
@@ -87,7 +87,6 @@ export class PolicyActionsService {
         try {
             const message = PolicyActionMessage.from(data);
 
-            console.debug('---- 1', message);
             switch (message.action) {
                 case MessageAction.CreatePolicyAction: {
                     const row = await this.savePolicyAction(message, PolicyActionType.NEW);
@@ -146,11 +145,14 @@ export class PolicyActionsService {
 
     private async savePolicyAction(message: PolicyActionMessage, status: PolicyActionType) {
         const collection = new DataBaseHelper(PolicyActions);
+        console.debug('--- savePolicyAction --');
         let document: any;
         try {
+            console.debug('--- loadDocument --');
             await MessageServer.loadDocument(message);
             document = message.getDocument();
         } catch (error) {
+            console.debug('--- error --', error);
             document = null;
         }
         let row = await collection.findOne({ messageId: message.id });
@@ -190,31 +192,34 @@ export class PolicyActionsService {
 
     private async createPolicyAction(row: PolicyActions) {
         try {
-            const result = await this.executeAction(row);
+            console.debug('---- 1', row);
+            if (!row || !row.document) {
+                throw new Error('Invalid document');
+            }
+
+            // User
+            const policyUser = await PolicyComponentsUtils.GetPolicyUserByAccount(row.accountId, this.policyInstance);
+            if (!policyUser) {
+                console.debug('---- 2', row);
+                return;
+            }
+
+            // Available
+            const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(this.policyId, row.blockTag);
+            const error = await PolicyComponentsUtils.isAvailableSetData(block, policyUser);
+            if (error) {
+                console.debug('---- 3', row);
+                return;
+            }
+
+            const result = await block.setData(policyUser, row.document);
+
+            console.debug('---- 4', row);
             await this.sentCompleteMessage(row, result);
         } catch (error) {
+            console.debug('---- 7', error);
             await this.sentErrorMessage(row, error);
         }
-    }
-
-    private async executeAction(row: PolicyActions) {
-        if (!row || !row.document) {
-            throw new Error('Invalid document');
-        }
-
-        const policyUser = await PolicyComponentsUtils.GetPolicyUserByAccount(row.accountId, this.policyInstance);
-        const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(this.policyId, row.blockTag);
-
-        // <-- Available
-        const error = await PolicyComponentsUtils.isAvailableSetData(block, policyUser);
-        if (error) {
-            throw error;
-        }
-        // Available -->
-
-        const result = await PolicyComponentsUtils.blockSetData(block, policyUser, row.document);
-
-        return result;
     }
 
     private async sentCompleteMessage(row: PolicyActions, result: any) {

@@ -52,15 +52,20 @@ export class ListenerService extends NatsService {
     }
 
     public async addListener(options: IListenerOptions): Promise<string> {
-        let index = -1;
-        if (options.index !== undefined && isFinite(options.index) && options.index > -1) {
-            index = options.index;
+        let index: number | null = null;
+        if (options.index !== undefined && isFinite(options.index) && options.index > -2) {
+            index = Number(options.index);
         }
         if (options.name && this.map.has(options.name)) {
             const listener = this.map.get(options.name);
-            await listener.restart(index);
+            if (index !== null) {
+                await listener.restart(index);
+            }
             return listener.name;
         } else {
+            if (index === null) {
+                index = -1;
+            }
             const dataBaseServer = new DatabaseServer();
             const row = await dataBaseServer.save(ListenerCollection,
                 dataBaseServer.create(

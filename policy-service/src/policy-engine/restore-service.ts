@@ -179,7 +179,7 @@ export class PolicyRestoreService {
         await this.controller.init();
 
         this.topicListener = new TopicListener(this.topicId);
-        this.topicListener.setListenerName(this.policyId);
+        this.topicListener.setListenerName(`policy_restore_${this.policyId}`);
         await this.topicListener.subscribe(this.task.bind(this));
     }
 
