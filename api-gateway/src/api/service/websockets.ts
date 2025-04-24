@@ -417,7 +417,6 @@ export class WebSocketsService {
             ws.on('close', () => {
                 this.clients.delete(clientId);
             });
-            ws.user = await this.getUserByUrl(req.url);
         });
     }
 
@@ -518,25 +517,6 @@ export class WebSocketsService {
             ws.send(JSON.stringify(message));
         } catch (error) {
             this.logger.error(error, ['API_GATEWAY', 'websocket', 'send']);
-        }
-    }
-
-    /**
-     * Get User by url
-     * @param url
-     * @private
-     */
-    private async getUserByUrl(url: string): Promise<any> {
-        try {
-            const params = url.split('?')[1];
-            const token = new URLSearchParams(params).get('token');
-            if (token) {
-                return await new Users().getUserByToken(token);
-            }
-            return null;
-        } catch (error) {
-            await this.logger.warn(error.message || error, ['API_GATEWAY']);
-            return null;
         }
     }
 
