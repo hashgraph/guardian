@@ -642,7 +642,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         policyId: string
     ) {
-        return await this.sendMessage(PolicyEngineEvents.CREATE_SAVEPOINT, {model, owner, policyId});
+        return await this.sendMessage(PolicyEngineEvents.CREATE_SAVEPOINT, { model, owner, policyId });
     }
 
     /**
@@ -656,7 +656,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         policyId: string
     ) {
-        return await this.sendMessage(PolicyEngineEvents.DELETE_SAVEPOINT, {model, owner, policyId});
+        return await this.sendMessage(PolicyEngineEvents.DELETE_SAVEPOINT, { model, owner, policyId });
     }
 
     /**
@@ -670,7 +670,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         policyId: string
     ) {
-        return await this.sendMessage(PolicyEngineEvents.RESTORE_SAVEPOINT, {model, owner, policyId});
+        return await this.sendMessage(PolicyEngineEvents.RESTORE_SAVEPOINT, { model, owner, policyId });
     }
 
     /**
@@ -682,7 +682,7 @@ export class PolicyEngine extends NatsService {
         owner: IOwner,
         policyId: string
     ) {
-        return await this.sendMessage(PolicyEngineEvents.GET_SAVEPOINT, {owner, policyId});
+        return await this.sendMessage(PolicyEngineEvents.GET_SAVEPOINT, { owner, policyId });
     }
 
     /**
@@ -1030,5 +1030,49 @@ export class PolicyEngine extends NatsService {
             testId,
             owner
         });
+    }
+
+    /**
+     * Get policies
+     * @param filters
+     * @param owner
+     */
+    public async getRemoteRequests<T extends {
+        /**
+         * Policies array
+         */
+        items: any[],
+        /**
+         * Total count
+         */
+        count: number
+    }>(options: any, user: IAuthUser): Promise<T> {
+        return await this.sendMessage<T>(PolicyEngineEvents.GET_REMOTE_REQUESTS, { options, user });
+    }
+
+    /**
+     * Approve remote request
+     * @param policyId
+     * @param messageId
+     * @param user
+     */
+    public async approveRemoteRequest(
+        messageId: string,
+        user: IAuthUser
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.APPROVE_REMOTE_REQUEST, { messageId, user });
+    }
+
+    /**
+     * Reject remote request
+     * @param policyId
+     * @param messageId
+     * @param user
+    */
+    public async rejectRemoteRequest(
+        messageId: string,
+        user: IAuthUser
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.REJECT_REMOTE_REQUEST, { messageId, user });
     }
 }

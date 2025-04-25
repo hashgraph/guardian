@@ -49,7 +49,8 @@ import {
     VcDocument as VcDocumentCollection,
     VpDocument,
     VpDocument as VpDocumentCollection,
-    ExternalPolicy
+    ExternalPolicy,
+    PolicyActions
 } from '../entity/index.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { Theme } from '../entity/theme.js';
@@ -4388,5 +4389,39 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async getMintRequests(filters: FilterObject<MintRequest>): Promise<MintRequest[]> {
         return await this.find(MintRequest, filters);
+    }
+
+    /**
+     * Get remote requests
+     * @param filters
+     */
+    public static async getRemoteRequest(filters: FilterQuery<PolicyActions>): Promise<PolicyActions | null> {
+        return await new DataBaseHelper(PolicyActions).findOne(filters);
+    }
+
+    /**
+     * Get remote request by ID
+     * @param id
+     */
+    public static async getRemoteRequestId(messageId: string | null): Promise<PolicyActions | null> {
+        return await new DataBaseHelper(PolicyActions).findOne({ messageId });
+    }
+
+    /**
+     * Get remote requests
+     * @param filters
+     * @param options
+     */
+    public static async getRemoteRequests(filters?: FilterQuery<PolicyActions>, options?: unknown): Promise<PolicyActions[]> {
+        return await new DataBaseHelper(PolicyActions).find(filters, options);
+    }
+
+    /**
+     * Get remote requests
+     * @param filters
+     * @param options
+     */
+    public static async getRemoteRequestsAndCount(filters?: FilterObject<PolicyActions>, options?: FindOptions<unknown>): Promise<[PolicyActions[], number]> {
+        return await new DataBaseHelper(PolicyActions).findAndCount(filters, options);
     }
 }

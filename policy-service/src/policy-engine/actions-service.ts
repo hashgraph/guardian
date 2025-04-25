@@ -1,9 +1,10 @@
 import { DataBaseHelper, DatabaseServer, ITopicMessage, MessageAction, MessageServer, Policy, PolicyActionMessage, PolicyActions, TopicConfig, TopicListener } from "@guardian/common";
-import { GenerateUUIDv4, PolicyActionType, PolicyStatus } from "@guardian/interfaces";
-import { IPolicyInterfaceBlock } from "./policy-engine.interface.js";
+import { GenerateUUIDv4, PolicyActionStatus, PolicyActionType, PolicyStatus } from "@guardian/interfaces";
+import { AnyBlockType, IPolicyInterfaceBlock } from "./policy-engine.interface.js";
 import { PolicyUser } from "./policy-user.js";
 import { PolicyUtils } from "./helpers/utils.js";
 import { PolicyComponentsUtils } from "./policy-components-utils.js";
+import { PolicyActionsUtils } from "./helpers/policy-actions-utils.js";
 
 export class PolicyActionsService {
     private readonly topicId: string;
@@ -13,6 +14,8 @@ export class PolicyActionsService {
     private readonly policyOwner: string;
     private topic: TopicConfig;
     private topicListener: TopicListener;
+    private readonly callback: Map<string, Function>;
+
 
     constructor(policyId: string, policyInstance: IPolicyInterfaceBlock, policy: Policy) {
         this.policyId = policyId;
@@ -20,6 +23,7 @@ export class PolicyActionsService {
         this.isLocal = policy.status !== PolicyStatus.VIEW;
         this.policyInstance = policyInstance;
         this.policyOwner = policy.owner;
+        this.callback = new Map<string, Function>();
     }
 
     public async init(): Promise<void> {
@@ -50,11 +54,12 @@ export class PolicyActionsService {
         );
         const row: any = {
             uuid: GenerateUUIDv4(),
+            type: PolicyActionType.ACTION,
             owner: user.did,
             creator: user.did,
             topicId: this.topicId,
             policyId: this.policyId,
-            status: 'NEW',
+            status: PolicyActionStatus.NEW,
             accountId: userHederaCred.hederaAccountId,
             blockTag: block.tag,
             messageId: null,
@@ -71,15 +76,113 @@ export class PolicyActionsService {
         row.messageId = messageResult.getId();
         row.startMessageId = messageResult.getId();
         const collection = new DataBaseHelper(PolicyActions);
-        await collection.insertOrUpdate([row], 'messageId');
+        const newRow = collection.create(row);
+        await collection.insertOrUpdate([newRow], 'messageId');
     }
 
     public async sendRemoteRequest(
-        block: IPolicyInterfaceBlock,
-        user: PolicyUser,
-        data: any
+        block: AnyBlockType,
+        data: any,
+        callback: (action: PolicyActions) => Promise<void>
     ): Promise<any> {
+        const root = await PolicyUtils.getUserCredentials(this.policyInstance, this.policyOwner);
+        const userHederaCred = await root.loadHederaCredentials(this.policyInstance);
+        const signOptions = await root.loadSignOptions(this.policyInstance);
+        const messageServer = new MessageServer(
+            userHederaCred.hederaAccountId,
+            userHederaCred.hederaAccountKey,
+            signOptions
+        );
+        const collection = new DataBaseHelper(PolicyActions);
+        const newRow = collection.create({
+            status: PolicyActionStatus.NEW,
+            type: PolicyActionType.REQUEST,
+            uuid: data.uuid,
+            owner: data.owner,
+            creator: data.owner,
+            accountId: data.accountId,
+            blockTag: data.blockTag,
+            topicId: data.topicId,
+            policyId: this.policyId,
+            document: data.document,
+            messageId: null,
+            startMessageId: null,
+            index: null
+        });
 
+        const message = new PolicyActionMessage(MessageAction.CreatePolicyRequest);
+        message.setDocument(newRow, newRow.document);
+
+        const messageResult = await messageServer
+            .setTopicObject(this.topic)
+            .sendMessage(message, true);
+
+        newRow.messageId = messageResult.getId();
+
+        this.callback.set(newRow.messageId, callback);
+
+        await collection.insertOrUpdate([newRow], 'messageId');
+    }
+
+    public async executeRemoteRequest(messageId: string, user: PolicyUser) {
+        const collection = new DataBaseHelper(PolicyActions);
+
+        const cred = await PolicyUtils.getUserCredentials(this.policyInstance, user.did);
+        const row = await collection.findOne({
+            messageId,
+            accountId: cred.hederaAccountId,
+            type: PolicyActionType.REQUEST
+        });
+
+        if (!row) {
+            throw new Error('Request not found');
+        }
+
+        const data = await PolicyActionsUtils.executeAction(row, user);
+
+        const userCred = await PolicyUtils.getUserCredentials(this.policyInstance, user.did);
+        const userHederaCred = await userCred.loadHederaCredentials(this.policyInstance);
+        const signOptions = await userCred.loadSignOptions(this.policyInstance);
+        const messageServer = new MessageServer(
+            userHederaCred.hederaAccountId,
+            userHederaCred.hederaAccountKey,
+            signOptions
+        );
+
+        const newRow = collection.create({
+            status: PolicyActionStatus.COMPLETED,
+            type: row.type,
+            uuid: row.uuid,
+            owner: row.owner,
+            creator: row.owner,
+            accountId: userHederaCred.hederaAccountId,
+            blockTag: row.blockTag,
+            messageId: null,
+            startMessageId: row.messageId,
+            topicId: this.topicId,
+            index: null,
+            policyId: this.policyId,
+            document: data
+        });
+
+        const message = new PolicyActionMessage(MessageAction.UpdatePolicyRequest);
+        message.setDocument(newRow, newRow.document);
+
+        const messageResult = await messageServer
+            .setTopicObject(this.topic)
+            .sendMessage(message, true);
+        row.messageId = messageResult.getId();
+
+        await collection.insertOrUpdate([newRow], 'messageId');
+
+        return newRow;
+    }
+
+    public async rejectRemoteRequest(row: PolicyActions, user: PolicyUser) {
+        const collection = new DataBaseHelper(PolicyActions);
+        row.status = PolicyActionStatus.REJECT;
+        await collection.insertOrUpdate([row], 'messageId');
+        return row;
     }
 
     private async loadTask(data: ITopicMessage): Promise<boolean> {
@@ -89,7 +192,7 @@ export class PolicyActionsService {
 
             switch (message.action) {
                 case MessageAction.CreatePolicyAction: {
-                    const row = await this.savePolicyAction(message, PolicyActionType.NEW);
+                    const row = await this.savePolicyAction(message, PolicyActionType.ACTION, PolicyActionStatus.NEW);
                     if (this.isLocal) {
                         await this.createPolicyAction(row);
                     } else {
@@ -98,35 +201,37 @@ export class PolicyActionsService {
                     break;
                 }
                 case MessageAction.UpdatePolicyAction: {
-                    const row = await this.savePolicyAction(message, PolicyActionType.COMPLETED);
+                    const row = await this.savePolicyAction(message, PolicyActionType.ACTION, PolicyActionStatus.COMPLETED);
                     if (!this.isLocal) {
                         await this.sentNotification(row);
                     }
                     break;
                 }
                 case MessageAction.ErrorPolicyAction: {
-                    const row = await this.savePolicyAction(message, PolicyActionType.ERROR);
+                    const row = await this.savePolicyAction(message, PolicyActionType.ACTION, PolicyActionStatus.ERROR);
                     if (!this.isLocal) {
                         await this.sentNotification(row);
                     }
                     break;
                 }
                 case MessageAction.CreatePolicyRequest: {
-                    const row = await this.savePolicyAction(message, PolicyActionType.NEW);
+                    const row = await this.savePolicyAction(message, PolicyActionType.REQUEST, PolicyActionStatus.NEW);
                     if (!this.isLocal) {
                         await this.sentNotification(row);
                     }
                     break;
                 }
                 case MessageAction.UpdatePolicyRequest: {
-                    const row = await this.savePolicyAction(message, PolicyActionType.COMPLETED);
-                    if (!this.isLocal) {
+                    const row = await this.savePolicyAction(message, PolicyActionType.REQUEST, PolicyActionStatus.COMPLETED);
+                    if (this.isLocal) {
+                        await this.completePolicyRequest(row);
+                    } else {
                         await this.sentNotification(row);
                     }
                     break;
                 }
                 case MessageAction.ErrorPolicyRequest: {
-                    const row = await this.savePolicyAction(message, PolicyActionType.ERROR);
+                    const row = await this.savePolicyAction(message, PolicyActionType.REQUEST, PolicyActionStatus.ERROR);
                     if (!this.isLocal) {
                         await this.sentNotification(row);
                     }
@@ -143,7 +248,7 @@ export class PolicyActionsService {
         return true;
     }
 
-    private async savePolicyAction(message: PolicyActionMessage, status: PolicyActionType) {
+    private async savePolicyAction(message: PolicyActionMessage, type: PolicyActionType, status: PolicyActionStatus) {
         const collection = new DataBaseHelper(PolicyActions);
         console.debug('--- savePolicyAction --');
         let document: any;
@@ -159,6 +264,7 @@ export class PolicyActionsService {
         if (!row) {
             row = collection.create({
                 status,
+                type,
                 uuid: message.uuid,
                 owner: message.owner,
                 creator: message.owner,
@@ -171,8 +277,9 @@ export class PolicyActionsService {
                 policyId: this.policyId,
                 document
             });
-            await collection.save(row);
+            await collection.insertOrUpdate([row], 'messageId');
         } else {
+            row.type = type;
             row.uuid = message.uuid;
             row.owner = message.owner;
             row.creator = message.owner;
@@ -185,7 +292,7 @@ export class PolicyActionsService {
             row.policyId = this.policyId;
             row.status = status;
             row.document = document;
-            await collection.update(row);
+            await collection.insertOrUpdate([row], 'messageId');
         }
         return row;
     }
@@ -234,7 +341,8 @@ export class PolicyActionsService {
             );
             const collection = new DataBaseHelper(PolicyActions);
             const newRow = collection.create({
-                status: PolicyActionType.COMPLETED,
+                status: PolicyActionStatus.COMPLETED,
+                type: row.type,
                 uuid: row.uuid,
                 owner: row.owner,
                 creator: row.owner,
@@ -256,7 +364,7 @@ export class PolicyActionsService {
                 .sendMessage(message, true);
             row.messageId = messageResult.getId();
 
-            await collection.save(newRow);
+            await collection.insertOrUpdate([newRow], 'messageId');
         } catch (error) {
             console.error(error);
         }
@@ -280,7 +388,8 @@ export class PolicyActionsService {
             );
             const collection = new DataBaseHelper(PolicyActions);
             const newRow = collection.create({
-                status: PolicyActionType.ERROR,
+                type: row.type,
+                status: PolicyActionStatus.ERROR,
                 uuid: row.uuid,
                 owner: row.owner,
                 creator: row.owner,
@@ -302,7 +411,7 @@ export class PolicyActionsService {
                 .sendMessage(message, true);
             row.messageId = messageResult.getId();
 
-            await collection.save(newRow);
+            await collection.insertOrUpdate([newRow], 'messageId');
         } catch (error) {
             console.error(error);
         }
@@ -310,5 +419,17 @@ export class PolicyActionsService {
 
     private async sentNotification(row: PolicyActions) {
         console.debug('- update');
+    }
+
+    private async completePolicyRequest(row: PolicyActions) {
+        const collection = new DataBaseHelper(PolicyActions);
+        const request = await collection.findOne({ messageId: row.startMessageId });
+        if (request && request.accountId === row.accountId) {
+            const callback = this.callback.get(request.messageId);
+            if (callback) {
+                this.callback.delete(request.messageId)
+                await callback(row);
+            }
+        }
     }
 }

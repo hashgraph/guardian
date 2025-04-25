@@ -2,8 +2,8 @@ import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, PolicyLabelDocumentDTO, PolicyLabelDTO, PolicyLabelRelationshipsDTO, VcDocumentDTO, pageHeader, PolicyLabelDocumentRelationshipsDTO, PolicyLabelComponentsDTO, PolicyLabelFiltersDTO, TaskDTO, ExternalPolicyDTO, ImportMessageDTO, PolicyPreviewDTO } from '#middlewares';
-import { Guardians, InternalException, EntityOwner, TaskManager, ServiceError } from '#helpers';
+import { Examples, InternalServerErrorDTO, pageHeader, TaskDTO, ExternalPolicyDTO, ImportMessageDTO, PolicyPreviewDTO, PolicyDTO } from '#middlewares';
+import { Guardians, InternalException, EntityOwner, TaskManager, ServiceError, PolicyEngine } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 
 @Controller('external-policies')
@@ -365,6 +365,165 @@ export class ExternalPoliciesApi {
                 throw new HttpException('Item not found.', HttpStatus.NOT_FOUND);
             }
             return await guardians.rejectExternalPolicy(messageId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Return a list of all policies V2 05.06.2024
+     */
+    @Get('/requests')
+    @Auth(
+        Permissions.POLICIES_POLICY_READ,
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Return a list of all policies.',
+        description: 'Returns all policies.',
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: PolicyDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getRemoteRequests(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+    ): Promise<any> {
+        try {
+            const options: any = {
+                filters: {},
+                pageIndex,
+                pageSize
+            };
+            const engineService = new PolicyEngine();
+            const { items, count } = await engineService.getRemoteRequests(options, user);
+            return res.header('X-Total-Count', count).send(items);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Update schema rule
+     */
+    @Put('/requests/:messageId/approve')
+    @Auth(
+        Permissions.POLICIES_POLICY_READ,
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Updates schema rule.',
+        description: 'Updates schema rule configuration for the specified rule ID.',
+    })
+    @ApiParam({
+        name: 'messageId',
+        type: 'string',
+        required: true,
+        description: 'Schema Rule Identifier',
+        example: Examples.MESSAGE_ID,
+    })
+    @ApiBody({
+        description: 'Object that contains a configuration.',
+        required: true,
+        type: PolicyDTO
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: PolicyDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async approveRemoteRequest(
+        @AuthUser() user: IAuthUser,
+        @Param('messageId') messageId: string
+    ): Promise<PolicyDTO> {
+        try {
+            if (!messageId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const engineService = new PolicyEngine();
+            return await engineService.approveRemoteRequest(messageId, user);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Update schema rule
+     */
+    @Put('/requests/:messageId/reject')
+    @Auth(
+        Permissions.POLICIES_POLICY_READ,
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Updates schema rule.',
+        description: 'Updates schema rule configuration for the specified rule ID.',
+    })
+    @ApiParam({
+        name: 'messageId',
+        type: 'string',
+        required: true,
+        description: 'Schema Rule Identifier',
+        example: Examples.MESSAGE_ID,
+    })
+    @ApiBody({
+        description: 'Object that contains a configuration.',
+        required: true,
+        type: PolicyDTO
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: PolicyDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async rejectRemoteRequest(
+        @AuthUser() user: IAuthUser,
+        @Param('messageId') messageId: string
+    ): Promise<PolicyDTO> {
+        try {
+            if (!messageId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const engineService = new PolicyEngine();
+            return await engineService.rejectRemoteRequest(messageId, user);
         } catch (error) {
             await InternalException(error, this.logger);
         }

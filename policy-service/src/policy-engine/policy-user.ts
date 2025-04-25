@@ -230,6 +230,10 @@ export class UserCredentials {
      * Hedera account id
      */
     private _hederaAccountId: string;
+    /**
+     * User location
+     */
+    private _location: LocationType;
 
     public get did(): string {
         return this._did;
@@ -239,10 +243,15 @@ export class UserCredentials {
         return this._hederaAccountId;
     }
 
+    public get location(): LocationType {
+        return this._location;
+    }
+
     constructor(ref: AnyBlockType, userDid: string) {
         this._dryRun = !!ref.dryRun;
         this._did = userDid;
         this._owner = ref.policyOwner;
+        this._location = LocationType.LOCAL;
     }
 
     public async load(ref: AnyBlockType): Promise<UserCredentials> {
@@ -256,6 +265,7 @@ export class UserCredentials {
         if (!userFull) {
             throw new Error('Virtual User not found');
         }
+        this._location = userFull.location || LocationType.LOCAL;
         this._hederaAccountId = userFull.hederaAccountId;
         this._did = userFull.did;
         if (!this._did || !this._hederaAccountId) {

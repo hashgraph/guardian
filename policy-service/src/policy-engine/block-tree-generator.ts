@@ -137,15 +137,6 @@ export class BlockTreeGenerator extends NatsService {
             return new MessageResponse(result);
         });
 
-
-
-
-
-
-
-
-
-
         this.getPolicyMessages(PolicyEvents.GET_ROOT_BLOCK_DATA, policyId, async (msg: any) => {
             const { user } = msg;
 
@@ -285,6 +276,30 @@ export class BlockTreeGenerator extends NatsService {
             await DataBaseHelper.orm.em.fork().refresh(policy);
             return new MessageResponse(policy);
         });
+
+        this.getPolicyMessages(PolicyEvents.APPROVE_REMOTE_REQUEST, policyId, async (msg: any) => {
+            const { messageId, user } = msg;
+            try {
+                const userFull = await this.getUser(policyInstance, user);
+                const controller = PolicyComponentsUtils.getActionsController(policyId);
+                const row = await controller.executeRemoteRequest(messageId, userFull);
+                return new MessageResponse(row);
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
+
+        this.getPolicyMessages(PolicyEvents.REJECT_REMOTE_REQUEST, policyId, async (msg: any) => {
+            const { messageId, user } = msg;
+            try {
+                const userFull = await this.getUser(policyInstance, user);
+                const controller = PolicyComponentsUtils.getActionsController(policyId);
+                const row =  await controller.rejectRemoteRequest(messageId, userFull);
+                return new MessageResponse(row);
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
     }
 
     /**
@@ -350,8 +365,8 @@ export class BlockTreeGenerator extends NatsService {
      * Init restore
      */
     async initPolicyRestore(
-        policyId: string, 
-        policyInstance: IPolicyInterfaceBlock, 
+        policyId: string,
+        policyInstance: IPolicyInterfaceBlock,
         policy: Policy
     ): Promise<void> {
         try {
@@ -359,24 +374,24 @@ export class BlockTreeGenerator extends NatsService {
                 policy.status === PolicyStatus.PUBLISH &&
                 policy.availability === PolicyAvailability.PUBLIC
             ) {
-                if(policy.restoreTopicId) {
+                if (policy.restoreTopicId) {
                     const service = new PolicyBackupService(policyId, policy);
                     await service.init();
                     PolicyComponentsUtils.RegisterBackupService(policyId, service);
                 }
-                if(policy.actionsTopicId) {
+                if (policy.actionsTopicId) {
                     const service = new PolicyActionsService(policyId, policyInstance, policy);
                     await service.init();
                     PolicyComponentsUtils.RegisterActionsService(policyId, service);
                 }
             }
             if (policy.status === PolicyStatus.VIEW) {
-                if(policy.restoreTopicId) {
+                if (policy.restoreTopicId) {
                     const service = new PolicyRestoreService(policyId, policy);
                     await service.init();
                     PolicyComponentsUtils.RegisterRestoreService(policyId, service);
                 }
-                if(policy.actionsTopicId) {
+                if (policy.actionsTopicId) {
                     const service = new PolicyActionsService(policyId, policyInstance, policy);
                     await service.init();
                     PolicyComponentsUtils.RegisterActionsService(policyId, service);

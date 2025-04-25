@@ -25,7 +25,7 @@ import {
     VcHelper,
     XlsxToJson
 } from '@guardian/common';
-import { DocumentCategoryType, DocumentType, EntityOwner, ExternalMessageEvents, GenerateUUIDv4, IOwner, PolicyEngineEvents, PolicyEvents, PolicyHelper, PolicyTestStatus, PolicyStatus, Schema, SchemaField, TopicType, PolicyAvailability } from '@guardian/interfaces';
+import { DocumentCategoryType, DocumentType, EntityOwner, ExternalMessageEvents, GenerateUUIDv4, IOwner, PolicyEngineEvents, PolicyEvents, PolicyHelper, PolicyTestStatus, PolicyStatus, Schema, SchemaField, TopicType, PolicyAvailability, PolicyActionType } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { NatsConnection } from 'nats';
 import { HashComparator } from '../analytics/index.js';
@@ -2270,6 +2270,81 @@ export class PolicyEngineService {
                     return new MessageResponse(result);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+        //#endregion
+
+        //#region Requests
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_REMOTE_REQUESTS,
+            async (msg: { options: any, user: IAuthUser }) => {
+                try {
+                    const { options, user } = msg;
+                    const { filters, pageIndex, pageSize } = options;
+                    const _filters: any = { ...filters };
+
+                    _filters.accountId = user.hederaAccountId;
+                    //_filters.type = PolicyActionType.REQUEST;
+
+                    const otherOptions: any = {};
+                    const _pageSize = parseInt(pageSize, 10);
+                    const _pageIndex = parseInt(pageIndex, 10);
+                    if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                        otherOptions.orderBy = { createDate: 'DESC' };
+                        otherOptions.limit = _pageSize;
+                        otherOptions.offset = _pageIndex * _pageSize;
+                    } else {
+                        otherOptions.orderBy = { createDate: 'DESC' };
+                        otherOptions.limit = 100;
+                    }
+                    const [items, count] = await DatabaseServer.getRemoteRequestsAndCount(_filters, otherOptions);
+                    return new MessageResponse({ items, count });
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.APPROVE_REMOTE_REQUEST,
+            async (msg: { user: IAuthUser, messageId: string }) => {
+                try {
+                    const { messageId, user } = msg;
+
+                    const request = await DatabaseServer.getRemoteRequestId(messageId);
+                    if (request) {
+                        throw new Error(`Request is not fount`);
+                    }
+
+                    const model = await DatabaseServer.getPolicyById(request.policyId);
+                    if (model) {
+                        throw new Error(`Policy is not fount`);
+                    }
+
+                    const result = await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.APPROVE_REMOTE_REQUEST, request.policyId, { messageId, user }) as any;
+                    return new MessageResponse(result);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.REJECT_REMOTE_REQUEST,
+            async (msg: { user: IAuthUser, messageId: string }) => {
+                try {
+                    const { messageId, user } = msg;
+
+                    const request = await DatabaseServer.getRemoteRequestId(messageId);
+                    if (request) {
+                        throw new Error(`Request is not fount`);
+                    }
+
+                    const model = await DatabaseServer.getPolicyById(request.policyId);
+                    if (model) {
+                        throw new Error(`Policy is not fount`);
+                    }
+                    const result = await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.REJECT_REMOTE_REQUEST, request.policyId, { messageId, user }) as any;
+                    return new MessageResponse(result);
+                } catch (error) {
                     return new MessageError(error);
                 }
             });

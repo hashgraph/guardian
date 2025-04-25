@@ -1,6 +1,6 @@
 import { AfterDelete, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property } from '@mikro-orm/core';
 import { BaseEntity } from '../models/index.js';
-import { GenerateUUIDv4, PolicyActionType } from '@guardian/interfaces';
+import { GenerateUUIDv4, PolicyActionStatus, PolicyActionType } from '@guardian/interfaces';
 import { DataBaseHelper } from '../helpers/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
 
@@ -14,6 +14,12 @@ export class PolicyActions extends BaseEntity {
      */
     @Property({ nullable: true })
     uuid?: string;
+
+    /**
+     * ID
+     */
+    @Property({ nullable: true })
+    type?: PolicyActionType;
 
     /**
      * Message id
@@ -64,7 +70,7 @@ export class PolicyActions extends BaseEntity {
      * Status
      */
     @Property({ nullable: true })
-    status?: PolicyActionType;
+    status?: PolicyActionStatus;
 
     /**
      * Hedera account id
@@ -111,7 +117,7 @@ export class PolicyActions extends BaseEntity {
     @BeforeCreate()
     setDefaults() {
         this.uuid = this.uuid || GenerateUUIDv4();
-        this.status = this.status || PolicyActionType.NEW;
+        this.status = this.status || PolicyActionStatus.NEW;
     }
 
 

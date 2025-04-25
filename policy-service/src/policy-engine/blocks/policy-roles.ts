@@ -7,7 +7,8 @@ import { DocumentCategoryType, GroupAccessType, GroupRelationshipType, LocationT
 import { BlockActionError } from '../errors/index.js';
 import { AnyBlockType, IPolicyGetData } from '../policy-engine.interface.js';
 import { PolicyUtils } from '../helpers/utils.js';
-import { VcHelper, MessageAction, MessageServer, RoleMessage, IAuthUser } from '@guardian/common';
+import { PolicyActionsUtils } from '../helpers/policy-actions-utils.js';
+import { IAuthUser } from '@guardian/common';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
@@ -317,13 +318,7 @@ export class PolicyRolesBlock {
             return null;
         }
 
-        const userCred = await PolicyUtils.getUserCredentials(ref, group.owner);
-        const hederaCred = await userCred.loadHederaCredentials(ref);
-        const signOptions = await userCred.loadSignOptions(ref)
-        const didDocument = await userCred.loadDidDocument(ref);
-
         const uuid: string = await ref.components.generateUUID();
-        const vcHelper = new VcHelper();
         const vcSubject: any = {
             ...SchemaHelper.getContext(policySchema),
             id: uuid,
@@ -344,30 +339,16 @@ export class PolicyRolesBlock {
             vcSubject.groupLabel = group.groupLabel;
         }
 
-        const userVC = await vcHelper.createVerifiableCredential(
-            vcSubject,
-            didDocument,
-            null,
-            { uuid }
-        );
+        const { vc, message } = await PolicyActionsUtils.singAndSendRole(ref, vcSubject, group, uuid);
 
-        const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref);
-        const messageServer = new MessageServer(hederaCred.hederaAccountId, hederaCred.hederaAccountKey, signOptions, ref.dryRun);
-        const vcMessage = new RoleMessage(MessageAction.CreateVC);
-        vcMessage.setDocument(userVC);
-        vcMessage.setRole(group);
-        const vcMessageResult = await messageServer
-            .setTopicObject(rootTopic)
-            .sendMessage(vcMessage);
-
-        const vcDocument = PolicyUtils.createVC(ref, user, userVC);
+        const vcDocument = PolicyUtils.createVC(ref, user, vc);
         vcDocument.type = DocumentCategoryType.USER_ROLE;
-        vcDocument.schema = `#${userVC.getSubjectType()}`;
-        vcDocument.messageId = vcMessageResult.getId();
-        vcDocument.topicId = vcMessageResult.getTopicId();
+        vcDocument.schema = `#${vc.getSubjectType()}`;
+        vcDocument.messageId = message.getId();
+        vcDocument.topicId = message.getTopicId();
         vcDocument.relationships = null;
         await ref.databaseServer.saveVC(vcDocument);
-        return vcMessageResult.getId();
+        return message.getId();
     }
 
     /**

@@ -150,6 +150,7 @@ import { RequestDocumentBlockDialog } from './policy-viewer/blocks/request-docum
 import { DataTransformationConfigComponent } from './policy-configuration/blocks/calculate/data-transformation-config/data-transformation-config.component';
 import { ExternalPolicyComponent } from './external-policies/external-policies.component';
 import { SearchExternalPolicyDialog } from './dialogs/search-external-policy-dialog/search-external-policy-dialog.component';
+import { PolicyRequestsComponent } from './requests/requests.component';
 
 @NgModule({
     declarations: [
@@ -258,6 +259,7 @@ import { SearchExternalPolicyDialog } from './dialogs/search-external-policy-dia
         RequestDocumentBlockDialog,
         DataTransformationConfigComponent,
         ExternalPolicyComponent,
+        PolicyRequestsComponent,
         SearchExternalPolicyDialog
     ],
     imports: [

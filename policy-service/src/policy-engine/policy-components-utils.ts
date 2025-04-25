@@ -1626,4 +1626,12 @@ export class PolicyComponentsUtils {
     }
 
 
+    public static getActionsController(policyId: string) {
+        const controller = PolicyComponentsUtils.ActionsControllers.get(policyId);
+        if (controller) {
+            return controller;
+        } else {
+            throw new MessageError('Invalid policy controller', 500);
+        }
+    }
 }

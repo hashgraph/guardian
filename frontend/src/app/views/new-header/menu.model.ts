@@ -154,6 +154,10 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
                     title: 'List of Policies',
                     routerLink: '/policy-viewer'
                 });
+                childItems.push({
+                    title: 'Policy Requests',
+                    routerLink: '/policy-requests'
+                });
             }
             if (user.STATISTICS_STATISTIC_READ) {
                 childItems.push({
