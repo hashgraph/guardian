@@ -9,6 +9,7 @@ export interface IPermission {
     disabled: boolean;
     default: boolean;
     dependOn?: Permissions[];
+    required?: boolean
 }
 
 export interface IAction {

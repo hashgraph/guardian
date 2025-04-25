@@ -147,7 +147,7 @@ export class RolesViewComponent implements OnInit, OnDestroy {
 
     public onSave() {
         if (this.newRole?.valid) {
-            const role = this.newRole.value;
+            const role = this.newRole.getRawValue();
             const permissions: string[] = [];
             for (const [key, value] of Object.entries(role.permissions)) {
                 if (value === true) {
