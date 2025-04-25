@@ -4442,6 +4442,80 @@ paths:
       summary: Sets Hedera credentials for the user.
       tags:
         - profiles
+  /profiles/parent/select/{username}:
+    put:
+      description: ''
+      operationId: ProfileApi_setUserStandardRegistry
+      parameters:
+        - name: username
+          required: true
+          in: path
+          description: The name of the user for whom to update the information.
+          schema:
+            example: username
+            type: string
+      requestBody:
+        required: true
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDidDTO'
+      responses:
+        '200':
+          description: Updated.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: ''
+      tags:
+        - profiles
+  /profiles/parent/add/{username}:
+    put:
+      description: ''
+      operationId: ProfileApi_addUserStandardRegistry
+      parameters:
+        - name: username
+          required: true
+          in: path
+          description: The name of the user for whom to update the information.
+          schema:
+            example: username
+            type: string
+      requestBody:
+        required: true
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDidDTO'
+      responses:
+        '200':
+          description: Updated.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: ''
+      tags:
+        - profiles
   /profiles/push/{username}:
     put:
       description: >-
@@ -15342,8 +15416,15 @@ components:
             #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
         parent:
           type: string
+          example:
+            - >-
+              #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        parents:
           example: >-
             #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+          type: array
+          items:
+            type: string
         hederaAccountId:
           type: string
           example: 0.0.1
@@ -16643,8 +16724,15 @@ components:
             #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
         parent:
           type: string
+          example:
+            - >-
+              #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        parents:
           example: >-
             #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+          type: array
+          items:
+            type: string
         hederaAccountId:
           type: string
           example: 0.0.1
@@ -16802,6 +16890,14 @@ components:
         - entity
         - hederaAccountId
         - hederaAccountKey
+    UserDidDTO:
+      type: object
+      properties:
+        did:
+          type: string
+          nullable: false
+      required:
+        - did
     DidDocumentStatusDTO:
       type: object
       properties:
