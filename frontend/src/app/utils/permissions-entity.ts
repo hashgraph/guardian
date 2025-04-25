@@ -301,6 +301,11 @@ export class EntityLog implements IEntity {
         }
         this.actions[index] = action;
         this.map.set(permission.action, action);
+
+        if (permission.name === Permissions.LOG_LOG_READ) {
+            action.disable();
+        }
+
         return action;
     }
 
