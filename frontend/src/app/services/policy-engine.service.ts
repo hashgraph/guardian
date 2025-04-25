@@ -289,9 +289,9 @@ export class PolicyEngineService {
     public exportDocuments(
         policyId: string,
         filters: any,
-    ): Observable<any> {
+    ): Observable<ArrayBuffer> {
         const params = this.getOptions(filters);
-        return this.http.get(`${this.url}/${policyId}/export-documents`, { observe: 'response', params });
+        return this.http.get(`${this.url}/${policyId}/export-documents`, { responseType: 'arraybuffer', params });
     }
 
     public getPolicyDocumentOwners(

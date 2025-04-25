@@ -353,11 +353,9 @@ export class ProjectDataExportComponent implements OnInit {
                 options,
             )
             .subscribe({
-                next: (response) => {
-                    if (response) {
-                        console.log(response.body);
-                        
-                        this.downloadObjectAsJson(response.body, 'report');
+                next: (fileBuffer) => {
+                    if (fileBuffer) {
+                        this.downloadObject(fileBuffer);
                     }
             
                     setTimeout(() => {
@@ -371,19 +369,16 @@ export class ProjectDataExportComponent implements OnInit {
             });
     }
 
-    private downloadObjectAsJson(csvContent: string, exportName: string) {
-        const data = csvContent;
-    
-        const blob = new Blob([data], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        if (link.download !== undefined) {
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', exportName + '.csv');
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+    private downloadObject(fileBuffer: ArrayBuffer) {
+        const downloadLink = document.createElement('a');
+        downloadLink.href = window.URL.createObjectURL(
+            new Blob([new Uint8Array(fileBuffer)], {
+                type: 'application/guardian-formula'
+            })
+        );
+        downloadLink.setAttribute('download', `${this.currentPolicy.name} Project Data ${Date.now()}.zip`);
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        downloadLink.remove();
     }
 }
