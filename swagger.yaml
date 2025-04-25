@@ -14255,6 +14255,138 @@ paths:
       summary: Rejects policy.
       tags:
         - external-policies
+  /external-policies/requests:
+    get:
+      description: Returns all policies.
+      operationId: ExternalPoliciesApi_getRemoteRequests
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          schema:
+            example: 20
+            type: number
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Return a list of all policies.
+      tags:
+        - external-policies
+  /external-policies/requests/{messageId}/approve:
+    put:
+      description: Updates schema rule configuration for the specified rule ID.
+      operationId: ExternalPoliciesApi_approveRemoteRequest
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Schema Rule Identifier
+          schema:
+            example: '0000000000.000000001'
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains a configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Updates schema rule.
+      tags:
+        - external-policies
+  /external-policies/requests/{messageId}/reject:
+    put:
+      description: Updates schema rule configuration for the specified rule ID.
+      operationId: ExternalPoliciesApi_rejectRemoteRequest
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Schema Rule Identifier
+          schema:
+            example: '0000000000.000000001'
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains a configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Updates schema rule.
+      tags:
+        - external-policies
   /policy-labels:
     post:
       description: Creates a new policy label.
