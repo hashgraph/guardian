@@ -2310,12 +2310,12 @@ export class PolicyEngineService {
                     const { messageId, user } = msg;
 
                     const request = await DatabaseServer.getRemoteRequestId(messageId);
-                    if (request) {
+                    if (!request) {
                         throw new Error(`Request is not fount`);
                     }
 
                     const model = await DatabaseServer.getPolicyById(request.policyId);
-                    if (model) {
+                    if (!model) {
                         throw new Error(`Policy is not fount`);
                     }
 
@@ -2333,12 +2333,12 @@ export class PolicyEngineService {
                     const { messageId, user } = msg;
 
                     const request = await DatabaseServer.getRemoteRequestId(messageId);
-                    if (request) {
+                    if (!request) {
                         throw new Error(`Request is not fount`);
                     }
 
                     const model = await DatabaseServer.getPolicyById(request.policyId);
-                    if (model) {
+                    if (!model) {
                         throw new Error(`Policy is not fount`);
                     }
                     const result = await new GuardiansService()

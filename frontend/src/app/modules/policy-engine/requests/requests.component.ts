@@ -89,14 +89,13 @@ export class PolicyRequestsComponent implements OnInit {
             size: '180',
             tooltip: false
         },
-            // , {
-            //     id: 'delete',
-            //     title: '',
-            //     type: 'text',
-            //     size: '64',
-            //     tooltip: false
-            // }
-        ];
+        {
+            id: 'options',
+            title: '',
+            type: 'text',
+            size: '180',
+            tooltip: false
+        }];
         this.columns = [...this._defaultColumns];
     }
 
@@ -210,37 +209,6 @@ export class PolicyRequestsComponent implements OnInit {
     }
 
     public onDelete(item: any) {
-        // if (item.status === EntityStatus.ACTIVE) {
-        //     return;
-        // }
-        // const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
-        //     showHeader: false,
-        //     width: '640px',
-        //     styleClass: 'guardian-dialog',
-        //     data: {
-        //         header: 'Delete Label',
-        //         text: `Are you sure want to delete label (${item.name})?`,
-        //         buttons: [{
-        //             name: 'Close',
-        //             class: 'secondary'
-        //         }, {
-        //             name: 'Delete',
-        //             class: 'delete'
-        //         }]
-        //     },
-        // });
-        // dialogRef.onClose.subscribe((result: string) => {
-        //     if (result === 'Delete') {
-        //         this.loading = true;
-        //         this.externalPoliciesService
-        //             .deleteLabel(item.id)
-        //             .subscribe((result) => {
-        //                 this.loadData();
-        //             }, (e) => {
-        //                 this.loading = false;
-        //             });
-        //     }
-        // });
     }
 
     public onApprove(item: any) {

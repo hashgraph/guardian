@@ -19,7 +19,7 @@ export class PolicyActionsUtils {
                 const document = data.document;
                 const uuid = data.uuid;
                 const vc = VcDocumentDefinition.fromJsonTree(document);
-                const subject = vc.getCredentialSubject()
+                const subject = vc.getCredentialSubject().toJsonTree();
                 const result = await PolicyActionsUtils.singAndSendRole(block, subject, group, uuid);
                 return {
                     messageId: result.message.getMessageId()

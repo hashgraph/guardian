@@ -83,10 +83,10 @@ export class ExternalPoliciesService {
     }
 
     public approveAction(messageId: string): Observable<any> {
-        return this.http.post<any>(`${this.url}/requests/${messageId}/approve`, null);
+        return this.http.put<any>(`${this.url}/requests/${messageId}/approve`, null);
     }
 
     public rejectAction(messageId: string): Observable<any> {
-        return this.http.post<any>(`${this.url}/requests/${messageId}/reject`, null);
+        return this.http.put<any>(`${this.url}/requests/${messageId}/reject`, null);
     }
 }

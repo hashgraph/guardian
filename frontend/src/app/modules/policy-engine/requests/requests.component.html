@@ -97,7 +97,7 @@
                                         </span>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'options'">
-                                        <div *ngIf="row.fullStatus === 'NEW'" class="option-btns">
+                                        <div class="option-btns">
                                             <button class="guardian-button approve-btn" (click)="onApprove(row)">Approve</button>
                                             <button class="guardian-button reject-btn" (click)="onReject(row)">Reject</button>
                                         </div>
