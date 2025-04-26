@@ -249,8 +249,7 @@ export const PermissionsArray: {
     entity: PermissionEntities,
     action: PermissionActions,
     disabled: boolean,
-    dependOn?: Permissions[],
-    required?: boolean,
+    dependOn?: Permissions[]
 }[] = [
         //ACCOUNT
         {
@@ -581,28 +580,21 @@ export const PermissionsArray: {
             category: PermissionCategories.LOG,
             entity: PermissionEntities.LOG,
             action: PermissionActions.READ,
-            disabled: false,
-            required: true,
+            disabled: false
         },
         {
             name: Permissions.LOG_SYSTEM_READ,
             category: PermissionCategories.LOG,
             entity: PermissionEntities.LOG,
             action: PermissionActions.SYSTEM,
-            disabled: false,
-            dependOn: [
-                Permissions.LOG_LOG_READ,
-            ]
+            disabled: false
         },
         {
             name: Permissions.LOG_USERS_READ,
             category: PermissionCategories.LOG,
             entity: PermissionEntities.LOG,
             action: PermissionActions.USERS,
-            disabled: false,
-            dependOn: [
-                Permissions.LOG_LOG_READ,
-            ]
+            disabled: false
         },
         //MODULE
         {
