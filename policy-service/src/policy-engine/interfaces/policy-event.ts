@@ -53,6 +53,10 @@ export interface IPolicyEvent<T> {
      * Data
      */
     data?: T;
+    /**
+     * User Id
+     */
+    userId?: string | null
 }
 
 /**
@@ -119,6 +123,7 @@ export class PolicyLink<T> {
      */
     public run(user: PolicyUser, data: T): void {
         this.getUser(user, data).then((_user) => {
+            const userId = (this.target as any)?.policyInstance?.ownerId || null;
             const event: IPolicyEvent<T> = {
                 type: this.type,
                 inputType: this.inputType,
@@ -129,7 +134,8 @@ export class PolicyLink<T> {
                 target: this.target.tag,
                 targetId: this.target.uuid,
                 user: _user,
-                data
+                data,
+                userId
             };
             this.callback.call(this.target, event);
         });

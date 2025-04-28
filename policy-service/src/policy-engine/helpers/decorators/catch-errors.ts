@@ -14,9 +14,7 @@ export function CatchErrors() {
         descriptor.value = new Proxy(_target[propertyKey], {
             async apply(target: any, thisArg: any, argArray: any[]): Promise<any> {
                 const user = argArray[0].user;
-
-                const credentials = await UserCredentials.create(thisArg.blockType, user.did);
-                const userId = credentials.userId;
+                const userId = argArray[0]?.userId;
 
                 const data = argArray[0].data;
                 const f = async () => {
