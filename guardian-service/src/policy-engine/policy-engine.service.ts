@@ -2284,7 +2284,7 @@ export class PolicyEngineService {
                     const _filters: any = { ...filters };
 
                     _filters.accountId = user.hederaAccountId;
-                    //_filters.type = PolicyActionType.REQUEST;
+                    _filters.type = PolicyActionType.REQUEST;
 
                     const otherOptions: any = {};
                     const _pageSize = parseInt(pageSize, 10);
@@ -2311,12 +2311,15 @@ export class PolicyEngineService {
 
                     const request = await DatabaseServer.getRemoteRequestId(messageId);
                     if (!request) {
-                        throw new Error(`Request is not fount`);
+                        throw new Error(`Request is not found`);
+                    }
+                    if (request.accountId !== user.hederaAccountId) {
+                        throw new Error(`Request is not found`);
                     }
 
                     const model = await DatabaseServer.getPolicyById(request.policyId);
                     if (!model) {
-                        throw new Error(`Policy is not fount`);
+                        throw new Error(`Policy is not found`);
                     }
 
                     const result = await new GuardiansService()
@@ -2334,12 +2337,15 @@ export class PolicyEngineService {
 
                     const request = await DatabaseServer.getRemoteRequestId(messageId);
                     if (!request) {
-                        throw new Error(`Request is not fount`);
+                        throw new Error(`Request is not found`);
+                    }
+                    if (request.accountId !== user.hederaAccountId) {
+                        throw new Error(`Request is not found`);
                     }
 
                     const model = await DatabaseServer.getPolicyById(request.policyId);
                     if (!model) {
-                        throw new Error(`Policy is not fount`);
+                        throw new Error(`Policy is not found`);
                     }
                     const result = await new GuardiansService()
                         .sendPolicyMessage(PolicyEvents.REJECT_REMOTE_REQUEST, request.policyId, { messageId, user }) as any;

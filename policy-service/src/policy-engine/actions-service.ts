@@ -39,7 +39,7 @@ export class PolicyActionsService {
         await this.topicListener.subscribe(this.loadTask.bind(this));
     }
 
-    public async sendRemoteAction(
+    public async sendAction(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
         data: any
@@ -80,9 +80,8 @@ export class PolicyActionsService {
         await collection.insertOrUpdate([newRow], 'messageId');
     }
 
-    public async sendRemoteRequest(
-        block: AnyBlockType,
-        data: any,
+    public async sendRequest(
+        data: PolicyActions,
         callback: (action: PolicyActions) => Promise<void>
     ): Promise<any> {
         const root = await PolicyUtils.getUserCredentials(this.policyInstance, this.policyOwner);
@@ -124,7 +123,7 @@ export class PolicyActionsService {
         await collection.insertOrUpdate([newRow], 'messageId');
     }
 
-    public async executeRemoteRequest(messageId: string, user: PolicyUser) {
+    public async sendResponse(messageId: string, user: PolicyUser) {
         const collection = new DataBaseHelper(PolicyActions);
 
         const cred = await PolicyUtils.getUserCredentials(this.policyInstance, user.did);
@@ -138,7 +137,7 @@ export class PolicyActionsService {
             throw new Error('Request not found');
         }
 
-        const data = await PolicyActionsUtils.executeAction(row, user);
+        const data = await PolicyActionsUtils.response(row);
 
         const userCred = await PolicyUtils.getUserCredentials(this.policyInstance, user.did);
         const userHederaCred = await userCred.loadHederaCredentials(this.policyInstance);
@@ -178,7 +177,7 @@ export class PolicyActionsService {
         return newRow;
     }
 
-    public async rejectRemoteRequest(row: PolicyActions, user: PolicyUser) {
+    public async rejectRequest(row: PolicyActions, user: PolicyUser) {
         const collection = new DataBaseHelper(PolicyActions);
         row.status = PolicyActionStatus.REJECT;
         await collection.insertOrUpdate([row], 'messageId');
@@ -194,7 +193,7 @@ export class PolicyActionsService {
                 case MessageAction.CreatePolicyAction: {
                     const row = await this.savePolicyAction(message, PolicyActionType.ACTION, PolicyActionStatus.NEW);
                     if (this.isLocal) {
-                        await this.createPolicyAction(row);
+                        await this.executeAction(row);
                     } else {
                         await this.sentNotification(row);
                     }
@@ -224,7 +223,7 @@ export class PolicyActionsService {
                 case MessageAction.UpdatePolicyRequest: {
                     const row = await this.savePolicyAction(message, PolicyActionType.REQUEST, PolicyActionStatus.COMPLETED);
                     if (this.isLocal) {
-                        await this.completePolicyRequest(row);
+                        await this.completeRequest(row);
                     } else {
                         await this.sentNotification(row);
                     }
@@ -297,7 +296,7 @@ export class PolicyActionsService {
         return row;
     }
 
-    private async createPolicyAction(row: PolicyActions) {
+    private async executeAction(row: PolicyActions) {
         try {
             console.debug('---- 1', row);
             if (!row || !row.document) {
@@ -421,10 +420,11 @@ export class PolicyActionsService {
         console.debug('- update');
     }
 
-    private async completePolicyRequest(row: PolicyActions) {
+    private async completeRequest(row: PolicyActions) {
         const collection = new DataBaseHelper(PolicyActions);
         const request = await collection.findOne({ messageId: row.startMessageId });
-        if (request && request.accountId === row.accountId) {
+        const valid = await PolicyActionsUtils.validate(request, row);
+        if (valid) {
             const callback = this.callback.get(request.messageId);
             if (callback) {
                 this.callback.delete(request.messageId)

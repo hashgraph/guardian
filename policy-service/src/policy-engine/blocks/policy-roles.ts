@@ -339,7 +339,7 @@ export class PolicyRolesBlock {
             vcSubject.groupLabel = group.groupLabel;
         }
 
-        const { vc, message } = await PolicyActionsUtils.singAndSendRole(ref, vcSubject, group, uuid);
+        const { vc, message } = await PolicyActionsUtils.signAndSendRole(ref, vcSubject, group, uuid);
 
         const vcDocument = PolicyUtils.createVC(ref, user, vc);
         vcDocument.type = DocumentCategoryType.USER_ROLE;

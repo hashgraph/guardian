@@ -1597,7 +1597,7 @@ export class PolicyComponentsUtils {
         if (block.locationType === LocationType.REMOTE) {
             const controller = PolicyComponentsUtils.ActionsControllers.get(block.policyId);
             if (controller) {
-                const result = await controller.sendRemoteAction(block, user, data);
+                const result = await controller.sendAction(block, user, data);
                 return new MessageResponse(result);
             } else {
                 return new MessageError('Invalid policy controller', 500);

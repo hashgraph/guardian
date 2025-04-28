@@ -282,7 +282,7 @@ export class BlockTreeGenerator extends NatsService {
             try {
                 const userFull = await this.getUser(policyInstance, user);
                 const controller = PolicyComponentsUtils.getActionsController(policyId);
-                const row = await controller.executeRemoteRequest(messageId, userFull);
+                const row = await controller.sendResponse(messageId, userFull);
                 return new MessageResponse(row);
             } catch (error) {
                 return new MessageError(error, 500);
@@ -294,7 +294,7 @@ export class BlockTreeGenerator extends NatsService {
             try {
                 const userFull = await this.getUser(policyInstance, user);
                 const controller = PolicyComponentsUtils.getActionsController(policyId);
-                const row =  await controller.rejectRemoteRequest(messageId, userFull);
+                const row =  await controller.rejectRequest(messageId, userFull);
                 return new MessageResponse(row);
             } catch (error) {
                 return new MessageError(error, 500);
