@@ -1,22 +1,21 @@
-import { MessageAction, MessageServer, PolicyAction, RoleMessage, VcDocumentDefinition, VcHelper } from "@guardian/common";
+import { RoleMessage, VcHelper, MessageServer, MessageAction, PolicyAction } from "@guardian/common";
+import { VcDocument as VcDocumentDefinition } from "@guardian/common/dist/hedera-modules/vcjs/vc-document";
+import { GenerateUUIDv4 } from "@guardian/interfaces";
+import { PolicyUtils } from "@policy-engine/helpers/utils";
+import { PolicyComponentsUtils } from "@policy-engine/policy-components-utils";
 import { AnyBlockType } from "@policy-engine/policy-engine.interface";
-import { GenerateUUIDv4, LocationType, PolicyActionStatus } from "@guardian/interfaces";
-import { PolicyUtils } from "./utils.js";
-import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { PolicyUser } from "@policy-engine/policy-user";
+import { PolicyActionType } from "./utils";
 
-enum PolicyActionType {
-    SignAndSendRole = 'sign-and-send-role'
-}
-
-class SignAndSendRole {
+export class SignAndSendRole {
     public static async local(
         ref: AnyBlockType,
         subject: any,
         group: any,
         uuid: string
     ): Promise<{
-        vc: VcDocumentDefinition,
-        message: RoleMessage
+        vc: VcDocumentDefinition;
+        message: RoleMessage;
     }> {
         const did = group.owner;
         const vcHelper = new VcHelper();
@@ -46,7 +45,7 @@ class SignAndSendRole {
             .setTopicObject(rootTopic)
             .sendMessage(vcMessage);
 
-        return { vc: userVC, message: messageResult }
+        return { vc: userVC, message: messageResult };
     }
 
     public static async request(
@@ -61,6 +60,7 @@ class SignAndSendRole {
 
         const rootCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
         const rootDidDocument = await rootCred.loadDidDocument(ref);
+
         const rootVC = await vcHelper.createVerifiableCredential(
             subject,
             rootDidDocument,
@@ -82,12 +82,12 @@ class SignAndSendRole {
                 group,
                 document: rootVC.getDocument(),
             }
-        }
+        };
 
         return data;
     }
 
-    public static async response(row: PolicyAction) {
+    public static async response(row: PolicyAction, user: PolicyUser) {
         const block = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
         const data = row.document;
 
@@ -97,9 +97,9 @@ class SignAndSendRole {
         const vc = VcDocumentDefinition.fromJsonTree(document);
         const subject = vc.getCredentialSubject().toJsonTree();
 
-        const did = group.owner;
+
         const vcHelper = new VcHelper();
-        const userCred = await PolicyUtils.getUserCredentials(block, did);
+        const userCred = await PolicyUtils.getUserCredentials(block, user.did);
         const userDidDocument = await userCred.loadDidDocument(block);
         const userVC = await vcHelper.createVerifiableCredential(
             subject,
@@ -113,7 +113,7 @@ class SignAndSendRole {
             uuid,
             group,
             document: userVC.getDocument(),
-        }
+        };
     }
 
     public static async complete(row: PolicyAction) {
@@ -140,7 +140,7 @@ class SignAndSendRole {
             .setTopicObject(rootTopic)
             .sendMessage(vcMessage);
 
-        return { vc: userVC, message: messageResult }
+        return { vc: userVC, message: messageResult };
     }
 
     public static async validate(request: PolicyAction, response: PolicyAction): Promise<boolean> {
@@ -148,58 +148,5 @@ class SignAndSendRole {
             return true;
         }
         return false;
-    }
-}
-
-export class PolicyActionsUtils {
-    public static async validate(request: PolicyAction, response: PolicyAction) {
-        const type = request?.document?.type;
-        switch (type) {
-            case PolicyActionType.SignAndSendRole: {
-                return await SignAndSendRole.validate(request, response);
-            }
-        }
-        return false;
-    }
-
-    public static async response(row: PolicyAction) {
-        const type = row?.document?.type;
-        switch (type) {
-            case PolicyActionType.SignAndSendRole: {
-                return await SignAndSendRole.response(row);
-            }
-        }
-        throw new Error('Invalid command');
-    }
-
-    public static async signAndSendRole(
-        ref: AnyBlockType,
-        subject: any,
-        group: any,
-        uuid: string
-    ): Promise<{
-        vc: VcDocumentDefinition,
-        message: RoleMessage
-    }> {
-        const did = group.owner;
-        const userCred = await PolicyUtils.getUserCredentials(ref, did);
-
-        if (userCred.location === LocationType.LOCAL) {
-            return await SignAndSendRole.local(ref, subject, group, uuid);
-        } else {
-            const data = await SignAndSendRole.request(ref, subject, group, uuid);
-            return new Promise((resolve, reject) => {
-                const callback = async (action: PolicyAction) => {
-                    if (action.status === PolicyActionStatus.COMPLETED) {
-                        const result = await SignAndSendRole.complete(action);
-                        resolve(result)
-                    } else {
-                        reject(action.document);
-                    }
-                }
-                const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
-                controller.sendRequest(data, callback).catch(reject).then();
-            });
-        }
     }
 }

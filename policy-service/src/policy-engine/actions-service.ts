@@ -4,7 +4,7 @@ import { AnyBlockType, IPolicyInterfaceBlock } from "./policy-engine.interface.j
 import { PolicyUser } from "./policy-user.js";
 import { PolicyUtils } from "./helpers/utils.js";
 import { PolicyComponentsUtils } from "./policy-components-utils.js";
-import { PolicyActionsUtils } from "./helpers/policy-actions-utils.js";
+import { PolicyActionsUtils } from "./policy-actions/utils.js";
 
 export class PolicyActionsService {
     private readonly topicId: string;
@@ -140,7 +140,7 @@ export class PolicyActionsService {
             throw new Error('Request not found');
         }
 
-        const data = await PolicyActionsUtils.response(row);
+        const data = await PolicyActionsUtils.response(row, user);
 
         const userCred = await PolicyUtils.getUserCredentials(this.policyInstance, user.did);
         const userHederaCred = await userCred.loadHederaCredentials(this.policyInstance);

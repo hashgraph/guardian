@@ -13,6 +13,7 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { BlockActionError } from '../errors/index.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { fileURLToPath } from 'url';
+import { PolicyActionsUtils } from '../policy-actions/utils.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -23,7 +24,8 @@ interface IMetadata {
     accounts: any;
     tokens: any;
     relationships: any[];
-    didDocument: HederaDidDocument;
+    issuer: string;
+    // didDocument: HederaDidDocument;
 }
 
 /**
@@ -137,7 +139,11 @@ export class CustomLogicBlock {
      * @param state
      * @param user
      */
-    execute(state: IPolicyEventState, user: PolicyUser, triggerEvents: (documents: IPolicyDocument | IPolicyDocument[]) => void): Promise<IPolicyDocument | IPolicyDocument[]> {
+    execute(
+        state: IPolicyEventState,
+        user: PolicyUser,
+        triggerEvents: (documents: IPolicyDocument | IPolicyDocument[]) => void
+    ): Promise<IPolicyDocument | IPolicyDocument[]> {
         return new Promise<IPolicyDocument | IPolicyDocument[]>(async (resolve, reject) => {
             try {
                 const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
@@ -292,26 +298,20 @@ export class CustomLogicBlock {
             }
         }
 
-        let userCred: UserCredentials;
+        let issuer: string;
         switch (ref.options.documentSigner) {
             case 'owner':
-                userCred = await PolicyUtils.getUserCredentials(ref, owner.did);
+                issuer = owner.did;
                 break;
             case 'issuer':
-                const issuer = PolicyUtils.getDocumentIssuer(firstDocument.document);
-                userCred = await PolicyUtils.getUserCredentials(ref, issuer);
+                issuer = PolicyUtils.getDocumentIssuer(firstDocument.document);
                 break;
             default:
-                userCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
+                issuer = ref.policyOwner
                 break;
         }
-        const didDocument = await userCred.loadDidDocument(ref);
 
-        if (ref.options.idType !== 'DOCUMENT') {
-            id = await this.generateId(ref.options.idType, user, userCred);
-        }
-
-        return { owner, id, reference, accounts, tokens, relationships, didDocument };
+        return { owner, id, reference, accounts, tokens, relationships, issuer };
     }
 
     /**
@@ -332,7 +332,7 @@ export class CustomLogicBlock {
             accounts,
             tokens,
             relationships,
-            didDocument
+            issuer
         } = metadata;
 
         // <-- new vc
@@ -358,12 +358,12 @@ export class CustomLogicBlock {
 
         const uuid = await ref.components.generateUUID();
 
-        const newVC = await VCHelper.createVerifiableCredential(
-            vcSubject,
-            didDocument,
-            null,
-            { uuid }
-        );
+
+        const newId = await PolicyActionsUtils.generateId(ref, ref.options.idType, owner);
+        if (newId) {
+            vcSubject.id = newId;
+        }
+        const newVC = await PolicyActionsUtils.signVC(ref, vcSubject, issuer, uuid);
 
         const item = PolicyUtils.createVC(ref, owner, newVC);
         item.type = outputSchema.iri;
@@ -387,61 +387,5 @@ export class CustomLogicBlock {
     ): Promise<IPolicyDocument> {
         const vc = PolicyUtils.createVcFromSubject(json);
         return PolicyUtils.createUnsignedVC(ref, vc);
-    }
-
-    /**
-     * Generate id
-     * Generate id
-     * @param idType
-     * @param user
-     * @param userCred
-     * @param userHederaCred
-     */
-    private async generateId(
-        idType: string,
-        user: PolicyUser,
-        userCred: UserCredentials
-    ): Promise<string | undefined> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            if (idType === 'UUID') {
-                return await ref.components.generateUUID();
-            }
-            if (idType === 'DID') {
-                const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null);
-
-                const didObject = await ref.components.generateDID(topic.topicId);
-
-                const message = new DIDMessage(MessageAction.CreateDID);
-                message.setDocument(didObject);
-
-                const hederaCred = await userCred.loadHederaCredentials(ref);
-                const signOptions = await userCred.loadSignOptions(ref);
-                const client = new MessageServer(
-                    hederaCred.hederaAccountId,
-                    hederaCred.hederaAccountKey,
-                    signOptions,
-                    ref.dryRun
-                );
-                const messageResult = await client
-                    .setTopicObject(topic)
-                    .sendMessage(message);
-
-                const item = PolicyUtils.createDID(ref, user, didObject);
-                item.messageId = messageResult.getId();
-                item.topicId = messageResult.getTopicId();
-
-                await userCred.saveSubDidDocument(ref, item, didObject);
-
-                return didObject.getDid();
-            }
-            if (idType === 'OWNER') {
-                return user.did;
-            }
-            return undefined;
-        } catch (error) {
-            ref.error(`generateId: ${idType} : ${PolicyUtils.getErrorMessage(error)}`);
-            throw new BlockActionError(error, ref.blockType, ref.uuid);
-        }
     }
 }

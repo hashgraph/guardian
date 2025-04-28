@@ -9,6 +9,7 @@ import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { KeyType } from '@guardian/common';
+import { PolicyActionsUtils } from '../policy-actions/utils.js';
 
 /**
  * Document action clock with UI
@@ -106,19 +107,17 @@ export class InterfaceDocumentActionBlock {
         if (ref.options.type === 'download') {
             const sensorDid = document.document.credentialSubject[0].id;
             const userDID = document.owner;
-            const userCred = await PolicyUtils.getUserCredentials(ref, userDID);
-            const hederaCred = await userCred.loadHederaCredentials(ref);
             const schemaObject = await PolicyUtils.loadSchemaByID(ref, ref.options.schema);
             const schema = new Schema(schemaObject);
-            const didDocument = await userCred.loadSubDidDocument(ref, sensorDid);
             const sensorKey = await PolicyUtils.getAccountKey(ref, userDID, KeyType.KEY, sensorDid);
+            const key = await PolicyActionsUtils.downloadPrivateDocument(ref, userDID, sensorDid);
             result = {
                 fileName: ref.options.filename || `${sensorDid}.config.json`,
                 body: {
                     'url': ref.options.targetUrl || process.env.MRV_ADDRESS,
                     'topic': ref.policyInstance?.topicId,
-                    'hederaAccountId': hederaCred.hederaAccountId,
-                    'hederaAccountKey': hederaCred.hederaAccountKey,
+                    'hederaAccountId': key.hederaAccountId,
+                    'hederaAccountKey': key.hederaAccountKey,
                     'installer': userDID,
                     'did': sensorDid,
                     'key': sensorKey,
@@ -128,7 +127,7 @@ export class InterfaceDocumentActionBlock {
                         'type': schema.type,
                         '@context': [schema.contextURL]
                     },
-                    'didDocument': didDocument.getPrivateDocument(),
+                    'didDocument': key.didDocument,
                     'policyId': ref.policyId,
                     'policyTag': ref.policyInstance?.policyTag,
                     'ref': sensorDid

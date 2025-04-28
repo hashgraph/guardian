@@ -145,7 +145,7 @@ export class CreateTokenBlock {
     }
 
     private async _createToken(
-        user,
+        user: PolicyUser,
         ref: IPolicyRequestBlock,
         template: any,
         docs: IPolicyDocument | IPolicyDocument[]
@@ -158,10 +158,7 @@ export class CreateTokenBlock {
             );
         }
 
-        const policyOwnerCred = await PolicyUtils.getUserCredentials(
-            ref,
-            ref.policyOwner
-        );
+        const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
 
         if (!docs) {
             throw new BlockActionError(
