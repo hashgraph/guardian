@@ -144,7 +144,9 @@ export class MultiSignBlock {
         }
 
         const userCred = await PolicyUtils.getUserCredentials(ref, user.did);
-        const didDocument = await userCred.loadDidDocument(ref);
+        const userId = userCred.userId;
+
+        const didDocument = await userCred.loadDidDocument(ref, userId);
 
         const groupContext = await PolicyUtils.getGroupContext(ref, user);
         const vcDocument = sourceDoc.document;
@@ -209,11 +211,11 @@ export class MultiSignBlock {
         const declinedThreshold = Math.round(users.length - signedThreshold + 1);
 
         if (signed >= signedThreshold) {
-            const docOwner = await PolicyUtils.getDocumentOwner(ref, sourceDoc);
+            const docOwner = await PolicyUtils.getDocumentOwner(ref, sourceDoc, userId);
             const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
             const documentOwnerCred = await PolicyUtils.getUserCredentials(ref, docOwner.did);
 
-            const policyOwnerDocument = await policyOwnerCred.loadDidDocument(ref);
+            const policyOwnerDocument = await policyOwnerCred.loadDidDocument(ref, userId);
 
             const vcs = data.map(e => VcDocument.fromJsonTree(e.document));
             const uuid: string = await ref.components.generateUUID();
@@ -224,13 +226,13 @@ export class MultiSignBlock {
                 { uuid }
             );
 
-            const documentOwnerHederaCred = await documentOwnerCred.loadHederaCredentials(ref);
-            const signOptions = await documentOwnerCred.loadSignOptions(ref);
+            const documentOwnerHederaCred = await documentOwnerCred.loadHederaCredentials(ref, userId);
+            const signOptions = await documentOwnerCred.loadSignOptions(ref, userId);
             const vpMessage = new VPMessage(MessageAction.CreateVP);
             vpMessage.setDocument(vp);
             vpMessage.setRelationships(sourceDoc.messageId ? [sourceDoc.messageId] : []);
             vpMessage.setUser(null);
-            const topic = await PolicyUtils.getPolicyTopic(ref, sourceDoc.topicId);
+            const topic = await PolicyUtils.getPolicyTopic(ref, sourceDoc.topicId, userId);
             const messageServer = new MessageServer(
                 documentOwnerHederaCred.hederaAccountId,
                 documentOwnerHederaCred.hederaAccountKey,

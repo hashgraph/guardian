@@ -290,9 +290,10 @@ export class PolicyEngine extends NatsService {
             schema.topicId = policyTopicId;
             const topic = await TopicConfig.fromObject(
                 await DatabaseServer.getTopicById(policyTopicId),
-                true
+                true,
+                owner.id
             );
-            const root = await users.getHederaAccount(owner.creator);
+            const root = await users.getHederaAccount(owner.creator, owner.id);
             const dependencySchemas = await DatabaseServer.getSchemas({
                 $and: [
                     { iri: { $in: schema.defs } },
@@ -373,13 +374,13 @@ export class PolicyEngine extends NatsService {
 
         let newTopic: Topic;
         notifier.completedAndStart('Resolve Hedera account');
-        const root = await this.users.getHederaAccount(user.owner);
+        const root = await this.users.getHederaAccount(user.owner, user.id);
         notifier.completed();
         if (!model.topicId) {
             notifier.start('Create topic');
             logger.info('Create Policy: Create New Topic', ['GUARDIAN_SERVICE'], user.id);
             const parent = await TopicConfig.fromObject(
-                await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true
+                await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true, user.id
             );
             const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
             const topic = await topicHelper.create({
@@ -390,7 +391,7 @@ export class PolicyEngine extends NatsService {
                 policyId: null,
                 policyUUID: null
             }, user.id);
-            await topic.saveKeys();
+            await topic.saveKeys(user.id);
 
             model.topicId = topic.topicId;
 
@@ -632,9 +633,9 @@ export class PolicyEngine extends NatsService {
         await DatabaseServer.deletePolicyTests(policyToDelete.id);
 
         notifier.completedAndStart('Publishing delete policy message');
-        const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(policyToDelete.topicId), true);
+        const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(policyToDelete.topicId), true, user.id);
         const users = new Users();
-        const root = await users.getHederaAccount(user.creator);
+        const root = await users.getHederaAccount(user.creator, user.id);
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
         const message = new PolicyMessage(MessageType.Policy, MessageAction.DeletePolicy);
         message.setDocument(policyToDelete);
@@ -796,13 +797,13 @@ export class PolicyEngine extends NatsService {
     ): Promise<Policy> {
         await logger.info('Publish Policy', ['GUARDIAN_SERVICE'], user.id);
         notifier.start('Resolve Hedera account');
-        const root = await this.users.getHederaAccount(user.creator);
+        const root = await this.users.getHederaAccount(user.creator, user.id);
 
         notifier.completedAndStart('Find topic');
 
         model.version = version;
 
-        const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(model.topicId), true);
+        const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(model.topicId), true, user.id);
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
             .setTopicObject(topic);
 
@@ -879,7 +880,7 @@ export class PolicyEngine extends NatsService {
                     policyId: model.id.toString(),
                     policyUUID: model.uuid
                 }, user.id);
-                await rootTopic.saveKeys();
+                await rootTopic.saveKeys(user.id);
                 await DatabaseServer.saveTopic(rootTopic.toObject());
                 model.instanceTopicId = rootTopic.topicId;
             }
@@ -888,7 +889,7 @@ export class PolicyEngine extends NatsService {
             if (model.status === PolicyType.PUBLISH_ERROR) {
                 if (model.instanceTopicId) {
                     const topicEntity = await DatabaseServer.getTopicById(model.instanceTopicId);
-                    rootTopic = await TopicConfig.fromObject(topicEntity);
+                    rootTopic = await TopicConfig.fromObject(topicEntity, false, user.id);
                 }
                 if (!rootTopic) {
                     await createInstanceTopic();
@@ -907,7 +908,7 @@ export class PolicyEngine extends NatsService {
                     policyId: model.id.toString(),
                     policyUUID: model.uuid
                 }, user.id, { admin: true, submit: false });
-                await synchronizationTopic.saveKeys();
+                await synchronizationTopic.saveKeys(user.id);
                 await DatabaseServer.saveTopic(synchronizationTopic.toObject());
                 model.synchronizationTopicId = synchronizationTopic.topicId;
             }
@@ -961,7 +962,7 @@ export class PolicyEngine extends NatsService {
                 credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
             }
 
-            const didDocument = await vcHelper.loadDidDocument(user.creator);
+            const didDocument = await vcHelper.loadDidDocument(user.creator, user.id);
             const vc = await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
             await DatabaseServer.saveVC({
                 hash: vc.toCredentialHash(),
@@ -1024,9 +1025,9 @@ export class PolicyEngine extends NatsService {
 
         //Create Services
         const [root, topic] = await Promise.all([
-            this.users.getHederaAccount(user.owner),
+            this.users.getHederaAccount(user.owner, user.id),
             TopicConfig.fromObject(
-                await DatabaseServer.getTopicById(model.topicId), !demo
+                await DatabaseServer.getTopicById(model.topicId), !demo, user.id
             )
         ])
 
@@ -1052,7 +1053,7 @@ export class PolicyEngine extends NatsService {
         }, user.id);
 
         await Promise.all([
-            rootTopic.saveKeys(),
+            rootTopic.saveKeys(user.id),
             databaseServer.saveTopic(rootTopic.toObject())
         ]);
 
@@ -1096,7 +1097,7 @@ export class PolicyEngine extends NatsService {
             credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
         }
         const vcHelper = new VcHelper();
-        const didDocument = await vcHelper.loadDidDocument(user.owner);
+        const didDocument = await vcHelper.loadDidDocument(user.owner, user.id);
         const vc = await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
 
         let [,,,retVal] = await Promise.all([
@@ -1190,7 +1191,7 @@ export class PolicyEngine extends NatsService {
             }
 
             await this.generateModel(newPolicy.id.toString());
-            const users = await new Users().getUsersBySrId(owner.owner);
+            const users = await new Users().getUsersBySrId(owner.owner, owner.id);
 
             await Promise.all(
                 users.map(
@@ -1239,7 +1240,7 @@ export class PolicyEngine extends NatsService {
 
         await logger.info(`Import policy by message`, ['GUARDIAN_SERVICE'], user.id);
 
-        const root = await this.users.getHederaAccount(user.creator);
+        const root = await this.users.getHederaAccount(user.creator, user.id);
 
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
         const message = await messageServer.getMessage<PolicyMessage>(messageId);

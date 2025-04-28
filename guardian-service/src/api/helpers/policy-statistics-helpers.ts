@@ -195,7 +195,7 @@ export async function generateVcDocument(document: any, schema: Schema, owner: I
     if (!res.ok) {
         throw Error(JSON.stringify(res.error));
     }
-    const didDocument = await vcHelper.loadDidDocument(owner.creator);
+    const didDocument = await vcHelper.loadDidDocument(owner.creator, owner.id);
     const vcObject = await vcHelper.createVerifiableCredential(document, didDocument, null, null);
     return vcObject;
 }
@@ -203,7 +203,7 @@ export async function generateVcDocument(document: any, schema: Schema, owner: I
 export async function getOrCreateTopic(item: PolicyStatistic, userId: string | null): Promise<TopicConfig> {
     let topic: TopicConfig;
     if (item.topicId) {
-        topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true);
+        topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true, userId);
         if (topic) {
             return topic;
         }
@@ -214,8 +214,8 @@ export async function getOrCreateTopic(item: PolicyStatistic, userId: string | n
         throw Error('Item does not exist.');
     }
 
-    const rootTopic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(policy.instanceTopicId), true);
-    const root = await (new Users()).getHederaAccount(item.owner);
+    const rootTopic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(policy.instanceTopicId), true, userId);
+    const root = await (new Users()).getHederaAccount(item.owner, userId);
     const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
     topic = await topicHelper.create({
         type: TopicType.StatisticTopic,
@@ -225,7 +225,7 @@ export async function getOrCreateTopic(item: PolicyStatistic, userId: string | n
         policyId: policy.id,
         policyUUID: policy.uuid
     }, userId, { admin: true, submit: false });
-    await topic.saveKeys();
+    await topic.saveKeys(userId);
     await topicHelper.twoWayLink(topic, rootTopic, null, userId);
     await DatabaseServer.saveTopic(topic.toObject());
     return topic;

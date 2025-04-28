@@ -102,7 +102,7 @@ export class SynchronizationService {
      */
     private async taskByPolicy(policy: Policy, policyOwnerId: string | null) {
         try {
-            const root = await this.users.getHederaAccount(policy.owner);
+            const root = await this.users.getHederaAccount(policy.owner, policyOwnerId);
             const count = await DatabaseServer.countMultiPolicyTransactions(policy.id);
 
             if (!count) {
@@ -220,8 +220,8 @@ export class SynchronizationService {
         for (const transaction of transactions) {
             if (transaction.amount <= min) {
                 const users = new Users();
-                const userAccount = await users.getUserById(user);
-                const policyOwner = await users.getUserById(policy.owner);
+                const userAccount = await users.getUserById(user, policyOwnerId);
+                const policyOwner = await users.getUserById(policy.owner, policyOwnerId);
                 const notifier = NotificationHelper.init([userAccount?.id, policyOwner?.id]);
                 const token = await DatabaseServer.getToken(transaction.tokenId);
                 const messageIds = await this.completeTransaction(

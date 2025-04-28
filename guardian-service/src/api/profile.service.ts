@@ -96,18 +96,20 @@ async function getGlobalTopic(): Promise<TopicConfig | null> {
  * @param profile
  * @param notifier
  * @param logger
+ * @param userId
  */
 async function setupUserProfile(
     username: string,
     profile: ICredentials,
     notifier: INotifier,
-    logger: PinoLogger
+    logger: PinoLogger,
+    userId: string | null
 ): Promise<string> {
     const users = new Users();
     const wallet = new Wallet();
 
     notifier.start('Get user');
-    const user = await users.getUser(username);
+    const user = await users.getUser(username, userId);
     if (user.did) {
         throw new Error('User DID already exists');
     }
@@ -129,11 +131,11 @@ async function setupUserProfile(
         parent: profile.parent,
         hederaAccountId: profile.hederaAccountId,
         useFireblocksSigning: profile.useFireblocksSigning
-    });
+    }, userId);
 
     notifier.completedAndStart('Update permissions');
     if (user.role === UserRole.USER) {
-        const changeRole = await users.setDefaultUserRole(username, profile.parent);
+        const changeRole = await users.setDefaultUserRole(username, profile.parent, userId);
         await serDefaultRole(changeRole, EntityOwner.sr(null, profile.parent))
     }
 
@@ -282,7 +284,7 @@ async function createUserProfile(
             await dataBaseServer.findOne(Topic, {
                 owner: parent,
                 type: TopicType.UserTopic
-            }), true);
+            }), true, user.id);
     }
     if (!topicConfig) {
         notifier.info('Create user topic');
@@ -608,7 +610,7 @@ async function createDefaultRoles(
     }
     await dataBaseServer.saveMany(VcDocumentCollection, vcDocumentCollectionObjects);
 
-    await users.setDefaultRole(ids[0], owner.creator);
+    await users.setDefaultRole(ids[0], owner.creator, userId);
 }
 
 @Controller()
@@ -627,7 +629,7 @@ export function profileAPI(logger: PinoLogger) {
                 const wallet = new Wallet();
                 const users = new Users();
                 const workers = new Workers();
-                const user = await users.getUser(username);
+                const user = await users.getUser(username, userId);
 
                 if (!user) {
                     return new MessageResponse(null);
@@ -671,7 +673,7 @@ export function profileAPI(logger: PinoLogger) {
                 const users = new Users();
                 const workers = new Workers();
 
-                const user = await users.getUser(username);
+                const user = await users.getUser(username, userId);
 
                 if (!user) {
                     return new MessageResponse('Invalid Account');
@@ -712,7 +714,7 @@ export function profileAPI(logger: PinoLogger) {
                     return new MessageError('Invalid Hedera Account Key', 403);
                 }
 
-                const did = await setupUserProfile(username, profile, emptyNotifier(), logger);
+                const did = await setupUserProfile(username, profile, emptyNotifier(), logger, userId);
                 return new MessageResponse(did);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], userId);
@@ -736,7 +738,7 @@ export function profileAPI(logger: PinoLogger) {
                     return;
                 }
 
-                const did = await setupUserProfile(username, profile, notifier, logger);
+                const did = await setupUserProfile(username, profile, notifier, logger, userId);
                 notifier.result(did);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], userId);
@@ -764,7 +766,7 @@ export function profileAPI(logger: PinoLogger) {
                     didKeys
                 } = profile;
 
-                const user = await new Users().getUser(username);
+                const user = await new Users().getUser(username, userId);
 
                 try {
                     const workers = new Workers();
@@ -795,7 +797,8 @@ export function profileAPI(logger: PinoLogger) {
                     hederaAccountKey,
                     topicId,
                     oldDidDocument,
-                    logger
+                    logger,
+                    userId
                 )
                 notifier.completed();
                 notifier.result('did');

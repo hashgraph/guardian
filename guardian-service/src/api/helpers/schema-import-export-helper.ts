@@ -315,7 +315,7 @@ export class SchemaImport {
     private async resolveAccount(user: IOwner): Promise<IRootConfig> {
         this.notifier.start('Resolve Hedera account');
         const users = new Users();
-        this.root = await users.getHederaAccount(user.creator);
+        this.root = await users.getHederaAccount(user.creator, user.id);
         this.topicHelper = new TopicHelper(
             this.root.hederaAccountId,
             this.root.hederaAccountKey,
@@ -346,7 +346,7 @@ export class SchemaImport {
         } else if (topicId === 'draft') {
             this.topicRow = null;
         } else if (topicId) {
-            this.topicRow = await TopicConfig.fromObject(await DatabaseServer.getTopicById(topicId), true);
+            this.topicRow = await TopicConfig.fromObject(await DatabaseServer.getTopicById(topicId), true, user.id);
         } else {
             this.topicRow = await this.topicHelper.create({
                 type: TopicType.SchemaTopic,
@@ -356,7 +356,7 @@ export class SchemaImport {
                 policyId: null,
                 policyUUID: null
             }, user.id);
-            await this.topicRow.saveKeys();
+            await this.topicRow.saveKeys(user.id);
             await DatabaseServer.saveTopic(this.topicRow.toObject());
             await this.topicHelper.twoWayLink(this.topicRow, null, null, this.owner.id);
         }

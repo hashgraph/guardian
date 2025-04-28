@@ -115,20 +115,20 @@ export class GroupManagerBlock {
 
         if (member.messageId) {
             const userCred = await PolicyUtils.getUserCredentials(ref, user.did);
-            const userHederaCred = await userCred.loadHederaCredentials(ref);
-            const signOptions = await userCred.loadSignOptions(ref);
+            const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
+            const signOptions = await userCred.loadSignOptions(ref, userId);
             const messageServer = new MessageServer(
                 userHederaCred.hederaAccountId, userHederaCred.hederaAccountKey, signOptions, ref.dryRun
             );
             const message = await messageServer.getMessage(member.messageId);
-            const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId);
+            const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId, userId);
             message.setMessageStatus(MessageStatus.WITHDRAW, text);
             await messageServer
                 .setTopicObject(topic)
                 .sendMessage(message, false, null, userId);
         }
 
-        const target = await PolicyComponentsUtils.GetPolicyUserByGroup(member, ref);
+        const target = await PolicyComponentsUtils.GetPolicyUserByGroup(member, ref, userId);
         ref.triggerInternalEvent('remove-user', target);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.DeleteMember, ref, user, null));
     }

@@ -568,6 +568,7 @@ export class RestoreDataFromHedera {
      * @param registrantTopicId
      * @param didDocument
      * @param logger
+     * @param userId
      */
     async restoreRootAuthority(
         username: string,
@@ -575,10 +576,11 @@ export class RestoreDataFromHedera {
         hederaAccountKey: string,
         registrantTopicId: string,
         didDocument: CommonDidDocument,
-        logger: PinoLogger
+        logger: PinoLogger,
+        userId: string | null
     ): Promise<void> {
         const did = didDocument.getDid();
-        const user = await this.users.getUser(username);
+        const user = await this.users.getUser(username, userId);
 
         if (user.role !== UserRole.STANDARD_REGISTRY) {
             throw new Error('User is not a Standard Registry.');
@@ -651,10 +653,10 @@ export class RestoreDataFromHedera {
             did,
             parent: undefined,
             hederaAccountId: hederaAccountID,
-        });
+        }, userId);
 
-        await this.restoreUsers(allMessages, did);
-        await this.restorePermissions(allMessages, did, user, hederaAccountID);
+        await this.restoreUsers(allMessages, did, userId);
+        await this.restorePermissions(allMessages, did, user, hederaAccountID, userId);
 
         await this.restoreTopic(
             {
@@ -692,7 +694,7 @@ export class RestoreDataFromHedera {
         }
     }
 
-    private async restoreUsers(messages: Message[], owner: string) {
+    private async restoreUsers(messages: Message[], owner: string, userId: string | null) {
         const userDIDs = this.findMessagesByType<DIDMessage>(MessageType.DIDDocument, messages);
         userDIDs.shift();
 
@@ -706,7 +708,7 @@ export class RestoreDataFromHedera {
                 messageId: message.id,
                 topicId: message.topicId,
             });
-            this.users.generateNewTemplate(UserRole.USER, did, owner);
+            this.users.generateNewTemplate(UserRole.USER, did, owner, userId);
         }
     }
 
@@ -714,7 +716,8 @@ export class RestoreDataFromHedera {
         messages: Message[],
         parentDid: string,
         parent: IAuthUser,
-        hederaAccountID: string
+        hederaAccountID: string,
+        userId: string | null
     ) {
         const guardianRoles = this.findMessagesByType<GuardianRoleMessage>(MessageType.GuardianRole, messages);
         const _guardianRoles = new Map<string, GuardianRoleMessage>();
@@ -764,7 +767,7 @@ export class RestoreDataFromHedera {
                 owner: string
             }[]>('roles');
             const userDid = vcDoc.getField<string>('userId');
-            const template = await this.users.getUserById(userDid);
+            const template = await this.users.getUserById(userDid, userId);
             if (
                 template &&
                 template.role === UserRole.USER &&

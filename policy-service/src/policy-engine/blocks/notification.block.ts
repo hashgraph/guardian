@@ -207,7 +207,7 @@ export class NotificationBlock {
                             ref.policyId
                         );
                     const users = await new Users().getUsersByIds(
-                        policyUsers.map((pu) => pu.did)
+                        policyUsers.map((pu) => pu.did), event.userId
                     );
                     for (const user of users) {
                         await notify(
@@ -220,7 +220,7 @@ export class NotificationBlock {
             }
             case UserOption.CURRENT: {
                 if (event.user.did !== ref.policyOwner && !ref.dryRun) {
-                    const user = await PolicyUtils.getUser(ref, event.user.did);
+                    const user = await PolicyUtils.getUser(ref, event.user.did, event.userId);
                     await notify(
                         ref.options.title,
                         ref.options.message,
@@ -234,7 +234,7 @@ export class NotificationBlock {
             // tslint:disable-next-line:no-duplicate-switch-case
             case UserOption.ALL:
             case UserOption.POLICY_OWNER: {
-                const owner = await new Users().getUserById(ref.policyOwner);
+                const owner = await new Users().getUserById(ref.policyOwner, event.userId);
                 await notify(ref.options.title, ref.options.message, owner.id);
                 break;
             }
@@ -243,7 +243,8 @@ export class NotificationBlock {
                     ref,
                     Array.isArray(event.data.data)
                         ? event.data.data[0].owner
-                        : event.data.data.owner
+                        : event.data.data.owner,
+                    event.userId
                 );
                 if (user.did === ref.policyOwner || !ref.dryRun) {
                     await notify(
@@ -259,7 +260,8 @@ export class NotificationBlock {
                     ref,
                     Array.isArray(event.data.data)
                         ? event.data.data[0].document?.issuer
-                        : event.data.data.document?.issuer
+                        : event.data.data.document?.issuer,
+                    event.userId
                 );
                 if (user.did === ref.policyOwner || !ref.dryRun) {
                     await notify(
@@ -276,7 +278,7 @@ export class NotificationBlock {
                     event.user.did
                 );
                 for (const role of roles) {
-                    const owner = await PolicyUtils.getUser(ref, role.owner);
+                    const owner = await PolicyUtils.getUser(ref, role.owner, event.userId);
                     if (owner.did === ref.policyOwner || !ref.dryRun) {
                         await notify(
                             ref.options.title,
@@ -302,7 +304,7 @@ export class NotificationBlock {
                     ? policyUsers.filter((pu) => pu.did === ref.policyOwner)
                     : policyUsers;
                 const users = await new Users().getUsersByIds(
-                    policyUsers.map((pu) => pu.did)
+                    policyUsers.map((pu) => pu.did), event.userId
                 );
                 for (const user of users) {
                     await notify(

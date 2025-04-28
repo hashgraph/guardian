@@ -293,7 +293,7 @@ export class PolicyDataMigrator {
                     throw new Error(`Can't find source policy`);
                 }
                 const srcModelDryRun = PolicyHelper.isDryRunMode(srcModel);
-                policyUsers = await users.getUsersBySrId(owner);
+                policyUsers = await users.getUsersBySrId(owner, userId);
                 policyRoles = await new RolesLoader(
                     srcModel.id,
                     srcModel.topicId,
@@ -417,7 +417,7 @@ export class PolicyDataMigrator {
             }
 
             const wallet = new Wallet();
-            const root = await users.getUserById(owner);
+            const root = await users.getUserById(owner, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -429,7 +429,7 @@ export class PolicyDataMigrator {
                 await new DatabaseServer(dstModelDryRun ? dstModel.id : undefined)
                     .getTopic({
                         topicId: dstModel.instanceTopicId,
-                    })
+                    }), false, userId
             );
 
             const policyDataMigrator = new PolicyDataMigrator(
@@ -537,7 +537,7 @@ export class PolicyDataMigrator {
             if (this._dryRunId) {
                 await this._createVirtualUsers(users);
             }
-            await this._migratePolicyRoles(roles);
+            await this._migratePolicyRoles(roles, userId);
             await this._migrateDocument(
                 roleVcs,
                 this._migrateRoleVc.bind(this),
@@ -787,7 +787,7 @@ export class PolicyDataMigrator {
             topic.topicId
         );
 
-        await topic.saveKeys();
+        await topic.saveKeys(userId);
         await DatabaseServer.saveTopic(topic.toObject());
 
         const version = await getContractVersion(
@@ -832,9 +832,10 @@ export class PolicyDataMigrator {
     /**
      * Migrate split document
      * @param doc Split document
+     * @param userId
      * @returns Split document
      */
-    private async _migrateSplitDocument(doc: SplitDocuments) {
+    private async _migrateSplitDocument(doc: SplitDocuments, userId: string | null) {
         if (!this._blocks[doc.blockId]) {
             return null;
         }
@@ -843,7 +844,7 @@ export class PolicyDataMigrator {
         doc.policyId = this._policyId;
 
         const _vcHelper = new VcHelper();
-        const didDocument = await _vcHelper.loadDidDocument(this._owner);
+        const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
         const svc = await _vcHelper.issueVerifiableCredential(
             VcDocumentDefinition.fromJsonTree(doc.document),
             didDocument,
@@ -876,9 +877,10 @@ export class PolicyDataMigrator {
     /**
      * Migrate multi sign document
      * @param doc Multi document
+     * @param userId
      * @returns Multi document
      */
-    async _migrateMultiSignDocument(doc: MultiDocuments) {
+    async _migrateMultiSignDocument(doc: MultiDocuments, userId: string | null) {
         doc.userId = await this._replaceDidTopicId(doc.userId);
         doc.did = await this._replaceDidTopicId(doc.did);
 
@@ -890,7 +892,7 @@ export class PolicyDataMigrator {
         doc.documentId = vc.id;
 
         const _vcHelper = new VcHelper();
-        const didDocument = await _vcHelper.loadDidDocument(this._owner);
+        const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
         const svc = await _vcHelper.issueVerifiableCredential(
             VcDocumentDefinition.fromJsonTree(doc.document),
             didDocument,
@@ -1019,7 +1021,7 @@ export class PolicyDataMigrator {
         ) {
             this._notifier?.info(`Resigning VC ${doc.id}`);
             const _vcHelper = new VcHelper();
-            const didDocument = await _vcHelper.loadDidDocument(this._owner);
+            const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
             const credentialSubject = SchemaHelper.updateObjectContext(
                 new Schema(schema),
                 doc.document.credentialSubject[0]
@@ -1106,8 +1108,9 @@ export class PolicyDataMigrator {
     /**
      * Migrate policy roles
      * @param roles Roles
+     * @param userId
      */
-    private async _migratePolicyRoles(roles: PolicyRoles[]) {
+    private async _migratePolicyRoles(roles: PolicyRoles[], userId: string | null) {
         for (const role of roles) {
             role.owner = await this._replaceDidTopicId(role.owner);
             role.did = await this._replaceDidTopicId(role.did);
@@ -1118,7 +1121,7 @@ export class PolicyDataMigrator {
                 role.groupName = this._groups[role.groupName];
             }
             if (role.username && !this._dryRunId) {
-                const newUser = await this._users.getUserById(role.did);
+                const newUser = await this._users.getUserById(role.did, userId);
                 if (newUser) {
                     role.username = newUser.username;
                 }
@@ -1212,7 +1215,7 @@ export class PolicyDataMigrator {
         if (vpChanged || this._oldPolicyOwner !== this._owner) {
             this._notifier?.info(`Resigning VP ${doc.id}`);
             const _vcHelper = new VcHelper();
-            const didDocument = await _vcHelper.loadDidDocument(this._owner);
+            const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
             vp = await _vcHelper.createVerifiablePresentation(
                 vcs,
                 didDocument,
@@ -1386,7 +1389,7 @@ export class PolicyDataMigrator {
             this._notifier?.info(`Resigning VC ${doc.id}`);
 
             const _vcHelper = new VcHelper();
-            const didDocument = await _vcHelper.loadDidDocument(this._owner);
+            const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
             const credentialSubject = SchemaHelper.updateObjectContext(
                 new Schema(schema),
                 this._editedVCs[doc.id] || doc.document.credentialSubject[0]

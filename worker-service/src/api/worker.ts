@@ -599,7 +599,7 @@ export class Worker extends NatsService {
                     } else {
                         result.data = await client.revokeKyc(token.tokenId, userHederaAccountId, kycKey, userId);
                     }
-                    const user = await new Users().getUserByAccount(userHederaAccountId);
+                    const user = await new Users().getUserByAccount(userHederaAccountId, userId);
                     await NotificationHelper.info(
                         `${grant ? 'Grant' : 'Revok'} KYC`,
                         `KYC ${grant ? 'granted for' : 'revoked for'} ${token.tokenName}`,
@@ -625,7 +625,7 @@ export class Worker extends NatsService {
                     } else {
                         result.data = await client.unfreeze(token.tokenId, userHederaAccountId, freezeKey, userId);
                     }
-                    const user = await new Users().getUserByAccount(userHederaAccountId);
+                    const user = await new Users().getUserByAccount(userHederaAccountId, userId);
                     await NotificationHelper.info(
                         `${freeze ? 'Freeze' : 'Unfreeze'} token`,
                         `${token.tokenName} ${freeze ? 'frozen' : 'unfrozen'}`,

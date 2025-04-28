@@ -60,20 +60,23 @@ export class CalculateContainerBlock {
      * Calculate data
      * @param documents
      * @param ref
+     * @param parents
+     * @param userId
      * @private
      */
     private async calculate(
         documents: IVC | IVC[],
         ref: IPolicyCalculateBlock,
         parents: IPolicyDocument | IPolicyDocument[],
+        userId: string | null
     ): Promise<VcDocumentCollection> {
         const fields = ref.options.inputFields;
         let scope = {};
         let docOwner: PolicyUser;
         if (Array.isArray(parents)) {
-            docOwner = await PolicyUtils.getDocumentOwner(ref, parents[0]);
+            docOwner = await PolicyUtils.getDocumentOwner(ref, parents[0], userId);
         } else {
-            docOwner = await PolicyUtils.getDocumentOwner(ref, parents);
+            docOwner = await PolicyUtils.getDocumentOwner(ref, parents, userId);
         }
         if (fields) {
             if (Array.isArray(documents)) {
@@ -109,11 +112,13 @@ export class CalculateContainerBlock {
      * Process data
      * @param documents
      * @param ref
+     * @param userId
      * @private
      */
     private async process(
         documents: IPolicyDocument | IPolicyDocument[],
-        ref: IPolicyCalculateBlock
+        ref: IPolicyCalculateBlock,
+        userId: string | null
     ): Promise<IPolicyDocument> {
         const isArray = Array.isArray(documents);
         if (!documents || (isArray && !documents.length)) {
@@ -135,11 +140,11 @@ export class CalculateContainerBlock {
         }
         // -->
 
-        const newJson = await this.calculate(json, ref, documents);
+        const newJson = await this.calculate(json, ref, documents, userId);
         if (ref.options.unsigned) {
             return await this.createUnsignedDocument(newJson, ref);
         } else {
-            const metadata = await this.aggregateMetadata(documents, ref);
+            const metadata = await this.aggregateMetadata(documents, ref, userId);
             return await this.createDocument(newJson, metadata, ref);
         }
     }
@@ -148,10 +153,12 @@ export class CalculateContainerBlock {
      * Generate document metadata
      * @param documents
      * @param ref
+     * @param userId
      */
     private async aggregateMetadata(
         documents: IPolicyDocument | IPolicyDocument[],
-        ref: IPolicyCalculateBlock
+        ref: IPolicyCalculateBlock,
+        userId: string | null
     ): Promise<IMetadata> {
         const isArray = Array.isArray(documents);
         const firstDocument = isArray ? documents[0] : documents;
@@ -195,7 +202,7 @@ export class CalculateContainerBlock {
                 relationships.push(documents.messageId);
             }
         }
-        const owner = await PolicyUtils.getDocumentOwner(ref, firstDocument);
+        const owner = await PolicyUtils.getDocumentOwner(ref, firstDocument, userId);
         return { owner, id, reference, accounts, tokens, relationships };
     }
 
@@ -236,7 +243,9 @@ export class CalculateContainerBlock {
         }
 
         const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
-        const didDocument = await policyOwnerCred.loadDidDocument(ref);
+        const userId = policyOwnerCred.userId;
+
+        const didDocument = await policyOwnerCred.loadDidDocument(ref, userId);
         const uuid = await ref.components.generateUUID();
         const newVC = await VCHelper.createVerifiableCredential(
             vcSubject,
@@ -289,15 +298,15 @@ export class CalculateContainerBlock {
             if (Array.isArray(event.data.data)) {
                 const result: IPolicyDocument[] = [];
                 for (const doc of event.data.data) {
-                    const newVC = await this.process(doc, ref);
+                    const newVC = await this.process(doc, ref, event.userId);
                     result.push(newVC)
                 }
                 event.data.data = result;
             } else {
-                event.data.data = await this.process(event.data.data, ref);
+                event.data.data = await this.process(event.data.data, ref, event.userId);
             }
         } else {
-            event.data.data = await this.process(event.data.data, ref);
+            event.data.data = await this.process(event.data.data, ref, event.userId);
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);

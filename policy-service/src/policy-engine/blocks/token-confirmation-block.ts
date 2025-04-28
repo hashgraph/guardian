@@ -218,7 +218,7 @@ export class TokenConfirmationBlock {
                         hederaAccountId = doc.accounts[field];
                     }
                 } else {
-                    hederaAccountId = await PolicyUtils.getHederaAccountId(ref, doc.owner);
+                    hederaAccountId = await PolicyUtils.getHederaAccountId(ref, doc.owner, event.userId);
                 }
 
                 if (ref.options.useTemplate) {

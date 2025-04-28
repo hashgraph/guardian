@@ -178,9 +178,9 @@ export class CreateTokenBlock {
         // #endregion
 
         // #region Send new token to hedera
-        const hederaCred = await policyOwnerCred.loadHederaCredentials(ref);
-        const signOptions = await policyOwnerCred.loadSignOptions(ref);
-        const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref);
+        const hederaCred = await policyOwnerCred.loadHederaCredentials(ref, userId);
+        const signOptions = await policyOwnerCred.loadSignOptions(ref, userId);
+        const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref, userId);
         const messageServer = new MessageServer(
             hederaCred.hederaAccountId,
             hederaCred.hederaAccountKey,

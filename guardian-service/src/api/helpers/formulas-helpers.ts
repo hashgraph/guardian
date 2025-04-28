@@ -100,7 +100,7 @@ export async function publishFormula(
     item.status = EntityStatus.PUBLISHED;
 
     notifier.completedAndStart('Resolve topic');
-    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.policyTopicId), true);
+    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.policyTopicId), true, owner.id);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topic);
 

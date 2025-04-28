@@ -74,14 +74,14 @@ export class MintService {
         messageId: string,
         transactionMemo: string,
         documents: VcDocument[],
-        userId?: string
+        userId: string
     ): Promise<void> {
         const multipleConfig = await MintService.getMultipleConfig(ref, documentOwner);
         const users = new Users();
-        const documentOwnerUser = await users.getUserById(documentOwner.did);
+        const documentOwnerUser = await users.getUserById(documentOwner.did, userId);
         const wallet = new Wallet();
         const signOptions = await wallet.getUserSignOptions(documentOwnerUser);
-        const policyOwner = await users.getUserById(ref.policyOwner);
+        const policyOwner = await users.getUserById(ref.policyOwner, userId);
         const notifier = NotificationHelper.init(
             [documentOwnerUser?.id, policyOwner?.id],
         );
@@ -117,7 +117,7 @@ export class MintService {
                 } as FilterObject<MultiPolicyTransaction>);
             }
         } else {
-            const tokenConfig = await MintService.getTokenConfig(ref, token);
+            const tokenConfig = await MintService.getTokenConfig(ref, token, policyOwner?.id);
             if (token.tokenType === 'non-fungible') {
                 const serials = await MintService.mintNonFungibleTokens(
                     tokenConfig,
@@ -193,12 +193,14 @@ export class MintService {
             MintService.wallet.getUserKey(
                 token.owner,
                 KeyType.TOKEN_TREASURY_KEY,
-                token.tokenId
+                token.tokenId,
+                userId
             ),
             MintService.wallet.getUserKey(
                 token.owner,
                 KeyType.TOKEN_SUPPLY_KEY,
-                token.tokenId
+                token.tokenId,
+                userId
             ),
         ]);
         tokenConfig.supplyKey = supplyKey;
@@ -246,8 +248,9 @@ export class MintService {
      * Get token keys
      * @param ref
      * @param token
+     * @param userId
      */
-    private static async getTokenConfig(ref: AnyBlockType, token: Token): Promise<TokenConfig> {
+    private static async getTokenConfig(ref: AnyBlockType, token: Token, userId: string | null): Promise<TokenConfig> {
         const tokenConfig: TokenConfig = {
             treasuryId: token.draftToken ? '0.0.0' : token.adminId,
             tokenId: token.draftToken ? '0.0.0' : token.tokenId,
@@ -264,12 +267,14 @@ export class MintService {
                 MintService.wallet.getUserKey(
                     token.owner,
                     KeyType.TOKEN_TREASURY_KEY,
-                    token.tokenId
+                    token.tokenId,
+                    userId
                 ),
                 MintService.wallet.getUserKey(
                     token.owner,
                     KeyType.TOKEN_SUPPLY_KEY,
-                    token.tokenId
+                    token.tokenId,
+                    userId
                 ),
             ]);
             tokenConfig.supplyKey = supplyKey;
@@ -571,7 +576,8 @@ export class MintService {
             const wipeKey = await MintService.wallet.getUserKey(
                 token.owner,
                 KeyType.TOKEN_WIPE_KEY,
-                token.tokenId
+                token.tokenId,
+                userId
             );
             await workers.addRetryableTask({
                 type: WorkerTaskType.WIPE_TOKEN,

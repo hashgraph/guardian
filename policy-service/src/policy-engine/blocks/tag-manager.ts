@@ -135,7 +135,7 @@ export class TagsManagerBlock {
                 const userCred = await PolicyUtils.getUserCredentials(ref, user.did);
                 //Document
                 if (tag.document && typeof tag.document === 'object') {
-                    const didDocument = await userCred.loadDidDocument(ref);
+                    const didDocument = await userCred.loadDidDocument(ref, userId);
 
                     const vcHelper = new VcHelper();
                     let credentialSubject: any = { ...tag.document } || {};
@@ -186,8 +186,8 @@ export class TagsManagerBlock {
                 if (target.target && target.topicId) {
                     tag.target = target.target;
                     tag.status = 'Published';
-                    const hederaCred = await userCred.loadHederaCredentials(ref);
-                    const signOptions = await userCred.loadSignOptions(ref);
+                    const hederaCred = await userCred.loadHederaCredentials(ref, userId);
+                    const signOptions = await userCred.loadSignOptions(ref, userId);
                     await this.publishTag(tag, target.topicId, hederaCred, signOptions, userId);
                 } else {
                     tag.target = null;
@@ -297,7 +297,7 @@ export class TagsManagerBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const messageServer = new MessageServer(owner.hederaAccountId, owner.hederaAccountKey, signOptions, ref.dryRun);
         const topic = await ref.databaseServer.getTopicById(topicId);
-        const topicConfig = await TopicConfig.fromObject(topic, !ref.dryRun);
+        const topicConfig = await TopicConfig.fromObject(topic, !ref.dryRun, userId);
 
         item.operation = 'Create';
         item.status = 'Published';
@@ -323,11 +323,11 @@ export class TagsManagerBlock {
     private async deleteTag(item: Tag, topicId: string, owner: string, userId: string | null): Promise<Tag> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const user = await PolicyUtils.getUserCredentials(ref, owner);
-        const userCred = await user.loadHederaCredentials(ref);
-        const signOptions = await user.loadSignOptions(ref);
+        const userCred = await user.loadHederaCredentials(ref, userId);
+        const signOptions = await user.loadSignOptions(ref, userId);
         const messageServer = new MessageServer(userCred.hederaAccountId, userCred.hederaAccountKey, signOptions, ref.dryRun);
         const topic = await ref.databaseServer.getTopicById(topicId);
-        const topicConfig = await TopicConfig.fromObject(topic, !ref.dryRun);
+        const topicConfig = await TopicConfig.fromObject(topic, !ref.dryRun, userId);
 
         item.operation = 'Delete';
         item.status = 'Published';

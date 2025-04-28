@@ -21,7 +21,7 @@ export async function publishSchemaTags(
     const tags = await DatabaseServer.getTags(filter);
 
     const topic = await DatabaseServer.getTopicById(schema.topicId);
-    const topicConfig = await TopicConfig.fromObject(topic, true);
+    const topicConfig = await TopicConfig.fromObject(topic, true, owner.id);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topicConfig);
 
@@ -56,7 +56,7 @@ export async function publishPolicyTags(
     const tags = await DatabaseServer.getTags(filter);
 
     const topic = await DatabaseServer.getTopicById(policy.topicId);
-    const topicConfig = await TopicConfig.fromObject(topic, true);
+    const topicConfig = await TopicConfig.fromObject(topic, true, owner.id);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topicConfig);
 
@@ -91,7 +91,7 @@ export async function publishTokenTags(
     const tags = await DatabaseServer.getTags(filter);
 
     const topic = await DatabaseServer.getTopicById(token.topicId);
-    const topicConfig = await TopicConfig.fromObject(topic, true);
+    const topicConfig = await TopicConfig.fromObject(topic, true, owner.id);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topicConfig);
 
@@ -125,7 +125,7 @@ export async function publishToolTags(
     }
     const tags = await DatabaseServer.getTags(filter);
     const topic = await DatabaseServer.getTopicById(tool.tagsTopicId);
-    const topicConfig = await TopicConfig.fromObject(topic, true);
+    const topicConfig = await TopicConfig.fromObject(topic, true, owner.id);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topicConfig);
 
@@ -160,7 +160,7 @@ export async function publishModuleTags(
     const tags = await DatabaseServer.getTags(filter);
 
     const topic = await DatabaseServer.getTopicById(module.topicId);
-    const topicConfig = await TopicConfig.fromObject(topic, true);
+    const topicConfig = await TopicConfig.fromObject(topic, true, owner.id);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topicConfig);
 
@@ -371,7 +371,7 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 const target = await getTarget(tag.entity, tag.localTarget || tag.target);
                 if (target) {
                     const users = new Users();
-                    const root = await users.getHederaAccount(owner.creator);
+                    const root = await users.getHederaAccount(owner.creator, userId);
                     //Document
                     if (tag.document && typeof tag.document === 'object') {
                         const vcHelper = new VcHelper();
@@ -388,7 +388,7 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                             credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
                         }
 
-                        const didDocument = await vcHelper.loadDidDocument(owner.creator);
+                        const didDocument = await vcHelper.loadDidDocument(owner.creator, userId);
                         const vcObject = await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
                         tag.document = vcObject.getDocument();
                     } else {
@@ -400,7 +400,7 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                         tag.localTarget = target.id;
                         tag.status = 'Published';
                         const topic = await DatabaseServer.getTopicById(target.topicId);
-                        const topicConfig = await TopicConfig.fromObject(topic, true);
+                        const topicConfig = await TopicConfig.fromObject(topic, true, userId);
                         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
                             .setTopicObject(topicConfig);
                         await publishTag(tag, messageServer, owner);
@@ -566,9 +566,9 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
 
                 if (item.topicId && item.status === 'Published') {
                     const users = new Users();
-                    const root = await users.getHederaAccount(owner.creator);
+                    const root = await users.getHederaAccount(owner.creator, userId);
                     const topic = await DatabaseServer.getTopicById(item.topicId);
-                    const topicConfig = await TopicConfig.fromObject(topic, true);
+                    const topicConfig = await TopicConfig.fromObject(topic, true, userId);
                     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
                         .setTopicObject(topicConfig);
                     await deleteTag(item, messageServer, owner);

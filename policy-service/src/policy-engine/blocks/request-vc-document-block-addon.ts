@@ -146,6 +146,7 @@ export class RequestVcDocumentBlockAddon {
      * Set block data
      * @param user
      * @param _data
+     * @param userId
      */
     @ActionCallback({
         output: [
@@ -153,7 +154,7 @@ export class RequestVcDocumentBlockAddon {
             PolicyOutputEventType.RefreshEvent,
         ],
     })
-    async setData(user: PolicyUser, _data: IPolicyDocument): Promise<any> {
+    async setData(user: PolicyUser, _data: IPolicyDocument, userId: string | null): Promise<any> {
         const ref =
             PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
@@ -194,7 +195,7 @@ export class RequestVcDocumentBlockAddon {
                     ref,
                     user.did
                 );
-                const didDocument = await userCred.loadDidDocument(ref);
+                const didDocument = await userCred.loadDidDocument(ref, userId);
 
                 const id = await this.generateId(idType, user, userCred);
                 const credentialSubject = document;
@@ -294,9 +295,9 @@ export class RequestVcDocumentBlockAddon {
                 message.setDocument(didObject);
 
                 const userHederaCred = await userCred.loadHederaCredentials(
-                    ref
+                    ref, userId
                 );
-                const signOptions = await userCred.loadSignOptions(ref);
+                const signOptions = await userCred.loadSignOptions(ref, userId);
                 const client = new MessageServer(
                     userHederaCred.hederaAccountId,
                     userHederaCred.hederaAccountKey,
@@ -311,7 +312,7 @@ export class RequestVcDocumentBlockAddon {
                 item.messageId = messageResult.getId();
                 item.topicId = messageResult.getTopicId();
 
-                await userCred.saveSubDidDocument(ref, item, didObject);
+                await userCred.saveSubDidDocument(ref, item, didObject, userId);
 
                 return didObject.getDid();
             }

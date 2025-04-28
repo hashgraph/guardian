@@ -442,7 +442,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('The policy has not published yet.');
                 }
 
-                const root = await (new Users()).getHederaAccount(owner.creator);
+                const root = await (new Users()).getHederaAccount(owner.creator, userId);
                 const result = await publishFormula(item, owner, root, emptyNotifier());
                 return new MessageResponse(result);
             } catch (error) {

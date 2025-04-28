@@ -83,7 +83,7 @@ export class TokenActionBlock {
                 }
             } else {
                 const user = await PolicyUtils.getUserCredentials(ref, doc.owner);
-                account = await user.loadHederaCredentials(ref);
+                account = await user.loadHederaCredentials(ref, event.userId);
             }
             if (ref.options.useTemplate) {
                 if (doc.tokens) {
@@ -97,7 +97,7 @@ export class TokenActionBlock {
         }
 
         const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
-        const ownerCredentials = await policyOwner.loadHederaCredentials(ref);
+        const ownerCredentials = await policyOwner.loadHederaCredentials(ref, event.userId);
         const userId = policyOwner.userId;
 
         await PolicyUtils.checkAccountId(account, userId);

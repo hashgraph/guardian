@@ -104,7 +104,7 @@ export class CustomLogicBlock {
                     documents: ExternalDocuments(event?.data?.data)
                 }));
             }
-            await this.execute(event.data, event.user, triggerEvents);
+            await this.execute(event.data, event.user, triggerEvents, event.userId);
         } catch (error) {
             ref.error(PolicyUtils.getErrorMessage(error));
         }
@@ -134,8 +134,10 @@ export class CustomLogicBlock {
      * Execute logic
      * @param state
      * @param user
+     * @param triggerEvents
+     * @param userId
      */
-    execute(state: IPolicyEventState, user: PolicyUser, triggerEvents: (documents: IPolicyDocument | IPolicyDocument[]) => void): Promise<IPolicyDocument | IPolicyDocument[]> {
+    execute(state: IPolicyEventState, user: PolicyUser, triggerEvents: (documents: IPolicyDocument | IPolicyDocument[]) => void, userId: string | null): Promise<IPolicyDocument | IPolicyDocument[]> {
         return new Promise<IPolicyDocument | IPolicyDocument[]>(async (resolve, reject) => {
             try {
                 const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
@@ -150,7 +152,7 @@ export class CustomLogicBlock {
                 if (ref.options.unsigned) {
                     metadata = null;
                 } else {
-                    metadata = await this.aggregateMetadata(documents, user, ref);
+                    metadata = await this.aggregateMetadata(documents, user, ref, userId);
                 }
 
                 const done = async (result: any | any[], final: boolean) => {
@@ -240,15 +242,17 @@ export class CustomLogicBlock {
      * @param documents
      * @param user
      * @param ref
+     * @param userId
      */
     private async aggregateMetadata(
         documents: IPolicyDocument | IPolicyDocument[],
         user: PolicyUser,
-        ref: IPolicyCalculateBlock
+        ref: IPolicyCalculateBlock,
+        userId: string | null
     ): Promise<IMetadata> {
         const isArray = Array.isArray(documents);
         const firstDocument = isArray ? documents[0] : documents;
-        const owner = await PolicyUtils.getDocumentOwner(ref, firstDocument);
+        const owner = await PolicyUtils.getDocumentOwner(ref, firstDocument, userId);
         const relationships = [];
         let accounts: any = {};
         let tokens: any = {};
@@ -303,7 +307,7 @@ export class CustomLogicBlock {
                 userCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
                 break;
         }
-        const didDocument = await userCred.loadDidDocument(ref);
+        const didDocument = await userCred.loadDidDocument(ref, userId);
 
         if (ref.options.idType !== 'DOCUMENT') {
             id = await this.generateId(ref.options.idType, user, userCred);
@@ -402,8 +406,7 @@ export class CustomLogicBlock {
     ): Promise<string | undefined> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
-            const credentials = await UserCredentials.create(ref, user.did);
-            const userId = credentials.userId;
+            const userId = userCred.userId;
 
             if (idType === 'UUID') {
                 return await ref.components.generateUUID();
@@ -416,8 +419,8 @@ export class CustomLogicBlock {
                 const message = new DIDMessage(MessageAction.CreateDID);
                 message.setDocument(didObject);
 
-                const hederaCred = await userCred.loadHederaCredentials(ref);
-                const signOptions = await userCred.loadSignOptions(ref);
+                const hederaCred = await userCred.loadHederaCredentials(ref, userId);
+                const signOptions = await userCred.loadSignOptions(ref, userId);
                 const client = new MessageServer(
                     hederaCred.hederaAccountId,
                     hederaCred.hederaAccountKey,
@@ -432,7 +435,7 @@ export class CustomLogicBlock {
                 item.messageId = messageResult.getId();
                 item.topicId = messageResult.getTopicId();
 
-                await userCred.saveSubDidDocument(ref, item, didObject);
+                await userCred.saveSubDidDocument(ref, item, didObject, userId);
 
                 return didObject.getDid();
             }

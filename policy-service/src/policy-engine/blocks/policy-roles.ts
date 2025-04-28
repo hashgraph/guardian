@@ -315,14 +315,11 @@ export class PolicyRolesBlock {
         if (!policySchema) {
             return null;
         }
-
-        const credentials = await UserCredentials.create(ref, user.did);
-        const userId = credentials.userId;
-
         const userCred = await PolicyUtils.getUserCredentials(ref, group.owner);
-        const hederaCred = await userCred.loadHederaCredentials(ref);
-        const signOptions = await userCred.loadSignOptions(ref)
-        const didDocument = await userCred.loadDidDocument(ref);
+        const userId = userCred.userId;
+        const hederaCred = await userCred.loadHederaCredentials(ref, userId);
+        const signOptions = await userCred.loadSignOptions(ref, userId)
+        const didDocument = await userCred.loadDidDocument(ref, userId);
 
         const uuid: string = await ref.components.generateUUID();
         const vcHelper = new VcHelper();
@@ -353,7 +350,7 @@ export class PolicyRolesBlock {
             { uuid }
         );
 
-        const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref);
+        const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref, userId);
         const messageServer = new MessageServer(hederaCred.hederaAccountId, hederaCred.hederaAccountKey, signOptions, ref.dryRun);
         const vcMessage = new RoleMessage(MessageAction.CreateVC);
         vcMessage.setDocument(userVC);
@@ -403,14 +400,15 @@ export class PolicyRolesBlock {
      * Set block data
      * @param user
      * @param data
+     * @param userId
      */
     @ActionCallback({
         output: [PolicyOutputEventType.JoinGroup, PolicyOutputEventType.CreateGroup]
     })
-    async setData(user: PolicyUser, data: any): Promise<any> {
+    async setData(user: PolicyUser, data: any, userId: string | null): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const did = user?.did;
-        const curUser = await PolicyUtils.getUser(ref, did);
+        const curUser = await PolicyUtils.getUser(ref, did, userId);
 
         if (!did) {
             throw new BlockActionError('Invalid user', ref.blockType, ref.uuid);
@@ -437,7 +435,7 @@ export class PolicyRolesBlock {
         group.messageId = await this.createVC(ref, user, group);
 
         const userGroup = await ref.databaseServer.setUserInGroup(group);
-        const newUser = await PolicyComponentsUtils.GetPolicyUserByGroup(userGroup, ref);
+        const newUser = await PolicyComponentsUtils.GetPolicyUserByGroup(userGroup, ref, userId);
         if (data.invitation) {
             ref.triggerEvents(PolicyOutputEventType.JoinGroup, newUser, null);
         } else {

@@ -346,7 +346,7 @@ export async function importToolByFile(
 
     notifier.completedAndStart('Resolve Hedera account');
     const users = new Users();
-    const root = await users.getHederaAccount(user.creator);
+    const root = await users.getHederaAccount(user.creator, user.id);
 
     const toolsMapping: {
         oldMessageId: string;
@@ -384,7 +384,7 @@ export async function importToolByFile(
 
     notifier.completedAndStart('Create topic');
     const parent = await TopicConfig.fromObject(
-        await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true
+        await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true, user.id
     );
     const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
     const topic = await topicHelper.create({
@@ -395,7 +395,7 @@ export async function importToolByFile(
         targetId: null,
         targetUUID: null
     }, user.id, { admin: true, submit: true });
-    await topic.saveKeys();
+    await topic.saveKeys(user.id);
 
     notifier.completedAndStart('Create tool in Hedera');
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);

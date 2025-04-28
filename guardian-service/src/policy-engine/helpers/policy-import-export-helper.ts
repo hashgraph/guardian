@@ -99,7 +99,7 @@ export class PolicyImport {
     private async resolveAccount(user: IOwner): Promise<IRootConfig> {
         this.notifier.start('Resolve Hedera account');
         const users = new Users();
-        this.root = await users.getHederaAccount(user.creator);
+        this.root = await users.getHederaAccount(user.creator, user.id);
         this.topicHelper = new TopicHelper(
             this.root.hederaAccountId,
             this.root.hederaAccountKey,
@@ -141,7 +141,7 @@ export class PolicyImport {
     private async createPolicyTopic(policy: Policy, versionOfTopicId: string, user: IOwner) {
         this.notifier.completedAndStart('Resolve topic');
         this.parentTopic = await TopicConfig.fromObject(
-            await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true
+            await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true, user.id
         );
 
         if (this.demo) {
@@ -157,7 +157,7 @@ export class PolicyImport {
             await DatabaseServer.saveTopic(this.topicRow.toObject());
         } else if (versionOfTopicId) {
             this.topicRow = await TopicConfig.fromObject(
-                await DatabaseServer.getTopicById(versionOfTopicId), true
+                await DatabaseServer.getTopicById(versionOfTopicId), true, user.id
             );
             this.notifier.completedAndStart('Skip publishing policy in Hedera');
         } else {
@@ -177,7 +177,7 @@ export class PolicyImport {
                 policyId: null,
                 policyUUID: null
             }, user.id);
-            await this.topicRow.saveKeys();
+            await this.topicRow.saveKeys(user.id);
             await DatabaseServer.saveTopic(this.topicRow.toObject());
 
             this.notifier.completedAndStart('Link topic and policy');

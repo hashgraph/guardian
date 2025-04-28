@@ -82,7 +82,7 @@ async function createVc(
             role.owner = role.owner || '';
         }
     }
-    const didDocument = await vcHelper.loadDidDocument(owner.creator);
+    const didDocument = await vcHelper.loadDidDocument(owner.creator, owner.id);
     return await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
 }
 
@@ -91,9 +91,9 @@ async function createMessageServer(owner: IOwner): Promise<MessageServer> {
         owner: owner.owner,
         type: TopicType.UserTopic
     });
-    const topicConfig = await TopicConfig.fromObject(row, true);
+    const topicConfig = await TopicConfig.fromObject(row, true, owner.id);
     const users = new Users();
-    const root = await users.getHederaAccount(owner.creator);
+    const root = await users.getHederaAccount(owner.creator, owner.id);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
     messageServer.setTopicObject(topicConfig);
     return messageServer;

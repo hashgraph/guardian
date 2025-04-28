@@ -6,7 +6,7 @@ import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { AnyBlockType, IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '../policy-engine.interface.js';
 import { BlockActionError } from '../errors/index.js';
-import { IHederaCredentials, PolicyUser } from '../policy-user.js';
+import {IHederaCredentials, PolicyUser, UserCredentials} from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import {
     VcDocument as VcDocumentCollection,
@@ -641,12 +641,13 @@ export class ExternalTopicBlock {
      * Load messages by user
      * @param item
      * @param user
+     * @param userId
      * @private
      */
-    private async receiveData(item: ExternalDocument, user: PolicyUser): Promise<void> {
+    private async receiveData(item: ExternalDocument, user: PolicyUser, userId: string | null): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const documentOwnerCred = await PolicyUtils.getUserCredentials(ref, item.owner);
-        const hederaCred = await documentOwnerCred.loadHederaCredentials(ref);
+        const hederaCred = await documentOwnerCred.loadHederaCredentials(ref, userId);
         const messages: VCMessage[] = await MessageServer.getMessages(
             item.documentTopicId,
             user.id,
@@ -672,10 +673,13 @@ export class ExternalTopicBlock {
         item.status = TaskStatus.Processing;
         await ref.databaseServer.updateExternalTopic(item);
 
-        const user = await PolicyComponentsUtils.GetPolicyUserByDID(item.owner, null, ref);
+        const credentials = await UserCredentials.create(ref, item.owner);
+        const userId = credentials.userId;
+
+        const user = await PolicyComponentsUtils.GetPolicyUserByDID(item.owner, null, ref, userId);
         this.updateStatus(ref, item, user);
         try {
-            await this.receiveData(item, user);
+            await this.receiveData(item, user, userId);
             item.status = TaskStatus.Free;
             item.lastUpdate = (new Date()).toISOString();
             await ref.databaseServer.updateExternalTopic(item);

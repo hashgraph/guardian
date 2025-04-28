@@ -21,9 +21,9 @@ export class LoggerService {
         return logs.body;
     }
 
-    async getAttributes(name?: string, existingAttributes: string[] = [], userId?: string): Promise<any> {
+    async getAttributes(name?: string, existingAttributes: string[] = [], user?: IAuthUser): Promise<any> {
         const logs = await this.client.send(MessageAPI.GET_ATTRIBUTES, {
-            name, existingAttributes, userId
+            name, existingAttributes, user
         }).toPromise();
         return logs.body;
     }
@@ -195,7 +195,7 @@ export class LoggerApi {
                     attributes = existingAttributes
                 }
             }
-            return await this.loggerService.getAttributes(escapeRegExp(name), attributes, user.id);
+            return await this.loggerService.getAttributes(escapeRegExp(name), attributes, user);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

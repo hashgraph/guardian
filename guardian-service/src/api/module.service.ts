@@ -42,7 +42,7 @@ export async function preparePreviewMessage(
     }
 
     const users = new Users();
-    const root = await users.getHederaAccount(user.creator);
+    const root = await users.getHederaAccount(user.creator, user.id);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
     const message = await messageServer.getMessage<ModuleMessage>(messageId);
     if (message.type !== MessageType.Module) {
@@ -127,12 +127,12 @@ export async function publishModule(
     logger.info('Publish module', ['GUARDIAN_SERVICE'], user.id);
     notifier.start('Resolve Hedera account');
     const users = new Users();
-    const root = await users.getHederaAccount(user.owner);
+    const root = await users.getHederaAccount(user.owner, user.id);
     notifier.completedAndStart('Find topic');
 
     const userTopic = await TopicConfig.fromObject(
         await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic),
-        true
+        true, user.id
     );
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(userTopic);
@@ -147,7 +147,7 @@ export async function publishModule(
         policyId: null,
         policyUUID: null
     }, user.id);
-    await rootTopic.saveKeys();
+    await rootTopic.saveKeys(user.id);
     await DatabaseServer.saveTopic(rootTopic.toObject());
 
     model.topicId = rootTopic.topicId;

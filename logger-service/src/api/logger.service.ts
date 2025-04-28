@@ -1,5 +1,13 @@
-import { LargePayloadContainer, MessageError, MessageResponse, Log, DatabaseServer, MAP_ATTRIBUTES_AGGREGATION_FILTERS } from '@guardian/common';
-import { MessageAPI } from '@guardian/interfaces';
+import {
+    LargePayloadContainer,
+    MessageError,
+    MessageResponse,
+    Log,
+    DatabaseServer,
+    MAP_ATTRIBUTES_AGGREGATION_FILTERS,
+    Users, IAuthUser
+} from '@guardian/common';
+import {MessageAPI, Permissions} from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Ctx, MessagePattern, NatsContext, Payload, Transport } from '@nestjs/microservices';
 import process from 'process';
@@ -68,7 +76,34 @@ export class LoggerService {
         try {
             const nameFilter = `.*${msg.name || ''}.*`;
             const existingAttributes = msg.existingAttributes || [];
-            const userId = msg.userId;
+            const usersService = new Users();
+
+            const user: IAuthUser = msg.user;
+            const userId = user.id;
+
+            const userIds: (string | null)[] = [userId];
+            const permissions = user.permissions || [];
+
+            const hasSystemAccess = permissions.includes(Permissions.LOG_SYSTEM_READ);
+            const hasUsersAccess = permissions.includes(Permissions.LOG_USERS_READ);
+
+            if (hasSystemAccess && user.did) {
+                userIds.push(null);
+
+                if (user.parent) {
+                    const parentUser = await usersService.getUserById(user.parent, userId);
+                    if (parentUser?.id) {
+                        userIds.push(parentUser.id);
+                    }
+                }
+            }
+
+            if (hasUsersAccess && user.parent) {
+                const usersByParentDid = await usersService.getUsersByParentDid(user.parent, userId);
+                for (const u of usersByParentDid) {
+                    userIds.push(u.id);
+                }
+            }
 
             const pipeline = logRepository.getAttributesAggregationFilters(
                 MAP_ATTRIBUTES_AGGREGATION_FILTERS.RESULT,
@@ -78,10 +113,7 @@ export class LoggerService {
 
             pipeline.unshift({
                 $match: {
-                    $or: [
-                        { userId },
-                        { userId: null }
-                    ]
+                    $or: userIds.map(id => ({ userId: id }))
                 }
             });
 

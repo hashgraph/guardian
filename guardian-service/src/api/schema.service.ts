@@ -562,7 +562,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
                 const { id, version, owner } = msg;
                 const users = new Users();
-                const root = await users.getHederaAccount(owner.creator);
+                const root = await users.getHederaAccount(owner.creator, userId);
                 const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier(), null);
                 return new MessageResponse(item);
             } catch (error) {
@@ -583,7 +583,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
 
                 notifier.completedAndStart('Resolve Hedera account');
                 const users = new Users();
-                const root = await users.getHederaAccount(owner.creator);
+                const root = await users.getHederaAccount(owner.creator, userId);
                 const item = await findAndPublishSchema(id, version, owner, root, notifier, null);
                 notifier.result(item.id);
             }, async (error) => {
@@ -1209,7 +1209,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
                 const { id, version, owner } = msg;
                 const users = new Users();
-                const root = await users.getHederaAccount(owner.creator);
+                const root = await users.getHederaAccount(owner.creator, userId);
                 const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier(), null);
                 return new MessageResponse(item);
             } catch (error) {
@@ -1286,7 +1286,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const users = new Users();
-                const root = await users.getHederaAccount(owner.creator);
+                const root = await users.getHederaAccount(owner.creator, userId);
                 const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
                 const { tools, errors } = await importSubTools(root, xlsxResult.getToolIds(), owner, notifier);
                 for (const tool of tools) {
@@ -1345,7 +1345,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
 
                 await logger.info(`Import policy by xlsx`, ['GUARDIAN_SERVICE'], userId);
                 const users = new Users();
-                const root = await users.getHederaAccount(owner.creator);
+                const root = await users.getHederaAccount(owner.creator, userId);
                 notifier.start('File parsing');
 
                 const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));

@@ -101,6 +101,11 @@ export class SplitBlock {
      * @param root
      * @param document
      * @param newValue
+     * @param chunkNumber
+     * @param maxChunks
+     * @param sourceValue
+     * @param threshold
+     * @param userId
      */
     private async createNewDoc(
         ref: IPolicyBlock,
@@ -111,6 +116,7 @@ export class SplitBlock {
         maxChunks: number,
         sourceValue: number,
         threshold: number,
+        userId: string | null
     ): Promise<IPolicyDocument> {
         let clone = PolicyUtils.cloneVC(ref, document);
         PolicyUtils.setObjectValue(clone, ref.options.sourceField, newValue);
@@ -131,7 +137,7 @@ export class SplitBlock {
             });
         }
         const uuid = await ref.components.generateUUID();
-        const didDocument = await root.loadDidDocument(ref);
+        const didDocument = await root.loadDidDocument(ref, userId);
         vc = await this.vcHelper.issueVerifiableCredential(
             vc,
             didDocument,
@@ -152,6 +158,7 @@ export class SplitBlock {
      * @param result
      * @param residue
      * @param document
+     * @param userId
      */
     private async split(
         ref: IPolicyBlock,
@@ -159,7 +166,8 @@ export class SplitBlock {
         user: PolicyUser,
         result: SplitDocuments[][],
         residue: SplitDocuments[],
-        document: IPolicyDocument
+        document: IPolicyDocument,
+        userId: string | null
     ) {
         const threshold = parseFloat(ref.options.threshold);
         const value = await this.calcDocValue(ref, document);
@@ -179,7 +187,7 @@ export class SplitBlock {
         if (value < needed) {
             const maxChunks = 1;
             const newDoc = await this.createNewDoc(
-                ref, root, document, value, maxChunks, maxChunks, value, threshold
+                ref, root, document, value, maxChunks, maxChunks, value, threshold, userId
             );
             residue.push(ref.databaseServer.createResidue(
                 ref.policyId,
@@ -194,7 +202,7 @@ export class SplitBlock {
             const maxChunks = (count > 0 ? count : 0) + (end > 0 ? 1 : 0) + 1;
 
             const newDoc1 = await this.createNewDoc(
-                ref, root, document, needed, 1, maxChunks, value, threshold
+                ref, root, document, needed, 1, maxChunks, value, threshold, userId
             );
             residue.push(ref.databaseServer.createResidue(
                 ref.policyId,
@@ -209,7 +217,7 @@ export class SplitBlock {
             if (count > 0) {
                 for (let i = 0; i < count; i++) {
                     const newDocN = await this.createNewDoc(
-                        ref, root, document, threshold, i + 2, maxChunks, value, threshold
+                        ref, root, document, threshold, i + 2, maxChunks, value, threshold, userId
                     );
                     result.push([ref.databaseServer.createResidue(
                         ref.policyId,
@@ -222,7 +230,7 @@ export class SplitBlock {
             }
             if (end > 0) {
                 const newDocL = await this.createNewDoc(
-                    ref, root, document, end, maxChunks, maxChunks, value, threshold
+                    ref, root, document, end, maxChunks, maxChunks, value, threshold, userId
                 );
                 residue.push(ref.databaseServer.createResidue(
                     ref.policyId,
@@ -241,8 +249,9 @@ export class SplitBlock {
      * @param ref
      * @param user
      * @param documents
+     * @param userId
      */
-    private async addDocs(ref: IPolicyBlock, user: PolicyUser, documents: IPolicyDocument[]) {
+    private async addDocs(ref: IPolicyBlock, user: PolicyUser, documents: IPolicyDocument[], userId: string | null) {
         const residue = await ref.databaseServer.getResidue(ref.policyId, ref.uuid, user.id);
         const root = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
 
@@ -250,7 +259,7 @@ export class SplitBlock {
 
         const data: SplitDocuments[][] = [];
         for (const document of documents) {
-            current = await this.split(ref, root, user, data, current, document);
+            current = await this.split(ref, root, user, data, current, document, userId);
         }
 
         await ref.databaseServer.removeResidue(residue);
@@ -293,9 +302,9 @@ export class SplitBlock {
             documents: ExternalDocuments(docs)
         }));
         if (Array.isArray(docs)) {
-            await this.addDocs(ref, event.user, docs);
+            await this.addDocs(ref, event.user, docs, event.userId);
         } else {
-            await this.addDocs(ref, event.user, [docs]);
+            await this.addDocs(ref, event.user, [docs], event.userId);
         }
     }
 }

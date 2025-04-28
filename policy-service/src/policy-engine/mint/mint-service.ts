@@ -38,10 +38,12 @@ export class MintService {
      * Get token keys
      * @param ref
      * @param token
+     * @param userId
      */
     private static async getTokenConfig(
         ref: AnyBlockType,
-        token: Token
+        token: Token,
+        userId: string | null
     ): Promise<TokenConfig> {
         const tokenConfig: TokenConfig = {
             treasuryId: token.draftToken ? '0.0.0' : token.adminId,
@@ -59,12 +61,15 @@ export class MintService {
                 MintService.wallet.getUserKey(
                     token.owner,
                     KeyType.TOKEN_TREASURY_KEY,
-                    token.tokenId
+                    token.tokenId,
+                    userId
+
                 ),
                 MintService.wallet.getUserKey(
                     token.owner,
                     KeyType.TOKEN_SUPPLY_KEY,
-                    token.tokenId
+                    token.tokenId,
+                    userId
                 ),
             ]);
             tokenConfig.supplyKey = supplyKey;
@@ -85,6 +90,7 @@ export class MintService {
      * @param transactionMemo
      * @param documents
      * @param signOptions
+     * @param userId
      */
     public static async mint(
         ref: AnyBlockType,
@@ -96,15 +102,16 @@ export class MintService {
         vpMessageId: string,
         transactionMemo: string,
         documents: VcDocument[],
-        signOptions: ISignOptions
+        signOptions: ISignOptions,
+        userId: string | null
     ): Promise<void> {
         const multipleConfig = await MintService.getMultipleConfig(
             ref,
             documentOwner
         );
         const users = new Users();
-        const documentOwnerUser = await users.getUserById(documentOwner.did);
-        const policyOwner = await users.getUserById(ref.policyOwner);
+        const documentOwnerUser = await users.getUserById(documentOwner.did, userId);
+        const policyOwner = await users.getUserById(ref.policyOwner, userId);
         const notifier = NotificationHelper.init([
             documentOwnerUser?.id,
             policyOwner?.id,
@@ -154,7 +161,7 @@ export class MintService {
                 ref.policyId
             );
         } else {
-            const tokenConfig = await MintService.getTokenConfig(ref, token);
+            const tokenConfig = await MintService.getTokenConfig(ref, token, userId);
             if (token.tokenType === 'non-fungible') {
                 const mintNFT = await MintNFT.create(
                     {
@@ -229,12 +236,14 @@ export class MintService {
      * @param userDId User did
      * @param rootDid Root did
      * @param ref Block ref
+     * @param userId
      */
     public static async retry(
         vpMessageId: string,
         userDId: string,
         rootDid: string,
-        ref?: any
+        ref: any,
+        userId: string | null
     ) {
         const db = new DatabaseServer(ref?.dryRun);
         const requests = await db.getMintRequests({
@@ -251,11 +260,11 @@ export class MintService {
             messageId: vpMessageId,
         });
         const users = new Users();
-        const documentOwnerUser = await users.getUserById(vp.owner);
-        const user = await users.getUserById(userDId);
+        const documentOwnerUser = await users.getUserById(vp.owner, userId);
+        const user = await users.getUserById(userDId, userId);
         let processed = false;
-        const root = await users.getHederaAccount(rootDid);
-        const rootUser = await users.getUserById(rootDid);
+        const root = await users.getHederaAccount(rootDid, userId);
+        const rootUser = await users.getUserById(rootDid, userId);
         for (const request of requests) {
             processed ||= await MintService.retryRequest(
                 request,
@@ -339,7 +348,8 @@ export class MintService {
             }
             const tokenConfig: TokenConfig = await MintService.getTokenConfig(
                 ref,
-                token
+                token,
+                userId
             );
             let processed = false;
 
@@ -447,12 +457,14 @@ export class MintService {
             MintService.wallet.getUserKey(
                 token.owner,
                 KeyType.TOKEN_TREASURY_KEY,
-                token.tokenId
+                token.tokenId,
+                userId
             ),
             MintService.wallet.getUserKey(
                 token.owner,
                 KeyType.TOKEN_SUPPLY_KEY,
-                token.tokenId
+                token.tokenId,
+                userId
             ),
         ]);
         tokenConfig.supplyKey = supplyKey;
@@ -583,7 +595,8 @@ export class MintService {
             const wipeKey = await MintService.wallet.getUserKey(
                 token.owner,
                 KeyType.TOKEN_WIPE_KEY,
-                token.tokenId
+                token.tokenId,
+                userId
             );
             await workers.addRetryableTask(
                 {

@@ -48,7 +48,7 @@ export async function preparePreviewMessage(
     }
 
     const users = new Users();
-    const root = await users.getHederaAccount(user.creator);
+    const root = await users.getHederaAccount(user.creator, user.id);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
     const message = await messageServer.getMessage<ToolMessage>(messageId);
     if (message.type !== MessageType.Tool) {
@@ -134,10 +134,10 @@ export async function publishTool(
 
         notifier.start('Resolve Hedera account');
         const users = new Users();
-        const root = await users.getHederaAccount(user.creator);
+        const root = await users.getHederaAccount(user.creator, user.id);
 
         notifier.completedAndStart('Find topic');
-        const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(tool.topicId), true);
+        const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(tool.topicId), true, user.id);
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
             .setTopicObject(topic);
 
@@ -154,7 +154,7 @@ export async function publishTool(
             policyId: tool.id.toString(),
             policyUUID: tool.uuid
         }, user.id, { admin: true, submit: false });
-        await tagsTopic.saveKeys();
+        await tagsTopic.saveKeys(user.id);
         await DatabaseServer.saveTopic(tagsTopic.toObject());
         tool.tagsTopicId = tagsTopic.topicId;
 
@@ -294,12 +294,12 @@ export async function createTool(
         if (!tool.topicId) {
             notifier.completedAndStart('Resolve Hedera account');
             const users = new Users();
-            const root = await users.getHederaAccount(user.creator);
+            const root = await users.getHederaAccount(user.creator, user.id);
 
             notifier.completedAndStart('Create topic');
             await logger.info('Create Tool: Create New Topic', ['GUARDIAN_SERVICE'], user.id);
             const parent = await TopicConfig.fromObject(
-                await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true
+                await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true, user.id
             );
             const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
             const topic = await topicHelper.create({
@@ -310,7 +310,7 @@ export async function createTool(
                 targetId: tool.id.toString(),
                 targetUUID: tool.uuid
             }, user.id, { admin: true, submit: true });
-            await topic.saveKeys();
+            await topic.saveKeys(user.id);
 
             notifier.completedAndStart('Create tool in Hedera');
             const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
@@ -743,7 +743,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 }
                 const notifier = emptyNotifier();
                 const users = new Users();
-                const root = await users.getHederaAccount(owner.creator);
+                const root = await users.getHederaAccount(owner.creator, userId);
                 const item = await importToolByMessage(root, id, owner, notifier);
                 notifier.completed();
                 return new MessageResponse(item);
@@ -794,7 +794,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('The tool already exists');
                 }
                 const users = new Users();
-                const root = await users.getHederaAccount(owner.creator);
+                const root = await users.getHederaAccount(owner.creator, userId);
                 const { tool, errors } = await importToolByMessage(root, id, owner, notifier);
                 notifier.completed();
                 if (errors?.length) {

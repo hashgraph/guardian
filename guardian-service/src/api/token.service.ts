@@ -26,7 +26,7 @@ export async function createHederaToken(token: any, user: IRootConfig, userId: s
         admin: true,
         submit: false
     });
-    await topic.saveKeys();
+    await topic.saveKeys(userId);
     await DatabaseServer.saveTopic(topic.toObject());
 
     const workers = new Workers();
@@ -47,37 +47,43 @@ export async function createHederaToken(token: any, user: IRootConfig, userId: s
             user.did,
             KeyType.TOKEN_TREASURY_KEY,
             tokenData.tokenId,
-            tokenData.treasuryKey
+            tokenData.treasuryKey,
+            userId
         ),
         wallet.setUserKey(
             user.did,
             KeyType.TOKEN_ADMIN_KEY,
             tokenData.tokenId,
-            tokenData.adminKey
+            tokenData.adminKey,
+            userId
         ),
         wallet.setUserKey(
             user.did,
             KeyType.TOKEN_FREEZE_KEY,
             tokenData.tokenId,
-            tokenData.freezeKey
+            tokenData.freezeKey,
+            userId
         ),
         wallet.setUserKey(
             user.did,
             KeyType.TOKEN_KYC_KEY,
             tokenData.tokenId,
-            tokenData.kycKey
+            tokenData.kycKey,
+            userId
         ),
         wallet.setUserKey(
             user.did,
             KeyType.TOKEN_SUPPLY_KEY,
             tokenData.tokenId,
-            tokenData.supplyKey
+            tokenData.supplyKey,
+            userId
         ),
         wallet.setUserKey(
             user.did,
             KeyType.TOKEN_WIPE_KEY,
             tokenData.tokenId,
-            tokenData.wipeKey
+            tokenData.wipeKey,
+            userId
         )
     ]);
 
@@ -169,7 +175,7 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
 
     notifier.start('Resolve Hedera account');
     const users = new Users();
-    const root = await users.getHederaAccount(user.creator);
+    const root = await users.getHederaAccount(user.creator, user.id);
 
     notifier.completedAndStart('Create token');
 
@@ -220,7 +226,7 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
     } else if (oldToken.draftToken && !newToken.draftToken) {
         notifier.start('Resolve Hedera account');
         const users = new Users();
-        const root = await users.getHederaAccount(user.creator);
+        const root = await users.getHederaAccount(user.creator, user.id);
 
         notifier.completedAndStart('Create and save token in DB');
 
@@ -266,11 +272,12 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
         const wallet = new Wallet();
         const workers = new Workers();
 
-        const root = await users.getHederaAccount(user.creator);
+        const root = await users.getHederaAccount(user.creator, user.id);
         const adminKey = await wallet.getUserKey(
             user.owner,
             KeyType.TOKEN_ADMIN_KEY,
-            oldToken.tokenId
+            oldToken.tokenId,
+            user.id
         );
 
         notifier.completedAndStart('Update token');
@@ -300,7 +307,8 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
                 user.owner,
                 KeyType.TOKEN_FREEZE_KEY,
                 tokenData.tokenId,
-                tokenData.freezeKey
+                tokenData.freezeKey,
+                user.id
             ));
         }
         if (changes.enableKYC) {
@@ -308,7 +316,8 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
                 user.owner,
                 KeyType.TOKEN_KYC_KEY,
                 tokenData.tokenId,
-                tokenData.kycKey
+                tokenData.kycKey,
+                user.id
             ));
         }
         if (changes.enableWipe) {
@@ -316,7 +325,8 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
                 user.owner,
                 KeyType.TOKEN_WIPE_KEY,
                 tokenData.tokenId,
-                tokenData.wipeKey
+                tokenData.wipeKey,
+                user.id
             ));
         }
         await Promise.all(saveKeys);
@@ -344,11 +354,12 @@ async function deleteToken(
         const wallet = new Wallet();
         const workers = new Workers();
 
-        const root = await users.getHederaAccount(user.creator);
+        const root = await users.getHederaAccount(user.creator, user.id);
         const adminKey = await wallet.getUserKey(
             user.owner,
             KeyType.TOKEN_ADMIN_KEY,
-            token.tokenId
+            token.tokenId,
+            user.id
         );
 
         notifier.completedAndStart('Delete token');
@@ -402,7 +413,7 @@ async function associateToken(
     const wallet = new Wallet();
     const users = new Users();
     notifier.completedAndStart('Resolve Hedera account');
-    const user = await users.getUserById(target.creator);
+    const user = await users.getUserById(target.creator, target.id);
     const userID = user.hederaAccountId;
     const userDID = user.did;
     const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
@@ -457,7 +468,7 @@ async function grantKycToken(
 
     notifier.completedAndStart('Resolve Hedera account');
     const users = new Users();
-    const user = await users.getUser(username);
+    const user = await users.getUser(username, owner.id);
     if (!user) {
         throw new Error('User not found');
     }
@@ -465,14 +476,15 @@ async function grantKycToken(
         throw new Error('User is not linked to an Hedera Account');
     }
 
-    const root = await users.getHederaAccount(owner.creator);
+    const root = await users.getHederaAccount(owner.creator, owner.id);
 
     notifier.completedAndStart(grant ? 'Grant KYC' : 'Revoke KYC');
     const workers = new Workers();
     const kycKey = await new Wallet().getUserKey(
         owner.owner,
         KeyType.TOKEN_KYC_KEY,
-        token.tokenId
+        token.tokenId,
+        owner.id
     );
     await workers.addNonRetryableTask({
         type: WorkerTaskType.GRANT_KYC_TOKEN,
@@ -529,7 +541,7 @@ async function freezeToken(
 
     notifier.completedAndStart('Resolve Hedera account');
     const users = new Users();
-    const user = await users.getUser(username);
+    const user = await users.getUser(username, owner.id);
     if (!user) {
         throw new Error('User not found');
     }
@@ -537,14 +549,15 @@ async function freezeToken(
         throw new Error('User is not linked to an Hedera Account');
     }
 
-    const root = await users.getHederaAccount(owner.creator);
+    const root = await users.getHederaAccount(owner.creator, owner.id);
 
     notifier.completedAndStart(freeze ? 'Freeze Token' : 'Unfreeze Token');
     const workers = new Workers();
     const freezeKey = await new Wallet().getUserKey(
         owner.owner,
         KeyType.TOKEN_FREEZE_KEY,
-        token.tokenId
+        token.tokenId,
+        owner.id
     );
     await workers.addNonRetryableTask({
         type: WorkerTaskType.FREEZE_TOKEN,
@@ -787,7 +800,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 const { tokenId, username, owner } = msg;
 
                 const users = new Users();
-                const user = await users.getUser(username);
+                const user = await users.getUser(username, userId);
                 if (!user) {
                     throw new Error('User not found');
                 }
@@ -801,7 +814,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                     return new MessageResponse(getTokenInfo(null, token));
                 }
 
-                const root = await users.getHederaAccount(owner.creator);
+                const root = await users.getHederaAccount(owner.creator, userId);
                 const workers = new Workers();
                 const info = await workers.addNonRetryableTask({
                     type: WorkerTaskType.GET_ACCOUNT_INFO,
@@ -830,7 +843,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 const users = new Users();
                 const { did } = msg;
 
-                const user = await users.getUserById(did);
+                const user = await users.getUserById(did, userId);
                 const userID = user.hederaAccountId;
                 const userDID = user.did;
                 const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
@@ -1035,7 +1048,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 if (!tokenId) {
                     throw new Error('Token identifier is required');
                 }
-                const user = await users.getUserById(did);
+                const user = await users.getUserById(did, userId);
                 const userID = user.hederaAccountId;
                 const userDID = user.did;
                 const userKey = await wallet.getKey(

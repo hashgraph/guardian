@@ -44,7 +44,7 @@ export class BlockTreeGenerator extends NatsService {
         policy: IPolicyInstance | IPolicyInterfaceBlock,
         user: IUser
     ): Promise<PolicyUser> {
-        const policyUser = await PolicyComponentsUtils.GetPolicyUserByName(user?.username, policy);
+        const policyUser = await PolicyComponentsUtils.GetPolicyUserByName(user?.username, policy, user.id);
         if (!user) {
             throw new Error(`Forbidden`);
         }

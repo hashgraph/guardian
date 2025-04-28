@@ -419,8 +419,8 @@ export class SendToGuardianBlock {
 
             const topic = await PolicyUtils.getOrCreateTopic(ref, ref.options.topic, root, topicOwner, userId, document);
 
-            const userHederaCred = await user.loadHederaCredentials(ref);
-            const signOptions = await user.loadSignOptions(ref);
+            const userHederaCred = await user.loadHederaCredentials(ref, userId);
+            const signOptions = await user.loadSignOptions(ref, userId);
             const messageServer = new MessageServer(
                 userHederaCred.hederaAccountId, userHederaCred.hederaAccountKey, signOptions, ref.dryRun
             );
@@ -442,8 +442,9 @@ export class SendToGuardianBlock {
     /**
      * Document sender
      * @param document
+     * @param userId
      */
-    private async documentSender(document: IPolicyDocument): Promise<IPolicyDocument> {
+    private async documentSender(document: IPolicyDocument, userId: string | null): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const type = PolicyUtils.getDocumentType(document);
 
@@ -453,10 +454,7 @@ export class SendToGuardianBlock {
         let message: Message;
         let docObject: VcDocument | VpDocument | HederaDidDocument;
 
-        const owner = await PolicyUtils.getUserByIssuer(ref, document);
-
-        const credentials = await UserCredentials.create(ref, owner.did);
-        const userId = credentials.userId;
+        const owner = await PolicyUtils.getUserByIssuer(ref, document, userId);
 
         if (type === DocumentType.DID) {
             const did = HederaDidDocument.fromJsonTree(document.document);
@@ -557,12 +555,12 @@ export class SendToGuardianBlock {
         if (Array.isArray(docs)) {
             const newDocs = [];
             for (const doc of docs) {
-                const newDoc = await this.documentSender(doc);
+                const newDoc = await this.documentSender(doc, event.userId);
                 newDocs.push(newDoc);
             }
             event.data.data = newDocs;
         } else {
-            event.data.data = await this.documentSender(docs);
+            event.data.data = await this.documentSender(docs, event.userId);
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);

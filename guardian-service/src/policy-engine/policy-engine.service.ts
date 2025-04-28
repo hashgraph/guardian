@@ -817,11 +817,11 @@ export class PolicyEngineService {
                     await this.policyEngine.accessPolicy(policy, owner, 'read');
 
                     const item = await DatabaseServer.getMultiPolicy(policy.instanceTopicId, owner.creator);
-                    const userAccount = await this.users.getHederaAccount(owner.creator);
+                    const userAccount = await this.users.getHederaAccount(owner.creator, userId);
                     if (item) {
                         return new MessageError(new Error('Policy is already bound'));
                     } else {
-                        const root = await this.users.getHederaAccount(policy.creator);
+                        const root = await this.users.getHederaAccount(policy.creator, userId);
                         const result = await this.policyEngine.createMultiPolicy(policy, userAccount, root, data);
                         return new MessageResponse(result);
                     }
@@ -1062,7 +1062,7 @@ export class PolicyEngineService {
                         throw new Error(`Policy is not published`);
                     }
 
-                    const root = await this.users.getHederaAccount(owner.creator);
+                    const root = await this.users.getHederaAccount(owner.creator, userId);
                     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
                     let message: PolicyMessage;
                     if (date) {
@@ -1080,7 +1080,7 @@ export class PolicyEngineService {
                         message = new PolicyMessage(MessageType.Policy, MessageAction.DiscontinuePolicy);
                     }
                     message.setDocument(model);
-                    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(model.topicId), true);
+                    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(model.topicId), true, userId);
                     await messageServer
                         .setTopicObject(topic)
                         .sendMessage(message, true, null, userId);
@@ -1388,7 +1388,7 @@ export class PolicyEngineService {
                     if (!messageId) {
                         throw new Error('Policy ID in body is empty');
                     }
-                    const root = await this.users.getHederaAccount(owner.creator);
+                    const root = await this.users.getHederaAccount(owner.creator, userId);
                     const result = await this.policyEngine
                         .importPolicyMessage(messageId, owner, root, versionOfTopicId, logger, metadata, demo);
                     if (result?.errors?.length) {
@@ -1426,7 +1426,7 @@ export class PolicyEngineService {
                             throw new Error('Policy ID in body is empty');
                         }
                         notifier.start('Resolve Hedera account');
-                        const root = await this.users.getHederaAccount(owner.creator);
+                        const root = await this.users.getHederaAccount(owner.creator, userId);
                         notifier.completed();
                         const result = await this.policyEngine
                             .importPolicyMessage(messageId, owner, root, versionOfTopicId, logger, metadata, demo, notifier);
@@ -1492,7 +1492,7 @@ export class PolicyEngineService {
                     if (!xlsx) {
                         throw new Error('file in body is empty');
                     }
-                    const root = await this.users.getHederaAccount(owner.creator);
+                    const root = await this.users.getHederaAccount(owner.creator, userId);
                     const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
                     const { tools, errors } = await importSubTools(root, xlsxResult.getToolIds(), owner, notifier);
                     for (const tool of tools) {
@@ -1543,7 +1543,7 @@ export class PolicyEngineService {
                         throw new Error('file in body is empty');
                     }
                     await logger.info(`Import policy by xlsx`, ['GUARDIAN_SERVICE'], userId);
-                    const root = await this.users.getHederaAccount(owner.creator);
+                    const root = await this.users.getHederaAccount(owner.creator, userId);
                     notifier.start('File parsing');
                     const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
                     const { tools, errors } = await importSubTools(root, xlsxResult.getToolIds(), owner, notifier);
@@ -1962,7 +1962,8 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.DOWNLOAD_POLICY_DATA,
-            async (msg: { policyId: string, owner: IOwner }) => {
+            async (msg: { policyId: string, owner: IOwner, userId: string | null }) => {
+                const userId = msg?.userId
                 try {
                     const { policyId, owner } = msg;
                     const policy = await DatabaseServer.getPolicy({
@@ -1978,7 +1979,7 @@ export class PolicyEngineService {
                     });
                     await this.policyEngine.accessPolicy(policy, owner, 'read');
                     const policyDataExportHelper = new PolicyDataImportExport(policy);
-                    const zip = await policyDataExportHelper.exportData();
+                    const zip = await policyDataExportHelper.exportData(userId);
                     const zippedData = await zip.generateAsync({
                         type: 'arraybuffer',
                         compression: 'DEFLATE',

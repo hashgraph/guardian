@@ -525,7 +525,7 @@ export async function syncWipeContract(
             const contractOwnerDids = contracts.map(
                 (contractOwnerDid) => contractOwnerDid.owner
             );
-            const contractOwners = await users.getUsersByIds(contractOwnerDids);
+            const contractOwners = await users.getUsersByIds(contractOwnerDids, userId);
             const contractOwnerIds = contractOwners.map(
                 (contractOwner) => contractOwner.id
             );
@@ -802,14 +802,14 @@ export async function syncRetireContract(
             const contractOwnerDids = contracts.map(
                 (contract) => contract.owner
             );
-            const contractOwners = await users.getUsersByIds(contractOwnerDids);
+            const contractOwners = await users.getUsersByIds(contractOwnerDids, userId);
             const contractOwnerIds = contractOwners.map(
                 (contractOwner) => contractOwner.id
             );
             const allOwnersUsers = await Promise.all(
                 contractOwnerDids.map(
                     async (contractOwnerDid) =>
-                        await users.getUsersBySrId(contractOwnerDid)
+                        await users.getUsersBySrId(contractOwnerDid, userId)
                 )
             );
             const allOwnersUsersIds = []
@@ -824,7 +824,7 @@ export async function syncRetireContract(
                     const tokens = data[1].map((item) =>
                         TokenId.fromSolidityAddress(item[0]).toString()
                     );
-                    const user = await users.getUserByAccount(retireUser);
+                    const user = await users.getUserByAccount(retireUser, userId);
                     if (!sendNotifications || !user?.id) {
                         break;
                     }
@@ -845,8 +845,6 @@ export async function syncRetireContract(
                         data[0]
                     ).toString();
 
-                    const userIdByAccount = (await users.getUserByAccount(userAccount)).id;
-
                     await setPool(
                         workers,
                         dataBaseServer,
@@ -855,7 +853,7 @@ export async function syncRetireContract(
                             tokens,
                             immediately: data[1],
                         },
-                        userIdByAccount
+                        userId
                     );
                     if (!sendNotifications) {
                         break;
@@ -1195,7 +1193,7 @@ async function saveRetireVC(
     const topicConfig = await TopicConfig.fromObject({
         topicId: contract.topicId,
         type: TopicType.RetireTopic,
-    } as any);
+    } as any, false, userId);
 
     const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
     messageServer.setTopicObject(topicConfig);
@@ -1205,7 +1203,7 @@ async function saveRetireVC(
             owner: owner.creator,
             type: TopicType.UserTopic,
         }),
-        true
+        true, userId
     );
 
     let schema = await dataBaseServer.findOne(SchemaCollection, {
@@ -1254,7 +1252,7 @@ async function saveRetireVC(
         );
     }
 
-    const didDocument = await vcHelper.loadDidDocument(owner.creator);
+    const didDocument = await vcHelper.loadDidDocument(owner.creator, userId);
     const vcObject = await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
 
     const vcMessage = new VCMessage(MessageAction.CreateVC);
@@ -1344,7 +1342,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -1378,7 +1376,7 @@ export async function contractAPI(
                 topic.topicId
             );
 
-            await topic.saveKeys();
+            await topic.saveKeys(userId);
             await DatabaseServer.saveTopic(topic.toObject());
 
             const version = await getContractVersion(
@@ -1412,7 +1410,7 @@ export async function contractAPI(
                 .sendMessage(contractMessage, true, null, userId);
             const userTopic = await TopicConfig.fromObject(
                 await DatabaseServer.getTopicByType(owner.owner, TopicType.UserTopic),
-                true
+                true, userId
             );
             await topicHelper.twoWayLink(topic, userTopic, contractMessageResult.getId(), userId);
             return new MessageResponse(contract);
@@ -1445,7 +1443,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -1553,7 +1551,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -1716,7 +1714,7 @@ export async function contractAPI(
                 const users = new Users();
                 const wallet = new Wallet();
                 const workers = new Workers();
-                const root = await users.getUserById(owner.creator);
+                const root = await users.getUserById(owner.creator, userId);
                 const rootKey = await wallet.getKey(
                     root.walletToken,
                     KeyType.KEY,
@@ -1767,7 +1765,7 @@ export async function contractAPI(
                 const users = new Users();
                 const wallet = new Wallet();
                 const workers = new Workers();
-                const root = await users.getUserById(owner.creator);
+                const root = await users.getUserById(owner.creator, userId);
                 const rootKey = await wallet.getKey(
                     root.walletToken,
                     KeyType.KEY,
@@ -1817,7 +1815,7 @@ export async function contractAPI(
                 const users = new Users();
                 const wallet = new Wallet();
                 const workers = new Workers();
-                const root = await users.getUserById(owner.creator);
+                const root = await users.getUserById(owner.creator, userId);
                 const rootKey = await wallet.getKey(
                     root.walletToken,
                     KeyType.KEY,
@@ -1902,7 +1900,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -1981,7 +1979,7 @@ export async function contractAPI(
                 const users = new Users();
                 const wallet = new Wallet();
                 const workers = new Workers();
-                const root = await users.getUserById(owner.creator);
+                const root = await users.getUserById(owner.creator, userId);
                 const rootKey = await wallet.getKey(
                     root.walletToken,
                     KeyType.KEY,
@@ -2052,7 +2050,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -2118,7 +2116,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -2184,7 +2182,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -2250,7 +2248,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -2318,7 +2316,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -2395,7 +2393,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -2577,7 +2575,7 @@ export async function contractAPI(
             }
 
             const users = new Users();
-            const user = await users.getUserById(owner.creator);
+            const user = await users.getUserById(owner.creator, userId);
 
             const filters: any = {};
             if (contractId) {
@@ -2639,7 +2637,7 @@ export async function contractAPI(
             }
 
             const users = new Users();
-            const user = await users.getUserById(owner.creator);
+            const user = await users.getUserById(owner.creator, userId);
 
             const filters: any = {
                 $and: [],
@@ -2707,7 +2705,7 @@ export async function contractAPI(
                 const users = new Users();
                 const wallet = new Wallet();
                 const workers = new Workers();
-                const root = await users.getUserById(owner.creator);
+                const root = await users.getUserById(owner.creator, userId);
                 const rootKey = await wallet.getKey(
                     root.walletToken,
                     KeyType.KEY,
@@ -2782,7 +2780,7 @@ export async function contractAPI(
                 const users = new Users();
                 const wallet = new Wallet();
                 const workers = new Workers();
-                const root = await users.getUserById(owner.creator);
+                const root = await users.getUserById(owner.creator, userId);
                 const rootKey = await wallet.getKey(
                     root.walletToken,
                     KeyType.KEY,
@@ -2864,7 +2862,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -2931,7 +2929,7 @@ export async function contractAPI(
                 const users = new Users();
                 const wallet = new Wallet();
                 const workers = new Workers();
-                const root = await users.getUserById(owner.creator);
+                const root = await users.getUserById(owner.creator, userId);
                 const rootKey = await wallet.getKey(
                     root.walletToken,
                     KeyType.KEY,
@@ -2992,7 +2990,7 @@ export async function contractAPI(
                 const users = new Users();
                 const wallet = new Wallet();
                 const workers = new Workers();
-                const root = await users.getUserById(owner.creator);
+                const root = await users.getUserById(owner.creator, userId);
                 const rootKey = await wallet.getKey(
                     root.walletToken,
                     KeyType.KEY,
@@ -3082,13 +3080,13 @@ export async function contractAPI(
                 throw new Error(error);
             }
 
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
                 owner.creator
             );
-            const sr = await users.getUserById(root.parent || root.did);
+            const sr = await users.getUserById(root.parent || root.did, userId);
             const srKey = await wallet.getKey(
                 sr.walletToken,
                 KeyType.KEY,
@@ -3170,7 +3168,7 @@ export async function contractAPI(
                 const users = new Users();
                 const wallet = new Wallet();
                 const workers = new Workers();
-                const root = await users.getUserById(owner.creator);
+                const root = await users.getUserById(owner.creator, userId);
                 const rootKey = await wallet.getKey(
                     root.walletToken,
                     KeyType.KEY,
@@ -3279,7 +3277,7 @@ export async function contractAPI(
                 const users = new Users();
                 const wallet = new Wallet();
                 const workers = new Workers();
-                const root = await users.getUserById(owner.creator);
+                const root = await users.getUserById(owner.creator, userId);
                 const rootKey = await wallet.getKey(
                     root.walletToken,
                     KeyType.KEY,
@@ -3347,7 +3345,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -3413,7 +3411,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -3475,7 +3473,7 @@ export async function contractAPI(
             }
 
             const users = new Users();
-            const user = await users.getUserById(owner.creator);
+            const user = await users.getUserById(owner.creator, userId);
 
             const filters: any = {
                 owner: owner.owner,
