@@ -1,4 +1,4 @@
-import { DataBaseHelper, DatabaseServer, ITopicMessage, MessageAction, MessageServer, Policy, PolicyActionMessage, PolicyActions, TopicConfig, TopicListener } from "@guardian/common";
+import { DataBaseHelper, DatabaseServer, ITopicMessage, MessageAction, MessageServer, Policy, PolicyActionMessage, PolicyAction, TopicConfig, TopicListener } from "@guardian/common";
 import { GenerateUUIDv4, PolicyActionStatus, PolicyActionType, PolicyStatus } from "@guardian/interfaces";
 import { AnyBlockType, IPolicyInterfaceBlock } from "./policy-engine.interface.js";
 import { PolicyUser } from "./policy-user.js";
@@ -64,6 +64,7 @@ export class PolicyActionsService {
             blockTag: block.tag,
             messageId: null,
             startMessageId: null,
+            sender: null,
             document: data
         };
         const message = new PolicyActionMessage(MessageAction.CreatePolicyAction);
@@ -75,14 +76,15 @@ export class PolicyActionsService {
             .sendMessage(message, true);
         row.messageId = messageResult.getId();
         row.startMessageId = messageResult.getId();
-        const collection = new DataBaseHelper(PolicyActions);
+        row.sender = messageResult.payer;
+        const collection = new DataBaseHelper(PolicyAction);
         const newRow = collection.create(row);
         await collection.insertOrUpdate([newRow], 'messageId');
     }
 
     public async sendRequest(
-        data: PolicyActions,
-        callback: (action: PolicyActions) => Promise<void>
+        data: PolicyAction,
+        callback: (action: PolicyAction) => Promise<void>
     ): Promise<any> {
         const root = await PolicyUtils.getUserCredentials(this.policyInstance, this.policyOwner);
         const userHederaCred = await root.loadHederaCredentials(this.policyInstance);
@@ -92,7 +94,7 @@ export class PolicyActionsService {
             userHederaCred.hederaAccountKey,
             signOptions
         );
-        const collection = new DataBaseHelper(PolicyActions);
+        const collection = new DataBaseHelper(PolicyAction);
         const newRow = collection.create({
             status: PolicyActionStatus.NEW,
             type: PolicyActionType.REQUEST,
@@ -117,6 +119,7 @@ export class PolicyActionsService {
             .sendMessage(message, true);
 
         newRow.messageId = messageResult.getId();
+        newRow.sender = messageResult.payer;
 
         this.callback.set(newRow.messageId, callback);
 
@@ -124,7 +127,7 @@ export class PolicyActionsService {
     }
 
     public async sendResponse(messageId: string, user: PolicyUser) {
-        const collection = new DataBaseHelper(PolicyActions);
+        const collection = new DataBaseHelper(PolicyAction);
 
         const cred = await PolicyUtils.getUserCredentials(this.policyInstance, user.did);
         const row = await collection.findOne({
@@ -154,9 +157,10 @@ export class PolicyActionsService {
             uuid: row.uuid,
             owner: row.owner,
             creator: row.owner,
-            accountId: userHederaCred.hederaAccountId,
+            accountId: row.accountId,
             blockTag: row.blockTag,
             messageId: null,
+            sender: null,
             startMessageId: row.messageId,
             topicId: this.topicId,
             index: null,
@@ -171,14 +175,15 @@ export class PolicyActionsService {
             .setTopicObject(this.topic)
             .sendMessage(message, true);
         row.messageId = messageResult.getId();
+        row.sender = messageResult.payer;
 
         await collection.insertOrUpdate([newRow], 'messageId');
 
         return newRow;
     }
 
-    public async rejectRequest(row: PolicyActions, user: PolicyUser) {
-        const collection = new DataBaseHelper(PolicyActions);
+    public async rejectRequest(row: PolicyAction, user: PolicyUser) {
+        const collection = new DataBaseHelper(PolicyAction);
         row.status = PolicyActionStatus.REJECT;
         await collection.insertOrUpdate([row], 'messageId');
         return row;
@@ -248,7 +253,7 @@ export class PolicyActionsService {
     }
 
     private async savePolicyAction(message: PolicyActionMessage, type: PolicyActionType, status: PolicyActionStatus) {
-        const collection = new DataBaseHelper(PolicyActions);
+        const collection = new DataBaseHelper(PolicyAction);
         console.debug('--- savePolicyAction --');
         let document: any;
         try {
@@ -267,7 +272,8 @@ export class PolicyActionsService {
                 uuid: message.uuid,
                 owner: message.owner,
                 creator: message.owner,
-                accountId: message.payer,
+                accountId: message.accountId,
+                sender: message.payer,
                 blockTag: message.blockTag,
                 messageId: message.id,
                 startMessageId: message.parent,
@@ -282,7 +288,8 @@ export class PolicyActionsService {
             row.uuid = message.uuid;
             row.owner = message.owner;
             row.creator = message.owner;
-            row.accountId = message.payer;
+            row.accountId = message.accountId;
+            row.sender = message.payer;
             row.topicId = message.topicId?.toString();
             row.blockTag = message.blockTag;
             row.messageId = message.id;
@@ -296,15 +303,19 @@ export class PolicyActionsService {
         return row;
     }
 
-    private async executeAction(row: PolicyActions) {
+    private async executeAction(row: PolicyAction) {
         try {
             console.debug('---- 1', row);
             if (!row || !row.document) {
                 throw new Error('Invalid document');
             }
 
+            if (row.accountId !== row.sender) {
+                throw new Error('Invalid user');
+            }
+
             // User
-            const policyUser = await PolicyComponentsUtils.GetPolicyUserByAccount(row.accountId, this.policyInstance);
+            const policyUser = await PolicyComponentsUtils.GetPolicyUserByAccount(row.sender, this.policyInstance);
             if (!policyUser) {
                 console.debug('---- 2', row);
                 return;
@@ -328,26 +339,27 @@ export class PolicyActionsService {
         }
     }
 
-    private async sentCompleteMessage(row: PolicyActions, result: any) {
+    private async sentCompleteMessage(row: PolicyAction, result: any) {
         try {
             const root = await PolicyUtils.getUserCredentials(this.policyInstance, this.policyOwner);
-            const userHederaCred = await root.loadHederaCredentials(this.policyInstance);
-            const signOptions = await root.loadSignOptions(this.policyInstance);
+            const rootHederaCred = await root.loadHederaCredentials(this.policyInstance);
+            const rootSignOptions = await root.loadSignOptions(this.policyInstance);
             const messageServer = new MessageServer(
-                userHederaCred.hederaAccountId,
-                userHederaCred.hederaAccountKey,
-                signOptions
+                rootHederaCred.hederaAccountId,
+                rootHederaCred.hederaAccountKey,
+                rootSignOptions
             );
-            const collection = new DataBaseHelper(PolicyActions);
+            const collection = new DataBaseHelper(PolicyAction);
             const newRow = collection.create({
                 status: PolicyActionStatus.COMPLETED,
                 type: row.type,
                 uuid: row.uuid,
                 owner: row.owner,
                 creator: row.owner,
-                accountId: userHederaCred.hederaAccountId,
+                accountId: row.accountId,
                 blockTag: row.blockTag,
                 messageId: null,
+                sender: null,
                 startMessageId: row.messageId,
                 topicId: this.topicId,
                 index: null,
@@ -362,6 +374,7 @@ export class PolicyActionsService {
                 .setTopicObject(this.topic)
                 .sendMessage(message, true);
             row.messageId = messageResult.getId();
+            row.sender = messageResult.payer;
 
             await collection.insertOrUpdate([newRow], 'messageId');
         } catch (error) {
@@ -369,30 +382,33 @@ export class PolicyActionsService {
         }
     }
 
-    private async sentErrorMessage(row: PolicyActions, error: string | Error) {
+    private async sentErrorMessage(row: PolicyAction, error: string | Error) {
         console.debug('- Error ???');
         try {
-            const policyUser = await PolicyComponentsUtils.GetPolicyUserByAccount(row.accountId, this.policyInstance);
+            if (row.sender !== row.accountId) {
+                return;
+            }
+            const policyUser = await PolicyComponentsUtils.GetPolicyUserByAccount(row.sender, this.policyInstance);
             if (!policyUser) {
                 return;
             }
 
             const root = await PolicyUtils.getUserCredentials(this.policyInstance, this.policyOwner);
-            const userHederaCred = await root.loadHederaCredentials(this.policyInstance);
-            const signOptions = await root.loadSignOptions(this.policyInstance);
+            const rootHederaCred = await root.loadHederaCredentials(this.policyInstance);
+            const rootSignOptions = await root.loadSignOptions(this.policyInstance);
             const messageServer = new MessageServer(
-                userHederaCred.hederaAccountId,
-                userHederaCred.hederaAccountKey,
-                signOptions
+                rootHederaCred.hederaAccountId,
+                rootHederaCred.hederaAccountKey,
+                rootSignOptions
             );
-            const collection = new DataBaseHelper(PolicyActions);
+            const collection = new DataBaseHelper(PolicyAction);
             const newRow = collection.create({
                 type: row.type,
                 status: PolicyActionStatus.ERROR,
                 uuid: row.uuid,
                 owner: row.owner,
                 creator: row.owner,
-                accountId: userHederaCred.hederaAccountId,
+                accountId: row.accountId,
                 blockTag: row.blockTag,
                 messageId: null,
                 startMessageId: row.messageId,
@@ -409,6 +425,7 @@ export class PolicyActionsService {
                 .setTopicObject(this.topic)
                 .sendMessage(message, true);
             row.messageId = messageResult.getId();
+            row.sender = messageResult.payer;
 
             await collection.insertOrUpdate([newRow], 'messageId');
         } catch (error) {
@@ -416,12 +433,12 @@ export class PolicyActionsService {
         }
     }
 
-    private async sentNotification(row: PolicyActions) {
+    private async sentNotification(row: PolicyAction) {
         console.debug('- update');
     }
 
-    private async completeRequest(row: PolicyActions) {
-        const collection = new DataBaseHelper(PolicyActions);
+    private async completeRequest(row: PolicyAction) {
+        const collection = new DataBaseHelper(PolicyAction);
         const request = await collection.findOne({ messageId: row.startMessageId });
         const valid = await PolicyActionsUtils.validate(request, row);
         if (valid) {

@@ -50,7 +50,7 @@ import {
     VpDocument,
     VpDocument as VpDocumentCollection,
     ExternalPolicy,
-    PolicyActions
+    PolicyAction
 } from '../entity/index.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { Theme } from '../entity/theme.js';
@@ -4395,16 +4395,16 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * Get remote requests
      * @param filters
      */
-    public static async getRemoteRequest(filters: FilterQuery<PolicyActions>): Promise<PolicyActions | null> {
-        return await new DataBaseHelper(PolicyActions).findOne(filters);
+    public static async getRemoteRequest(filters: FilterQuery<PolicyAction>): Promise<PolicyAction | null> {
+        return await new DataBaseHelper(PolicyAction).findOne(filters);
     }
 
     /**
      * Get remote request by ID
      * @param id
      */
-    public static async getRemoteRequestId(messageId: string | null): Promise<PolicyActions | null> {
-        return await new DataBaseHelper(PolicyActions).findOne({ messageId });
+    public static async getRemoteRequestId(messageId: string | null): Promise<PolicyAction | null> {
+        return await new DataBaseHelper(PolicyAction).findOne({ messageId });
     }
 
     /**
@@ -4412,8 +4412,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getRemoteRequests(filters?: FilterQuery<PolicyActions>, options?: unknown): Promise<PolicyActions[]> {
-        return await new DataBaseHelper(PolicyActions).find(filters, options);
+    public static async getRemoteRequests(filters?: FilterQuery<PolicyAction>, options?: unknown): Promise<PolicyAction[]> {
+        return await new DataBaseHelper(PolicyAction).find(filters, options);
     }
 
     /**
@@ -4421,7 +4421,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getRemoteRequestsAndCount(filters?: FilterObject<PolicyActions>, options?: FindOptions<unknown>): Promise<[PolicyActions[], number]> {
-        return await new DataBaseHelper(PolicyActions).findAndCount(filters, options);
+    public static async getRemoteRequestsAndCount(filters?: FilterObject<PolicyAction>, options?: FindOptions<unknown>): Promise<[PolicyAction[], number]> {
+        return await new DataBaseHelper(PolicyAction).findAndCount(filters, options);
     }
 }

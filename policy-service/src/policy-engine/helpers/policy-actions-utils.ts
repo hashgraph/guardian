@@ -1,4 +1,4 @@
-import { MessageAction, MessageServer, PolicyActions, RoleMessage, VcDocumentDefinition, VcHelper } from "@guardian/common";
+import { MessageAction, MessageServer, PolicyAction, RoleMessage, VcDocumentDefinition, VcHelper } from "@guardian/common";
 import { AnyBlockType } from "@policy-engine/policy-engine.interface";
 import { GenerateUUIDv4, LocationType, PolicyActionStatus } from "@guardian/interfaces";
 import { PolicyUtils } from "./utils.js";
@@ -87,7 +87,7 @@ class SignAndSendRole {
         return data;
     }
 
-    public static async response(row: PolicyActions) {
+    public static async response(row: PolicyAction) {
         const block = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
         const data = row.document;
 
@@ -116,7 +116,7 @@ class SignAndSendRole {
         }
     }
 
-    public static async complete(row: PolicyActions) {
+    public static async complete(row: PolicyAction) {
         const block = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
 
         const data = row.document;
@@ -143,7 +143,7 @@ class SignAndSendRole {
         return { vc: userVC, message: messageResult }
     }
 
-    public static async validate(request: PolicyActions, response: PolicyActions): Promise<boolean> {
+    public static async validate(request: PolicyAction, response: PolicyAction): Promise<boolean> {
         if (request && response && request.accountId === response.accountId) {
             return true;
         }
@@ -152,7 +152,7 @@ class SignAndSendRole {
 }
 
 export class PolicyActionsUtils {
-    public static async validate(request: PolicyActions, response: PolicyActions) {
+    public static async validate(request: PolicyAction, response: PolicyAction) {
         const type = request?.document?.type;
         switch (type) {
             case PolicyActionType.SignAndSendRole: {
@@ -162,7 +162,7 @@ export class PolicyActionsUtils {
         return false;
     }
 
-    public static async response(row: PolicyActions) {
+    public static async response(row: PolicyAction) {
         const type = row?.document?.type;
         switch (type) {
             case PolicyActionType.SignAndSendRole: {
@@ -189,7 +189,7 @@ export class PolicyActionsUtils {
         } else {
             const data = await SignAndSendRole.request(ref, subject, group, uuid);
             return new Promise((resolve, reject) => {
-                const callback = async (action: PolicyActions) => {
+                const callback = async (action: PolicyAction) => {
                     if (action.status === PolicyActionStatus.COMPLETED) {
                         const result = await SignAndSendRole.complete(action);
                         resolve(result)

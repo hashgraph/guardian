@@ -8,7 +8,7 @@ import { ObjectId } from '@mikro-orm/mongodb';
  * PolicyActions collection
  */
 @Entity()
-export class PolicyActions extends BaseEntity {
+export class PolicyAction extends BaseEntity {
     /**
      * ID
      */
@@ -80,6 +80,12 @@ export class PolicyActions extends BaseEntity {
         index: true
     })
     accountId?: string;
+
+    /**
+     * Hedera account id
+     */
+    @Property({ nullable: true })
+    sender?: string;
 
     /**
      * Hedera account id
