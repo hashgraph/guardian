@@ -46,8 +46,8 @@ export class ProjectDataExportComponent implements OnInit {
     public selectedRows: any[] = [];
 
     public selectedSchemas!: ISchema[];
-    public selectedOwners!: ISchema[];
-    public selectedTokens!: ISchema[];
+    public selectedOwners!: string[];
+    public selectedTokens!: string[];
 
     private subscription = new Subscription();
 
@@ -122,7 +122,10 @@ export class ProjectDataExportComponent implements OnInit {
         this.pageCount = 0;
 
         this.subscription.add(
-            this.route.queryParams.subscribe((queryParams) => {
+            this.route.queryParams.subscribe((params) => {
+                console.log(params);
+                
+                this.setFiltersFromQueryParams(params);
                 this.loadProfile();
             })
         );
@@ -286,16 +289,47 @@ export class ProjectDataExportComponent implements OnInit {
             tokens: [],
             related: '',
         })
-        this.loadData();
+        this.applyFilters();
     }
 
     public showFilters(): void {
         this.showMoreFilters = !this.showMoreFilters;
     }
 
+    private setFiltersFromQueryParams(params: any) {
+        this.selectedSchemas = params.schemas ? this.schemas.filter(schema => params.schemas.split(',')?.some((iri: string) => schema.iri === iri)) || [] : [];
+        this.selectedOwners = params.owners ? params.owners.split(',') : [];
+        this.selectedTokens = params.tokens ? params.tokens.split(',') : [];
+        this.filtersForm?.get('related')?.setValue(params.related ? params.related.split(',') : []);
+
+        this.filtersForm.patchValue({
+            schemas: params.schemas ? params.schemas.split(',') : [],
+            owners: params.owners ? params.owners.split(',') : [],
+            tokens: params.tokens ? params.tokens.split(',') : [],
+            related: params.related ? params.related.split(',') : [],
+        });
+    }
+
     public applyFilters(): void {
-        this.pageIndex = 0;
-        this.loadData();
+        const currentParams = { ...this.route.snapshot.queryParams };
+        const filters = this.filtersForm.value;
+        
+        Object.keys(filters).forEach(key => {
+            if (filters[key] && filters[key].length) {
+                currentParams[key] = filters[key].join(',');
+            } else {
+                delete currentParams[key];
+            }
+        });
+
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: currentParams,
+            replaceUrl: true,
+        });
+
+        // this.pageIndex = 0;
+        // this.loadData();
     }
 
     public onFindRelated() {
