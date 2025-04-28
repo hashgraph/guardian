@@ -5,6 +5,7 @@ import { MessageType } from './message-type.js';
 import { PolicyActionMessageBody, PolicyDiffMessageBody } from './message-body.interface.js';
 import { IPFS } from '../../helpers/index.js';
 import { ITopicMessage } from '../../topic-listener/topic-listener.js';
+import { PolicyAction } from '../../entity/index.js';
 
 /**
  * Policy action message
@@ -48,13 +49,13 @@ export class PolicyActionMessage extends Message {
      * @param model
      * @param zip
      */
-    public setDocument(action: any, data: any): void {
+    public setDocument(action: PolicyAction, data: any): void {
         this.uuid = action.uuid;
         this.owner = action.owner;
         this.policyId = action.policyId;
         this.accountId = action.accountId;
         this.blockTag = action.blockTag;
-        this.parent = action.parent;
+        this.parent = action.startMessageId;
         this.document = data;
     }
 

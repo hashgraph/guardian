@@ -370,33 +370,53 @@ export class BlockTreeGenerator extends NatsService {
         policy: Policy
     ): Promise<void> {
         try {
+            console.debug('-- init 1')
             if (
                 policy.status === PolicyStatus.PUBLISH &&
                 policy.availability === PolicyAvailability.PUBLIC
             ) {
+                console.debug('-- init 2')
                 if (policy.restoreTopicId) {
+                    console.debug('-- init 2.1')
                     const service = new PolicyBackupService(policyId, policy);
+                    console.debug('-- init 2.2')
                     await service.init();
+                    console.debug('-- init 2.3')
                     PolicyComponentsUtils.RegisterBackupService(policyId, service);
+                    console.debug('-- init 2.4')
                 }
                 if (policy.actionsTopicId) {
+                    console.debug('-- init 2.5')
                     const service = new PolicyActionsService(policyId, policyInstance, policy);
+                    console.debug('-- init 2.6')
                     await service.init();
+                    console.debug('-- init 2.7')
                     PolicyComponentsUtils.RegisterActionsService(policyId, service);
+                    console.debug('-- init 2.8')
                 }
             }
             if (policy.status === PolicyStatus.VIEW) {
+                console.debug('-- init 3')
                 if (policy.restoreTopicId) {
+                    console.debug('-- init 3.1')
                     const service = new PolicyRestoreService(policyId, policy);
+                    console.debug('-- init 3.2')
                     await service.init();
+                    console.debug('-- init 3.3')
                     PolicyComponentsUtils.RegisterRestoreService(policyId, service);
+                    console.debug('-- init 3.4')
                 }
                 if (policy.actionsTopicId) {
+                    console.debug('-- init 3.5')
                     const service = new PolicyActionsService(policyId, policyInstance, policy);
+                    console.debug('-- init 3.6')
                     await service.init();
+                    console.debug('-- init 3.7')
                     PolicyComponentsUtils.RegisterActionsService(policyId, service);
+                    console.debug('-- init 3.8')
                 }
             }
+            console.debug('-- init 4')
         } catch (error) {
             console.log(error);
         }

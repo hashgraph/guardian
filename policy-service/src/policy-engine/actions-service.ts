@@ -174,8 +174,8 @@ export class PolicyActionsService {
         const messageResult = await messageServer
             .setTopicObject(this.topic)
             .sendMessage(message, true);
-        row.messageId = messageResult.getId();
-        row.sender = messageResult.payer;
+        newRow.messageId = messageResult.getId();
+        newRow.sender = messageResult.payer;
 
         await collection.insertOrUpdate([newRow], 'messageId');
 
