@@ -211,7 +211,7 @@
             </div>
             <div>
                 <button 
-                    *ngIf="selectedRows && selectedRows.length > 0"
+                    *ngIf="canShowFindRelatedButton()"
                     (click)="onFindRelated()"
                     class="button secondary" 
                     label="Find all related" 

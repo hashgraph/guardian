@@ -415,4 +415,8 @@ export class ProjectDataExportComponent implements OnInit {
         downloadLink.click();
         downloadLink.remove();
     }
+
+    public canShowFindRelatedButton(): boolean {
+        return this.selectedRows && this.selectedRows.length > 0 && this.selectedRows.filter(row => row.messageId).length > 0;
+    }
 }
