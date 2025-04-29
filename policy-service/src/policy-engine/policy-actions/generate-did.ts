@@ -1,9 +1,9 @@
-import { MessageServer, DIDMessage, MessageAction, PolicyAction, HederaDidDocument } from "@guardian/common";
+import { DIDMessage, HederaDidDocument , MessageServer, MessageAction, PolicyAction } from "@guardian/common";
 import { GenerateUUIDv4 } from "@guardian/interfaces";
-import { PolicyUtils } from "@policy-engine/helpers/utils";
-import { PolicyComponentsUtils } from "@policy-engine/policy-components-utils";
-import { AnyBlockType } from "@policy-engine/policy-engine.interface";
-import { PolicyUser } from "@policy-engine/policy-user";
+import { PolicyUtils } from '../helpers/utils.js';
+import { PolicyComponentsUtils } from './../policy-components-utils.js';
+import { AnyBlockType } from '../policy-engine.interface.js';
+import { PolicyUser } from '../policy-user.js';
 import { PolicyActionType } from "./utils.js";
 
 export class GenerateDID {

@@ -1,9 +1,9 @@
 import { IDocumentOptions, PolicyAction, RoleMessage, VcDocumentDefinition } from "@guardian/common";
-import { AnyBlockType } from "@policy-engine/policy-engine.interface";
 import { LocationType, PolicyActionStatus } from "@guardian/interfaces";
+import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUtils } from "../helpers/utils.js";
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { PolicyUser } from "@policy-engine/policy-user.js";
+import { PolicyUser } from '../policy-user.js';
 import { BlockActionError } from '../errors/index.js';
 import { SignAndSendRole } from "./sign-and-send-role.js";
 import { GenerateDID } from "./generate-did.js";
@@ -180,7 +180,7 @@ export class PolicyActionsUtils {
      * send-to-guardian-block
      */
 
-    
+
 
     /**
      * external-data-block
