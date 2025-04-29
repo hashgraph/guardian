@@ -1,4 +1,4 @@
-import { DataBaseHelper, Tag } from "@guardian/common";
+import { DataBaseHelper, Tag } from '@guardian/common';
 import { CollectionRestore, IDiffAction } from '../../index.js';
 
 export class TagCollectionRestore extends CollectionRestore<Tag> {

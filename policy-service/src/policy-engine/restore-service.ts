@@ -1,7 +1,7 @@
-import { IPolicyDiff, PolicyBackup, PolicyRestore } from "./db-restore/index.js";
-import { FileHelper } from "./db-restore/file-helper.js";
-import { DatabaseServer, ITopicMessage, MessageAction, MessageServer, MessageType, Policy, PolicyDiffMessage, TopicConfig, TopicListener, Users, Wallet } from "@guardian/common";
-import { PolicyComponentsUtils } from "./policy-components-utils.js";
+import { IPolicyDiff, PolicyBackup, PolicyRestore } from './db-restore/index.js';
+import { FileHelper } from './db-restore/file-helper.js';
+import { DatabaseServer, ITopicMessage, MessageAction, MessageServer, MessageType, Policy, PolicyDiffMessage, TopicConfig, TopicListener, Users } from '@guardian/common';
+import { PolicyComponentsUtils } from './policy-components-utils.js';
 
 class Timer {
     private readonly min: number;
@@ -11,9 +11,9 @@ class Timer {
     private _actions: number;
     private _minTimer: any;
     private _maxTimer: any;
-    private _tickStart: any;
-    private _tickEnd: any;
     private _lock: boolean;
+    private readonly _tickStart: any;
+    private readonly _tickEnd: any;
 
     constructor(min: number, max: number) {
         this.min = min;
@@ -77,8 +77,8 @@ export class PolicyBackupService {
 
     private messageServer: MessageServer;
     private userId: string;
-    private policyTopicId: string;
-    private instanceTopicId: string;
+    private readonly policyTopicId: string;
+    private readonly instanceTopicId: string;
 
     constructor(policyId: string, policy: Policy) {
         this.controller = new PolicyBackup(policyId);
@@ -159,19 +159,18 @@ export class PolicyBackupService {
 
 export class PolicyRestoreService {
     private readonly topicId: string;
-    private readonly owner: string;
+    // private readonly owner: string;
     private readonly controller: PolicyRestore;
-
-    private messageServer: MessageServer;
-    private userId: string;
-    private policyId: string;
+    private readonly policyId: string;
+    // private messageServer: MessageServer;
+    // private userId: string;
     private topicListener: TopicListener;
 
     constructor(policyId: string, policy: Policy) {
         this.controller = new PolicyRestore(policyId);
         this.policyId = policyId;
         this.topicId = policy.restoreTopicId;
-        this.owner = policy.owner;
+        // this.owner = policy.owner;
     }
 
     public async init(): Promise<void> {

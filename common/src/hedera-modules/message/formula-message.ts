@@ -199,7 +199,7 @@ export class FormulaMessage extends Message {
         }
 
         const result = Message._fromJson(new FormulaMessage(json.action), json);
-        result.name = this.name;
+        result.name = json.name;
         result.description = json.description;
         result.owner = json.owner;
         result.uuid = json.uuid;

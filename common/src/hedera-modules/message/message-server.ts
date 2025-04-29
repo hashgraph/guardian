@@ -343,7 +343,6 @@ export class MessageServer {
         return message as T;
     }
 
-
     /**
      * From message object
      * @param json

@@ -1,4 +1,4 @@
-import { DataBaseHelper, ApprovalDocument } from "@guardian/common";
+import { DataBaseHelper, ApprovalDocument } from '@guardian/common';
 import { CollectionRestore, IDiffAction } from '../../index.js';
 
 export class ApproveCollectionRestore extends CollectionRestore<ApprovalDocument> {

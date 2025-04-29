@@ -8,7 +8,6 @@ import {
     ModelHelper,
     NotificationAction,
     PolicyEvents,
-    PolicyToolMetadata,
     PolicyStatus,
     Schema,
     SchemaEntity,
@@ -1036,8 +1035,6 @@ export class PolicyEngine extends NatsService {
                     await createActionsTopic();
                 }
             }
-
-
 
             const zip = await PolicyImportExport.generate(model);
             const buffer = await zip.generateAsync({

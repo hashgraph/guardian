@@ -1,7 +1,7 @@
-import { FindCursor } from "mongodb";
-import { DataBaseHelper, ApprovalDocument } from "@guardian/common";
-import { CollectionBackup } from "../collection-backup.js";
-import { IDiffAction } from "../../interfaces/action.interface.js";
+import { FindCursor } from 'mongodb';
+import { DataBaseHelper, ApprovalDocument } from '@guardian/common';
+import { CollectionBackup } from '../collection-backup.js';
+import { IDiffAction } from '../../interfaces/action.interface.js';
 
 export class ApproveCollectionBackup extends CollectionBackup<ApprovalDocument> {
     private readonly collectionName: string = 'ApprovalDocument';
@@ -32,11 +32,10 @@ export class ApproveCollectionBackup extends CollectionBackup<ApprovalDocument> 
     }
 
     protected override createDiffData(newRow: ApprovalDocument, oldRow?: ApprovalDocument): any {
-        let diff: any = this.compareData(newRow, oldRow);
+        const diff: any = this.compareData(newRow, oldRow);
         delete diff.documentFileId;
         return diff;
     }
-
 
     protected override checkDocument(newRow: ApprovalDocument, oldRow: ApprovalDocument): boolean {
         return (newRow._docHash !== oldRow._docHash) || (newRow._propHash !== oldRow._propHash);

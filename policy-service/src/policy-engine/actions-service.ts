@@ -1,10 +1,10 @@
-import { DataBaseHelper, DatabaseServer, ITopicMessage, MessageAction, MessageServer, Policy, PolicyActionMessage, PolicyAction, TopicConfig, TopicListener } from "@guardian/common";
-import { GenerateUUIDv4, PolicyActionStatus, PolicyActionType, PolicyStatus } from "@guardian/interfaces";
-import { AnyBlockType, IPolicyInterfaceBlock } from "./policy-engine.interface.js";
-import { PolicyUser } from "./policy-user.js";
-import { PolicyUtils } from "./helpers/utils.js";
-import { PolicyComponentsUtils } from "./policy-components-utils.js";
-import { PolicyActionsUtils } from "./policy-actions/utils.js";
+import { DataBaseHelper, DatabaseServer, ITopicMessage, MessageAction, MessageServer, Policy, PolicyActionMessage, PolicyAction, TopicConfig, TopicListener } from '@guardian/common';
+import { GenerateUUIDv4, PolicyActionStatus, PolicyActionType, PolicyStatus } from '@guardian/interfaces';
+import { IPolicyInterfaceBlock } from './policy-engine.interface.js';
+import { PolicyUser } from './policy-user.js';
+import { PolicyUtils } from './helpers/utils.js';
+import { PolicyComponentsUtils } from './policy-components-utils.js';
+import { PolicyActionsUtils } from './policy-actions/utils.js';
 
 export class PolicyActionsService {
     private readonly topicId: string;
@@ -15,7 +15,6 @@ export class PolicyActionsService {
     private topic: TopicConfig;
     private topicListener: TopicListener;
     private readonly callback: Map<string, Function>;
-
 
     constructor(policyId: string, policyInstance: IPolicyInterfaceBlock, policy: Policy) {
         this.policyId = policyId;

@@ -252,16 +252,16 @@ export class FileHelper {
 
     private static _readNumber(header: FileHeaders, lines: string[], cursor: Cursor): number {
         if (lines[cursor.index] && lines[cursor.index].startsWith(header)) {
-            const number = lines[cursor.index++].substring(header.length);
-            return Number(number);
+            const _number = lines[cursor.index++].substring(header.length);
+            return Number(_number);
         } else {
             return null;
         }
     }
     private static _readDate(header: FileHeaders, lines: string[], cursor: Cursor): Date {
         if (lines[cursor.index] && lines[cursor.index].startsWith(header)) {
-            const date = lines[cursor.index++].substring(header.length);
-            return date ? (new Date(date)) : null;
+            const _date = lines[cursor.index++].substring(header.length);
+            return _date ? (new Date(_date)) : null;
         } else {
             return null;
         }

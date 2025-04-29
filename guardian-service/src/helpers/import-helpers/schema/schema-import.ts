@@ -17,7 +17,6 @@ import {
     MessageServer,
     MessageType,
     replaceValueRecursive,
-    Schema as SchemaCollection,
     SchemaConverterUtils,
     SchemaMessage,
     TagMessage,
@@ -25,7 +24,6 @@ import {
     TopicHelper,
     Users
 } from '@guardian/common';
-import { FilterObject } from '@mikro-orm/core';
 import { INotifier } from '../../notifier.js';
 import { ImportSchemaError, ImportSchemaMap, ImportSchemaOptions, ImportSchemaResult } from './schema-import.interface.js';
 import geoJson from '@guardian/interfaces/dist/helpers/geojson-schema/geo-json.js';
@@ -34,7 +32,6 @@ import { checkForCircularDependency, loadSchema } from '../common/load-helper.js
 import { SchemaImportExportHelper } from './schema-import-helper.js';
 import { ImportMode } from '../common/import.interface.js';
 import { importTag } from '../tag/tag-import-helper.js';
-import { ObjectId } from '@mikro-orm/mongodb';
 
 export class SchemaImport {
     private readonly mode: ImportMode;

@@ -2,7 +2,7 @@ import { Message } from './message.js';
 import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
-import { PolicyActionMessageBody, PolicyDiffMessageBody } from './message-body.interface.js';
+import { PolicyActionMessageBody } from './message-body.interface.js';
 import { IPFS } from '../../helpers/index.js';
 import { ITopicMessage } from '../../topic-listener/topic-listener.js';
 import { PolicyAction } from '../../entity/index.js';
@@ -16,28 +16,28 @@ export class PolicyActionMessage extends Message {
      */
     public document: any;
     /**
-     * 
+     * UUID
      */
     public uuid: string;
     /**
-     * 
+     * Owner
      */
     public owner: string;
     /**
-    * 
-    */
+     * Policy
+     */
     public policyId: string;
     /**
-    * 
-    */
+     * User account
+     */
     public accountId: string;
     /**
-    * 
-    */
+     * Block
+     */
     public blockTag: string;
     /**
-    * 
-    */
+     * Parent message
+     */
     public parent: string;
 
     constructor(action: MessageAction) {

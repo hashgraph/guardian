@@ -4,13 +4,11 @@ import {
     MessageError,
     MessageResponse,
     PinoLogger,
-    ExternalPolicy,
     RunFunctionAsync,
     Users,
     MessageServer,
     MessageType,
     PolicyMessage,
-    MessageAction,
     PolicyImportExport
 } from '@guardian/common';
 import { ExternalPolicyStatus, IOwner, MessageAPI, PolicyAvailability } from '@guardian/interfaces';
@@ -62,7 +60,6 @@ async function preparePolicyPreviewMessage(
     notifier.completed();
     return policyToImport;
 }
-
 
 async function addPolicy(
     messageId: string,
@@ -127,7 +124,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
         });
 
     /**
-     * 
+     * Get external policies
      *
      * @param {any} msg - filters
      *
@@ -162,7 +159,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
         });
 
     /**
-     * 
+     * Get external policies
      *
      * @param {any} msg - filters
      *
@@ -196,7 +193,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
         });
 
     /**
-     * 
+     * Preview external policy
      *
      * @param {any} msg - messageId
      *
@@ -215,7 +212,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
         });
 
     /**
-     * 
+     * Import external policy
      *
      * @param {any} msg - messageId
      *
@@ -259,11 +256,11 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
         });
 
     /**
-     * 
+     * Approve external policy
      *
-     * @param {any} msg - policy label id
+     * @param {any} msg - messageId
      *
-     * @returns {any} - policy label
+     * @returns {any} - external policy
      */
     ApiResponse(MessageAPI.APPROVE_EXTERNAL_POLICY_ASYNC,
         async (msg: { messageId: string, owner: IOwner, task: any }) => {
@@ -305,13 +302,12 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
             }
         });
 
-
     /**
-     * 
+     * Approve external policy
      *
-     * @param {any} msg - policy label id
+     * @param {any} msg - messageId
      *
-     * @returns {any} - policy label
+     * @returns {any} - external policy
      */
     ApiResponse(MessageAPI.APPROVE_EXTERNAL_POLICY,
         async (msg: { messageId: string, owner: IOwner }) => {
@@ -350,11 +346,11 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
         });
 
     /**
-     * 
+     * Reject external policy
      *
-     * @param {any} msg - policy label id
+     * @param {any} msg - messageId
      *
-     * @returns {any} - policy label
+     * @returns {any} - external policy
      */
     ApiResponse(MessageAPI.REJECT_EXTERNAL_POLICY_ASYNC,
         async (msg: { messageId: string, owner: IOwner, task: any }) => {
@@ -362,7 +358,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
                 }
-                const { messageId, owner, task } = msg;
+                const { messageId, task } = msg;
 
                 const items = await DatabaseServer.getExternalPolicies({ messageId });
                 if (!items || !items.length) {
@@ -389,13 +385,12 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
             }
         });
 
-
     /**
-     * 
+     * Reject external policy
      *
-     * @param {any} msg - policy label id
+     * @param {any} msg - messageId
      *
-     * @returns {any} - policy label
+     * @returns {any} - external policy
      */
     ApiResponse(MessageAPI.REJECT_EXTERNAL_POLICY,
         async (msg: { messageId: string, owner: IOwner }) => {
@@ -403,7 +398,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
                 }
-                const { messageId, owner } = msg;
+                const { messageId } = msg;
 
                 const items = await DatabaseServer.getExternalPolicies({ messageId });
                 if (!items || !items.length) {

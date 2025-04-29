@@ -497,7 +497,6 @@ export class BlockTreeGenerator extends NatsService {
         }
     }
 
-
     /**
      * Regenerate IDs
      * @param block

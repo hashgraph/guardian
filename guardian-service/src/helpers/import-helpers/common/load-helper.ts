@@ -1,5 +1,5 @@
-import { DatabaseServer, MessageServer, MessageType, PinoLogger, SchemaMessage, UrlType } from "@guardian/common";
-import { ISchema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus } from "@guardian/interfaces";
+import { DatabaseServer, MessageServer, MessageType, PinoLogger, SchemaMessage, UrlType } from '@guardian/common';
+import { ISchema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 
 export class SchemaCache {
     /**

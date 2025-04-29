@@ -60,15 +60,15 @@ export class PolicyMessage extends Message {
      */
     public discontinuedDate?: Date;
     /**
-     * 
+     * Availability
      */
     public availability: string;
     /**
-     * 
+     * Restore Topic Id
      */
     public restoreTopicId: string;
     /**
-     * 
+     * Actions Topic Id
      */
     public actionsTopicId: string;
 

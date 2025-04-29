@@ -1,7 +1,7 @@
-import { DataBaseHelper, MintTransaction } from "@guardian/common";
-import { FindCursor } from "mongodb";
-import { CollectionBackup } from "../collection-backup.js";
-import { IDiffAction } from "../../interfaces/action.interface.js";
+import { DataBaseHelper, MintTransaction } from '@guardian/common';
+import { FindCursor } from 'mongodb';
+import { CollectionBackup } from '../collection-backup.js';
+import { IDiffAction } from '../../interfaces/action.interface.js';
 
 export class MintTransactionCollectionBackup extends CollectionBackup<MintTransaction> {
     private readonly collectionName: string = 'MintTransaction';
@@ -32,7 +32,7 @@ export class MintTransactionCollectionBackup extends CollectionBackup<MintTransa
     }
 
     protected override createDiffData(newRow: MintTransaction, oldRow?: MintTransaction): any {
-        let diff: any = this.compareData(newRow, oldRow);
+        const diff: any = this.compareData(newRow, oldRow);
         return diff;
     }
 

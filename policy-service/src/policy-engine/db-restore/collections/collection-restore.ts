@@ -1,6 +1,6 @@
 import { RestoreEntity } from '@guardian/common';
 import { DiffActionType, ICollectionDiff, IDiffAction } from '../index.js';
-import crypto from "crypto";
+import crypto from 'crypto';
 import { ObjectId } from '@mikro-orm/mongodb';
 
 export abstract class CollectionRestore<T extends RestoreEntity> {
@@ -99,7 +99,7 @@ export abstract class CollectionRestore<T extends RestoreEntity> {
             return crypto
                 .createHash('md5')
                 .update(result)
-                .digest("hex");
+                .digest('hex');
         } else {
             return '';
         }

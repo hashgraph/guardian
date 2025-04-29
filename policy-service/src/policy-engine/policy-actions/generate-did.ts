@@ -1,10 +1,10 @@
-import { DIDMessage, HederaDidDocument , MessageServer, MessageAction, PolicyAction } from "@guardian/common";
-import { GenerateUUIDv4 } from "@guardian/interfaces";
+import { DIDMessage, HederaDidDocument , MessageServer, MessageAction, PolicyAction } from '@guardian/common';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyComponentsUtils } from './../policy-components-utils.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
-import { PolicyActionType } from "./policy-action.type.js";
+import { PolicyActionType } from './policy-action.type.js';
 
 export class GenerateDID {
     public static async local(
@@ -73,7 +73,7 @@ export class GenerateDID {
 
         return {
             type: PolicyActionType.GenerateDID,
-            topicId: topicId,
+            topicId,
             did: didObject.getDid(),
             document: didObject.getDocument()
         };

@@ -1,7 +1,7 @@
-import { FindCursor } from "mongodb";
-import { DataBaseHelper, Topic } from "@guardian/common";
-import { CollectionBackup } from "../collection-backup.js";
-import { IDiffAction } from "../../interfaces/action.interface.js";
+import { FindCursor } from 'mongodb';
+import { DataBaseHelper, Topic } from '@guardian/common';
+import { CollectionBackup } from '../collection-backup.js';
+import { IDiffAction } from '../../interfaces/action.interface.js';
 
 export class TopicCollectionBackup extends CollectionBackup<Topic> {
     private readonly collectionName: string = 'Topic';
@@ -32,7 +32,7 @@ export class TopicCollectionBackup extends CollectionBackup<Topic> {
     }
 
     protected override createDiffData(newRow: Topic, oldRow?: Topic): any {
-        let diff: any = this.compareData(newRow, oldRow);
+        const diff: any = this.compareData(newRow, oldRow);
         delete diff.documentFileId;
         return diff;
     }

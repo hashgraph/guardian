@@ -1,7 +1,7 @@
-import { DataBaseHelper, MultiDocuments } from "@guardian/common";
-import { FindCursor } from "mongodb";
-import { CollectionBackup } from "../collection-backup.js";
-import { IDiffAction } from "../../interfaces/action.interface.js";
+import { DataBaseHelper, MultiDocuments } from '@guardian/common';
+import { FindCursor } from 'mongodb';
+import { CollectionBackup } from '../collection-backup.js';
+import { IDiffAction } from '../../interfaces/action.interface.js';
 
 export class MultiDocCollectionBackup extends CollectionBackup<MultiDocuments> {
     private readonly collectionName: string = 'MultiDocuments';
@@ -32,7 +32,7 @@ export class MultiDocCollectionBackup extends CollectionBackup<MultiDocuments> {
     }
 
     protected override createDiffData(newRow: MultiDocuments, oldRow?: MultiDocuments): any {
-        let diff: any = this.compareData(newRow, oldRow);
+        const diff: any = this.compareData(newRow, oldRow);
         delete diff.documentFileId;
         return diff;
     }

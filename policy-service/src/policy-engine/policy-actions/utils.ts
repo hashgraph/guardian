@@ -1,16 +1,16 @@
-import { IDocumentOptions, Message, PolicyAction, RoleMessage, TopicConfig, VcDocumentDefinition } from "@guardian/common";
-import { LocationType, PolicyActionStatus, PolicyStatus, TopicType } from "@guardian/interfaces";
+import { IDocumentOptions, Message, PolicyAction, RoleMessage, TopicConfig, VcDocumentDefinition } from '@guardian/common';
+import { LocationType, PolicyActionStatus, PolicyStatus, TopicType } from '@guardian/interfaces';
 import { AnyBlockType } from '../policy-engine.interface.js';
-import { PolicyUtils } from "../helpers/utils.js";
+import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { BlockActionError } from '../errors/index.js';
-import { SignAndSendRole } from "./sign-and-send-role.js";
-import { GenerateDID } from "./generate-did.js";
-import { SignVC } from "./sign-vc.js";
-import { PolicyActionType } from "./policy-action.type.js";
-import { SendMessage } from "./send-message.js";
-import { CreateTopic } from "./create-topic.js";
+import { SignAndSendRole } from './sign-and-send-role.js';
+import { GenerateDID } from './generate-did.js';
+import { SignVC } from './sign-vc.js';
+import { PolicyActionType } from './policy-action.type.js';
+import { SendMessage } from './send-message.js';
+import { CreateTopic } from './create-topic.js';
 
 export class PolicyActionsUtils {
     private static needKey(status: PolicyStatus): boolean {
@@ -44,8 +44,9 @@ export class PolicyActionsUtils {
             case PolicyActionType.CreateTopic: {
                 return await CreateTopic.validate(request, response);
             }
+            default:
+                return false;
         }
-        return false;
     }
 
     public static async response(row: PolicyAction, user: PolicyUser) {
@@ -66,8 +67,9 @@ export class PolicyActionsUtils {
             case PolicyActionType.CreateTopic: {
                 return await CreateTopic.response(row, user);
             }
+            default:
+                throw new Error('Invalid command');
         }
-        throw new Error('Invalid command');
     }
 
     /**
@@ -263,8 +265,6 @@ export class PolicyActionsUtils {
      * token-action-block
      */
 
-
-
     /**
      * send-to-guardian-block
      */
@@ -283,7 +283,7 @@ export class PolicyActionsUtils {
         const policyTopics = ref.policyInstance.policyTopics || [];
         const config = policyTopics.find(e => e.name === name);
         if (!config) {
-            throw new Error(`Topic "${name}" does not exist`);
+            throw new Error(`Topic '${name}' does not exist`);
         }
 
         // User topic

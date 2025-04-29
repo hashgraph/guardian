@@ -1625,7 +1625,6 @@ export class PolicyComponentsUtils {
         return await (block as any).receiveData(data);
     }
 
-
     public static getActionsController(policyId: string) {
         const controller = PolicyComponentsUtils.ActionsControllers.get(policyId);
         if (controller) {

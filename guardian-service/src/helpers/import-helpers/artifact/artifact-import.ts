@@ -1,9 +1,9 @@
 import { Artifact, DatabaseServer, getArtifactType } from '@guardian/common';
 import { GenerateUUIDv4, IOwner } from '@guardian/interfaces';
-import { ObjectId } from "@mikro-orm/mongodb";
-import { ImportMode } from "../common/import.interface.js";
+import { ObjectId } from '@mikro-orm/mongodb';
+import { ImportMode } from '../common/import.interface.js';
 import { INotifier } from '../../notifier.js';
-import { ImportArtifactResult } from "./artifact-import.interface.js";
+import { ImportArtifactResult } from './artifact-import.interface.js';
 
 export class ArtifactImport {
     private readonly mode: ImportMode;

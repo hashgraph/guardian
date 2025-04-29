@@ -1,4 +1,4 @@
-import { PolicyTool } from "@guardian/common";
+import { PolicyTool } from '@guardian/common';
 
 /**
  * Import tool mapping

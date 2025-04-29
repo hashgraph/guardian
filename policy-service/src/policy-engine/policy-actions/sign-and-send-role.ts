@@ -1,10 +1,10 @@
-import { RoleMessage, MessageServer, MessageAction, VcHelper, PolicyAction, VcDocumentDefinition } from "@guardian/common";
-import { GenerateUUIDv4 } from "@guardian/interfaces";
+import { RoleMessage, MessageServer, MessageAction, VcHelper, PolicyAction, VcDocumentDefinition } from '@guardian/common';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyComponentsUtils } from './../policy-components-utils.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
-import { PolicyActionType } from "./policy-action.type.js";
+import { PolicyActionType } from './policy-action.type.js';
 
 export class SignAndSendRole {
     public static async local(
@@ -95,8 +95,6 @@ export class SignAndSendRole {
         const uuid = data.uuid;
         const vc = VcDocumentDefinition.fromJsonTree(document);
         const subject = vc.getCredentialSubject().toJsonTree();
-
-
         const vcHelper = new VcHelper();
         const userCred = await PolicyUtils.getUserCredentials(ref, user.did);
         const userDidDocument = await userCred.loadDidDocument(ref);

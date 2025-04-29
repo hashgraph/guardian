@@ -1,4 +1,4 @@
-import { DataBaseHelper, BlockState } from "@guardian/common";
+import { DataBaseHelper, BlockState } from '@guardian/common';
 import { CollectionRestore, IDiffAction } from '../../index.js';
 
 export class StateCollectionRestore extends CollectionRestore<BlockState> {

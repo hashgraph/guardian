@@ -126,7 +126,6 @@ export class PolicyAction extends BaseEntity {
         this.status = this.status || PolicyActionStatus.NEW;
     }
 
-
     /**
      * Create document
      */
@@ -190,4 +189,3 @@ export class PolicyAction extends BaseEntity {
         }
     }
 }
-
