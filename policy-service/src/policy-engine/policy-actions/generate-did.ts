@@ -61,15 +61,15 @@ export class GenerateDID {
     }
 
     public static async response(row: PolicyAction, user: PolicyUser) {
-        const block = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
+        const ref = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
         const data = row.document;
         const topicId = data.topicId;
-        const didObject: HederaDidDocument = await block.components.generateDID(topicId);
+        const didObject: HederaDidDocument = await ref.components.generateDID(topicId);
 
-        const item = PolicyUtils.createDID(block, user, didObject);
+        const item = PolicyUtils.createDID(ref, user, didObject);
 
-        const userCred = await PolicyUtils.getUserCredentials(block, user.did);
-        await userCred.saveSubDidDocument(block, item, didObject);
+        const userCred = await PolicyUtils.getUserCredentials(ref, user.did);
+        await userCred.saveSubDidDocument(ref, item, didObject);
 
         return {
             type: PolicyActionType.GenerateDID,
@@ -80,7 +80,7 @@ export class GenerateDID {
     }
 
     public static async complete(row: PolicyAction, user: PolicyUser) {
-        const block = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
+        const ref = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
 
         const data = row.document;
         const did = data.did;
@@ -90,24 +90,24 @@ export class GenerateDID {
         const message = new DIDMessage(MessageAction.CreateDID);
         message.setDocument(didObject);
 
-        const topic = await PolicyUtils.getOrCreateTopic(block, 'root', null, null);
-        const rootCred = await PolicyUtils.getUserCredentials(block, block.policyOwner);
-        const rootHederaCred = await rootCred.loadHederaCredentials(block);
-        const rootSignOptions = await rootCred.loadSignOptions(block);
+        const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null);
+        const rootCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
+        const rootHederaCred = await rootCred.loadHederaCredentials(ref);
+        const rootSignOptions = await rootCred.loadSignOptions(ref);
         const messageServer = new MessageServer(
             rootHederaCred.hederaAccountId,
             rootHederaCred.hederaAccountKey,
             rootSignOptions,
-            block.dryRun
+            ref.dryRun
         );
         const messageResult = await messageServer
             .setTopicObject(topic)
             .sendMessage(message);
 
-        const item = PolicyUtils.createDID(block, user, didObject);
+        const item = PolicyUtils.createDID(ref, user, didObject);
         item.messageId = messageResult.getId();
         item.topicId = messageResult.getTopicId();
-        await block.databaseServer.saveDid(item);
+        await ref.databaseServer.saveDid(item);
 
         return did;
     }

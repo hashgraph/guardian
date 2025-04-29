@@ -918,7 +918,7 @@ export class UserProfileComponent implements OnInit {
             const config = JSON.parse(json);
             this.remoteCredentialsForm.setValue({
                 id: config.hederaAccountId,
-                topicId: config.hederaAccountId
+                topicId: config.topicId
             })
             this.remoteDidDocumentForm.setValue(JSON.stringify(config.didDocument))
         });

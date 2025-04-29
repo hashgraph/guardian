@@ -363,7 +363,7 @@ export class CustomLogicBlock {
         if (newId) {
             vcSubject.id = newId;
         }
-        const newVC = await PolicyActionsUtils.signVC(ref, vcSubject, issuer, uuid);
+        const newVC = await PolicyActionsUtils.signVC(ref, vcSubject, issuer, { uuid });
 
         const item = PolicyUtils.createVC(ref, owner, newVC);
         item.type = outputSchema.iri;

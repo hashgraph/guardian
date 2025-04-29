@@ -1,18 +1,18 @@
-import { VcHelper, PolicyAction } from "@guardian/common";
+import { VcHelper, PolicyAction, IDocumentOptions } from "@guardian/common";
 import { VcDocument as VcDocumentDefinition } from "@guardian/common/dist/hedera-modules/vcjs/vc-document";
 import { GenerateUUIDv4 } from "@guardian/interfaces";
 import { PolicyUtils } from "@policy-engine/helpers/utils";
 import { PolicyComponentsUtils } from "@policy-engine/policy-components-utils";
 import { AnyBlockType } from "@policy-engine/policy-engine.interface";
 import { PolicyUser } from "@policy-engine/policy-user";
-import { PolicyActionType } from "./utils";
+import { PolicyActionType } from "./utils.js";
 
 export class SignVC {
     public static async local(
         ref: AnyBlockType,
         subject: any,
         issuer: string,
-        uuid: string
+        options: IDocumentOptions
     ): Promise<VcDocumentDefinition> {
         const vcHelper = new VcHelper();
         const userCred = await PolicyUtils.getUserCredentials(ref, issuer);
@@ -21,7 +21,7 @@ export class SignVC {
             subject,
             didDocument,
             null,
-            { uuid }
+            options
         );
         return newVC;
     }
@@ -30,7 +30,7 @@ export class SignVC {
         ref: AnyBlockType,
         subject: any,
         issuer: string,
-        uuid: string
+        options: IDocumentOptions
     ): Promise<any> {
         const vcHelper = new VcHelper();
         const userAccount = await PolicyUtils.getHederaAccountId(ref, issuer);
@@ -41,7 +41,7 @@ export class SignVC {
             subject,
             rootDidDocument,
             null,
-            { uuid }
+            options
         );
 
         const data = {
@@ -51,7 +51,7 @@ export class SignVC {
             blockTag: ref.tag,
             document: {
                 type: PolicyActionType.SignVC,
-                uuid,
+                options,
                 issuer,
                 document: rootVC.getDocument(),
             }
@@ -61,27 +61,27 @@ export class SignVC {
     }
 
     public static async response(row: PolicyAction, user: PolicyUser) {
-        const block = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
+        const ref = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
         const data = row.document;
         const document = data.document;
-        const uuid = data.uuid;
+        const options = data.options;
 
         const vc = VcDocumentDefinition.fromJsonTree(document);
         const subject = vc.getCredentialSubject().toJsonTree();
 
         const vcHelper = new VcHelper();
-        const userCred = await PolicyUtils.getUserCredentials(block, user.did);
-        const userDidDocument = await userCred.loadDidDocument(block);
+        const userCred = await PolicyUtils.getUserCredentials(ref, user.did);
+        const userDidDocument = await userCred.loadDidDocument(ref);
         const userVC = await vcHelper.createVerifiableCredential(
             subject,
             userDidDocument,
             null,
-            { uuid }
+            options
         );
 
         return {
             type: PolicyActionType.SignAndSendRole,
-            uuid,
+            options,
             issuer: user.did,
             document: userVC.getDocument()
         };

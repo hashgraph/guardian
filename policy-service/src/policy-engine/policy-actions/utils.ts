@@ -1,4 +1,4 @@
-import { PolicyAction, RoleMessage, VcDocumentDefinition } from "@guardian/common";
+import { IDocumentOptions, PolicyAction, RoleMessage, VcDocumentDefinition } from "@guardian/common";
 import { AnyBlockType } from "@policy-engine/policy-engine.interface";
 import { LocationType, PolicyActionStatus } from "@guardian/interfaces";
 import { PolicyUtils } from "../helpers/utils.js";
@@ -147,18 +147,20 @@ export class PolicyActionsUtils {
 
     /**
      * custom-logic-block
+     * request-vc-document-block-addon
+     * request-vc-document-block
      */
     public static async signVC(
         ref: AnyBlockType,
         subject: any,
         issuer: string,
-        uuid: string,
+        options: IDocumentOptions
     ): Promise<VcDocumentDefinition> {
         const userCred = await PolicyUtils.getUserCredentials(ref, issuer);
         if (userCred.location === LocationType.LOCAL) {
-            return await SignVC.local(ref, subject, issuer, uuid);
+            return await SignVC.local(ref, subject, issuer, options);
         } else {
-            const data = await SignVC.request(ref, subject, issuer, uuid);
+            const data = await SignVC.request(ref, subject, issuer, options);
             return new Promise((resolve, reject) => {
                 const callback = async (action: PolicyAction) => {
                     if (action.status === PolicyActionStatus.COMPLETED) {
@@ -173,6 +175,12 @@ export class PolicyActionsUtils {
             });
         }
     }
+
+    /**
+     * send-to-guardian-block
+     */
+
+    
 
     /**
      * external-data-block
@@ -195,23 +203,11 @@ export class PolicyActionsUtils {
      */
 
     /**
-     * request-vc-document-block-addon
-     */
-
-    /**
-     * request-vc-document-block
-     */   
-
-    /**
      * revocation-block
      */
 
     /**
      * revoke-block
-     */
-
-    /**
-     * send-to-guardian-block
      */
 
     /**
