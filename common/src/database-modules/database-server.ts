@@ -660,18 +660,18 @@ export class DatabaseServer extends AbstractDatabaseServer {
 
         pipeline.push({
             $group: {
-                _id: "$messageId",
-                createDate: { $first: "$createDate" },
-                name: { $first: "$name" },
-                description: { $first: "$description" },
-                version: { $first: "$version" },
-                topicId: { $first: "$topicId" },
-                instanceTopicId: { $first: "$instanceTopicId" },
-                policyTag: { $first: "$policyTag" },
-                owner: { $addToSet: "$owner" },
-                creator: { $push: "$creator" },
-                status: { $push: "$status" },
-                username: { $push: "$username" }
+                _id: '$messageId',
+                createDate: { $first: '$createDate' },
+                name: { $first: '$name' },
+                description: { $first: '$description' },
+                version: { $first: '$version' },
+                topicId: { $first: '$topicId' },
+                instanceTopicId: { $first: '$instanceTopicId' },
+                policyTag: { $first: '$policyTag' },
+                owner: { $addToSet: '$owner' },
+                creator: { $push: '$creator' },
+                status: { $push: '$status' },
+                username: { $push: '$username' }
             }
         });
         pipeline.push({
@@ -692,15 +692,15 @@ export class DatabaseServer extends AbstractDatabaseServer {
                     $switch: {
                         branches: [
                             {
-                                case: { $in: [ExternalPolicyStatus.APPROVED, "$status"] },
+                                case: { $in: [ExternalPolicyStatus.APPROVED, '$status'] },
                                 then: ExternalPolicyStatus.APPROVED
                             },
                             {
-                                case: { $in: [ExternalPolicyStatus.NEW, "$status"] },
+                                case: { $in: [ExternalPolicyStatus.NEW, '$status'] },
                                 then: ExternalPolicyStatus.NEW
                             },
                             {
-                                case: { $in: [ExternalPolicyStatus.REJECTED, "$status"] },
+                                case: { $in: [ExternalPolicyStatus.REJECTED, '$status'] },
                                 then: ExternalPolicyStatus.REJECTED
                             }
                         ],
@@ -722,7 +722,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         pipeline.push({
             $facet: {
                 items: [{ $skip: skip }, { $limit: limit }],
-                count: [{ $count: "count" }]
+                count: [{ $count: 'count' }]
             }
         });
 
@@ -745,25 +745,6 @@ export class DatabaseServer extends AbstractDatabaseServer {
 
         return [items, count];
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     /**
      * Dry-run

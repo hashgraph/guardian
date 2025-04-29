@@ -116,15 +116,15 @@ export interface PolicyMessageBody extends MessageBody {
      */
     synchronizationTopicId: string;
     /**
-     * 
+     * Availability
      */
     availability: string;
     /**
-     * 
+     * restoreTopicId
      */
     restoreTopicId: string;
     /**
-     * 
+     * actionsTopicId
      */
     actionsTopicId: string;
     /**
@@ -752,7 +752,6 @@ export interface LabelDocumentMessageBody extends MessageBody {
     definition: string;
 }
 
-
 /**
  * Policy diff message body
  */
@@ -792,32 +791,32 @@ export interface PolicyDiffMessageBody extends MessageBody {
 }
 
 /**
- * 
+ * PolicyActionMessageBody
  */
 export interface PolicyActionMessageBody extends MessageBody {
     /**
-     * 
+     * UUID
      */
     uuid: string;
     /**
-     * 
+     * User
      */
     owner: string;
     /**
-    * 
-    */
+     * Policy
+     */
     policyId: string;
     /**
-    * 
-    */
+     * User account
+     */
     accountId: string;
     /**
-    * 
-    */
+     * Block
+     */
     blockTag: string;
     /**
-    * 
-    */
+     * Parent message
+     */
     parent: string;
     /**
      * CID

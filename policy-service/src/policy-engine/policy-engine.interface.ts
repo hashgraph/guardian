@@ -1067,7 +1067,6 @@ export interface IPolicyNavigationStep {
     level: number;
 }
 
-
 /**
  * Block get data
  */

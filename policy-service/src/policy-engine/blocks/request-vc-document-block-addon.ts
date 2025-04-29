@@ -14,14 +14,8 @@ import {
     IPolicyValidatorBlock,
 } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
-import { PolicyUser, UserCredentials } from '../policy-user.js';
-import {
-    VcHelper,
-    DIDMessage,
-    MessageAction,
-    MessageServer,
-    VcDocument as VcDocumentCollection,
-} from '@guardian/common';
+import { PolicyUser } from '../policy-user.js';
+import { VcHelper, VcDocument as VcDocumentCollection } from '@guardian/common';
 import {
     Schema,
     SchemaHelper,

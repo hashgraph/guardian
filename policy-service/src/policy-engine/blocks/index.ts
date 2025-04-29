@@ -51,4 +51,3 @@ export { ButtonBlockAddon } from './button-block-addon.js';
 export { DropdownBlockAddon } from './dropdown-block-addon.js';
 export { RequestVcDocumentBlockAddon } from './request-vc-document-block-addon.js';
 export { DataTransformationAddon } from './data-transformation-addon.js';
-

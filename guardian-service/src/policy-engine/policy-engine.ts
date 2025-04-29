@@ -8,7 +8,6 @@ import {
     ModelHelper,
     NotificationAction,
     PolicyEvents,
-    PolicyToolMetadata,
     PolicyStatus,
     Schema,
     SchemaEntity,
@@ -945,6 +944,9 @@ export class PolicyEngine extends NatsService {
                     owner: user.creator,
                     policyId: model.id.toString(),
                     policyUUID: model.uuid
+                }, {
+                    admin: model.availability !== PolicyAvailability.PUBLIC,
+                    submit: model.availability !== PolicyAvailability.PUBLIC
                 });
                 await rootTopic.saveKeys();
                 await DatabaseServer.saveTopic(rootTopic.toObject());
@@ -969,7 +971,7 @@ export class PolicyEngine extends NatsService {
                 const synchronizationTopic = await topicHelper.create({
                     type: TopicType.SynchronizationTopic,
                     name: model.name || TopicType.SynchronizationTopic,
-                    description: model.topicDescription || TopicType.InstancePolicyTopic,
+                    description: model.topicDescription || TopicType.SynchronizationTopic,
                     owner: user.creator,
                     policyId: model.id.toString(),
                     policyUUID: model.uuid
@@ -1033,8 +1035,6 @@ export class PolicyEngine extends NatsService {
                     await createActionsTopic();
                 }
             }
-
-
 
             const zip = await PolicyImportExport.generate(model);
             const buffer = await zip.generateAsync({
@@ -1216,7 +1216,7 @@ export class PolicyEngine extends NatsService {
         const didDocument = await vcHelper.loadDidDocument(user.owner);
         const vc = await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
 
-        let [,,,retVal] = await Promise.all([
+        let [, , , retVal] = await Promise.all([
             databaseServer.saveVC({
                 hash: vc.toCredentialHash(),
                 owner: user.owner,

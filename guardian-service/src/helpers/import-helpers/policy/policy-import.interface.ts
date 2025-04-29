@@ -1,5 +1,5 @@
-import { IPolicyComponents, PinoLogger, Policy } from "@guardian/common";
-import { IFormula, IOwner, PolicyToolMetadata } from "@guardian/interfaces";
+import { IPolicyComponents, PinoLogger, Policy } from '@guardian/common';
+import { IFormula, IOwner, PolicyToolMetadata } from '@guardian/interfaces';
 
 export interface ImportPolicyError {
     /**

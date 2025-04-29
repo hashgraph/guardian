@@ -1,7 +1,7 @@
-import { DataBaseHelper, PolicyRoles } from "@guardian/common";
-import { FindCursor } from "mongodb";
-import { CollectionBackup } from "../collection-backup.js";
-import { IDiffAction } from "../../interfaces/action.interface.js";
+import { DataBaseHelper, PolicyRoles } from '@guardian/common';
+import { FindCursor } from 'mongodb';
+import { CollectionBackup } from '../collection-backup.js';
+import { IDiffAction } from '../../interfaces/action.interface.js';
 
 export class RoleCollectionBackup extends CollectionBackup<PolicyRoles> {
     private readonly collectionName: string = 'PolicyRoles';
@@ -32,7 +32,7 @@ export class RoleCollectionBackup extends CollectionBackup<PolicyRoles> {
     }
 
     protected override createDiffData(newRow: PolicyRoles, oldRow?: PolicyRoles): any {
-        let diff: any = this.compareData(newRow, oldRow);
+        const diff: any = this.compareData(newRow, oldRow);
         return diff;
     }
 

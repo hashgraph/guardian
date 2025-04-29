@@ -1,4 +1,4 @@
-import { DataBaseHelper, VcDocument } from "@guardian/common";
+import { DataBaseHelper, VcDocument } from '@guardian/common';
 import { CollectionRestore, IDiffAction } from '../../index.js';
 
 export class VcCollectionRestore extends CollectionRestore<VcDocument> {

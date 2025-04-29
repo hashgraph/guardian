@@ -28,6 +28,7 @@ import { LabelMessage } from './label-message.js';
 import { FormulaMessage } from './formula-message.js';
 import { PolicyDiffMessage } from './policy-diff-message.js';
 import { PolicyActionMessage } from './policy-action-message.js';
+import { ContractMessage } from './contract-message.js';
 
 /**
  * Message server
@@ -343,6 +344,90 @@ export class MessageServer {
     }
 
     /**
+     * From message object
+     * @param json
+     * @param type
+     */
+    public static fromJson<T extends Message>(json: any): T {
+        let message: Message;
+        json.type = json.type;
+        switch (json.type) {
+            case MessageType.Contract:
+                message = ContractMessage.fromMessageObject(json);
+                break;
+            case MessageType.EVCDocument:
+            case MessageType.VCDocument:
+                message = VCMessage.fromMessageObject(json);
+                break;
+            case MessageType.DIDDocument:
+                message = DIDMessage.fromMessageObject(json);
+                break;
+            case MessageType.Schema:
+                message = SchemaMessage.fromMessageObject(json);
+                break;
+            case MessageType.Policy:
+            case MessageType.InstancePolicy:
+                message = PolicyMessage.fromMessageObject(json);
+                break;
+            case MessageType.VPDocument:
+                message = VPMessage.fromMessageObject(json);
+                break;
+            case MessageType.StandardRegistry:
+                message = RegistrationMessage.fromMessageObject(json);
+                break;
+            case MessageType.Topic:
+                message = TopicMessage.fromMessageObject(json);
+                break;
+            case MessageType.Token:
+                message = TokenMessage.fromMessageObject(json);
+                break;
+            case MessageType.Module:
+                message = ModuleMessage.fromMessageObject(json);
+                break;
+            case MessageType.Tool:
+                message = ToolMessage.fromMessageObject(json);
+                break;
+            case MessageType.Tag:
+                message = TagMessage.fromMessageObject(json);
+                break;
+            case MessageType.RoleDocument:
+                message = RoleMessage.fromMessageObject(json);
+                break;
+            case MessageType.GuardianRole:
+                message = GuardianRoleMessage.fromMessageObject(json);
+                break;
+            case MessageType.UserPermissions:
+                message = UserPermissionsMessage.fromMessageObject(json);
+                break;
+            case MessageType.PolicyStatistic:
+                message = StatisticMessage.fromMessageObject(json);
+                break;
+            case MessageType.PolicyLabel:
+                message = LabelMessage.fromMessageObject(json);
+                break;
+            case MessageType.Formula:
+                message = FormulaMessage.fromMessageObject(json);
+                break;
+            case MessageType.PolicyDiff:
+                message = PolicyDiffMessage.fromMessageObject(json);
+                break;
+            case MessageType.PolicyAction:
+                message = PolicyActionMessage.fromMessageObject(json);
+                break;
+            // Default schemas
+            case 'schema-document':
+                message = SchemaMessage.fromMessageObject(json);
+                break;
+            default:
+                throw new Error(`Invalid format message: ${json.type || 'UNKNOWN TYPE'}`);
+        }
+        if (!message.validate()) {
+            throw new Error(`Invalid json: ${json.type}`);
+        }
+        return message as T;
+    }
+
+    /**
      * Get messages
      * @param timeStamp
      */
@@ -362,6 +447,7 @@ export class MessageServer {
             item.setIndex(message.sequence_number);
             item.setId(message.id);
             item.setTopicId(message.topicId);
+            item.setMemo(message.memo);
             return item as T;
         } catch (error) {
             return null;
@@ -413,6 +499,7 @@ export class MessageServer {
                     item.setIndex(message.sequence_number);
                     item.setId(message.id);
                     item.setTopicId(topic);
+                    item.setMemo(message.memo);
                     result.push(item);
                 }
             } catch (error) {
@@ -435,6 +522,11 @@ export class MessageServer {
         }
 
         message.setLang(MessageServer.lang);
+        if (memo) {
+            message.setMemo(memo);
+        } else {
+            message.setMemo(MessageMemo.getMessageMemo(message));
+        }
         const time = await this.messageStartLog('Hedera');
         const buffer = message.toMessage();
         const timestamp = await new Workers().addRetryableTask({
@@ -448,7 +540,7 @@ export class MessageServer {
                 localNodeAddress: Environment.localNodeAddress,
                 localNodeProtocol: Environment.localNodeProtocol,
                 signOptions: this.signOptions,
-                memo: memo || MessageMemo.getMessageMemo(message),
+                memo: message.getMemo(),
                 dryRun: this.dryRun,
             }
         }, 10, 0, userId);
@@ -483,6 +575,7 @@ export class MessageServer {
                 item.setAccount(message.payer_account_id);
                 item.setIndex(message.sequence_number);
                 item.setId(message.id);
+                item.setMemo(message.memo);
                 item.setTopicId(topic);
                 return item;
             }
@@ -498,7 +591,11 @@ export class MessageServer {
      * @param type
      * @param action
      */
-    public async getMessages<T extends Message>(topicId: string | TopicId, type?: MessageType, action?: MessageAction): Promise<T[]> {
+    public async getMessages<T extends Message>(
+        topicId: string | TopicId,
+        type?: MessageType,
+        action?: MessageAction
+    ): Promise<T[]> {
         if (this.dryRun) {
             const messages = await DatabaseServer.getVirtualMessages(this.dryRun, topicId);
             const result: T[] = [];
@@ -515,6 +612,7 @@ export class MessageServer {
                     if (filter) {
                         item.setId(message.messageId);
                         item.setTopicId(message.topicId);
+                        item.setMemo(message.memo);
                         result.push(item);
                     }
                 } catch (error) {
@@ -597,6 +695,7 @@ export class MessageServer {
             const result = MessageServer.fromMessage<T>(message.document, type);
             result.setId(message.messageId);
             result.setTopicId(message.topicId);
+            result.setMemo(message.memo);
             return result;
         } else {
             let message = await this.getTopicMessage<T>(id, type, userId);
@@ -662,6 +761,7 @@ export class MessageServer {
         result.setIndex(message.sequence_number);
         result.setId(timeStamp);
         result.setTopicId(topicId);
+        result.setMemo(message.memo);
         return result;
     }
 
@@ -719,6 +819,7 @@ export class MessageServer {
                     item.setIndex(message.sequence_number);
                     item.setId(message.id);
                     item.setTopicId(topic);
+                    item.setMemo(message.memo);
                     result.push(item);
                 }
             } catch (error) {

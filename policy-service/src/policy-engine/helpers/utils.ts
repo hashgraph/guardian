@@ -1,5 +1,5 @@
-import { HederaDidDocument, IAuthUser, KeyType, NotificationHelper, Schema as SchemaCollection, Token, Topic, TopicConfig, TopicHelper, Users, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcDocumentDefinition as HVcDocument, VcSubject, VpDocumentDefinition as VpDocument, Wallet, Workers, VcHelper, MessageAction, RoleMessage, MessageServer, IDocumentOptions } from '@guardian/common';
-import { DidDocumentStatus, DocumentSignature, DocumentStatus, Schema, SchemaEntity, SignatureType, TopicType, WorkerTaskType } from '@guardian/interfaces';
+import { HederaDidDocument, IAuthUser, KeyType, NotificationHelper, Schema as SchemaCollection, Token, Topic, TopicConfig, TopicHelper, Users, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcDocumentDefinition as HVcDocument, VcSubject, VpDocumentDefinition as VpDocument, Wallet, Workers } from '@guardian/common';
+import { DidDocumentStatus, DocumentSignature, DocumentStatus, Schema, SchemaEntity, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { TokenId, TopicId } from '@hashgraph/sdk';
 import { FilterQuery } from '@mikro-orm/core';
 import * as mathjs from 'mathjs';

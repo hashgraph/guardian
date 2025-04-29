@@ -469,7 +469,6 @@ export async function deleteDemoSchema(
     await DatabaseServer.deleteSchemas(item.id);
 }
 
-
 /**
  * Prepare schema for preview
  * @param messageIds

@@ -1,4 +1,4 @@
-import { SchemaCategory } from "@guardian/interfaces";
+import { SchemaCategory } from '@guardian/interfaces';
 
 /**
  * Import Result

@@ -47,7 +47,6 @@ import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { serDefaultRole } from '../permission.service.js';
 import { publishSystemSchema } from '../../helpers/import-helpers/index.js';
 
-
 export interface IFireblocksConfig {
     fireBlocksVaultId: string;
     fireBlocksAssetId: string;
@@ -762,7 +761,6 @@ export async function validateCommonDid(json: string | any, keys: IDidKey[]): Pr
 }
 
 export async function validateDidWithoutKeys(json: string | any): Promise<CommonDidDocument> {
-    const vcHelper = new VcHelper();
     if (!json) {
         throw new Error(`Invalid did document.`);
     }

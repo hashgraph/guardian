@@ -244,6 +244,18 @@ export class VPMessage extends Message {
         return result;
     }
 
+    public static fromJson(json: any): VPMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+        const result = Message._fromJson(new VPMessage(json.action), json);
+        result.issuer = json.issuer;
+        result.hash = json.hash;
+        result.relationships = json.relationships;
+        result.document = json.document;
+        return result;
+    }
+
     /**
      * Get User DID
      */

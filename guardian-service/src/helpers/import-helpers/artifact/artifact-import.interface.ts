@@ -1,4 +1,4 @@
-import { Artifact } from "@guardian/common";
+import { Artifact } from '@guardian/common';
 
 /**
  * Import Result

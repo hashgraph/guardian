@@ -150,8 +150,6 @@ export class VpDocument extends RestoreEntity implements IVPDocument {
         this.signature = this.signature || DocumentSignature.NEW;
     }
 
-
-
     private _createDocument(document: string): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             try {

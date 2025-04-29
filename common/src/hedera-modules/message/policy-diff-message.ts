@@ -40,7 +40,7 @@ export class PolicyDiffMessage extends Message {
     public instanceTopicId: string;
 
     constructor(
-        type: MessageType.PolicyDiff, 
+        type: MessageType.PolicyDiff,
         action: MessageAction
     ) {
         super(action, type);
@@ -196,6 +196,22 @@ export class PolicyDiffMessage extends Message {
         result.policyTopicId = this.policyTopicId;
         result.instanceTopicId = this.instanceTopicId;
         result.document = this.document;
+        return result;
+    }
+
+    public static fromJson(json: any): PolicyDiffMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
+        const result = Message._fromJson(new PolicyDiffMessage(json.type, json.action), json);
+        result.uuid = json.uuid;
+        result.owner = json.owner;
+        result.diffType = json.diffType;
+        result.diffIndex = json.diffIndex;
+        result.policyTopicId = json.policyTopicId;
+        result.instanceTopicId = json.instanceTopicId;
+        result.document = json.document;
         return result;
     }
 

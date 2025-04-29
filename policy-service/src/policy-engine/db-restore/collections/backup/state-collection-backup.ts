@@ -1,7 +1,7 @@
-import { DataBaseHelper, BlockState } from "@guardian/common";
-import { FindCursor } from "mongodb";
-import { CollectionBackup } from "../collection-backup.js";
-import { IDiffAction } from "../../interfaces/action.interface.js";
+import { DataBaseHelper, BlockState } from '@guardian/common';
+import { FindCursor } from 'mongodb';
+import { CollectionBackup } from '../collection-backup.js';
+import { IDiffAction } from '../../interfaces/action.interface.js';
 
 export class StateCollectionBackup extends CollectionBackup<BlockState> {
     private readonly collectionName: string = 'BlockState';
@@ -32,7 +32,7 @@ export class StateCollectionBackup extends CollectionBackup<BlockState> {
     }
 
     protected override createDiffData(newRow: BlockState, oldRow?: BlockState): any {
-        let diff: any = this.compareData(newRow, oldRow);
+        const diff: any = this.compareData(newRow, oldRow);
         return diff;
     }
 

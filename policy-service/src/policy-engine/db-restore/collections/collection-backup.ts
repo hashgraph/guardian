@@ -1,7 +1,7 @@
-import { FindCursor } from "mongodb";
-import { RestoreEntity } from "@guardian/common";
+import { FindCursor } from 'mongodb';
+import { RestoreEntity } from '@guardian/common';
 import { DiffActionType, ICollectionDiff, IDiffAction } from '../index.js';
-import crypto from "crypto";
+import crypto from 'crypto';
 
 interface DiffResult<T extends RestoreEntity> {
     backup: ICollectionDiff<T>;
@@ -163,7 +163,7 @@ export abstract class CollectionBackup<T extends RestoreEntity> {
             return crypto
                 .createHash('md5')
                 .update(result)
-                .digest("hex");
+                .digest('hex');
         } else {
             return '';
         }

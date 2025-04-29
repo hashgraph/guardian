@@ -1,7 +1,7 @@
-import { FindCursor } from "mongodb";
-import { DataBaseHelper, Tag } from "@guardian/common";
-import { CollectionBackup } from "../collection-backup.js";
-import { IDiffAction } from "../../interfaces/action.interface.js";
+import { FindCursor } from 'mongodb';
+import { DataBaseHelper, Tag } from '@guardian/common';
+import { CollectionBackup } from '../collection-backup.js';
+import { IDiffAction } from '../../interfaces/action.interface.js';
 
 export class TagCollectionBackup extends CollectionBackup<Tag> {
     private readonly collectionName: string = 'Tag';
@@ -32,7 +32,7 @@ export class TagCollectionBackup extends CollectionBackup<Tag> {
     }
 
     protected override createDiffData(newRow: Tag, oldRow?: Tag): any {
-        let diff: any = this.compareData(newRow, oldRow);
+        const diff: any = this.compareData(newRow, oldRow);
         delete diff.documentFileId;
         return diff;
     }
@@ -48,7 +48,7 @@ export class TagCollectionBackup extends CollectionBackup<Tag> {
     protected override async loadFile(row: Tag, i: number = 0): Promise<any> {
         return row;
     }
-    
+
     protected override async clearFile(row: Tag): Promise<Tag> {
         return row;
     }

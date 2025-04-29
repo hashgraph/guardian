@@ -1,4 +1,4 @@
-import { DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, PinoLogger, Policy as PolicyCollection, PolicyModule as ModuleCollection, PolicyTool as PolicyToolCollection, Schema as SchemaCollection, Tag, TagMessage, Token as TokenCollection, TopicConfig, UrlType, Users, VcHelper } from '@guardian/common';
+import { DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, PinoLogger, Tag, TagMessage, TopicConfig, Users, VcHelper } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, MessageAPI, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { publishTag } from '../helpers/import-helpers/index.js'
@@ -228,8 +228,8 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 }
                 const { targets, entity } = msg;
                 const filter: any = {
-                        localTarget: { $in: targets },
-                        entity
+                    localTarget: { $in: targets },
+                    entity
                 }
                 const items = await DatabaseServer.getTags(filter);
                 return new MessageResponse(items);
@@ -247,8 +247,8 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 }
                 const { targets, entity } = msg;
                 const filter: any = {
-                        localTarget: { $in: targets },
-                        entity
+                    localTarget: { $in: targets },
+                    entity
                 }
                 const items = await DatabaseServer.getTagCache(filter);
                 return new MessageResponse(items);
@@ -385,8 +385,8 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 }
                 const { targets, entity } = msg;
                 const filter: any = {
-                        localTarget: { $in: targets },
-                        entity
+                    localTarget: { $in: targets },
+                    entity
                 }
                 const items = await DatabaseServer.getTags(filter);
                 for (const item of items) {

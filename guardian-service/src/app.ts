@@ -81,7 +81,7 @@ Promise.all([
             transactional: false
         },
         ensureIndexes: true,
-        entities: entities
+        entities
     }, [
         'v2-4-0',
         'v2-7-0',

@@ -1,4 +1,4 @@
-import { DataBaseHelper, MultiDocuments } from "@guardian/common";
+import { DataBaseHelper, MultiDocuments } from '@guardian/common';
 import { CollectionRestore, IDiffAction } from '../../index.js';
 
 export class MultiDocCollectionRestore extends CollectionRestore<MultiDocuments> {
