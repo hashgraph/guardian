@@ -117,7 +117,6 @@
                     <div *ngIf="type === 'table'" class="merge-table" [attr.open]="panelOpenState">
                         <div class="merge-table-content">
                             <p-table *ngIf="report" [value]="report" class="table mat-table">
-                                <!-- Шапка таблицы -->
                                 <ng-template pTemplate="header">
                                     <tr class="mat-header-row">
                                         <ng-container *ngFor="let column of columns">
@@ -128,7 +127,6 @@
                                     </tr>
                                 </ng-template>
 
-                                <!-- Тело таблицы -->
                                 <ng-template pTemplate="body" let-row>
                                     <tr class="mat-row" [attr.type]="row.type" [attr.rate]="row.total_rate">
                                         <ng-container *ngFor="let column of columns">
