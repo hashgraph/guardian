@@ -203,4 +203,20 @@ export class PolicyActionMessage extends Message {
         result.document = this.document;
         return result;
     }
+
+    public static fromJson(json: any): PolicyActionMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
+        const result = Message._fromJson(new PolicyActionMessage(json.action), json);
+        result.uuid = json.uuid;
+        result.owner = json.owner;
+        result.policyId = json.policyId;
+        result.accountId = json.accountId;
+        result.blockTag = json.blockTag;
+        result.parent = json.parent;
+        result.document = json.document;
+        return result;
+    }
 }

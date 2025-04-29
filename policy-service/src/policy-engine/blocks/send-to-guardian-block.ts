@@ -11,6 +11,7 @@ import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { DocumentType } from '../interfaces/document.type.js';
 import { FilterQuery } from '@mikro-orm/core';
+import { PolicyActionsUtils } from '../policy-actions/utils.js';
 
 /**
  * Document Operations
@@ -390,6 +391,31 @@ export class SendToGuardianBlock {
     }
 
     /**
+     * Get topic owner
+     * @param ref
+     * @param document
+     * @param type
+     */
+    private getTopicOwner(
+        ref: AnyBlockType,
+        document: IPolicyDocument,
+        type: string
+    ): string {
+        let topicOwner: string = document.owner;
+        if (type === 'issuer') {
+            topicOwner = PolicyUtils.getDocumentIssuer(document.document);
+        } else if (type === 'user') {
+            topicOwner = document.owner;
+        } else if (type === 'root') {
+            topicOwner = ref.policyOwner;
+        }
+        if (!topicOwner) {
+            throw new Error(`Topic owner not found`);
+        }
+        return topicOwner;
+    }
+
+    /**
      * Send to hedera
      * @param document
      * @param message
@@ -401,32 +427,12 @@ export class SendToGuardianBlock {
         ref: AnyBlockType
     ): Promise<IPolicyDocument> {
         try {
-            const root = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
-            const user = await PolicyUtils.getUserCredentials(ref, document.owner);
-
-            let topicOwner = user;
-            if (ref.options.topicOwner === 'user') {
-                topicOwner = await PolicyUtils.getUserCredentials(ref, user.did);
-            } else if (ref.options.topicOwner === 'issuer') {
-                topicOwner = await PolicyUtils.getUserCredentials(ref, PolicyUtils.getDocumentIssuer(document.document));
-            } else {
-                topicOwner = user;
-            }
-            if (!topicOwner) {
-                throw new Error(`Topic owner not found`);
-            }
-
-            const topic = await PolicyUtils.getOrCreateTopic(ref, ref.options.topic, root, topicOwner, document);
-
-            const userHederaCred = await user.loadHederaCredentials(ref);
-            const signOptions = await user.loadSignOptions(ref);
-            const messageServer = new MessageServer(
-                userHederaCred.hederaAccountId, userHederaCred.hederaAccountKey, signOptions, ref.dryRun
-            );
             const memo = MessageMemo.parseMemo(true, ref.options.memo, document);
-            const vcMessageResult = await messageServer
-                .setTopicObject(topic)
-                .sendMessage(message, true, memo);
+            message.setMemo(memo);
+
+            const topicOwner = this.getTopicOwner(ref, document, ref.options.topicOwner);
+            const topic = await PolicyActionsUtils.getOrCreateTopic(ref, ref.options.topic, topicOwner, document);
+            const vcMessageResult = await PolicyActionsUtils.sendMessage(ref, topic, message, document.owner);
 
             document.hederaStatus = DocumentStatus.ISSUE;
             document.messageId = vcMessageResult.getId();

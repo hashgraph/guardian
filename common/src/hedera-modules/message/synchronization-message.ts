@@ -192,6 +192,24 @@ export class SynchronizationMessage extends Message {
         return result;
     }
 
+    public static fromJson(json: any): SynchronizationMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
+        const result = Message._fromJson(new SynchronizationMessage(json.action), json);
+        result.user = json.user;
+        result.policy = json.policy;
+        result.policyType = json.policyType;
+        result.messageId = json.messageId;
+        result.tokenId = json.tokenId;
+        result.amount = json.amount;
+        result.memo = json.memo;
+        result.target = json.target;
+        result.policyOwner = json.policyOwner;
+        return result;
+    }
+
     /**
      * Get User DID
      */

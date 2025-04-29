@@ -52,6 +52,18 @@ export class GuardianRoleMessage extends VCMessage {
         return result;
     }
 
+        public static fromJson(json: any): GuardianRoleMessage {
+            if (!json) {
+                throw new Error('JSON Object is empty');
+            }
+    
+            const result = VCMessage._fromJson(new GuardianRoleMessage(json.action), json);
+            result.uuid = json.uuid;
+            result.name = json.name;
+            result.description = json.description;
+            return result;
+        }
+
     /**
      * To message object
      */

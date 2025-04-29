@@ -272,6 +272,30 @@ export class PolicyMessage extends Message {
         return result;
     }
 
+    public static fromJson(json: any): PolicyMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
+        const result = Message._fromJson(new PolicyMessage(json.type, json.action), json);
+        result.uuid = json.uuid;
+        result.name = json.name;
+        result.description = json.description;
+        result.owner = json.owner;
+        result.topicDescription = json.topicDescription;
+        result.version = json.version;
+        result.policyTag = json.policyTag;
+        result.policyTopicId = json.policyTopicId;
+        result.instanceTopicId = json.instanceTopicId;
+        result.synchronizationTopicId = json.synchronizationTopicId;
+        result.availability = json.availability;
+        result.restoreTopicId = json.restoreTopicId;
+        result.actionsTopicId = json.actionsTopicId;
+        result.discontinuedDate = json.effectiveDate;
+        result.document = json.document;
+        return result;
+    }
+
     /**
      * Get User DID
      */

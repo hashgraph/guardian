@@ -801,6 +801,7 @@ export class PolicyUtils {
                 owner: topicOwner
             }), !ref.dryRun);
 
+
         if (!topic) {
             const hederaCred = config.static
                 ? (await root.loadHederaCredentials(ref))

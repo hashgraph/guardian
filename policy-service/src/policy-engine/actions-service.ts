@@ -119,6 +119,7 @@ export class PolicyActionsService {
             .sendMessage(message, true);
 
         newRow.messageId = messageResult.getId();
+        newRow.startMessageId = messageResult.getId();
         newRow.sender = messageResult.payer;
 
         this.callback.set(newRow.messageId, callback);
@@ -276,7 +277,7 @@ export class PolicyActionsService {
                 sender: message.payer,
                 blockTag: message.blockTag,
                 messageId: message.id,
-                startMessageId: message.parent,
+                startMessageId: message.parent || message.id,
                 topicId: message.topicId?.toString(),
                 index: Number(message.index),
                 policyId: this.policyId,
@@ -294,7 +295,7 @@ export class PolicyActionsService {
             row.blockTag = message.blockTag;
             row.messageId = message.id;
             row.index = Number(message.index);
-            row.startMessageId = message.parent;
+            row.startMessageId = message.parent || message.id,
             row.policyId = this.policyId;
             row.status = status;
             row.document = document;
@@ -437,15 +438,15 @@ export class PolicyActionsService {
         console.debug('- update');
     }
 
-    private async completeRequest(row: PolicyAction) {
+    private async completeRequest(response: PolicyAction) {
         const collection = new DataBaseHelper(PolicyAction);
-        const request = await collection.findOne({ messageId: row.startMessageId });
-        const valid = await PolicyActionsUtils.validate(request, row);
+        const request = await collection.findOne({ messageId: response.startMessageId });
+        const valid = await PolicyActionsUtils.validate(request, response);
         if (valid) {
             const callback = this.callback.get(request.messageId);
             if (callback) {
                 this.callback.delete(request.messageId)
-                await callback(row);
+                await callback(response);
             }
         }
     }

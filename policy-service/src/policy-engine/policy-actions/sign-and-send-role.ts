@@ -4,7 +4,7 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyComponentsUtils } from './../policy-components-utils.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
-import { PolicyActionType } from "./utils.js";
+import { PolicyActionType } from "./policy-action.type.js";
 
 export class SignAndSendRole {
     public static async local(

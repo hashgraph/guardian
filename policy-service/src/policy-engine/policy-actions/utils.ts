@@ -1,5 +1,5 @@
-import { IDocumentOptions, PolicyAction, RoleMessage, VcDocumentDefinition } from "@guardian/common";
-import { LocationType, PolicyActionStatus } from "@guardian/interfaces";
+import { IDocumentOptions, Message, PolicyAction, RoleMessage, TopicConfig, VcDocumentDefinition } from "@guardian/common";
+import { LocationType, PolicyActionStatus, PolicyStatus, TopicType } from "@guardian/interfaces";
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUtils } from "../helpers/utils.js";
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
@@ -8,14 +8,24 @@ import { BlockActionError } from '../errors/index.js';
 import { SignAndSendRole } from "./sign-and-send-role.js";
 import { GenerateDID } from "./generate-did.js";
 import { SignVC } from "./sign-vc.js";
-
-export enum PolicyActionType {
-    SignAndSendRole = 'sign-and-send-role',
-    GenerateDID = 'generate-did',
-    SignVC = 'sign-vc',
-}
+import { PolicyActionType } from "./policy-action.type.js";
+import { SendMessage } from "./send-message.js";
+import { CreateTopic } from "./create-topic.js";
 
 export class PolicyActionsUtils {
+    private static needKey(status: PolicyStatus): boolean {
+        switch (status) {
+            case PolicyStatus.DRY_RUN: return false;
+            case PolicyStatus.DEMO: return false;
+            case PolicyStatus.VIEW: return false;
+            case PolicyStatus.DRAFT: return false;
+            case PolicyStatus.PUBLISH_ERROR: return false;
+            case PolicyStatus.PUBLISH: return true;
+            case PolicyStatus.DISCONTINUED: return true;
+            default: return false;
+        }
+    }
+
     public static async validate(request: PolicyAction, response: PolicyAction) {
         const type = request?.document?.type;
         switch (type) {
@@ -27,6 +37,12 @@ export class PolicyActionsUtils {
             }
             case PolicyActionType.SignVC: {
                 return await SignVC.validate(request, response);
+            }
+            case PolicyActionType.SendMessage: {
+                return await SendMessage.validate(request, response);
+            }
+            case PolicyActionType.CreateTopic: {
+                return await CreateTopic.validate(request, response);
             }
         }
         return false;
@@ -43,6 +59,12 @@ export class PolicyActionsUtils {
             }
             case PolicyActionType.SignVC: {
                 return await SignVC.response(row, user);
+            }
+            case PolicyActionType.SendMessage: {
+                return await SendMessage.response(row, user);
+            }
+            case PolicyActionType.CreateTopic: {
+                return await CreateTopic.response(row, user);
             }
         }
         throw new Error('Invalid command');
@@ -179,8 +201,31 @@ export class PolicyActionsUtils {
     /**
      * send-to-guardian-block
      */
-
-
+    public static async sendMessage(
+        ref: AnyBlockType,
+        topic: TopicConfig,
+        message: Message,
+        owner: string,
+    ): Promise<Message> {
+        const userCred = await PolicyUtils.getUserCredentials(ref, owner);
+        if (userCred.location === LocationType.LOCAL) {
+            return await SendMessage.local(ref, topic, message, owner);
+        } else {
+            const data = await SendMessage.request(ref, topic, message, owner);
+            return new Promise((resolve, reject) => {
+                const callback = async (action: PolicyAction) => {
+                    if (action.status === PolicyActionStatus.COMPLETED) {
+                        const result = await SendMessage.complete(action);
+                        resolve(result)
+                    } else {
+                        reject(action.document);
+                    }
+                }
+                const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
+                controller.sendRequest(data, callback).catch(reject).then();
+            });
+        }
+    }
 
     /**
      * external-data-block
@@ -217,4 +262,95 @@ export class PolicyActionsUtils {
     /**
      * token-action-block
      */
+
+
+
+    /**
+     * send-to-guardian-block
+     */
+    public static async getOrCreateTopic(
+        ref: AnyBlockType,
+        name: string,
+        owner: string,
+        memoObj: any,
+    ): Promise<TopicConfig> {
+        // Root topic
+        if (!name || name === 'root') {
+            return await PolicyActionsUtils.getRootTopic(ref);
+        }
+
+        // Check config
+        const policyTopics = ref.policyInstance.policyTopics || [];
+        const config = policyTopics.find(e => e.name === name);
+        if (!config) {
+            throw new Error(`Topic "${name}" does not exist`);
+        }
+
+        // User topic
+        const topicOwner: string = config.static ? ref.policyOwner : owner;
+
+        const topic = await PolicyActionsUtils.getTopic(ref, name, topicOwner);
+        if (topic) {
+            return topic;
+        }
+
+        return await PolicyActionsUtils.createTopic(ref, TopicType.DynamicTopic, config, topicOwner, memoObj);
+    }
+
+    public static async getRootTopic(
+        ref: AnyBlockType,
+
+    ): Promise<TopicConfig> {
+        const needKey = PolicyActionsUtils.needKey(ref.policyStatus);
+        const rootTopic = await TopicConfig.fromObject(
+            await ref.databaseServer.getTopic({
+                policyId: ref.policyId,
+                type: TopicType.InstancePolicyTopic
+            }), needKey);
+        return rootTopic;
+    }
+
+    public static async getTopic(
+        ref: AnyBlockType,
+        name: string,
+        owner: string
+    ): Promise<TopicConfig> {
+        const needKey = PolicyActionsUtils.needKey(ref.policyStatus);
+        const topic = await TopicConfig.fromObject(
+            await ref.databaseServer.getTopic({
+                policyId: ref.policyId,
+                type: TopicType.DynamicTopic,
+                name,
+                owner
+            }), needKey);
+        return topic;
+    }
+
+    public static async createTopic(
+        ref: AnyBlockType,
+        type: TopicType,
+        config: any,
+        owner: string,
+        memoObj: any,
+    ): Promise<TopicConfig> {
+        const needKey = PolicyActionsUtils.needKey(ref.policyStatus);
+        const userCred = await PolicyUtils.getUserCredentials(ref, owner);
+        if (userCred.location === LocationType.LOCAL) {
+            return await CreateTopic.local(ref, type, config, owner, memoObj, needKey);
+        } else {
+            const data = await CreateTopic.request(ref, type, config, owner, memoObj);
+            return new Promise((resolve, reject) => {
+                const callback = async (action: PolicyAction) => {
+                    if (action.status === PolicyActionStatus.COMPLETED) {
+                        const result = await CreateTopic.complete(action);
+                        resolve(result)
+                    } else {
+                        reject(action.document);
+                    }
+                }
+                const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
+                controller.sendRequest(data, callback).catch(reject).then();
+            });
+        }
+    }
 }
