@@ -5,9 +5,8 @@ import {
     Log,
     DatabaseServer,
     MAP_ATTRIBUTES_AGGREGATION_FILTERS,
-    Users, IAuthUser
 } from '@guardian/common';
-import {MessageAPI, Permissions} from '@guardian/interfaces';
+import { MessageAPI } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Ctx, MessagePattern, NatsContext, Payload, Transport } from '@nestjs/microservices';
 import process from 'process';
