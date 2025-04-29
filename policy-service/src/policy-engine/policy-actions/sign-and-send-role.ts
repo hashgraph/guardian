@@ -1,5 +1,4 @@
-import { RoleMessage, VcHelper, MessageServer, MessageAction, PolicyAction } from "@guardian/common";
-import { VcDocument as VcDocumentDefinition } from "@guardian/common/dist/hedera-modules/vcjs/vc-document";
+import { RoleMessage, VcHelper, MessageServer, MessageAction, PolicyAction, VcDocumentDefinition } from "@guardian/common";
 import { GenerateUUIDv4 } from "@guardian/interfaces";
 import { PolicyUtils } from "@policy-engine/helpers/utils";
 import { PolicyComponentsUtils } from "@policy-engine/policy-components-utils";
