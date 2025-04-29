@@ -4,7 +4,7 @@ import { PolicyUtils } from "@policy-engine/helpers/utils";
 import { PolicyComponentsUtils } from "@policy-engine/policy-components-utils";
 import { AnyBlockType } from "@policy-engine/policy-engine.interface";
 import { PolicyUser } from "@policy-engine/policy-user";
-import { PolicyActionType } from "./utils";
+import { PolicyActionType } from "./utils.js";
 
 export class GenerateDID {
     public static async local(
