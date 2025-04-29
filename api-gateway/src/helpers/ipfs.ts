@@ -83,7 +83,7 @@ export class IPFS extends NatsService{
      * @param userId
      */
     public async updateSettings(settings: CommonSettings, userId: string | null): Promise<void> {
-        const res = await this.sendMessage(MessageAPI.UPDATE_SETTINGS, {...settings, userId}) as any;
+        const res = await this.sendMessage(MessageAPI.UPDATE_SETTINGS, {settings, userId}) as any;
         if (!res) {
             throw new Error('Invalid IPFS response');
         }

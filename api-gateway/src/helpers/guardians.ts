@@ -96,7 +96,7 @@ export class Guardians extends NatsService {
      *
      */
     public async updateSettings(settings: CommonSettings, userId: string | null): Promise<void> {
-        await this.sendMessage(MessageAPI.UPDATE_SETTINGS, {...settings, userId});
+        await this.sendMessage(MessageAPI.UPDATE_SETTINGS, {settings, userId});
     }
 
     /**

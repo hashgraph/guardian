@@ -20,8 +20,7 @@ export async function configAPI(
      * Update settings
      *
      */
-    ApiResponse(MessageAPI.UPDATE_SETTINGS, async ({settings} :{settings: CommonSettings & { userId: string }}) => {
-        const userId = settings?.userId
+    ApiResponse(MessageAPI.UPDATE_SETTINGS, async ({settings, userId} :{settings: CommonSettings, userId: string }) => {
         try {
             const secretManager = SecretManager.New();
             try {

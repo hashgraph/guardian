@@ -163,7 +163,6 @@ export class Worker extends NatsService {
         });
 
         const runTask = async (task) => {
-            console.dir(task, { depth: null, colors: true });
             this.isInUse = true;
             this.currentTaskId = task.id;
             const userId = task.data?.payload?.userId;
