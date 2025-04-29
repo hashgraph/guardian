@@ -841,10 +841,6 @@ export async function syncRetireContract(
                         count: Number(item[1]),
                     }));
 
-                    const userAccount = AccountId.fromSolidityAddress(
-                        data[0]
-                    ).toString();
-
                     await setPool(
                         workers,
                         dataBaseServer,

@@ -959,8 +959,7 @@ export class Worker extends NatsService {
                         serialnumber,
                         order,
                         filter,
-                        limit,
-                        payload: { userId }
+                        limit
                     } = task.data;
                     const nfts = await HederaSDKHelper.getNFTTokenSerials(tokenId, accountId, serialnumber, order, filter, limit);
                     result.data = nfts?.map(nft => nft.serial_number) || [];

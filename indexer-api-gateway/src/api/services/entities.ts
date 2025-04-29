@@ -168,7 +168,7 @@ export class EntityApi extends ApiClient {
             messageId,
         });
     }
-    
+
     @ApiOperation({
         summary: 'Get registry relationships',
         description: 'Returns registry relationships',

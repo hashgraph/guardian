@@ -4,7 +4,7 @@ import { CACHE } from '../../constants/index.js';
 import { UseCache, Guardians } from '#helpers';
 import { InternalServerErrorDTO } from '#middlewares';
 import {Auth, AuthUser} from '#auth';
-import {IAuthUser} from "@guardian/common";
+import {IAuthUser} from '@guardian/common';
 
 @Controller('map')
 @ApiTags('map')

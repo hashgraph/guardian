@@ -143,9 +143,8 @@ export class Users extends NatsService {
         return await this.sendMessage(AuthEvents.GET_USERS_BY_SR_ID, { did, userId });
     }
 
-
     /**
-     * Update current user entity
+     * Update the current user entity
      * @param username
      * @param item
      * @param userId

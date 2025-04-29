@@ -2,7 +2,6 @@ import { BlockErrorActions } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../../policy-components-utils.js';
 import { PinoLogger } from '@guardian/common';
 import { PolicyOutputEventType } from '../../interfaces/index.js';
-import {UserCredentials} from '../../policy-user.js';
 
 /**
  * Catch errors decorator

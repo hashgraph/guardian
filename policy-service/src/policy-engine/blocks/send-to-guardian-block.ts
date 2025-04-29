@@ -11,7 +11,6 @@ import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { DocumentType } from '../interfaces/document.type.js';
 import { FilterQuery } from '@mikro-orm/core';
-import {UserCredentials} from '../../policy-engine/policy-user.js';
 
 /**
  * Document Operations
