@@ -4,5 +4,7 @@ export enum PolicyActionType {
     GenerateDID = 'generate-did',
     SignVC = 'sign-vc',
     SendMessage = 'send-message',
-    CreateTopic = 'create-topic'
+    CreateTopic = 'create-topic',
+    AssociateToken = 'associate-token',
+    DissociateToken = 'dissociate-token'
 }

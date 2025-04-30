@@ -1,4 +1,4 @@
-import { IDocumentOptions, Message, PolicyAction, RoleMessage, TopicConfig, VcDocumentDefinition } from '@guardian/common';
+import { IDocumentOptions, Message, PolicyAction, RoleMessage, Token, TopicConfig, VcDocumentDefinition } from '@guardian/common';
 import { LocationType, PolicyActionStatus, PolicyStatus, TopicType } from '@guardian/interfaces';
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUtils } from '../helpers/utils.js';
@@ -11,6 +11,8 @@ import { SignVC } from './sign-vc.js';
 import { PolicyActionType } from './policy-action.type.js';
 import { SendMessage } from './send-message.js';
 import { CreateTopic } from './create-topic.js';
+import { AssociateToken } from './associate-token.js';
+import { DissociateToken } from './dissociate-token.js';
 
 export class PolicyActionsUtils {
     private static needKey(status: PolicyStatus): boolean {
@@ -44,6 +46,12 @@ export class PolicyActionsUtils {
             case PolicyActionType.CreateTopic: {
                 return await CreateTopic.validate(request, response);
             }
+            case PolicyActionType.AssociateToken: {
+                return await AssociateToken.validate(request, response);
+            }
+            case PolicyActionType.DissociateToken: {
+                return await DissociateToken.validate(request, response);
+            }
             default:
                 return false;
         }
@@ -66,6 +74,12 @@ export class PolicyActionsUtils {
             }
             case PolicyActionType.CreateTopic: {
                 return await CreateTopic.response(row, user);
+            }
+            case PolicyActionType.AssociateToken: {
+                return await AssociateToken.response(row, user);
+            }
+            case PolicyActionType.DissociateToken: {
+                return await DissociateToken.response(row, user);
             }
             default:
                 throw new Error('Invalid command');
@@ -264,6 +278,58 @@ export class PolicyActionsUtils {
     /**
      * token-action-block
      */
+    public static async associateToken(
+        ref: AnyBlockType,
+        token: Token,
+        user: string,
+    ): Promise<boolean> {
+        const userCred = await PolicyUtils.getUserCredentials(ref, user);
+        if (userCred.location === LocationType.LOCAL) {
+            return await AssociateToken.local(ref, token, user);
+        } else {
+            const data = await AssociateToken.request(ref, token, user);
+            return new Promise((resolve, reject) => {
+                const callback = async (action: PolicyAction) => {
+                    if (action.status === PolicyActionStatus.COMPLETED) {
+                        const result = await AssociateToken.complete(action);
+                        resolve(result)
+                    } else {
+                        reject(action.document);
+                    }
+                }
+                const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
+                controller.sendRequest(data, callback).catch(reject).then();
+            });
+        }
+    }
+
+    /**
+     * token-action-block
+     */
+    public static async dissociateToken(
+        ref: AnyBlockType,
+        token: Token,
+        user: string,
+    ): Promise<boolean> {
+        const userCred = await PolicyUtils.getUserCredentials(ref, user);
+        if (userCred.location === LocationType.LOCAL) {
+            return await DissociateToken.local(ref, token, user);
+        } else {
+            const data = await DissociateToken.request(ref, token, user);
+            return new Promise((resolve, reject) => {
+                const callback = async (action: PolicyAction) => {
+                    if (action.status === PolicyActionStatus.COMPLETED) {
+                        const result = await DissociateToken.complete(action);
+                        resolve(result)
+                    } else {
+                        reject(action.document);
+                    }
+                }
+                const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
+                controller.sendRequest(data, callback).catch(reject).then();
+            });
+        }
+    }
 
     /**
      * send-to-guardian-block

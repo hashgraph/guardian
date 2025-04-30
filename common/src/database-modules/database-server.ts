@@ -3127,6 +3127,20 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Get Virtual User
+     * @param did
+     *
+     * @virtual
+     */
+    public async getVirtualUserByAccount(accountId: string): Promise<IAuthUser | null> {
+        return (await new DataBaseHelper(DryRun).findOne({
+            dryRunId: this.dryRun,
+            dryRunClass: 'VirtualUsers',
+            hederaAccountId: accountId
+        })) as unknown as IAuthUser;
+    }
+
+    /**
      * Get Current Virtual User
      * @param policyId
      *

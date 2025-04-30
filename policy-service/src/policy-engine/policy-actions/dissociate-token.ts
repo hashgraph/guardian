@@ -1,0 +1,78 @@
+import { PolicyAction, Token } from '@guardian/common';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { PolicyUtils } from '../helpers/utils.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { AnyBlockType } from '../policy-engine.interface.js';
+import { PolicyUser } from '../policy-user.js';
+import { PolicyActionType } from './policy-action.type.js';
+
+export class DissociateToken {
+    public static async local(
+        ref: AnyBlockType,
+        token: Token,
+        user: string
+    ): Promise<boolean> {
+        const userCred = await PolicyUtils.getUserCredentials(ref, user);
+        const userHederaCred = await userCred.loadHederaCredentials(ref);
+        return await PolicyUtils.dissociate(ref, token, userHederaCred);
+    }
+
+    public static async request(
+        ref: AnyBlockType,
+        token: Token,
+        user: string
+    ): Promise<any> {
+        const userAccount = await PolicyUtils.getHederaAccountId(ref, user);
+        const data = {
+            uuid: GenerateUUIDv4(),
+            owner: user,
+            accountId: userAccount,
+            blockTag: ref.tag,
+            document: {
+                type: PolicyActionType.DissociateToken,
+                owner: user,
+                token: {
+                    tokenId: token.tokenId,
+                    tokenName: token.tokenName,
+                    tokenSymbol: token.tokenSymbol,
+                    tokenType: token.tokenType
+                }
+            }
+        };
+        return data;
+    }
+
+    public static async response(row: PolicyAction, user: PolicyUser) {
+        const ref = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
+        const data = row.document;
+        const { token } = data;
+
+        const userCred = await PolicyUtils.getUserCredentials(ref, user.did);
+        const userHederaCred = await userCred.loadHederaCredentials(ref);
+        const dissociate = await PolicyUtils.dissociate(ref, token, userHederaCred);
+
+        return {
+            type: PolicyActionType.DissociateToken,
+            owner: user.did,
+            token,
+            dissociate
+        };
+    }
+
+    public static async complete(row: PolicyAction): Promise<boolean> {
+        const data = row.document;
+        const { dissociate } = data;
+        return !!dissociate;
+    }
+
+    public static async validate(request: PolicyAction, response: PolicyAction): Promise<boolean> {
+        try {
+            if (request && response && request.accountId === response.accountId) {
+                return true;
+            }
+            return false;
+        } catch (error) {
+            return false;
+        }
+    }
+}

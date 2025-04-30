@@ -486,9 +486,7 @@ export class PolicyUtils {
                     dryRun: ref.dryRun
                 }
             }, 20);
-            const userProfile = await new Users().getUserByAccount(
-                user.hederaAccountId
-            );
+            const userProfile = await new Users().getUserByAccount(user.hederaAccountId);
             await NotificationHelper.info(
                 `Associate token`,
                 `${token.tokenName} associated`,
@@ -746,13 +744,11 @@ export class PolicyUtils {
      * revokeKyc
      * @param account
      */
-    public static async checkAccountId(account: IHederaCredentials): Promise<void> {
+    public static async checkAccountId(hederaAccountId: string): Promise<void> {
         const workers = new Workers();
         return await workers.addNonRetryableTask({
             type: WorkerTaskType.CHECK_ACCOUNT,
-            data: {
-                hederaAccountId: account.hederaAccountId,
-            }
+            data: { hederaAccountId }
         }, 20);
     }
 
@@ -961,6 +957,27 @@ export class PolicyUtils {
      */
     public static async getUserCredentials(ref: AnyBlockType, did: string): Promise<UserCredentials> {
         return await UserCredentials.create(ref, did);
+    }
+
+    /**
+     * Get Hedera Account and Private Key
+     * @param ref
+     * @param did
+     */
+    public static async getUserCredentialsByAccount(ref: AnyBlockType, accountId: string): Promise<UserCredentials> {
+        return await UserCredentials.createByAccount(ref, accountId);
+    }
+
+    /**
+     * Get Hedera Account and Private Key
+     * @param hederaAccountId
+     * @param hederaAccountKey
+     */
+    public static createHederaCredentials(
+        hederaAccountId: string,
+        hederaAccountKey: string = null
+    ): IHederaCredentials {
+        return { hederaAccountId, hederaAccountKey }
     }
 
     /**
