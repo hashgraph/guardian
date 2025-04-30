@@ -294,7 +294,7 @@ export class PolicyActionsService {
             row.blockTag = message.blockTag;
             row.messageId = message.id;
             row.index = Number(message.index);
-            row.startMessageId = message.parent || message.id,
+            row.startMessageId = message.parent || message.id;
             row.policyId = this.policyId;
             row.status = status;
             row.document = document;
@@ -435,6 +435,7 @@ export class PolicyActionsService {
 
     private async sentNotification(row: PolicyAction) {
         console.debug('- update');
+        PolicyComponentsUtils.sentRequestNotification(row);
     }
 
     private async completeRequest(response: PolicyAction) {

@@ -20,7 +20,7 @@ import {
     ISerializedBlock,
     ISerializedBlockExtend
 } from './policy-engine.interface.js';
-import { DatabaseServer, MessageError, MessageResponse, Policy, PolicyRoles, PolicyTool, Users } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, Policy, PolicyAction, PolicyRoles, PolicyTool, Users } from '@guardian/common';
 import { STATE_KEY } from './helpers/constants.js';
 import { GetBlockByType } from './blocks/get-block-by-type.js';
 import { GetOtherOptions } from './helpers/get-other-options.js';
@@ -142,6 +142,16 @@ export function externalBlockEvent(event: ExternalEvent<any>): void {
     const type = 'external';
     new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, data: [event] }, false);
 }
+
+export function requestNotificationEvent(row: PolicyAction): void {
+    new BlockTreeGenerator().sendMessage(PolicyEvents.REQUEST_UPDATE_BROADCAST, {
+        id: row.id,
+        type: row.type,
+        accountId: row.accountId,
+        policyId: row.policyId,
+        status : row.status
+    }, false);
+};
 
 /**
  * Policy component utils
@@ -1633,4 +1643,11 @@ export class PolicyComponentsUtils {
             throw new MessageError('Invalid policy controller', 500);
         }
     }
+
+    /**
+     * Policy request notifications
+     */
+    public static async sentRequestNotification(row: PolicyAction) {
+        requestNotificationEvent(row);
+    };
 }

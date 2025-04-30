@@ -62,6 +62,7 @@ export async function updateSchemaDefs(schemaId: string, oldSchemaId?: string) {
  * @param user
  */
 export async function incrementSchemaVersion(
+    topicId: string,
     iri: string,
     user: IOwner
 ): Promise<SchemaCollection> {
@@ -69,7 +70,11 @@ export async function incrementSchemaVersion(
         throw new Error(`Invalid increment schema version parameter`);
     }
 
-    const schema = await DatabaseServer.getSchema({ iri, owner: user.owner });
+    const filter: any = { iri, owner: user.owner };
+    if (topicId) {
+        filter.topicId = topicId;
+    }
+    const schema = await DatabaseServer.getSchema(filter);
 
     if (!schema) {
         return;

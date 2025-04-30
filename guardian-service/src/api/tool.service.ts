@@ -215,12 +215,12 @@ export async function publishSchemas(
     const schemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
 
     notifier.info(`Found ${schemas.length} schemas`);
-    const schemaIRIs = schemas.map(s => s.iri);
+
     let num: number = 0;
     let skipped: number = 0;
     const schemaMap = new Map<string, string>();
-    for (const schemaIRI of schemaIRIs) {
-        const schema = await incrementSchemaVersion(schemaIRI, owner);
+    for (const row of schemas) {
+        const schema = await incrementSchemaVersion(row.topicId, row.iri, owner);
         if (!schema || schema.status === SchemaStatus.PUBLISHED) {
             skipped++;
             continue;
@@ -235,7 +235,7 @@ export async function publishSchemas(
         );
         if (Array.isArray(tool.config?.variables)) {
             for (const variable of tool.config?.variables) {
-                if (variable.baseSchema === schemaIRI) {
+                if (variable.baseSchema === row.iri) {
                     variable.baseSchema = newSchema.iri;
                 }
             }

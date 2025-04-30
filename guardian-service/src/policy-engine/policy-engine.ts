@@ -727,11 +727,10 @@ export class PolicyEngine extends NatsService {
     ): Promise<Policy> {
         const schemas = await DatabaseServer.getSchemas({ topicId: model.topicId });
         notifier.info(`Found ${schemas.length} schemas`);
-        const schemaIRIs = schemas.map(s => s.iri);
         let num: number = 0;
         let skipped: number = 0;
-        for (const schemaIRI of schemaIRIs) {
-            const schema = await incrementSchemaVersion(schemaIRI, user);
+        for (const row of schemas) {
+            const schema = await incrementSchemaVersion(row.topicId, row.iri, user);
             if (!schema || schema.status === SchemaStatus.PUBLISHED) {
                 skipped++;
                 continue;
@@ -1228,7 +1227,7 @@ export class PolicyEngine extends NatsService {
             true
         );
 
-        let [,retVal] = await Promise.all([
+        let [, retVal] = await Promise.all([
             //Update dry-run table (mark readonly rows)
             DatabaseServer.setSystemMode(dryRunId, true),
             //Update Policy hash and status

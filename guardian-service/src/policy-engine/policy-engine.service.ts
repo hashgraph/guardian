@@ -254,6 +254,23 @@ export class PolicyEngineService {
                 }
             })
 
+        this.channel.getMessages(PolicyEvents.REQUEST_UPDATE_BROADCAST,
+            async (msg: {
+                id: string,
+                type: string,
+                accountId: string,
+                policyId: string,
+                status: string,
+            }) => {
+                const policy = await DatabaseServer.getPolicyById(msg.policyId);
+                const user = await this.users.getUserByAccount(msg.accountId);
+                if (user && policy) {
+                    const evert = { ...msg, user: { did: user.did } };
+                    this.channel.publish('update-request', evert);
+                    console.debug('---- update-request', evert);
+                }
+            })
+
         this.channel.getMessages(PolicyEvents.TEST_UPDATE_BROADCAST,
             async (msg: {
                 id: string,
@@ -816,12 +833,16 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_TOKENS_MAP,
-            async (msg: { owner: IOwner, status: string }) => {
+            async (msg: { owner: IOwner, status: string | string[] }) => {
                 try {
                     const { owner, status } = msg;
                     const filters: any = {};
                     if (status) {
-                        filters.status = status;
+                        if (Array.isArray(status)) {
+                            filters.status = { $in: status };
+                        } else {
+                            filters.status = status;
+                        }
                     }
                     await this.policyEngine.addAccessFilters(filters, owner);
                     const policies = await DatabaseServer.getPolicies(filters);
