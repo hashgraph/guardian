@@ -20,4 +20,8 @@ export interface ILog {
      * Log level
      */
     level?: number;
+    /**
+     * User Id
+     */
+    userId?: string | null;
 }

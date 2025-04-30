@@ -142,10 +142,11 @@ export class VcHelper extends VCJS {
 
     /**
      * Load DID document
-     * @param topic
-     * @param needKey
+     * @param did
+     * @param userId
+     * @param user
      */
-    public async loadDidDocument(did: string, user?: IAuthUser): Promise<HederaDidDocument> {
+    public async loadDidDocument(did: string, userId: string | null, user?: IAuthUser): Promise<HederaDidDocument> {
         if (!did) {
             return null;
         }
@@ -158,7 +159,7 @@ export class VcHelper extends VCJS {
         document.setDidTopicId(row.topicId);
 
         if (!user) {
-            user = await (new Users()).getUserById(did);
+            user = await (new Users()).getUserById(did, userId);
         }
 
         if (!user) {

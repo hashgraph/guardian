@@ -48,7 +48,7 @@ export class AISuggestionsAPI {
             const aiSuggestions = new AISuggestions();
             return await aiSuggestions.getAIAnswer(q);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, null);
         }
     }
 
@@ -75,7 +75,7 @@ export class AISuggestionsAPI {
             const aiSuggestions = new AISuggestions();
             return await aiSuggestions.rebuildAIVector();
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, null);
         }
     }
 }

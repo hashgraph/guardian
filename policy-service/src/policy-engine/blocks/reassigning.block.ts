@@ -47,8 +47,9 @@ export class ReassigningBlock {
      * Document reassigning
      * @param document
      * @param user
+     * @param userId
      */
-    async documentReassigning(document: IPolicyDocument, user: PolicyUser): Promise<{
+    async documentReassigning(document: IPolicyDocument, user: PolicyUser, userId: string | null): Promise<{
         /**
          * New Document
          */
@@ -60,7 +61,7 @@ export class ReassigningBlock {
     }> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const vcDocument = document.document;
-        const owner: PolicyUser = await PolicyUtils.getDocumentOwner(ref, document);
+        const owner: PolicyUser = await PolicyUtils.getDocumentOwner(ref, document, userId);
 
         let root: UserCredentials;
         let groupContext: any;
@@ -78,14 +79,14 @@ export class ReassigningBlock {
 
         let actor: PolicyUser;
         if (ref.options.actor === 'owner') {
-            actor = await PolicyUtils.getDocumentOwner(ref, document);
+            actor = await PolicyUtils.getDocumentOwner(ref, document, userId);
         } else if (ref.options.actor === 'issuer') {
-            actor = await PolicyUtils.getPolicyUser(ref, root.did, document.group);
+            actor = await PolicyUtils.getPolicyUser(ref, root.did, document.group, userId);
         } else {
             actor = user;
         }
 
-        const didDocument = await root.loadDidDocument(ref);
+        const didDocument = await root.loadDidDocument(ref, userId);
         const uuid = await ref.components.generateUUID();
         const credentialSubject = vcDocument.credentialSubject[0];
         const vc: any = await this.vcHelper.createVerifiableCredential(
@@ -128,12 +129,12 @@ export class ReassigningBlock {
         if (Array.isArray(documents)) {
             result = [];
             for (const doc of documents) {
-                const { item, actor } = await this.documentReassigning(doc, event.user);
+                const { item, actor } = await this.documentReassigning(doc, event.user, event.userId);
                 result.push(item);
                 user = actor;
             }
         } else {
-            const { item, actor } = await this.documentReassigning(documents, event.user);
+            const { item, actor } = await this.documentReassigning(documents, event.user, event.userId);
             result = item;
             user = actor;
         }

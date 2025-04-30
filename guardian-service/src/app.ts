@@ -378,7 +378,8 @@ Promise.all([
                     hederaAccountId: OPERATOR_ID,
                     hederaAccountKey: OPERATOR_KEY,
                     dryRun: false,
-                    topicMemo: TopicMemo.getGlobalTopicMemo()
+                    topicMemo: TopicMemo.getGlobalTopicMemo(),
+                    payload: { userId: null }
                 }
             }, 10);
         }

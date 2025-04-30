@@ -83,58 +83,74 @@ export class Users extends NatsService {
     /**
      * Return user by username
      * @param username
+     * @param userId
      */
-    public async getUser(username: string): Promise<IAuthUser> {
-        return await this.sendMessage(AuthEvents.GET_USER, { username });
+    public async getUser(username: string, userId: string | null): Promise<IAuthUser> {
+        return await this.sendMessage(AuthEvents.GET_USER, { username, userId });
     }
 
     /**
      * Return user by username
      * @param username
+     * @param userId
      */
-    public async getUserPermissions(username: string): Promise<IAuthUser> {
-        return await this.sendMessage(AuthEvents.GET_USER_PERMISSIONS, { username });
+    public async getUserPermissions(username: string, userId: string | null): Promise<IAuthUser> {
+        return await this.sendMessage(AuthEvents.GET_USER_PERMISSIONS, { username, userId });
     }
 
     /**
      * Return user by did
      * @param did
+     * @param userId
      */
-    public async getUserById(did: string): Promise<IAuthUser> {
-        return await this.sendMessage(AuthEvents.GET_USER_BY_ID, { did });
+    public async getUserById(did: string, userId: string | null): Promise<IAuthUser> {
+        return await this.sendMessage(AuthEvents.GET_USER_BY_ID, { did, userId });
     }
 
     /**
      * Return user by account
      * @param account
+     * @param userId
      */
     public async getUserByAccount(account: string): Promise<IAuthUser> {
-        return await this.sendMessage(AuthEvents.GET_USER_BY_ACCOUNT, { account });
+        return await this.sendMessage(AuthEvents.GET_USER_BY_ACCOUNT, { account, userId: null });
     }
 
     /**
      * Return user by did
      * @param dids
+     * @param userId
      */
-    public async getUsersByIds(dids: string[]): Promise<IAuthUser[]> {
-        return await this.sendMessage(AuthEvents.GET_USERS_BY_ID, { dids });
+    public async getUsersByIds(dids: string[], userId: string | null): Promise<IAuthUser[]> {
+        return await this.sendMessage(AuthEvents.GET_USERS_BY_ID, { dids, userId });
     }
 
     /**
      * Return users with role
      * @param role
+     * @param userId
      */
-    public async getUsersByRole(role: UserRole): Promise<IAuthUser[]> {
-        return await this.sendMessage(AuthEvents.GET_USERS_BY_ROLE, { role });
+    public async getUsersByRole(role: UserRole, userId: string | null): Promise<IAuthUser[]> {
+        return await this.sendMessage(AuthEvents.GET_USERS_BY_ROLE, { role, userId });
     }
 
     /**
-     * Update current user entity
+     * Return users by parent did
+     * @param did
+     * @param userId
+     */
+    public async getUsersByParentDid(did: string, userId: string | null): Promise<IAuthUser[]> {
+        return await this.sendMessage(AuthEvents.GET_USERS_BY_SR_ID, { did, userId });
+    }
+
+    /**
+     * Update the current user entity
      * @param username
      * @param item
+     * @param userId
      */
-    public async updateCurrentUser(username: string, item: any) {
-        return await this.sendMessage(AuthEvents.UPDATE_USER, { username, item });
+    public async updateCurrentUser(username: string, item: any, userId: string | null) {
+        return await this.sendMessage(AuthEvents.UPDATE_USER, { username, item, userId });
     }
 
     /**
@@ -185,22 +201,22 @@ export class Users extends NatsService {
     /**
      * Get all user accounts
      */
-    public async getAllUserAccounts(): Promise<IAuthUser[]> {
-        return await this.sendMessage(AuthEvents.GET_ALL_USER_ACCOUNTS);
+    public async getAllUserAccounts(userId: string | null): Promise<IAuthUser[]> {
+        return await this.sendMessage(AuthEvents.GET_ALL_USER_ACCOUNTS, { userId });
     }
 
     /**
      * Get all user accounts demo
      */
     public async getAllUserAccountsDemo() {
-        return await this.sendMessage(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO);
+        return await this.sendMessage(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO, { userId: null });
     }
 
     /**
      * Get all standard registries
      */
-    public async getAllStandardRegistryAccounts() {
-        return await this.sendMessage(AuthEvents.GET_ALL_STANDARD_REGISTRY_ACCOUNTS);
+    public async getAllStandardRegistryAccounts(userId: string | null) {
+        return await this.sendMessage(AuthEvents.GET_ALL_STANDARD_REGISTRY_ACCOUNTS, { userId });
     }
 
     /**
@@ -218,34 +234,36 @@ export class Users extends NatsService {
     }
 
     public async generateNewUserTokenBasedOnExternalUserProvider(userProvider: ProviderAuthUser): Promise<any> {
-        return await this.sendMessage(AuthEvents.GENERATE_NEW_TOKEN_BASED_ON_USER_PROVIDER, userProvider);
+        return await this.sendMessage(AuthEvents.GENERATE_NEW_TOKEN_BASED_ON_USER_PROVIDER, {...userProvider, userId: null});
     }
 
     /**
      * Get permissions
-     * @param options
      * @returns Operation Success
+     * @param userId
      */
-    public async getPermissions(): Promise<any[]> {
-        return await this.sendMessage(AuthEvents.GET_PERMISSIONS, {});
+    public async getPermissions(userId: string | null): Promise<any[]> {
+        return await this.sendMessage(AuthEvents.GET_PERMISSIONS, {userId});
     }
 
     /**
      * Get roles
      * @param options
+     * @param userId
      * @returns Operation Success
      */
-    public async getRoles(options: any): Promise<ResponseAndCount<any>> {
-        return await this.sendMessage(AuthEvents.GET_ROLES, options);
+    public async getRoles(options: any, userId: string | null): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(AuthEvents.GET_ROLES, {...options, userId});
     }
 
     /**
      * Get role
      * @param id
+     * @param userId
      * @returns Operation Success
      */
-    public async getRoleById(id: string): Promise<any> {
-        return await this.sendMessage(AuthEvents.GET_ROLE, { id });
+    public async getRoleById(id: string, userId: string | null): Promise<any> {
+        return await this.sendMessage(AuthEvents.GET_ROLE, { id, userId });
     }
 
     /**
@@ -256,7 +274,7 @@ export class Users extends NatsService {
      * @returns Operation Success
      */
     public async createRole(role: any, owner: IOwner): Promise<any> {
-        return await this.sendMessage(AuthEvents.CREATE_ROLE, { role, owner });
+        return await this.sendMessage(AuthEvents.CREATE_ROLE, { role, owner, userId: owner.id });
     }
 
     /**
@@ -267,7 +285,7 @@ export class Users extends NatsService {
      * @returns Operation Success
      */
     public async updateRole(id: string, role: any, owner: IOwner): Promise<any> {
-        return await this.sendMessage(AuthEvents.UPDATE_ROLE, { id, role, owner });
+        return await this.sendMessage(AuthEvents.UPDATE_ROLE, { id, role, owner, userId: owner.id });
     }
 
     /**
@@ -277,26 +295,28 @@ export class Users extends NatsService {
      * @returns Operation Success
      */
     public async deleteRole(id: string, owner: IOwner): Promise<any> {
-        return await this.sendMessage(AuthEvents.DELETE_ROLE, { id, owner });
+        return await this.sendMessage(AuthEvents.DELETE_ROLE, { id, owner, userId: owner.id });
     }
 
     /**
      * Det default role
      * @param id
      * @param owner
+     * @param userId
      * @returns Operation Success
      */
-    public async setDefaultRole(id: string, owner: string): Promise<RoleDTO> {
-        return await this.sendMessage(AuthEvents.SET_DEFAULT_ROLE, { id, owner });
+    public async setDefaultRole(id: string, owner: string, userId: string | null): Promise<RoleDTO> {
+        return await this.sendMessage(AuthEvents.SET_DEFAULT_ROLE, { id, owner, userId });
     }
 
     /**
      * Get roles
      * @param options
+     * @param userId
      * @returns Operation Success
      */
-    public async getWorkers(options: any): Promise<ResponseAndCount<any>> {
-        return await this.sendMessage(AuthEvents.GET_USER_ACCOUNTS, options);
+    public async getWorkers(options: any, userId: string | null): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(AuthEvents.GET_USER_ACCOUNTS, {...options, userId});
     }
 
     /**
@@ -311,7 +331,7 @@ export class Users extends NatsService {
         userRoles: string[],
         owner: IOwner
     ): Promise<any> {
-        return await this.sendMessage(AuthEvents.UPDATE_USER_ROLE, { username, userRoles, owner });
+        return await this.sendMessage(AuthEvents.UPDATE_USER_ROLE, { username, userRoles, owner, userId: owner.id });
     }
 
     /**
@@ -326,17 +346,18 @@ export class Users extends NatsService {
         userRoles: string[],
         owner: IOwner
     ): Promise<any> {
-        return await this.sendMessage(AuthEvents.DELEGATE_USER_ROLE, { username, userRoles, owner });
+        return await this.sendMessage(AuthEvents.DELEGATE_USER_ROLE, { username, userRoles, owner, userId: owner.id });
     }
 
     /**
      * Refresh user permissions
      * @param id
      * @param owner
+     * @param userId
      * @returns Operation Success
      */
-    public async refreshUserPermissions(id: string, owner: string): Promise<any[]> {
-        return await this.sendMessage(AuthEvents.REFRESH_USER_PERMISSIONS, { id, owner });
+    public async refreshUserPermissions(id: string, owner: string, userId: string | null): Promise<any[]> {
+        return await this.sendMessage(AuthEvents.REFRESH_USER_PERMISSIONS, { id, owner, userId });
     }
 }
 
@@ -369,17 +390,19 @@ export class UsersService {
     /**
      * Return user by username
      * @param username
+     * @param userId
      */
-    public async getUser(username: string): Promise<IAuthUser> {
-        return await this.users.getUser(username)
+    public async getUser(username: string, userId: string | null): Promise<IAuthUser> {
+        return await this.users.getUser(username, userId);
     }
 
     /**
      * Return user by did
      * @param did
+     * @param userId
      */
-    public async getUserById(did: string): Promise<IAuthUser> {
-        return await this.users.getUserById(did);
+    public async getUserById(did: string, userId: string | null): Promise<IAuthUser> {
+        return await this.users.getUserById(did, userId);
     }
 
     /**
@@ -393,26 +416,38 @@ export class UsersService {
     /**
      * Return user by did
      * @param dids
+     * @param userId
      */
-    public async getUsersByIds(dids: string[]): Promise<IAuthUser[]> {
-        return await this.users.getUsersByIds(dids);
+    public async getUsersByIds(dids: string[], userId: string | null): Promise<IAuthUser[]> {
+        return await this.users.getUsersByIds(dids, userId);
     }
 
     /**
      * Return users with role
      * @param role
+     * @param userId
      */
-    public async getUsersByRole(role: UserRole): Promise<IAuthUser[]> {
-        return await this.users.getUsersByRole(role);
+    public async getUsersByRole(role: UserRole, userId: string | null): Promise<IAuthUser[]> {
+        return await this.users.getUsersByRole(role, userId);
+    }
+
+    /**
+     * Return users by parent did
+     * @param did
+     * @param userId
+     */
+    public async getUsersByParentDid(did: string, userId: string | null): Promise<IAuthUser[]> {
+        return await this.users.getUsersByParentDid(did, userId);
     }
 
     /**
      * Update current user entity
      * @param username
      * @param item
+     * @param userId
      */
-    public async updateCurrentUser(username: string, item: any) {
-        return await this.users.updateCurrentUser(username, item);
+    public async updateCurrentUser(username: string, item: any, userId: string | null) {
+        return await this.users.updateCurrentUser(username, item, userId);
     }
 
     /**
@@ -449,8 +484,8 @@ export class UsersService {
     /**
      * Get all user accounts
      */
-    public async getAllUserAccounts(): Promise<any> {
-        return await this.users.getAllUserAccounts();
+    public async getAllUserAccounts(userId: string | null): Promise<any> {
+        return await this.users.getAllUserAccounts(userId);
     }
 
     /**
@@ -463,8 +498,8 @@ export class UsersService {
     /**
      * Get all standard registries
      */
-    public async getAllStandardRegistryAccounts() {
-        return await this.users.getAllStandardRegistryAccounts();
+    public async getAllStandardRegistryAccounts(userId: string | null) {
+        return await this.users.getAllStandardRegistryAccounts(userId);
     }
 
     /**
@@ -476,7 +511,7 @@ export class UsersService {
         return await this.users.getStatus();
     }
 
-    public async generateNewUserTokenBasedOnExternalUserProvider(userProvider: ProviderAuthUser): Promise<any> {
+    public async generateNewUserTokenBasedOnExternalUserProvider(userProvider: ProviderAuthUser,): Promise<any> {
         return await this.users.generateNewUserTokenBasedOnExternalUserProvider(userProvider);
     }
 }

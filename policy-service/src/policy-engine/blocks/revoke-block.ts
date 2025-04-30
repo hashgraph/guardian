@@ -7,6 +7,7 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../in
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import {UserCredentials} from '../../policy-engine/policy-user.js';
 
 export const RevokedStatus = 'Revoked';
 
@@ -39,6 +40,7 @@ export class RevokeBlock {
      * @param messageServer
      * @param ref
      * @param revokeMessage
+     * @param userId
      * @param parentId
      */
     async sendToHedera(
@@ -46,13 +48,14 @@ export class RevokeBlock {
         messageServer: MessageServer,
         ref: AnyBlockType,
         revokeMessage: string,
+        userId: string | null,
         parentId?: string[]
     ) {
-        const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId);
+        const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId, userId);
         message.revoke(revokeMessage, parentId);
         await messageServer
             .setTopicObject(topic)
-            .sendMessage(message, false);
+            .sendMessage(message, false, null, userId);
     }
 
     /**
@@ -131,9 +134,12 @@ export class RevokeBlock {
         const data = event.data.data;
         const doc = Array.isArray(data) ? data[0] : data;
 
+        const credentials = await UserCredentials.create(ref, event.user.id);
+        const userId = credentials.userId;
+
         const userCred = await PolicyUtils.getUserCredentials(ref, event.user.did);
-        const userHederaCred = await userCred.loadHederaCredentials(ref);
-        const signOptions = await userCred.loadSignOptions(ref);
+        const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
+        const signOptions = await userCred.loadSignOptions(ref, userId);
         const messageServer = new MessageServer(
             userHederaCred.hederaAccountId, userHederaCred.hederaAccountKey, signOptions, ref.dryRun
         );
@@ -141,7 +147,7 @@ export class RevokeBlock {
 
         const policyTopicsMessages = [];
         for (const topic of policyTopics) {
-            const topicMessages = await messageServer.getMessages(topic.topicId);
+            const topicMessages = await messageServer.getMessages(topic.topicId, userId);
             policyTopicsMessages.push(...topicMessages);
         }
         const messagesToFind = policyTopicsMessages
@@ -158,6 +164,7 @@ export class RevokeBlock {
                     messageServer,
                     ref,
                     doc.comment,
+                    userId,
                     relatedMessage.parentIds
                 );
             }

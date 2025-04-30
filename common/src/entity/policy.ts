@@ -78,6 +78,12 @@ export class Policy extends BaseEntity {
     owner?: string;
 
     /**
+     * Policy owner Id
+     */
+    @Property({ nullable: true })
+    ownerId?: string;
+
+    /**
      * Policy roles
      */
     @Property({ nullable: true })

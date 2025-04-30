@@ -15,7 +15,8 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} new schema rule
      */
     ApiResponse(MessageAPI.CREATE_SCHEMA_RULE,
-        async (msg: { rule: SchemaRule, owner: IOwner }) => {
+        async (msg: { rule: SchemaRule, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -45,7 +46,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 const row = await DatabaseServer.createSchemaRule(rule);
                 return new MessageResponse(row);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -58,7 +59,8 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - schema rules
      */
     ApiResponse(MessageAPI.GET_SCHEMA_RULES,
-        async (msg: { filters: any, owner: IOwner }) => {
+        async (msg: { filters: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -96,7 +98,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 const [items, count] = await DatabaseServer.getSchemaRulesAndCount(query, otherOptions);
                 return new MessageResponse({ items, count });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -109,7 +111,8 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - schema rule
      */
     ApiResponse(MessageAPI.GET_SCHEMA_RULE,
-        async (msg: { ruleId: string, owner: IOwner }) => {
+        async (msg: { ruleId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -121,7 +124,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 }
                 return new MessageResponse(item);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -134,7 +137,8 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - relationships
      */
     ApiResponse(MessageAPI.GET_SCHEMA_RULE_RELATIONSHIPS,
-        async (msg: { ruleId: string, owner: IOwner }) => {
+        async (msg: { ruleId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -159,7 +163,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                     schemas: all,
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -175,8 +179,10 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             ruleId: string,
             rule: SchemaRule,
-            owner: IOwner
+            owner: IOwner,
+            userId: string | null
         }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -197,7 +203,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 const result = await DatabaseServer.updateSchemaRule(item);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -210,7 +216,8 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
      * @returns {boolean} - Operation success
      */
     ApiResponse(MessageAPI.DELETE_SCHEMA_RULE,
-        async (msg: { ruleId: string, owner: IOwner }) => {
+        async (msg: { ruleId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -226,7 +233,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 await DatabaseServer.removeSchemaRule(item);
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -239,7 +246,8 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - schema rule
      */
     ApiResponse(MessageAPI.ACTIVATE_SCHEMA_RULE,
-        async (msg: { ruleId: string, owner: IOwner }) => {
+        async (msg: { ruleId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -262,7 +270,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 return new MessageResponse(result);
 
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -275,7 +283,8 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - schema rule
      */
     ApiResponse(MessageAPI.INACTIVATE_SCHEMA_RULE,
-        async (msg: { ruleId: string, owner: IOwner }) => {
+        async (msg: { ruleId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -296,7 +305,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 return new MessageResponse(result);
 
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -316,8 +325,10 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 documentId: string,
                 parentId: string,
             }
-            owner: IOwner
+            owner: IOwner,
+            userId: string | null
         }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -339,7 +350,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 }
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -352,7 +363,8 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - zip file
      */
     ApiResponse(MessageAPI.EXPORT_SCHEMA_RULE_FILE,
-        async (msg: { ruleId: string, owner: IOwner }) => {
+        async (msg: { ruleId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid export theme parameters');
@@ -375,7 +387,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
 
                 return new BinaryMessageResponse(file);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -388,7 +400,8 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - new schema rule
      */
     ApiResponse(MessageAPI.IMPORT_SCHEMA_RULE_FILE,
-        async (msg: { zip: any, policyId: string, owner: IOwner }) => {
+        async (msg: { zip: any, policyId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { zip, policyId, owner } = msg;
                 if (!zip) {
@@ -418,7 +431,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse(row);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -431,7 +444,8 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} Preview
      */
     ApiResponse(MessageAPI.PREVIEW_SCHEMA_RULE_FILE,
-        async (msg: { zip: any, owner: IOwner }) => {
+        async (msg: { zip: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { zip } = msg;
                 if (!zip) {
@@ -441,7 +455,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 const { rule } = preview;
                 return new MessageResponse(rule);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });

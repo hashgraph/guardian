@@ -47,7 +47,7 @@ export class PolicyStatisticsApi {
             const guardian = new Guardians();
             return await guardian.createStatisticDefinition(definition, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -106,7 +106,7 @@ export class PolicyStatisticsApi {
             const { items, count } = await guardians.getStatisticDefinitions({ policyInstanceTopicId, pageIndex, pageSize }, owner);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -148,7 +148,7 @@ export class PolicyStatisticsApi {
             const guardian = new Guardians();
             return await guardian.getStatisticDefinitionById(definitionId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -200,7 +200,7 @@ export class PolicyStatisticsApi {
             }
             return await guardians.updateStatisticDefinition(definitionId, item, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -242,7 +242,7 @@ export class PolicyStatisticsApi {
             const guardians = new Guardians();
             return await guardians.deleteStatisticDefinition(definitionId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -288,7 +288,7 @@ export class PolicyStatisticsApi {
             }
             return await guardians.publishStatisticDefinition(definitionId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -330,7 +330,7 @@ export class PolicyStatisticsApi {
             const guardian = new Guardians();
             return await guardian.getStatisticRelationships(definitionId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -389,7 +389,7 @@ export class PolicyStatisticsApi {
             const { items, count } = await guardians.getStatisticDocuments(definitionId, owner, pageIndex, pageSize);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -440,7 +440,7 @@ export class PolicyStatisticsApi {
             const guardian = new Guardians();
             return await guardian.createStatisticAssessment(definitionId, assessment, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -502,7 +502,7 @@ export class PolicyStatisticsApi {
             const { items, count } = await guardians.getStatisticAssessments(definitionId, { pageIndex, pageSize }, owner);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -552,7 +552,7 @@ export class PolicyStatisticsApi {
             const guardian = new Guardians();
             return await guardian.getStatisticAssessment(definitionId, assessmentId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -602,7 +602,7 @@ export class PolicyStatisticsApi {
             const guardian = new Guardians();
             return await guardian.getStatisticAssessmentRelationships(definitionId, assessmentId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -646,7 +646,7 @@ export class PolicyStatisticsApi {
             const owner = new EntityOwner(user);
             return await guardian.importStatisticDefinition(zip, policyId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -688,7 +688,7 @@ export class PolicyStatisticsApi {
             res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -723,7 +723,7 @@ export class PolicyStatisticsApi {
             const guardian = new Guardians();
             return await guardian.previewStatisticDefinition(body, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

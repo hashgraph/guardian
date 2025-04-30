@@ -66,7 +66,7 @@ export class MessagesReportBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
             const report = new MessagesReport();
-            await report.start(messageId);
+            await report.start(messageId, user.id);
             await ref.setLongCache<IReport>(this.USER_REPORT, report.toJson(), user);
             await ref.setShortCache<string>(this.USER_REPORT_STATUS, 'FINISHED', user);
             this.updateStatus(ref, 'FINISHED', user);

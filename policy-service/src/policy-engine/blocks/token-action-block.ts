@@ -83,7 +83,7 @@ export class TokenActionBlock {
                 }
             } else {
                 const user = await PolicyUtils.getUserCredentials(ref, doc.owner);
-                account = await user.loadHederaCredentials(ref);
+                account = await user.loadHederaCredentials(ref, event.userId);
             }
             if (ref.options.useTemplate) {
                 if (doc.tokens) {
@@ -96,34 +96,35 @@ export class TokenActionBlock {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
 
-        await PolicyUtils.checkAccountId(account);
-
         const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
-        const ownerCredentials = await policyOwner.loadHederaCredentials(ref);
+        const ownerCredentials = await policyOwner.loadHederaCredentials(ref, event.userId);
+        const userId = policyOwner.userId;
+
+        await PolicyUtils.checkAccountId(account, userId);
 
         switch (ref.options.action) {
             case 'associate': {
-                await PolicyUtils.associate(ref, token, account);
+                await PolicyUtils.associate(ref, token, account, userId);
                 break;
             }
             case 'dissociate': {
-                await PolicyUtils.dissociate(ref, token, account);
+                await PolicyUtils.dissociate(ref, token, account, userId);
                 break;
             }
             case 'freeze': {
-                await PolicyUtils.freeze(ref, token, account, ownerCredentials);
+                await PolicyUtils.freeze(ref, token, account, ownerCredentials, userId);
                 break;
             }
             case 'unfreeze': {
-                await PolicyUtils.unfreeze(ref, token, account, ownerCredentials);
+                await PolicyUtils.unfreeze(ref, token, account, ownerCredentials, userId);
                 break;
             }
             case 'grantKyc': {
-                await PolicyUtils.grantKyc(ref, token, account, ownerCredentials);
+                await PolicyUtils.grantKyc(ref, token, account, ownerCredentials, userId);
                 break;
             }
             case 'revokeKyc': {
-                await PolicyUtils.revokeKyc(ref, token, account, ownerCredentials);
+                await PolicyUtils.revokeKyc(ref, token, account, ownerCredentials, userId);
                 break;
             }
             default:

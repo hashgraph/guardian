@@ -53,6 +53,10 @@ export interface IPolicyEvent<T> {
      * Data
      */
     data?: T;
+    /**
+     * User Id
+     */
+    userId?: string | null
 }
 
 /**
@@ -118,7 +122,8 @@ export class PolicyLink<T> {
      * @param data
      */
     public run(user: PolicyUser, data: T): void {
-        this.getUser(user, data).then((_user) => {
+        const userId = (this.target as any)?.policyInstance?.ownerId || null;
+        this.getUser(user, data, userId).then((_user) => {
             const event: IPolicyEvent<T> = {
                 type: this.type,
                 inputType: this.inputType,
@@ -129,7 +134,8 @@ export class PolicyLink<T> {
                 target: this.target.tag,
                 targetId: this.target.uuid,
                 user: _user,
-                data
+                data,
+                userId
             };
             this.callback.call(this.target, event);
         });
@@ -137,14 +143,16 @@ export class PolicyLink<T> {
 
     /**
      * Get owner
+     * @param user
      * @param data
+     * @param userId
      * @private
      */
-    private async getUser(user: PolicyUser, data: T): Promise<PolicyUser> {
+    private async getUser(user: PolicyUser, data: T, userId: string | null): Promise<PolicyUser> {
         if (this.actor === EventActor.Owner) {
-            return await this.getOwner(user, data);
+            return await this.getOwner(user, data, userId);
         } else if (this.actor === EventActor.Issuer) {
-            return await this.getIssuer(user, data);
+            return await this.getIssuer(user, data, userId);
         } else {
             return user;
         }
@@ -152,10 +160,12 @@ export class PolicyLink<T> {
 
     /**
      * Get owner
+     * @param user
      * @param data
+     * @param userId
      * @private
      */
-    private async getOwner(user: PolicyUser, data: any): Promise<PolicyUser> {
+    private async getOwner(user: PolicyUser, data: any, userId: string | null): Promise<PolicyUser> {
         if (!data) {
             return null;
         }
@@ -165,16 +175,18 @@ export class PolicyLink<T> {
         if (user && user.equal(data.owner, data.group)) {
             return user;
         } else {
-            return await PolicyComponentsUtils.GetPolicyUserByDID(data.owner, data.group, this.target);
+            return await PolicyComponentsUtils.GetPolicyUserByDID(data.owner, data.group, this.target, userId);
         }
     }
 
     /**
      * Get issuer
+     * @param user
      * @param data
+     * @param userId
      * @private
      */
-    private async getIssuer(user: PolicyUser, data: any): Promise<PolicyUser> {
+    private async getIssuer(user: PolicyUser, data: any, userId: string | null): Promise<PolicyUser> {
         if (!data) {
             return null;
         }
@@ -189,7 +201,7 @@ export class PolicyLink<T> {
             if (user && user.equal(did, data.group)) {
                 return user;
             } else {
-                return await PolicyComponentsUtils.GetPolicyUserByDID(did, data.group, this.target);
+                return await PolicyComponentsUtils.GetPolicyUserByDID(did, data.group, this.target, userId);
             }
         }
         return null;

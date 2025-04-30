@@ -7,6 +7,7 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType, } from '../i
 import { ChildrenType, ControlType, PropertyType, } from '../interfaces/block-about.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType, } from '../interfaces/external-event.js';
+import {UserCredentials} from '../../policy-engine/policy-user.js';
 
 export const RevokedStatus = 'Revoked';
 
@@ -53,6 +54,7 @@ export class RevocationBlock {
      * @param messageServer
      * @param ref
      * @param revokeMessage
+     * @param userId
      * @param parentId
      */
     async sendToHedera(
@@ -60,11 +62,12 @@ export class RevocationBlock {
         messageServer: MessageServer,
         ref: AnyBlockType,
         revokeMessage: string,
+        userId: string | null,
         parentId?: string[]
     ) {
-        const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId);
+        const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId, userId);
         message.revoke(revokeMessage, parentId);
-        await messageServer.setTopicObject(topic).sendMessage(message, false);
+        await messageServer.setTopicObject(topic).sendMessage(message, false, null, userId);
     }
 
     /**
@@ -160,9 +163,12 @@ export class RevocationBlock {
         const data = event.data.data;
         const doc = Array.isArray(data) ? data[0] : data;
 
+        const credentials = await UserCredentials.create(ref, event.user.id);
+        const userId = credentials.userId;
+
         const userCred = await PolicyUtils.getUserCredentials(ref, event.user.did);
-        const userHederaCred = await userCred.loadHederaCredentials(ref);
-        const signOptions = await userCred.loadSignOptions(ref);
+        const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
+        const signOptions = await userCred.loadSignOptions(ref, userId);
         const messageServer = new MessageServer(
             userHederaCred.hederaAccountId,
             userHederaCred.hederaAccountKey,
@@ -176,7 +182,8 @@ export class RevocationBlock {
         const policyTopicsMessages = [];
         for (const topic of policyTopics) {
             const topicMessages = await messageServer.getMessages(
-                topic.topicId
+                topic.topicId,
+                userId
             );
             policyTopicsMessages.push(...topicMessages);
         }
@@ -202,6 +209,7 @@ export class RevocationBlock {
                     messageServer,
                     ref,
                     doc.comment,
+                    userId,
                     relatedMessage.parentIds
                 );
             }

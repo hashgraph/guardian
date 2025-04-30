@@ -26,7 +26,8 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} new formula
      */
     ApiResponse(MessageAPI.CREATE_FORMULA,
-        async (msg: { formula: Formula, owner: IOwner }) => {
+        async (msg: { formula: Formula, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -57,7 +58,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 const row = await DatabaseServer.createFormula(formula);
                 return new MessageResponse(row);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -70,7 +71,8 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - formulas
      */
     ApiResponse(MessageAPI.GET_FORMULAS,
-        async (msg: { filters: any, owner: IOwner }) => {
+        async (msg: { filters: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -110,7 +112,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 const [items, count] = await DatabaseServer.getFormulasAndCount(query, otherOptions);
                 return new MessageResponse({ items, count });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -123,7 +125,8 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - formula
      */
     ApiResponse(MessageAPI.GET_FORMULA,
-        async (msg: { formulaId: string, owner: IOwner }) => {
+        async (msg: { formulaId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -135,7 +138,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 }
                 return new MessageResponse(item);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -151,8 +154,10 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             formulaId: string,
             formula: Formula,
-            owner: IOwner
+            owner: IOwner,
+            userId: string | null
         }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -173,7 +178,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 const result = await DatabaseServer.updateFormula(item);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -186,7 +191,8 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
      * @returns {boolean} - Operation success
      */
     ApiResponse(MessageAPI.DELETE_FORMULA,
-        async (msg: { formulaId: string, owner: IOwner }) => {
+        async (msg: { formulaId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -202,7 +208,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 await DatabaseServer.removeFormula(item);
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -215,7 +221,8 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - zip file
      */
     ApiResponse(MessageAPI.EXPORT_FORMULA_FILE,
-        async (msg: { formulaId: string, owner: IOwner }) => {
+        async (msg: { formulaId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid export theme parameters');
@@ -238,7 +245,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
 
                 return new BinaryMessageResponse(file);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -251,7 +258,8 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - new formula
      */
     ApiResponse(MessageAPI.IMPORT_FORMULA_FILE,
-        async (msg: { zip: any, policyId: string, owner: IOwner }) => {
+        async (msg: { zip: any, policyId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { zip, policyId, owner } = msg;
                 if (!zip) {
@@ -281,7 +289,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse(row);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -294,7 +302,8 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} Preview
      */
     ApiResponse(MessageAPI.PREVIEW_FORMULA_FILE,
-        async (msg: { zip: any, owner: IOwner }) => {
+        async (msg: { zip: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { zip } = msg;
                 if (!zip) {
@@ -304,7 +313,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 const { formula } = preview;
                 return new MessageResponse(formula);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -317,7 +326,8 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} relationships
      */
     ApiResponse(MessageAPI.GET_FORMULA_RELATIONSHIPS,
-        async (msg: { formulaId: any, owner: IOwner }) => {
+        async (msg: { formulaId: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { formulaId, owner } = msg;
                 const item = await DatabaseServer.getFormulaById(formulaId);
@@ -345,7 +355,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                     formulas
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -365,8 +375,10 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 documentId: string,
                 parentId: string
             }
-            owner: IOwner
+            owner: IOwner,
+            userId: string | null
         }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -395,7 +407,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                     schemas: all
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -408,7 +420,8 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - Formula
      */
     ApiResponse(MessageAPI.PUBLISH_FORMULA,
-        async (msg: { formulaId: string, owner: IOwner }) => {
+        async (msg: { formulaId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -429,11 +442,11 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('The policy has not published yet.');
                 }
 
-                const root = await (new Users()).getHederaAccount(owner.creator);
+                const root = await (new Users()).getHederaAccount(owner.creator, userId);
                 const result = await publishFormula(item, owner, root, emptyNotifier());
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });

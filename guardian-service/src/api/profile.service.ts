@@ -96,18 +96,20 @@ async function getGlobalTopic(): Promise<TopicConfig | null> {
  * @param profile
  * @param notifier
  * @param logger
+ * @param userId
  */
 async function setupUserProfile(
     username: string,
     profile: ICredentials,
     notifier: INotifier,
-    logger: PinoLogger
+    logger: PinoLogger,
+    userId: string | null
 ): Promise<string> {
     const users = new Users();
     const wallet = new Wallet();
 
     notifier.start('Get user');
-    const user = await users.getUser(username);
+    const user = await users.getUser(username, userId);
     if (user.did) {
         throw new Error('User DID already exists');
     }
@@ -129,11 +131,11 @@ async function setupUserProfile(
         parent: profile.parent,
         hederaAccountId: profile.hederaAccountId,
         useFireblocksSigning: profile.useFireblocksSigning
-    });
+    }, userId);
 
     notifier.completedAndStart('Update permissions');
     if (user.role === UserRole.USER) {
-        const changeRole = await users.setDefaultUserRole(username, profile.parent);
+        const changeRole = await users.setDefaultUserRole(username, profile.parent, userId);
         await serDefaultRole(changeRole, EntityOwner.sr(null, profile.parent))
     }
 
@@ -200,7 +202,7 @@ async function checkAndPublishSchema(
         });
         if (schema) {
             notifier.info(`Publish System Schema (${entity})`);
-            logger.info(`Publish System Schema (${entity})`, ['GUARDIAN_SERVICE']);
+            logger.info(`Publish System Schema (${entity})`, ['GUARDIAN_SERVICE'], srUser.id);
             schema.creator = userDID;
             schema.owner = userDID;
             const item = await publishSystemSchema(schema, srUser, messageServer, MessageAction.PublishSystemSchema, notifier);
@@ -243,12 +245,11 @@ async function createUserProfile(
                 apiKey: fireblocksConfig.fireBlocksApiKey,
                 privateKey: fireblocksConfig.fireBlocksPrivateiKey,
                 assetId: fireblocksConfig.fireBlocksAssetId,
-                vaultId: fireblocksConfig.fireBlocksVaultId
+                vaultId: fireblocksConfig.fireBlocksVaultId,
             }
         }
     }
     const messageServer = new MessageServer(hederaAccountId, hederaAccountKey, signOptions);
-    console.log('hederaAccountId', hederaAccountId);
 
     // ------------------------
     // <-- Check hedera key
@@ -259,7 +260,7 @@ async function createUserProfile(
         PrivateKey.fromString(hederaAccountKey);
         await workers.addNonRetryableTask({
             type: WorkerTaskType.GET_USER_BALANCE,
-            data: { hederaAccountId, hederaAccountKey }
+            data: { hederaAccountId, hederaAccountKey, payload: { userId: user.id } }
         }, 20, user.id.toString());
     } catch (error) {
         throw new Error(`Invalid Hedera account or key.`);
@@ -283,11 +284,11 @@ async function createUserProfile(
             await dataBaseServer.findOne(Topic, {
                 owner: parent,
                 type: TopicType.UserTopic
-            }), true);
+            }), true, user.id);
     }
     if (!topicConfig) {
         notifier.info('Create user topic');
-        logger.info('Create User Topic', ['GUARDIAN_SERVICE']);
+        logger.info('Create User Topic', ['GUARDIAN_SERVICE'], user.id);
         const topicHelper = new TopicHelper(hederaAccountId, hederaAccountKey, signOptions);
         topicConfig = await topicHelper.create({
             type: TopicType.UserTopic,
@@ -296,7 +297,7 @@ async function createUserProfile(
             owner: null,
             policyId: null,
             policyUUID: null
-        });
+        }, user.id);
         await topicHelper.oneWayLink(topicConfig, globalTopic, user.id.toString());
         newTopic = await dataBaseServer.save(Topic, topicConfig.toObject());
     }
@@ -309,7 +310,7 @@ async function createUserProfile(
     // <-- Publish DID Document
     // ------------------------
     notifier.completedAndStart('Publish DID Document');
-    logger.info('Create DID Document', ['GUARDIAN_SERVICE']);
+    logger.info('Create DID Document', ['GUARDIAN_SERVICE'], user.id);
 
     const vcHelper = new VcHelper();
     let currentDidDocument: CommonDidDocument
@@ -340,7 +341,7 @@ async function createUserProfile(
         didRow.topicId = didMessageResult.getTopicId();
         await dataBaseServer.update(DidDocumentCollection, null, didRow);
     } catch (error) {
-        logger.error(error, ['GUARDIAN_SERVICE']);
+        logger.error(error, ['GUARDIAN_SERVICE'], user.id);
         // didRow.status = DidDocumentStatus.FAILED;
         // await new DataBaseHelper(DidDocumentCollection).update(didRow);
     }
@@ -411,7 +412,7 @@ async function createUserProfile(
             }
         }
     } catch (error) {
-        logger.error(error, ['GUARDIAN_SERVICE']);
+        logger.error(error, ['GUARDIAN_SERVICE'], user.id);
     }
     // ------------------
     // Publish Schema -->
@@ -422,7 +423,7 @@ async function createUserProfile(
     // -----------------------
     notifier.completedAndStart('Publish VC Document');
     if (vcDocument) {
-        logger.info('Create VC Document', ['GUARDIAN_SERVICE']);
+        logger.info('Create VC Document', ['GUARDIAN_SERVICE'], user.id);
 
         let credentialSubject: any = { ...vcDocument };
         credentialSubject.id = userDID;
@@ -449,7 +450,7 @@ async function createUserProfile(
             vcDoc.topicId = vcMessageResult.getTopicId();
             await dataBaseServer.update(VcDocumentCollection, null, vcDoc);
         } catch (error) {
-            logger.error(error, ['GUARDIAN_SERVICE']);
+            logger.error(error, ['GUARDIAN_SERVICE'], user.id);
             vcDoc.hederaStatus = DocumentStatus.FAILED;
             await dataBaseServer.update(VcDocumentCollection, null, vcDoc);
         }
@@ -535,7 +536,8 @@ async function createDefaultRoles(
             Permissions.TAGS_TAG_READ,
             Permissions.TAGS_TAG_CREATE,
             Permissions.SUGGESTIONS_SUGGESTIONS_READ,
-            Permissions.ACCESS_POLICY_ASSIGNED
+            Permissions.ACCESS_POLICY_ASSIGNED,
+            Permissions.LOG_LOG_READ,
         ]
     }, {
         name: 'Policy Manager',
@@ -549,7 +551,8 @@ async function createDefaultRoles(
             Permissions.ACCOUNTS_ACCOUNT_READ,
             Permissions.TAGS_TAG_READ,
             Permissions.TAGS_TAG_CREATE,
-            Permissions.ACCESS_POLICY_ASSIGNED_AND_PUBLISHED
+            Permissions.ACCESS_POLICY_ASSIGNED_AND_PUBLISHED,
+            Permissions.LOG_LOG_READ,
         ]
     }, {
         name: 'Policy User',
@@ -607,7 +610,7 @@ async function createDefaultRoles(
     }
     await dataBaseServer.saveMany(VcDocumentCollection, vcDocumentCollectionObjects);
 
-    await users.setDefaultRole(ids[0], owner.creator);
+    await users.setDefaultRole(ids[0], owner.creator, userId);
 }
 
 @Controller()
@@ -619,13 +622,14 @@ export class ProfileController {
  */
 export function profileAPI(logger: PinoLogger) {
     ApiResponse(MessageAPI.GET_BALANCE,
-        async (msg: { username: string }) => {
+        async (msg: { username: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { username } = msg;
                 const wallet = new Wallet();
                 const users = new Users();
                 const workers = new Workers();
-                const user = await users.getUser(username);
+                const user = await users.getUser(username, userId);
 
                 if (!user) {
                     return new MessageResponse(null);
@@ -640,7 +644,8 @@ export function profileAPI(logger: PinoLogger) {
                     type: WorkerTaskType.GET_USER_BALANCE,
                     data: {
                         hederaAccountId: user.hederaAccountId,
-                        hederaAccountKey: key
+                        hederaAccountKey: key,
+                        payload: { userId }
                     }
                 }, 20, user.id.toString());
                 return new MessageResponse({
@@ -652,14 +657,15 @@ export function profileAPI(logger: PinoLogger) {
                     } : null
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 console.error(error);
                 return new MessageError(error, 500);
             }
         });
 
     ApiResponse(MessageAPI.GET_USER_BALANCE,
-        async (msg: { username: string }) => {
+        async (msg: { username: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { username } = msg;
 
@@ -667,7 +673,7 @@ export function profileAPI(logger: PinoLogger) {
                 const users = new Users();
                 const workers = new Workers();
 
-                const user = await users.getUser(username);
+                const user = await users.getUser(username, userId);
 
                 if (!user) {
                     return new MessageResponse('Invalid Account');
@@ -682,20 +688,22 @@ export function profileAPI(logger: PinoLogger) {
                     type: WorkerTaskType.GET_USER_BALANCE,
                     data: {
                         hederaAccountId: user.hederaAccountId,
-                        hederaAccountKey: key
+                        hederaAccountKey: key,
+                        payload: { userId }
                     }
                 }, 20, user.id.toString());
 
                 return new MessageResponse(balance);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 console.error(error);
                 return new MessageError(error, 500);
             }
         });
 
     ApiResponse(MessageAPI.CREATE_USER_PROFILE_COMMON,
-        async (msg: { username: string, profile: any }) => {
+        async (msg: { username: string, profile: any, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { username, profile } = msg;
 
@@ -706,18 +714,18 @@ export function profileAPI(logger: PinoLogger) {
                     return new MessageError('Invalid Hedera Account Key', 403);
                 }
 
-                const did = await setupUserProfile(username, profile, emptyNotifier(), logger);
+                const did = await setupUserProfile(username, profile, emptyNotifier(), logger, userId);
                 return new MessageResponse(did);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 console.error(error);
                 return new MessageError(error, 500);
             }
         });
 
     ApiResponse(MessageAPI.CREATE_USER_PROFILE_COMMON_ASYNC,
-        async (msg: { username: string, profile: any, task: any }) => {
-            const { username, profile, task } = msg;
+        async (msg: { username: string, profile: any, task: any, userId: string | null }) => {
+            const { username, profile, task, userId } = msg;
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
@@ -730,10 +738,10 @@ export function profileAPI(logger: PinoLogger) {
                     return;
                 }
 
-                const did = await setupUserProfile(username, profile, notifier, logger);
+                const did = await setupUserProfile(username, profile, notifier, logger, userId);
                 notifier.result(did);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 notifier.error(error);
             });
 
@@ -741,8 +749,8 @@ export function profileAPI(logger: PinoLogger) {
         });
 
     ApiResponse(MessageAPI.RESTORE_USER_PROFILE_COMMON_ASYNC,
-        async (msg: { username: string, profile: any, task: any }) => {
-            const { username, profile, task } = msg;
+        async (msg: { username: string, profile: any, task: any, userId: string | null }) => {
+            const { username, profile, task, userId } = msg;
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
@@ -758,7 +766,7 @@ export function profileAPI(logger: PinoLogger) {
                     didKeys
                 } = profile;
 
-                const user = await new Users().getUser(username);
+                const user = await new Users().getUser(username, userId);
 
                 try {
                     const workers = new Workers();
@@ -766,7 +774,8 @@ export function profileAPI(logger: PinoLogger) {
                     PrivateKey.fromString(hederaAccountKey);
                     await workers.addNonRetryableTask({
                         type: WorkerTaskType.GET_USER_BALANCE,
-                        data: { hederaAccountId, hederaAccountKey }
+                        data: { hederaAccountId, hederaAccountKey, payload: { userId }
+                        },
                     }, 20, user.id.toString());
                 } catch (error) {
                     throw new Error(`Invalid Hedera account or key.`);
@@ -788,12 +797,13 @@ export function profileAPI(logger: PinoLogger) {
                     hederaAccountKey,
                     topicId,
                     oldDidDocument,
-                    logger
+                    logger,
+                    userId
                 )
                 notifier.completed();
                 notifier.result('did');
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 notifier.error(error);
             });
 
@@ -801,8 +811,8 @@ export function profileAPI(logger: PinoLogger) {
         });
 
     ApiResponse(MessageAPI.GET_ALL_USER_TOPICS_ASYNC,
-        async (msg: { username: string, profile: any, task: any }) => {
-            const { username, profile, task } = msg;
+        async (msg: { username: string, profile: any, task: any, userId: string | null}) => {
+            const { username, profile, task, userId } = msg;
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
@@ -838,12 +848,13 @@ export function profileAPI(logger: PinoLogger) {
                     username,
                     hederaAccountId,
                     hederaAccountKey,
-                    did
+                    did,
+                    userId
                 )
                 notifier.completed();
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 notifier.error(error);
             });
 
@@ -851,7 +862,8 @@ export function profileAPI(logger: PinoLogger) {
         });
 
     ApiResponse(MessageAPI.VALIDATE_DID_DOCUMENT,
-        async (msg: { document: any }) => {
+        async (msg: { document: any, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { document } = msg;
                 const result = {
@@ -894,13 +906,14 @@ export function profileAPI(logger: PinoLogger) {
                 }
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.VALIDATE_DID_KEY,
-        async (msg: { document: any, keys: any }) => {
+        async (msg: { document: any, keys: any, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { document, keys } = msg;
                 for (const item of keys) {
@@ -923,7 +936,7 @@ export function profileAPI(logger: PinoLogger) {
                     return new MessageResponse(keys);
                 }
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });

@@ -87,12 +87,15 @@ export class TokenOperationAddon {
     /**
      * Run logic
      * @param documents
+     * @param root
      * @param user
+     * @param userId
      */
     public async run(
         documents: VcDocument[],
         root: UserCredentials,
-        user: PolicyUser
+        user: PolicyUser,
+        userId: string | null
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const policySchema = await this.getSchema();
@@ -113,7 +116,7 @@ export class TokenOperationAddon {
         if (ref.options.description) {
             vcSubject.description = ref.options.description;
         }
-        const didDocument = await root.loadDidDocument(ref);
+        const didDocument = await root.loadDidDocument(ref, userId);
         const uuid = await ref.components.generateUUID();
         const vc = await vcHelper.createVerifiableCredential(
             vcSubject,

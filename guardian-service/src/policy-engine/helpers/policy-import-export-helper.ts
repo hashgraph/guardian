@@ -99,7 +99,7 @@ export class PolicyImport {
     private async resolveAccount(user: IOwner): Promise<IRootConfig> {
         this.notifier.start('Resolve Hedera account');
         const users = new Users();
-        this.root = await users.getHederaAccount(user.creator);
+        this.root = await users.getHederaAccount(user.creator, user.id);
         this.topicHelper = new TopicHelper(
             this.root.hederaAccountId,
             this.root.hederaAccountKey,
@@ -141,7 +141,7 @@ export class PolicyImport {
     private async createPolicyTopic(policy: Policy, versionOfTopicId: string, user: IOwner) {
         this.notifier.completedAndStart('Resolve topic');
         this.parentTopic = await TopicConfig.fromObject(
-            await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true
+            await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true, user.id
         );
 
         if (this.demo) {
@@ -157,7 +157,7 @@ export class PolicyImport {
             await DatabaseServer.saveTopic(this.topicRow.toObject());
         } else if (versionOfTopicId) {
             this.topicRow = await TopicConfig.fromObject(
-                await DatabaseServer.getTopicById(versionOfTopicId), true
+                await DatabaseServer.getTopicById(versionOfTopicId), true, user.id
             );
             this.notifier.completedAndStart('Skip publishing policy in Hedera');
         } else {
@@ -166,7 +166,7 @@ export class PolicyImport {
             message.setDocument(policy);
             const createPolicyMessage = await this.messageServer
                 .setTopicObject(this.parentTopic)
-                .sendMessage(message);
+                .sendMessage(message, true, null, user.id);
 
             this.notifier.completedAndStart('Create policy topic');
             this.topicRow = await this.topicHelper.create({
@@ -176,8 +176,8 @@ export class PolicyImport {
                 owner: user.owner,
                 policyId: null,
                 policyUUID: null
-            });
-            await this.topicRow.saveKeys();
+            }, user.id);
+            await this.topicRow.saveKeys(user.id);
             await DatabaseServer.saveTopic(this.topicRow.toObject());
 
             this.notifier.completedAndStart('Link topic and policy');
@@ -431,9 +431,9 @@ export class PolicyImport {
         }
     }
 
-    private async saveHash(policy: Policy, logger: PinoLogger) {
+    private async saveHash(policy: Policy, logger: PinoLogger, userId: string | null) {
         this.notifier.completedAndStart('Updating hash');
-        await PolicyImportExportHelper.updatePolicyComponents(policy, logger);
+        await PolicyImportExportHelper.updatePolicyComponents(policy, logger, userId);
     }
 
     private async setSuggestionsConfig(policy: Policy, user: IOwner) {
@@ -529,7 +529,7 @@ export class PolicyImport {
         await this.saveArtifacts(row);
         await this.saveTests(row);
         await this.saveFormulas(row);
-        await this.saveHash(row, logger);
+        await this.saveHash(row, logger, user.id);
         await this.setSuggestionsConfig(row, user);
         await this.importTags(row, tags);
 
@@ -718,7 +718,7 @@ export class PolicyImportExportHelper {
      * @param policy
      * @param logger
      */
-    public static async updatePolicyComponents(policy: Policy, logger: PinoLogger): Promise<Policy> {
+    public static async updatePolicyComponents(policy: Policy, logger: PinoLogger, userId: string | null): Promise<Policy> {
         try {
             const raw = await PolicyLoader.load(policy.id.toString());
             const compareModel = await PolicyLoader.create(raw, HashComparator.options);
@@ -726,7 +726,7 @@ export class PolicyImportExportHelper {
             policy.hash = hash;
             policy.hashMap = hashMap;
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE, HASH']);
+            await logger.error(error, ['GUARDIAN_SERVICE, HASH'], userId);
         }
         const toolIds = new Set<string>()
         PolicyImportExportHelper.findTools(policy.config, toolIds);
