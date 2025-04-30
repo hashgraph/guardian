@@ -791,8 +791,8 @@ export class UserProfileComponent implements OnInit {
             profile.type = LocationType.REMOTE;
             profile.parent = data.standardRegistry;
             profile.hederaAccountId = data.hederaCredentials.id?.trim();
+            profile.topicId = data.hederaCredentials.topicId;
             profile.didDocument = data.didDocument;
-            profile.topicId = data.topicId;
         } else {
             //Local
             const data = this.localFullForm.value;
@@ -881,8 +881,8 @@ export class UserProfileComponent implements OnInit {
             const json = e.target.result;
             const config = JSON.parse(json);
             this.remoteCredentialsForm.setValue({
-                id: config.hederaAccountId,
-                topicId: config.topicId
+                id: config.hederaAccountId || '',
+                topicId: config.topicId || ''
             })
             this.remoteDidDocumentForm.setValue(JSON.stringify(config.didDocument))
         });
