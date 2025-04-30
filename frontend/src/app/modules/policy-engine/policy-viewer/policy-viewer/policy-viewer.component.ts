@@ -12,6 +12,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 import { RecordControllerComponent } from '../../record/record-controller/record-controller.component';
 import { PolicyProgressService } from '../../services/policy-progress.service';
 import { IStep } from '../../structures';
+import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
 
 /**
  * Component for choosing a policy and
@@ -53,6 +54,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public prevButtonDisabled = false;
     public nextButtonDisabled = false;
     public permissions: UserPermissions;
+    public newRequestsExist: boolean = false;
 
     constructor(
         private profileService: ProfileService,
@@ -61,6 +63,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private dialogService: DialogService,
         private policyProgressService: PolicyProgressService,
+        private externalPoliciesService: ExternalPoliciesService,
         private changeDetector: ChangeDetectorRef,
         private router: Router
     ) {
@@ -224,6 +227,12 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     })
                 })
                 this.getSavepointState();
+
+                this.externalPoliciesService.getActionRequestsCount({ policyId }).subscribe(response => {
+                    if (response?.body) {
+                        this.newRequestsExist = response.body.count > 0;
+                    }
+                })
             }, (e) => {
                 this.loading = false;
             });
@@ -523,5 +532,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     public onBack() {
         this.router.navigate(['/policy-viewer']);
+    }
+
+    public onPolicyRequests() {
+        this.router.navigate([`/policy-requests`], { queryParams: { policyId: this.policyId } });
     }
 }

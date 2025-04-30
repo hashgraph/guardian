@@ -6,6 +6,17 @@
         </div>
     </ng-container>
 
+    <ng-container *ngIf="newRequestsExist">
+        <div class="new-requests-exist">
+            <div>
+                <p>You have new remote policy requests awaiting your response. Please respond to proceed with the policy process.</p>
+                <p-button (onClick)="onPolicyRequests()" [outlined]="true">
+                    View Policy Requests
+                </p-button>
+            </div>
+        </div>
+    </ng-container>
+
     <ng-container *ngIf="isConfirmed && (!policyId || !policy)">
         <div class="not-exist">
             Policy doesn't exist

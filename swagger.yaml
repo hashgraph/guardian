@@ -14276,6 +14276,13 @@ paths:
           schema:
             example: 20
             type: number
+        - name: policyId
+          required: false
+          in: query
+          description: Policy Id
+          schema:
+            example: '001'
+            type: string
       responses:
         '200':
           description: Successful operation.
@@ -14385,6 +14392,40 @@ paths:
       security:
         - bearer: []
       summary: Updates schema rule.
+      tags:
+        - external-policies
+  /external-policies/requestsCount:
+    get:
+      description: Return a count of policy requests.
+      operationId: ExternalPoliciesApi_getRemoteRequestsCount
+      parameters:
+        - name: policyId
+          required: false
+          in: query
+          description: Policy Id
+          schema:
+            example: '001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: number
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Return a count of policy requests.
       tags:
         - external-policies
   /policy-labels:

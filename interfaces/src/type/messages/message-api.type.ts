@@ -157,6 +157,7 @@ export enum MessageAPI {
     UPDATE_USER_INFO_EVENT = 'update-user-info-event',
     UPDATE_RECORD = 'update-record-event',
     UPDATE_TEST_EVENT = 'update-test-event',
+    UPDATE_REQUEST_EVENT = 'update-request-event',
     MEECO_AUTH_REQUEST = 'MEECO_AUTH_REQUEST',
     MEECO_AUTH_PRESENT_VP = 'MEECO_AUTH_PRESENT_VP',
     MEECO_VERIFY_VP = 'MEECO_VERIFY_VP',
