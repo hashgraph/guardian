@@ -1050,12 +1050,8 @@ export class PolicyEngine extends NatsService {
             policyId: dryRunId,
             policyUUID: model.uuid
         });
-
-        await Promise.all([
-            rootTopic.saveKeys(),
-            databaseServer.saveTopic(rootTopic.toObject())
-        ]);
-
+        await rootTopic.saveKeys();
+        await databaseServer.saveTopic(rootTopic.toObject());
         model.instanceTopicId = rootTopic.topicId;
 
         //Send Message
@@ -1098,22 +1094,24 @@ export class PolicyEngine extends NatsService {
         const vcHelper = new VcHelper();
         const didDocument = await vcHelper.loadDidDocument(user.owner);
         const vc = await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
+        await databaseServer.saveVC({
+            hash: vc.toCredentialHash(),
+            owner: user.owner,
+            document: vc.toJsonTree(),
+            type: SchemaEntity.POLICY,
+            policyId: `${model.id}`
+        });
 
-        let [,,,retVal] = await Promise.all([
-            databaseServer.saveVC({
-                hash: vc.toCredentialHash(),
-                owner: user.owner,
-                document: vc.toJsonTree(),
-                type: SchemaEntity.POLICY,
-                policyId: `${model.id}`
-            }),
-            databaseServer.createVirtualUser(
-                'Administrator',
-                root.did,
-                root.hederaAccountId,
-                root.hederaAccountKey,
-                true
-            ),
+        //Create default user
+        await databaseServer.createVirtualUser(
+            'Administrator',
+            root.did,
+            root.hederaAccountId,
+            root.hederaAccountKey,
+            true
+        );
+
+        let [,retVal] = await Promise.all([
             //Update dry-run table (mark readonly rows)
             DatabaseServer.setSystemMode(dryRunId, true),
             //Update Policy hash and status
