@@ -417,32 +417,6 @@ export class BlockTreeGenerator extends NatsService {
                 }
             }
 
-            setInterval(() => {
-                const row: any = {
-                    "createDate": "2025-04-30T14:52:35.887Z",
-                    "updateDate": "2025-04-30T14:52:35.887Z",
-                    "uuid": "97b55dc6-5385-4d31-b102-afadee0c124d",
-                    "type": "REQUEST",
-                    "startMessageId": "1746024683.894090000",
-                    "owner": "did:hedera:testnet:EmqXEgWJXYa1MXyWrxJKcu8hNfBARvCh2LK41vdEZEFL_0.0.5929149",
-                    "creator": "did:hedera:testnet:EmqXEgWJXYa1MXyWrxJKcu8hNfBARvCh2LK41vdEZEFL_0.0.5929149",
-                    "topicId": "0.0.5929189",
-                    "messageId": "1746024746.910574551",
-                    "policyId": "681212e2e24e5435a3ea1fa1",
-                    "status": "COMPLETED",
-                    "accountId": "0.0.5155692",
-                    "sender": "0.0.5155692",
-                    "blockTag": "save_copy_issue(hedera)",
-                    "index": 58,
-                    "document": {
-                        "type": "send-message",
-                        "owner": "did:hedera:testnet:EmqXEgWJXYa1MXyWrxJKcu8hNfBARvCh2LK41vdEZEFL_0.0.5929149",
-                        "messageId": "1746024738.811076000"
-                    },
-                }
-                PolicyComponentsUtils.sentRequestNotification(row);
-            }, 5000)
-
             console.debug('-- init 4')
         } catch (error) {
             console.log(error);
