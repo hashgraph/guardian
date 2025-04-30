@@ -247,13 +247,14 @@ export class HederaSDKHelper {
      * Save Virtual Transaction log
      * @param id
      * @param transactionName
+     * @param userId
      * @private
      */
-    private async virtualTransactionLog(id: string, transactionName: string): Promise<void> {
+    private async virtualTransactionLog(id: string, transactionName: string, userId: string | null): Promise<void> {
         if (HederaSDKHelper.sendTransactionLogMessage) {
             await HederaSDKHelper.sendTransactionLogMessage({
                 type: 'virtual-function-log',
-                data: TransactionLogger.getTransactionData(id, this.client, this.network, transactionName, null),
+                data: TransactionLogger.getTransactionData(id, this.client, this.network, transactionName, userId),
             });
         }
     }
@@ -1143,7 +1144,7 @@ export class HederaSDKHelper {
         metadata?: any
     ): Promise<TransactionReceipt> {
         if (this.dryRun) {
-            await this.virtualTransactionLog(this.dryRun, type);
+            await this.virtualTransactionLog(this.dryRun, type, userId);
             let serials = [];
             if (type === 'TokenMintNFTTransaction') {
                 if (metadata && metadata.length) {
@@ -1252,7 +1253,7 @@ export class HederaSDKHelper {
         metadata?: any
     ): Promise<TransactionRecord> {
         if (this.dryRun) {
-            await this.virtualTransactionLog(this.dryRun, type);
+            await this.virtualTransactionLog(this.dryRun, type, userId);
             return {
                 consensusTimestamp: Timestamp.fromDate(Date.now())
             } as any
