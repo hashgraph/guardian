@@ -100,6 +100,7 @@ export class UserProfileComponent implements OnInit {
     public hederaCredentialsForm!: UntypedFormGroup;
     public standardRegistryForm!: UntypedFormControl;
     public locationType!: UntypedFormControl;
+    public remoteUserSetupType!: UntypedFormControl;
     public didDocumentType!: UntypedFormControl;
     public didDocumentForm!: UntypedFormControl;
     public didKeysForm!: UntypedFormGroup;
@@ -144,6 +145,7 @@ export class UserProfileComponent implements OnInit {
             ])
         });
         this.locationType = new UntypedFormControl(false, [Validators.required]);
+        this.remoteUserSetupType = new UntypedFormControl(false, [Validators.required]);
         this.didDocumentType = new UntypedFormControl(false, [Validators.required]);
         this.didDocumentForm = new UntypedFormControl('', [Validators.required]);
         this.didKeysForm = new UntypedFormGroup({});
@@ -172,6 +174,7 @@ export class UserProfileComponent implements OnInit {
         this.remoteFullForm.addControl('didDocument', this.remoteDidDocumentForm);
 
         // Steps
+        // Common
         const selectSRStep: IStep = {
             id: 'select_sr',
             label: 'Standard Registries',
@@ -186,31 +189,31 @@ export class UserProfileComponent implements OnInit {
                 return this.standardRegistryForm.valid;
             },
             next: () => {
-                this.changeStep('select_type');
+                this.changeStep('hedera_credentials');
             },
             canPrev: () => {
                 return false;
             },
             prev: () => { }
         };
-        const selectTypeStep: IStep = {
-            id: 'select_type',
-            label: 'Type',
+        const hederaCredentialsStep: IStep = {
+            id: 'hedera_credentials',
+            label: 'Hedera Account',
             index: 1,
             visibility: () => {
                 return true;
             },
             isFinish: () => {
-                return false;
+                return this.locationType.value;
             },
             canNext: () => {
-                return this.standardRegistryForm.valid;
+                return !this.locationType.value && this.hederaCredentialsForm.valid || this.remoteCredentialsForm.valid && this.remoteDidDocumentForm.valid;
             },
             next: () => {
-                if (this.locationType.value) {
-                    this.changeStep('remote_config');
+                if (!this.locationType.value) {
+                    this.changeStep('did_document');
                 } else {
-                    this.changeStep('hedera_credentials');
+                    this.onSubmit();
                 }
             },
             canPrev: () => {
@@ -221,34 +224,11 @@ export class UserProfileComponent implements OnInit {
             }
         }
 
-        //Local
-        const hederaCredentialsStep: IStep = {
-            id: 'hedera_credentials',
-            label: 'Hedera Credentials',
-            index: 2,
-            visibility: () => {
-                return !this.locationType.value;
-            },
-            isFinish: () => {
-                return false;
-            },
-            canNext: () => {
-                return this.hederaCredentialsForm.valid;
-            },
-            next: () => {
-                this.changeStep('did_document');
-            },
-            canPrev: () => {
-                return true;
-            },
-            prev: () => {
-                this.changeStep('select_type');
-            }
-        }
+        // Local
         const didDocumentStep: IStep = {
             id: 'did_document',
-            label: 'DID Document',
-            index: 3,
+            label: 'Set Up Digital Identity',
+            index: 2,
             visibility: () => {
                 return !this.locationType.value;
             },
@@ -285,7 +265,7 @@ export class UserProfileComponent implements OnInit {
         const didDocumentKeysStep: IStep = {
             id: 'did_document_keys',
             label: 'DID Document signing keys',
-            index: 4,
+            index: 3,
             visibility: () => {
                 return !this.locationType.value && this.didDocumentType.value;
             },
@@ -314,7 +294,7 @@ export class UserProfileComponent implements OnInit {
         const vcDocumentStep: IStep = {
             id: 'vc_document',
             label: 'VC Document',
-            index: 5,
+            index: 4,
             visibility: () => {
                 return !this.locationType.value && this.vcDocumentType.value;
             },
@@ -339,44 +319,18 @@ export class UserProfileComponent implements OnInit {
             }
         }
 
-        //Remote
-        const remoteConfigStep: IStep = {
-            id: 'remote_config',
-            label: 'Config',
-            index: 2,
-            visibility: () => {
-                return this.locationType.value;
-            },
-            isFinish: () => {
-                return true;
-            },
-            canNext: () => {
-                return this.remoteCredentialsForm.valid && this.remoteDidDocumentForm.valid;
-            },
-            next: () => {
-                this.onSubmit();
-            },
-            canPrev: () => {
-                return true;
-            },
-            prev: () => {
-                this.changeStep('select_type');
-            }
-        }
-
         this.steps = [
-            //Common
+            // Common
             selectSRStep,
-            selectTypeStep,
-            //Local
             hederaCredentialsStep,
+            // Local
             didDocumentStep,
             didDocumentKeysStep,
             vcDocumentStep,
-            //Remote
-            remoteConfigStep
         ];
         this.currentStep = this.steps[0];
+
+        this.onChangeRemoteUserSetupType();
     }
 
     ngOnInit() {
@@ -542,6 +496,16 @@ export class UserProfileComponent implements OnInit {
 
     public isFinish(): boolean {
         return this.currentStep?.isFinish() || false;
+    }
+
+    public onChangeRemoteUserSetupType() {
+        if (!this.remoteUserSetupType.value) {
+            this.remoteCredentialsForm.disable();
+            this.remoteDidDocumentForm.disable();
+        } else {
+            this.remoteCredentialsForm.enable();
+            this.remoteDidDocumentForm.enable();
+        }
     }
 
     //New User
