@@ -1,12 +1,12 @@
-import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
-import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { AnyBlockType, IPolicyEventState, IPolicyInterfaceBlock, } from '../policy-engine.interface.js';
 import { Message, MessageServer } from '@guardian/common';
-import { PolicyUtils } from '../helpers/utils.js';
-import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType, } from '../interfaces/index.js';
-import { ChildrenType, ControlType, PropertyType, } from '../interfaces/block-about.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { AnyBlockType, IPolicyEventState, IPolicyInterfaceBlock } from '../policy-engine.interface.js';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import { ExternalDocuments, ExternalEvent, ExternalEventType, } from '../interfaces/external-event.js';
+import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
+import { PolicyUtils } from '../helpers/utils.js';
 import { LocationType } from '@guardian/interfaces';
 
 export const RevokedStatus = 'Revoked';
@@ -24,10 +24,12 @@ export const RevokedStatus = 'Revoked';
         get: false,
         children: ChildrenType.None,
         control: ControlType.Server,
-        input: [PolicyInputEventType.RunEvent],
+        input: [
+            PolicyInputEventType.RunEvent
+        ],
         output: [
             PolicyOutputEventType.RunEvent,
-            PolicyOutputEventType.ErrorEvent,
+            PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true,
         properties: [
@@ -66,7 +68,9 @@ export class RevocationBlock {
     ) {
         const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId);
         message.revoke(revokeMessage, parentId);
-        await messageServer.setTopicObject(topic).sendMessage(message, false);
+        await messageServer
+            .setTopicObject(topic)
+            .sendMessage(message, false);
     }
 
     /**
@@ -85,11 +89,13 @@ export class RevocationBlock {
         if (!topicMessage) {
             throw new Error('Topic message to find related messages is empty');
         }
-        const relatedMessages = topicMessages.filter(
-            (message: any) =>
-                message.relationships &&
-                message.relationships.includes(topicMessage.id)
-        );
+        const relatedMessages = topicMessages
+            .filter(
+                (message: any) => (
+                    message.relationships &&
+                    message.relationships.includes(topicMessage.id)
+                )
+            );
         for (const relatedMessage of relatedMessages) {
             await this.findRelatedMessageIds(
                 relatedMessage,
@@ -98,13 +104,12 @@ export class RevocationBlock {
                 topicMessage.id
             );
         }
-        const relatedMessageId = relatedMessageIds.find(
-            (item) => item.id === topicMessage.id
-        );
+        const relatedMessageId = relatedMessageIds
+            .find((item) => item.id === topicMessage.id);
         if (!relatedMessageId) {
             relatedMessageIds.push({
                 parentIds: parentId ? [parentId] : undefined,
-                id: topicMessage.id,
+                id: topicMessage.id
             });
         } else if (
             relatedMessageId.parentIds &&
@@ -120,28 +125,18 @@ export class RevocationBlock {
      * @param messageIds
      */
     async findDocumentByMessageIds(messageIds: string[]): Promise<any[]> {
-        const ref =
-            PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         const filters: any = {
-            messageId: { $in: messageIds },
+            messageId: { $in: messageIds }
         };
         const otherOptions = {
             orderBy: {
-                messageId: 'ASC',
-            },
+                messageId: 'ASC'
+            }
         };
-        const vcDocuments: any[] = (await ref.databaseServer.getVcDocuments(
-            filters,
-            otherOptions
-        )) as any[];
-        const vpDocuments: any[] = (await ref.databaseServer.getVpDocuments(
-            filters,
-            otherOptions
-        )) as any[];
-        const didDocuments: any[] = (await ref.databaseServer.getDidDocuments(
-            filters,
-            otherOptions
-        )) as any[];
+        const vcDocuments: any[] = await ref.databaseServer.getVcDocuments(filters, otherOptions) as any[];
+        const vpDocuments: any[] = await ref.databaseServer.getVpDocuments(filters, otherOptions) as any[];
+        const didDocuments: any[] = await ref.databaseServer.getDidDocuments(filters, otherOptions) as any[];
         return vcDocuments.concat(vpDocuments).concat(didDocuments);
     }
 
@@ -152,13 +147,12 @@ export class RevocationBlock {
     @ActionCallback({
         output: [
             PolicyOutputEventType.RunEvent,
-            PolicyOutputEventType.ErrorEvent,
-        ],
+            PolicyOutputEventType.ErrorEvent
+        ]
     })
     @CatchErrors()
     async runAction(event: IPolicyEvent<IPolicyEventState>): Promise<any> {
-        const ref =
-            PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         const data = event.data.data;
         const doc = Array.isArray(data) ? data[0] : data;
 
@@ -171,33 +165,23 @@ export class RevocationBlock {
             signOptions,
             ref.dryRun
         );
-        const policyTopics = await ref.databaseServer.getTopics({
-            policyId: ref.policyId,
-        });
+        const policyTopics = await ref.databaseServer.getTopics({ policyId: ref.policyId });
 
         const policyTopicsMessages = [];
         for (const topic of policyTopics) {
-            const topicMessages = await messageServer.getMessages(
-                topic.topicId
-            );
+            const topicMessages = await messageServer.getMessages(topic.topicId);
             policyTopicsMessages.push(...topicMessages);
         }
-        const messagesToFind = policyTopicsMessages.filter(
-            (item) => !item.isRevoked()
-        );
+        const messagesToFind = policyTopicsMessages
+            .filter((item) => !item.isRevoked());
 
-        const topicMessage = policyTopicsMessages.find(
-            (item) => item.id === doc.messageId
-        );
+        const topicMessage = policyTopicsMessages
+            .find((item) => item.id === doc.messageId);
 
-        const relatedMessages = await this.findRelatedMessageIds(
-            topicMessage,
-            messagesToFind
-        );
+        const relatedMessages = await this.findRelatedMessageIds(topicMessage, messagesToFind);
         for (const policyTopicMessage of policyTopicsMessages) {
-            const relatedMessage = relatedMessages.find(
-                (item) => item.id === policyTopicMessage.id
-            );
+            const relatedMessage = relatedMessages
+                .find((item) => item.id === policyTopicMessage.id);
             if (relatedMessage) {
                 await this.sendToHedera(
                     policyTopicMessage,
@@ -229,9 +213,7 @@ export class RevocationBlock {
         }
 
         if (ref.options.updatePrevDoc && doc.relationships) {
-            const prevDocs = await this.findDocumentByMessageIds(
-                doc.relationships
-            );
+            const prevDocs = await this.findDocumentByMessageIds(doc.relationships);
             const prevDocument = prevDocs[prevDocs.length - 1];
             if (prevDocument) {
                 prevDocument.option.status = ref.options.prevDocStatus;
@@ -245,7 +227,7 @@ export class RevocationBlock {
         }
 
         const state: IPolicyEventState = {
-            data: documents,
+            data: documents
         };
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state);
@@ -253,9 +235,10 @@ export class RevocationBlock {
 
         PolicyComponentsUtils.ExternalEventFn(
             new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
-                documents: ExternalDocuments(documents),
+                documents: ExternalDocuments(documents)
             })
         );
+
         ref.backup();
     }
 }

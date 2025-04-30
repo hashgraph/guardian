@@ -1,12 +1,12 @@
-import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
+import { Message, MessageServer } from '@guardian/common';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType, IPolicyEventState, IPolicyInterfaceBlock } from '../policy-engine.interface.js';
-import { Message, MessageServer } from '@guardian/common';
-import { PolicyUtils } from '../helpers/utils.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
+import { PolicyUtils } from '../helpers/utils.js';
 import { LocationType } from '@guardian/interfaces';
 
 export const RevokedStatus = 'Revoked';
@@ -20,8 +20,8 @@ export const RevokedStatus = 'Revoked';
     about: {
         label: 'Revoke Document',
         title: `Add 'Revoke' Block`,
-        post: true,
-        get: true,
+        post: false,
+        get: false,
         children: ChildrenType.None,
         control: ControlType.Server,
         input: [
@@ -73,9 +73,13 @@ export class RevokeBlock {
         if (!topicMessage) {
             throw new Error('Topic message to find related messages is empty');
         }
-        const relatedMessages = topicMessages.filter(
-            (message: any) => (message.relationships && message.relationships.includes(topicMessage.id))
-        );
+        const relatedMessages = topicMessages
+            .filter(
+                (message: any) => (
+                    message.relationships &&
+                    message.relationships.includes(topicMessage.id)
+                )
+            );
         for (const relatedMessage of relatedMessages) {
             await this.findRelatedMessageIds(
                 relatedMessage,
@@ -84,13 +88,17 @@ export class RevokeBlock {
                 topicMessage.id
             );
         }
-        const relatedMessageId = relatedMessageIds.find(item => item.id === topicMessage.id);
+        const relatedMessageId = relatedMessageIds
+            .find((item) => item.id === topicMessage.id);
         if (!relatedMessageId) {
             relatedMessageIds.push({
                 parentIds: parentId ? [parentId] : undefined,
                 id: topicMessage.id
             });
-        } else if (relatedMessageId.parentIds && !relatedMessageId.parentIds.includes(parentId)) {
+        } else if (
+            relatedMessageId.parentIds &&
+            !relatedMessageId.parentIds.includes(parentId)
+        ) {
             relatedMessageId.parentIds.push(parentId);
         }
         return relatedMessageIds;
@@ -109,7 +117,7 @@ export class RevokeBlock {
             orderBy: {
                 messageId: 'ASC'
             }
-        }
+        };
         const vcDocuments: any[] = await ref.databaseServer.getVcDocuments(filters, otherOptions) as any[];
         const vpDocuments: any[] = await ref.databaseServer.getVpDocuments(filters, otherOptions) as any[];
         const didDocuments: any[] = await ref.databaseServer.getDidDocuments(filters, otherOptions) as any[];
@@ -137,7 +145,10 @@ export class RevokeBlock {
         const userHederaCred = await userCred.loadHederaCredentials(ref);
         const signOptions = await userCred.loadSignOptions(ref);
         const messageServer = new MessageServer(
-            userHederaCred.hederaAccountId, userHederaCred.hederaAccountKey, signOptions, ref.dryRun
+            userHederaCred.hederaAccountId,
+            userHederaCred.hederaAccountKey,
+            signOptions,
+            ref.dryRun
         );
         const policyTopics = await ref.databaseServer.getTopics({ policyId: ref.policyId });
 
@@ -147,13 +158,15 @@ export class RevokeBlock {
             policyTopicsMessages.push(...topicMessages);
         }
         const messagesToFind = policyTopicsMessages
-            .filter(item => !item.isRevoked());
+            .filter((item) => !item.isRevoked());
 
-        const topicMessage = policyTopicsMessages.find(item => item.id === doc.messageId);
+        const topicMessage = policyTopicsMessages
+            .find((item) => item.id === doc.messageId);
 
         const relatedMessages = await this.findRelatedMessageIds(topicMessage, messagesToFind);
         for (const policyTopicMessage of policyTopicsMessages) {
-            const relatedMessage = relatedMessages.find(item => item.id === policyTopicMessage.id);
+            const relatedMessage = relatedMessages
+                .find((item) => item.id === policyTopicMessage.id);
             if (relatedMessage) {
                 await this.sendToHedera(
                     policyTopicMessage,
@@ -165,7 +178,9 @@ export class RevokeBlock {
             }
         }
 
-        const documents = await this.findDocumentByMessageIds(relatedMessages.map(item => item.id));
+        const documents = await this.findDocumentByMessageIds(
+            relatedMessages.map((item) => item.id)
+        );
         for (const item of documents) {
             item.option = item.option || {};
             item.option.status = RevokedStatus;
@@ -203,9 +218,11 @@ export class RevokeBlock {
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state);
         ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
 
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
-            documents: ExternalDocuments(documents),
-        }));
+        PolicyComponentsUtils.ExternalEventFn(
+            new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
+                documents: ExternalDocuments(documents)
+            })
+        );
 
         ref.backup();
     }
