@@ -835,6 +835,18 @@ a[disabled="true"] {
     margin-left: 10px;
 }
 
+.download-button {
+    ::ng-deep .p-button {
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        height: 40px;
+        border-radius: 8px;
+        background: var(--button-primary-color);
+    }
+}
+
 .clear-filters-button {
     ::ng-deep .p-button-outlined {
         color: var(--button-primary-color);

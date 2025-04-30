@@ -84,7 +84,14 @@
                 </div>
 
                 <div *ngIf="profile" class="item">
-                    <span (click)="download()">Download</span>
+                    <div class="download-button">
+                        <p-button
+                            (click)="download()"
+                            label="Download profile"
+                            icon="pi pi-download"
+                        >
+                        </p-button>
+                    </div>
                 </div>
             </div>
         </div>
