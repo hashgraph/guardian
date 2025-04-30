@@ -130,7 +130,7 @@ export class MessageError<T> implements IMessageResponse<T>, Error {
     constructor(error: string | Error, code: number = 500) {
         this.code = code;
         this.body = null;
-        this.error = typeof error === 'string' ? error : error.message;
+        this.error = typeof error === 'string' ? error : error?.message;
 
         this.name = this.error;
         this.message = this.error;
