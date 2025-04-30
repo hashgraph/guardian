@@ -28,14 +28,34 @@
 
     <div class="guardian-user-page-toolbar">
         <div class="guardian-user-page-filters">
-            <div class="guardian-search">
-                <input
-                    id="fieldSearch"
-                    placeholder="Search"
-                    pInputText
-                    type="text"
-                />
-            </div>
+            <p-dropdown
+                (onChange)="onFilter($event)"
+                [(ngModel)]="currentPolicy"
+                [options]="allPolicies"
+                [showClear]="false"
+                class="guardian-dropdown"
+                placeholder="Select Policy"
+                panelStyleClass="guardian-dropdown-panel">
+                <ng-template pTemplate="selectedItem">
+                    <div *ngIf="currentPolicy && currentPolicy.instanceTopicId" class="guardian-dropdown-selected">
+                        <span class="guardian-dropdown-label">Policy</span>
+                        <span class="guardian-dropdown-item">{{ currentPolicy.name }}</span>
+                    </div>
+                    <div *ngIf="!currentPolicy || !currentPolicy.instanceTopicId" class="guardian-dropdown-selected">
+                        <span class="guardian-dropdown-label">Policy</span>
+                        <span class="guardian-dropdown-item">All</span>
+                    </div>
+                </ng-template>
+                <ng-template let-policy pTemplate="item">
+                    <div *ngIf="policy.instanceTopicId" class="guardian-dropdown-item">
+                        <span>{{policy.name}}</span>
+                        <span class="dropdown-policy-version">({{policy.version}})</span>
+                    </div>
+                    <div *ngIf="!policy.instanceTopicId" class="guardian-dropdown-item">
+                        <span>All</span>
+                    </div>
+                </ng-template>
+            </p-dropdown>
         </div>
         <div class="guardian-user-page-buttons">
             <button
@@ -85,9 +105,12 @@
                                     [ngSwitch]="column.id"
                                 >
                                     <ng-container *ngSwitchCase="'status'">
-                                        <div class="policy-status {{row.fullStatus}}-status">
+                                        <div class="policy-status {{row.status}}-status">
                                             {{ getStatusName(row) }}
                                         </div>
+                                    </ng-container>
+                                    <ng-container *ngSwitchCase="'documentType'">
+                                        <span class="text-truncate">{{row.document.type}}</span>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'topicId'">
                                         <span class="text-truncate">
@@ -97,9 +120,19 @@
                                         </span>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'options'">
-                                        <div class="option-btns">
+                                        <div *ngIf="row.status === 'NEW'" class="option-btns">
                                             <button class="guardian-button approve-btn" (click)="onApprove(row)">Approve</button>
                                             <button class="guardian-button reject-btn" (click)="onReject(row)">Reject</button>
+                                        </div>
+                                    </ng-container>
+                                    <ng-container *ngSwitchCase="'operations'">
+                                        <div class="operations-btns">
+                                            <p-button
+                                                (click)="openVCDocument(row.document, 'VC Document')"
+                                                label="View document"
+                                                [outlined]=true
+                                                icon="pi pi-file"
+                                            ></p-button>
                                         </div>
                                     </ng-container>
                                     <!-- <ng-container *ngSwitchCase="'delete'">

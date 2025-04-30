@@ -1,5 +1,6 @@
 import {
     BinaryMessageResponse,
+    DataBaseHelper,
     DatabaseServer,
     findAllEntities,
     GenerateBlocks,
@@ -14,6 +15,7 @@ import {
     NatsService,
     PinoLogger,
     Policy,
+    PolicyAction,
     PolicyImportExport,
     PolicyMessage,
     RecordImportExport,
@@ -25,7 +27,7 @@ import {
     VcHelper,
     XlsxToJson
 } from '@guardian/common';
-import { DocumentCategoryType, DocumentType, EntityOwner, ExternalMessageEvents, GenerateUUIDv4, IOwner, PolicyEngineEvents, PolicyEvents, PolicyHelper, PolicyTestStatus, PolicyStatus, Schema, SchemaField, TopicType, PolicyAvailability, PolicyActionType } from '@guardian/interfaces';
+import { DocumentCategoryType, DocumentType, EntityOwner, ExternalMessageEvents, GenerateUUIDv4, IOwner, PolicyEngineEvents, PolicyEvents, PolicyHelper, PolicyTestStatus, PolicyStatus, Schema, SchemaField, TopicType, PolicyAvailability, PolicyActionType, PolicyActionStatus } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { NatsConnection } from 'nats';
 import { HashComparator } from '../analytics/index.js';
@@ -2280,25 +2282,178 @@ export class PolicyEngineService {
             async (msg: { options: any, user: IAuthUser }) => {
                 try {
                     const { options, user } = msg;
-                    const { filters, pageIndex, pageSize } = options;
+                    const { filters, pageIndex, pageSize, policyId } = options;
                     const _filters: any = { ...filters };
 
                     _filters.accountId = user.hederaAccountId;
                     _filters.type = PolicyActionType.REQUEST;
+ 
 
                     const otherOptions: any = {};
                     const _pageSize = parseInt(pageSize, 10);
                     const _pageIndex = parseInt(pageIndex, 10);
                     if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
-                        otherOptions.orderBy = { createDate: 'DESC' };
+                        otherOptions.orderBy = { createDate: -1 };
                         otherOptions.limit = _pageSize;
                         otherOptions.offset = _pageIndex * _pageSize;
                     } else {
-                        otherOptions.orderBy = { createDate: 'DESC' };
+                        otherOptions.orderBy = { createDate: -1 };
                         otherOptions.limit = 100;
                     }
-                    const [items, count] = await DatabaseServer.getRemoteRequestsAndCount(_filters, otherOptions);
-                    return new MessageResponse({ items, count });
+
+                    const em = new DataBaseHelper(PolicyAction);
+                    const total = await em.count(_filters, otherOptions);
+
+                    const aggregate: any[] = [
+                        {
+                            $project: {
+                                _id: "$_id",
+                                createDate: "$createDate",
+                                accountId: "$accountId",
+                                type: "$type",
+                                startMessageId: "$startMessageId",
+                                policyId: "$policyId",
+
+                                status: "$status",
+                                topicId: "$topicId",
+                                messageId: "$messageId",
+                                document: "$document",
+                                blockTag: "$blockTag",
+                            }
+                        },
+                        {
+                            $match:
+                            {
+                                accountId: user.hederaAccountId,
+                                type: PolicyActionType.REQUEST,
+                            }
+                        },
+                        {
+                            $group:
+                            {
+                                _id: "$startMessageId",
+                                statuses: { $addToSet: "$status" },
+                                createDate: {$last: "$createDate"},
+                                policyId: {$last: "$policyId"},
+                                topicId: {$last: "$topicId"},
+                                messageId: {$last: "$messageId"},
+                                blockTag: {$last: "$blockTag"},
+                                document: {$first: "$document"},
+                            }
+                        },
+                        {
+                            $project: {
+                                statuses: "$statuses",
+                                status: {
+                                    $switch: {
+                                        branches: [
+                                            { case: { $in: ["ERROR", "$statuses"] }, then: "ERROR" },
+                                            { case: { $in: ["REJECT", "$statuses"] }, then: "REJECT" },
+                                            { case: { $in: ["COMPLETED", "$statuses"] }, then: "COMPLETED" },
+                                        ],
+                                        default: "NEW"
+                                    }
+                                },
+                                policyId: "$policyId",
+                                createDate: "$createDate",
+                                topicId: "$topicId",
+                                messageId: "$messageId",
+                                document: "$document",
+                                blockTag: "$blockTag",
+                            }
+                        }
+                    ];
+
+                    if (policyId) {
+                        aggregate.push({
+                            $match: {
+                                policyId: policyId,
+                            }
+                        })
+                    }
+                    
+                    if (otherOptions.orderBy) {
+                        aggregate.push(
+                            {
+                                $sort: otherOptions.orderBy
+                            }
+                        )
+                    }
+
+
+                    if (otherOptions.offset) {
+                        aggregate.push(
+                            {
+                                $skip: otherOptions.offset
+                            }
+                        )
+                    }
+
+                    if (otherOptions.limit) {
+                        aggregate.push(
+                            {
+                                $limit: otherOptions.limit
+                            }
+                        )
+                    }
+
+                    const items = await em.aggregate(aggregate);
+                    
+                    const policyIds = new Set<string>();
+                    items.forEach(row => {
+                        policyIds.add(row.policyId);
+                    });
+
+                    const policies = await DatabaseServer.getPolicies({
+                        id: { $in: Array.from(policyIds) }
+                    });
+
+                    for (const item of items as any) {
+                        const policy = policies.find(p => p.id === item.policyId);
+                        if (policy) {
+                            item.policyName = policy.name;
+                            item.policyDescription = policy.description;
+                            item.policyVersion = policy.version;
+                        }
+                    }
+
+                    return new MessageResponse({ items, total });
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_REMOTE_REQUESTS_COUNT,
+            async (msg: { options: any, user: IAuthUser }) => {
+                try {
+                    const { options, user } = msg;
+                    const { filters, policyId } = options;
+                    const _filters: any = { ...filters };
+
+                    _filters.accountId = user.hederaAccountId;
+                    _filters.type = PolicyActionType.REQUEST;
+
+                    if (policyId) {
+                        _filters.policyId = policyId;
+                    }
+
+                    console.log(options);
+
+                    const [rows] = await DatabaseServer.getRemoteRequestsAndCount(_filters, {});
+                    
+                    const requestsMap = new Map<string, string>();
+
+                    for (const row of rows) {
+                        if (!requestsMap.has(row.startMessageId))
+                            requestsMap.set(row.startMessageId, row.status);
+
+                        if (row.status != PolicyActionStatus.NEW)
+                            requestsMap.set(row.startMessageId, row.status);
+                    }
+                    
+                    const count = Array.from(requestsMap.values()).filter(status => status === PolicyActionStatus.NEW).length;
+                    
+                    return new MessageResponse({count, total: requestsMap.size});
                 } catch (error) {
                     return new MessageError(error);
                 }

@@ -1051,6 +1051,24 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Get policies requests count
+     * @param filters
+     * @param owner
+     */
+    public async getRemoteRequestsCount<T extends {
+        /**
+         * Count with NEW status
+         */
+        count: number
+        /**
+         * Total count
+         */
+        total: number
+    }>(options: any, user: IAuthUser): Promise<T> {
+        return await this.sendMessage<T>(PolicyEngineEvents.GET_REMOTE_REQUESTS_COUNT, { options, user });
+    }
+
+    /**
      * Approve remote request
      * @param policyId
      * @param messageId

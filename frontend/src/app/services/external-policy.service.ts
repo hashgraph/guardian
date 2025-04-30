@@ -89,4 +89,11 @@ export class ExternalPoliciesService {
     public rejectAction(messageId: string): Observable<any> {
         return this.http.put<any>(`${this.url}/requests/${messageId}/reject`, null);
     }
+
+    public getActionRequestsCount(
+        filters?: any
+    ): Observable<HttpResponse<any>> {
+        const params = ExternalPoliciesService.getOptions(filters);
+        return this.http.get<any>(`${this.url}/requestsCount`, { observe: 'response', params });
+    }
 }

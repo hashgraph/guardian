@@ -397,6 +397,13 @@ export class ExternalPoliciesApi {
         required: false,
         example: 20
     })
+    @ApiQuery({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: false,
+        example: '001'
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -414,15 +421,18 @@ export class ExternalPoliciesApi {
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
+        @Query('policyId') policyId?: string,
     ): Promise<any> {
         try {
             const options: any = {
                 filters: {},
                 pageIndex,
-                pageSize
+                pageSize,
+                policyId
             };
             const engineService = new PolicyEngine();
             const { items, count } = await engineService.getRemoteRequests(options, user);
+
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -524,6 +534,55 @@ export class ExternalPoliciesApi {
             }
             const engineService = new PolicyEngine();
             return await engineService.rejectRemoteRequest(messageId, user);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Return a count of policy requests
+     */
+    @Get('/requestsCount')
+    @Auth(
+        Permissions.POLICIES_POLICY_READ,
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Return a count of policy requests.',
+        description: 'Return a count of policy requests.',
+    })
+    @ApiQuery({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: false,
+        example: '001'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Number,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getRemoteRequestsCount(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Query('policyId') policyId?: string,
+    ): Promise<any> {
+        try {
+            const options: any = {
+                filters: {},
+                policyId
+            };
+            const engineService = new PolicyEngine();
+            const {count, total} = await engineService.getRemoteRequestsCount(options, user);
+            
+            return res.send({count, total});
         } catch (error) {
             await InternalException(error, this.logger);
         }

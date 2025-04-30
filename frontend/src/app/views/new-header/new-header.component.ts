@@ -9,6 +9,7 @@ import {ProfileService} from '../../services/profile.service';
 import {WebSocketService} from '../../services/web-socket.service';
 import {HeaderPropsService} from '../../services/header-props.service';
 import {BrandingService} from '../../services/branding.service';
+import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
 
 @Component({
     selector: 'app-new-header',
@@ -25,6 +26,9 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
     public menuItems: NavbarMenuItem[];
     public activeLink: string = '';
     public activeLinkRoot: string = '';
+    
+    public policyRequests = 0;
+    public newPolicyRequests = 0;
 
     private commonLinksDisabled: boolean = false;
     private balanceType: string;
@@ -46,7 +50,8 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
         public profileService: ProfileService,
         public webSocketService: WebSocketService,
         public headerProps: HeaderPropsService,
-        private brandingService: BrandingService) {
+        private brandingService: BrandingService,
+        private externalPoliciesService: ExternalPoliciesService) {
         this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {
                 this.update();
@@ -177,6 +182,13 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
                     document.getElementById('company-name')!.innerText = res.companyName;
                 }
 
+            })
+
+            this.externalPoliciesService.getActionRequestsCount().subscribe((response) => {
+                if (response?.body) {
+                    this.newPolicyRequests = response.body.count;
+                    this.policyRequests = response.body.total;
+                }
             })
 
         }, () => {
