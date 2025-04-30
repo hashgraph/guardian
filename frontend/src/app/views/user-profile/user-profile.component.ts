@@ -329,8 +329,6 @@ export class UserProfileComponent implements OnInit {
             vcDocumentStep,
         ];
         this.currentStep = this.steps[0];
-
-        this.onChangeRemoteUserSetupType();
     }
 
     ngOnInit() {
@@ -496,16 +494,6 @@ export class UserProfileComponent implements OnInit {
 
     public isFinish(): boolean {
         return this.currentStep?.isFinish() || false;
-    }
-
-    public onChangeRemoteUserSetupType() {
-        if (!this.remoteUserSetupType.value) {
-            this.remoteCredentialsForm.disable();
-            this.remoteDidDocumentForm.disable();
-        } else {
-            this.remoteCredentialsForm.enable();
-            this.remoteDidDocumentForm.enable();
-        }
     }
 
     //New User
