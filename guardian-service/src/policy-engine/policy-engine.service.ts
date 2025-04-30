@@ -264,6 +264,7 @@ export class PolicyEngineService {
             }) => {
                 const policy = await DatabaseServer.getPolicyById(msg.policyId);
                 const user = await this.users.getUserByAccount(msg.accountId);
+                
                 if (user && policy) {
                     const evert = { ...msg, user: { did: user.did } };
                     this.channel.publish('update-request', evert);
@@ -2457,8 +2458,6 @@ export class PolicyEngineService {
                     if (policyId) {
                         _filters.policyId = policyId;
                     }
-
-                    console.log(options);
 
                     const [rows] = await DatabaseServer.getRemoteRequestsAndCount(_filters, {});
                     

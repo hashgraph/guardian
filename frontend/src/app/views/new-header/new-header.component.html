@@ -90,7 +90,8 @@
         </div>
 
         <div
-                [class.current]="activeLink.startsWith('/policy-requests')"
+            *ngIf="policyRequests && policyRequests > 0"
+            [class.current]="activeLink.startsWith('/policy-requests')"
             [routerLink]="'/policy-requests'"
             class="item cursor-pointer"
         >

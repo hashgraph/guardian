@@ -10,6 +10,7 @@ import {WebSocketService} from '../../services/web-socket.service';
 import {HeaderPropsService} from '../../services/header-props.service';
 import {BrandingService} from '../../services/branding.service';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-new-header',
@@ -35,6 +36,7 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
     private balanceInit: boolean = false;
     private ws!: any;
     private authSubscription!: any;
+    private policyRequestsSubscription = new Subscription();
 
     @Input() remoteContainerMethod: any;
 
@@ -88,6 +90,12 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
                 this.getBalance();
             }
         });
+
+        this.policyRequestsSubscription.add(
+            this.webSocketService.requestSubscribe((message => {
+                this.updateRemotePolicyRequests();
+            }))
+        );
     }
 
     ngAfterViewChecked(): void {
@@ -115,6 +123,7 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
             this.authSubscription.unsubscribe();
             this.authSubscription = null;
         }
+        this.policyRequestsSubscription.unsubscribe();
     }
 
     private getBalance() {
@@ -180,14 +189,6 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
 
                 if (document.getElementById('company-name')) {
                     document.getElementById('company-name')!.innerText = res.companyName;
-                }
-
-            })
-
-            this.externalPoliciesService.getActionRequestsCount().subscribe((response) => {
-                if (response?.body) {
-                    this.newPolicyRequests = response.body.count;
-                    this.policyRequests = response.body.total;
                 }
             })
 
@@ -262,5 +263,14 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
         } else {
             this.router.navigate([barItem.routerLink]);
         }
+    }
+
+    private updateRemotePolicyRequests() {
+        this.externalPoliciesService.getActionRequestsCount().subscribe((response) => {
+            if (response?.body) {
+                this.newPolicyRequests = response.body.count;
+                this.policyRequests = response.body.total;
+            }
+        })
     }
 }

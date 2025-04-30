@@ -292,7 +292,7 @@ export class WebSocketsService {
             this.wss.clients.forEach((client: any) => {
                 if (this.checkUserByDid(client, msg)) {
                     this.send(client, {
-                        type: 'update-request-event',
+                        type: MessageAPI.UPDATE_REQUEST_EVENT,
                         data: msg,
                     });
                 }
