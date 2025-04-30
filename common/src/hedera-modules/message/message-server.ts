@@ -353,70 +353,70 @@ export class MessageServer {
         json.type = json.type;
         switch (json.type) {
             case MessageType.Contract:
-                message = ContractMessage.fromMessageObject(json);
+                message = ContractMessage.fromJson(json);
                 break;
             case MessageType.EVCDocument:
             case MessageType.VCDocument:
-                message = VCMessage.fromMessageObject(json);
+                message = VCMessage.fromJson(json);
                 break;
             case MessageType.DIDDocument:
-                message = DIDMessage.fromMessageObject(json);
+                message = DIDMessage.fromJson(json);
                 break;
             case MessageType.Schema:
-                message = SchemaMessage.fromMessageObject(json);
+                message = SchemaMessage.fromJson(json);
                 break;
             case MessageType.Policy:
             case MessageType.InstancePolicy:
-                message = PolicyMessage.fromMessageObject(json);
+                message = PolicyMessage.fromJson(json);
                 break;
             case MessageType.VPDocument:
-                message = VPMessage.fromMessageObject(json);
+                message = VPMessage.fromJson(json);
                 break;
             case MessageType.StandardRegistry:
-                message = RegistrationMessage.fromMessageObject(json);
+                message = RegistrationMessage.fromJson(json);
                 break;
             case MessageType.Topic:
-                message = TopicMessage.fromMessageObject(json);
+                message = TopicMessage.fromJson(json);
                 break;
             case MessageType.Token:
-                message = TokenMessage.fromMessageObject(json);
+                message = TokenMessage.fromJson(json);
                 break;
             case MessageType.Module:
-                message = ModuleMessage.fromMessageObject(json);
+                message = ModuleMessage.fromJson(json);
                 break;
             case MessageType.Tool:
-                message = ToolMessage.fromMessageObject(json);
+                message = ToolMessage.fromJson(json);
                 break;
             case MessageType.Tag:
-                message = TagMessage.fromMessageObject(json);
+                message = TagMessage.fromJson(json);
                 break;
             case MessageType.RoleDocument:
-                message = RoleMessage.fromMessageObject(json);
+                message = RoleMessage.fromJson(json);
                 break;
             case MessageType.GuardianRole:
-                message = GuardianRoleMessage.fromMessageObject(json);
+                message = GuardianRoleMessage.fromJson(json);
                 break;
             case MessageType.UserPermissions:
-                message = UserPermissionsMessage.fromMessageObject(json);
+                message = UserPermissionsMessage.fromJson(json);
                 break;
             case MessageType.PolicyStatistic:
-                message = StatisticMessage.fromMessageObject(json);
+                message = StatisticMessage.fromJson(json);
                 break;
             case MessageType.PolicyLabel:
-                message = LabelMessage.fromMessageObject(json);
+                message = LabelMessage.fromJson(json);
                 break;
             case MessageType.Formula:
-                message = FormulaMessage.fromMessageObject(json);
+                message = FormulaMessage.fromJson(json);
                 break;
             case MessageType.PolicyDiff:
-                message = PolicyDiffMessage.fromMessageObject(json);
+                message = PolicyDiffMessage.fromJson(json);
                 break;
             case MessageType.PolicyAction:
-                message = PolicyActionMessage.fromMessageObject(json);
+                message = PolicyActionMessage.fromJson(json);
                 break;
             // Default schemas
             case 'schema-document':
-                message = SchemaMessage.fromMessageObject(json);
+                message = SchemaMessage.fromJson(json);
                 break;
             default:
                 throw new Error(`Invalid format message: ${json.type || 'UNKNOWN TYPE'}`);

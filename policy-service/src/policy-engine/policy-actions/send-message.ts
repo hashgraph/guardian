@@ -89,17 +89,17 @@ export class SendMessage {
 
     public static async validate(request: PolicyAction, response: PolicyAction): Promise<boolean> {
         try {
-            if (request && response && request.accountId === response.accountId) {
-                return true;
-            }
-
             const data = response.document;
             const { messageId } = data;
 
-            const message = await MessageServer.getMessage(messageId)
+            const message = await MessageServer.getMessage(messageId);
             await MessageServer.loadDocument(message);
 
             data.message = message;
+
+            if (request && response && request.accountId === response.accountId) {
+                return true;
+            }
 
             return false;
         } catch (error) {
