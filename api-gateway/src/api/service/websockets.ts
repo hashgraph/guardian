@@ -288,6 +288,18 @@ export class WebSocketsService {
             return new MessageResponse({});
         });
 
+        this.channel.subscribe('update-request', async (msg) => {
+            this.wss.clients.forEach((client: any) => {
+                if (this.checkUserByDid(client, msg)) {
+                    this.send(client, {
+                        type: 'update-request-event',
+                        data: msg,
+                    });
+                }
+            });
+            return new MessageResponse({});
+        });
+
         this.channel.subscribe('update-test',
             async (msg: any) => {
                 this.wss.clients.forEach((client: any) => {

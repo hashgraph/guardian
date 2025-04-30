@@ -252,6 +252,23 @@ export class PolicyEngineService {
                 }
             })
 
+        this.channel.getMessages(PolicyEvents.REQUEST_UPDATE_BROADCAST,
+            async (msg: {
+                id: string,
+                type: string,
+                accountId: string,
+                policyId: string,
+                status: string,
+            }) => {
+                const policy = await DatabaseServer.getPolicyById(msg.policyId);
+                const user = await this.users.getUserByAccount(msg.accountId);
+                if (user && policy) {
+                    const evert = { ...msg, user: { did: user.did } };
+                    this.channel.publish('update-request', evert);
+                    console.debug('---- update-request', evert);
+                }
+            })
+
         this.channel.getMessages(PolicyEvents.TEST_UPDATE_BROADCAST,
             async (msg: {
                 id: string,
