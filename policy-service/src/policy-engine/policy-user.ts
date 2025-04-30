@@ -274,6 +274,26 @@ export class UserCredentials {
         return this;
     }
 
+    public async loadByAccount(ref: AnyBlockType, accountId: string): Promise<UserCredentials> {
+        let userFull: IAuthUser;
+        if (this._dryRun) {
+            userFull = await ref.databaseServer.getVirtualUserByAccount(accountId);
+        } else {
+            const users = new Users();
+            userFull = await users.getUserByAccount(accountId);
+        }
+        if (!userFull) {
+            throw new Error('Virtual User not found');
+        }
+        this._location = userFull.location || LocationType.LOCAL;
+        this._hederaAccountId = userFull.hederaAccountId;
+        this._did = userFull.did;
+        if (!this._did || !this._hederaAccountId) {
+            throw new Error('Hedera Account not found.');
+        }
+        return this;
+    }
+
     public async loadHederaKey(ref: AnyBlockType): Promise<any> {
         if (this._dryRun) {
             return await ref.databaseServer.getVirtualKey(this._did, this._did);
@@ -403,5 +423,9 @@ export class UserCredentials {
 
     public static async create(ref: AnyBlockType, userDid: string): Promise<UserCredentials> {
         return await (new UserCredentials(ref, userDid)).load(ref);
+    }
+
+    public static async createByAccount(ref: AnyBlockType, accountId: string): Promise<UserCredentials> {
+        return await (new UserCredentials(ref, null)).loadByAccount(ref, accountId);
     }
 }

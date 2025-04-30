@@ -158,7 +158,7 @@ export class TokenConfirmationBlock {
             hederaAccountKey: data.hederaAccountKey
         }
 
-        await PolicyUtils.checkAccountId(account);
+        await PolicyUtils.checkAccountId(account.hederaAccountId);
         if (!account.hederaAccountKey) {
             throw new BlockActionError(`Key value is unknown`, ref.blockType, ref.uuid)
         }
