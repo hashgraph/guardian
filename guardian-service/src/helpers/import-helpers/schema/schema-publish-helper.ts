@@ -167,7 +167,7 @@ export async function publishDefsSchemas(
             iri: schemaId
         });
         if (schema && schema.status !== SchemaStatus.PUBLISHED) {
-            schema = await incrementSchemaVersion(schema.iri, user);
+            schema = await incrementSchemaVersion(schema.topicId, schema.iri, user);
             await findAndPublishSchema(schema.id, schema.version, user, root, emptyNotifier(), schemaMap);
         }
     }
