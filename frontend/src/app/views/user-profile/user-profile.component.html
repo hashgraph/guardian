@@ -332,7 +332,6 @@
                                                         name="remoteUserSetupType"
                                                         [value]="false"
                                                         [formControl]="remoteUserSetupType"
-                                                        (ngModelChange)="onChangeRemoteUserSetupType()"
                                                         class="boolean-option">
                                                     </p-radioButton>
                                                     <label>From File</label>
@@ -350,7 +349,6 @@
                                                         name="remoteUserSetupType"
                                                         [value]="true"
                                                         [formControl]="remoteUserSetupType"
-                                                        (ngModelChange)="onChangeRemoteUserSetupType()"
                                                         class="boolean-option">
                                                     </p-radioButton>
                                                     <label>Manual</label>
@@ -363,6 +361,7 @@
                                                         </label>
                                                         <input
                                                             formControlName="id"
+                                                            [readonly]="!remoteUserSetupType.value"
                                                             id="operatorId"
                                                             pInputText
                                                             placeholder="0.0.1548173"
@@ -375,6 +374,7 @@
                                                         </label>
                                                         <input
                                                             formControlName="topicId"
+                                                            [readonly]="!remoteUserSetupType.value"
                                                             id="topicId"
                                                             pInputText
                                                             placeholder="0.0.1548173"
@@ -391,6 +391,7 @@
                                                             pInputTextarea
                                                             id="didDocumentTextarea"
                                                             [formControl]="remoteDidDocumentForm"
+                                                            [readonly]="!remoteUserSetupType.value"
                                                             class="full-width"
                                                             placeholder="DID Document: *"
                                                             style="height: 150px"></textarea>
