@@ -83,7 +83,7 @@ export class PolicyEngine extends NatsService {
      */
     public async getTokensMap(
         owner: IOwner,
-        status?: string
+        status?: string | string[]
     ): Promise<any> {
         return await this.sendMessage<any>(PolicyEngineEvents.GET_TOKENS_MAP, { owner, status });
     }

@@ -814,12 +814,16 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_TOKENS_MAP,
-            async (msg: { owner: IOwner, status: string }) => {
+            async (msg: { owner: IOwner, status: string | string[] }) => {
                 try {
                     const { owner, status } = msg;
                     const filters: any = {};
                     if (status) {
-                        filters.status = status;
+                        if (Array.isArray(status)) {
+                            filters.status = { $in: status };
+                        } else {
+                            filters.status = status;
+                        }
                     }
                     await this.policyEngine.addAccessFilters(filters, owner);
                     const policies = await DatabaseServer.getPolicies(filters);
