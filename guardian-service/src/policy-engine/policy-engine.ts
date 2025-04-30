@@ -1023,10 +1023,13 @@ export class PolicyEngine extends NatsService {
         const databaseServer = new DatabaseServer(dryRunId);
 
         //Create Services
-        const root = await this.users.getHederaAccount(user.owner);
-        const topic = await TopicConfig.fromObject(
-            await DatabaseServer.getTopicById(model.topicId), !demo
-        );
+        const [root, topic] = await Promise.all([
+            this.users.getHederaAccount(user.owner),
+            TopicConfig.fromObject(
+                await DatabaseServer.getTopicById(model.topicId), !demo
+            )
+        ])
+
         const messageServer = new MessageServer(
             root.hederaAccountId, root.hederaAccountKey, root.signOptions, dryRunId
         ).setTopicObject(topic);
@@ -1108,11 +1111,13 @@ export class PolicyEngine extends NatsService {
             true
         );
 
-        //Update dry-run table (mark readonly rows)
-        await DatabaseServer.setSystemMode(dryRunId, true);
+        let [,retVal] = await Promise.all([
+            //Update dry-run table (mark readonly rows)
+            DatabaseServer.setSystemMode(dryRunId, true),
+            //Update Policy hash and status
+            DatabaseServer.updatePolicy(model)
+        ]);
 
-        //Update Policy hash and status
-        let retVal = await DatabaseServer.updatePolicy(model);
         retVal = await PolicyImportExportHelper.updatePolicyComponents(retVal, logger);
 
         logger.info('Run Policy', ['GUARDIAN_SERVICE']);
