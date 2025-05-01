@@ -264,11 +264,10 @@ export class PolicyEngineService {
             }) => {
                 const policy = await DatabaseServer.getPolicyById(msg.policyId);
                 const user = await this.users.getUserByAccount(msg.accountId);
-                
+
                 if (user && policy) {
                     const evert = { ...msg, user: { did: user.did } };
                     this.channel.publish('update-request', evert);
-                    console.debug('---- update-request', evert);
                 }
             })
 
@@ -2309,7 +2308,7 @@ export class PolicyEngineService {
 
                     _filters.accountId = user.hederaAccountId;
                     _filters.type = PolicyActionType.REQUEST;
- 
+
 
                     const otherOptions: any = {};
                     const _pageSize = parseInt(pageSize, 10);
@@ -2355,12 +2354,12 @@ export class PolicyEngineService {
                             {
                                 _id: "$startMessageId",
                                 statuses: { $addToSet: "$status" },
-                                createDate: {$last: "$createDate"},
-                                policyId: {$last: "$policyId"},
-                                topicId: {$last: "$topicId"},
-                                messageId: {$last: "$messageId"},
-                                blockTag: {$last: "$blockTag"},
-                                document: {$first: "$document"},
+                                createDate: { $last: "$createDate" },
+                                policyId: { $last: "$policyId" },
+                                topicId: { $last: "$topicId" },
+                                messageId: { $last: "$messageId" },
+                                blockTag: { $last: "$blockTag" },
+                                document: { $first: "$document" },
                             }
                         },
                         {
@@ -2393,7 +2392,7 @@ export class PolicyEngineService {
                             }
                         })
                     }
-                    
+
                     if (otherOptions.orderBy) {
                         aggregate.push(
                             {
@@ -2420,7 +2419,7 @@ export class PolicyEngineService {
                     }
 
                     const items = await em.aggregate(aggregate);
-                    
+
                     const policyIds = new Set<string>();
                     items.forEach(row => {
                         policyIds.add(row.policyId);
@@ -2453,27 +2452,27 @@ export class PolicyEngineService {
                     const _filters: any = { ...filters };
 
                     _filters.accountId = user.hederaAccountId;
-                    _filters.type = PolicyActionType.REQUEST;
-
+                    _filters.lastStatus = PolicyActionStatus.NEW;
                     if (policyId) {
                         _filters.policyId = policyId;
                     }
 
-                    const [rows] = await DatabaseServer.getRemoteRequestsAndCount(_filters, {});
-                    
-                    const requestsMap = new Map<string, string>();
-
-                    for (const row of rows) {
-                        if (!requestsMap.has(row.startMessageId))
-                            requestsMap.set(row.startMessageId, row.status);
-
-                        if (row.status != PolicyActionStatus.NEW)
-                            requestsMap.set(row.startMessageId, row.status);
-                    }
-                    
-                    const count = Array.from(requestsMap.values()).filter(status => status === PolicyActionStatus.NEW).length;
-                    
-                    return new MessageResponse({count, total: requestsMap.size});
+                    const requestsCount = await DatabaseServer.getRemoteRequestsCount({
+                        ..._filters,
+                        type: PolicyActionType.REQUEST
+                    }, {});
+                    const actionsCount = await DatabaseServer.getRemoteRequestsCount({
+                        ..._filters,
+                        type: PolicyActionType.ACTION
+                    }, {});
+                    const total = await DatabaseServer.getRemoteRequestsCount({
+                        ..._filters
+                    }, {});
+                    return new MessageResponse({
+                        requestsCount,
+                        actionsCount,
+                        total
+                    });
                 } catch (error) {
                     return new MessageError(error);
                 }

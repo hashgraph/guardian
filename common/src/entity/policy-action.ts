@@ -118,12 +118,19 @@ export class PolicyAction extends BaseEntity {
     documentFileId?: ObjectId;
 
     /**
+     * Last Status
+     */
+    @Property({ nullable: true })
+    lastStatus?: PolicyActionStatus;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()
     setDefaults() {
         this.uuid = this.uuid || GenerateUUIDv4();
         this.status = this.status || PolicyActionStatus.NEW;
+        this.lastStatus = this.lastStatus || this.status;
     }
 
     /**

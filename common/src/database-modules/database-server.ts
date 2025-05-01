@@ -4419,4 +4419,13 @@ export class DatabaseServer extends AbstractDatabaseServer {
     public static async getRemoteRequestsAndCount(filters?: FilterObject<PolicyAction>, options?: FindOptions<unknown>): Promise<[PolicyAction[], number]> {
         return await new DataBaseHelper(PolicyAction).findAndCount(filters, options);
     }
+
+    /**
+     * Get remote requests
+     * @param filters
+     * @param options
+     */
+    public static async getRemoteRequestsCount(filters?: FilterObject<PolicyAction>, options?: FindOptions<unknown>): Promise<number> {
+        return await new DataBaseHelper(PolicyAction).count(filters, options);
+    }
 }

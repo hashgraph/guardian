@@ -542,7 +542,7 @@ export class ExternalPoliciesApi {
     /**
      * Return a count of policy requests
      */
-    @Get('/requestsCount')
+    @Get('/requests/count')
     @Auth(
         Permissions.POLICIES_POLICY_READ,
         Permissions.POLICIES_POLICY_EXECUTE,

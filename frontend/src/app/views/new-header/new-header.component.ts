@@ -1,14 +1,14 @@
-import {Component, Input, OnInit, AfterViewInit, ElementRef, ViewChild, NgZone, AfterViewChecked} from '@angular/core';
-import {getMenuItems, NavbarMenuItem} from './menu.model';
-import {IUser, UserCategory, UserPermissions, UserRole} from '@guardian/interfaces';
-import {AuthStateService} from '../../services/auth-state.service';
-import {AuthService} from '../../services/auth.service';
-import {DemoService} from '../../services/demo.service';
-import {NavigationEnd, Router} from '@angular/router';
-import {ProfileService} from '../../services/profile.service';
-import {WebSocketService} from '../../services/web-socket.service';
-import {HeaderPropsService} from '../../services/header-props.service';
-import {BrandingService} from '../../services/branding.service';
+import { Component, Input, OnInit, AfterViewInit, ElementRef, ViewChild, NgZone, AfterViewChecked } from '@angular/core';
+import { getMenuItems, NavbarMenuItem } from './menu.model';
+import { IUser, UserCategory, UserPermissions, UserRole } from '@guardian/interfaces';
+import { AuthStateService } from '../../services/auth-state.service';
+import { AuthService } from '../../services/auth.service';
+import { DemoService } from '../../services/demo.service';
+import { NavigationEnd, Router } from '@angular/router';
+import { ProfileService } from '../../services/profile.service';
+import { WebSocketService } from '../../services/web-socket.service';
+import { HeaderPropsService } from '../../services/header-props.service';
+import { BrandingService } from '../../services/branding.service';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
 import { Subscription } from 'rxjs';
 
@@ -27,7 +27,7 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
     public menuItems: NavbarMenuItem[];
     public activeLink: string = '';
     public activeLinkRoot: string = '';
-    
+
     public policyRequests = 0;
     public newPolicyRequests = 0;
 
@@ -268,7 +268,7 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
     private updateRemotePolicyRequests() {
         this.externalPoliciesService.getActionRequestsCount().subscribe((response) => {
             if (response?.body) {
-                this.newPolicyRequests = response.body.count;
+                this.newPolicyRequests = response.body.requestsCount;
                 this.policyRequests = response.body.total;
             }
         })

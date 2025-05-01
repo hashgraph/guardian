@@ -64,7 +64,8 @@ export class PolicyActionsService {
             messageId: null,
             startMessageId: null,
             sender: null,
-            document: data
+            document: data,
+            lastStatus: PolicyActionStatus.NEW
         };
         const message = new PolicyActionMessage(MessageAction.CreatePolicyAction);
         message.setDocument(row, data);
@@ -79,6 +80,8 @@ export class PolicyActionsService {
         const collection = new DataBaseHelper(PolicyAction);
         const newRow = collection.create(row);
         await collection.insertOrUpdate([newRow], 'messageId');
+        await this.sentNotification(row);
+        return row;
     }
 
     public async sendRequest(
@@ -107,7 +110,8 @@ export class PolicyActionsService {
             document: data.document,
             messageId: null,
             startMessageId: null,
-            index: null
+            index: null,
+            lastStatus: PolicyActionStatus.NEW
         });
 
         const message = new PolicyActionMessage(MessageAction.CreatePolicyRequest);
@@ -124,6 +128,9 @@ export class PolicyActionsService {
         this.callback.set(newRow.messageId, callback);
 
         await collection.insertOrUpdate([newRow], 'messageId');
+        await this.sentNotification(newRow);
+
+        return newRow;
     }
 
     public async sendResponse(messageId: string, user: PolicyUser) {
@@ -165,7 +172,8 @@ export class PolicyActionsService {
             topicId: this.topicId,
             index: null,
             policyId: this.policyId,
-            document: data
+            document: data,
+            lastStatus: PolicyActionStatus.COMPLETED
         });
 
         const message = new PolicyActionMessage(MessageAction.UpdatePolicyRequest);
@@ -179,13 +187,17 @@ export class PolicyActionsService {
 
         await collection.insertOrUpdate([newRow], 'messageId');
 
+        await this.sentNotification(newRow);
+
         return newRow;
     }
 
     public async rejectRequest(row: PolicyAction, user: PolicyUser) {
         const collection = new DataBaseHelper(PolicyAction);
         row.status = PolicyActionStatus.REJECT;
+        row.lastStatus = PolicyActionStatus.NEW;
         await collection.insertOrUpdate([row], 'messageId');
+        await this.sentNotification(row);
         return row;
     }
 
@@ -264,6 +276,33 @@ export class PolicyActionsService {
             console.debug('--- error --', error);
             document = null;
         }
+        let lastStatus = PolicyActionStatus.NEW;
+        switch (message.action) {
+            case MessageAction.CreatePolicyRequest: {
+                lastStatus = PolicyActionStatus.NEW;
+                break;
+            }
+            case MessageAction.UpdatePolicyRequest: {
+                lastStatus = PolicyActionStatus.COMPLETED;
+                break;
+            }
+            case MessageAction.ErrorPolicyRequest: {
+                lastStatus = PolicyActionStatus.ERROR;
+                break;
+            }
+            case MessageAction.CreatePolicyAction: {
+                lastStatus = PolicyActionStatus.NEW;
+                break;
+            }
+            case MessageAction.UpdatePolicyAction: {
+                lastStatus = PolicyActionStatus.COMPLETED;
+                break;
+            }
+            case MessageAction.ErrorPolicyAction: {
+                lastStatus = PolicyActionStatus.ERROR;
+                break;
+            }
+        }
         let row = await collection.findOne({ messageId: message.id });
         if (!row) {
             row = collection.create({
@@ -280,7 +319,8 @@ export class PolicyActionsService {
                 topicId: message.topicId?.toString(),
                 index: Number(message.index),
                 policyId: this.policyId,
-                document
+                document,
+                lastStatus
             });
             await collection.insertOrUpdate([row], 'messageId');
         } else {
@@ -298,6 +338,7 @@ export class PolicyActionsService {
             row.policyId = this.policyId;
             row.status = status;
             row.document = document;
+            row.lastStatus = lastStatus;
             await collection.insertOrUpdate([row], 'messageId');
         }
         return row;
@@ -364,7 +405,8 @@ export class PolicyActionsService {
                 topicId: this.topicId,
                 index: null,
                 policyId: this.policyId,
-                document: null
+                document: null,
+                lastStatus: PolicyActionStatus.COMPLETED
             });
 
             const message = new PolicyActionMessage(MessageAction.UpdatePolicyAction);
@@ -415,7 +457,8 @@ export class PolicyActionsService {
                 topicId: this.topicId,
                 index: null,
                 policyId: this.policyId,
-                document: typeof error === 'string' ? error : error.message
+                document: typeof error === 'string' ? error : error.message,
+                lastStatus: PolicyActionStatus.ERROR
             });
 
             const message = new PolicyActionMessage(MessageAction.ErrorPolicyAction);

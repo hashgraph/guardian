@@ -92,8 +92,12 @@ export class ExternalPoliciesService {
 
     public getActionRequestsCount(
         filters?: any
-    ): Observable<HttpResponse<any>> {
+    ): Observable<HttpResponse<{
+        requestsCount: number,
+        actionsCount: number,
+        total: number
+    }>> {
         const params = ExternalPoliciesService.getOptions(filters);
-        return this.http.get<any>(`${this.url}/requestsCount`, { observe: 'response', params });
+        return this.http.get<any>(`${this.url}/requests/count`, { observe: 'response', params });
     }
 }

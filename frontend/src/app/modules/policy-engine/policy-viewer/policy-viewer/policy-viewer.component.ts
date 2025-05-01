@@ -55,6 +55,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public nextButtonDisabled = false;
     public permissions: UserPermissions;
     public newRequestsExist: boolean = false;
+    public newActionsExist: boolean = false;
 
     constructor(
         private profileService: ProfileService,
@@ -138,6 +139,13 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.userRole = userRole;
                 this.userGroup = userGroup?.groupLabel || userGroup?.uuid;
                 this.groups = userGroups;
+            })
+        );
+        this.subscription.add(
+            this.wsService.requestSubscribe((message) => {
+                if (message.policyId === this.policyId && this.isConfirmed) {
+                    this.updateRemotePolicyRequests();
+                }
             })
         );
 
@@ -230,7 +238,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
                 this.externalPoliciesService.getActionRequestsCount({ policyId }).subscribe(response => {
                     if (response?.body) {
-                        this.newRequestsExist = response.body.count > 0;
+                        this.newRequestsExist = response.body.requestsCount > 0;
+                        this.newActionsExist = response.body.actionsCount > 0;
                     }
                 })
             }, (e) => {
@@ -536,5 +545,14 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     public onPolicyRequests() {
         this.router.navigate([`/policy-requests`], { queryParams: { policyId: this.policyId } });
+    }
+
+    private updateRemotePolicyRequests() {
+        this.externalPoliciesService.getActionRequestsCount().subscribe((response) => {
+            if (response?.body) {
+                this.newRequestsExist = response.body.requestsCount > 0;
+                this.newActionsExist = response.body.actionsCount > 0;
+            }
+        })
     }
 }
