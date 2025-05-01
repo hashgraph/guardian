@@ -83,7 +83,7 @@ It is recommended to separate the system functionality from the registry functio
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4058](https://github.com/hashgraph/guardian/issues/4058)
 
-Documentation Link:&#x20;
+Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/roles-and-permissions/roles-and-permissions-user-guide](https://docs.hedera.com/guardian/guardian/standard-registry/roles-and-permissions/roles-and-permissions-user-guide)
 
 ### Development of VM0042 v2.1: Improved Agricultural Land Management
 
