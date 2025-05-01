@@ -14394,7 +14394,7 @@ paths:
       summary: Updates schema rule.
       tags:
         - external-policies
-  /external-policies/requestsCount:
+  /external-policies/requests/count:
     get:
       description: Return a count of policy requests.
       operationId: ExternalPoliciesApi_getRemoteRequestsCount
