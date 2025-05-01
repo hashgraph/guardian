@@ -1,4 +1,4 @@
-import { DidDocumentStatus, Permissions, SchemaEntity, TaskAction, TopicType } from '@guardian/interfaces';
+import { Permissions, TaskAction } from '@guardian/interfaces';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
@@ -39,7 +39,7 @@ export class ProfileApi {
     })
     @ApiExtraModels(ProfileDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    // @UseCache()
+    @UseCache()
     async getProfile(
         @AuthUser() user: IAuthUser
     ): Promise<ProfileDTO> {
@@ -47,7 +47,7 @@ export class ProfileApi {
             const guardians = new Guardians();
             return await guardians.getProfile(user);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -94,7 +94,7 @@ export class ProfileApi {
         const username: string = user.username;
         const guardians = new Guardians();
         try {
-            await guardians.createUserProfileCommon(username, profile);
+            await guardians.createUserProfileCommon(user, username, profile);
         } catch (error) {
             throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
         }
@@ -148,17 +148,17 @@ export class ProfileApi {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.CONNECT_USER, user.id);
         const username: string = user.username;
-        const invalidedCacheTags = [`/${PREFIXES.PROFILES}/${username}`];
+        const invalidedCacheTags = [`/${PREFIXES.PROFILES}/${username}`, `/${PREFIXES.ACCOUNTS}/session`];
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.createUserProfileCommonAsync(username, profile, task);
+            await guardians.createUserProfileCommonAsync(user, username, profile, task);
 
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
+            setTimeout(async () => await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user)), 10000)
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
 
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
+            setTimeout(async () => await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user)), 10000)
         });
         return task;
     }
@@ -203,7 +203,7 @@ export class ProfileApi {
             return null;
         }
         const guardians = new Guardians();
-        const balance = await guardians.getUserBalance(username);
+        const balance = await guardians.getUserBalance(user, username);
         if (isNaN(parseFloat(balance))) {
             throw new HttpException(balance, HttpStatus.UNPROCESSABLE_ENTITY);
         }
@@ -257,11 +257,11 @@ export class ProfileApi {
         const invalidedCacheTags = [`/${PREFIXES.PROFILES}/${username}`];
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.restoreUserProfileCommonAsync(username, profile, task);
+            await guardians.restoreUserProfileCommonAsync(user, username, profile, task);
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
@@ -315,11 +315,11 @@ export class ProfileApi {
         const invalidedCacheTags = [`/${PREFIXES.PROFILES}/${username}`];
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.getAllUserTopicsAsync(username, profile, task);
+            await guardians.getAllUserTopicsAsync(user, username, profile, task);
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
@@ -364,9 +364,9 @@ export class ProfileApi {
         }
         try {
             const guardians = new Guardians();
-            return await guardians.validateDidDocument(document);
+            return await guardians.validateDidDocument(user, document);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -414,9 +414,9 @@ export class ProfileApi {
         }
         try {
             const guardians = new Guardians();
-            return await guardians.validateDidKeys(document, keys);
+            return await guardians.validateDidKeys(user, document, keys);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

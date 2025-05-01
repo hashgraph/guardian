@@ -156,7 +156,10 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
      * @returns {Tag} new tag
      */
     ApiResponse(MessageAPI.CREATE_TAG,
-        async (msg: { tag: any, owner: IOwner }) => {
+        async (msg: {
+            tag: any,
+            owner: IOwner
+        }) => {
             try {
                 if (!msg) {
                     throw new Error('Invalid Params');
@@ -171,7 +174,7 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 const target = await getTarget(tag.entity, tag.localTarget || tag.target);
                 if (target) {
                     const users = new Users();
-                    const root = await users.getHederaAccount(owner.creator);
+                    const root = await users.getHederaAccount(owner.creator, owner?.id);
                     //Document
                     if (tag.document && typeof tag.document === 'object') {
                         const vcHelper = new VcHelper();
@@ -188,7 +191,7 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                             credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
                         }
 
-                        const didDocument = await vcHelper.loadDidDocument(owner.creator);
+                        const didDocument = await vcHelper.loadDidDocument(owner.creator, owner?.id);
                         const vcObject = await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
                         tag.document = vcObject.getDocument();
                     } else {
@@ -200,7 +203,7 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                         tag.localTarget = target.id;
                         tag.status = 'Published';
                         const topic = await DatabaseServer.getTopicById(target.topicId);
-                        const topicConfig = await TopicConfig.fromObject(topic, true);
+                        const topicConfig = await TopicConfig.fromObject(topic, true, owner?.id);
                         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
                             .setTopicObject(topicConfig);
                         await publishTag(tag, messageServer, owner);
@@ -215,13 +218,17 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('Invalid target');
                 }
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.GET_TAGS,
-        async (msg: { entity: string, targets: string[] }) => {
+        async (msg: {
+            owner: IOwner,
+            entity: string,
+            targets: string[]
+        }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid load tags parameter');
@@ -234,13 +241,17 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 const items = await DatabaseServer.getTags(filter);
                 return new MessageResponse(items);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.GET_TAG_CACHE,
-        async (msg: { entity: string, targets: string[] }) => {
+        async (msg: {
+            owner: IOwner,
+            entity: string,
+            targets: string[]
+        }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid load tags parameter');
@@ -253,18 +264,23 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 const items = await DatabaseServer.getTagCache(filter);
                 return new MessageResponse(items);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.GET_SYNCHRONIZATION_TAGS,
-        async (msg: { entity: TagType, target: string }) => {
+        async (msg: {
+            owner: IOwner,
+            entity: TagType,
+            target: string
+        }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid load tags parameter');
                 }
-                const { target, entity } = msg;
+
+                const { owner, target, entity } = msg;
                 const localTarget = target;
                 const filter: any = { localTarget, entity };
 
@@ -272,7 +288,7 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 if (targetObject) {
                     if (targetObject.topicId) {
                         const messageServer = new MessageServer(null, null);
-                        const messages = await messageServer.getMessages<TagMessage>(targetObject.topicId, MessageType.Tag);
+                        const messages = await messageServer.getMessages<TagMessage>(targetObject.topicId, owner.id, MessageType.Tag);
                         const items = await DatabaseServer.getTags({ localTarget, entity, status: 'Published' });
                         const map = new Map<string, any>();
                         for (const message of messages) {
@@ -324,12 +340,10 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 const date = (new Date()).toISOString()
                 const cache = await DatabaseServer.getTagCache(filter);
                 if (cache.length) {
-
                     const tagCacheObjects = []
 
                     for (const item of cache) {
                         item.date = date;
-
                         tagCacheObjects.push(item);
                     }
 
@@ -341,13 +355,16 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 const tags = await DatabaseServer.getTags(filter);
                 return new MessageResponse(tags);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.DELETE_TAG,
-        async (msg: { uuid: string, owner: IOwner }) => {
+        async (msg: {
+            uuid: string,
+            owner: IOwner
+        }) => {
             try {
                 const { uuid, owner } = msg;
 
@@ -362,9 +379,9 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
 
                 if (item.topicId && item.status === 'Published') {
                     const users = new Users();
-                    const root = await users.getHederaAccount(owner.creator);
+                    const root = await users.getHederaAccount(owner.creator, owner?.id);
                     const topic = await DatabaseServer.getTopicById(item.topicId);
-                    const topicConfig = await TopicConfig.fromObject(topic, true);
+                    const topicConfig = await TopicConfig.fromObject(topic, true, owner?.id);
                     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
                         .setTopicObject(topicConfig);
                     await deleteTag(item, messageServer, owner);
@@ -372,13 +389,17 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.EXPORT_TAGS,
-        async (msg: { entity: string, targets: string[] }) => {
+        async (msg: {
+            owner: IOwner,
+            entity: string,
+            targets: string[]
+        }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid load tags parameter');
@@ -396,7 +417,7 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 }
                 return new MessageResponse(items);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });

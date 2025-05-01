@@ -11,11 +11,12 @@ export class SignVC {
         ref: AnyBlockType,
         subject: any,
         issuer: string,
-        options: IDocumentOptions
+        options: IDocumentOptions,
+        userId: string | null
     ): Promise<VcDocumentDefinition> {
         const vcHelper = new VcHelper();
-        const userCred = await PolicyUtils.getUserCredentials(ref, issuer);
-        const didDocument = await userCred.loadDidDocument(ref);
+        const userCred = await PolicyUtils.getUserCredentials(ref, issuer, userId);
+        const didDocument = await userCred.loadDidDocument(ref, userId);
         const newVC = await vcHelper.createVerifiableCredential(
             subject,
             didDocument,
@@ -29,13 +30,14 @@ export class SignVC {
         ref: AnyBlockType,
         subject: any,
         issuer: string,
-        options: IDocumentOptions
+        options: IDocumentOptions,
+        userId: string | null
     ): Promise<any> {
         const vcHelper = new VcHelper();
-        const userAccount = await PolicyUtils.getHederaAccountId(ref, issuer);
+        const userAccount = await PolicyUtils.getHederaAccountId(ref, issuer, userId);
 
-        const rootCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
-        const rootDidDocument = await rootCred.loadDidDocument(ref);
+        const rootCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
+        const rootDidDocument = await rootCred.loadDidDocument(ref, userId);
         const rootVC = await vcHelper.createVerifiableCredential(
             subject,
             rootDidDocument,
@@ -59,7 +61,11 @@ export class SignVC {
         return data;
     }
 
-    public static async response(row: PolicyAction, user: PolicyUser) {
+    public static async response(
+        row: PolicyAction,
+        user: PolicyUser,
+        userId: string | null
+    ) {
         const ref = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
         const data = row.document;
         const document = data.document;
@@ -69,8 +75,8 @@ export class SignVC {
         const subject = vc.getCredentialSubject().toJsonTree();
 
         const vcHelper = new VcHelper();
-        const userCred = await PolicyUtils.getUserCredentials(ref, user.did);
-        const userDidDocument = await userCred.loadDidDocument(ref);
+        const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
+        const userDidDocument = await userCred.loadDidDocument(ref, userId);
         const userVC = await vcHelper.createVerifiableCredential(
             subject,
             userDidDocument,
@@ -86,13 +92,20 @@ export class SignVC {
         };
     }
 
-    public static async complete(row: PolicyAction): Promise<VcDocumentDefinition> {
+    public static async complete(
+        row: PolicyAction,
+        userId: string | null
+    ): Promise<VcDocumentDefinition> {
         const data = row.document;
         const userVC = VcDocumentDefinition.fromJsonTree(data.document);
         return userVC;
     }
 
-    public static async validate(request: PolicyAction, response: PolicyAction): Promise<boolean> {
+    public static async validate(
+        request: PolicyAction,
+        response: PolicyAction,
+        userId: string | null
+    ): Promise<boolean> {
         if (request && response && request.accountId === response.accountId) {
             return true;
         }

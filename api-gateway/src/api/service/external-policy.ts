@@ -1,5 +1,5 @@
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, pageHeader, TaskDTO, ExternalPolicyDTO, ImportMessageDTO, PolicyPreviewDTO, PolicyDTO } from '#middlewares';
@@ -150,15 +150,6 @@ export class ExternalPoliciesApi {
         }
     }
 
-
-
-
-
-
-
-
-
-
     /**
      * Approve policy (Async)
      */
@@ -205,7 +196,7 @@ export class ExternalPoliciesApi {
             RunFunctionAsync<ServiceError>(async () => {
                 await guardians.approveExternalPolicyAsync(messageId, owner, task);
             }, async (error) => {
-                await this.logger.error(error, ['API_GATEWAY']);
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
                 taskManager.addError(task.taskId, { code: 500, message: error.message || error });
             });
 
@@ -261,7 +252,7 @@ export class ExternalPoliciesApi {
             RunFunctionAsync<ServiceError>(async () => {
                 await guardians.rejectExternalPolicyAsync(messageId, owner, task);
             }, async (error) => {
-                await this.logger.error(error, ['API_GATEWAY']);
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
                 taskManager.addError(task.taskId, { code: 500, message: error.message || error });
             });
 
@@ -270,13 +261,6 @@ export class ExternalPoliciesApi {
             await InternalException(error, this.logger);
         }
     }
-
-
-
-
-
-
-
 
     /**
      * Approve policy
@@ -580,9 +564,9 @@ export class ExternalPoliciesApi {
                 policyId
             };
             const engineService = new PolicyEngine();
-            const {count, total} = await engineService.getRemoteRequestsCount(options, user);
-            
-            return res.send({count, total});
+            const { count, total } = await engineService.getRemoteRequestsCount(options, user);
+
+            return res.send({ count, total });
         } catch (error) {
             await InternalException(error, this.logger);
         }

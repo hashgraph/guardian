@@ -85,14 +85,14 @@ Promise.all([
             new LargePayloadContainer().runServer();
         }
         await state.updateState(ApplicationStates.READY);
-        logger.info('Listener started', [channelName, 'LISTENER']);
+        logger.info('Listener started', [channelName, 'LISTENER'], null);
     });
 
     validator.setInvalidAction(async () => {
         timer = setInterval(async () => {
             await state.updateState(ApplicationStates.BAD_CONFIGURATION);
         }, 1000);
-        logger.error('Listener not configured', [channelName, 'LISTENER']);
+        logger.error('Listener not configured', [channelName, 'LISTENER'], null);
     })
 
     await validator.validate();

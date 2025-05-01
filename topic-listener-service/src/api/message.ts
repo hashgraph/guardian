@@ -66,7 +66,6 @@ export class Message {
         this.consensusTimestamp = first.consensusTimestamp;
         this.owner = first.owner;
 
-
         if (first.chunkTotal === this.messages.length) {
             this.status = 'COMPRESSED';
             this.data = this.compressData();

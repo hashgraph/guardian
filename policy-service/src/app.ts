@@ -28,7 +28,7 @@ Promise.all([
     if (Number.isInteger(maxPayload)) {
         new LargePayloadContainer().runServer();
     }
-    await logger.info('Policy service started', ['POLICY_SERVICE']);
+    await logger.info('Policy service started', ['POLICY_SERVICE'], null);
 
     await state.updateState(ApplicationStates.READY);
 

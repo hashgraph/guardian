@@ -49,7 +49,7 @@ export class SingleSchemaApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            const schema = await guardians.getSchemaById(schemaId);
+            const schema = await guardians.getSchemaById(user, schemaId);
             if (!schema) {
                 throw new HttpException(`Schema not found.`, HttpStatus.NOT_FOUND);
             }
@@ -62,7 +62,7 @@ export class SingleSchemaApi {
             SchemaHelper.updatePermission([schema], owner);
             return SchemaUtils.toOld(schema);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -107,7 +107,7 @@ export class SingleSchemaApi {
             const schemas = await guardians.getSchemaParents(schemaId, owner);
             return SchemaUtils.toOld(schemas);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -166,7 +166,7 @@ export class SingleSchemaApi {
             const owner = new EntityOwner(user);
             return await guardians.getSchemaTree(schemaId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }
@@ -302,7 +302,7 @@ export class SchemaApi {
             SchemaHelper.updatePermission(items, owner);
             return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -425,7 +425,7 @@ export class SchemaApi {
 
             return res.header('X-Total-Count', count).send(schemas);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -510,7 +510,7 @@ export class SchemaApi {
             SchemaHelper.updatePermission(items, owner);
             return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -547,7 +547,7 @@ export class SchemaApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            schema = await guardians.getSchemaByType(schemaType);
+            schema = await guardians.getSchemaByType(user, schemaType);
             if (!schema) {
                 throw new HttpException(`Schema not found: ${schemaType}`, HttpStatus.NOT_FOUND);
             }
@@ -568,7 +568,7 @@ export class SchemaApi {
                 contextURL: schema.contextURL,
             };
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -605,7 +605,7 @@ export class SchemaApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            schema = await guardians.getSchemaByType(schemaType, user.did);
+            schema = await guardians.getSchemaByType(user, schemaType, user.did);
             if (!schema) {
                 throw new HttpException(`Schema not found: ${schemaType}`, HttpStatus.NOT_FOUND);
             }
@@ -626,7 +626,7 @@ export class SchemaApi {
                 contextURL: schema.contextURL,
             };
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -669,7 +669,7 @@ export class SchemaApi {
                 return [];
             }
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -727,7 +727,7 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             return await guardians.getSubSchemas(category, topicId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -788,7 +788,7 @@ export class SchemaApi {
             let promiseSchema: Promise<ISchema | void> = new Promise<void>(resolve => resolve())
 
             if (schemaId) {
-                promiseSchema = guardians.getSchemaById(schemaId)
+                promiseSchema = guardians.getSchemaById(user, schemaId)
             }
 
             const [schema, subSchemas] =
@@ -796,7 +796,7 @@ export class SchemaApi {
 
             return { schema, subSchemas };
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -859,7 +859,7 @@ export class SchemaApi {
 
             return SchemaUtils.toOld(schemas);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -902,7 +902,7 @@ export class SchemaApi {
             taskManager.addStatus(task.taskId, 'Check schema version', StatusType.PROCESSING);
             await guardians.copySchemaAsync(iri, topicId, name, owner, task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
 
@@ -967,7 +967,7 @@ export class SchemaApi {
 
             await guardians.createSchemaAsync(newSchema, owner, task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
 
@@ -1014,7 +1014,7 @@ export class SchemaApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            const schema = await guardians.getSchemaById(newSchema.id);
+            const schema = await guardians.getSchemaById(user, newSchema.id);
             if (!schema) {
                 throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
             }
@@ -1041,7 +1041,7 @@ export class SchemaApi {
 
             return SchemaUtils.toOld(schemas);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1085,9 +1085,9 @@ export class SchemaApi {
         const owner = new EntityOwner(user);
 
         try {
-            schema = await guardians.getSchemaById(schemaId);
+            schema = await guardians.getSchemaById(user, schemaId);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
         if (!schema) {
             throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
@@ -1112,7 +1112,7 @@ export class SchemaApi {
 
             return SchemaUtils.toOld(schemas);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1172,17 +1172,17 @@ export class SchemaApi {
         let allVersion: ISchema[];
         const owner = new EntityOwner(user);
         try {
-            schema = await guardians.getSchemaById(schemaId);
+            schema = await guardians.getSchemaById(user, schemaId);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
         if (!schema) {
             throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
         }
         try {
-            allVersion = await guardians.getSchemasByUUID(schema.uuid);
+            allVersion = await guardians.getSchemasByUUID(owner, schema.uuid);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
         const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.POLICY);
         if (error) {
@@ -1210,7 +1210,7 @@ export class SchemaApi {
 
             return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1263,7 +1263,7 @@ export class SchemaApi {
     ): Promise<TaskDTO> {
         const guardians = new Guardians();
         const owner = new EntityOwner(user);
-        const schema = await guardians.getSchemaById(schemaId);
+        const schema = await guardians.getSchemaById(user, schemaId);
         if (!schema) {
             throw new HttpException('Schema not found', HttpStatus.NOT_FOUND)
         }
@@ -1283,14 +1283,14 @@ export class SchemaApi {
                 taskManager.addError(task.taskId, { code: 500, message: 'Schema imported in demo mode.' });
                 return;
             }
-            const allVersion = await guardians.getSchemasByUUID(schema.uuid);
+            const allVersion = await guardians.getSchemasByUUID(owner, schema.uuid);
             if (allVersion.findIndex(s => s.version === version) !== -1) {
                 taskManager.addError(task.taskId, { code: 500, message: 'Version already exists.' });
                 return;
             }
             await guardians.publishSchemaAsync(schemaId, version, owner, task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
 
@@ -1337,6 +1337,7 @@ export class SchemaApi {
     @ApiExtraModels(MessageSchemaDTO, SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async importFromMessagePreview(
+        @AuthUser() user: IAuthUser,
         @Body() body: MessageSchemaDTO
     ): Promise<SchemaDTO[]> {
         const messageId = body?.messageId;
@@ -1345,9 +1346,10 @@ export class SchemaApi {
         }
         try {
             const guardians = new Guardians();
-            return await guardians.previewSchemasByMessages([messageId]);
+            const owner = new EntityOwner(user);
+            return await guardians.previewSchemasByMessages(owner, [messageId]);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1397,9 +1399,10 @@ export class SchemaApi {
         const task = taskManager.start(TaskAction.PREVIEW_SCHEMA_MESSAGE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.previewSchemasByMessagesAsync([messageId], task);
+            const owner = new EntityOwner(user);
+            await guardians.previewSchemasByMessagesAsync(owner, [messageId], task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
         return task;
@@ -1433,6 +1436,7 @@ export class SchemaApi {
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async importFromFilePreview(
+        @AuthUser() user: IAuthUser,
         @Body() zip: any
     ): Promise<SchemaDTO[]> {
         if (!zip) {
@@ -1443,7 +1447,7 @@ export class SchemaApi {
             const { schemas } = await SchemaImportExport.parseZipFile(zip);
             return await guardians.previewSchemasByFile(schemas);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1516,7 +1520,7 @@ export class SchemaApi {
 
             return res.status(201).header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1578,7 +1582,7 @@ export class SchemaApi {
             const guardians = new Guardians();
             await guardians.importSchemasByMessagesAsync([messageId], owner, topicId, task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
 
@@ -1650,7 +1654,7 @@ export class SchemaApi {
 
             return res.status(201).header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1704,7 +1708,7 @@ export class SchemaApi {
             const guardians = new Guardians();
             await guardians.importSchemasByFileAsync(files, owner, topicId, task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
 
@@ -1765,7 +1769,7 @@ export class SchemaApi {
                 owner: scheme.owner
             };
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1810,7 +1814,7 @@ export class SchemaApi {
                 throw new HttpException(`Cannot export schema ${schemaId}`, HttpStatus.UNPROCESSABLE_ENTITY)
             }
             const ids = schemas.map(s => s.id);
-            const tags = await guardians.exportTags('Schema', ids);
+            const tags = await guardians.exportTags(owner, 'Schema', ids);
             const name = `${Date.now()}`;
             const zip = await SchemaImportExport.generateZipFile({ schemas, tags });
             const arcStream = zip.generateNodeStream({
@@ -1824,7 +1828,7 @@ export class SchemaApi {
             res.header('Content-type', 'application/zip');
             return res.send(arcStream);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1884,7 +1888,7 @@ export class SchemaApi {
             delete newSchema.topicId;
 
             SchemaHelper.updateOwner(newSchema, owner);
-            const schema = await guardians.createSystemSchema(newSchema);
+            const schema = await guardians.createSystemSchema(newSchema, owner);
 
             const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
 
@@ -1892,7 +1896,7 @@ export class SchemaApi {
 
             return SchemaUtils.toOld(schema);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1952,11 +1956,11 @@ export class SchemaApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            const { items, count } = await guardians.getSystemSchemas(pageIndex, pageSize);
+            const { items, count } = await guardians.getSystemSchemas(owner, pageIndex, pageSize);
             items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner.owner });
             return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2018,11 +2022,11 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             const fields: string[] = Object.values(SCHEMA_REQUIRED_PROPS)
 
-            const { items, count } = await guardians.getSystemSchemasV2(fields, pageIndex, pageSize);
+            const { items, count } = await guardians.getSystemSchemasV2(owner, fields, pageIndex, pageSize);
             items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner.owner });
             return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2062,7 +2066,7 @@ export class SchemaApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            const schema = await guardians.getSchemaById(schemaId);
+            const schema = await guardians.getSchemaById(user, schemaId);
             if (!schema) {
                 throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
             }
@@ -2079,7 +2083,7 @@ export class SchemaApi {
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2127,7 +2131,7 @@ export class SchemaApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            const schema = await guardians.getSchemaById(newSchema.id);
+            const schema = await guardians.getSchemaById(user, newSchema.id);
             if (!schema) {
                 throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND);
             }
@@ -2150,7 +2154,7 @@ export class SchemaApi {
 
             return SchemaUtils.toOld(schemas);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2189,7 +2193,7 @@ export class SchemaApi {
     ): Promise<any> {
         try {
             const guardians = new Guardians();
-            const schema = await guardians.getSchemaById(schemaId);
+            const schema = await guardians.getSchemaById(user, schemaId);
             if (!schema) {
                 throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND);
             }
@@ -2199,7 +2203,8 @@ export class SchemaApi {
             if (schema.active) {
                 throw new HttpException('Schema is active.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            await guardians.activeSchema(schemaId);
+            const owner = new EntityOwner(user);
+            await guardians.activeSchema(schemaId, owner);
 
             const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
 
@@ -2207,7 +2212,7 @@ export class SchemaApi {
 
             return null;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2238,11 +2243,13 @@ export class SchemaApi {
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getSchemaEntity(
+        @AuthUser() user: IAuthUser,
         @Param('schemaEntity') schemaEntity: string
     ): Promise<SchemaDTO> {
         try {
             const guardians = new Guardians();
-            const schema = await guardians.getSchemaByEntity(schemaEntity);
+            const owner = new EntityOwner(user);
+            const schema = await guardians.getSchemaByEntity(schemaEntity, owner);
             if (!schema) {
                 return null;
             }
@@ -2257,7 +2264,7 @@ export class SchemaApi {
                 contextURL: schema.contextURL,
             };
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2302,12 +2309,12 @@ export class SchemaApi {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
             const file: any = await guardians.exportSchemasXlsx(owner, [schemaId]);
-            const schema: any = await guardians.getSchemaById(schemaId);
+            const schema: any = await guardians.getSchemaById(user, schemaId);
             res.header('Content-disposition', `attachment; filename=${schema.name}`);
             res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2372,7 +2379,7 @@ export class SchemaApi {
 
             return res.status(201).header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2429,7 +2436,7 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             await guardians.importSchemasByXlsxAsync(owner, topicId, file, task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
         const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
@@ -2480,7 +2487,7 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             return await guardians.previewSchemasByFileXlsx(owner, file);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2518,7 +2525,8 @@ export class SchemaApi {
         try {
             const filename = 'template.xlsx';
             const guardians = new Guardians();
-            const file = await guardians.getFileTemplate(filename);
+            const owner = new EntityOwner(user);
+            const file = await guardians.getFileTemplate(owner, filename);
             const fileBuffer = Buffer.from(file, 'base64');
             res.header('Content-disposition', `attachment; filename=` + filename);
             res.header('Content-type', 'application/zip');
@@ -2527,7 +2535,7 @@ export class SchemaApi {
 
             return res.send(fileBuffer);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

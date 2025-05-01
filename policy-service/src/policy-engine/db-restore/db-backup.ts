@@ -59,7 +59,6 @@ export class PolicyBackup {
     }
 
     public async init(): Promise<void> {
-        console.log('-- init')
         const policy = await DatabaseServer.getPolicyById(this.policyId);
         if (policy) {
             await this._loadBackup(policy);
@@ -92,7 +91,6 @@ export class PolicyBackup {
     }
 
     private async _createFullBackup(): Promise<{ backup: IPolicyDiff, diff: IPolicyDiff }> {
-        console.log('-- _createFullBackup')
         const lastUpdate = new Date();
         const vcResult = await this.vcBackup.createCollectionBackup();
         const vpResult = await this.vpBackup.createCollectionBackup();
@@ -150,13 +148,10 @@ export class PolicyBackup {
             mintRequestCollection: mintRequestCollection.diff,
             mintTransactionCollection: mintTransactionCollection.diff,
         }
-        // console.log(JSON.stringify(backup))
-        // console.log(JSON.stringify(diff))
         return { backup, diff };
     }
 
     private async _createDiff(oldDiff: IPolicyDiff): Promise<{ backup: IPolicyDiff, diff: IPolicyDiff }> {
-        console.log('-- _createDiff')
         const lastUpdate = new Date();
         const vcResult = await this.vcBackup.createCollectionDiff(oldDiff.vcCollection, lastUpdate);
         const vpResult = await this.vpBackup.createCollectionDiff(oldDiff.vpCollection, lastUpdate);
@@ -214,8 +209,6 @@ export class PolicyBackup {
             mintRequestCollection: mintRequestCollection.diff,
             mintTransactionCollection: mintTransactionCollection.diff,
         }
-        // console.log(JSON.stringify(backup))
-        // console.log(JSON.stringify(diff))
         return { backup, diff };
     }
 
@@ -235,7 +228,5 @@ export class PolicyBackup {
             row.file = await FileHelper.loadFile(row.fileId);
         }
         this.lastDiff = row;
-        console.log('-- _loadBackup (b)')
-        // console.log(JSON.stringify(this.lastDiff))
     }
 }

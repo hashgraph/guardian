@@ -48,7 +48,7 @@ export class WizardApi {
             const guardians = new Guardians();
             return await guardians.wizardPolicyCreate(wizardConfig, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -98,7 +98,7 @@ export class WizardApi {
                 );
             },
             async (error) => {
-                await this.logger.error(error, ['API_GATEWAY']);
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
                 taskManager.addError(task.taskId, {
                     code: 500,
                     message: error.message,
@@ -152,7 +152,7 @@ export class WizardApi {
             const owner = new EntityOwner(user);
             return await guardians.wizardGetPolicyConfig(policyId, wizardConfig, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

@@ -80,7 +80,12 @@ export class DocumentsSourceAddon {
      * @param countResult
      * @param otherOptions
      */
-    async getFromSource(user: PolicyUser, globalFilters: any, countResult?: boolean, otherOptions?: any) {
+    async getFromSource(
+        user: PolicyUser,
+        globalFilters: any,
+        countResult?: boolean,
+        otherOptions?: any
+    ) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
         const filters: any = {};
@@ -168,7 +173,7 @@ export class DocumentsSourceAddon {
                 }
                 break;
             case 'standard-registries':
-                data = await PolicyUtils.getAllStandardRegistryAccounts(ref, countResult);
+                data = await PolicyUtils.getAllStandardRegistryAccounts(ref, countResult, user.userId);
                 break;
             case 'approve':
                 filters.policyId = ref.policyId;
@@ -179,7 +184,7 @@ export class DocumentsSourceAddon {
                 break;
             // @deprecated 2022-10-01
             case 'root-authorities':
-                data = await PolicyUtils.getAllStandardRegistryAccounts(ref, countResult);
+                data = await PolicyUtils.getAllStandardRegistryAccounts(ref, countResult, user.userId);
                 break;
             default:
                 throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)

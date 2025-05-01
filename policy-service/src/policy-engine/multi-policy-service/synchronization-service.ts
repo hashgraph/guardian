@@ -33,7 +33,7 @@ export class SynchronizationService {
      */
     private readonly policy: Policy;
 
-    constructor(policy: Policy, private readonly logger: PinoLogger) {
+    constructor(policy: Policy, private readonly logger: PinoLogger, private readonly policyOwnerId: string | null) {
         this.policy = policy;
     }
 
@@ -56,7 +56,7 @@ export class SynchronizationService {
             this.task().then();
         }, null, false, 'UTC');
         this.job.start();
-        this.logger.info(`Start synchronization: ${cronMask}`, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+        this.logger.info(`Start synchronization: ${cronMask}`, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE'], this.policyOwnerId);
         return true;
     }
 
@@ -80,28 +80,29 @@ export class SynchronizationService {
             if (this.taskStatus) {
                 return;
             }
-            await this.logger.info('Start synchronization task', ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+            await this.logger.info('Start synchronization task', ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE'], this.policyOwnerId);
 
             this.taskStatus = true;
-            await this.taskByPolicy(this.policy);
+            await this.taskByPolicy(this.policy, this.policyOwnerId);
             this.taskStatus = false;
 
-            await this.logger.info('Complete synchronization task', ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+            await this.logger.info('Complete synchronization task', ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE'], this.policyOwnerId);
         } catch (error) {
             this.taskStatus = false;
             console.error(error);
-            await this.logger.error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+            await this.logger.error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE'], this.policyOwnerId);
         }
     }
 
     /**
      * Group by policy
      * @param policy
+     * @param policyOwnerId
      * @private
      */
-    private async taskByPolicy(policy: Policy) {
+    private async taskByPolicy(policy: Policy, policyOwnerId: string | null) {
         try {
-            const root = await this.users.getHederaAccount(policy.owner);
+            const root = await this.users.getHederaAccount(policy.owner, policyOwnerId);
             const count = await DatabaseServer.countMultiPolicyTransactions(policy.id);
 
             if (!count) {
@@ -118,7 +119,8 @@ export class SynchronizationService {
                     operatorId: null,
                     operatorKey: null,
                     dryRun: false,
-                    topic: policy.synchronizationTopicId
+                    topic: policy.synchronizationTopicId,
+                    payload: { userId: policyOwnerId },
                 }
             }, 10);
 
@@ -161,13 +163,13 @@ export class SynchronizationService {
                 const chunk = users.slice(i, i + chunkSize);
                 const tasks: any[] = [];
                 for (const user of chunk) {
-                    tasks.push(this.taskByUser(messageServer, root, policy, user, policyMap[user], vpMap[user]));
+                    tasks.push(this.taskByUser(messageServer, root, policy, user, policyMap[user], vpMap[user], policyOwnerId));
                 }
                 await Promise.all<any[][]>(tasks);
             }
         } catch (error) {
             console.error(error);
-            await this.logger.error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+            await this.logger.error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE'], policyOwnerId);
         }
     }
 
@@ -179,6 +181,7 @@ export class SynchronizationService {
      * @param user
      * @param policies
      * @param vps
+     * @param policyOwnerId
      * @private
      */
     private async taskByUser(
@@ -187,7 +190,8 @@ export class SynchronizationService {
         policy: Policy,
         user: string,
         policies: SynchronizationMessage[],
-        vps: Map<string, SynchronizationMessage>
+        vps: Map<string, SynchronizationMessage>,
+        policyOwnerId: string | null,
     ) {
         if (!vps) {
             return;
@@ -216,12 +220,12 @@ export class SynchronizationService {
         for (const transaction of transactions) {
             if (transaction.amount <= min) {
                 const users = new Users();
-                const userAccount = await users.getUserById(user);
-                const policyOwner = await users.getUserById(policy.owner);
+                const userAccount = await users.getUserById(user, policyOwnerId);
+                const policyOwner = await users.getUserById(policy.owner, policyOwnerId);
                 const notifier = NotificationHelper.init([userAccount?.id, policyOwner?.id]);
                 const token = await DatabaseServer.getToken(transaction.tokenId);
                 const messageIds = await this.completeTransaction(
-                    messageServer, root, token, transaction, policies, vpMap, notifier
+                    messageServer, root, token, transaction, policies, vpMap, policyOwnerId, notifier
                 );
                 if (messageIds) {
                     min -= transaction.amount;
@@ -233,9 +237,10 @@ export class SynchronizationService {
                         messageIds,
                         transaction.vpMessageId,
                         policy.id?.toString(),
-                        notifier,
+                        policyOwner?.id,
+                        notifier
                     ).catch(error => {
-                        this.logger.error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+                        this.logger.error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE'], policyOwnerId);
                     });
                 }
             }
@@ -250,6 +255,8 @@ export class SynchronizationService {
      * @param transaction
      * @param policies
      * @param vpMap
+     * @param notifier
+     * @param policyOwnerId
      * @private
      */
     private async completeTransaction(
@@ -259,7 +266,8 @@ export class SynchronizationService {
         transaction: MultiPolicyTransaction,
         policies: SynchronizationMessage[],
         vpMap: { [x: string]: SynchronizationMessage[] },
-        notifier?: NotificationHelper,
+        policyOwnerId: string | null,
+        notifier?: NotificationHelper
     ): Promise<string[] | null> {
         try {
             if (!token) {
@@ -289,7 +297,7 @@ export class SynchronizationService {
                     i++;
                 }
             }
-            await this.updateMessages(messageServer, updateMessages);
+            await this.updateMessages(messageServer, updateMessages, policyOwnerId);
 
             transaction.status = 'Completed';
             await DatabaseServer.updateMultiPolicyTransactions(transaction);
@@ -298,7 +306,7 @@ export class SynchronizationService {
         } catch (error) {
             transaction.status = 'Failed';
             console.error(error);
-            await this.logger.error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+            await this.logger.error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE'], policyOwnerId);
             await DatabaseServer.updateMultiPolicyTransactions(transaction);
             return null;
         }
@@ -308,14 +316,16 @@ export class SynchronizationService {
      * Update Messages
      * @param messageServer
      * @param updateMessages
+     * @param userId
      * @private
      */
     private async updateMessages(
         messageServer: MessageServer,
-        updateMessages: SynchronizationMessage[]
+        updateMessages: SynchronizationMessage[],
+        userId?: string | null,
     ): Promise<boolean> {
         for (const message of updateMessages) {
-            await messageServer.sendMessage(message);
+            await messageServer.sendMessage(message, true, null, userId);
         }
         return true;
     }

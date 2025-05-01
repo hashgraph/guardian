@@ -106,7 +106,7 @@ export class CustomLogicBlock {
                     documents: ExternalDocuments(event?.data?.data)
                 }));
             }
-            await this.execute(event.data, event.user, triggerEvents);
+            await this.execute(event.data, event.user, triggerEvents, event?.user?.userId);
             ref.backup();
         } catch (error) {
             ref.error(PolicyUtils.getErrorMessage(error));
@@ -137,11 +137,14 @@ export class CustomLogicBlock {
      * Execute logic
      * @param state
      * @param user
+     * @param triggerEvents
+     * @param userId
      */
     execute(
         state: IPolicyEventState,
         user: PolicyUser,
-        triggerEvents: (documents: IPolicyDocument | IPolicyDocument[]) => void
+        triggerEvents: (documents: IPolicyDocument | IPolicyDocument[]) => void,
+        userId: string | null
     ): Promise<IPolicyDocument | IPolicyDocument[]> {
         return new Promise<IPolicyDocument | IPolicyDocument[]>(async (resolve, reject) => {
             try {
@@ -157,7 +160,7 @@ export class CustomLogicBlock {
                 if (ref.options.unsigned) {
                     metadata = null;
                 } else {
-                    metadata = await this.aggregateMetadata(documents, user, ref);
+                    metadata = await this.aggregateMetadata(documents, user, ref, userId);
                 }
 
                 const done = async (result: any | any[], final: boolean) => {
@@ -175,7 +178,7 @@ export class CustomLogicBlock {
                         if (ref.options.unsigned) {
                             return await this.createUnsignedDocument(json, ref);
                         } else {
-                            return await this.createDocument(json, metadata, ref);
+                            return await this.createDocument(json, metadata, ref, userId);
                         }
                     }
                     if (Array.isArray(result)) {
@@ -247,15 +250,17 @@ export class CustomLogicBlock {
      * @param documents
      * @param user
      * @param ref
+     * @param userId
      */
     private async aggregateMetadata(
         documents: IPolicyDocument | IPolicyDocument[],
         user: PolicyUser,
-        ref: IPolicyCalculateBlock
+        ref: IPolicyCalculateBlock,
+        userId: string | null
     ): Promise<IMetadata> {
         const isArray = Array.isArray(documents);
         const firstDocument = isArray ? documents[0] : documents;
-        const owner = await PolicyUtils.getDocumentOwner(ref, firstDocument);
+        const owner = await PolicyUtils.getDocumentOwner(ref, firstDocument, userId);
         const relationships = [];
         let accounts: any = {};
         let tokens: any = {};
@@ -322,7 +327,8 @@ export class CustomLogicBlock {
     private async createDocument(
         json: any,
         metadata: IMetadata,
-        ref: IPolicyCalculateBlock
+        ref: IPolicyCalculateBlock,
+        userId: string | null
     ): Promise<IPolicyDocument> {
         const {
             owner,
@@ -357,11 +363,11 @@ export class CustomLogicBlock {
 
         const uuid = await ref.components.generateUUID();
 
-        const newId = await PolicyActionsUtils.generateId(ref, ref.options.idType, owner);
+        const newId = await PolicyActionsUtils.generateId(ref, ref.options.idType, owner, userId);
         if (newId) {
             vcSubject.id = newId;
         }
-        const newVC = await PolicyActionsUtils.signVC(ref, vcSubject, issuer, { uuid });
+        const newVC = await PolicyActionsUtils.signVC(ref, vcSubject, issuer, { uuid }, userId);
 
         const item = PolicyUtils.createVC(ref, owner, newVC);
         item.type = outputSchema.iri;

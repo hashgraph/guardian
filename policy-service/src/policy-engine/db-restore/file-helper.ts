@@ -81,7 +81,6 @@ export class FileHelper {
     }
 
     public static async saveFile(diff: IPolicyDiff): Promise<ObjectId> {
-        console.debug(diff);
         const file = FileHelper.encryptFile(diff);
         const buffer = Buffer.from(file);
         const id = await DataBaseHelper.saveFile(GenerateUUIDv4(), buffer);

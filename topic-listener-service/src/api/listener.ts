@@ -92,9 +92,9 @@ export class Listener {
     public addMessages(message: TopicMessage): void {
         const chunkId = Message.getChunkId(message);
         if (chunkId) {
-            for (const item of this._messages) {
-                if (item.chunkId === chunkId) {
-                    item.addChunk(message);
+            for (const m of this._messages) {
+                if (m.chunkId === chunkId) {
+                    m.addChunk(message);
                     return;
                 }
             }

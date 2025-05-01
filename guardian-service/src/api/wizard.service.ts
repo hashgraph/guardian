@@ -15,7 +15,8 @@ import { SchemaImportExportHelper } from '../helpers/import-helpers/index.js'
 async function createExistingPolicySchemas(
     config: IWizardConfig,
     user: IOwner,
-    policyTopicId?: string
+    policyTopicId: string | null,
+    userId: string | null
 ) {
     const schemas = await DatabaseServer.getSchemas({ owner: user.owner });
     const schemaIris = config.schemas.map((schema: any) => schema.iri);
@@ -36,7 +37,8 @@ async function createExistingPolicySchemas(
             category: SchemaCategory.POLICY,
             topicId: policyTopicId
         },
-        emptyNotifier()
+        emptyNotifier(),
+        userId
     );
     const schemasMap = importResult.schemasMap;
     for (const schema of config.schemas) {
@@ -75,7 +77,12 @@ async function createExistingPolicySchemas(
  */
 export async function wizardAPI(logger: PinoLogger): Promise<void> {
     ApiResponse(MessageAPI.WIZARD_POLICY_CREATE_ASYNC,
-        async (msg: { config: any, owner: IOwner, task: any, saveState: boolean }) => {
+        async (msg: {
+            config: any,
+            owner: IOwner,
+            task: any,
+            saveState: boolean
+        }) => {
             // tslint:disable-next-line:prefer-const
             let { config, owner, task, saveState } = msg;
             const notifier = await initNotifier(task);
@@ -83,7 +90,7 @@ export async function wizardAPI(logger: PinoLogger): Promise<void> {
                 async () => {
                     const policyEngine = new PolicyEngine(logger);
                     const wizardHelper = new PolicyWizardHelper();
-                    config = await createExistingPolicySchemas(config, owner);
+                    config = await createExistingPolicySchemas(config, owner, null, owner.id);
                     const categories = [];
                     for (const elem of [
                         config.policy.projectScale,
@@ -132,13 +139,16 @@ export async function wizardAPI(logger: PinoLogger): Promise<void> {
         });
 
     ApiResponse(MessageAPI.WIZARD_POLICY_CREATE,
-        async (msg: { config: any, owner: IOwner }) => {
+        async (msg: {
+            config: any,
+            owner: IOwner
+        }) => {
             try {
                 // tslint:disable-next-line:prefer-const
                 let { config, owner } = msg;
                 const policyEngine = new PolicyEngine(logger);
                 const wizardHelper = new PolicyWizardHelper();
-                config = await createExistingPolicySchemas(config, owner);
+                config = await createExistingPolicySchemas(config, owner, null, owner.id);
                 const policyConfig = wizardHelper.createPolicyConfig(config);
                 const policy = await policyEngine.createPolicy(
                     Object.assign(config.policy, {
@@ -166,7 +176,11 @@ export async function wizardAPI(logger: PinoLogger): Promise<void> {
         });
 
     ApiResponse(MessageAPI.WIZARD_GET_POLICY_CONFIG,
-        async (msg: { policyId: string, config: any, owner: IOwner }) => {
+        async (msg: {
+            policyId: string,
+            config: any,
+            owner: IOwner
+        }) => {
             try {
                 // tslint:disable-next-line:prefer-const
                 let { policyId, config, owner } = msg;
@@ -182,7 +196,8 @@ export async function wizardAPI(logger: PinoLogger): Promise<void> {
                 config = await createExistingPolicySchemas(
                     config,
                     owner,
-                    policy.topicId
+                    policy.topicId,
+                    owner.id
                 );
                 const policyConfig = wizardHelper.createPolicyConfig(config);
                 await policyEngine.setupPolicySchemas(
@@ -195,7 +210,7 @@ export async function wizardAPI(logger: PinoLogger): Promise<void> {
                     wizardConfig: config,
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });

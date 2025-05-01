@@ -45,7 +45,7 @@ export async function preparePreviewMessage(
     }
 
     const users = new Users();
-    const root = await users.getHederaAccount(user.creator);
+    const root = await users.getHederaAccount(user.creator, user.id);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
     const message = await messageServer.getMessage<ToolMessage>(messageId);
     if (message.type !== MessageType.Tool) {
@@ -127,14 +127,14 @@ export async function publishTool(
     logger: PinoLogger
 ): Promise<PolicyTool> {
     try {
-        await logger.info('Publish tool', ['GUARDIAN_SERVICE']);
+        await logger.info('Publish tool', ['GUARDIAN_SERVICE'], user.id);
 
         notifier.start('Resolve Hedera account');
         const users = new Users();
-        const root = await users.getHederaAccount(user.creator);
+        const root = await users.getHederaAccount(user.creator, user.id);
 
         notifier.completedAndStart('Find topic');
-        const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(tool.topicId), true);
+        const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(tool.topicId), true, user.id);
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
             .setTopicObject(topic);
 
@@ -150,8 +150,8 @@ export async function publishTool(
             owner: user.owner,
             policyId: tool.id.toString(),
             policyUUID: tool.uuid
-        }, { admin: true, submit: false });
-        await tagsTopic.saveKeys();
+        }, user.id, { admin: true, submit: false });
+        await tagsTopic.saveKeys(user.id);
         await DatabaseServer.saveTopic(tagsTopic.toObject());
         tool.tagsTopicId = tagsTopic.topicId;
 
@@ -175,9 +175,9 @@ export async function publishTool(
 
         notifier.completedAndStart('Publish tags');
         try {
-            await publishToolTags(tool, user, root);
+            await publishToolTags(tool, user, root, user.id);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE, TAGS']);
+            await logger.error(error, ['GUARDIAN_SERVICE, TAGS'], user.id);
         }
 
         notifier.completedAndStart('Saving in DB');
@@ -187,7 +187,7 @@ export async function publishTool(
 
         notifier.completed();
 
-        await logger.info('Published tool', ['GUARDIAN_SERVICE']);
+        await logger.info('Published tool', ['GUARDIAN_SERVICE'], user.id);
 
         return retVal
     } catch (error) {
@@ -231,7 +231,8 @@ export async function publishSchemas(
             owner,
             root,
             emptyNotifier(),
-            schemaMap
+            schemaMap,
+            userId
         );
         if (Array.isArray(tool.config?.variables)) {
             for (const variable of tool.config?.variables) {
@@ -270,7 +271,7 @@ export async function createTool(
     notifier: INotifier,
     logger: PinoLogger
 ): Promise<PolicyTool> {
-    await logger.info('Create Policy', ['GUARDIAN_SERVICE']);
+    await logger.info('Create Policy', ['GUARDIAN_SERVICE'], user.id);
     notifier.start('Save in DB');
     if (json) {
         delete json._id;
@@ -291,12 +292,12 @@ export async function createTool(
         if (!tool.topicId) {
             notifier.completedAndStart('Resolve Hedera account');
             const users = new Users();
-            const root = await users.getHederaAccount(user.creator);
+            const root = await users.getHederaAccount(user.creator, user.id);
 
             notifier.completedAndStart('Create topic');
-            await logger.info('Create Tool: Create New Topic', ['GUARDIAN_SERVICE']);
+            await logger.info('Create Tool: Create New Topic', ['GUARDIAN_SERVICE'], user.id);
             const parent = await TopicConfig.fromObject(
-                await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true
+                await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true, user.id
             );
             const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
             const topic = await topicHelper.create({
@@ -306,8 +307,8 @@ export async function createTool(
                 owner: user.owner,
                 targetId: tool.id.toString(),
                 targetUUID: tool.uuid
-            }, { admin: true, submit: true });
-            await topic.saveKeys();
+            }, user.id, { admin: true, submit: true });
+            await topic.saveKeys(user.id);
 
             notifier.completedAndStart('Create tool in Hedera');
             const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
@@ -315,10 +316,10 @@ export async function createTool(
             message.setDocument(tool);
             const messageStatus = await messageServer
                 .setTopicObject(parent)
-                .sendMessage(message);
+                .sendMessage(message, true, null, user.id);
 
             notifier.completedAndStart('Link topic and tool');
-            await topicHelper.twoWayLink(topic, parent, messageStatus.getId());
+            await topicHelper.twoWayLink(topic, parent, messageStatus.getId(), user.id);
 
             await DatabaseServer.saveTopic(topic.toObject());
             tool.topicId = topic.topicId;
@@ -345,7 +346,10 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
      * @returns {PolicyTool} new tool
      */
     ApiResponse(MessageAPI.CREATE_TOOL,
-        async (msg: { tool: PolicyTool, owner: IOwner }) => {
+        async (msg: {
+            tool: PolicyTool,
+            owner: IOwner
+        }) => {
             try {
                 if (!msg) {
                     throw new Error('Invalid Params');
@@ -354,7 +358,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 const item = await createTool(tool, owner, emptyNotifier(), logger);
                 return new MessageResponse(item);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
@@ -367,7 +371,11 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
      * @returns {PolicyTool} new tool
      */
     ApiResponse(MessageAPI.CREATE_TOOL_ASYNC,
-        async (msg: { tool: PolicyTool, owner: IOwner, task: any }) => {
+        async (msg: {
+            tool: PolicyTool,
+            owner: IOwner,
+            task: any
+        }) => {
             if (!msg) {
                 throw new Error('Invalid Params');
             }
@@ -383,7 +391,10 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
         });
 
     ApiResponse(MessageAPI.GET_TOOLS,
-        async (msg: { filters: any, owner: IOwner }) => {
+        async (msg: {
+            filters: any,
+            owner: IOwner
+        }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid load tools parameter');
@@ -423,7 +434,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 } as FilterObject<PolicyTool>, otherOptions);
                 return new MessageResponse({ items, count });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
@@ -432,7 +443,11 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
      * Get tools V2 05.06.2024
      */
     ApiResponse(MessageAPI.GET_TOOLS_V2,
-        async (msg: { fields: string[], filters: any, owner: IOwner }) => {
+        async (msg: {
+            fields: string[],
+            filters: any,
+            owner: IOwner
+        }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid load tools parameter');
@@ -463,13 +478,16 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse({ items, count });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.DELETE_TOOL,
-        async (msg: { id: string, owner: IOwner }) => {
+        async (msg: {
+            id: string,
+            owner: IOwner
+        }) => {
             try {
                 const { id, owner } = msg;
                 if (!id || !owner) {
@@ -494,13 +512,15 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 }
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.GET_MENU_TOOLS,
-        async (msg: { owner: IOwner }) => {
+        async (msg: {
+            owner: IOwner
+        }) => {
             try {
                 const tools: any[] = await DatabaseServer.getTools({
                     status: ModuleStatus.PUBLISHED
@@ -551,13 +571,17 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 }
                 return new MessageResponse(tools);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.UPDATE_TOOL,
-        async (msg: { id: string, tool: PolicyTool, owner: IOwner }) => {
+        async (msg: {
+            id: string,
+            tool: PolicyTool,
+            owner: IOwner
+        }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid load tools parameter');
@@ -579,13 +603,16 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 const result = await DatabaseServer.updateTool(item);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.GET_TOOL,
-        async (msg: { id: string, owner: IOwner }) => {
+        async (msg: {
+            id: string,
+            owner: IOwner
+        }) => {
             try {
                 const { id, owner } = msg;
                 if (!id || !owner) {
@@ -600,13 +627,16 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 }
                 return new MessageResponse(item);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.TOOL_EXPORT_FILE,
-        async (msg: { id: string, owner: IOwner }) => {
+        async (msg: {
+            id: string,
+            owner: IOwner
+        }) => {
             try {
                 const { id, owner } = msg;
                 if (!id || !owner) {
@@ -632,13 +662,16 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 });
                 return new BinaryMessageResponse(file);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.TOOL_EXPORT_MESSAGE,
-        async (msg: { id: string, owner: IOwner }) => {
+        async (msg: {
+            id: string,
+            owner: IOwner
+        }) => {
             try {
                 const { id, owner } = msg;
                 if (!id || !owner) {
@@ -659,13 +692,16 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     owner: item.owner
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.TOOL_IMPORT_FILE_PREVIEW,
-        async (msg: { zip: any, owner: IOwner }) => {
+        async (msg: {
+            zip: any,
+            owner: IOwner
+        }) => {
             try {
                 const { zip } = msg;
                 if (!zip) {
@@ -674,47 +710,57 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
                 return new MessageResponse(preview);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.TOOL_IMPORT_MESSAGE_PREVIEW,
-        async (msg: { messageId: string, owner: IOwner }) => {
+        async (msg: {
+            messageId: string,
+            owner: IOwner
+        }) => {
             try {
                 const { messageId, owner } = msg;
                 const preview = await preparePreviewMessage(messageId, owner, emptyNotifier());
                 return new MessageResponse(preview);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.TOOL_IMPORT_FILE,
-        async (msg: { zip: any, owner: IOwner, metadata: any }) => {
+        async (msg: {
+            zip: any,
+            owner: IOwner,
+            metadata: any
+        }) => {
             try {
                 const { zip, owner, metadata } = msg;
                 if (!zip) {
                     throw new Error('file in body is empty');
                 }
                 const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
-                const { tool, errors } = await importToolByFile(owner, preview, emptyNotifier(), metadata);
+                const { tool, errors } = await importToolByFile(owner, preview, emptyNotifier(),  metadata, owner.id);
                 if (errors?.length) {
                     const message = importToolErrors(errors);
-                    await logger.warn(message, ['GUARDIAN_SERVICE']);
+                    await logger.warn(message, ['GUARDIAN_SERVICE'], owner?.id);
                     return new MessageError(message);
                 } else {
                     return new MessageResponse(tool);
                 }
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.TOOL_IMPORT_MESSAGE,
-        async (msg: { messageId: string, owner: IOwner }) => {
+        async (msg: {
+            messageId: string,
+            owner: IOwner,
+        }) => {
             try {
                 const { messageId, owner } = msg;
                 if (!messageId || typeof messageId !== 'string') {
@@ -727,18 +773,23 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 }
                 const notifier = emptyNotifier();
                 const users = new Users();
-                const root = await users.getHederaAccount(owner.creator);
-                const item = await importToolByMessage(root, id, owner, notifier);
+                const root = await users.getHederaAccount(owner.creator, owner?.id);
+                const item = await importToolByMessage(root, id, owner, notifier, owner.id);
                 notifier.completed();
                 return new MessageResponse(item);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.TOOL_IMPORT_FILE_ASYNC,
-        async (msg: { zip: any, owner: IOwner, metadata: any, task: any }) => {
+        async (msg: {
+            zip: any,
+            owner: IOwner,
+            metadata: any,
+            task: any
+        }) => {
             const { zip, owner, task, metadata } = msg;
             const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
@@ -746,11 +797,11 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('file in body is empty');
                 }
                 const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
-                const { tool, errors } = await importToolByFile(owner, preview, notifier, metadata);
+                const { tool, errors } = await importToolByFile(owner, preview, notifier, metadata, owner.id);
                 if (errors?.length) {
                     const message = importToolErrors(errors);
                     notifier.error(message);
-                    await logger.warn(message, ['GUARDIAN_SERVICE']);
+                    await logger.warn(message, ['GUARDIAN_SERVICE'], owner?.id);
                 } else {
                     notifier.result({
                         toolId: tool.id,
@@ -764,7 +815,11 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
         });
 
     ApiResponse(MessageAPI.TOOL_IMPORT_MESSAGE_ASYNC,
-        async (msg: { messageId: string, owner: IOwner, task: any }) => {
+        async (msg: {
+            messageId: string,
+            owner: IOwner,
+            task: any
+        }) => {
             const { messageId, owner, task } = msg;
             const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
@@ -777,13 +832,13 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('The tool already exists');
                 }
                 const users = new Users();
-                const root = await users.getHederaAccount(owner.creator);
-                const { tool, errors } = await importToolByMessage(root, id, owner, notifier);
+                const root = await users.getHederaAccount(owner.creator, owner?.id);
+                const { tool, errors } = await importToolByMessage(root, id, owner, notifier, owner.id);
                 notifier.completed();
                 if (errors?.length) {
                     const message = importToolErrors(errors);
                     notifier.error(message);
-                    await logger.warn(message, ['GUARDIAN_SERVICE']);
+                    await logger.warn(message, ['GUARDIAN_SERVICE'], owner?.id);
                 } else {
                     notifier.result({
                         toolId: tool.id,
@@ -797,49 +852,61 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
         });
 
     ApiResponse(MessageAPI.PUBLISH_TOOL,
-        async (msg: { id: string, owner: IOwner, tool: PolicyTool }) => {
+        async (msg: {
+            id: string,
+            owner: IOwner,
+            tool: PolicyTool
+        }) => {
             try {
                 const { id, owner } = msg;
                 const result = await validateAndPublish(id, owner, emptyNotifier(), logger);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.PUBLISH_TOOL_ASYNC,
-        async (msg: { id: string, owner: IOwner, tool: PolicyTool, task: any }) => {
+        async (msg: {
+            id: string,
+            owner: IOwner,
+            tool: PolicyTool,
+            task: any
+        }) => {
+            const { id, owner, task } = msg;
             try {
-                const { id, owner, task } = msg;
                 const notifier = await initNotifier(task);
 
                 RunFunctionAsync(async () => {
                     const result = await validateAndPublish(id, owner, notifier, logger);
                     notifier.result(result);
                 }, async (error) => {
-                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
                     notifier.error(error);
                 });
 
                 return new MessageResponse(task);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.VALIDATE_TOOL,
-        async (msg: { owner: IOwner, tool: PolicyTool }) => {
+        async (msg: {
+            owner: IOwner,
+            tool: PolicyTool
+        }) => {
+            const { tool } = msg;
             try {
-                const { tool } = msg;
                 const results = await validateTool(tool);
                 return new MessageResponse({
                     results,
                     tool
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });

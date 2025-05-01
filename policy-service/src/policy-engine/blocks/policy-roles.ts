@@ -339,7 +339,7 @@ export class PolicyRolesBlock {
             vcSubject.groupLabel = group.groupLabel;
         }
 
-        const { vc, message } = await PolicyActionsUtils.signAndSendRole(ref, vcSubject, group, uuid);
+        const { vc, message } = await PolicyActionsUtils.signAndSendRole(ref, vcSubject, group, uuid, user.userId);
 
         const vcDocument = PolicyUtils.createVC(ref, user, vc);
         vcDocument.type = DocumentCategoryType.USER_ROLE;
@@ -396,7 +396,7 @@ export class PolicyRolesBlock {
     async setData(user: PolicyUser, data: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const did = user?.did;
-        const curUser = await PolicyUtils.getUser(ref, did);
+        const curUser = await PolicyUtils.getUser(ref, did, user.userId);
 
         if (!did) {
             throw new BlockActionError('Invalid user', ref.blockType, ref.uuid);
@@ -423,7 +423,7 @@ export class PolicyRolesBlock {
         group.messageId = await this.createVC(ref, user, group);
 
         const userGroup = await ref.databaseServer.setUserInGroup(group);
-        const newUser = await PolicyComponentsUtils.GetPolicyUserByGroup(userGroup, ref);
+        const newUser = await PolicyComponentsUtils.GetPolicyUserByGroup(userGroup, ref, user.userId);
         if (data.invitation) {
             ref.triggerEvents(PolicyOutputEventType.JoinGroup, newUser, null);
         } else {

@@ -10,8 +10,8 @@ export class ListenerService extends NatsService {
     public messageQueueName = 'listeners-queue';
     public replySubject = 'listeners-queue-reply-' + GenerateUUIDv4();
 
-    private delay: number = 10 * 1000;
-    private map: Map<string, Listener>;
+    private readonly delay: number = 10 * 1000;
+    private readonly map: Map<string, Listener>;
 
     constructor(
         private readonly serviceID: string,
@@ -33,7 +33,7 @@ export class ListenerService extends NatsService {
                 const result = await this.addListener(options);
                 return new MessageResponse({ result })
             } catch (error) {
-                this.logger.error(`Update settings error, ${error.message}`, [this.serviceID, 'WORKER']);
+                this.logger.error(`Update settings error, ${error.message}`, [this.serviceID, 'WORKER'], null);
                 return new MessageResponse({ result: null })
             }
         })
@@ -43,7 +43,7 @@ export class ListenerService extends NatsService {
                 const result = await this.removeListener(name);
                 return new MessageResponse({ result })
             } catch (error) {
-                this.logger.error(`Update settings error, ${error.message}`, [this.serviceID, 'WORKER']);
+                this.logger.error(`Update settings error, ${error.message}`, [this.serviceID, 'WORKER'], null);
                 return new MessageResponse({ result: null })
             }
         });

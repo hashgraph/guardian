@@ -61,8 +61,9 @@ export class ReportBlock {
      * Get username
      * @param did
      * @param map
+     * @param userId
      */
-    async getUserName(did: string, map: any): Promise<string> {
+    async getUserName(did: string, map: any, userId: string | null): Promise<string> {
         if (!did) {
             return null;
         }
@@ -70,7 +71,7 @@ export class ReportBlock {
             return map[did];
         } else {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
-            const curUser = await PolicyUtils.getUser(ref, did);
+            const curUser = await PolicyUtils.getUser(ref, did, userId);
             if (curUser) {
                 map[did] = curUser.username;
                 return map[did];
@@ -84,20 +85,21 @@ export class ReportBlock {
      * Item user map
      * @param documents
      * @param map
+     * @param userId
      */
-    async itemUserMap(documents: any[], map: any) {
+    async itemUserMap(documents: any[], map: any, userId: string | null) {
         if (!documents) {
             return;
         }
         for (const element of documents) {
             if (element.multiple) {
                 for (const document of element.document) {
-                    document.username = await this.getUserName(document.username, map);
+                    document.username = await this.getUserName(document.username, map, userId);
                 }
             } else {
-                element.username = await this.getUserName(element.username, map);
+                element.username = await this.getUserName(element.username, map, userId);
             }
-            await this.itemUserMap(element.documents, map);
+            await this.itemUserMap(element.documents, map, userId);
         }
     }
 
@@ -309,25 +311,26 @@ export class ReportBlock {
     /**
      * Report user map
      * @param report
+     * @param userId
      */
-    private async reportUserMap(report: IReport): Promise<IReport> {
+    private async reportUserMap(report: IReport, userId: string | null): Promise<IReport> {
         const map: any = {};
         if (report.vpDocument) {
-            report.vpDocument.username = await this.getUserName(report.vpDocument.username, map);
+            report.vpDocument.username = await this.getUserName(report.vpDocument.username, map, userId);
         }
         if (report.vcDocument) {
-            report.vcDocument.username = await this.getUserName(report.vcDocument.username, map);
+            report.vcDocument.username = await this.getUserName(report.vcDocument.username, map, userId);
         }
         if (report.mintDocument) {
-            report.mintDocument.username = await this.getUserName(report.mintDocument.username, map);
+            report.mintDocument.username = await this.getUserName(report.mintDocument.username, map, userId);
         }
         if (report.policyDocument) {
-            report.policyDocument.username = await this.getUserName(report.policyDocument.username, map);
+            report.policyDocument.username = await this.getUserName(report.policyDocument.username, map, userId);
         }
         if (report.policyCreatorDocument) {
-            report.policyCreatorDocument.username = await this.getUserName(report.policyCreatorDocument.username, map);
+            report.policyCreatorDocument.username = await this.getUserName(report.policyCreatorDocument.username, map, userId);
         }
-        await this.itemUserMap(report.documents, map);
+        await this.itemUserMap(report.documents, map, userId);
 
         return report
     }
@@ -472,10 +475,10 @@ export class ReportBlock {
                 }
             }
 
-            report = await this.reportUserMap(report);
+            report = await this.reportUserMap(report, user.userId);
             if (report.additionalDocuments) {
                 for (let i = 0; i < report.additionalDocuments.length; i++) {
-                    report.additionalDocuments[i] = await this.reportUserMap(report.additionalDocuments[i]);
+                    report.additionalDocuments[i] = await this.reportUserMap(report.additionalDocuments[i], user.userId);
                 }
             }
 

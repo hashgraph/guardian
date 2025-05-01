@@ -83,7 +83,8 @@ export class GroupManagerBlock {
         user: PolicyUser,
         groupId: string,
         did: string,
-        text: string
+        text: string,
+        userId: string | null
     ): Promise<void> {
         if (user.did === did) {
             throw new Error(`Permission denied`);
@@ -112,22 +113,22 @@ export class GroupManagerBlock {
         }
 
         if (member.messageId) {
-            const userCred = await PolicyUtils.getUserCredentials(ref, user.did);
-            const userHederaCred = await userCred.loadHederaCredentials(ref);
-            const signOptions = await userCred.loadSignOptions(ref);
+            const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
+            const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
+            const signOptions = await userCred.loadSignOptions(ref, userId);
             const messageServer = new MessageServer(
                 userHederaCred.hederaAccountId, userHederaCred.hederaAccountKey, signOptions, ref.dryRun
             );
             const message = await messageServer.getMessage(member.messageId);
-            const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId);
+            const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId, userId);
             message.setMessageStatus(MessageStatus.WITHDRAW, text);
             await messageServer
                 .setTopicObject(topic)
-                .sendMessage(message, false);
+                .sendMessage(message, false, null, userId);
         }
 
-        const target = await PolicyComponentsUtils.GetPolicyUserByGroup(member, ref);
-        ref.triggerInternalEvent('remove-user', target);
+        const target = await PolicyComponentsUtils.GetPolicyUserByGroup(member, ref, userId);
+        ref.triggerInternalEvent('remove-user', { target, user });
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.DeleteMember, ref, user, null));
     }
 
@@ -215,7 +216,8 @@ export class GroupManagerBlock {
                 user,
                 blockData.group,
                 blockData.user,
-                blockData.message
+                blockData.message,
+                user.userId
             );
             result = { deleted: true };
         }

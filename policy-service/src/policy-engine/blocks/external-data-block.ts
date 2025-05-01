@@ -155,12 +155,12 @@ export class ExternalDataBlock {
                 verify = await VCHelper.verifyVC(data.document);
             }
         } catch (error) {
-            ref.error(`Verify VC: ${PolicyUtils.getErrorMessage(error)}`)
+            ref.error(`Verify VC: ${PolicyUtils.getErrorMessage(error)}`);
             verify = false;
         }
 
-        const user: PolicyUser = await PolicyUtils.getDocumentOwner(ref, data);
-        const docOwner = await PolicyUtils.getUserCredentials(ref, data.owner);
+        const user: PolicyUser = await PolicyUtils.getDocumentOwner(ref, data, null);
+        const docOwner = await PolicyUtils.getUserCredentials(ref, data.owner, user.userId);
         const documentRef = await this.getRelationships(ref, data.ref);
         const schema = await this.getSchema();
         const vc = VcDocument.fromJsonTree(data.document);

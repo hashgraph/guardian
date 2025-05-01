@@ -90,7 +90,10 @@ export enum PermissionActions {
     //
     ASSIGNED = 'ASSIGNED',
     PUBLISHED = 'PUBLISHED',
-    ASSIGNED_AND_PUBLISHED = 'ASSIGNED_AND_PUBLISHED'
+    ASSIGNED_AND_PUBLISHED = 'ASSIGNED_AND_PUBLISHED',
+    //
+    SYSTEM = 'SYSTEM',
+    USERS = 'USERS'
 }
 
 /**
@@ -147,6 +150,8 @@ export enum Permissions {
     IPFS_FILE_CREATE = 'IPFS_FILE_CREATE',
     //LOG
     LOG_LOG_READ = 'LOG_LOG_READ',
+    LOG_SYSTEM_READ = 'LOG_SYSTEM_READ',
+    LOG_USERS_READ = 'LOG_USERS_READ',
     //MODULE
     MODULES_MODULE_READ = 'MODULES_MODULE_READ',
     MODULES_MODULE_CREATE = 'MODULES_MODULE_CREATE',
@@ -581,7 +586,21 @@ export const PermissionsArray: {
             category: PermissionCategories.LOG,
             entity: PermissionEntities.LOG,
             action: PermissionActions.READ,
-            disabled: true
+            disabled: false
+        },
+        {
+            name: Permissions.LOG_SYSTEM_READ,
+            category: PermissionCategories.LOG,
+            entity: PermissionEntities.LOG,
+            action: PermissionActions.SYSTEM,
+            disabled: false
+        },
+        {
+            name: Permissions.LOG_USERS_READ,
+            category: PermissionCategories.LOG,
+            entity: PermissionEntities.LOG,
+            action: PermissionActions.USERS,
+            disabled: false
         },
         //MODULE
         {
@@ -1412,12 +1431,16 @@ export const SRDefaultPermission: Permissions[] = [
     Permissions.POLICIES_EXTERNAL_POLICY_CREATE,
     Permissions.POLICIES_EXTERNAL_POLICY_UPDATE,
     Permissions.POLICIES_EXTERNAL_POLICY_DELETE,
+    Permissions.LOG_LOG_READ,
+    Permissions.LOG_SYSTEM_READ,
+    // Permissions.LOG_USERS_READ,
 ];
 
 export const AuditDefaultPermission: Permissions[] = [
     ...UserDefaultPermission,
     Permissions.POLICIES_POLICY_AUDIT,
     Permissions.AUDIT_TRUST_CHAIN_READ,
+    Permissions.LOG_LOG_READ,
 ]
 
 export const DefaultRoles: Permissions[] = [
@@ -1440,6 +1463,7 @@ export const DefaultRoles: Permissions[] = [
     Permissions.STATISTICS_LABEL_READ,
     Permissions.STATISTICS_LABEL_CREATE,
     Permissions.SCHEMAS_RULE_EXECUTE,
+    Permissions.LOG_LOG_READ
 ];
 
 export const OldRoles: Permissions[] = [
@@ -1458,4 +1482,5 @@ export const OldRoles: Permissions[] = [
     Permissions.TAGS_TAG_CREATE,
     Permissions.ACCESS_POLICY_PUBLISHED,
     Permissions.SCHEMAS_RULE_EXECUTE,
+    Permissions.LOG_LOG_READ,
 ];

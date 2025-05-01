@@ -156,9 +156,9 @@ export class SwitchBlock {
 
             let curUser: PolicyUser = event.user;
             if (actor === 'owner' && owner) {
-                curUser = await PolicyUtils.getPolicyUser(ref, owner, group);
+                curUser = await PolicyUtils.getPolicyUser(ref, owner, group, event?.user?.userId);
             } else if (actor === 'issuer' && issuer) {
-                curUser = await PolicyUtils.getPolicyUser(ref, issuer, group);
+                curUser = await PolicyUtils.getPolicyUser(ref, issuer, group, event?.user?.userId);
             }
 
             ref.log(`check condition: ${curUser?.id}, ${type},  ${value},  ${result}, ${JSON.stringify(scope)}`);

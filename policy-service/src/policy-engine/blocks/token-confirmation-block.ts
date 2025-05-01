@@ -91,7 +91,7 @@ export class TokenConfirmationBlock {
      * Get block data
      * @param user
      */
-    async getData(user: PolicyUser):Promise<IPolicyGetData> {
+    async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         const blockState: any = this.state[user?.id] || {};
         const token = await this.getToken();
@@ -135,7 +135,7 @@ export class TokenConfirmationBlock {
         }
 
         if (data.action === 'confirm') {
-            await this.confirm(ref, data, blockState, data.action === 'skip');
+            await this.confirm(ref, data, blockState, user.userId, data.action === 'skip');
         }
 
         ref.triggerEvents(PolicyOutputEventType.Confirm, blockState.user, blockState.data);
@@ -151,14 +151,15 @@ export class TokenConfirmationBlock {
      * @param {IPolicyBlock} ref
      * @param {any} data
      * @param {any} state
+     * @param userId
      */
-    private async confirm(ref: IPolicyBlock, data: any, state: any, skip: boolean = false) {
+    private async confirm(ref: IPolicyBlock, data: any, state: any, userId: string | null, skip: boolean = false) {
         const account = {
             hederaAccountId: state.accountId,
             hederaAccountKey: data.hederaAccountKey
         }
 
-        await PolicyUtils.checkAccountId(account.hederaAccountId);
+        await PolicyUtils.checkAccountId(account.hederaAccountId, userId);
         if (!account.hederaAccountKey) {
             throw new BlockActionError(`Key value is unknown`, ref.blockType, ref.uuid)
         }
@@ -178,11 +179,11 @@ export class TokenConfirmationBlock {
 
         switch (ref.options.action) {
             case 'associate': {
-                await PolicyUtils.associate(ref, token, account);
+                await PolicyUtils.associate(ref, token, account, userId);
                 break;
             }
             case 'dissociate': {
-                await PolicyUtils.dissociate(ref, token, account);
+                await PolicyUtils.dissociate(ref, token, account, userId);
                 break;
             }
             default:
@@ -221,7 +222,7 @@ export class TokenConfirmationBlock {
                         hederaAccountId = doc.accounts[field];
                     }
                 } else {
-                    hederaAccountId = await PolicyUtils.getHederaAccountId(ref, doc.owner);
+                    hederaAccountId = await PolicyUtils.getHederaAccountId(ref, doc.owner, event?.user?.userId);
                 }
 
                 if (ref.options.useTemplate) {

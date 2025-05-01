@@ -150,7 +150,7 @@ Promise.all([
     const dataBaseServer = new DatabaseServer();
 
     try {
-        await configAPI(dataBaseServer, logger);
+        await configAPI(logger);
         await schemaAPI(logger);
         await tokenAPI(dataBaseServer, logger);
         await loaderAPI(dataBaseServer, logger);
@@ -193,7 +193,8 @@ Promise.all([
         } catch (error) {
             await logger.warn(
                 'HEDERA_CUSTOM_NODES field in settings: ' + error.message,
-                ['GUARDIAN_SERVICE']
+                ['GUARDIAN_SERVICE'],
+                null
             );
             console.warn(error);
         }
@@ -206,9 +207,9 @@ Promise.all([
             Environment.setMirrorNodes(mirrorNodes);
         } catch (error) {
             await logger.warn(
-                'HEDERA_CUSTOM_MIRROR_NODES field in settings: ' +
-                error.message,
-                ['GUARDIAN_SERVICE']
+                'HEDERA_CUSTOM_MIRROR_NODES field in settings: ' + error.message,
+                ['GUARDIAN_SERVICE'],
+                null
             );
             console.warn(error);
         }
@@ -236,14 +237,14 @@ Promise.all([
             }
             AccountId.fromString(OPERATOR_ID);
         } catch (error) {
-            await logger.error('OPERATOR_ID field in settings: ' + error.message, ['GUARDIAN_SERVICE']);
+            await logger.error('OPERATOR_ID field in settings: ' + error.message, ['GUARDIAN_SERVICE'], null);
             return false;
             // process.exit(0);
         }
         try {
             PrivateKey.fromString(OPERATOR_KEY);
         } catch (error) {
-            await logger.error('OPERATOR_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
+            await logger.error('OPERATOR_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE'], null);
             return false;
         }
         try {
@@ -254,7 +255,7 @@ Promise.all([
                 TopicId.fromString(process.env.INITIALIZATION_TOPIC_ID);
             }
         } catch (error) {
-            await logger.error('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
+            await logger.error('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message, ['GUARDIAN_SERVICE'], null);
             return false;
             // process.exit(0);
         }
@@ -263,7 +264,7 @@ Promise.all([
                 PrivateKey.fromString(process.env.INITIALIZATION_TOPIC_KEY);
             }
         } catch (error) {
-            await logger.error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
+            await logger.error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE'], null);
             return false;
             // process.exit(0);
         }
@@ -279,7 +280,8 @@ Promise.all([
                     hederaAccountId: OPERATOR_ID,
                     hederaAccountKey: OPERATOR_KEY,
                     dryRun: false,
-                    topicMemo: TopicMemo.getGlobalTopicMemo()
+                    topicMemo: TopicMemo.getGlobalTopicMemo(),
+                    payload: { userId: null }
                 }
             }, 10);
         }
@@ -316,7 +318,7 @@ Promise.all([
             new LargePayloadContainer().runServer();
         }
 
-        await logger.info('guardian service started', ['GUARDIAN_SERVICE']);
+        await logger.info('guardian service started', ['GUARDIAN_SERVICE'], null);
 
         await state.updateState(ApplicationStates.READY);
 

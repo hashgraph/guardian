@@ -112,7 +112,7 @@ export class InterfaceStepBlock {
             throw new BlockActionError('Bad child block', ref.blockType, ref.uuid);
         }
         ref.log(`changeStep: ${blockState?.index}, ${user?.id}`);
-        ref.updateBlock(blockState, user);
+        ref.updateBlock(blockState, user, ref.tag, user.userId);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Step, ref, user, {
@@ -144,7 +144,7 @@ export class InterfaceStepBlock {
                     blockState = this.state[user.id];
                 }
                 blockState.index = 0;
-                ref.updateBlock(blockState, user);
+                ref.updateBlock(blockState, user, ref.tag, user.userId);
                 ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
             }
         }

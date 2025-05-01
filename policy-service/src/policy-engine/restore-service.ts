@@ -79,13 +79,15 @@ export class PolicyBackupService {
     private userId: string;
     private readonly policyTopicId: string;
     private readonly instanceTopicId: string;
+    private readonly policyOwnerId: string;
 
-    constructor(policyId: string, policy: Policy) {
+    constructor(policyId: string, policy: Policy, policyOwnerId: string | null) {
         this.controller = new PolicyBackup(policyId);
         this.topicId = policy.restoreTopicId;
         this.owner = policy.owner;
         this.policyTopicId = policy.topicId;
         this.instanceTopicId = policy.instanceTopicId;
+        this.policyOwnerId = policyOwnerId;
 
         this.timer = new Timer(30 * 1000, 120 * 1000);
         this.timer.subscribe(this.task.bind(this));
@@ -94,13 +96,13 @@ export class PolicyBackupService {
     public async init(): Promise<void> {
         await this.controller.init();
 
-        const root = await (new Users()).getHederaAccount(this.owner);
+        const root = await (new Users()).getHederaAccount(this.owner, this.policyOwnerId);
         if (!root) {
             throw Error('Invalid user');
         }
 
         const topicConfig = await DatabaseServer.getTopicById(this.topicId);
-        const topic = await TopicConfig.fromObjectV2(topicConfig);
+        const topic = await TopicConfig.fromObjectV2(topicConfig, this.policyOwnerId);
         if (!topic) {
             throw Error('Invalid restore topic');
         }
@@ -116,7 +118,6 @@ export class PolicyBackupService {
     }
 
     public backup(): void {
-        console.log('----- backup');
         this.timer.push();
     }
 
@@ -131,7 +132,6 @@ export class PolicyBackupService {
     }
 
     private async sendDiff(diff: IPolicyDiff) {
-        console.log('----------- _sendDiff')
         const file = FileHelper.encryptFile(diff);
         const buffer = await FileHelper.zipFile(file);
 
@@ -149,11 +149,6 @@ export class PolicyBackupService {
             .sendMessage(message, true, null, this.userId);
 
         diff.messageId = result.getId();
-
-        console.log('--- messageId', diff.messageId);
-        console.log('--- getTopic', this.messageServer.getTopic());
-
-        // console.log(file)
     }
 }
 
@@ -163,18 +158,18 @@ export class PolicyRestoreService {
     private readonly controller: PolicyRestore;
     private readonly policyId: string;
     // private messageServer: MessageServer;
-    // private userId: string;
+    // private readonly policyOwnerId: string;
     private topicListener: TopicListener;
 
-    constructor(policyId: string, policy: Policy) {
+    constructor(policyId: string, policy: Policy, policyOwnerId: string | null) {
         this.controller = new PolicyRestore(policyId);
         this.policyId = policyId;
         this.topicId = policy.restoreTopicId;
         // this.owner = policy.owner;
+        // this.policyOwnerId = policy.policyOwnerId;
     }
 
     public async init(): Promise<void> {
-        console.debug('--- PolicyRestoreService init')
         await this.controller.init();
 
         this.topicListener = new TopicListener(this.topicId);
@@ -183,14 +178,12 @@ export class PolicyRestoreService {
     }
 
     private async task(data: ITopicMessage): Promise<boolean> {
-        console.debug('--- task');
         try {
             const message = PolicyDiffMessage.fromMessage(data.message);
             await MessageServer.loadDocument(message);
             const file = await FileHelper.unZipFile(message.document);
             await this.controller.restore(file);
             await PolicyComponentsUtils.restoreState(this.policyId);
-            console.debug('--- task --');
         } catch (error) {
             console.log(error);
         }

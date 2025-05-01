@@ -142,11 +142,12 @@ export class SchemaImportExportHelper {
             outerSchemas?: { name: string, iri: string }[],
             mode?: ImportMode
         },
-        notifier: INotifier
+        notifier: INotifier,
+        userId: string | null
     ): Promise<ImportSchemaResult> {
         const helper = new SchemaImport(options.mode, notifier);
         helper.addExternalSchemas(options.outerSchemas);
-        return helper.import(files, user, options);
+        return helper.import(files, user, options, userId);
     }
     /**
      * Import schemas by messages
@@ -165,10 +166,11 @@ export class SchemaImportExportHelper {
             mode?: ImportMode
         },
         notifier: INotifier,
-        logger: PinoLogger
+        logger: PinoLogger,
+        userId: string | null
     ): Promise<ImportSchemaResult> {
         const helper = new SchemaImport(options.mode, notifier);
-        return helper.importByMessage(messageIds, user, options, logger);
+        return helper.importByMessage(messageIds, user, options, logger, userId);
     }
 
     /**
@@ -188,10 +190,11 @@ export class SchemaImportExportHelper {
             outerSchemas?: { name: string, iri: string }[],
             mode?: ImportMode
         },
-        notifier: INotifier
+        notifier: INotifier,
+        userId: string | null
     ): Promise<ImportSchemaResult> {
         const helper = new SchemaImport(options.mode, notifier);
         helper.addExternalSchemas(options.outerSchemas);
-        return helper.importSystem(files, user, options);
+        return helper.importSystem(files, user, options, userId);
     }
 }

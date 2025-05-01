@@ -149,7 +149,7 @@ export function requestNotificationEvent(row: PolicyAction): void {
         type: row.type,
         accountId: row.accountId,
         policyId: row.policyId,
-        status : row.status
+        status: row.status
     }, false);
 };
 
@@ -1332,13 +1332,14 @@ export class PolicyComponentsUtils {
      */
     public static async GetPolicyUserByAccount(
         account: string,
-        instance: IPolicyInstance | AnyBlockType
+        instance: IPolicyInstance | AnyBlockType,
+        userId: string | null
     ): Promise<PolicyUser> {
         if (!account) {
             return null;
         }
 
-        const regUser = await (new Users()).getUserByAccount(account);
+        const regUser = await (new Users()).getUserByAccount(account, userId);
         if (!regUser || !regUser.did) {
             return null;
         }
@@ -1360,16 +1361,18 @@ export class PolicyComponentsUtils {
      * Get user by name
      * @param username
      * @param instance
+     * @param userId
      */
     public static async GetPolicyUserByName(
         username: string,
-        instance: IPolicyInstance | AnyBlockType
+        instance: IPolicyInstance | AnyBlockType,
+        userId: string | null
     ): Promise<PolicyUser> {
         if (!username) {
             return null;
         }
 
-        const regUser = await (new Users()).getUser(username);
+        const regUser = await (new Users()).getUser(username, userId);
         if (!regUser || !regUser.did) {
             return null;
         }
@@ -1398,14 +1401,15 @@ export class PolicyComponentsUtils {
     public static async GetPolicyUserByDID(
         did: string,
         groupUUID: string,
-        instance: IPolicyInstance | AnyBlockType
+        instance: IPolicyInstance | AnyBlockType,
+        userId: string | null
     ): Promise<PolicyUser> {
         const virtual = !!instance.dryRun;
         let userFull: PolicyUser;
         if (virtual) {
             userFull = new VirtualUser({ did }, instance);
         } else {
-            const regUser = await (new Users()).getUserById(did);
+            const regUser = await (new Users()).getUserById(did, userId);
             if (regUser) {
                 userFull = new PolicyUser(regUser, instance);
             } else {
@@ -1432,14 +1436,15 @@ export class PolicyComponentsUtils {
 
     public static async GetPolicyUserByGroup(
         group: PolicyRoles,
-        instance: IPolicyInstance | AnyBlockType
+        instance: IPolicyInstance | AnyBlockType,
+        userId: string | null
     ): Promise<PolicyUser> {
         const virtual = !!instance.dryRun;
         let userFull: PolicyUser;
         if (virtual) {
             userFull = new VirtualUser(group, instance);
         } else {
-            const regUser = await (new Users()).getUserById(group.did);
+            const regUser = await (new Users()).getUserById(group.did, userId);
             if (regUser) {
                 userFull = new PolicyUser(regUser, instance);
             } else {

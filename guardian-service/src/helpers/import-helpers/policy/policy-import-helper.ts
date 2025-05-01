@@ -21,7 +21,7 @@ import { ImportPolicyError, ImportPolicyOptions, ImportPolicyResult } from './po
 import { PolicyImport } from './policy-import.js';
 import { ImportSchemaMap } from '../schema/schema-import.interface.js';
 import { PolicyConverterUtils } from './policy-converter-utils.js';
-import { emptyNotifier, INotifier } from '../../notifier.js';
+import { INotifier } from '../../notifier.js';
 import { HashComparator, PolicyLoader } from '../../../analytics/index.js';
 import { importPolicyTags } from '../tag/tag-import-helper.js';
 
@@ -71,10 +71,11 @@ export class PolicyImportExportHelper {
     public static async importPolicy(
         mode: ImportMode,
         options: ImportPolicyOptions,
-        notifier: INotifier = emptyNotifier(),
+        notifier: INotifier,
+        userId: string | null
     ): Promise<ImportPolicyResult> {
         const helper = new PolicyImport(mode, notifier);
-        return helper.import(options);
+        return helper.import(options, userId);
     }
 
     /**
@@ -193,7 +194,11 @@ export class PolicyImportExportHelper {
      * @param policy
      * @param logger
      */
-    public static async updatePolicyComponents(policy: Policy, logger: PinoLogger): Promise<Policy> {
+    public static async updatePolicyComponents(
+        policy: Policy,
+        logger: PinoLogger,
+        userId: string
+    ): Promise<Policy> {
         try {
             const raw = await PolicyLoader.load(policy.id.toString());
             const compareModel = await PolicyLoader.create(raw, HashComparator.options);
@@ -201,7 +206,7 @@ export class PolicyImportExportHelper {
             policy.hash = hash;
             policy.hashMap = hashMap;
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE, HASH']);
+            await logger.error(error, ['GUARDIAN_SERVICE, HASH'], userId);
         }
         const toolIds = new Set<string>()
         PolicyImportExportHelper.findTools(policy.config, toolIds);
@@ -237,7 +242,8 @@ export class PolicyImportExportHelper {
     public static async loadPolicyMessage(
         messageId: string,
         hederaAccount: IRootConfig,
-        notifier: INotifier
+        notifier: INotifier,
+        userId: string | null
     ): Promise<IPolicyComponents> {
         notifier.start('Load from IPFS');
         const messageServer = new MessageServer(
@@ -257,7 +263,7 @@ export class PolicyImportExportHelper {
         const policyToImport = await PolicyImportExport.parseZipFile(message.document, true);
 
         notifier.completedAndStart('Load tags parsing');
-        await importPolicyTags(policyToImport, messageId, message.policyTopicId, messageServer);
+        await importPolicyTags(policyToImport, messageId, message.policyTopicId, messageServer, userId);
 
         notifier.completed();
 

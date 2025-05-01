@@ -69,10 +69,10 @@ export class SchemaImport {
         }
     }
 
-    private async resolveAccount(user: IOwner): Promise<IRootConfig> {
+    private async resolveAccount(user: IOwner, userId: string | null): Promise<IRootConfig> {
         this.notifier.start('Resolve Hedera account');
         const users = new Users();
-        this.root = await users.getHederaAccount(user.creator);
+        this.root = await users.getHederaAccount(user.creator, userId);
         this.topicHelper = new TopicHelper(
             this.root.hederaAccountId,
             this.root.hederaAccountKey,
@@ -87,7 +87,7 @@ export class SchemaImport {
         return this.root;
     }
 
-    private async resolveTopic(user: IOwner, topicId: string) {
+    private async resolveTopic(user: IOwner, topicId: string, userId: string | null) {
         this.notifier.completedAndStart('Resolve Topics');
 
         if (this.mode === ImportMode.DEMO) {
@@ -101,12 +101,12 @@ export class SchemaImport {
                 topicId
             }, null, null)
         } else if (this.mode === ImportMode.VIEW) {
-            this.topicRow = await TopicConfig.fromObject(await DatabaseServer.getTopicById(topicId), false);
+            this.topicRow = await TopicConfig.fromObject(await DatabaseServer.getTopicById(topicId), false, userId);
         } else {
             if (topicId === 'draft') {
                 this.topicRow = null;
             } else if (topicId) {
-                this.topicRow = await TopicConfig.fromObject(await DatabaseServer.getTopicById(topicId), true);
+                this.topicRow = await TopicConfig.fromObject(await DatabaseServer.getTopicById(topicId), true, userId);
             } else {
                 this.topicRow = await this.topicHelper.create({
                     type: TopicType.SchemaTopic,
@@ -115,8 +115,8 @@ export class SchemaImport {
                     owner: user.creator,
                     policyId: null,
                     policyUUID: null
-                });
-                await this.topicRow.saveKeys();
+                }, userId);
+                await this.topicRow.saveKeys(userId);
                 await DatabaseServer.saveTopic(this.topicRow.toObject());
                 await this.topicHelper.twoWayLink(this.topicRow, null, null, this.owner.id);
             }
@@ -124,14 +124,14 @@ export class SchemaImport {
         this.topicId = this.topicRow?.topicId || 'draft';
     }
 
-    private async resolveMessages(messageIds: string[], logger: PinoLogger): Promise<ISchema[]> {
+    private async resolveMessages(messageIds: string[], logger: PinoLogger, userId: string | null): Promise<ISchema[]> {
         this.notifier.start('Resolve schema messages');
 
         const schemas: ISchema[] = [];
 
         const relationships = new Set<string>();
         for (const messageId of messageIds) {
-            const newSchema = await loadSchema(messageId, logger);
+            const newSchema = await loadSchema(messageId, logger, userId);
             schemas.push(newSchema);
             for (const id of newSchema.relationships) {
                 relationships.add(id);
@@ -141,7 +141,7 @@ export class SchemaImport {
             relationships.delete(messageId);
         }
         for (const messageId of relationships) {
-            const newSchema = await loadSchema(messageId, logger);
+            const newSchema = await loadSchema(messageId, logger, userId);
             schemas.push(newSchema);
         }
 
@@ -349,13 +349,14 @@ export class SchemaImport {
      * Import tags by files
      * @param files
      */
-    private async importTags(topics: Set<string>): Promise<void> {
+    private async importTags(topics: Set<string>, userId: string | null): Promise<void> {
         this.notifier.start('Load tags');
         const tags: any[] = [];
         const messageServer = new MessageServer(null, null);
         for (const id of topics) {
             const tagMessages = await messageServer.getMessages<TagMessage>(
                 id,
+                userId,
                 MessageType.Tag,
                 MessageAction.PublishTag
             );
@@ -390,13 +391,14 @@ export class SchemaImport {
         components: ISchema[],
         user: IOwner,
         options: ImportSchemaOptions,
+        userId: string | null
     ): Promise<ImportSchemaResult> {
         const { topicId, category } = options;
 
         this.notifier.start('Import schemas');
 
-        await this.resolveAccount(user);
-        await this.resolveTopic(user, topicId);
+        await this.resolveAccount(user, userId);
+        await this.resolveTopic(user, topicId, userId);
         await this.dataPreparation(category, components, user, false);
         await this.updateUUIDs(components);
         await this.validateDefs(components);
@@ -414,13 +416,14 @@ export class SchemaImport {
         components: ISchema[],
         user: IOwner,
         options: ImportSchemaOptions,
+        userId: string | null
     ): Promise<ImportSchemaResult> {
         const { topicId, category } = options;
 
         this.notifier.start('Import schemas');
 
-        await this.resolveAccount(user);
-        await this.resolveTopic(user, topicId);
+        await this.resolveAccount(user, userId);
+        await this.resolveTopic(user, topicId, userId);
         await this.dataPreparation(category, components, user, true);
         await this.updateUUIDs(components);
         await this.updateDefs(components);
@@ -438,22 +441,23 @@ export class SchemaImport {
         messageIds: string[],
         user: IOwner,
         options: ImportSchemaOptions,
-        logger: PinoLogger
+        logger: PinoLogger,
+        userId: string | null
     ): Promise<ImportSchemaResult> {
         const { topicId, category } = options;
 
         this.notifier.start('Import schemas');
 
-        await this.resolveAccount(user);
-        await this.resolveTopic(user, topicId);
-        const components = await this.resolveMessages(messageIds, logger);
+        await this.resolveAccount(user, userId);
+        await this.resolveTopic(user, topicId, userId);
+        const components = await this.resolveMessages(messageIds, logger, userId);
         const topics = new Set(components.map((s) => s.topicId));
 
         await this.dataPreparation(category, components, user, false);
         await this.updateUUIDs(components);
         await this.validateDefs(components);
         await this.saveSchemas(components);
-        await this.importTags(topics);
+        await this.importTags(topics, userId);
         this.notifier.completed();
 
         return {

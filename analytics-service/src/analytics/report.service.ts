@@ -110,12 +110,12 @@ export class ReportService {
         });
 
         if (!report) {
-            new PinoLogger().error(`Report does not exist`, ['ANALYTICS_SERVICE']);
+            new PinoLogger().error(`Report does not exist`, ['ANALYTICS_SERVICE'], null);
             return report;
         }
 
         if (report.status === ReportStatus.PROGRESS) {
-            new PinoLogger().error(`Report already started`, ['ANALYTICS_SERVICE']);
+            new PinoLogger().error(`Report already started`, ['ANALYTICS_SERVICE'], null);
             return report;
         }
 
@@ -123,10 +123,10 @@ export class ReportService {
 
         ReportService.update(report).then((result) => {
             if (result && result.status === ReportStatus.FINISHED) {
-                new PinoLogger().info(`Update completed`, ['ANALYTICS_SERVICE']);
+                new PinoLogger().info(`Update completed`, ['ANALYTICS_SERVICE'], null);
             }
         }, (error) => {
-            new PinoLogger().error(`Update error: ${error?.message}`, ['ANALYTICS_SERVICE']);
+            new PinoLogger().error(`Update error: ${error?.message}`, ['ANALYTICS_SERVICE'], null);
         });
 
         return report;
@@ -207,7 +207,7 @@ export class ReportService {
 
         //Total
         const topics = await databaseServer.find(TopicCache, { uuid });
-        const rowTokens = await databaseServer.find(Token, { uuid }) as any[] ;
+        const rowTokens = await databaseServer.find(Token, { uuid }) as any[];
         const balances = await databaseServer.find(TokenCache, { uuid });
         const policies = await databaseServer.find(Policy, { uuid }) as any[];
         const instances = await databaseServer.find(PolicyInstance, { uuid }) as any[];
@@ -557,7 +557,7 @@ export class ReportService {
 
         const entity = await databaseServer.create(Dashboard, row);
 
-        return  await databaseServer.save(Dashboard, entity);
+        return await databaseServer.save(Dashboard, entity);
     }
 
     /**
@@ -565,7 +565,7 @@ export class ReportService {
      * @param id
      */
     public static async getDashboard(id: string): Promise<Dashboard> {
-        return  await new DatabaseServer().findOne(Dashboard, id);
+        return await new DatabaseServer().findOne(Dashboard, id);
     }
 
     /**

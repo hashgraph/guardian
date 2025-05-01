@@ -148,7 +148,8 @@ export class CreateTokenBlock {
         user: PolicyUser,
         ref: IPolicyRequestBlock,
         template: any,
-        docs: IPolicyDocument | IPolicyDocument[]
+        docs: IPolicyDocument | IPolicyDocument[],
+        userId: string | null
     ) {
         if (!template) {
             throw new BlockActionError(
@@ -158,7 +159,7 @@ export class CreateTokenBlock {
             );
         }
 
-        const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
+        const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner,userId);
 
         if (!docs) {
             throw new BlockActionError(
@@ -173,14 +174,15 @@ export class CreateTokenBlock {
         const createdToken = await PolicyUtils.createTokenByTemplate(
             ref,
             template,
-            policyOwnerCred
+            policyOwnerCred,
+            userId
         );
         // #endregion
 
         // #region Send new token to hedera
-        const hederaCred = await policyOwnerCred.loadHederaCredentials(ref);
-        const signOptions = await policyOwnerCred.loadSignOptions(ref);
-        const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref);
+        const hederaCred = await policyOwnerCred.loadHederaCredentials(ref, userId);
+        const signOptions = await policyOwnerCred.loadSignOptions(ref, userId);
+        const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref, userId);
         const messageServer = new MessageServer(
             hederaCred.hederaAccountId,
             hederaCred.hederaAccountKey,
@@ -189,7 +191,7 @@ export class CreateTokenBlock {
         ).setTopicObject(rootTopic);
         const tokenMessage = new TokenMessage(MessageAction.CreateToken);
         tokenMessage.setDocument(createdToken);
-        await messageServer.sendMessage(tokenMessage);
+        await messageServer.sendMessage(tokenMessage, true, null, userId);
         // #endregion
 
         // #region Set token in document
@@ -275,7 +277,8 @@ export class CreateTokenBlock {
                         })
                     )
                 ),
-                this.state?.[user.id]?.data?.data
+                this.state?.[user.id]?.data?.data,
+                user.userId
             );
             delete this.state?.[user.id];
             await ref.saveState();
@@ -298,8 +301,7 @@ export class CreateTokenBlock {
     })
     @CatchErrors()
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
-        const ref =
-            PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         ref.log(`runAction`);
 
         const user = event.user;
@@ -323,7 +325,8 @@ export class CreateTokenBlock {
                         index: this.state.tokenNumber,
                     })
                 ),
-                eventData.data
+                eventData.data,
+                event?.user?.userId
             );
         } else {
             if (!this.state.hasOwnProperty(user.id)) {

@@ -24,8 +24,6 @@ export abstract class CollectionRestore<T extends RestoreEntity> {
 
         await this.insertDocuments(rows);
 
-        console.log(backup.hash, hash)
-
         if (backup.hash === hash) {
             return {
                 hash,
@@ -51,7 +49,6 @@ export abstract class CollectionRestore<T extends RestoreEntity> {
 
         let hash = '';
         for (const action of diff.actions) {
-            console.log(typeof action.data);
             const row = this.createRow(action.data);
             this.setRowId(row, action);
 
@@ -71,10 +68,6 @@ export abstract class CollectionRestore<T extends RestoreEntity> {
                 oldCollectionDiff.fullHash
             ) : null;
 
-        console.debug('------- restoreDiff')
-        console.debug('------- insertDocuments', this.policyId, insertRows.length)
-        console.debug('------- updateDocuments', this.policyId, updateRows.length)
-        console.debug('------- deleteDocuments', this.policyId, deleteRows.length)
         await this.insertDocuments(insertRows);
         await this.updateDocuments(updateRows);
         await this.deleteDocuments(deleteRows);

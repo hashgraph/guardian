@@ -46,7 +46,7 @@ export class BlockTreeGenerator extends NatsService {
         policy: IPolicyInstance | IPolicyInterfaceBlock,
         user: IUser
     ): Promise<PolicyUser> {
-        const policyUser = await PolicyComponentsUtils.GetPolicyUserByName(user?.username, policy);
+        const policyUser = await PolicyComponentsUtils.GetPolicyUserByName(user?.username, policy, user.id);
         if (!user) {
             throw new Error(`Forbidden`);
         }
@@ -367,57 +367,37 @@ export class BlockTreeGenerator extends NatsService {
     async initPolicyRestore(
         policyId: string,
         policyInstance: IPolicyInterfaceBlock,
-        policy: Policy
+        policy: Policy,
+        policyOwnerId: string | null
     ): Promise<void> {
         try {
-            console.debug('-- init 1')
             if (
                 policy.status === PolicyStatus.PUBLISH &&
                 policy.availability === PolicyAvailability.PUBLIC
             ) {
-                console.debug('-- init 2')
                 if (policy.restoreTopicId) {
-                    console.debug('-- init 2.1')
-                    const service = new PolicyBackupService(policyId, policy);
-                    console.debug('-- init 2.2')
+                    const service = new PolicyBackupService(policyId, policy, policyOwnerId);
                     await service.init();
-                    console.debug('-- init 2.3')
                     PolicyComponentsUtils.RegisterBackupService(policyId, service);
-                    console.debug('-- init 2.4')
                 }
                 if (policy.actionsTopicId) {
-                    console.debug('-- init 2.5')
-                    const service = new PolicyActionsService(policyId, policyInstance, policy);
-                    console.debug('-- init 2.6')
+                    const service = new PolicyActionsService(policyId, policyInstance, policy, policyOwnerId);
                     await service.init();
-                    console.debug('-- init 2.7')
                     PolicyComponentsUtils.RegisterActionsService(policyId, service);
-                    console.debug('-- init 2.8')
                 }
             }
             if (policy.status === PolicyStatus.VIEW) {
-                console.debug('-- init 3')
                 if (policy.restoreTopicId) {
-                    console.debug('-- init 3.1')
-                    const service = new PolicyRestoreService(policyId, policy);
-                    console.debug('-- init 3.2')
+                    const service = new PolicyRestoreService(policyId, policy, policyOwnerId);
                     await service.init();
-                    console.debug('-- init 3.3')
                     PolicyComponentsUtils.RegisterRestoreService(policyId, service);
-                    console.debug('-- init 3.4')
                 }
                 if (policy.actionsTopicId) {
-                    console.debug('-- init 3.5')
-                    const service = new PolicyActionsService(policyId, policyInstance, policy);
-                    console.debug('-- init 3.6')
+                    const service = new PolicyActionsService(policyId, policyInstance, policy, policyOwnerId);
                     await service.init();
-                    console.debug('-- init 3.7')
                     PolicyComponentsUtils.RegisterActionsService(policyId, service);
-                    console.debug('-- init 3.8')
                 }
             }
-
-            console.debug('-- init 4')
         } catch (error) {
             console.log(error);
         }
@@ -429,12 +409,14 @@ export class BlockTreeGenerator extends NatsService {
      * @param skipRegistration
      * @param policyValidator
      * @param logger
+     * @param policyOwnerId
      */
     public async generate(
         policy: Policy,
         skipRegistration: boolean,
         policyValidator: PolicyValidator,
-        logger: PinoLogger
+        logger: PinoLogger,
+        policyOwnerId: string | null
     ): Promise<IPolicyBlock | { type: 'error', message: string }> {
         if (!policy || (typeof policy !== 'object')) {
             throw new Error('Policy was not exist');
@@ -468,13 +450,13 @@ export class BlockTreeGenerator extends NatsService {
             }
             await this.initPolicyEvents(policyId, rootInstance, policy);
             await this.initRecordEvents(policyId);
-            await this.initPolicyRestore(policyId, rootInstance, policy);
+            await this.initPolicyRestore(policyId, rootInstance, policy, policyOwnerId);
 
             await PolicyComponentsUtils.RegisterNavigation(policyId, policy.policyNavigation);
 
             return rootInstance;
         } catch (error) {
-            await logger.error(`Error build policy ${error}`, ['POLICY', policy.name, policyId.toString()]);
+            await logger.error(`Error build policy ${error}`, ['POLICY', policy.name, policyId.toString()], policyOwnerId);
             policyValidator.addError(typeof error === 'string' ? error : error.message);
             return {
                 type: 'error',
@@ -483,7 +465,7 @@ export class BlockTreeGenerator extends NatsService {
         }
     }
 
-    public async destroyModel(policyId: string, logger: PinoLogger): Promise<void> {
+    public async destroyModel(policyId: string, logger: PinoLogger, policyOwnerId: string | null): Promise<void> {
         try {
             await RecordUtils.DestroyRecording(policyId);
             await RecordUtils.DestroyRunning(policyId);
@@ -494,7 +476,7 @@ export class BlockTreeGenerator extends NatsService {
             PolicyComponentsUtils.UnregisterActionsService(policyId);
             this.models.delete(policyId);
         } catch (error) {
-            await logger.error(`Error destroy policy ${error}`, ['POLICY', policyId.toString()]);
+            await logger.error(`Error destroy policy ${error}`, ['POLICY', policyId.toString()], policyOwnerId);
         }
     }
 

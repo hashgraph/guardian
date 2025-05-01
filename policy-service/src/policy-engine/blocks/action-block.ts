@@ -92,14 +92,14 @@ export class InterfaceDocumentActionBlock {
             if (option) {
                 const newUser = option.user === UserType.CURRENT
                     ? user
-                    : await PolicyUtils.getDocumentOwner(ref, document);
+                    : await PolicyUtils.getDocumentOwner(ref, document, user.userId);
                 ref.triggerEvents(option.tag, newUser, state);
                 ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state);
             }
         }
 
         if (ref.options.type === 'dropdown') {
-            const newUser = await PolicyUtils.getDocumentOwner(ref, document);
+            const newUser = await PolicyUtils.getDocumentOwner(ref, document, user.userId);
             ref.triggerEvents(PolicyOutputEventType.DropdownEvent, newUser, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state);
         }
@@ -109,8 +109,8 @@ export class InterfaceDocumentActionBlock {
             const userDID = document.owner;
             const schemaObject = await PolicyUtils.loadSchemaByID(ref, ref.options.schema);
             const schema = new Schema(schemaObject);
-            const sensorKey = await PolicyUtils.getAccountKey(ref, userDID, KeyType.KEY, sensorDid);
-            const key = await PolicyActionsUtils.downloadPrivateDocument(ref, userDID, sensorDid);
+            const sensorKey = await PolicyUtils.getAccountKey(ref, userDID, KeyType.KEY, sensorDid, user.userId);
+            const key = await PolicyActionsUtils.downloadPrivateDocument(ref, userDID, sensorDid, user.userId);
             result = {
                 fileName: ref.options.filename || `${sensorDid}.config.json`,
                 body: {

@@ -47,10 +47,10 @@ export class PolicyImport {
         this.notifier = notifier;
     }
 
-    private async resolveAccount(user: IOwner): Promise<IRootConfig> {
+    private async resolveAccount(user: IOwner, userId: string | null): Promise<IRootConfig> {
         this.notifier.start('Resolve Hedera account');
         const users = new Users();
-        this.root = await users.getHederaAccount(user.creator);
+        this.root = await users.getHederaAccount(user.creator, userId);
         this.topicHelper = new TopicHelper(
             this.root.hederaAccountId,
             this.root.hederaAccountKey,
@@ -123,10 +123,10 @@ export class PolicyImport {
         return policy;
     }
 
-    private async createPolicyTopic(policy: Policy, user: IOwner, versionOfTopicId: string) {
+    private async createPolicyTopic(policy: Policy, user: IOwner, versionOfTopicId: string, userId: string | null) {
         this.notifier.completedAndStart('Resolve topic');
         this.parentTopic = await TopicConfig.fromObject(
-            await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true
+            await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true, userId
         );
 
         if (this.mode === ImportMode.DEMO) {
@@ -176,7 +176,7 @@ export class PolicyImport {
         } else {
             if (versionOfTopicId) {
                 this.topicRow = await TopicConfig.fromObject(
-                    await DatabaseServer.getTopicById(versionOfTopicId), true
+                    await DatabaseServer.getTopicById(versionOfTopicId), true, userId
                 );
                 this.notifier.completedAndStart('Skip publishing policy in Hedera');
             } else {
@@ -195,8 +195,8 @@ export class PolicyImport {
                     owner: user.owner,
                     policyId: null,
                     policyUUID: null
-                });
-                await this.topicRow.saveKeys();
+                }, userId);
+                await this.topicRow.saveKeys(userId);
                 await DatabaseServer.saveTopic(this.topicRow.toObject());
 
                 this.notifier.completedAndStart('Link topic and policy');
@@ -212,7 +212,7 @@ export class PolicyImport {
         this.topicId = policy.topicId;
     }
 
-    private async publishSystemSchemas(systemSchemas: Schema[], user: IOwner, versionOfTopicId: string) {
+    private async publishSystemSchemas(systemSchemas: Schema[], user: IOwner, versionOfTopicId: string, userId: string | null) {
         if (this.mode === ImportMode.DEMO) {
             systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
             this.schemasResult = await SchemaImportExportHelper.importSystemSchema(
@@ -224,7 +224,8 @@ export class PolicyImport {
                     skipGenerateId: false,
                     mode: this.mode
                 },
-                this.notifier
+                this.notifier,
+                userId
             );
         } else if (this.mode === ImportMode.VIEW) {
             this.schemasResult = await SchemaImportExportHelper.importSystemSchema(
@@ -236,7 +237,8 @@ export class PolicyImport {
                     skipGenerateId: false,
                     mode: this.mode
                 },
-                this.notifier
+                this.notifier,
+                userId
             );
         } else {
             if (versionOfTopicId) {
@@ -254,7 +256,8 @@ export class PolicyImport {
     private async importTools(
         tools: PolicyTool[],
         user: IOwner,
-        metadata: PolicyToolMetadata | null
+        metadata: PolicyToolMetadata | null,
+        userId: string | null
     ) {
         this.notifier.completedAndStart('Import tools');
         this.notifier.sub(true);
@@ -276,7 +279,7 @@ export class PolicyImport {
             }
         }
 
-        this.toolsResult = await importSubTools(this.root, tools, user, this.notifier);
+        this.toolsResult = await importSubTools(this.root, tools, user, this.notifier, userId);
 
         for (const toolMapping of this.toolsMapping) {
             const toolByMessageId = this.toolsResult.tools.find((tool) => tool.messageId === toolMapping.messageId);
@@ -291,7 +294,7 @@ export class PolicyImport {
         this.tokenMapping = this.tokensResult.tokenMap;
     }
 
-    private async importSchemas(schemas: Schema[], user: IOwner) {
+    private async importSchemas(schemas: Schema[], user: IOwner, userId: string | null) {
         const topicIds = this.toolsResult.tools.map((tool) => tool.topicId);
         const toolsSchemas = (await DatabaseServer.getSchemas(
             {
@@ -312,7 +315,8 @@ export class PolicyImport {
                 outerSchemas: toolsSchemas,
                 mode: this.mode
             },
-            this.notifier
+            this.notifier,
+            userId
         );
         this.schemasMapping = this.schemasResult.schemasMap;
     }
@@ -466,9 +470,9 @@ export class PolicyImport {
         }
     }
 
-    private async saveHash(policy: Policy, logger: PinoLogger) {
+    private async saveHash(policy: Policy, logger: PinoLogger, userId: string | null) {
         this.notifier.completedAndStart('Updating hash');
-        await PolicyImportExportHelper.updatePolicyComponents(policy, logger);
+        await PolicyImportExportHelper.updatePolicyComponents(policy, logger, userId);
     }
 
     private async setSuggestionsConfig(policy: Policy, user: IOwner) {
@@ -537,7 +541,7 @@ export class PolicyImport {
         return errors;
     }
 
-    public async import(options: ImportPolicyOptions): Promise<ImportPolicyResult> {
+    public async import(options: ImportPolicyOptions, userId: string | null): Promise<ImportPolicyResult> {
         options.validate();
         const {
             policy,
@@ -556,13 +560,13 @@ export class PolicyImport {
         const metadata = options.metadata;
         const logger = options.logger;
 
-        await this.resolveAccount(user);
+        await this.resolveAccount(user, userId);
         await this.dataPreparation(policy, user, additionalPolicyConfig);
-        await this.createPolicyTopic(policy, user, versionOfTopicId);
-        await this.publishSystemSchemas(systemSchemas, user, versionOfTopicId);
-        await this.importTools(tools, user, metadata);
+        await this.createPolicyTopic(policy, user, versionOfTopicId, userId);
+        await this.publishSystemSchemas(systemSchemas, user, versionOfTopicId, userId);
+        await this.importTools(tools, user, metadata, userId);
         await this.importTokens(tokens, user);
-        await this.importSchemas(schemas, user);
+        await this.importSchemas(schemas, user, userId);
         await this.importArtifacts(artifacts, user);
         await this.importTests(tests, user);
         await this.importFormulas(formulas, user);
@@ -574,7 +578,7 @@ export class PolicyImport {
         await this.saveArtifacts(row);
         await this.saveTests(row);
         await this.saveFormulas(row);
-        await this.saveHash(row, logger);
+        await this.saveHash(row, logger, userId);
         await this.setSuggestionsConfig(row, user);
         await this.importTags(row, tags);
 

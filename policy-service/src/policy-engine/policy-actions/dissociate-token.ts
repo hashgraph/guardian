@@ -10,19 +10,21 @@ export class DissociateToken {
     public static async local(
         ref: AnyBlockType,
         token: Token,
-        user: string
+        user: string,
+        userId: string | null
     ): Promise<boolean> {
-        const userCred = await PolicyUtils.getUserCredentials(ref, user);
-        const userHederaCred = await userCred.loadHederaCredentials(ref);
-        return await PolicyUtils.dissociate(ref, token, userHederaCred);
+        const userCred = await PolicyUtils.getUserCredentials(ref, user, userId);
+        const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
+        return await PolicyUtils.dissociate(ref, token, userHederaCred, userId);
     }
 
     public static async request(
         ref: AnyBlockType,
         token: Token,
-        user: string
+        user: string,
+        userId: string | null
     ): Promise<any> {
-        const userAccount = await PolicyUtils.getHederaAccountId(ref, user);
+        const userAccount = await PolicyUtils.getHederaAccountId(ref, user, userId);
         const data = {
             uuid: GenerateUUIDv4(),
             owner: user,
@@ -42,14 +44,18 @@ export class DissociateToken {
         return data;
     }
 
-    public static async response(row: PolicyAction, user: PolicyUser) {
+    public static async response(
+        row: PolicyAction,
+        user: PolicyUser,
+        userId: string | null
+    ) {
         const ref = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
         const data = row.document;
         const { token } = data;
 
-        const userCred = await PolicyUtils.getUserCredentials(ref, user.did);
-        const userHederaCred = await userCred.loadHederaCredentials(ref);
-        const dissociate = await PolicyUtils.dissociate(ref, token, userHederaCred);
+        const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
+        const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
+        const dissociate = await PolicyUtils.dissociate(ref, token, userHederaCred, userId);
 
         return {
             type: PolicyActionType.DissociateToken,
@@ -59,13 +65,20 @@ export class DissociateToken {
         };
     }
 
-    public static async complete(row: PolicyAction): Promise<boolean> {
+    public static async complete(
+        row: PolicyAction,
+        userId: string | null
+    ): Promise<boolean> {
         const data = row.document;
         const { dissociate } = data;
         return !!dissociate;
     }
 
-    public static async validate(request: PolicyAction, response: PolicyAction): Promise<boolean> {
+    public static async validate(
+        request: PolicyAction,
+        response: PolicyAction,
+        userId: string | null
+    ): Promise<boolean> {
         try {
             if (request && response && request.accountId === response.accountId) {
                 return true;

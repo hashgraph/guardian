@@ -22,7 +22,8 @@ import { IOwner, IRootConfig, TagType } from '@guardian/interfaces';
 export async function publishSchemaTags(
     schema: SchemaCollection,
     owner: IOwner,
-    root: IRootConfig
+    root: IRootConfig,
+    userId: string | null
 ): Promise<void> {
     const filter: any = {
         localTarget: schema.id,
@@ -32,9 +33,12 @@ export async function publishSchemaTags(
     const tags = await DatabaseServer.getTags(filter);
 
     const topic = await DatabaseServer.getTopicById(schema.topicId);
-    const topicConfig = await TopicConfig.fromObject(topic, true);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
-        .setTopicObject(topicConfig);
+    const topicConfig = await TopicConfig.fromObject(topic, true, userId);
+    const messageServer = new MessageServer(
+        root.hederaAccountId,
+        root.hederaAccountKey,
+        root.signOptions
+    ).setTopicObject(topicConfig);
 
     const tagObjects = []
 
@@ -57,7 +61,8 @@ export async function publishSchemaTags(
 export async function publishPolicyTags(
     policy: PolicyCollection,
     owner: IOwner,
-    root: IRootConfig
+    root: IRootConfig,
+    userId: string | null
 ): Promise<void> {
     const filter: any = {
         localTarget: policy.id,
@@ -67,9 +72,12 @@ export async function publishPolicyTags(
     const tags = await DatabaseServer.getTags(filter);
 
     const topic = await DatabaseServer.getTopicById(policy.topicId);
-    const topicConfig = await TopicConfig.fromObject(topic, true);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
-        .setTopicObject(topicConfig);
+    const topicConfig = await TopicConfig.fromObject(topic, true, userId);
+    const messageServer = new MessageServer(
+        root.hederaAccountId,
+        root.hederaAccountKey,
+        root.signOptions
+    ).setTopicObject(topicConfig);
 
     const tagObjects = []
 
@@ -92,7 +100,8 @@ export async function publishPolicyTags(
 export async function publishTokenTags(
     token: TokenCollection,
     owner: IOwner,
-    root: IRootConfig
+    root: IRootConfig,
+    userId: string | null
 ): Promise<void> {
     const filter: any = {
         localTarget: token.id,
@@ -102,9 +111,12 @@ export async function publishTokenTags(
     const tags = await DatabaseServer.getTags(filter);
 
     const topic = await DatabaseServer.getTopicById(token.topicId);
-    const topicConfig = await TopicConfig.fromObject(topic, true);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
-        .setTopicObject(topicConfig);
+    const topicConfig = await TopicConfig.fromObject(topic, true, userId);
+    const messageServer = new MessageServer(
+        root.hederaAccountId,
+        root.hederaAccountKey,
+        root.signOptions
+    ).setTopicObject(topicConfig);
 
     const tagObjects = []
 
@@ -127,7 +139,8 @@ export async function publishTokenTags(
 export async function publishToolTags(
     tool: PolicyToolCollection,
     owner: IOwner,
-    root: IRootConfig
+    root: IRootConfig,
+    userId: string | null
 ): Promise<void> {
     const filter: any = {
         localTarget: tool.id,
@@ -136,9 +149,12 @@ export async function publishToolTags(
     }
     const tags = await DatabaseServer.getTags(filter);
     const topic = await DatabaseServer.getTopicById(tool.tagsTopicId);
-    const topicConfig = await TopicConfig.fromObject(topic, true);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
-        .setTopicObject(topicConfig);
+    const topicConfig = await TopicConfig.fromObject(topic, true, userId);
+    const messageServer = new MessageServer(
+        root.hederaAccountId,
+        root.hederaAccountKey,
+        root.signOptions
+    ).setTopicObject(topicConfig);
 
     const tagObjects = []
 
@@ -161,7 +177,8 @@ export async function publishToolTags(
 export async function publishModuleTags(
     module: ModuleCollection,
     owner: IOwner,
-    root: IRootConfig
+    root: IRootConfig,
+    userId: string | null
 ): Promise<void> {
     const filter: any = {
         localTarget: module.id,
@@ -171,9 +188,12 @@ export async function publishModuleTags(
     const tags = await DatabaseServer.getTags(filter);
 
     const topic = await DatabaseServer.getTopicById(module.topicId);
-    const topicConfig = await TopicConfig.fromObject(topic, true);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
-        .setTopicObject(topicConfig);
+    const topicConfig = await TopicConfig.fromObject(topic, true, userId);
+    const messageServer = new MessageServer(
+        root.hederaAccountId,
+        root.hederaAccountKey,
+        root.signOptions
+    ).setTopicObject(topicConfig);
 
     const tagObjects = []
 

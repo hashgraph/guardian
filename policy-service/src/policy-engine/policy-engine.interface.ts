@@ -220,7 +220,7 @@ export interface IPolicyBlock {
      * @param user
      * @param tag
      */
-    updateBlock(state: any, user: PolicyUser, tag?: string): any;
+    updateBlock(state: any, user: PolicyUser, tag: string, userId: string | null): any;
 
     /**
      * Check permissions

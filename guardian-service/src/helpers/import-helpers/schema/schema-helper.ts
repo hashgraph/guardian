@@ -213,7 +213,7 @@ export async function copySchemaAsync(
     user: IOwner
 ) {
     const users = new Users();
-    const root = await users.getHederaAccount(user.creator);
+    const root = await users.getHederaAccount(user.creator, user.id);
 
     let item = await DatabaseServer.getSchema({ iri });
 
@@ -254,7 +254,7 @@ export async function copySchemaAsync(
     await updateSchemaDocument(item);
     await updateSchemaDefs(item.iri, oldSchemaIri);
 
-    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true);
+    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true, user.id);
 
     if (topic) {
         await sendSchemaMessage(
@@ -336,7 +336,7 @@ export async function createSchema(
     delete newSchema._id;
     const users = new Users();
     notifier.start('Resolve Hedera account');
-    const root = await users.getHederaAccount(user.creator);
+    const root = await users.getHederaAccount(user.creator, user.id);
 
     notifier.completedAndStart('Save in DB');
     if (newSchema) {
@@ -347,7 +347,7 @@ export async function createSchema(
     notifier.completedAndStart('Resolve Topic');
     let topic: TopicConfig;
     if (newSchema.topicId) {
-        topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(newSchema.topicId), true);
+        topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(newSchema.topicId), true, user.id);
     }
 
     if (!topic && newSchema.topicId !== 'draft') {
@@ -359,8 +359,8 @@ export async function createSchema(
             owner: user.creator,
             policyId: null,
             policyUUID: null
-        });
-        await topic.saveKeys();
+        }, user.id);
+        await topic.saveKeys(user.id);
         await DatabaseServer.saveTopic(topic.toObject());
         await topicHelper.twoWayLink(topic, null, null, user.id);
     }
@@ -434,10 +434,10 @@ export async function deleteSchema(
 
     notifier.info(`Delete schema ${item.name}`);
     if (item.topicId) {
-        const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true);
+        const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true, owner.id);
         if (topic) {
             const users = new Users();
-            const root = await users.getHederaAccount(owner.creator);
+            const root = await users.getHederaAccount(owner.creator, owner.id);
             await sendSchemaMessage(
                 owner,
                 root,
@@ -483,12 +483,13 @@ export async function deleteDemoSchema(
 export async function prepareSchemaPreview(
     messageIds: string[],
     notifier: INotifier,
-    logger: PinoLogger
+    logger: PinoLogger,
+    userId: string | null
 ): Promise<any[]> {
     notifier.start('Load schema file');
     const schemas = [];
     for (const messageId of messageIds) {
-        const schema = await loadSchema(messageId, logger);
+        const schema = await loadSchema(messageId, logger, userId);
         schemas.push(schema);
     }
 
@@ -499,6 +500,7 @@ export async function prepareSchemaPreview(
     for (const topicId of uniqueTopics) {
         const anotherVersions = await messageServer.getMessages<SchemaMessage>(
             topicId,
+            userId,
             MessageType.Schema,
             MessageAction.PublishSchema
         );

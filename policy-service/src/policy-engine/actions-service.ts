@@ -12,23 +12,30 @@ export class PolicyActionsService {
     private readonly isLocal: boolean;
     private readonly policyInstance: IPolicyInterfaceBlock;
     private readonly policyOwner: string;
+    private readonly policyOwnerId: string;
+
     private topic: TopicConfig;
     private topicListener: TopicListener;
     private readonly callback: Map<string, Function>;
 
-    constructor(policyId: string, policyInstance: IPolicyInterfaceBlock, policy: Policy) {
+    constructor(
+        policyId: string,
+        policyInstance: IPolicyInterfaceBlock,
+        policy: Policy,
+        policyOwnerId: string | null
+    ) {
         this.policyId = policyId;
         this.topicId = policy.actionsTopicId;
         this.isLocal = policy.status !== PolicyStatus.VIEW;
         this.policyInstance = policyInstance;
         this.policyOwner = policy.owner;
+        this.policyOwnerId = policyOwnerId;
         this.callback = new Map<string, Function>();
     }
 
     public async init(): Promise<void> {
-        console.debug('--- PolicyActionsService init')
         const topicConfig = await DatabaseServer.getTopicById(this.topicId);
-        this.topic = await TopicConfig.fromObject(topicConfig);
+        this.topic = await TopicConfig.fromObject(topicConfig, false, this.policyOwnerId);
         if (!this.topic) {
             throw Error('Invalid action topic');
         }
@@ -43,9 +50,9 @@ export class PolicyActionsService {
         user: PolicyUser,
         data: any
     ): Promise<any> {
-        const credentials = await PolicyUtils.getUserCredentials(block, user.did);
-        const userHederaCred = await credentials.loadHederaCredentials(block);
-        const signOptions = await credentials.loadSignOptions(block);
+        const credentials = await PolicyUtils.getUserCredentials(block, user.did, user.userId);
+        const userHederaCred = await credentials.loadHederaCredentials(block, user.userId);
+        const signOptions = await credentials.loadSignOptions(block, user.userId);
         const messageServer = new MessageServer(
             userHederaCred.hederaAccountId,
             userHederaCred.hederaAccountKey,
@@ -70,7 +77,6 @@ export class PolicyActionsService {
         const message = new PolicyActionMessage(MessageAction.CreatePolicyAction);
         message.setDocument(row, data);
 
-        console.debug(row, data);
         const messageResult = await messageServer
             .setTopicObject(this.topic)
             .sendMessage(message, true);
@@ -87,11 +93,12 @@ export class PolicyActionsService {
 
     public async sendRequest(
         data: PolicyAction,
-        callback: (action: PolicyAction) => Promise<void>
+        callback: (action: PolicyAction) => Promise<void>,
+        userId: string | null
     ): Promise<any> {
-        const root = await PolicyUtils.getUserCredentials(this.policyInstance, this.policyOwner);
-        const userHederaCred = await root.loadHederaCredentials(this.policyInstance);
-        const signOptions = await root.loadSignOptions(this.policyInstance);
+        const root = await PolicyUtils.getUserCredentials(this.policyInstance, this.policyOwner, this.policyOwnerId);
+        const userHederaCred = await root.loadHederaCredentials(this.policyInstance, this.policyOwnerId);
+        const signOptions = await root.loadSignOptions(this.policyInstance, this.policyOwnerId);
         const messageServer = new MessageServer(
             userHederaCred.hederaAccountId,
             userHederaCred.hederaAccountKey,
@@ -138,7 +145,7 @@ export class PolicyActionsService {
     public async sendResponse(messageId: string, user: PolicyUser) {
         const collection = new DataBaseHelper(PolicyAction);
 
-        const cred = await PolicyUtils.getUserCredentials(this.policyInstance, user.did);
+        const cred = await PolicyUtils.getUserCredentials(this.policyInstance, user.did, user.userId);
         const row = await collection.findOne({
             messageId,
             accountId: cred.hederaAccountId,
@@ -149,11 +156,11 @@ export class PolicyActionsService {
             throw new Error('Request not found');
         }
 
-        const data = await PolicyActionsUtils.response(row, user);
+        const data = await PolicyActionsUtils.response(row, user, user.userId);
 
-        const userCred = await PolicyUtils.getUserCredentials(this.policyInstance, user.did);
-        const userHederaCred = await userCred.loadHederaCredentials(this.policyInstance);
-        const signOptions = await userCred.loadSignOptions(this.policyInstance);
+        const userCred = await PolicyUtils.getUserCredentials(this.policyInstance, user.did, user.userId);
+        const userHederaCred = await userCred.loadHederaCredentials(this.policyInstance, user.userId);
+        const signOptions = await userCred.loadSignOptions(this.policyInstance, user.userId);
         const messageServer = new MessageServer(
             userHederaCred.hederaAccountId,
             userHederaCred.hederaAccountKey,
@@ -205,7 +212,6 @@ export class PolicyActionsService {
     }
 
     private async loadTask(data: ITopicMessage): Promise<boolean> {
-        console.debug('--- loadTask');
         try {
             const message = PolicyActionMessage.from(data);
 
@@ -260,7 +266,6 @@ export class PolicyActionsService {
                     break;
                 }
             }
-            console.debug('--- task --');
         } catch (error) {
             console.log(error);
         }
@@ -269,14 +274,11 @@ export class PolicyActionsService {
 
     private async savePolicyAction(message: PolicyActionMessage, type: PolicyActionType, status: PolicyActionStatus) {
         const collection = new DataBaseHelper(PolicyAction);
-        console.debug('--- savePolicyAction --');
         let document: any;
         try {
-            console.debug('--- loadDocument --');
             await MessageServer.loadDocument(message);
             document = message.getDocument();
         } catch (error) {
-            console.debug('--- error --', error);
             document = null;
         }
         let lastStatus = PolicyActionStatus.NEW;
@@ -303,6 +305,10 @@ export class PolicyActionsService {
             }
             case MessageAction.ErrorPolicyAction: {
                 lastStatus = PolicyActionStatus.ERROR;
+                break;
+            }
+            default: {
+                lastStatus = PolicyActionStatus.NEW;
                 break;
             }
         }
@@ -350,7 +356,6 @@ export class PolicyActionsService {
 
     private async executeAction(row: PolicyAction) {
         try {
-            console.debug('---- 1', row);
             if (!row || !row.document) {
                 throw new Error('Invalid document');
             }
@@ -360,9 +365,8 @@ export class PolicyActionsService {
             }
 
             // User
-            const policyUser = await PolicyComponentsUtils.GetPolicyUserByAccount(row.sender, this.policyInstance);
+            const policyUser = await PolicyComponentsUtils.GetPolicyUserByAccount(row.sender, this.policyInstance, this.policyOwnerId);
             if (!policyUser) {
-                console.debug('---- 2', row);
                 return;
             }
 
@@ -370,25 +374,21 @@ export class PolicyActionsService {
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(this.policyId, row.blockTag);
             const error = await PolicyComponentsUtils.isAvailableSetData(block, policyUser);
             if (error) {
-                console.debug('---- 3', row);
                 return;
             }
 
             const result = await block.setData(policyUser, row.document);
-
-            console.debug('---- 4', row);
-            await this.sentCompleteMessage(row, result);
+            await this.sentCompleteMessage(row, result, this.policyOwnerId);
         } catch (error) {
-            console.debug('---- 7', error);
-            await this.sentErrorMessage(row, error);
+            await this.sentErrorMessage(row, error, this.policyOwnerId);
         }
     }
 
-    private async sentCompleteMessage(row: PolicyAction, result: any) {
+    private async sentCompleteMessage(row: PolicyAction, result: any, userId: string | null) {
         try {
-            const root = await PolicyUtils.getUserCredentials(this.policyInstance, this.policyOwner);
-            const rootHederaCred = await root.loadHederaCredentials(this.policyInstance);
-            const rootSignOptions = await root.loadSignOptions(this.policyInstance);
+            const root = await PolicyUtils.getUserCredentials(this.policyInstance, this.policyOwner, userId);
+            const rootHederaCred = await root.loadHederaCredentials(this.policyInstance, userId);
+            const rootSignOptions = await root.loadSignOptions(this.policyInstance, userId);
             const messageServer = new MessageServer(
                 rootHederaCred.hederaAccountId,
                 rootHederaCred.hederaAccountKey,
@@ -430,20 +430,19 @@ export class PolicyActionsService {
         }
     }
 
-    private async sentErrorMessage(row: PolicyAction, error: string | Error) {
-        console.debug('- Error ???');
+    private async sentErrorMessage(row: PolicyAction, error: string | Error, userId: string | null) {
         try {
             if (row.sender !== row.accountId) {
                 return;
             }
-            const policyUser = await PolicyComponentsUtils.GetPolicyUserByAccount(row.sender, this.policyInstance);
+            const policyUser = await PolicyComponentsUtils.GetPolicyUserByAccount(row.sender, this.policyInstance, userId);
             if (!policyUser) {
                 return;
             }
 
-            const root = await PolicyUtils.getUserCredentials(this.policyInstance, this.policyOwner);
-            const rootHederaCred = await root.loadHederaCredentials(this.policyInstance);
-            const rootSignOptions = await root.loadSignOptions(this.policyInstance);
+            const root = await PolicyUtils.getUserCredentials(this.policyInstance, this.policyOwner, userId);
+            const rootHederaCred = await root.loadHederaCredentials(this.policyInstance, userId);
+            const rootSignOptions = await root.loadSignOptions(this.policyInstance, userId);
             const messageServer = new MessageServer(
                 rootHederaCred.hederaAccountId,
                 rootHederaCred.hederaAccountKey,
@@ -499,7 +498,7 @@ export class PolicyActionsService {
     private async completeRequest(response: PolicyAction) {
         const collection = new DataBaseHelper(PolicyAction);
         const request = await collection.findOne({ messageId: response.startMessageId });
-        const valid = await PolicyActionsUtils.validate(request, response);
+        const valid = await PolicyActionsUtils.validate(request, response, this.policyOwnerId);
         if (valid) {
             const callback = this.callback.get(request.messageId);
             if (callback) {

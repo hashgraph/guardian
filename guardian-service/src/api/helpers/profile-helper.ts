@@ -113,11 +113,12 @@ export async function setupUserProfile(
     username: string,
     profile: ICredentials,
     notifier: INotifier,
-    logger: PinoLogger
+    logger: PinoLogger,
+    logId: string | null
 ): Promise<string> {
     notifier.start('Get user');
     const users = new Users();
-    const user = await users.getUser(username);
+    const user = await users.getUser(username, logId);
     if (user.did) {
         throw new MessageError('User DID already exists', 500);
     }
@@ -129,21 +130,21 @@ export async function setupUserProfile(
         if (!profile.hederaAccountKey) {
             throw new MessageError('Invalid Hedera Account Key', 403);
         }
-        const did = await createUserProfile(profile, notifier, user, logger);
-        await saveUserProfile(username, did, profile, notifier, user, logger);
+        const did = await createUserProfile(profile, notifier, user, logger, logId);
+        await saveUserProfile(username, did, profile, notifier, user, logger, logId);
         return did;
     } else if (user.role === UserRole.USER) {
         profile.entity = SchemaEntity.USER;
         if (profile.type === LocationType.REMOTE) {
             const did = await createRemoteUserProfile(profile, notifier, user, logger);
-            await saveRemoteUserProfile(username, did, profile, notifier, user, logger);
+            await saveRemoteUserProfile(username, did, profile, notifier, user, logger, logId);
             return did;
         } else {
             if (!profile.hederaAccountKey) {
                 throw new MessageError('Invalid Hedera Account Key', 403);
             }
-            const did = await createUserProfile(profile, notifier, user, logger);
-            await saveUserProfile(username, did, profile, notifier, user, logger);
+            const did = await createUserProfile(profile, notifier, user, logger, logId);
+            await saveUserProfile(username, did, profile, notifier, user, logger, logId);
             return did;
         }
     } else {
@@ -162,7 +163,8 @@ export async function createUserProfile(
     profile: ICredentials,
     notifier: INotifier,
     user: IAuthUser,
-    logger: PinoLogger
+    logger: PinoLogger,
+    logId: string | null
 ): Promise<string> {
     const {
         hederaAccountId,
@@ -224,11 +226,11 @@ export async function createUserProfile(
             await dataBaseServer.findOne(Topic, {
                 owner: parent,
                 type: TopicType.UserTopic
-            }), true);
+            }), true, logId);
     }
     if (!topicConfig) {
         notifier.info('Create user topic');
-        logger.info('Create User Topic', ['GUARDIAN_SERVICE']);
+        logger.info('Create User Topic', ['GUARDIAN_SERVICE'], logId);
         const topicHelper = new TopicHelper(hederaAccountId, hederaAccountKey, signOptions);
         topicConfig = await topicHelper.create({
             type: TopicType.UserTopic,
@@ -237,7 +239,7 @@ export async function createUserProfile(
             owner: null,
             policyId: null,
             policyUUID: null
-        });
+        }, logId);
         await topicHelper.oneWayLink(topicConfig, globalTopic, user.id.toString());
         newTopic = await dataBaseServer.save(Topic, topicConfig.toObject());
     }
@@ -250,7 +252,7 @@ export async function createUserProfile(
     // <-- Publish DID Document
     // ------------------------
     notifier.completedAndStart('Publish DID Document');
-    logger.info('Create DID Document', ['GUARDIAN_SERVICE']);
+    logger.info('Create DID Document', ['GUARDIAN_SERVICE'], logId);
 
     const vcHelper = new VcHelper();
     let currentDidDocument: CommonDidDocument
@@ -281,7 +283,7 @@ export async function createUserProfile(
         didRow.topicId = didMessageResult.getTopicId();
         await dataBaseServer.update(DidDocumentCollection, null, didRow);
     } catch (error) {
-        logger.error(error, ['GUARDIAN_SERVICE']);
+        logger.error(error, ['GUARDIAN_SERVICE'], logId);
         // didRow.status = DidDocumentStatus.FAILED;
         // await new DataBaseHelper(DidDocumentCollection).update(didRow);
     }
@@ -303,7 +305,8 @@ export async function createUserProfile(
             srUser,
             messageServer,
             logger,
-            notifier
+            notifier,
+            logId
         );
         await checkAndPublishSchema(
             SchemaEntity.USER,
@@ -312,7 +315,8 @@ export async function createUserProfile(
             srUser,
             messageServer,
             logger,
-            notifier
+            notifier,
+            logId
         );
         await checkAndPublishSchema(
             SchemaEntity.RETIRE_TOKEN,
@@ -321,7 +325,8 @@ export async function createUserProfile(
             srUser,
             messageServer,
             logger,
-            notifier
+            notifier,
+            logId
         );
         await checkAndPublishSchema(
             SchemaEntity.ROLE,
@@ -330,7 +335,8 @@ export async function createUserProfile(
             srUser,
             messageServer,
             logger,
-            notifier
+            notifier,
+            logId
         );
         await checkAndPublishSchema(
             SchemaEntity.USER_PERMISSIONS,
@@ -339,7 +345,8 @@ export async function createUserProfile(
             srUser,
             messageServer,
             logger,
-            notifier
+            notifier,
+            logId
         );
         if (entity) {
             const schema = await dataBaseServer.findOne(SchemaCollection, {
@@ -352,7 +359,7 @@ export async function createUserProfile(
             }
         }
     } catch (error) {
-        logger.error(error, ['GUARDIAN_SERVICE']);
+        logger.error(error, ['GUARDIAN_SERVICE'], logId);
     }
     // ------------------
     // Publish Schema -->
@@ -363,7 +370,7 @@ export async function createUserProfile(
     // -----------------------
     notifier.completedAndStart('Publish VC Document');
     if (vcDocument) {
-        logger.info('Create VC Document', ['GUARDIAN_SERVICE']);
+        logger.info('Create VC Document', ['GUARDIAN_SERVICE'], logId);
 
         let credentialSubject: any = { ...vcDocument };
         credentialSubject.id = userDID;
@@ -390,7 +397,7 @@ export async function createUserProfile(
             vcDoc.topicId = vcMessageResult.getTopicId();
             await dataBaseServer.update(VcDocumentCollection, null, vcDoc);
         } catch (error) {
-            logger.error(error, ['GUARDIAN_SERVICE']);
+            logger.error(error, ['GUARDIAN_SERVICE'], logId);
             vcDoc.hederaStatus = DocumentStatus.FAILED;
             await dataBaseServer.update(VcDocumentCollection, null, vcDoc);
         }
@@ -425,7 +432,7 @@ export async function createUserProfile(
     // -----------------------
     if (user.role === UserRole.STANDARD_REGISTRY) {
         messageServer.setTopicObject(topicConfig);
-        await createDefaultRoles(user.id.toString(), userDID, currentDidDocument, messageServer, notifier);
+        await createDefaultRoles(user.id.toString(), userDID, currentDidDocument, messageServer, notifier, logId);
     }
 
     notifier.completed();
@@ -552,7 +559,8 @@ export async function saveUserProfile(
     profile: ICredentials,
     notifier: INotifier,
     user: IAuthUser,
-    logger: PinoLogger
+    logger: PinoLogger,
+    logId: string | null
 ) {
     const users = new Users();
     notifier.completedAndStart('Update user');
@@ -562,11 +570,11 @@ export async function saveUserProfile(
         hederaAccountId: profile.hederaAccountId,
         useFireblocksSigning: profile.useFireblocksSigning,
         location: LocationType.LOCAL
-    });
+    }, logId);
 
     notifier.completedAndStart('Update permissions');
     if (user.role === UserRole.USER) {
-        const changeRole = await users.setDefaultUserRole(username, profile.parent);
+        const changeRole = await users.setDefaultUserRole(username, profile.parent, logId);
         await serDefaultRole(changeRole, EntityOwner.sr(null, profile.parent))
     }
 
@@ -592,7 +600,8 @@ export async function saveRemoteUserProfile(
     profile: ICredentials,
     notifier: INotifier,
     user: IAuthUser,
-    logger: PinoLogger
+    logger: PinoLogger,
+    logId: string | null
 ) {
     const users = new Users();
     notifier.completedAndStart('Update user');
@@ -601,11 +610,11 @@ export async function saveRemoteUserProfile(
         parent: profile.parent,
         hederaAccountId: profile.hederaAccountId,
         location: LocationType.REMOTE
-    });
+    }, logId);
 
     notifier.completedAndStart('Update permissions');
     if (user.role === UserRole.USER) {
-        const changeRole = await users.setDefaultUserRole(username, profile.parent);
+        const changeRole = await users.setDefaultUserRole(username, profile.parent, logId);
         await serDefaultRole(changeRole, EntityOwner.sr(null, profile.parent))
     }
 
@@ -624,7 +633,8 @@ export async function createDefaultRoles(
     did: string,
     didDocument: CommonDidDocument,
     messageServer: MessageServer,
-    notifier: INotifier
+    notifier: INotifier,
+    logId: string | null
 ): Promise<void> {
     notifier.completedAndStart('Create roles');
     const owner = EntityOwner.sr(userId, did);
@@ -709,7 +719,7 @@ export async function createDefaultRoles(
         const message = new GuardianRoleMessage(MessageAction.CreateRole);
         message.setRole(credentialSubject);
         message.setDocument(document);
-        await messageServer.sendMessage(message, true, null, userId);
+        await messageServer.sendMessage(message, true, null, logId);
 
         vcDocumentCollectionObjects.push({
             hash: message.hash,
@@ -728,7 +738,7 @@ export async function createDefaultRoles(
     }
     await dataBaseServer.saveMany(VcDocumentCollection, vcDocumentCollectionObjects);
 
-    await users.setDefaultRole(ids[0], owner.creator);
+    await users.setDefaultRole(ids[0], owner.creator, logId);
 }
 
 export async function validateCommonDid(json: string | any, keys: IDidKey[]): Promise<CommonDidDocument> {
@@ -796,7 +806,8 @@ export async function checkAndPublishSchema(
     srUser: IOwner,
     messageServer: MessageServer,
     logger: PinoLogger,
-    notifier: INotifier
+    notifier: INotifier,
+    logId: string | null
 ): Promise<void> {
     const dataBaseServer = new DatabaseServer();
 
@@ -813,10 +824,12 @@ export async function checkAndPublishSchema(
         });
         if (schema) {
             notifier.info(`Publish System Schema (${entity})`);
-            logger.info(`Publish System Schema (${entity})`, ['GUARDIAN_SERVICE']);
+            logger.info(`Publish System Schema (${entity})`, ['GUARDIAN_SERVICE'], logId);
             schema.creator = userDID;
             schema.owner = userDID;
-            const item = await publishSystemSchema(schema, srUser, messageServer, MessageAction.PublishSystemSchema, notifier);
+            const item = await publishSystemSchema(
+                schema, srUser, messageServer, MessageAction.PublishSystemSchema, notifier
+            );
             await dataBaseServer.save(SchemaCollection, item);
         }
     }

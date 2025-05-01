@@ -48,14 +48,14 @@ export class SchemaCache {
  * @param messageId
  * @param log
  */
-export async function loadSchema(messageId: string, log: PinoLogger): Promise<any> {
+export async function loadSchema(messageId: string, log: PinoLogger, userId: string | null): Promise<any> {
     try {
         let schemaToImport = SchemaCache.getSchema(messageId);
         if (!schemaToImport) {
             const messageServer = new MessageServer(null, null);
-            log.info(`loadSchema: ${messageId}`, ['GUARDIAN_SERVICE']);
+            log.info(`loadSchema: ${messageId}`, ['GUARDIAN_SERVICE'], userId);
             const message = await messageServer.getMessage<SchemaMessage>(messageId, MessageType.Schema);
-            log.info(`loadedSchema: ${messageId}`, ['GUARDIAN_SERVICE']);
+            log.info(`loadedSchema: ${messageId}`, ['GUARDIAN_SERVICE'], userId);
             schemaToImport = {
                 iri: null,
                 uuid: message.uuid,
@@ -84,7 +84,7 @@ export async function loadSchema(messageId: string, log: PinoLogger): Promise<an
         }
         return schemaToImport;
     } catch (error) {
-        log.error(error, ['GUARDIAN_SERVICE']);
+        log.error(error, ['GUARDIAN_SERVICE'], userId);
         throw new Error(`Cannot load schema ${messageId}`);
     }
 }

@@ -87,7 +87,7 @@ export class ToolBlock {
             }
         }
         if (event.inputType === PolicyInputEventType.RefreshEvent) {
-            ref.updateBlock(event.data, event.user, ref.tag);
+            ref.updateBlock(event.data, event.user, ref.tag, event.user?.userId);
         }
     }
     /**

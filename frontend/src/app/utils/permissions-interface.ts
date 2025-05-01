@@ -194,3 +194,9 @@ export const actionAccessName = [
 export const delegateAccessName = [
     'Delegate',
 ]
+
+export const actionLogsName = [
+    'Read',
+    'System',
+    'Users',
+]

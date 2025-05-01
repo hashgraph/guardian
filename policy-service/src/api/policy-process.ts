@@ -43,7 +43,8 @@ class AppModule { }
 const {
     policyId,
     policyServiceName,
-    skipRegistration
+    skipRegistration,
+    policyOwnerId
 } = JSON.parse(process.env.POLICY_START_OPTIONS);
 
 process.env.SERVICE_CHANNEL = policyServiceName;
@@ -94,7 +95,8 @@ Promise.all([
         } catch (error) {
             await logger.warn(
                 'HEDERA_CUSTOM_NODES field in settings: ' + error.message,
-                ['POLICY', policyConfig.name, policyId.toString()]
+                ['POLICY', policyConfig.name, policyId.toString()],
+                policyOwnerId
             );
             console.warn(error);
         }
@@ -109,7 +111,8 @@ Promise.all([
             await logger.warn(
                 'HEDERA_CUSTOM_MIRROR_NODES field in settings: ' +
                 error.message,
-                ['POLICY', policyConfig.name, policyId.toString()]
+                ['POLICY', policyConfig.name, policyId.toString()],
+                policyOwnerId
             );
             console.warn(error);
         }
@@ -132,12 +135,12 @@ Promise.all([
     workersHelper.initListeners();
 
     // try {
-    await logger.info(`Process for with id ${policyId} was started started PID: ${process.pid}`, ['POLICY', policyId]);
+    await logger.info(`Process for with id ${policyId} was started started PID: ${process.pid}`, ['POLICY', policyId], policyOwnerId);
 
     const generator = new BlockTreeGenerator();
     const policyValidator = new PolicyValidator(policyConfig);
 
-    const policyModel = await generator.generate(policyConfig, skipRegistration, policyValidator, logger);
+    const policyModel = await generator.generate(policyConfig, skipRegistration, policyValidator, logger, policyOwnerId);
     if ((policyModel as { type: 'error', message: string }).type === 'error') {
         await generator.publish(PolicyEvents.POLICY_READY, {
             policyId: policyId.toString(),
@@ -147,11 +150,11 @@ Promise.all([
         // throw new Error((policyModel as {type: 'error', message: string}).message);
     }
 
-    const synchronizationService = new SynchronizationService(policyConfig, logger);
+    const synchronizationService = new SynchronizationService(policyConfig, logger, policyOwnerId);
     synchronizationService.start();
 
-    generator.getPolicyMessages(PolicyEvents.DELETE_POLICY, policyId, async () => {
-        await generator.destroyModel(policyId, logger)
+    generator.getPolicyMessages(PolicyEvents.DELETE_POLICY, policyId, async (payload: {policyOwnerId: string | null}) => {
+        await generator.destroyModel(policyId, logger, payload.policyOwnerId)
         synchronizationService.stop();
         process.exit(0);
     });
@@ -166,7 +169,7 @@ Promise.all([
         new LargePayloadContainer().runServer();
     }
 
-    await logger.info('Start policy', ['POLICY', policyConfig.name, policyId.toString()]);
+    await logger.info('Start policy', ['POLICY', policyConfig.name, policyId.toString()], policyOwnerId);
     // } catch (e) {
     //     process.exit(500);
     // }

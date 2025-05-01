@@ -58,7 +58,6 @@ export class PolicyRestore {
     }
 
     public async init(): Promise<void> {
-        console.log('-- init')
         const policy = await DatabaseServer.getPolicyById(this.policyId);
         if (policy) {
             await this._loadBackup(policy);
@@ -68,7 +67,6 @@ export class PolicyRestore {
     }
 
     public async restore(file: string): Promise<void> {
-        console.log('-- restore')
         const diff = FileHelper.decryptFile(file);
 
         if (diff.type === 'backup') {
@@ -79,7 +77,6 @@ export class PolicyRestore {
     }
 
     private async _restoreBackup(backup: IPolicyDiff): Promise<void> {
-        console.log('-- _restoreBackup');
         const oldDiff: IPolicyDiff = this.lastDiff.file || {};
 
         oldDiff.uuid = backup.uuid;
@@ -105,11 +102,7 @@ export class PolicyRestore {
     }
 
     private async _restoreDiff(diff: IPolicyDiff): Promise<void> {
-        console.log('-- _restoreDiff');
         const oldDiff: IPolicyDiff = this.lastDiff.file || {};
-
-        // console.log('-- _restoreDiff 1', JSON.stringify(diff));
-
         oldDiff.uuid = diff.uuid;
         oldDiff.index = diff.index;
         oldDiff.lastUpdate = diff.lastUpdate;
@@ -150,8 +143,6 @@ export class PolicyRestore {
             row.file = await FileHelper.loadFile(row.fileId);
         }
         this.lastDiff = row;
-        console.log('-- _loadBackup (r)')
-        // console.log(JSON.stringify(this.lastDiff))
     }
 
     private async _saveBackup(backup: IPolicyDiff) {

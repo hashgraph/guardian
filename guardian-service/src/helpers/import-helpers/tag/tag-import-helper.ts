@@ -85,10 +85,11 @@ export async function importPolicyTags(
     policyToImport: IPolicyComponents,
     messageId: string,
     policyTopicId: string,
-    messageServer: MessageServer
+    messageServer: MessageServer,
+    userId: string | null
 ): Promise<IPolicyComponents> {
     const tagMessages = await messageServer
-        .getMessages<TagMessage>(policyTopicId, MessageType.Tag, MessageAction.PublishTag);
+        .getMessages<TagMessage>(policyTopicId, userId, MessageType.Tag, MessageAction.PublishTag);
     if (!Array.isArray(policyToImport.tags)) {
         policyToImport.tags = [];
     }

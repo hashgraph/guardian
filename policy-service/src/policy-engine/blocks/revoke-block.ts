@@ -41,6 +41,7 @@ export class RevokeBlock {
      * @param messageServer
      * @param ref
      * @param revokeMessage
+     * @param userId
      * @param parentId
      */
     async sendToHedera(
@@ -48,13 +49,14 @@ export class RevokeBlock {
         messageServer: MessageServer,
         ref: AnyBlockType,
         revokeMessage: string,
+        userId: string | null,
         parentId?: string[]
     ) {
-        const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId);
+        const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId, userId);
         message.revoke(revokeMessage, parentId);
         await messageServer
             .setTopicObject(topic)
-            .sendMessage(message, false);
+            .sendMessage(message, false, null, userId);
     }
 
     /**
@@ -141,9 +143,9 @@ export class RevokeBlock {
         const data = event.data.data;
         const doc = Array.isArray(data) ? data[0] : data;
 
-        const userCred = await PolicyUtils.getUserCredentials(ref, event.user.did);
-        const userHederaCred = await userCred.loadHederaCredentials(ref);
-        const signOptions = await userCred.loadSignOptions(ref);
+        const userCred = await PolicyUtils.getUserCredentials(ref, event.user.did, event?.user?.userId);
+        const userHederaCred = await userCred.loadHederaCredentials(ref, event?.user?.userId);
+        const signOptions = await userCred.loadSignOptions(ref, event?.user?.userId);
         const messageServer = new MessageServer(
             userHederaCred.hederaAccountId,
             userHederaCred.hederaAccountKey,
@@ -154,7 +156,7 @@ export class RevokeBlock {
 
         const policyTopicsMessages = [];
         for (const topic of policyTopics) {
-            const topicMessages = await messageServer.getMessages(topic.topicId);
+            const topicMessages = await messageServer.getMessages(topic.topicId, event?.user?.userId);
             policyTopicsMessages.push(...topicMessages);
         }
         const messagesToFind = policyTopicsMessages
@@ -173,6 +175,7 @@ export class RevokeBlock {
                     messageServer,
                     ref,
                     doc.comment,
+                    event?.user?.userId,
                     relatedMessage.parentIds
                 );
             }

@@ -156,7 +156,8 @@ export async function publishDefsSchemas(
     defs: any,
     user: IOwner,
     root: IRootConfig,
-    schemaMap: Map<string, string> | null
+    schemaMap: Map<string, string> | null,
+    userId: string | null
 ) {
     if (!defs) {
         return;
@@ -168,7 +169,7 @@ export async function publishDefsSchemas(
         });
         if (schema && schema.status !== SchemaStatus.PUBLISHED) {
             schema = await incrementSchemaVersion(schema.topicId, schema.iri, user);
-            await findAndPublishSchema(schema.id, schema.version, user, root, emptyNotifier(), schemaMap);
+            await findAndPublishSchema(schema.id, schema.version, user, root, emptyNotifier(), schemaMap, userId);
         }
     }
 }
@@ -187,7 +188,8 @@ export async function findAndPublishSchema(
     user: IOwner,
     root: IRootConfig,
     notifier: INotifier,
-    schemaMap: Map<string, string> | null
+    schemaMap: Map<string, string> | null,
+    userId: string | null
 ): Promise<SchemaCollection> {
     notifier.start('Load schema');
 
@@ -203,11 +205,11 @@ export async function findAndPublishSchema(
 
     notifier.completedAndStart('Publishing related schemas');
     const oldSchemaIri = item.iri;
-    await publishDefsSchemas(item.document?.$defs, user, root, schemaMap);
+    await publishDefsSchemas(item.document?.$defs, user, root, schemaMap, userId);
     item = await DatabaseServer.getSchema(id);
 
     notifier.completedAndStart('Resolve topic');
-    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true);
+    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true, userId);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topic);
     notifier.completedAndStart('Publish schema');
@@ -216,7 +218,7 @@ export async function findAndPublishSchema(
     item = await publishSchema(item, user, messageServer, MessageAction.PublishSchema);
 
     notifier.completedAndStart('Publish tags');
-    await publishSchemaTags(item, user, root);
+    await publishSchemaTags(item, user, root, userId);
 
     notifier.completedAndStart('Update in DB');
     await updateSchemaDocument(item);

@@ -32,8 +32,8 @@ async function publishPolicyLabel(
     item.config = publishLabelConfig(item.config);
 
     notifier.start('Create topic');
-    const topic = await getOrCreateTopic(item);
-    const user = await (new Users()).getHederaAccount(owner.creator);
+    const topic = await getOrCreateTopic(item, owner.id);
+    const user = await (new Users()).getHederaAccount(owner.creator, owner.id);
     const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
     messageServer.setTopicObject(topic);
 
@@ -64,7 +64,7 @@ async function publishPolicyLabel(
     const statMessage = new LabelMessage(MessageAction.PublishPolicyLabel);
     statMessage.setDocument(item, buffer);
     const statMessageResult = await messageServer
-        .sendMessage(statMessage);
+        .sendMessage(statMessage, true, null, owner.id);
 
     item.topicId = topic.topicId;
     item.messageId = statMessageResult.getId();
@@ -85,7 +85,8 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} new policy label
      */
     ApiResponse(MessageAPI.CREATE_POLICY_LABEL,
-        async (msg: { label: PolicyLabel, owner: IOwner }) => {
+        async (msg: { label: PolicyLabel, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -115,7 +116,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 const row = await DatabaseServer.createPolicyLabel(label);
                 return new MessageResponse(row);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -128,7 +129,8 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - policy labels
      */
     ApiResponse(MessageAPI.GET_POLICY_LABELS,
-        async (msg: { filters: any, owner: IOwner }) => {
+        async (msg: { filters: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -168,7 +170,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 const [items, count] = await DatabaseServer.getPolicyLabelsAndCount(query, otherOptions);
                 return new MessageResponse({ items, count });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -181,7 +183,8 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - policy label
      */
     ApiResponse(MessageAPI.GET_POLICY_LABEL,
-        async (msg: { definitionId: string, owner: IOwner }) => {
+        async (msg: { definitionId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -193,7 +196,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 }
                 return new MessageResponse(item);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -206,7 +209,8 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - relationships
      */
     ApiResponse(MessageAPI.GET_POLICY_LABEL_RELATIONSHIPS,
-        async (msg: { definitionId: string, owner: IOwner }) => {
+        async (msg: { definitionId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -234,7 +238,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     documentsSchemas
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -250,8 +254,10 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             definitionId: string,
             label: PolicyLabel,
-            owner: IOwner
+            owner: IOwner,
+            userId: string | null
         }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -272,7 +278,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 const result = await DatabaseServer.updatePolicyLabel(item);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -285,7 +291,8 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
      * @returns {boolean} - Operation success
      */
     ApiResponse(MessageAPI.DELETE_POLICY_LABEL,
-        async (msg: { definitionId: string, owner: IOwner }) => {
+        async (msg: { definitionId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -301,7 +308,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 await DatabaseServer.removePolicyLabel(item);
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -314,7 +321,8 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - policy label
      */
     ApiResponse(MessageAPI.PUBLISH_POLICY_LABEL,
-        async (msg: { definitionId: string, owner: IOwner }) => {
+        async (msg: { definitionId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -333,7 +341,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 return new MessageResponse(result);
 
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -346,7 +354,8 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - policy label
      */
     ApiResponse(MessageAPI.PUBLISH_POLICY_LABEL_ASYNC,
-        async (msg: { definitionId: string, owner: IOwner, task: any }) => {
+        async (msg: { definitionId: string, owner: IOwner, task: any, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -366,13 +375,13 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     const result = await publishPolicyLabel(item, owner, notifier, logger);
                     notifier.result(result);
                 }, async (error) => {
-                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                     notifier.error(error);
                 });
 
                 return new MessageResponse(task);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -385,7 +394,8 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - zip file
      */
     ApiResponse(MessageAPI.EXPORT_POLICY_LABEL_FILE,
-        async (msg: { definitionId: string, owner: IOwner }) => {
+        async (msg: { definitionId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid export theme parameters');
@@ -408,7 +418,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
 
                 return new BinaryMessageResponse(file);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -421,7 +431,8 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - new policy label
      */
     ApiResponse(MessageAPI.IMPORT_POLICY_LABEL_FILE,
-        async (msg: { zip: any, policyId: string, owner: IOwner }) => {
+        async (msg: { zip: any, policyId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { zip, policyId, owner } = msg;
                 if (!zip) {
@@ -455,7 +466,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse(row);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -468,7 +479,8 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} Preview
      */
     ApiResponse(MessageAPI.PREVIEW_POLICY_LABEL_FILE,
-        async (msg: { zip: any, owner: IOwner }) => {
+        async (msg: { zip: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { zip } = msg;
                 if (!zip) {
@@ -478,7 +490,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 const { label } = preview;
                 return new MessageResponse(label);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -496,8 +508,11 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 text?: string,
                 owner?: string,
                 components?: string,
-            }, owner: IOwner
+            },
+            owner: IOwner,
+            userId: string | null
         }) => {
+            const userId = msg?.userId
             try {
                 const { options } = msg;
 
@@ -546,7 +561,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageResponse({ labels: [], statistics: [] });
                 }
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -563,10 +578,11 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
             definitionId: string,
             owner: IOwner,
             pageIndex?: string,
-            pageSize?: string
+            pageSize?: string,
+            userId: string | null
         }) => {
+            const userId = msg?.userId
             try {
-
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
                 }
@@ -603,7 +619,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     count: vps.length
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -619,8 +635,10 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             documentId: string,
             definitionId: string,
-            owner: IOwner
+            owner: IOwner,
+            userId: string | null
         }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -653,7 +671,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     unrelatedDocuments: []
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -672,8 +690,10 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 target: string,
                 documents: any[]
             },
-            owner: IOwner
+            owner: IOwner,
+            userId: string | null
         }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters');
@@ -719,8 +739,8 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 const vcs = validator.getVCs();
                 const vpObject = await generateVpDocument(vcs, schemaObjects, owner);
 
-                const topic = await getOrCreateTopic(item);
-                const user = await (new Users()).getHederaAccount(owner.creator);
+                const topic = await getOrCreateTopic(item, userId);
+                const user = await (new Users()).getHederaAccount(owner.creator, userId);
                 const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
 
                 const vpMessage = new LabelDocumentMessage(MessageAction.CreateLabelDocument);
@@ -730,7 +750,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 vpMessage.setRelationships(ids);
                 const vpMessageResult = await messageServer
                     .setTopicObject(topic)
-                    .sendMessage(vpMessage);
+                    .sendMessage(vpMessage, true, null, userId);
 
                 const row = await DatabaseServer.createLabelDocument({
                     definitionId: item.id,
@@ -747,7 +767,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 });
                 return new MessageResponse(row);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -763,8 +783,10 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             definitionId: string,
             filters: any,
-            owner: IOwner
+            owner: IOwner,
+            userId: string | null
         }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -813,7 +835,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse({ items, count });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -829,8 +851,10 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             definitionId: string,
             documentId: string,
-            owner: IOwner
+            owner: IOwner,
+            userId: string | null
         }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -847,7 +871,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse(document);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -863,8 +887,10 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             definitionId: string,
             documentId: string,
-            owner: IOwner
+            owner: IOwner,
+            userId: string | null
         }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -892,7 +918,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     relationships
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });

@@ -246,7 +246,8 @@ export class PolicyEngine extends NatsService {
 
     /**
      * Get policies by category Id
-     * @param filters
+     * @param categoryIds
+     * @param text
      */
     public async getPoliciesByCategoriesAndText(
         categoryIds: string[],
@@ -577,8 +578,8 @@ export class PolicyEngine extends NatsService {
     /**
      * Get block about information
      */
-    public async blockAbout() {
-        return await this.sendMessage(PolicyEngineEvents.BLOCK_ABOUT, null);
+    public async blockAbout(user: IAuthUser) {
+        return await this.sendMessage(PolicyEngineEvents.BLOCK_ABOUT, { user });
     }
 
     /**
@@ -1086,7 +1087,7 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      * @param messageId
      * @param user
-    */
+     */
     public async rejectRemoteRequest(
         messageId: string,
         user: IAuthUser

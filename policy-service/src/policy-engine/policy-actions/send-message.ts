@@ -12,10 +12,11 @@ export class SendMessage {
         topic: TopicConfig,
         message: Message,
         owner: string,
+        userId: string | null
     ): Promise<Message> {
-        const userCred = await PolicyUtils.getUserCredentials(ref, owner);
-        const userHederaCred = await userCred.loadHederaCredentials(ref);
-        const userSignOptions = await userCred.loadSignOptions(ref);
+        const userCred = await PolicyUtils.getUserCredentials(ref, owner, userId);
+        const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
+        const userSignOptions = await userCred.loadSignOptions(ref, userId);
         const messageServer = new MessageServer(
             userHederaCred.hederaAccountId,
             userHederaCred.hederaAccountKey,
@@ -34,8 +35,9 @@ export class SendMessage {
         topic: TopicConfig,
         message: Message,
         owner: string,
+        userId: string | null
     ): Promise<any> {
-        const userAccount = await PolicyUtils.getHederaAccountId(ref, owner);
+        const userAccount = await PolicyUtils.getHederaAccountId(ref, owner, userId);
 
         const data = {
             uuid: GenerateUUIDv4(),
@@ -53,17 +55,21 @@ export class SendMessage {
         return data;
     }
 
-    public static async response(row: PolicyAction, user: PolicyUser) {
+    public static async response(
+        row: PolicyAction,
+        user: PolicyUser,
+        userId: string | null
+    ) {
         const ref = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
         const data = row.document;
         const { topic, document } = data;
 
         const message = MessageServer.fromJson(document);
-        const topicConfig = await TopicConfig.fromObject(topic);
+        const topicConfig = await TopicConfig.fromObject(topic, false, userId);
 
-        const userCred = await PolicyUtils.getUserCredentials(ref, user.did);
-        const userHederaCred = await userCred.loadHederaCredentials(ref);
-        const userSignOptions = await userCred.loadSignOptions(ref);
+        const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
+        const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
+        const userSignOptions = await userCred.loadSignOptions(ref, userId);
         const messageServer = new MessageServer(
             userHederaCred.hederaAccountId,
             userHederaCred.hederaAccountKey,
@@ -81,18 +87,25 @@ export class SendMessage {
         };
     }
 
-    public static async complete(row: PolicyAction): Promise<Message> {
+    public static async complete(
+        row: PolicyAction,
+        userId: string | null
+    ): Promise<Message> {
         const data = row.document;
         const { message } = data;
         return message;
     }
 
-    public static async validate(request: PolicyAction, response: PolicyAction): Promise<boolean> {
+    public static async validate(
+        request: PolicyAction,
+        response: PolicyAction,
+        userId: string | null
+    ): Promise<boolean> {
         try {
             const data = response.document;
             const { messageId } = data;
 
-            const message = await MessageServer.getMessage(messageId);
+            const message = await MessageServer.getMessage(messageId, userId);
             await MessageServer.loadDocument(message);
 
             data.message = message;

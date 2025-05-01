@@ -27,17 +27,18 @@ async function preparePolicyPreviewMessage(
     messageId: string,
     user: IOwner,
     notifier: INotifier,
-    logger: PinoLogger
+    logger: PinoLogger,
+    userId: string | null
 ): Promise<any> {
     notifier.start('Resolve Hedera account');
     if (!messageId) {
         throw new Error('Policy ID in body is empty');
     }
 
-    await logger.info(`Import policy by message`, ['GUARDIAN_SERVICE']);
+    await logger.info(`Import policy by message`, ['GUARDIAN_SERVICE'], userId);
 
     const users = new Users();
-    const root = await users.getHederaAccount(user.creator);
+    const root = await users.getHederaAccount(user.creator, userId);
 
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
     const message = await messageServer.getMessage<PolicyMessage>(messageId);
@@ -65,25 +66,27 @@ async function addPolicy(
     messageId: string,
     owner: IOwner,
     logger: PinoLogger,
-    notifier: INotifier
+    notifier: INotifier,
+    userId: string | null
 ) {
     const users = new Users();
     notifier.start('Resolve Hedera account');
-    const root = await users.getHederaAccount(owner.creator);
+    const root = await users.getHederaAccount(owner.creator, userId);
     notifier.completed();
-    const policyToImport = await PolicyImportExportHelper.loadPolicyMessage(messageId, root, notifier);
+    const policyToImport = await PolicyImportExportHelper.loadPolicyMessage(messageId, root, notifier, userId);
     const result = await PolicyImportExportHelper.importPolicy(
         ImportMode.VIEW,
         (new ImportPolicyOptions(logger))
             .setComponents(policyToImport)
             .setUser(owner)
             .setAdditionalPolicy({ messageId }),
-        notifier
+        notifier,
+        userId
     );
     if (result?.errors?.length) {
         const message = PolicyImportExportHelper.errorsMessage(result.errors);
         notifier.error(message);
-        await logger.warn(message, ['GUARDIAN_SERVICE']);
+        await logger.warn(message, ['GUARDIAN_SERVICE'], userId);
 
         return result;
     }
@@ -118,7 +121,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 }
                 return new MessageResponse(item);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
@@ -153,7 +156,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 const [items, count] = await DatabaseServer.getExternalPoliciesAndCount(query, otherOptions);
                 return new MessageResponse({ items, count });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
@@ -187,7 +190,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 const [items, count] = await DatabaseServer.groupExternalPoliciesAndCount(owner, offset, limit, full);
                 return new MessageResponse({ items, count });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
@@ -203,10 +206,10 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
         async (msg: { messageId: string, owner: IOwner }) => {
             try {
                 const { messageId, owner } = msg;
-                const policyToImport = await preparePolicyPreviewMessage(messageId, owner, emptyNotifier(), logger);
+                const policyToImport = await preparePolicyPreviewMessage(messageId, owner, emptyNotifier(), logger, owner?.id);
                 return new MessageResponse(policyToImport);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
@@ -226,7 +229,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 if (item) {
                     return new MessageError(`Item is already exist.`);
                 }
-                const policyToImport = await preparePolicyPreviewMessage(messageId, owner, emptyNotifier(), logger);
+                const policyToImport = await preparePolicyPreviewMessage(messageId, owner, emptyNotifier(), logger, owner?.id);
                 if (policyToImport.availability !== PolicyAvailability.PUBLIC) {
                     return new MessageError(`Policy is private.`);
                 }
@@ -250,7 +253,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse(externalPolicy);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
@@ -280,7 +283,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 RunFunctionAsync(async () => {
                     let errors: any[] = [];
                     if (!policy) {
-                        const result = await addPolicy(messageId, owner, logger, notifier);
+                        const result = await addPolicy(messageId, owner, logger, notifier, owner?.id);
                         errors = result.errors;
                     }
 
@@ -291,13 +294,13 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
 
                     notifier.result({ id: messageId, errors });
                 }, async (error) => {
-                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
                     notifier.error(error);
                 });
 
                 return new MessageResponse(task);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
@@ -327,7 +330,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
 
                 let errors: any[] = [];
                 if (!policy) {
-                    const result = await addPolicy(messageId, owner, logger, notifier);
+                    const result = await addPolicy(messageId, owner, logger, notifier, owner?.id);
                     errors = result.errors;
                 }
 
@@ -340,7 +343,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
@@ -358,7 +361,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
                 }
-                const { messageId, task } = msg;
+                const { messageId, owner, task } = msg;
 
                 const items = await DatabaseServer.getExternalPolicies({ messageId });
                 if (!items || !items.length) {
@@ -374,13 +377,13 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
 
                     notifier.result({ id: messageId, errors: [] });
                 }, async (error) => {
-                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
                     notifier.error(error);
                 });
 
                 return new MessageResponse(task);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
@@ -411,7 +414,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 }
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });

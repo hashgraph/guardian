@@ -73,7 +73,7 @@ export class SynchronizationTask {
                         }
                     } catch (error) {
                         isTaskRunning = false;
-                        await this.logger.error(error, ['GUARDIAN_SERVICE']);
+                        await this.logger.error(error, ['GUARDIAN_SERVICE'], null);
                     }
                 }
                 this._job = new CronJob(this._mask, taskExecution);

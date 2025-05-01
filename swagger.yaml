@@ -18365,6 +18365,9 @@ components:
             - ARTIFACTS_FILE_DELETE
             - CONTRACTS_CONTRACT_READ
             - CONTRACTS_CONTRACT_EXECUTE
+            - LOG_LOG_READ
+            - LOG_SYSTEM_READ
+            - LOG_USERS_READ
             - MODULES_MODULE_READ
             - MODULES_MODULE_CREATE
             - MODULES_MODULE_UPDATE
@@ -18444,6 +18447,9 @@ components:
             - ARTIFACTS_FILE_DELETE
             - CONTRACTS_CONTRACT_READ
             - CONTRACTS_CONTRACT_EXECUTE
+            - LOG_LOG_READ
+            - LOG_SYSTEM_READ
+            - LOG_USERS_READ
             - MODULES_MODULE_READ
             - MODULES_MODULE_CREATE
             - MODULES_MODULE_UPDATE
@@ -18585,6 +18591,8 @@ components:
             - ASSIGNED
             - PUBLISHED
             - ASSIGNED_AND_PUBLISHED
+            - SYSTEM
+            - USERS
           example: READ
         disabled:
           type: boolean

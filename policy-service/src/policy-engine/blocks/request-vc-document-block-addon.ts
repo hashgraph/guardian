@@ -193,12 +193,12 @@ export class RequestVcDocumentBlockAddon {
 
                 const _vcHelper = new VcHelper();
                 const idType = ref.options.idType;
-                const userAccountId = await PolicyUtils.getHederaAccountId(ref, user.did);
+                const userAccountId = await PolicyUtils.getHederaAccountId(ref, user.did, user.userId);
 
                 const credentialSubject = document;
                 credentialSubject.policyId = ref.policyId;
 
-                const newId = await PolicyActionsUtils.generateId(ref, idType, user);
+                const newId = await PolicyActionsUtils.generateId(ref, idType, user, user.userId);
                 if (newId) {
                     credentialSubject.id = newId;
                 }
@@ -227,7 +227,7 @@ export class RequestVcDocumentBlockAddon {
                 const groupContext = await PolicyUtils.getGroupContext(ref, user);
                 const uuid = await ref.components.generateUUID();
 
-                const vc = await PolicyActionsUtils.signVC(ref, credentialSubject, user.did, { uuid, group: groupContext });
+                const vc = await PolicyActionsUtils.signVC(ref, credentialSubject, user.did, { uuid, group: groupContext }, user.userId);
                 let item = PolicyUtils.createVC(ref, user, vc);
 
                 const accounts = PolicyUtils.getHederaAccounts(vc, userAccountId, this._schema);

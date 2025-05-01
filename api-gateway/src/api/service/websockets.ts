@@ -514,7 +514,7 @@ export class WebSocketsService {
                     break;
             }
         } catch (error) {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], null);
         }
     }
 
@@ -528,7 +528,7 @@ export class WebSocketsService {
         try {
             ws.send(JSON.stringify(message));
         } catch (error) {
-            this.logger.error(error, ['API_GATEWAY', 'websocket', 'send']);
+            this.logger.error(error, ['API_GATEWAY', 'websocket', 'send'], null);
         }
     }
 

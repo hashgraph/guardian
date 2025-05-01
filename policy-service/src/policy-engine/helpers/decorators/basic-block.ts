@@ -399,7 +399,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 if (typeof super.refreshAction === 'function') {
                     return await super.refreshAction(event);
                 }
-                this.updateBlock(event.data, event.user, this.tag);
+                this.updateBlock(event.data, event.user, this.tag, event?.user?.userId);
             }
 
             /**
@@ -424,8 +424,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param state
              * @param user
              * @param tag
+             * @param userId
              */
-            public async updateBlock(state: any, user: PolicyUser, tag: string) {
+            public async updateBlock(state: any, user: PolicyUser, tag: string, userId: string | null) {
                 await this.saveState();
                 const users: Map<string, PolicyUser> = new Map<string, PolicyUser>();
                 if (this.options.followUser) {
@@ -433,7 +434,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                         users.set(user.did, user);
                     }
                 } else {
-                    const allUsers = await this.allAvailableUsers(user);
+                    const allUsers = await this.allAvailableUsers(user, userId);
                     for (const item of allUsers.values()) {
                         users.set(item.did, item);
                     }
@@ -570,8 +571,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             /**
              * Get all users
              * @param currentUser
+             * @param userId
              */
-            public async allAvailableUsers(currentUser: PolicyUser): Promise<Map<string, PolicyUser>> {
+            public async allAvailableUsers(currentUser: PolicyUser, userId: string | null): Promise<Map<string, PolicyUser>> {
                 const result: Map<string, PolicyUser> = new Map<string, PolicyUser>();
                 if (this.dryRun) {
                     const virtualUser = await PolicyComponentsUtils.GetActiveVirtualUser(this as any);
@@ -581,7 +583,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 } else {
                     const allUsers = await this.databaseServer.getAllPolicyUsers(this.policyId);
                     for (const group of allUsers) {
-                        const user = await PolicyComponentsUtils.GetPolicyUserByGroup(group, this as any);
+                        const user = await PolicyComponentsUtils.GetPolicyUserByGroup(group, this as any, userId);
                         if (this.hasPermission(user)) {
                             result.set(user.did, user);
                         }
@@ -597,7 +599,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                         const owners = [this.policyOwner];
                         for (const owner of owners) {
                             if (!result.has(owner)) {
-                                const user = await PolicyComponentsUtils.GetPolicyUserByDID(owner, null, this as any);
+                                const user = await PolicyComponentsUtils.GetPolicyUserByDID(owner, null, this as any, userId);
                                 if (user) {
                                     result.set(user.did, user);
                                 }
@@ -702,7 +704,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @protected
              */
             protected log(message: string) {
-                this.logger.info(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId]);
+                this.logger.info(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId], this.policyInstance.ownerId);
             }
 
             /**
@@ -711,7 +713,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @protected
              */
             protected error(message: string) {
-                this.logger.error(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId]);
+                this.logger.error(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId], this.policyInstance.ownerId);
             }
 
             /**
@@ -720,7 +722,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @protected
              */
             protected warn(message: string) {
-                this.logger.warn(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId]);
+                this.logger.warn(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId], this.policyInstance.ownerId);
             }
 
             /**

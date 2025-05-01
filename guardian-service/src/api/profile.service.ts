@@ -34,104 +34,119 @@ export class ProfileController {
  */
 export function profileAPI(logger: PinoLogger) {
     ApiResponse(MessageAPI.GET_BALANCE,
-        async (msg: { username: string }) => {
+        async (msg: {
+            user: IAuthUser,
+            username: string
+        }) => {
             try {
-                const { username } = msg;
+                const { username, user } = msg;
                 const wallet = new Wallet();
                 const users = new Users();
                 const workers = new Workers();
-                const user = await users.getUser(username);
+                const target = await users.getUser(username, user.id);
 
-                if (!user) {
+                if (!target) {
                     return new MessageResponse(null);
                 }
 
-                if (!user.hederaAccountId) {
+                if (!target.hederaAccountId) {
                     return new MessageResponse(null);
                 }
 
-                const key = await wallet.getKey(user.walletToken, KeyType.KEY, user.did);
+                const key = await wallet.getKey(target.walletToken, KeyType.KEY, target.did);
                 const balance = await workers.addNonRetryableTask({
                     type: WorkerTaskType.GET_USER_BALANCE,
                     data: {
-                        hederaAccountId: user.hederaAccountId,
+                        hederaAccountId: target.hederaAccountId,
                         hederaAccountKey: key
                     }
-                }, 20, user.id.toString());
+                }, 20, user.id);
                 return new MessageResponse({
                     balance,
                     unit: 'Hbar',
-                    user: user ? {
-                        username: user.username,
-                        did: user.did
+                    user: target ? {
+                        username: target.username,
+                        did: target.did
                     } : null
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 console.error(error);
                 return new MessageError(error, 500);
             }
         });
 
     ApiResponse(MessageAPI.GET_USER_BALANCE,
-        async (msg: { username: string }) => {
+        async (msg: {
+            user: IAuthUser,
+            username: string
+        }) => {
             try {
-                const { username } = msg;
+                const { username, user } = msg;
 
                 const wallet = new Wallet();
                 const users = new Users();
                 const workers = new Workers();
 
-                const user = await users.getUser(username);
+                const target = await users.getUser(username, user.id);
 
-                if (!user) {
+                if (!target) {
                     return new MessageResponse('Invalid Account');
                 }
 
-                if (!user.hederaAccountId) {
+                if (!target.hederaAccountId) {
                     return new MessageResponse('Invalid Hedera Account Id');
                 }
 
-                const key = await wallet.getKey(user.walletToken, KeyType.KEY, user.did);
+                const key = await wallet.getKey(target.walletToken, KeyType.KEY, target.did);
                 const balance = await workers.addNonRetryableTask({
                     type: WorkerTaskType.GET_USER_BALANCE,
                     data: {
-                        hederaAccountId: user.hederaAccountId,
+                        hederaAccountId: target.hederaAccountId,
                         hederaAccountKey: key
                     }
-                }, 20, user.id.toString());
+                }, 20, target.id.toString());
 
                 return new MessageResponse(balance);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 console.error(error);
                 return new MessageError(error, 500);
             }
         });
 
     ApiResponse(MessageAPI.CREATE_USER_PROFILE_COMMON,
-        async (msg: { username: string, profile: any }) => {
+        async (msg: {
+            user: IAuthUser,
+            username: string,
+            profile: any
+        }) => {
             try {
-                const { username, profile } = msg;
-                const did = await setupUserProfile(username, profile, emptyNotifier(), logger);
+                const { username, profile, user } = msg;
+                const did = await setupUserProfile(username, profile, emptyNotifier(), logger, user.id);
                 return new MessageResponse(did);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 console.error(error);
                 return new MessageError(error, 500);
             }
         });
 
     ApiResponse(MessageAPI.CREATE_USER_PROFILE_COMMON_ASYNC,
-        async (msg: { username: string, profile: any, task: any }) => {
-            const { username, profile, task } = msg;
+        async (msg: {
+            user: IAuthUser,
+            username: string,
+            profile: any,
+            task: any
+        }) => {
+            const { user, username, profile, task } = msg;
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
-                const did = await setupUserProfile(username, profile, notifier, logger);
+                const did = await setupUserProfile(username, profile, notifier, logger, user.id);
                 notifier.result(did);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], user.id);
                 notifier.error(error);
             });
 
@@ -139,8 +154,13 @@ export function profileAPI(logger: PinoLogger) {
         });
 
     ApiResponse(MessageAPI.RESTORE_USER_PROFILE_COMMON_ASYNC,
-        async (msg: { username: string, profile: any, task: any }) => {
-            const { username, profile, task } = msg;
+        async (msg: {
+            user: IAuthUser,
+            username: string,
+            profile: any,
+            task: any
+        }) => {
+            const { user, username, profile, task } = msg;
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
@@ -156,7 +176,7 @@ export function profileAPI(logger: PinoLogger) {
                     didKeys
                 } = profile;
 
-                const user = await new Users().getUser(username);
+                const target = await new Users().getUser(username, user.id);
 
                 try {
                     const workers = new Workers();
@@ -165,7 +185,7 @@ export function profileAPI(logger: PinoLogger) {
                     await workers.addNonRetryableTask({
                         type: WorkerTaskType.GET_USER_BALANCE,
                         data: { hederaAccountId, hederaAccountKey }
-                    }, 20, user.id.toString());
+                    }, 20, target.id.toString());
                 } catch (error) {
                     throw new Error(`Invalid Hedera account or key.`);
                 }
@@ -186,12 +206,13 @@ export function profileAPI(logger: PinoLogger) {
                     hederaAccountKey,
                     topicId,
                     oldDidDocument,
-                    logger
+                    logger,
+                    user.id
                 )
                 notifier.completed();
                 notifier.result('did');
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], user.id);
                 notifier.error(error);
             });
 
@@ -199,8 +220,13 @@ export function profileAPI(logger: PinoLogger) {
         });
 
     ApiResponse(MessageAPI.GET_ALL_USER_TOPICS_ASYNC,
-        async (msg: { username: string, profile: any, task: any }) => {
-            const { username, profile, task } = msg;
+        async (msg: {
+            user: IAuthUser,
+            username: string,
+            profile: any,
+            task: any
+        }) => {
+            const { user, username, profile, task } = msg;
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
@@ -236,12 +262,13 @@ export function profileAPI(logger: PinoLogger) {
                     username,
                     hederaAccountId,
                     hederaAccountKey,
-                    did
+                    did,
+                    user.id
                 )
                 notifier.completed();
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 notifier.error(error);
             });
 
@@ -249,7 +276,10 @@ export function profileAPI(logger: PinoLogger) {
         });
 
     ApiResponse(MessageAPI.VALIDATE_DID_DOCUMENT,
-        async (msg: { document: any }) => {
+        async (msg: {
+            user: IAuthUser,
+            document: any
+        }) => {
             try {
                 const { document } = msg;
                 const result = {
@@ -292,13 +322,17 @@ export function profileAPI(logger: PinoLogger) {
                 }
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.VALIDATE_DID_KEY,
-        async (msg: { document: any, keys: any }) => {
+        async (msg: {
+            user: IAuthUser,
+            document: any,
+            keys: any
+        }) => {
             try {
                 const { document, keys } = msg;
                 for (const item of keys) {
@@ -321,13 +355,15 @@ export function profileAPI(logger: PinoLogger) {
                     return new MessageResponse(keys);
                 }
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.GET_USER_PROFILE,
-        async (msg: { user: IAuthUser }) => {
+        async (msg: {
+            user: IAuthUser
+        }) => {
             try {
                 const { user } = msg;
                 const result = {
@@ -371,7 +407,7 @@ export function profileAPI(logger: PinoLogger) {
                 }
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 return new MessageError(error);
             }
         });

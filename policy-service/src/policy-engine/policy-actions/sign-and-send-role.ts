@@ -11,17 +11,18 @@ export class SignAndSendRole {
         ref: AnyBlockType,
         subject: any,
         group: any,
-        uuid: string
+        uuid: string,
+        userId: string | null
     ): Promise<{
         vc: VcDocumentDefinition;
         message: RoleMessage;
     }> {
         const did = group.owner;
         const vcHelper = new VcHelper();
-        const userCred = await PolicyUtils.getUserCredentials(ref, did);
+        const userCred = await PolicyUtils.getUserCredentials(ref, did, userId);
 
-        const userSignOptions = await userCred.loadSignOptions(ref);
-        const userDidDocument = await userCred.loadDidDocument(ref);
+        const userSignOptions = await userCred.loadSignOptions(ref, userId);
+        const userDidDocument = await userCred.loadDidDocument(ref, userId);
         const userVC = await vcHelper.createVerifiableCredential(
             subject,
             userDidDocument,
@@ -29,8 +30,8 @@ export class SignAndSendRole {
             { uuid }
         );
 
-        const userHederaCred = await userCred.loadHederaCredentials(ref);
-        const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref);
+        const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
+        const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref, userId);
         const messageServer = new MessageServer(
             userHederaCred.hederaAccountId,
             userHederaCred.hederaAccountKey,
@@ -51,14 +52,15 @@ export class SignAndSendRole {
         ref: AnyBlockType,
         subject: any,
         group: any,
-        uuid: string
+        uuid: string,
+        userId: string | null
     ): Promise<any> {
         const did = group.owner;
         const vcHelper = new VcHelper();
-        const userAccount = await PolicyUtils.getHederaAccountId(ref, did);
+        const userAccount = await PolicyUtils.getHederaAccountId(ref, did, userId);
 
-        const rootCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
-        const rootDidDocument = await rootCred.loadDidDocument(ref);
+        const rootCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
+        const rootDidDocument = await rootCred.loadDidDocument(ref, userId);
 
         const rootVC = await vcHelper.createVerifiableCredential(
             subject,
@@ -67,7 +69,7 @@ export class SignAndSendRole {
             { uuid }
         );
 
-        const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref);
+        const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref, userId);
 
         const data = {
             uuid: GenerateUUIDv4(),
@@ -86,7 +88,11 @@ export class SignAndSendRole {
         return data;
     }
 
-    public static async response(row: PolicyAction, user: PolicyUser) {
+    public static async response(
+        row: PolicyAction,
+        user: PolicyUser,
+        userId: string | null
+    ) {
         const ref = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
         const data = row.document;
 
@@ -96,8 +102,8 @@ export class SignAndSendRole {
         const vc = VcDocumentDefinition.fromJsonTree(document);
         const subject = vc.getCredentialSubject().toJsonTree();
         const vcHelper = new VcHelper();
-        const userCred = await PolicyUtils.getUserCredentials(ref, user.did);
-        const userDidDocument = await userCred.loadDidDocument(ref);
+        const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
+        const userDidDocument = await userCred.loadDidDocument(ref, userId);
         const userVC = await vcHelper.createVerifiableCredential(
             subject,
             userDidDocument,
@@ -113,17 +119,20 @@ export class SignAndSendRole {
         };
     }
 
-    public static async complete(row: PolicyAction) {
+    public static async complete(
+        row: PolicyAction,
+        userId: string | null
+    ) {
         const ref = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
 
         const data = row.document;
         const group = data.group;
         const userVC = VcDocumentDefinition.fromJsonTree(data.document);
 
-        const rootCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
-        const rootHederaCred = await rootCred.loadHederaCredentials(ref);
-        const rootSignOptions = await rootCred.loadSignOptions(ref);
-        const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref);
+        const rootCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
+        const rootHederaCred = await rootCred.loadHederaCredentials(ref, userId);
+        const rootSignOptions = await rootCred.loadSignOptions(ref, userId);
+        const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref, userId);
         const messageServer = new MessageServer(
             rootHederaCred.hederaAccountId,
             rootHederaCred.hederaAccountKey,
@@ -140,7 +149,11 @@ export class SignAndSendRole {
         return { vc: userVC, message: messageResult };
     }
 
-    public static async validate(request: PolicyAction, response: PolicyAction): Promise<boolean> {
+    public static async validate(
+        request: PolicyAction,
+        response: PolicyAction,
+        userId: string | null
+    ): Promise<boolean> {
         if (request && response && request.accountId === response.accountId) {
             return true;
         }
