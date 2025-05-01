@@ -173,7 +173,7 @@ export class PolicyRestore {
         const fileId = await FileHelper.saveFile(backup);
         const lastUpdate = backup.lastUpdate;
         const collection = DataBaseHelper.orm.em.getCollection<PolicyDiff>('PolicyDiff');
-        collection.updateOne(
+        await collection.updateOne(
             { _id: this.lastDiff._id },
             { $set: { lastUpdate, fileId, valid } }
         )

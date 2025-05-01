@@ -80,6 +80,7 @@ export class PolicyActionsService {
         const collection = new DataBaseHelper(PolicyAction);
         const newRow = collection.create(row);
         await collection.insertOrUpdate([newRow], 'messageId');
+        await this.updateLastStatus(row);
         await this.sentNotification(row);
         return row;
     }
@@ -128,6 +129,7 @@ export class PolicyActionsService {
         this.callback.set(newRow.messageId, callback);
 
         await collection.insertOrUpdate([newRow], 'messageId');
+        await this.updateLastStatus(newRow);
         await this.sentNotification(newRow);
 
         return newRow;
@@ -186,7 +188,7 @@ export class PolicyActionsService {
         newRow.sender = messageResult.payer;
 
         await collection.insertOrUpdate([newRow], 'messageId');
-
+        await this.updateLastStatus(newRow);
         await this.sentNotification(newRow);
 
         return newRow;
@@ -197,6 +199,7 @@ export class PolicyActionsService {
         row.status = PolicyActionStatus.REJECT;
         row.lastStatus = PolicyActionStatus.NEW;
         await collection.insertOrUpdate([row], 'messageId');
+        await this.updateLastStatus(row);
         await this.sentNotification(row);
         return row;
     }
@@ -341,6 +344,7 @@ export class PolicyActionsService {
             row.lastStatus = lastStatus;
             await collection.insertOrUpdate([row], 'messageId');
         }
+        await this.updateLastStatus(row);
         return row;
     }
 
@@ -419,6 +423,8 @@ export class PolicyActionsService {
             row.sender = messageResult.payer;
 
             await collection.insertOrUpdate([newRow], 'messageId');
+
+            await this.updateLastStatus(newRow);
         } catch (error) {
             console.error(error);
         }
@@ -471,13 +477,22 @@ export class PolicyActionsService {
             row.sender = messageResult.payer;
 
             await collection.insertOrUpdate([newRow], 'messageId');
+
+            await this.updateLastStatus(newRow);
         } catch (error) {
             console.error(error);
         }
     }
 
+    private async updateLastStatus(row: PolicyAction) {
+        const collection = DataBaseHelper.orm.em.getCollection<PolicyAction>('PolicyAction');
+        collection.updateMany(
+            { startMessageId: row.startMessageId },
+            { $set: { lastStatus: row.lastStatus } }
+        )
+    }
+
     private async sentNotification(row: PolicyAction) {
-        console.debug('- update');
         PolicyComponentsUtils.sentRequestNotification(row);
     }
 
