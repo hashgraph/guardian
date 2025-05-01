@@ -6,15 +6,14 @@ import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
 import { PolicyActionType } from './policy-action.type.js';
 
-export class SendMessage {
+export class SendMessages {
     public static async local(
         ref: AnyBlockType,
-        topic: TopicConfig,
-        message: Message,
+        messages: Message[],
         owner: string,
         updateIpfs: boolean,
         userId: string | null
-    ): Promise<Message> {
+    ): Promise<Message[]> {
         const userCred = await PolicyUtils.getUserCredentials(ref, owner, userId);
         const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
         const userSignOptions = await userCred.loadSignOptions(ref, userId);
@@ -24,22 +23,33 @@ export class SendMessage {
             userSignOptions,
             ref.dryRun
         );
-        const messageResult = await messageServer
-            .setTopicObject(topic)
-            .sendMessage(message, updateIpfs, null, userId);
 
-        return messageResult;
+        const results: Message[] = [];
+        for (const message of messages) {
+            const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId, userId);
+            const messageResult = await messageServer
+                .setTopicObject(topic)
+                .sendMessage(message, updateIpfs, null, userId);
+            results.push(messageResult);
+        }
+        return results;
     }
 
     public static async request(
         ref: AnyBlockType,
-        topic: TopicConfig,
-        message: Message,
+        messages: Message[],
         owner: string,
         updateIpfs: boolean,
         userId: string | null
     ): Promise<any> {
         const userAccount = await PolicyUtils.getHederaAccountId(ref, owner, userId);
+        const topics: any[] = [];
+        const documents: any[] = [];
+        for (const message of messages) {
+            const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId, userId);
+            topics.push(topic.toObject())
+            documents.push(message.toJson())
+        }
 
         const data = {
             uuid: GenerateUUIDv4(),
@@ -50,8 +60,8 @@ export class SendMessage {
                 type: PolicyActionType.SendMessage,
                 owner,
                 updateIpfs,
-                topic: topic.toObject(),
-                document: message.toJson(),
+                topics,
+                documents,
             }
         };
 
@@ -65,10 +75,7 @@ export class SendMessage {
     ) {
         const ref = PolicyComponentsUtils.GetBlockByTag<any>(row.policyId, row.blockTag);
         const data = row.document;
-        const { topic, updateIpfs, document } = data;
-
-        const message = MessageServer.fromJson(document);
-        const topicConfig = await TopicConfig.fromObject(topic, false, userId);
+        const { updateIpfs, topics, documents } = data;
 
         const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
         const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
@@ -79,24 +86,34 @@ export class SendMessage {
             userSignOptions,
             ref.dryRun
         );
-        const messageResult = await messageServer
-            .setTopicObject(topicConfig)
-            .sendMessage(message, updateIpfs, null, userId);
+
+        const messageIds: string[] = [];
+        for (let i = 0; i < documents.length; i++) {
+            const document = documents[i];
+            const topic = topics[i];
+
+            const message = MessageServer.fromJson(document);
+            const topicConfig = await TopicConfig.fromObject(topic, false, userId);
+            const messageResult = await messageServer
+                .setTopicObject(topicConfig)
+                .sendMessage(message, updateIpfs, null, userId);
+            messageIds.push(messageResult.getId());
+        }
 
         return {
             type: PolicyActionType.SendMessage,
             owner: user.did,
-            messageId: messageResult.getId()
+            messageIds
         };
     }
 
     public static async complete(
         row: PolicyAction,
         userId: string | null
-    ): Promise<Message> {
+    ): Promise<Message[]> {
         const data = row.document;
-        const { message } = data;
-        return message;
+        const { messages } = data;
+        return messages;
     }
 
     public static async validate(
@@ -106,12 +123,16 @@ export class SendMessage {
     ): Promise<boolean> {
         try {
             const data = response.document;
-            const { messageId } = data;
+            const { messageIds } = data;
 
-            const message = await MessageServer.getMessage(messageId, userId);
-            await MessageServer.loadDocument(message);
+            const messages: Message[] = [];
+            for (const messageId of messageIds) {
+                const message = await MessageServer.getMessage(messageId, userId);
+                await MessageServer.loadDocument(message);
+                messages.push(message);
+            }
 
-            data.message = message;
+            data.messages = messages;
 
             if (request && response && request.accountId === response.accountId) {
                 return true;

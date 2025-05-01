@@ -13,6 +13,7 @@ import { SendMessage } from './send-message.js';
 import { CreateTopic } from './create-topic.js';
 import { AssociateToken } from './associate-token.js';
 import { DissociateToken } from './dissociate-token.js';
+import { SendMessages } from './send-messages.js';
 
 export class PolicyActionsUtils {
     private static needKey(status: PolicyStatus): boolean {
@@ -47,6 +48,9 @@ export class PolicyActionsUtils {
             case PolicyActionType.SendMessage: {
                 return await SendMessage.validate(request, response, userId);
             }
+            case PolicyActionType.SendMessages: {
+                return await SendMessages.validate(request, response, userId);
+            }
             case PolicyActionType.CreateTopic: {
                 return await CreateTopic.validate(request, response, userId);
             }
@@ -79,6 +83,9 @@ export class PolicyActionsUtils {
             }
             case PolicyActionType.SendMessage: {
                 return await SendMessage.response(row, user, userId);
+            }
+            case PolicyActionType.SendMessages: {
+                return await SendMessages.response(row, user, userId);
             }
             case PolicyActionType.CreateTopic: {
                 return await CreateTopic.response(row, user, userId);
@@ -202,6 +209,8 @@ export class PolicyActionsUtils {
      * custom-logic-block
      * request-vc-document-block-addon
      * request-vc-document-block
+     * reassigning.block
+     * tag-manager
      */
     public static async signVC(
         ref: AnyBlockType,
@@ -232,19 +241,21 @@ export class PolicyActionsUtils {
 
     /**
      * send-to-guardian-block
+     * tag-manager
      */
     public static async sendMessage(
         ref: AnyBlockType,
         topic: TopicConfig,
         message: Message,
         owner: string,
+        updateIpfs: boolean,
         userId: string | null
     ): Promise<Message> {
         const userCred = await PolicyUtils.getUserCredentials(ref, owner, userId);
         if (userCred.location === LocationType.LOCAL) {
-            return await SendMessage.local(ref, topic, message, owner, userId);
+            return await SendMessage.local(ref, topic, message, owner, updateIpfs, userId);
         } else {
-            const data = await SendMessage.request(ref, topic, message, owner, userId);
+            const data = await SendMessage.request(ref, topic, message, owner, updateIpfs, userId);
             return new Promise((resolve, reject) => {
                 const callback = async (action: PolicyAction) => {
                     if (action.status === PolicyActionStatus.COMPLETED) {
@@ -261,36 +272,35 @@ export class PolicyActionsUtils {
     }
 
     /**
-     * external-data-block
-     */
-
-    /**
-     * external-topic-block
-     */
-
-    /**
-     * group-manager
-     */
-
-    /**
-     * multi-sign-block
-     */
-
-    /**
-     * reassigning.block
-     */
-
-    /**
      * revocation-block
-     */
-
-    /**
      * revoke-block
      */
-
-    /**
-     * tag-manager
-     */
+    public static async sendMessages(
+        ref: AnyBlockType,
+        messages: Message[],
+        owner: string,
+        updateIpfs: boolean,
+        userId: string | null
+    ): Promise<Message[]> {
+        const userCred = await PolicyUtils.getUserCredentials(ref, owner, userId);
+        if (userCred.location === LocationType.LOCAL) {
+            return await SendMessages.local(ref, messages, owner, updateIpfs, userId);
+        } else {
+            const data = await SendMessages.request(ref, messages, owner, updateIpfs, userId);
+            return new Promise((resolve, reject) => {
+                const callback = async (action: PolicyAction) => {
+                    if (action.status === PolicyActionStatus.COMPLETED) {
+                        const result = await SendMessages.complete(action, userId);
+                        resolve(result)
+                    } else {
+                        reject(action.document);
+                    }
+                }
+                const controller = PolicyComponentsUtils.getActionsController(ref.policyId);
+                controller.sendRequest(data, callback, userId).catch(reject).then();
+            });
+        }
+    }
 
     /**
      * token-action-block
@@ -413,6 +423,20 @@ export class PolicyActionsUtils {
         return topic;
     }
 
+    public static async getTopicById(
+        ref: AnyBlockType,
+        topicId: string,
+        userId: string | null
+    ): Promise<TopicConfig> {
+        const needKey = PolicyActionsUtils.needKey(ref.policyStatus);
+        const topic = await TopicConfig.fromObject(
+            await ref.databaseServer.getTopicById(topicId),
+            needKey,
+            userId
+        );
+        return topic;
+    }
+
     public static async createTopic(
         ref: AnyBlockType,
         type: TopicType,
@@ -441,4 +465,16 @@ export class PolicyActionsUtils {
             });
         }
     }
+
+    /**
+     * external-topic-block
+     */
+
+    /**
+     * group-manager
+     */
+
+    /**
+     * multi-sign-block
+     */
 }

@@ -116,8 +116,6 @@ export class SynchronizationService {
             const messages = await workers.addRetryableTask({
                 type: WorkerTaskType.GET_TOPIC_MESSAGES,
                 data: {
-                    operatorId: null,
-                    operatorKey: null,
                     dryRun: false,
                     topic: policy.synchronizationTopicId,
                     payload: { userId: policyOwnerId },

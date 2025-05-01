@@ -43,7 +43,7 @@ export class SignAndSendRole {
         vcMessage.setRole(group);
         const messageResult = await messageServer
             .setTopicObject(rootTopic)
-            .sendMessage(vcMessage);
+            .sendMessage(vcMessage, true, null, userId);
 
         return { vc: userVC, message: messageResult };
     }
@@ -144,7 +144,7 @@ export class SignAndSendRole {
         vcMessage.setRole(group);
         const messageResult = await messageServer
             .setTopicObject(rootTopic)
-            .sendMessage(vcMessage);
+            .sendMessage(vcMessage, true, null, userId);
 
         return { vc: userVC, message: messageResult };
     }

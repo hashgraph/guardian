@@ -460,64 +460,6 @@ export class MessageServer {
     }
 
     /**
-     * Get messages
-     * @param topicId
-     * @param userId
-     * @param type
-     * @param action
-     * @param timeStamp
-     */
-    public static async getMessages<T extends Message>(
-        topicId: string | TopicId,
-        userId: string | null,
-        type?: MessageType,
-        action?: MessageAction,
-        timeStamp?: string
-    ): Promise<T[]> {
-        if (!topicId) {
-            throw new Error(`Invalid Topic Id`);
-        }
-        if (timeStamp && typeof timeStamp === 'string') {
-            timeStamp = timeStamp.trim();
-        }
-        const topic = topicId.toString();
-        const workers = new Workers();
-        const messages = await workers.addNonRetryableTask({
-            type: WorkerTaskType.GET_TOPIC_MESSAGES,
-            data: {
-                topic,
-                timeStamp,
-                payload: { userId }
-            }
-        }, 10);
-        new PinoLogger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE'], userId);
-        const result: Message[] = [];
-        for (const message of messages) {
-            try {
-                const item = MessageServer.fromMessage(message.message, userId);
-                let filter = true;
-                if (type) {
-                    filter = filter && item.type === type;
-                }
-                if (action) {
-                    filter = filter && item.action === action;
-                }
-                if (filter) {
-                    item.setAccount(message.payer_account_id);
-                    item.setIndex(message.sequence_number);
-                    item.setId(message.id);
-                    item.setTopicId(topic);
-                    item.setMemo(message.memo);
-                    result.push(item);
-                }
-            } catch (error) {
-                console.error(error.message);
-            }
-        }
-        return result as T[];
-    }
-
-    /**
      * Send to hedera
      * @param message
      * @param memo
@@ -593,49 +535,6 @@ export class MessageServer {
             return null;
         } catch (error) {
             return null;
-        }
-    }
-
-    /**
-     * Get messages
-     * @param topicId
-     * @param userId
-     * @param type
-     * @param action
-     */
-    public async getMessages<T extends Message>(
-        topicId: string | TopicId,
-        userId: string | null,
-        type?: MessageType,
-        action?: MessageAction
-    ): Promise<T[]> {
-        if (this.dryRun) {
-            const messages = await DatabaseServer.getVirtualMessages(this.dryRun, topicId);
-            const result: T[] = [];
-            for (const message of messages) {
-                try {
-                    const item = MessageServer.fromMessage<T>(message.document, userId);
-                    let filter = true;
-                    if (type) {
-                        filter = filter && item.type === type;
-                    }
-                    if (action) {
-                        filter = filter && item.action === action;
-                    }
-                    if (filter) {
-                        item.setId(message.messageId);
-                        item.setTopicId(message.topicId);
-                        item.setMemo(message.memo);
-                        result.push(item);
-                    }
-                } catch (error) {
-                    console.error(error.message);
-                }
-            }
-            return result;
-        } else {
-            const messages = await this.getTopicMessages(topicId, userId, type, action);
-            return messages as T[];
         }
     }
 
@@ -782,7 +681,151 @@ export class MessageServer {
     }
 
     /**
-     * Get topic messages
+     * Get messages
+     * @param topicId
+     * @param userId
+     * @param type
+     * @param action
+     */
+    public static async getMessages<T extends Message>(
+        dryRun: string,
+        topicId: string | TopicId,
+        userId: string | null,
+        type?: MessageType,
+        action?: MessageAction
+    ): Promise<T[]> {
+        if (dryRun) {
+            return await MessageServer.getDryRunMessages(dryRun, topicId, userId, type, action) as T[];
+        } else {
+            return await MessageServer.getTopicMessages(topicId, userId, type, action) as T[];
+        }
+    }
+
+    /**
+     * Get topic message
+     * @param dryRun
+     * @param topicId
+     * @param userId
+     * @param type
+     * @param action
+     * @param timeStamp
+     */
+    public static async getDryRunMessages<T extends Message>(
+        dryRun: string,
+        topicId: string | TopicId,
+        userId: string | null,
+        type?: MessageType,
+        action?: MessageAction,
+        timeStamp?: string
+    ) {
+        const messages = await DatabaseServer.getVirtualMessages(dryRun, topicId);
+        const result: T[] = [];
+        for (const message of messages) {
+            try {
+                const item = MessageServer.fromMessage<T>(message.document, userId);
+                let filter = true;
+                if (type) {
+                    filter = filter && item.type === type;
+                }
+                if (action) {
+                    filter = filter && item.action === action;
+                }
+                if (filter) {
+                    item.setId(message.messageId);
+                    item.setTopicId(message.topicId);
+                    item.setMemo(message.memo);
+                    result.push(item);
+                }
+            } catch (error) {
+                console.error(error.message);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get topic message
+     * @param topicId
+     * @param userId
+     * @param type
+     * @param action
+     * @param timeStamp
+     */
+    public static async getTopicMessages<T extends Message>(
+        topicId: string | TopicId,
+        userId: string | null,
+        type?: MessageType,
+        action?: MessageAction,
+        timeStamp?: string
+    ): Promise<T[]> {
+        if (!topicId) {
+            throw new Error(`Invalid Topic Id`);
+        }
+
+        if (timeStamp && typeof timeStamp === 'string') {
+            timeStamp = timeStamp.trim();
+        }
+
+        const topic = topicId.toString();
+        const workers = new Workers();
+        const messages = await workers.addNonRetryableTask({
+            type: WorkerTaskType.GET_TOPIC_MESSAGES,
+            data: {
+                topic,
+                timeStamp,
+                payload: { userId }
+            }
+        }, 10);
+        new PinoLogger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE'], userId);
+        const result: Message[] = [];
+        for (const message of messages) {
+            try {
+                const item = MessageServer.fromMessage(message.message, userId);
+                let filter = true;
+                if (type) {
+                    filter = filter && item.type === type;
+                }
+                if (action) {
+                    filter = filter && item.action === action;
+                }
+                if (filter) {
+                    item.setAccount(message.payer_account_id);
+                    item.setIndex(message.sequence_number);
+                    item.setId(message.id);
+                    item.setTopicId(topic);
+                    item.setMemo(message.memo);
+                    result.push(item);
+                }
+            } catch (error) {
+                console.error(error.message);
+            }
+        }
+        return result as T[];
+    }
+
+    /**
+     * Get messages
+     * @param topicId
+     * @param userId
+     * @param type
+     * @param action
+     */
+    public async getMessages<T extends Message>(
+        topicId: string | TopicId,
+        userId: string | null,
+        type?: MessageType,
+        action?: MessageAction
+    ): Promise<T[]> {
+        if (this.dryRun) {
+            return await this.getDryRunMessages(this.dryRun, topicId, userId, type, action) as T[];
+        } else {
+            return await this.getTopicMessages(topicId, userId, type, action) as T[];
+        }
+    }
+
+    /**
+     * Get topic message
+     * @param dryRun
      * @param topicId
      * @param userId
      * @param type
@@ -790,14 +833,55 @@ export class MessageServer {
      * @param timeStamp
      * @private
      */
-    private async getTopicMessages(
+    public async getDryRunMessages<T extends Message>(
+        dryRun: string,
         topicId: string | TopicId,
         userId: string | null,
         type?: MessageType,
         action?: MessageAction,
         timeStamp?: string
     ): Promise<Message[]> {
-        const { operatorId, operatorKey, dryRun } = this.clientOptions;
+        const messages = await DatabaseServer.getVirtualMessages(dryRun, topicId);
+        const result: T[] = [];
+        for (const message of messages) {
+            try {
+                const item = MessageServer.fromMessage<T>(message.document, userId);
+                let filter = true;
+                if (type) {
+                    filter = filter && item.type === type;
+                }
+                if (action) {
+                    filter = filter && item.action === action;
+                }
+                if (filter) {
+                    item.setId(message.messageId);
+                    item.setTopicId(message.topicId);
+                    item.setMemo(message.memo);
+                    result.push(item);
+                }
+            } catch (error) {
+                console.error(error.message);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get topic messages
+     * @param topicId
+     * @param userId
+     * @param type
+     * @param action
+     * @param timeStamp
+     */
+    public async getTopicMessages(
+        topicId: string | TopicId,
+        userId: string | null,
+        type?: MessageType,
+        action?: MessageAction,
+        timeStamp?: string
+    ): Promise<Message[]> {
+        const { operatorId, dryRun } = this.clientOptions;
 
         if (!topicId) {
             throw new Error(`Invalid Topic Id`);
@@ -812,8 +896,6 @@ export class MessageServer {
         const messages = await workers.addNonRetryableTask({
             type: WorkerTaskType.GET_TOPIC_MESSAGES,
             data: {
-                operatorId,
-                operatorKey,
                 dryRun,
                 topic,
                 timeStamp,

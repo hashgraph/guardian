@@ -434,7 +434,7 @@ export class SendToGuardianBlock {
 
             const topicOwner = this.getTopicOwner(ref, document, ref.options.topicOwner);
             const topic = await PolicyActionsUtils.getOrCreateTopic(ref, ref.options.topic, topicOwner, document, userId);
-            const vcMessageResult = await PolicyActionsUtils.sendMessage(ref, topic, message, document.owner, userId);
+            const vcMessageResult = await PolicyActionsUtils.sendMessage(ref, topic, message, document.owner, true, userId);
 
             document.hederaStatus = DocumentStatus.ISSUE;
             document.messageId = vcMessageResult.getId();
