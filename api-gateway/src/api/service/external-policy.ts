@@ -564,9 +564,8 @@ export class ExternalPoliciesApi {
                 policyId
             };
             const engineService = new PolicyEngine();
-            const { count, total } = await engineService.getRemoteRequestsCount(options, user);
-
-            return res.send({ count, total });
+            const { requestsCount, actionsCount, total } = await engineService.getRemoteRequestsCount(options, user);
+            return res.send({ requestsCount, actionsCount, total });
         } catch (error) {
             await InternalException(error, this.logger);
         }

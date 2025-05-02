@@ -1060,7 +1060,11 @@ export class PolicyEngine extends NatsService {
         /**
          * Count with NEW status
          */
-        count: number
+        requestsCount: number,
+        /**
+         * Count with NEW status
+         */
+        actionsCount: number,
         /**
          * Total count
          */
