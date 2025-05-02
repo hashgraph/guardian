@@ -184,9 +184,14 @@ export class PolicyRestoreService {
             const file = await FileHelper.unZipFile(message.document);
             await this.controller.restore(file);
             await PolicyComponentsUtils.restoreState(this.policyId);
+            PolicyComponentsUtils.sentRestoreNotification(this.policyId); 
         } catch (error) {
             console.log(error);
         }
         return true;
+    }
+
+    private async sentNotification(row: PolicyAction) {
+        PolicyComponentsUtils.sentRequestNotification(row);
     }
 }

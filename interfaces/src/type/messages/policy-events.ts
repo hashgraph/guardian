@@ -45,4 +45,5 @@ export enum PolicyEvents {
     APPROVE_REMOTE_REQUEST = 'approve-remote-request',
     REJECT_REMOTE_REQUEST = 'reject-remote-request',
     REQUEST_UPDATE_BROADCAST = 'policy-event-request-update-broadcast',
+    RESTORE_UPDATE_BROADCAST = 'policy-event-restore-update-broadcast',
 }

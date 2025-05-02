@@ -153,6 +153,12 @@ export function requestNotificationEvent(row: PolicyAction): void {
     }, false);
 };
 
+export function restoreNotificationEvent(policyId: string): void {
+    new BlockTreeGenerator().sendMessage(PolicyEvents.RESTORE_UPDATE_BROADCAST, {
+        policyId: policyId,
+    }, false);
+};
+
 /**
  * Policy component utils
  */
@@ -1654,5 +1660,13 @@ export class PolicyComponentsUtils {
      */
     public static async sentRequestNotification(row: PolicyAction) {
         requestNotificationEvent(row);
+    };
+
+
+    /**
+     * Policy restore notifications
+     */
+    public static async sentRestoreNotification(policyId: string) {
+        restoreNotificationEvent(policyId);
     };
 }

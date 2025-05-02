@@ -149,6 +149,14 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             })
         );
 
+        this.subscription.add(
+            this.wsService.restoreSubscribe((message) => {
+                if (message?.data?.policyId === this.policyId && this.isConfirmed) {
+                    this.loadPolicyById(this.policyId);
+                }
+            })
+        );
+
         this.updateNavigationButtons();
     }
 

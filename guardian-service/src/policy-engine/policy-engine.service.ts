@@ -271,6 +271,16 @@ export class PolicyEngineService {
                 }
             })
 
+        this.channel.getMessages(PolicyEvents.RESTORE_UPDATE_BROADCAST,
+            async (msg: {
+                policyId: string
+            }) => {
+                const policy = await DatabaseServer.getPolicyById(msg.policyId);
+                if (policy) {
+                    this.channel.publish('update-restore', msg);
+                }
+            })
+
         this.channel.getMessages(PolicyEvents.TEST_UPDATE_BROADCAST,
             async (msg: {
                 id: string,

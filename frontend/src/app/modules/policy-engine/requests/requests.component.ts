@@ -275,14 +275,14 @@ export class PolicyRequestsComponent implements OnInit {
         }
     }
 
-    public openVCDocument(document: any, title: string) {
+    public openVCDocument(document: any) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
             width: '1000px',
             styleClass: 'guardian-dialog',
             data: {
                 row: null,
-                document: document.document,
+                document: document,
                 title: 'Document',
                 type: 'JSON',
             }

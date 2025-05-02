@@ -300,6 +300,16 @@ export class WebSocketsService {
             return new MessageResponse({});
         });
 
+        this.channel.subscribe('update-restore', async (msg) => {
+            this.wss.clients.forEach((client: any) => {
+                this.send(client, {
+                    type: MessageAPI.UPDATE_RESTORE_EVENT,
+                    data: msg,
+                });
+            });
+            return new MessageResponse({});
+        });
+
         this.channel.subscribe('update-test',
             async (msg: any) => {
                 this.wss.clients.forEach((client: any) => {
