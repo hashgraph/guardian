@@ -151,7 +151,7 @@ export class PolicyRequestsComponent implements OnInit {
                 name: 'All',
             });
             this.allPolicies.forEach((p: any) => p.label = p.name);
-            
+
             if (this.currentPolicyId) {
                 const policy = this.allPolicies.find((p: any) => p.id === this.currentPolicyId);
                 if (policy) {
@@ -209,8 +209,12 @@ export class PolicyRequestsComponent implements OnInit {
             });
     }
 
-    public onBack() {
-        this.router.navigate(['/policy-viewer']);
+    public onBack(id?: string) {
+        if (id) {
+            this.router.navigate(['/policy-viewer', id]);
+        } else {
+            this.router.navigate(['/policy-viewer']);
+        }
     }
 
     public onPage(event: any): void {
@@ -286,7 +290,7 @@ export class PolicyRequestsComponent implements OnInit {
                 return 'Incorrect status';
         }
     }
-    
+
     public openVCDocument(document: any, title: string) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
