@@ -192,9 +192,10 @@ export class CustomLogicBlock {
                         }
                         return;
                     } else {
-                        triggerEvents(await processing(result));
+                        const item = await processing(result);
+                        triggerEvents(item);
                         if (final) {
-                            resolve(await processing(result));
+                            resolve(item);
                         }
                         return;
                     }
@@ -367,6 +368,7 @@ export class CustomLogicBlock {
         if (newId) {
             vcSubject.id = newId;
         }
+
         const newVC = await PolicyActionsUtils.signVC(ref, vcSubject, issuer, { uuid }, userId);
 
         const item = PolicyUtils.createVC(ref, owner, newVC);
