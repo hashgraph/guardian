@@ -9,6 +9,7 @@ import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog
 import { SearchExternalPolicyDialog } from '../dialogs/search-external-policy-dialog/search-external-policy-dialog.component';
 import { VCViewerDialog } from '../../schema-engine/vc-dialog/vc-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { WebSocketService } from 'src/app/services/web-socket.service';
 
 interface IColumn {
     id: string;
@@ -51,7 +52,8 @@ export class PolicyRequestsComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private dialogService: DialogService,
         private router: Router,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private wsService: WebSocketService
     ) {
         this._defaultColumns = [
             {
@@ -125,6 +127,11 @@ export class PolicyRequestsComponent implements OnInit {
                 if (queryParams.policyId) {
                     this.currentPolicyId = queryParams.policyId;
                 }
+                this.loadProfile();
+            })
+        );
+        this.subscription.add(
+            this.wsService.requestSubscribe((message) => {
                 this.loadProfile();
             })
         );
