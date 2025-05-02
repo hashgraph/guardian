@@ -554,11 +554,13 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     private updateRemotePolicyRequests() {
-        this.externalPoliciesService.getActionRequestsCount().subscribe((response) => {
-            if (response?.body) {
-                this.newRequestsExist = response.body.requestsCount > 0;
-                this.newActionsExist = response.body.actionsCount > 0;
-            }
-        })
+        this.externalPoliciesService
+            .getActionRequestsCount({ policyId: this.policyId })
+            .subscribe((response) => {
+                if (response?.body) {
+                    this.newRequestsExist = response.body.requestsCount > 0;
+                    this.newActionsExist = response.body.actionsCount > 0;
+                }
+            })
     }
 }
