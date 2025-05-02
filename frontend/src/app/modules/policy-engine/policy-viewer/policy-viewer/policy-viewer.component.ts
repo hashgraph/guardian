@@ -199,12 +199,14 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         forkJoin([
             this.policyEngineService.policy(policyId),
             this.policyEngineService.policyBlock(policyId),
-            this.policyEngineService.getGroups(policyId)
+            this.policyEngineService.getGroups(policyId),
+            this.externalPoliciesService.getActionRequestsCount({ policyId })
         ]).subscribe(
             (value) => {
                 this.policyInfo = value[0];
                 this.policy = value[1];
                 this.groups = value[2] || [];
+                const count: any = value[3]?.body || {};
 
                 this.virtualUsers = [];
                 this.isMultipleGroups = !!(this.policyInfo?.policyGroups && this.groups?.length);
@@ -236,12 +238,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 })
                 this.getSavepointState();
 
-                this.externalPoliciesService.getActionRequestsCount({ policyId }).subscribe(response => {
-                    if (response?.body) {
-                        this.newRequestsExist = response.body.requestsCount > 0;
-                        this.newActionsExist = response.body.actionsCount > 0;
-                    }
-                })
+                this.newRequestsExist = count.requestsCount > 0;
+                this.newActionsExist = count.actionsCount > 0;
             }, (e) => {
                 this.loading = false;
             });
