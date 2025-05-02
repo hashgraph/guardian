@@ -1,11 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, ExternalPolicyStatus, UserPermissions } from '@guardian/interfaces';
+import { ExternalPolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
-import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { SearchExternalPolicyDialog } from '../dialogs/search-external-policy-dialog/search-external-policy-dialog.component';
 
 interface IColumn {
@@ -24,7 +23,7 @@ interface IColumn {
     styleUrls: ['./external-policies.component.scss'],
 })
 export class ExternalPolicyComponent implements OnInit {
-    public readonly title: string = 'External Policy';
+    public readonly title: string = 'Remote Policy';
 
     public loading: boolean = true;
     public isConfirmed: boolean = false;

@@ -45,7 +45,7 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
                 routerLink: '/schema-rules'
             },
             {
-                title: 'External Policies',
+                title: 'Remote Policies',
                 routerLink: '/external-policies'
             },
         ],

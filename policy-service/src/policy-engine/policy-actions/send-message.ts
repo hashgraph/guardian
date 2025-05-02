@@ -47,7 +47,7 @@ export class SendMessage {
             accountId: userAccount,
             blockTag: ref.tag,
             document: {
-                type: PolicyActionType.SendMessage,
+                type: PolicyActionType.SendMessages,
                 owner,
                 updateIpfs,
                 topic: topic.toObject(),
@@ -84,7 +84,7 @@ export class SendMessage {
             .sendMessage(message, updateIpfs, null, userId);
 
         return {
-            type: PolicyActionType.SendMessage,
+            type: PolicyActionType.SendMessages,
             owner: user.did,
             messageId: messageResult.getId()
         };
