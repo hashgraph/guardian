@@ -201,8 +201,19 @@ export class PolicyActionsService {
         return newRow;
     }
 
-    public async rejectRequest(row: PolicyAction, user: PolicyUser) {
+    public async rejectRequest(messageId: string, user: PolicyUser) {
         const collection = new DataBaseHelper(PolicyAction);
+        const cred = await PolicyUtils.getUserCredentials(this.policyInstance, user.did, user.userId);
+        const row = await collection.findOne({
+            messageId,
+            accountId: cred.hederaAccountId,
+            type: PolicyActionType.REQUEST
+        });
+
+        if (!row) {
+            throw new Error('Request not found');
+        }
+
         row.status = PolicyActionStatus.REJECT;
         row.lastStatus = PolicyActionStatus.NEW;
         await collection.insertOrUpdate([row], 'messageId');
