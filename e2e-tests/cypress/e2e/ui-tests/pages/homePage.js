@@ -14,6 +14,7 @@ const HomePageLocators = {
 	alert: '[role="alert"]',
 	passwordDifError: " Passwords are different ",
 	userAlreadyExistError: "An account with the same name already exists.",
+	weakPassword: "Password must be at least 4 characters long.",
 	logoutIcon: "[ng-reflect-content='Logout']"
 
 	// submitBtn: '[type="submit"]',
@@ -43,11 +44,11 @@ export class HomePage {
 		cy.get(HomePageLocators.logoutIcon).click();
 	}
 
-	createAccount(accType, username) {
+	createAccount(accType, username, password = 'test') {
 		this.selectAccoutTypeToCreate(accType);
 		cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).click().type(username);
-		cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).click().type('test');
-		cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).click().type('test');
+		cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).click().type(password);
+		cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).click().type(password);
 		cy.get(CommonElements.dialogWindow).find(HomePageLocators.requestAccessButton).click();
 	}
 
@@ -60,6 +61,10 @@ export class HomePage {
 
 	verifyAlert() {
 		cy.get(HomePageLocators.alert).children().contains(HomePageLocators.userAlreadyExistError).should('exist');
+	}
+
+	verifyWeakPasswordAlert() {
+		cy.get(HomePageLocators.alert).children().contains(HomePageLocators.weakPassword).should('exist');
 	}
 
 	checkCreateDisabledUserNameEmpty() {
