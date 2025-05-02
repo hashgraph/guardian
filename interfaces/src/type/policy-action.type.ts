@@ -10,5 +10,5 @@ export enum PolicyActionStatus {
     NEW = 'NEW',
     ERROR = 'ERROR',
     COMPLETED = 'COMPLETED',
-    REJECT = 'REJECT'
+    REJECTED = 'REJECTED'
 }

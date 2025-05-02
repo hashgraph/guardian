@@ -273,7 +273,7 @@ export class PolicyRequestsComponent implements OnInit {
                 return 'New';
             case PolicyActionStatus.COMPLETED:
                 return 'Completed';
-            case PolicyActionStatus.REJECT:
+            case PolicyActionStatus.REJECTED:
                 return 'Rejected';
             case PolicyActionStatus.ERROR:
                 return 'Error';

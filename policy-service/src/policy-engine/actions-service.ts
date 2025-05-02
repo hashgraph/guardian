@@ -214,8 +214,8 @@ export class PolicyActionsService {
             throw new Error('Request not found');
         }
 
-        row.status = PolicyActionStatus.REJECT;
-        row.lastStatus = PolicyActionStatus.NEW;
+        row.status = PolicyActionStatus.REJECTED;
+        row.lastStatus = PolicyActionStatus.REJECTED;
         await collection.insertOrUpdate([row], 'messageId');
         await this.updateLastStatus(row);
         await this.sentNotification(row);
