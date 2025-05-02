@@ -57,7 +57,7 @@ export class SendMessages {
             accountId: userAccount,
             blockTag: ref.tag,
             document: {
-                type: PolicyActionType.SendMessage,
+                type: PolicyActionType.SendMessages,
                 owner,
                 updateIpfs,
                 topics,
@@ -101,7 +101,7 @@ export class SendMessages {
         }
 
         return {
-            type: PolicyActionType.SendMessage,
+            type: PolicyActionType.SendMessages,
             owner: user.did,
             messageIds
         };
