@@ -176,6 +176,7 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
             } else {
                 this.remoteContainerMethod(this.smallMenuMode ? 'COLLAPSE' : 'EXPAND');
             }
+            this.updateRemotePolicyRequests();
             this.brandingService.getBrandingData().then(res => {
                 const logo = document.getElementById('company-logo') as HTMLImageElement;
                 if (logo) {
@@ -266,6 +267,9 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
     }
 
     private updateRemotePolicyRequests() {
+        if (!this.isLogin) {
+            return;
+        }
         this.externalPoliciesService.getActionRequestsCount().subscribe((response) => {
             if (response?.body) {
                 this.newPolicyRequests = response.body.requestsCount;
