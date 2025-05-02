@@ -2248,7 +2248,6 @@ export class SchemaApi {
     ): Promise<SchemaDTO> {
         try {
             const guardians = new Guardians();
-            const owner = new EntityOwner(user);
             const schema = await guardians.getSchemaByEntity(user, schemaEntity);
             if (!schema) {
                 return null;
