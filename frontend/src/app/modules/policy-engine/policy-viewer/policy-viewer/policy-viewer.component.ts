@@ -143,7 +143,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         );
         this.subscription.add(
             this.wsService.requestSubscribe((message) => {
-                if (message.policyId === this.policyId && this.isConfirmed) {
+                if (message?.data?.policyId === this.policyId && this.isConfirmed) {
                     this.updateRemotePolicyRequests();
                 }
             })
