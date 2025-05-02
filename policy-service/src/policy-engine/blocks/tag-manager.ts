@@ -5,8 +5,7 @@ import { AnyBlockType, IPolicyDocument, IPolicyGetData } from '../policy-engine.
 import { PolicyUser } from '../policy-user.js';
 import { BlockActionError } from '../errors/index.js';
 import { LocationType, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
-import { DatabaseServer, MessageAction, MessageServer, MessageType, Tag, TagMessage, TopicConfig, VcHelper, } from '@guardian/common';
-import { PolicyUtils } from '../helpers/utils.js';
+import { DatabaseServer, MessageAction, MessageServer, MessageType, Tag, TagMessage, VcHelper, } from '@guardian/common';
 import { PopulatePath } from '@mikro-orm/mongodb';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 
