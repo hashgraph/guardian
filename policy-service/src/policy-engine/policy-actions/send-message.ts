@@ -86,6 +86,7 @@ export class SendMessage {
         return {
             type: PolicyActionType.SendMessage,
             owner: user.did,
+            updateIpfs,
             messageId: messageResult.getId()
         };
     }
@@ -106,10 +107,12 @@ export class SendMessage {
     ): Promise<boolean> {
         try {
             const data = response.document;
-            const { messageId } = data;
+            const { updateIpfs, messageId } = data;
 
             const message = await MessageServer.getMessage(messageId, userId);
-            await MessageServer.loadDocument(message);
+            if (updateIpfs) {
+                await MessageServer.loadDocument(message);
+            }
 
             data.message = message;
 

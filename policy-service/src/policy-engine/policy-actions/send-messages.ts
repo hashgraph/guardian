@@ -103,6 +103,7 @@ export class SendMessages {
         return {
             type: PolicyActionType.SendMessages,
             owner: user.did,
+            updateIpfs,
             messageIds
         };
     }
@@ -123,12 +124,14 @@ export class SendMessages {
     ): Promise<boolean> {
         try {
             const data = response.document;
-            const { messageIds } = data;
+            const { updateIpfs, messageIds } = data;
 
             const messages: Message[] = [];
             for (const messageId of messageIds) {
                 const message = await MessageServer.getMessage(messageId, userId);
-                await MessageServer.loadDocument(message);
+                if (updateIpfs) {
+                    await MessageServer.loadDocument(message);
+                }
                 messages.push(message);
             }
 
@@ -140,6 +143,7 @@ export class SendMessages {
 
             return false;
         } catch (error) {
+            console.error(error);
             return false;
         }
     }
