@@ -868,12 +868,12 @@ export class Guardians extends NatsService {
      * @returns {ISchema[]} - all schemas
      */
     public async getSystemSchemas(
-        owner: IOwner,
+        user: IAuthUser,
         pageIndex?: any,
         pageSize?: any
     ): Promise<ResponseAndCount<ISchema>> {
         return await this.sendMessage(MessageAPI.GET_SYSTEM_SCHEMAS, {
-            owner,
+            user,
             pageIndex,
             pageSize
         });
@@ -888,13 +888,13 @@ export class Guardians extends NatsService {
      * @returns {ISchema[]} - all schemas
      */
     public async getSystemSchemasV2(
-        owner: IOwner,
+        user: IAuthUser,
         fields: string[],
         pageIndex?: any,
         pageSize?: any
     ): Promise<ResponseAndCount<ISchema>> {
         return await this.sendMessage(MessageAPI.GET_SYSTEM_SCHEMAS_V2, {
-            owner,
+            user,
             fields,
             pageIndex,
             pageSize
@@ -919,8 +919,8 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema} - schema
      */
-    public async getSchemaByEntity(entity: string, owner: IOwner): Promise<ISchema> {
-        return await this.sendMessage(MessageAPI.GET_SYSTEM_SCHEMA, { entity, owner });
+    public async getSchemaByEntity(user: IAuthUser, entity: string): Promise<ISchema> {
+        return await this.sendMessage(MessageAPI.GET_SYSTEM_SCHEMA, { user, entity });
     }
 
     /**

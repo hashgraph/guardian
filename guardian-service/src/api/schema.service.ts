@@ -959,8 +959,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      */
     ApiResponse(MessageAPI.CREATE_SYSTEM_SCHEMA,
         async (msg: {
-            item: ISchema,
-            owner: IOwner
+            user: IAuthUser,
+            item: ISchema
         }) => {
             try {
                 const { item } = msg;
@@ -980,7 +980,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const result = await DatabaseServer.createAndSaveSchema(schemaObject);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 return new MessageError(error);
             }
         });
@@ -994,7 +994,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      */
     ApiResponse(MessageAPI.GET_SYSTEM_SCHEMAS,
         async (msg: {
-            owner: IOwner,
+            user: IAuthUser,
             pageIndex?: any,
             pageSize?: any,
         }) => {
@@ -1022,7 +1022,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     count
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 return new MessageError(error);
             }
         });
@@ -1112,8 +1112,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      */
     ApiResponse(MessageAPI.GET_SYSTEM_SCHEMA,
         async (msg: {
-            entity: string,
-            owner: IOwner
+            user: IAuthUser,
+            entity: string
         }) => {
             try {
                 if (!msg || !msg.entity) {
@@ -1126,7 +1126,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 } as FilterObject<SchemaCollection>);
                 return new MessageResponse(schema);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 return new MessageError(error);
             }
         });

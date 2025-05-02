@@ -1956,7 +1956,7 @@ export class SchemaApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            const { items, count } = await guardians.getSystemSchemas(owner, pageIndex, pageSize);
+            const { items, count } = await guardians.getSystemSchemas(user, pageIndex, pageSize);
             items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner.owner });
             return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
@@ -2022,7 +2022,7 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             const fields: string[] = Object.values(SCHEMA_REQUIRED_PROPS)
 
-            const { items, count } = await guardians.getSystemSchemasV2(owner, fields, pageIndex, pageSize);
+            const { items, count } = await guardians.getSystemSchemasV2(user, fields, pageIndex, pageSize);
             items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner.owner });
             return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
@@ -2249,7 +2249,7 @@ export class SchemaApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            const schema = await guardians.getSchemaByEntity(schemaEntity, owner);
+            const schema = await guardians.getSchemaByEntity(user, schemaEntity);
             if (!schema) {
                 return null;
             }
