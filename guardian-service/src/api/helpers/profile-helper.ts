@@ -529,15 +529,18 @@ export async function createRemoteUserProfile(
     //     throw new Error(`Invalid parent account.`);
     // }
     // messageServer.setTopicObject(topicConfig);
-    await dataBaseServer.save(Topic, {
-        type: TopicType.UserTopic,
-        name: TopicType.UserTopic,
-        description: TopicType.UserTopic,
-        owner: userDID,
-        topicId,
-        policyId: null,
-        policyUUID: null,
-    });
+    const topic = await dataBaseServer.findOne(Topic, { topicId });
+    if (!topic) {
+        await dataBaseServer.save(Topic, {
+            type: TopicType.UserTopic,
+            name: TopicType.UserTopic,
+            description: TopicType.UserTopic,
+            owner: userDID,
+            topicId,
+            policyId: null,
+            policyUUID: null,
+        });
+    }
     // ------------------------
     // Resolve topic -->
     // ------------------------
