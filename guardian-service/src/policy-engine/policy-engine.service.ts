@@ -2452,7 +2452,7 @@ export class PolicyEngineService {
                                     $switch: {
                                         branches: [
                                             { case: { $in: ['ERROR', '$statuses'] }, then: 'ERROR' },
-                                            { case: { $in: ['REJECT', '$statuses'] }, then: 'REJECT' },
+                                            { case: { $in: ['REJECTED', '$statuses'] }, then: 'REJECTED' },
                                             { case: { $in: ['COMPLETED', '$statuses'] }, then: 'COMPLETED' },
                                         ],
                                         default: 'NEW'
