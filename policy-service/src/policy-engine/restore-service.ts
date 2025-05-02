@@ -190,8 +190,4 @@ export class PolicyRestoreService {
         }
         return true;
     }
-
-    private async sentNotification(row: PolicyAction) {
-        PolicyComponentsUtils.sentRequestNotification(row);
-    }
 }
