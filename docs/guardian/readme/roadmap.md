@@ -4,147 +4,6 @@
 
 {% tabs %}
 {% tab title="Upcoming Releases" %}
-## ---- February 2025----
-
-### Add policy support for more than one external data block
-
-Allow more than one external data block per policy. Each external data block should be able to handle a different schema, enabling multiple types of data to be sent from external sources as needed.
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/3992](https://github.com/hashgraph/guardian/issues/3992)
-
-Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/external-events/send-data-using-the-external-data-apis/sends-data-from-an-external-source](https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/external-events/send-data-using-the-external-data-apis/sends-data-from-an-external-source)
-
-### Firing external event when minting process is finished
-
-* Add another external event when the minting process is completed (i.e. external-events.token\_minting\_process\_completed)
-* Include in the event payload, among other details like tokenID, minted tokens, etc, the consensus timestamp of the last mint transaction
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4090](https://github.com/hashgraph/guardian/issues/4090)
-
-Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/external-events#external-events-list](https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/external-events#external-events-list)
-
-### Establish deprecation policy for architectural APIs
-
-* Identify and enumerate all architectural APIs significant to end users
-* Extend API deprecation policy coverage to include the above APIs
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/1794](https://github.com/hashgraph/guardian/issues/1794)
-
-Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/versioning-and-deprecation-policy/internal-apis-versioning-and-deprecation-policy](https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/versioning-and-deprecation-policy/internal-apis-versioning-and-deprecation-policy)
-
-### Cross-context (API+UI) refresh token invalidation (regression from v2.18.0)
-
-Looking into the code, it seems that the refresh token should last for a year, this is fine as it is configurable, but losing login context (or a user potentially feeling they lost all their data) isn't great UX.
-
-In terms of code behaviour, I would presume that this change would fix the issue:
-
-```
-const user = await new DataBaseHelper(User).findOne({refreshToken: decryptedToken.id, username: decryptedToken.name});
-```
-
-to
-
-```
-const user = await new DataBaseHelper(User).findOne({username: decryptedToken.name});
-```
-
-The reason why this _**might**_ be okay, is that the _expire at_ decoding happens on the line above, so a refresh token, would last for the period of time by default.
-
-As this is authentication related, it requires review from more people.
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/3525](https://github.com/hashgraph/guardian/issues/3525)
-
-### Business UseCase for Emissions Reduction/Removals (ERRs)Calculation Pre-Calculator in Guardian
-
-We are in the process of creating a few approaches to this ticket from the business use case perspective. One is essentially an “estimator” with a simplified workflow that can be used to estimate emission reductions, token issuance, etc. upfront to help the user better anticipate issuances and the impacts of various project activities and methodological choices. The other is more of a “summary preview” of the actual calculation results, that can be implemented just before validation (or anytime thereafter) to see summary KPIs based on the actual inputs and methodological choices made by the user, and they can then interact with the data like the Nerd Wallet retirement calculator to see how changes to the project activities could impact issuances. To be discussed further with the team.
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4562](https://github.com/hashgraph/guardian/issues/4562)
-
-### Add capabilities to display complex geoJSON shapes superimposed on maps
-
-* Introduce capability for geometric shapes display for geoJSON in Guardian UI (both Indexer and Guardian itself).
-* Shapes display must be correctly superimposed on maps wherever possible
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4375](https://github.com/hashgraph/guardian/issues/4375)
-
-Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/global-indexer/indexer-user-guide](https://docs.hedera.com/guardian-dev-1/guardian/global-indexer/indexer-user-guide)
-
-## ---- March 2025----
-
-### Weak Default configuration
-
-Change the password to a strong, random value, or create additional setup steps were the deployer is required to set this secrets. Additionally, set the most secure configuration as the default in the repository. This ensures that any user deploying the repository will benefit from enhanced security by default. In addition, as highlighted on the issue finding "Lack of Security Hardening Guides", a security guideline is recommended so that users can configure securely their environment before deploying it.
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4109](https://github.com/hashgraph/guardian/issues/4109)
-
-### System Logs Accessible by All Registries
-
-It is recommended to separate the system functionality from the registry functionality specifically for log management. Additionally, it would be appropriate to restrict access to system logs to a different admin role, who would only review the system logs. For registry logs, it is recommended to ensure that one registry can only view its logs, without seeing the logs of other registry users.
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4058](https://github.com/hashgraph/guardian/issues/4058)
-
-Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/roles-and-permissions/roles-and-permissions-user-guide](https://docs.hedera.com/guardian/guardian/standard-registry/roles-and-permissions/roles-and-permissions-user-guide)
-
-### Development of VM0042 v2.1: Improved Agricultural Land Management
-
-1. Flexible Quantification Approaches:
-2. Support for three primary quantification approaches:\
-   \- Measure and Model\
-   \- Measure and Remeasure\
-   \- Default Factors
-3. Document and Template Integration:
-4. Capture key documents/templates:\
-   \- Project Description Template, v4.4\
-   \- Monitoring Report Template, v4.4\
-   \- Validation Report Template, v4.4\
-   \- Verification Report Template, v4.4\
-   \- User Registration Forms\
-   \- Emission Calculation Form
-5. CDM Tools and Modules Integration:
-6. AR-TOOL14: Tool for Testing Significance of GHG Emissions in A/R CDM Project Activities
-7. A/R Methodological Tool for the Identification of Degraded or Degrading Lands in CDM A/R Project Activities
-8. VMD0053 Module: This module will be treated as a tool within Guardian.
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4559](https://github.com/hashgraph/guardian/issues/4559)
-
-Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/demo-guide/carbon-offsets/vm0042-improved-agricultural-land-management-v2.1](https://docs.hedera.com/guardian-dev-1/guardian/demo-guide/carbon-offsets/vm0042-improved-agricultural-land-management-v2.1)
-
-### Manual trigger of re-indexing for specific policy, SR, token
-
-* Introduce a new capability into the indexer to trigger manual re-indexing for a specific 'vertical', starting at a specific topic and navigating (only) down the hierarchy for immediate availability of data.
-* Develop a UI for users to provide a Topic ID for one of the specific items below as an entry point into the 'vertical':
-  * Policy
-  * Standard registry
-  * Token
-* When manual re-indexing is scheduled it must take priority, or the rest should gets postponed until the manually-triggered update is finished.
-* The user who triggered the update must be notified when the update is finished.
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4373](https://github.com/hashgraph/guardian/issues/4373)
-
-Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/global-indexer/indexer-user-guide#id-1.2-priority-loading-data-queue](https://docs.hedera.com/guardian-dev-1/guardian/global-indexer/indexer-user-guide#id-1.2-priority-loading-data-queue)
-
-### Article 6.4 Forms Research
-
-o Identify the additional requirements of Article 6 in comparison to one (or more) of the main voluntary standards.&#x20;
-
-o Determine functionality requirements to implement a “label-type” feature discussed above
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4560](https://github.com/hashgraph/guardian/issues/4560)
-
-## ---- April 2025----
-
-### Session Token in URL
-
-The application should use an alternative mechanism for transmitting session tokens, for example, the Authorization header, as it is done by the rest of the web application.22
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4059](https://github.com/hashgraph/guardian/issues/4059)
-
-### Accessing a Guardian policy from a Guardian instance other than the publishing instance
-
-A Guardian user should be able to access a policy published by another Guardian instance from their own Guardian instance. This access should be based on a request-grant model.
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/3951](https://github.com/hashgraph/guardian/issues/3951)
-
 ## ---- May 2025----
 
 ### Server-Side Request Forgery (SSRF) in Request Data module
@@ -1013,6 +872,149 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/3730](https://githu
 Referral Link : [https://github.com/hashgraph/guardian/issues/2873](https://github.com/hashgraph/guardian/issues/2873)
 
 Documentation Link : [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity)
+
+## ---- February 2025----
+
+### Add policy support for more than one external data block
+
+Allow more than one external data block per policy. Each external data block should be able to handle a different schema, enabling multiple types of data to be sent from external sources as needed.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3992](https://github.com/hashgraph/guardian/issues/3992)
+
+Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/external-events/send-data-using-the-external-data-apis/sends-data-from-an-external-source](https://docs.hedera.com/guardian/guardian/standard-registry/external-events/send-data-using-the-external-data-apis/sends-data-from-an-external-source)
+
+### Firing external event when minting process is finished
+
+* Add another external event when the minting process is completed (i.e. external-events.token\_minting\_process\_completed)
+* Include in the event payload, among other details like tokenID, minted tokens, etc, the consensus timestamp of the last mint transaction
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4090](https://github.com/hashgraph/guardian/issues/4090)
+
+Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/external-events#external-events-list](https://docs.hedera.com/guardian/guardian/standard-registry/external-events#external-events-list)
+
+### Establish deprecation policy for architectural APIs
+
+* Identify and enumerate all architectural APIs significant to end users
+* Extend API deprecation policy coverage to include the above APIs
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/1794](https://github.com/hashgraph/guardian/issues/1794)
+
+Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/policies/versioning-and-deprecation-policy/internal-apis-versioning-and-deprecation-policy](https://docs.hedera.com/guardian/guardian/standard-registry/policies/versioning-and-deprecation-policy/internal-apis-versioning-and-deprecation-policy)
+
+### Cross-context (API+UI) refresh token invalidation (regression from v2.18.0)
+
+Looking into the code, it seems that the refresh token should last for a year, this is fine as it is configurable, but losing login context (or a user potentially feeling they lost all their data) isn't great UX.
+
+In terms of code behaviour, I would presume that this change would fix the issue:
+
+```
+const user = await new DataBaseHelper(User).findOne({refreshToken: decryptedToken.id, username: decryptedToken.name});
+```
+
+to
+
+```
+const user = await new DataBaseHelper(User).findOne({username: decryptedToken.name});
+```
+
+The reason why this _**might**_ be okay, is that the _expire at_ decoding happens on the line above, so a refresh token, would last for the period of time by default.
+
+As this is authentication related, it requires review from more people.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3525](https://github.com/hashgraph/guardian/issues/3525)
+
+### Business UseCase for Emissions Reduction/Removals (ERRs)Calculation Pre-Calculator in Guardian
+
+We are in the process of creating a few approaches to this ticket from the business use case perspective. One is essentially an “estimator” with a simplified workflow that can be used to estimate emission reductions, token issuance, etc. upfront to help the user better anticipate issuances and the impacts of various project activities and methodological choices. The other is more of a “summary preview” of the actual calculation results, that can be implemented just before validation (or anytime thereafter) to see summary KPIs based on the actual inputs and methodological choices made by the user, and they can then interact with the data like the Nerd Wallet retirement calculator to see how changes to the project activities could impact issuances. To be discussed further with the team.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4562](https://github.com/hashgraph/guardian/issues/4562)
+
+### Add capabilities to display complex geoJSON shapes superimposed on maps
+
+* Introduce capability for geometric shapes display for geoJSON in Guardian UI (both Indexer and Guardian itself).
+* Shapes display must be correctly superimposed on maps wherever possible
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4375](https://github.com/hashgraph/guardian/issues/4375)
+
+Documentation Link: [https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide](https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide)
+
+## ---- March 2025----
+
+### Weak Default configuration
+
+Change the password to a strong, random value, or create additional setup steps were the deployer is required to set this secrets. Additionally, set the most secure configuration as the default in the repository. This ensures that any user deploying the repository will benefit from enhanced security by default. In addition, as highlighted on the issue finding "Lack of Security Hardening Guides", a security guideline is recommended so that users can configure securely their environment before deploying it.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4109](https://github.com/hashgraph/guardian/issues/4109)
+
+### System Logs Accessible by All Registries
+
+It is recommended to separate the system functionality from the registry functionality specifically for log management. Additionally, it would be appropriate to restrict access to system logs to a different admin role, who would only review the system logs. For registry logs, it is recommended to ensure that one registry can only view its logs, without seeing the logs of other registry users.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4058](https://github.com/hashgraph/guardian/issues/4058)
+
+Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/roles-and-permissions/roles-and-permissions-user-guide](https://docs.hedera.com/guardian/guardian/standard-registry/roles-and-permissions/roles-and-permissions-user-guide)
+
+### Development of VM0042 v2.1: Improved Agricultural Land Management
+
+1. Flexible Quantification Approaches:
+2. Support for three primary quantification approaches:\
+   \- Measure and Model\
+   \- Measure and Remeasure\
+   \- Default Factors
+3. Document and Template Integration:
+4. Capture key documents/templates:\
+   \- Project Description Template, v4.4\
+   \- Monitoring Report Template, v4.4\
+   \- Validation Report Template, v4.4\
+   \- Verification Report Template, v4.4\
+   \- User Registration Forms\
+   \- Emission Calculation Form
+5. CDM Tools and Modules Integration:
+6. AR-TOOL14: Tool for Testing Significance of GHG Emissions in A/R CDM Project Activities
+7. A/R Methodological Tool for the Identification of Degraded or Degrading Lands in CDM A/R Project Activities
+8. VMD0053 Module: This module will be treated as a tool within Guardian.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4559](https://github.com/hashgraph/guardian/issues/4559)
+
+Documentation Link: [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/vm0042-improved-agricultural-land-management-v2.1](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/vm0042-improved-agricultural-land-management-v2.1)
+
+### Manual trigger of re-indexing for specific policy, SR, token
+
+* Introduce a new capability into the indexer to trigger manual re-indexing for a specific 'vertical', starting at a specific topic and navigating (only) down the hierarchy for immediate availability of data.
+* Develop a UI for users to provide a Topic ID for one of the specific items below as an entry point into the 'vertical':
+  * Policy
+  * Standard registry
+  * Token
+* When manual re-indexing is scheduled it must take priority, or the rest should gets postponed until the manually-triggered update is finished.
+* The user who triggered the update must be notified when the update is finished.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4373](https://github.com/hashgraph/guardian/issues/4373)
+
+Documentation Link: [https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide#id-1.2-priority-loading-data-queue](https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide#id-1.2-priority-loading-data-queue)
+
+### Article 6.4 Forms Research
+
+o Identify the additional requirements of Article 6 in comparison to one (or more) of the main voluntary standards.&#x20;
+
+o Determine functionality requirements to implement a “label-type” feature discussed above
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4560](https://github.com/hashgraph/guardian/issues/4560)
+
+## ---- April 2025----
+
+### Session Token in URL
+
+The application should use an alternative mechanism for transmitting session tokens, for example, the Authorization header, as it is done by the rest of the web application.22
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4059](https://github.com/hashgraph/guardian/issues/4059)
+
+### Accessing a Guardian policy from a Guardian instance other than the publishing instance
+
+A Guardian user should be able to access a policy published by another Guardian instance from their own Guardian instance. This access should be based on a request-grant model.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3951](https://github.com/hashgraph/guardian/issues/3951)
+
+Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/decentralized-guardian/remote-policy-ui](https://docs.hedera.com/guardian/guardian/standard-registry/decentralized-guardian/remote-policy-ui)
 {% endtab %}
 {% endtabs %}
 
