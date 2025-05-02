@@ -238,28 +238,12 @@ export class PolicyRequestsComponent implements OnInit {
         this.router.navigate(['/policy-labels', item.id]);
     }
 
-    public onImport() {
-        const dialogRef = this.dialogService.open(SearchExternalPolicyDialog, {
-            showHeader: false,
-            width: '720px',
-            styleClass: 'guardian-dialog',
-        });
-        dialogRef.onClose.subscribe(async (result: any | null) => {
-            if (result) {
-                this.loadData();
-            }
-        });
-    }
-
-    public onDelete(item: any) {
-    }
-
     public onApprove(item: any) {
         this.loading = true;
         this.externalPoliciesService
             .approveAction(item.messageId)
             .subscribe((result) => {
-                debugger;
+                this.loadData();
             }, (e) => {
                 this.loading = false;
             });
@@ -270,7 +254,7 @@ export class PolicyRequestsComponent implements OnInit {
         this.externalPoliciesService
             .rejectAction(item.messageId)
             .subscribe((result) => {
-                debugger
+                this.loadData();
             }, (e) => {
                 this.loading = false;
             });

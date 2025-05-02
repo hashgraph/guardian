@@ -70,21 +70,6 @@
                 </ng-template>
             </p-dropdown>
         </div>
-        <div class="guardian-user-page-buttons">
-            <button
-                *ngIf="user.POLICIES_EXTERNAL_POLICY_CREATE"
-                (click)="onImport()"
-                class="guardian-button guardian-button-primary">
-                <div class="guardian-button-icon">
-                    <svg-icon
-                        class="icon-btn"
-                        src="/assets/images/icons/add.svg"
-                        svgClass="icon-color-secondary">
-                    </svg-icon>
-                </div>
-                <div class="guardian-button-label">Request Access</div>
-            </button>
-        </div>
     </div>
 
     <div class="guardian-user-page-grid">
@@ -148,18 +133,6 @@
                                             ></p-button>
                                         </div>
                                     </ng-container>
-                                    <!-- <ng-container *ngSwitchCase="'delete'">
-                                        <div
-                                            [attr.disabled]="row.status === 'PUBLISHED'"
-                                            class="guardian-icon-button big"
-                                            (click)="onDelete(row)">
-                                            <svg-icon
-                                                class="icon-btn"
-                                                src="/assets/images/icons/delete.svg"
-                                                [svgClass]="row.status === 'PUBLISHED' ? 'icon-color-disabled' : 'icon-color-delete'">
-                                            </svg-icon>
-                                        </div>
-                                    </ng-container> -->
                                     <ng-container *ngSwitchDefault>
                                         <span class="text-truncate">{{row[column.id]}}</span>
                                     </ng-container>
