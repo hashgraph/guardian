@@ -565,6 +565,8 @@
       * [Assigns Policies to a User - Only SR](guardian/standard-registry/roles-and-permissions/apis-related-to-roles-and-permissions/assigns-policies-to-a-user-only-sr.md)
       * [Updates user roles (for ordinary uses)](guardian/standard-registry/roles-and-permissions/apis-related-to-roles-and-permissions/updates-user-roles-for-ordinary-uses.md)
       * [Assigns policies to a user (for ordinary users)](guardian/standard-registry/roles-and-permissions/apis-related-to-roles-and-permissions/assigns-policies-to-a-user-for-ordinary-users.md)
+  * [Decentralized Guardian](guardian/standard-registry/decentralized-guardian/README.md)
+    * [Remote Policy UI](guardian/standard-registry/decentralized-guardian/remote-policy-ui.md)
   * [Change Password](guardian/standard-registry/change-password/README.md)
     * [Password Security Hardening and Change Password using UI](guardian/standard-registry/change-password/password-security-hardening-and-change-password-using-ui.md)
     * [⚙️ API related to Change Password](guardian/standard-registry/change-password/api-related-to-change-password/README.md)
