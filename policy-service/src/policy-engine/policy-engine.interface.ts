@@ -2,7 +2,7 @@ import { BlockCacheType, EventConfig, IPolicyEvent, PolicyOutputEventType } from
 import { DatabaseServer, Policy } from '@guardian/common';
 import { PolicyUser, UserCredentials } from './policy-user.js';
 import { ComponentsService } from './helpers/components-service.js';
-import { LocationType, PolicyStatus } from '@guardian/interfaces';
+import { LocationType, PolicyAvailability, PolicyStatus } from '@guardian/interfaces';
 
 /**
  * Policy roles interface
@@ -160,6 +160,11 @@ export interface IPolicyBlock {
      * Policy status
      */
     readonly policyStatus: PolicyStatus;
+
+    /**
+     * Policy availability
+     */
+    readonly policyAvailability: PolicyAvailability;
 
     /**
      * Policy location

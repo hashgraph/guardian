@@ -1,5 +1,5 @@
 import { IDocumentOptions, Message, PolicyAction, RoleMessage, Token, TopicConfig, VcDocumentDefinition } from '@guardian/common';
-import { LocationType, PolicyActionStatus, PolicyStatus, TopicType } from '@guardian/interfaces';
+import { LocationType, PolicyActionStatus, PolicyAvailability, PolicyStatus, TopicType } from '@guardian/interfaces';
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
@@ -16,15 +16,23 @@ import { DissociateToken } from './dissociate-token.js';
 import { SendMessages } from './send-messages.js';
 
 export class PolicyActionsUtils {
-    private static needKey(status: PolicyStatus): boolean {
+    private static needKey(status: PolicyStatus, availability: PolicyAvailability): boolean {
         switch (status) {
-            case PolicyStatus.DRY_RUN: return false;
-            case PolicyStatus.DEMO: return false;
-            case PolicyStatus.VIEW: return false;
-            case PolicyStatus.DRAFT: return false;
-            case PolicyStatus.PUBLISH_ERROR: return false;
-            case PolicyStatus.PUBLISH: return true;
-            case PolicyStatus.DISCONTINUED: return true;
+            case PolicyStatus.DRY_RUN:
+            case PolicyStatus.DEMO:
+            case PolicyStatus.VIEW:
+            case PolicyStatus.DRAFT:
+            case PolicyStatus.PUBLISH_ERROR: {
+                return false;
+            }
+            case PolicyStatus.PUBLISH:
+            case PolicyStatus.DISCONTINUED: {
+                if (availability === PolicyAvailability.PUBLIC) {
+                    return false;
+                } else {
+                    return true;
+                }
+            };
             default: return false;
         }
     }
@@ -397,7 +405,7 @@ export class PolicyActionsUtils {
         ref: AnyBlockType,
         userId: string | null
     ): Promise<TopicConfig> {
-        const needKey = PolicyActionsUtils.needKey(ref.policyStatus);
+        const needKey = PolicyActionsUtils.needKey(ref.policyStatus, ref.policyAvailability);
         const rootTopic = await TopicConfig.fromObject(
             await ref.databaseServer.getTopic({
                 policyId: ref.policyId,
@@ -412,7 +420,7 @@ export class PolicyActionsUtils {
         owner: string,
         userId: string | null
     ): Promise<TopicConfig> {
-        const needKey = PolicyActionsUtils.needKey(ref.policyStatus);
+        const needKey = PolicyActionsUtils.needKey(ref.policyStatus, ref.policyAvailability);
         const topic = await TopicConfig.fromObject(
             await ref.databaseServer.getTopic({
                 policyId: ref.policyId,
@@ -428,7 +436,7 @@ export class PolicyActionsUtils {
         topicId: string,
         userId: string | null
     ): Promise<TopicConfig> {
-        const needKey = PolicyActionsUtils.needKey(ref.policyStatus);
+        const needKey = PolicyActionsUtils.needKey(ref.policyStatus, ref.policyAvailability);
         const topic = await TopicConfig.fromObject(
             await ref.databaseServer.getTopicById(topicId),
             needKey,
@@ -445,7 +453,7 @@ export class PolicyActionsUtils {
         memoObj: any,
         userId: string | null
     ): Promise<TopicConfig> {
-        const needKey = PolicyActionsUtils.needKey(ref.policyStatus);
+        const needKey = PolicyActionsUtils.needKey(ref.policyStatus, ref.policyAvailability);
         const userCred = await PolicyUtils.getUserCredentials(ref, owner, userId);
         if (userCred.location === LocationType.LOCAL) {
             return await CreateTopic.local(ref, type, config, owner, memoObj, needKey, userId);

@@ -1,7 +1,7 @@
 import { PolicyBlockDefaultOptions } from '../../helpers/policy-block-default-options.js';
 import { BlockCacheType, EventConfig } from '../../interfaces/index.js';
 import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '../../interfaces/block-options.js';
-import { LocationType, PolicyHelper, PolicyRole, PolicyStatus } from '@guardian/interfaces';
+import { LocationType, PolicyAvailability, PolicyHelper, PolicyRole, PolicyStatus } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '../../policy-engine.interface.js';
 import { PolicyComponentsUtils } from '../../policy-components-utils.js';
 import { IPolicyEvent, PolicyLink } from '../../interfaces/policy-event.js';
@@ -227,6 +227,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             public get policyStatus(): PolicyStatus | null {
                 return this.policyInstance?.status || null;
+            }
+
+            /**
+             * Policy availability
+             */
+            public get policyAvailability(): PolicyAvailability | null {
+                return this.policyInstance?.availability || null;
             }
 
             /**
