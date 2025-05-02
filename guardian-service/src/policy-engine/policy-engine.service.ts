@@ -2534,17 +2534,18 @@ export class PolicyEngineService {
                     const _filters: any = { ...filters };
 
                     _filters.accountId = user.hederaAccountId;
-                    _filters.lastStatus = PolicyActionStatus.NEW;
                     if (policyId) {
                         _filters.policyId = policyId;
                     }
 
                     const requestsCount = await DatabaseServer.getRemoteRequestsCount({
                         ..._filters,
+                        lastStatus: PolicyActionStatus.NEW,
                         type: PolicyActionType.REQUEST
                     }, {});
                     const actionsCount = await DatabaseServer.getRemoteRequestsCount({
                         ..._filters,
+                        lastStatus: PolicyActionStatus.NEW,
                         type: PolicyActionType.ACTION
                     }, {});
                     const total = await DatabaseServer.getRemoteRequestsCount({
