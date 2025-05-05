@@ -235,12 +235,13 @@ export class AggregateBlock {
      * Tick aggregate
      * @param ref
      * @param document
+     * @param userId
      * @private
      */
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    private async tickAggregate(ref: AnyBlockType, document: any) {
+    private async tickAggregate(ref: AnyBlockType, document: any, userId: string | null) {
         const { expressions, condition, disableUserGrouping, groupByFields } = ref.options;
         const groupByUser = !disableUserGrouping;
 
@@ -275,7 +276,7 @@ export class AggregateBlock {
         }
 
         if (result === true) {
-            const user = await PolicyUtils.getDocumentOwner(ref, document);
+            const user = await PolicyUtils.getDocumentOwner(ref, document, userId);
             rawEntities = await this.removeDocuments(ref, rawEntities);
             const state: IPolicyEventState = { data: rawEntities };
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
@@ -338,13 +339,13 @@ export class AggregateBlock {
             for (const doc of docs) {
                 await this.saveDocuments(ref, doc);
                 if (aggregateType === 'cumulative') {
-                    await this.tickAggregate(ref, doc);
+                    await this.tickAggregate(ref, doc, event.userId);
                 }
             }
         } else {
             await this.saveDocuments(ref, docs);
             if (aggregateType === 'cumulative') {
-                await this.tickAggregate(ref, docs);
+                await this.tickAggregate(ref, docs, event.userId);
             }
         }
 

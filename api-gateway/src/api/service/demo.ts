@@ -46,7 +46,7 @@ export class DemoApi {
 
             return demoUsers
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, null);
         }
     }
 
@@ -82,7 +82,7 @@ export class DemoApi {
 
             return await guardians.generateDemoKey(role, user.id.toString());
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
         // try {
         //     const guardians = new Guardians();
@@ -139,7 +139,7 @@ export class DemoApi {
             const guardians = new Guardians();
             await guardians.generateDemoKeyAsync(user?.role, task, user.id.toString());
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
         return task;

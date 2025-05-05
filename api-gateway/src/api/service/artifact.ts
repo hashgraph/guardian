@@ -112,13 +112,13 @@ export class ArtifactApi {
                 options.pageSize = pageSize;
             }
             const guardians = new Guardians();
-            const { artifacts, count } = await guardians.getArtifacts(options);
+            const { artifacts, count } = await guardians.getArtifacts(options, user.id);
 
             req.locals = artifacts
 
             return res.header('X-Total-Count', count).send(artifacts);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -223,11 +223,11 @@ export class ArtifactApi {
             options.fields = Object.values(ARTIFACT_REQUIRED_PROPS)
 
             const guardians = new Guardians();
-            const { artifacts, count } = await guardians.getArtifactsV2(options);
+            const { artifacts, count } = await guardians.getArtifactsV2(options, user.id);
 
             return res.header('X-Total-Count', count).send(artifacts);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -303,7 +303,7 @@ export class ArtifactApi {
 
             return uploadedArtifacts;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -348,7 +348,7 @@ export class ArtifactApi {
 
             return await guardian.deleteArtifact(artifactId, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

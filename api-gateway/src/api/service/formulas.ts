@@ -47,7 +47,7 @@ export class FormulasApi {
             const guardian = new Guardians();
             return await guardian.createFormula(formula, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -110,7 +110,7 @@ export class FormulasApi {
             }, owner);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -152,7 +152,7 @@ export class FormulasApi {
             const guardian = new Guardians();
             return await guardian.getFormulaById(formulaId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -204,7 +204,7 @@ export class FormulasApi {
             }
             return await guardians.updateFormula(formulaId, item, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -246,7 +246,7 @@ export class FormulasApi {
             const guardians = new Guardians();
             return await guardians.deleteFormula(formulaId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -288,7 +288,7 @@ export class FormulasApi {
             const guardian = new Guardians();
             return await guardian.getFormulaRelationships(formulaId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -332,7 +332,7 @@ export class FormulasApi {
             const owner = new EntityOwner(user);
             return await guardian.importFormula(zip, policyId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -374,7 +374,7 @@ export class FormulasApi {
             res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -409,7 +409,7 @@ export class FormulasApi {
             const guardian = new Guardians();
             return await guardian.previewFormula(body, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -455,7 +455,7 @@ export class FormulasApi {
             }
             return await guardians.publishFormula(formulaId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -499,7 +499,7 @@ export class FormulasApi {
                 return await guardian.getFormulasData(options, owner);
             }
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

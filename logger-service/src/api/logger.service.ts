@@ -1,4 +1,11 @@
-import { LargePayloadContainer, MessageError, MessageResponse, Log, DatabaseServer, MAP_ATTRIBUTES_AGGREGATION_FILTERS } from '@guardian/common';
+import {
+    LargePayloadContainer,
+    MessageError,
+    MessageResponse,
+    Log,
+    DatabaseServer,
+    MAP_ATTRIBUTES_AGGREGATION_FILTERS,
+} from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Ctx, MessagePattern, NatsContext, Payload, Transport } from '@nestjs/microservices';
@@ -68,9 +75,19 @@ export class LoggerService {
         try {
             const nameFilter = `.*${msg.name || ''}.*`;
             const existingAttributes = msg.existingAttributes || [];
+            const filters = msg.filters;
 
-            const aggregateAttrResult =
-                await logRepository.aggregate(Log, logRepository.getAttributesAggregationFilters(MAP_ATTRIBUTES_AGGREGATION_FILTERS.RESULT, nameFilter, existingAttributes) as FilterObject<any>[]);
+            const pipeline = logRepository.getAttributesAggregationFilters(
+                MAP_ATTRIBUTES_AGGREGATION_FILTERS.RESULT,
+                nameFilter,
+                existingAttributes
+            ) as FilterObject<any>[];
+
+            pipeline.unshift({
+                $match: filters
+            });
+
+            const aggregateAttrResult = await logRepository.aggregate(Log, pipeline);
 
             return new MessageResponse(aggregateAttrResult[0].uniqueValues?.sort() || []);
         }

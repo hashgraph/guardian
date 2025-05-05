@@ -886,6 +886,13 @@ paths:
           schema:
             example: 0.0.1960
             type: string
+        - name: topicId
+          required: false
+          in: query
+          description: Topic identifier
+          schema:
+            example: 0.0.1960
+            type: string
       responses:
         '200':
           description: Tokens

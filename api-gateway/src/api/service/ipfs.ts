@@ -1,10 +1,10 @@
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Req, StreamableFile } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Permissions } from '@guardian/interfaces';
-import { Auth } from '#auth';
+import {Auth, AuthUser} from '#auth';
 import { Examples, InternalServerErrorDTO } from '#middlewares';
 import { CacheService, getCacheKey, Guardians, InternalException, UseCache } from '#helpers';
-import { PinoLogger } from '@guardian/common';
+import {IAuthUser, PinoLogger} from '@guardian/common';
 import { CACHE, PREFIXES } from '#constants';
 
 @Controller('ipfs')
@@ -43,6 +43,7 @@ export class IpfsApi {
     @HttpCode(HttpStatus.CREATED)
     async postFile(
         @Body() body: any,
+        @AuthUser() user: IAuthUser,
         @Req() req
     ): Promise<string> {
         try {
@@ -51,7 +52,7 @@ export class IpfsApi {
             }
 
             const guardians = new Guardians();
-            const { cid } = await guardians.addFileIpfs(body);
+            const { cid } = await guardians.addFileIpfs(body, user.id);
             if (!cid) {
                 throw new HttpException('File is not uploaded', HttpStatus.BAD_REQUEST);
             }
@@ -64,7 +65,7 @@ export class IpfsApi {
 
             return JSON.stringify(cid);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -106,6 +107,7 @@ export class IpfsApi {
     async postFileDryRun(
         @Param('policyId') policyId: string,
         @Body() body: any,
+        @AuthUser() user: IAuthUser,
         @Req() req
     ): Promise<string> {
         try {
@@ -114,7 +116,7 @@ export class IpfsApi {
             }
 
             const guardians = new Guardians();
-            const { cid } = await guardians.addFileToDryRunStorage(body, policyId);
+            const { cid } = await guardians.addFileToDryRunStorage(body, policyId, user.id);
 
             const invalidedCacheTags = [
                 `${PREFIXES.IPFS}file/${cid}`,
@@ -124,7 +126,7 @@ export class IpfsApi {
 
             return JSON.stringify(cid);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -163,6 +165,7 @@ export class IpfsApi {
     @UseCache({ ttl: CACHE.LONG_TTL })
     @HttpCode(HttpStatus.OK)
     async getFile(
+        @AuthUser() user: IAuthUser,
         @Param('cid') cid: string
     ): Promise<any> {
         try {
@@ -173,7 +176,7 @@ export class IpfsApi {
             }
             return new StreamableFile(Buffer.from(result));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -212,17 +215,18 @@ export class IpfsApi {
     @UseCache({ ttl: CACHE.LONG_TTL })
     @HttpCode(HttpStatus.OK)
     async getFileDryRun(
+        @AuthUser() user: IAuthUser,
         @Param('cid') cid: string
     ): Promise<any> {
         try {
             const guardians = new Guardians();
-            const result = await guardians.getFileFromDryRunStorage(cid, 'raw');
+            const result = await guardians.getFileFromDryRunStorage(cid, 'raw', user.id);
             if (result.type !== 'Buffer') {
                 throw new HttpException('File is not found', HttpStatus.NOT_FOUND)
             }
             return new StreamableFile(Buffer.from(result));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

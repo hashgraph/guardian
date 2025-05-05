@@ -23,6 +23,11 @@ export interface IPolicyStartOptions {
      * Skip registration
      */
     skipRegistration: boolean;
+
+    /**
+     * Policy owner id
+     */
+    policyOwnerId: string;
 }
 
 /**
@@ -195,6 +200,7 @@ export class PolicyContainer extends NatsService {
             this.unsubscribeFromModelGeneration();
             return false
         }
+
         this.container.set(config.policyId, {
             options: config,
             process: null
@@ -293,14 +299,16 @@ export class PolicyContainer extends NatsService {
         const {
             policyId,
             policyServiceName,
-            skipRegistration
+            skipRegistration,
+            policyOwnerId,
         } = instance.options;
 
         const childEnvironment = Object.assign(process.env, {
             POLICY_START_OPTIONS: JSON.stringify({
                 policyId,
                 policyServiceName,
-                skipRegistration
+                skipRegistration,
+                policyOwnerId
             }),
         });
 
@@ -310,11 +318,11 @@ export class PolicyContainer extends NatsService {
             detached: false
         });
         p.once('error', (error) => {
-            this.logger.error(error.message, ['POLICY_SERVICE', policyId]);
+            this.logger.error(error.message, ['POLICY_SERVICE', policyId], policyOwnerId);
             // Restart policy
         });
         p.once('exit', (code) => {
-            this.logger.info(`Policy process exit with code ${code}`, ['POLICY_SERVICE', policyId]);
+            this.logger.info(`Policy process exit with code ${code}`, ['POLICY_SERVICE', policyId], policyOwnerId);
             if (code === 0) {
                 this.container.delete(policyId);
 
@@ -326,17 +334,17 @@ export class PolicyContainer extends NatsService {
                     if (this.stopServiceScript) {
                         execFile(this.stopServiceScript, (error, _data) => {
                             if (error) {
-                                this.logger.error(error, ['POLICY_SERVICE', this.stopServiceScript]);
+                                this.logger.error(error, ['POLICY_SERVICE', this.stopServiceScript], policyOwnerId);
                                 return;
                             }
-                            this.logger.info(_data, ['POLICY_SERVICE', this.stopServiceScript]);
+                            this.logger.info(_data, ['POLICY_SERVICE', this.stopServiceScript], policyOwnerId);
                         })
                     }
                 }
             } else {
                 // rerun every 10 secs
                 setTimeout(() => {
-                    this.logger.warn(`Process for policy with id: ${policyId} respawning`, ['POLICY_SERVICE', policyId]);
+                    this.logger.warn(`Process for policy with id: ${policyId} respawning`, ['POLICY_SERVICE', policyId], policyOwnerId);
                     instance.process = null;
                 }, 10000)
             }

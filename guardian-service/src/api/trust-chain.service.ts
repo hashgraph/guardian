@@ -207,6 +207,7 @@ export async function trustChainAPI(
      * @returns {IChainItem[]} - trust chain
      */
     ApiResponse(MessageAPI.GET_CHAIN, async (msg) => {
+        const userId = msg?.userId
         try {
             const hash = msg.id;
             const chain: IChainItem[] = [];
@@ -268,7 +269,7 @@ export async function trustChainAPI(
             await getPolicyInfo(chain, null);
             return new MessageResponse(chain);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             console.error(error);
             return new MessageError(error);
         }

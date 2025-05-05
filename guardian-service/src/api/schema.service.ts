@@ -25,27 +25,29 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(MessageAPI.CREATE_SCHEMA,
-        async (msg: { item: ISchema, owner: IOwner }) => {
+        async (msg: { item: ISchema, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { item, owner } = msg;
                 await createSchemaAndArtifacts(item.category, item, owner, emptyNotifier());
                 const schemas = await DatabaseServer.getSchemas({ owner: owner.owner }, { limit: 100 });
                 return new MessageResponse(schemas);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.CREATE_SCHEMA_ASYNC,
-        async (msg: { item: ISchema, owner: IOwner, task: any }) => {
+        async (msg: { item: ISchema, owner: IOwner, task: any, userId: string | null }) => {
+            const userId = msg?.userId
             const { item, owner, task } = msg;
             const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
                 const schema = await createSchemaAndArtifacts(item.category, item, owner, notifier);
                 notifier.result(schema.id);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 notifier.error(error);
             });
             return new MessageResponse(task);
@@ -57,15 +59,17 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             topicId: string,
             name: string,
             owner: IOwner,
-            task: any
+            task: any,
+            userId: string | null
         }) => {
+            const userId = msg?.userId
             const { iri, topicId, name, owner, task } = msg;
             const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
                 const schema = await copySchemaAsync(iri, topicId, name, owner);
                 notifier.result(schema.iri);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 notifier.error(error);
             });
             return new MessageResponse(task);
@@ -79,7 +83,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(MessageAPI.UPDATE_SCHEMA,
-        async (msg: { item: ISchema, owner: IOwner }) => {
+        async (msg: { item: ISchema, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { item, owner } = msg;
                 const id = item.id as string;
@@ -103,7 +108,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const schemas = await DatabaseServer.getSchemas({ owner: owner.owner }, { limit: 100 });
                 return new MessageResponse(schemas);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -116,7 +121,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(MessageAPI.GET_SCHEMA,
-        async (msg: { type: string, id: string, owner: string }) => {
+        async (msg: { type: string, id: string, owner: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid load schema parameter');
@@ -138,7 +144,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
                 return new MessageError('Invalid load schema parameter');
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -151,7 +157,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {ISchema[]} - Parent schemas
      */
     ApiResponse(MessageAPI.GET_SCHEMA_PARENTS,
-        async (msg: { id: string, owner: IOwner }) => {
+        async (msg: { id: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid load schema parameter');
@@ -185,7 +192,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     ]
                 }));
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -198,7 +205,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - Schema tree
      */
     ApiResponse(MessageAPI.GET_SCHEMA_TREE,
-        async (msg: { id: string, owner: IOwner }) => {
+        async (msg: { id: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid load schema parameter');
@@ -249,7 +257,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
                 return new MessageResponse(await createNode(schema));
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -262,7 +270,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(MessageAPI.GET_SCHEMAS,
-        async (msg: { options: any, owner: IOwner }) => {
+        async (msg: { options: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid load schema parameter');
@@ -339,7 +348,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
                 return new MessageResponse({ items, count });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -352,7 +361,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(MessageAPI.GET_SCHEMAS_V2,
-        async (msg: { options: any, owner: IOwner }) => {
+        async (msg: { options: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid load schema parameter');
@@ -431,7 +441,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse({ items, count });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -444,7 +454,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(MessageAPI.GET_SCHEMAS_BY_UUID,
-        async (msg: { uuid: string }) => {
+        async (msg: { uuid: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid load schema parameter');
@@ -456,7 +467,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 });
                 return new MessageResponse(items);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -469,7 +480,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {any[]} - all schemas
      */
     ApiResponse(MessageAPI.GET_SUB_SCHEMAS,
-        async (msg: { category: string, topicId: string, owner: IOwner }) => {
+        async (msg: { category: string, topicId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { topicId, owner, category } = msg;
                 if (!owner) {
@@ -528,7 +540,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
                 return new MessageResponse(schemas);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -542,26 +554,27 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(MessageAPI.PUBLISH_SCHEMA,
-        async (msg: { id: string, version: string, owner: IOwner }) => {
+        async (msg: { id: string, version: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid id');
                 }
                 const { id, version, owner } = msg;
                 const users = new Users();
-                const root = await users.getHederaAccount(owner.creator);
+                const root = await users.getHederaAccount(owner.creator, userId);
                 const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier(), null);
                 return new MessageResponse(item);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 console.error(error);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.PUBLISH_SCHEMA_ASYNC,
-        async (msg: { id: string, version: string, owner: IOwner, task: any }) => {
-            const { id, version, owner, task } = msg;
+        async (msg: { id: string, version: string, owner: IOwner, task: any, userId: string | null }) => {
+            const { id, version, owner, task, userId } = msg;
             const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
                 if (!msg) {
@@ -570,11 +583,11 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
 
                 notifier.completedAndStart('Resolve Hedera account');
                 const users = new Users();
-                const root = await users.getHederaAccount(owner.creator);
+                const root = await users.getHederaAccount(owner.creator, userId);
                 const item = await findAndPublishSchema(id, version, owner, root, notifier, null);
                 notifier.result(item.id);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 notifier.error(error);
             });
             return new MessageResponse(task);
@@ -655,7 +668,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {Schema} Found or uploaded schema
      */
     ApiResponse(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES,
-        async (msg: { messageIds: string[], owner: IOwner, topicId: string }) => {
+        async (msg: { messageIds: string[], owner: IOwner, topicId: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid import schema parameter');
@@ -679,15 +693,15 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 );
                 return new MessageResponse(schemasMap);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 console.error(error);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES_ASYNC,
-        async (msg: { messageIds: string[], owner: IOwner, topicId: string, task: any }) => {
-            const { owner, messageIds, topicId, task } = msg;
+        async (msg: { messageIds: string[], owner: IOwner, topicId: string, task: any, userId: string | null }) => {
+            const { owner, messageIds, topicId, task, userId } = msg;
             const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
                 if (!msg) {
@@ -711,7 +725,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 );
                 notifier.result(schemasMap);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 notifier.error(error);
             });
             return new MessageResponse(task);
@@ -725,7 +739,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {Schema} Found or uploaded schema
      */
     ApiResponse(MessageAPI.IMPORT_SCHEMAS_BY_FILE,
-        async (msg: { files: any, owner: IOwner, topicId: string }) => {
+        async (msg: { files: any, owner: IOwner, topicId: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid import schema parameter');
@@ -751,15 +766,15 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 console.error(error);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC,
-        async (msg: { files: any, owner: IOwner, topicId: string, task: any }) => {
-            const { owner, files, topicId, task } = msg;
+        async (msg: { files: any, owner: IOwner, topicId: string, task: any, userId: string | null }) => {
+            const { owner, files, topicId, task, userId } = msg;
             const { schemas, tags } = files;
 
             const notifier = await initNotifier(task);
@@ -785,7 +800,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
 
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 notifier.error(error);
             });
             return new MessageResponse(task);
@@ -799,7 +814,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {Schema} Found or uploaded schema
      */
     ApiResponse(MessageAPI.PREVIEW_SCHEMA,
-        async (msg: { messageIds: string[] }) => {
+        async (msg: { messageIds: string[], userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid preview schema parameters');
@@ -814,10 +830,10 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Invalid preview schema parameters');
                 }
 
-                const result = await prepareSchemaPreview(messageIds, emptyNotifier(), logger);
+                const result = await prepareSchemaPreview(messageIds, emptyNotifier(), logger, userId);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 console.error(error);
                 return new MessageError(error);
             }
@@ -831,8 +847,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {Schema} Found or uploaded schema
      */
     ApiResponse(MessageAPI.PREVIEW_SCHEMA_ASYNC,
-        async (msg: { messageIds: string[], task: any }) => {
-            const { messageIds, task } = msg;
+        async (msg: { messageIds: string[], task: any, userId: string | null }) => {
+            const { messageIds, task, userId } = msg;
             const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
                 if (!msg) {
@@ -844,10 +860,10 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     return;
                 }
 
-                const result = await prepareSchemaPreview(messageIds, notifier, logger);
+                const result = await prepareSchemaPreview(messageIds, notifier, logger, userId);
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 notifier.error(error);
             });
 
@@ -863,12 +879,13 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - Response result
      */
     ApiResponse(MessageAPI.EXPORT_SCHEMAS,
-        async (msg: { ids: string[], owner: IOwner }) => {
+        async (msg: { ids: string[], owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { ids } = msg;
                 return new MessageResponse(await SchemaImportExportHelper.exportSchemas(ids));
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -881,7 +898,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(MessageAPI.CREATE_SYSTEM_SCHEMA,
-        async (msg: { item: ISchema, owner: IOwner }) => {
+        async (msg: { item: ISchema, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { item } = msg;
                 const schemaObject = item;
@@ -900,7 +918,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const result = await DatabaseServer.createAndSaveSchema(schemaObject);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -913,7 +931,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(MessageAPI.GET_SYSTEM_SCHEMAS,
-        async (msg: { pageIndex?: any, pageSize?: any }) => {
+        async (msg: { pageIndex?: any, pageSize?: any, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid load schema parameter');
@@ -938,7 +957,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     count
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -951,7 +970,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(MessageAPI.GET_SYSTEM_SCHEMAS_V2,
-        async (msg: { fields: string[], pageIndex?: any, pageSize?: any }) => {
+        async (msg: { fields: string[], pageIndex?: any, pageSize?: any, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid load schema parameter');
@@ -977,7 +997,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     count
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -1019,7 +1039,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(MessageAPI.GET_SYSTEM_SCHEMA,
-        async (msg: { entity: string }) => {
+        async (msg: { entity: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg || !msg.entity) {
                     return new MessageError('Invalid load schema parameter');
@@ -1031,7 +1052,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 } as FilterObject<SchemaCollection>);
                 return new MessageResponse(schema);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -1044,7 +1065,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {any[]} - all schemas
      */
     ApiResponse(MessageAPI.GET_LIST_SCHEMAS,
-        async (msg: { owner: IOwner }) => {
+        async (msg: { owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg || !msg.owner) {
                     return new MessageError('Invalid schema owner');
@@ -1067,7 +1089,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 });
                 return new MessageResponse(schema);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -1080,7 +1102,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(MessageAPI.GET_TAG_SCHEMAS,
-        async (msg: { owner: IOwner, pageIndex?: any, pageSize?: any }) => {
+        async (msg: { owner: IOwner, pageIndex?: any, pageSize?: any, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid load schema parameter');
@@ -1096,7 +1119,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
                 return new MessageResponse({ items, count });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -1109,7 +1132,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(MessageAPI.GET_TAG_SCHEMAS_V2,
-        async (msg: { owner: IOwner, pageIndex?: any, pageSize?: any }) => {
+        async (msg: { owner: IOwner, pageIndex?: any, pageSize?: any, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid load schema parameter');
@@ -1126,7 +1150,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse({ items, count });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -1139,7 +1163,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {ISchema} - schema
      */
     ApiResponse(MessageAPI.CREATE_TAG_SCHEMA,
-        async (msg: { item: ISchema, owner: IOwner }) => {
+        async (msg: { item: ISchema, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid schema');
@@ -1163,7 +1188,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const result = await DatabaseServer.createAndSaveSchema(schemaObject);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -1176,18 +1201,19 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(MessageAPI.PUBLISH_TAG_SCHEMA,
-        async (msg: { id: string, version: string, owner: IOwner }) => {
+        async (msg: { id: string, version: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid id');
                 }
                 const { id, version, owner } = msg;
                 const users = new Users();
-                const root = await users.getHederaAccount(owner.creator);
+                const root = await users.getHederaAccount(owner.creator, userId);
                 const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier(), null);
                 return new MessageResponse(item);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -1197,7 +1223,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      *
      * @returns {ISchema[]} - all schemas
      */
-    ApiResponse(MessageAPI.GET_PUBLISHED_TAG_SCHEMAS, async (_: any) => {
+    ApiResponse(MessageAPI.GET_PUBLISHED_TAG_SCHEMAS, async (msg: {userId: string | null}) => {
+        const userId = msg?.userId
         try {
             const schemas = await DatabaseServer.getSchemas({
                 system: false,
@@ -1218,7 +1245,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             });
             return new MessageResponse(schemas);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -1227,14 +1254,15 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * Export schemas
      */
     ApiResponse(MessageAPI.SCHEMA_EXPORT_XLSX,
-        async (msg: { owner: IOwner, ids: string[] }) => {
+        async (msg: { owner: IOwner, ids: string[], userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { ids } = msg;
                 const schemas = await SchemaImportExportHelper.exportSchemas(ids);
                 const buffer = await JsonToXlsx.generate(schemas, [], []);
                 return new BinaryMessageResponse(buffer);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -1243,7 +1271,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * Load schema by xlsx
      */
     ApiResponse(MessageAPI.SCHEMA_IMPORT_XLSX,
-        async (msg: { owner: IOwner, topicId: string, xlsx: any }) => {
+        async (msg: { owner: IOwner, topicId: string, xlsx: any, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { owner, xlsx, topicId } = msg;
                 const notifier = emptyNotifier();
@@ -1257,7 +1286,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const users = new Users();
-                const root = await users.getHederaAccount(owner.creator);
+                const root = await users.getHederaAccount(owner.creator, userId);
                 const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
                 const { tools, errors } = await importSubTools(root, xlsxResult.getToolIds(), owner, notifier);
                 for (const tool of tools) {
@@ -1284,7 +1313,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     await updateToolConfig(target);
                     await DatabaseServer.updateTool(target);
                 } else if (category === SchemaCategory.POLICY) {
-                    await PolicyImportExportHelper.updatePolicyComponents(target, logger);
+                    await PolicyImportExportHelper.updatePolicyComponents(target, logger, userId);
                 }
 
                 return new MessageResponse({
@@ -1292,7 +1321,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     errors: result.errors
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -1301,8 +1330,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * Load schema by xlsx
      */
     ApiResponse(MessageAPI.SCHEMA_IMPORT_XLSX_ASYNC,
-        async (msg: { owner: IOwner, topicId: string, xlsx: any, task: any }) => {
-            const { owner, xlsx, topicId, task } = msg;
+        async (msg: { owner: IOwner, topicId: string, xlsx: any, task: any, userId: string | null }) => {
+            const { owner, xlsx, topicId, task, userId } = msg;
             const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
                 const { category, target } = await getSchemaTarget(topicId);
@@ -1314,9 +1343,9 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('Unknown target');
                 }
 
-                await logger.info(`Import policy by xlsx`, ['GUARDIAN_SERVICE']);
+                await logger.info(`Import policy by xlsx`, ['GUARDIAN_SERVICE'], userId);
                 const users = new Users();
-                const root = await users.getHederaAccount(owner.creator);
+                const root = await users.getHederaAccount(owner.creator, userId);
                 notifier.start('File parsing');
 
                 const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
@@ -1344,7 +1373,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     await updateToolConfig(target);
                     await DatabaseServer.updateTool(target);
                 } else if (category === SchemaCategory.POLICY) {
-                    await PolicyImportExportHelper.updatePolicyComponents(target, logger);
+                    await PolicyImportExportHelper.updatePolicyComponents(target, logger, userId);
                 }
 
                 notifier.result({
@@ -1352,7 +1381,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     errors: result.errors
                 });
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 notifier.error(error);
             });
             return new MessageResponse(task);
@@ -1362,7 +1391,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * Preview schema by xlsx
      */
     ApiResponse(MessageAPI.SCHEMA_IMPORT_XLSX_PREVIEW,
-        async (msg: { owner: IOwner, xlsx: any }) => {
+        async (msg: { owner: IOwner, xlsx: any, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { xlsx } = msg;
                 if (!xlsx) {
@@ -1371,7 +1401,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
                 for (const toolId of xlsxResult.getToolIds()) {
                     try {
-                        const tool = await previewToolByMessage(toolId.messageId);
+                        const tool = await previewToolByMessage(toolId.messageId, userId);
                         xlsxResult.updateTool(tool.tool, tool.schemas);
                     } catch (error) {
                         xlsxResult.addErrors([{
@@ -1386,7 +1416,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse(xlsxResult.toJson());
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -1395,14 +1425,15 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * Preview schema by xlsx
      */
     ApiResponse(MessageAPI.GET_TEMPLATE,
-        async (msg: { filename: string }) => {
+        async (msg: { filename: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { filename } = msg;
                 const filePath = path.join(process.cwd(), 'artifacts', filename);
                 const file = await readFile(filePath);
                 return new BinaryMessageResponse(file.buffer);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });

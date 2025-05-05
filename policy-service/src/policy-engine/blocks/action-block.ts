@@ -73,8 +73,9 @@ export class InterfaceDocumentActionBlock {
      * Set block data
      * @param user
      * @param document
+     * @param userId
      */
-    async setData(user: PolicyUser, document: IPolicyDocument): Promise<any> {
+    async setData(user: PolicyUser, document: IPolicyDocument, userId: string | null): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
 
         const state: IPolicyEventState = { data: document };
@@ -85,14 +86,14 @@ export class InterfaceDocumentActionBlock {
             if (option) {
                 const newUser = option.user === UserType.CURRENT
                     ? user
-                    : await PolicyUtils.getDocumentOwner(ref, document);
+                    : await PolicyUtils.getDocumentOwner(ref, document, userId);
                 ref.triggerEvents(option.tag, newUser, state);
                 ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state);
             }
         }
 
         if (ref.options.type === 'dropdown') {
-            const newUser = await PolicyUtils.getDocumentOwner(ref, document);
+            const newUser = await PolicyUtils.getDocumentOwner(ref, document, userId);
             ref.triggerEvents(PolicyOutputEventType.DropdownEvent, newUser, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state);
         }
@@ -101,11 +102,11 @@ export class InterfaceDocumentActionBlock {
             const sensorDid = document.document.credentialSubject[0].id;
             const userDID = document.owner;
             const userCred = await PolicyUtils.getUserCredentials(ref, userDID);
-            const hederaCred = await userCred.loadHederaCredentials(ref);
+            const hederaCred = await userCred.loadHederaCredentials(ref, userId);
             const schemaObject = await PolicyUtils.loadSchemaByID(ref, ref.options.schema);
             const schema = new Schema(schemaObject);
-            const didDocument = await userCred.loadSubDidDocument(ref, sensorDid);
-            const sensorKey = await PolicyUtils.getAccountKey(ref, userDID, KeyType.KEY, sensorDid);
+            const didDocument = await userCred.loadSubDidDocument(ref, sensorDid, userId);
+            const sensorKey = await PolicyUtils.getAccountKey(ref, userDID, KeyType.KEY, sensorDid, userId);
             result = {
                 fileName: ref.options.filename || `${sensorDid}.config.json`,
                 body: {

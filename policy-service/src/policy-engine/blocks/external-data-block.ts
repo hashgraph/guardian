@@ -158,8 +158,10 @@ export class ExternalDataBlock {
             verify = false;
         }
 
-        const user: PolicyUser = await PolicyUtils.getDocumentOwner(ref, data);
         const docOwner = await PolicyUtils.getUserCredentials(ref, data.owner);
+        const userId = docOwner.userId
+
+        const user: PolicyUser = await PolicyUtils.getDocumentOwner(ref, data, userId);
         const documentRef = await this.getRelationships(ref, data.ref);
         const schema = await this.getSchema();
         const vc = VcDocument.fromJsonTree(data.document);

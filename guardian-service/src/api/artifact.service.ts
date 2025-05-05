@@ -37,8 +37,10 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
     ApiResponse(MessageAPI.UPLOAD_ARTIFACT, async (msg: {
         artifact: any,
         owner: IOwner,
-        parentId: string
+        parentId: string,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid get artifact parameters');
@@ -79,7 +81,7 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
             await DatabaseServer.saveArtifactFile(row.uuid, Buffer.from(msg.artifact.buffer));
             return new MessageResponse(row);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error.message);
         }
     });
@@ -98,8 +100,10 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
         policyId: string,
         pageIndex: string,
         pageSize: string,
-        owner: IOwner
+        owner: IOwner,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid get artifact parameters');
@@ -154,7 +158,7 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
                 count
             });
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -174,8 +178,10 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
         policyId: string,
         pageIndex: string,
         pageSize: string,
-        owner: IOwner
+        owner: IOwner,
+        userId: string | null
     }) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid get artifact parameters');
@@ -231,7 +237,7 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
                 count
             });
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -244,7 +250,8 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
      * @returns {boolean} - Operation success
      */
     ApiResponse(MessageAPI.DELETE_ARTIFACT,
-        async (msg: { artifactId: string, owner: IOwner }) => {
+        async (msg: { artifactId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { artifactId, owner } = msg;
                 if (!artifactId || !owner) {
@@ -277,7 +284,7 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
                 await DatabaseServer.removeArtifact(artifactToDelete);
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });

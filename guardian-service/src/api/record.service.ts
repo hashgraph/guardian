@@ -105,7 +105,8 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} result
      */
     ApiResponse(MessageAPI.GET_RECORD_STATUS,
-        async (msg: { policyId: string, owner: IOwner }) => {
+        async (msg: { policyId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     throw new Error('Invalid parameters');
@@ -117,7 +118,7 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     .sendPolicyMessage(PolicyEvents.GET_RECORD_STATUS, policyId, null);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -130,7 +131,8 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} result
      */
     ApiResponse(MessageAPI.START_RECORDING,
-        async (msg: { policyId: string, owner: IOwner, options: any }) => {
+        async (msg: { policyId: string, owner: IOwner, options: any, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     throw new Error('Invalid parameters');
@@ -142,7 +144,7 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     .sendPolicyMessage(PolicyEvents.START_RECORDING, policyId, options);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -155,7 +157,8 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} result
      */
     ApiResponse(MessageAPI.STOP_RECORDING,
-        async (msg: { policyId: string, owner: IOwner, options: any }) => {
+        async (msg: { policyId: string, owner: IOwner, options: any, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     throw new Error('Invalid parameters');
@@ -183,7 +186,7 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                 });
                 return new BinaryMessageResponse(file);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -196,7 +199,8 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} result
      */
     ApiResponse(MessageAPI.GET_RECORDED_ACTIONS,
-        async (msg: { policyId: string, owner: IOwner }) => {
+        async (msg: { policyId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     throw new Error('Invalid parameters');
@@ -208,7 +212,7 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     .sendPolicyMessage(PolicyEvents.GET_RECORDED_ACTIONS, policyId, null);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -221,7 +225,8 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} result
      */
     ApiResponse(MessageAPI.RUN_RECORD,
-        async (msg: { policyId: string, owner: IOwner, options: any }) => {
+        async (msg: { policyId: string, owner: IOwner, options: any, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     throw new Error('Invalid parameters');
@@ -243,7 +248,7 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     });
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -256,7 +261,8 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} result
      */
     ApiResponse(MessageAPI.STOP_RUNNING,
-        async (msg: { policyId: string, owner: IOwner, options: any }) => {
+        async (msg: { policyId: string, owner: IOwner, options: any, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     throw new Error('Invalid parameters');
@@ -270,7 +276,7 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     .sendPolicyMessage(PolicyEvents.STOP_RUNNING, policyId, options);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -283,7 +289,8 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} result
      */
     ApiResponse(MessageAPI.GET_RECORD_RESULTS,
-        async (msg: { policyId: string, owner: IOwner }) => {
+        async (msg: { policyId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     throw new Error('Invalid parameters');
@@ -299,7 +306,7 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                 const result = await getDetails(details);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -312,7 +319,8 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} result
      */
     ApiResponse(MessageAPI.GET_RECORD_DETAILS,
-        async (msg: { policyId: string, owner: IOwner }) => {
+        async (msg: { policyId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     throw new Error('Invalid parameters');
@@ -328,7 +336,7 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                 const result = await compareResults(details);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -341,7 +349,8 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} result
      */
     ApiResponse(MessageAPI.FAST_FORWARD,
-        async (msg: { policyId: string, owner: IOwner, options: any }) => {
+        async (msg: { policyId: string, owner: IOwner, options: any, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     throw new Error('Invalid parameters');
@@ -355,7 +364,7 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     .sendPolicyMessage(PolicyEvents.FAST_FORWARD, policyId, options);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -368,7 +377,8 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} result
      */
     ApiResponse(MessageAPI.RECORD_RETRY_STEP,
-        async (msg: { policyId: string, owner: IOwner, options: any }) => {
+        async (msg: { policyId: string, owner: IOwner, options: any, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     throw new Error('Invalid parameters');
@@ -382,7 +392,7 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     .sendPolicyMessage(PolicyEvents.RECORD_RETRY_STEP, policyId, options);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -395,7 +405,8 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} result
      */
     ApiResponse(MessageAPI.RECORD_SKIP_STEP,
-        async (msg: { policyId: string, owner: IOwner, options: any }) => {
+        async (msg: { policyId: string, owner: IOwner, options: any, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     throw new Error('Invalid parameters');
@@ -409,7 +420,7 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     .sendPolicyMessage(PolicyEvents.RECORD_SKIP_STEP, policyId, options);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });

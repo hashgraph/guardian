@@ -3,7 +3,7 @@ import { BlockActionError } from '../errors/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyAddonBlock, IPolicyDocument } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
-import { PolicyUser } from '../policy-user.js';
+import {PolicyUser, UserCredentials} from '../policy-user.js';
 import { PolicyUtils, QueryType } from '../helpers/utils.js';
 import ObjGet from 'lodash.get';
 import ObjSet from 'lodash.set';
@@ -147,6 +147,9 @@ export class DocumentsSourceAddon {
             }
         }
 
+        const credentials = await UserCredentials.create(ref, user.did);
+        const userId = credentials.userId;
+
         let data: IPolicyDocument[] | number;
         switch (ref.options.dataType) {
             case 'vc-documents':
@@ -166,7 +169,7 @@ export class DocumentsSourceAddon {
                 }
                 break;
             case 'standard-registries':
-                data = await PolicyUtils.getAllStandardRegistryAccounts(ref, countResult);
+                data = await PolicyUtils.getAllStandardRegistryAccounts(ref, countResult, userId);
                 break;
             case 'approve':
                 filters.policyId = ref.policyId;
@@ -177,7 +180,7 @@ export class DocumentsSourceAddon {
                 break;
             // @deprecated 2022-10-01
             case 'root-authorities':
-                data = await PolicyUtils.getAllStandardRegistryAccounts(ref, countResult);
+                data = await PolicyUtils.getAllStandardRegistryAccounts(ref, countResult, userId);
                 break;
             default:
                 throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)

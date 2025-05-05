@@ -143,8 +143,8 @@ export class WebSocketService {
         if (this.heartbeatTimeout) {
             clearTimeout(this.heartbeatTimeout);
         }
-        const accessToken = this.auth.getAccessToken();
-        this.wsSubjectConfig.url = this.getUrl(accessToken);
+
+        this.wsSubjectConfig.url = this.getUrl();
         this.socket = webSocket(this.wsSubjectConfig);
         this.socketSubscription = this.socket?.subscribe(
             (m: any) => {
@@ -326,10 +326,8 @@ export class WebSocketService {
         return `${url.replace(/^http/, 'ws')}`;
     }
 
-    private getUrl(accessToken: string | null = null) {
-        return accessToken
-            ? `${this.getBaseUrl()}/ws/?token=${accessToken}`
-            : `${this.getBaseUrl()}/ws/`;
+    private getUrl() {
+        return `${this.getBaseUrl()}/ws/`;
     }
 
     public blockSubscribe(

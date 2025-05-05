@@ -13,20 +13,22 @@ export async function mapAPI(logger: PinoLogger): Promise<void> {
      *
      * @returns {any} Artifacts and count
      */
-    ApiResponse(MessageAPI.GET_MAP_API_KEY, async (_:any) => {
+    ApiResponse(MessageAPI.GET_MAP_API_KEY, async (msg:any) => {
+        const userId = msg?.userId
         try {
             return new MessageResponse(process.env.MAP_API_KEY || '');
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
 
-    ApiResponse(MessageAPI.GET_SENTINEL_API_KEY, async (_:any) => {
+    ApiResponse(MessageAPI.GET_SENTINEL_API_KEY, async (msg:any) => {
+        const userId = msg?.userId
         try {
             return new MessageResponse(process.env.GET_SENTINEL_API_KEY || '');
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });

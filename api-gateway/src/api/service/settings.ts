@@ -2,10 +2,10 @@ import { AboutInterface, CommonSettings, Permissions } from '@guardian/interface
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SettingsDTO, InternalServerErrorDTO } from '#middlewares';
-import { Auth } from '#auth';
+import {Auth, AuthUser} from '#auth';
 import { Guardians, InternalException } from '#helpers';
 import process from 'process';
-import { PinoLogger } from '@guardian/common';
+import {IAuthUser, PinoLogger} from '@guardian/common';
 
 @Controller('settings')
 @ApiTags('settings')
@@ -40,15 +40,16 @@ export class SettingsApi {
     @ApiExtraModels(SettingsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async updateSettings(
+        @AuthUser() user: IAuthUser,
         @Body() body: SettingsDTO
     ): Promise<any> {
         try {
             const settings = body as CommonSettings;
             const guardians = new Guardians();
-            await Promise.all([guardians.updateSettings(settings)]);
+            await Promise.all([guardians.updateSettings(settings, user.id)]);
             return null;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -74,13 +75,15 @@ export class SettingsApi {
     })
     @ApiExtraModels(SettingsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getSettings(): Promise<SettingsDTO> {
+    async getSettings(
+        @AuthUser() user: IAuthUser,
+    ): Promise<SettingsDTO> {
         try {
             const guardians = new Guardians();
-            const [guardiansSettings] = await Promise.all([guardians.getSettings()]);
+            const [guardiansSettings] = await Promise.all([guardians.getSettings(user.id)]);
             return { ...guardiansSettings } as any;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -103,12 +106,14 @@ export class SettingsApi {
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getEnvironment(): Promise<string> {
+    async getEnvironment(
+        @AuthUser() user: IAuthUser
+    ): Promise<string> {
         try {
             const guardians = new Guardians();
-            return await guardians.getEnvironment();
+            return await guardians.getEnvironment(user.id);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 

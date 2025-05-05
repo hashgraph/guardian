@@ -120,9 +120,10 @@ export class MintBlock {
      * @param ref
      * @param docs
      * @param accounts
+     * @param userId
      * @private
      */
-    private async getAccount(ref: AnyBlockType, docs: IPolicyDocument[], accounts: string[]): Promise<string> {
+    private async getAccount(ref: AnyBlockType, docs: IPolicyDocument[], accounts: string[], userId: string | null): Promise<string> {
         let targetAccountId: string;
         if (ref.options.accountType !== 'custom-value') {
             const firstAccounts = accounts[0];
@@ -132,7 +133,7 @@ export class MintBlock {
             if (ref.options.accountId) {
                 targetAccountId = firstAccounts;
             } else {
-                targetAccountId = await PolicyUtils.getHederaAccountId(ref, docs[0].owner);
+                targetAccountId = await PolicyUtils.getHederaAccountId(ref, docs[0].owner, userId);
             }
             if (!targetAccountId) {
                 throw new BlockActionError('Token recipient is not set', ref.blockType, ref.uuid);
@@ -179,11 +180,12 @@ export class MintBlock {
     /**
      * Create report VC
      * @param ref
-     * @param root
+     * @param policyOwnerCred
      * @param user
      * @param documents
      * @param messages
      * @param additionalMessages
+     * @param userId
      * @private
      */
     private async createReportVC(
@@ -193,6 +195,7 @@ export class MintBlock {
         documents: VcDocument[],
         messages: string[],
         additionalMessages: string[],
+        userId: string | null
     ): Promise<VcDocument[]> {
         const addons = ref.getAddons();
         const result: VcDocument[] = [];
@@ -200,7 +203,7 @@ export class MintBlock {
             (addons && addons.length) ||
             (additionalMessages && additionalMessages.length)
         ) {
-            const policyOwnerDid = await policyOwnerCred.loadDidDocument(ref);
+            const policyOwnerDid = await policyOwnerCred.loadDidDocument(ref, userId);
             const vcHelper = new VcHelper();
             const policySchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.TOKEN_DATA_SOURCE);
             const vcSubject: any = { ...SchemaHelper.getContext(policySchema) };
@@ -259,6 +262,7 @@ export class MintBlock {
      * @param documents
      * @param messages
      * @param additionalMessages
+     * @param userId
      * @private
      */
     private async mintProcessing(
@@ -269,6 +273,7 @@ export class MintBlock {
         documents: VcDocument[],
         messages: string[],
         additionalMessages: string[],
+        userId: string | null,
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyTokenBlock>(this);
 
@@ -280,10 +285,10 @@ export class MintBlock {
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
 
         const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
-        const policyOwnerDid = await policyOwnerCred.loadDidDocument(ref);
+        const policyOwnerDid = await policyOwnerCred.loadDidDocument(ref, userId);
 
         const mintVC = await this.createMintVC(policyOwnerDid, token, tokenAmount, ref);
-        const reportVC = await this.createReportVC(ref, policyOwnerCred, user, documents, messages, additionalMessages);
+        const reportVC = await this.createReportVC(ref, policyOwnerCred, user, documents, messages, additionalMessages, userId);
         let vp: any;
         if (reportVC && reportVC.length) {
             const vcs = [...reportVC, mintVC];
@@ -295,8 +300,8 @@ export class MintBlock {
 
         ref.log(`Topic Id: ${topicId}`);
 
-        const policyOwnerHederaCred = await policyOwnerCred.loadHederaCredentials(ref);
-        const signOptions = await policyOwnerCred.loadSignOptions(ref);
+        const policyOwnerHederaCred = await policyOwnerCred.loadHederaCredentials(ref, userId);
+        const signOptions = await policyOwnerCred.loadSignOptions(ref, userId);
         const messageServer = new MessageServer(
             policyOwnerHederaCred.hederaAccountId,
             policyOwnerHederaCred.hederaAccountKey,
@@ -305,14 +310,14 @@ export class MintBlock {
         );
 
         // #region Save Mint VC
-        const topic = await PolicyUtils.getPolicyTopic(ref, topicId);
+        const topic = await PolicyUtils.getPolicyTopic(ref, topicId, userId);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(mintVC);
         vcMessage.setRelationships(messages);
         vcMessage.setUser(null);
         const vcMessageResult = await messageServer
             .setTopicObject(topic)
-            .sendMessage(vcMessage);
+            .sendMessage(vcMessage, true, null, userId);
         const mintVcDocument = PolicyUtils.createVC(ref, user, mintVC);
         mintVcDocument.type = DocumentCategoryType.MINT;
         mintVcDocument.schema = `#${mintVC.getSubjectType()}`;
@@ -332,9 +337,10 @@ export class MintBlock {
         vpMessage.setDocument(vp);
         vpMessage.setRelationships(messages);
         vpMessage.setUser(null);
+
         const vpMessageResult = await messageServer
             .setTopicObject(topic)
-            .sendMessage(vpMessage);
+            .sendMessage(vpMessage, true, null, userId);
         const vpMessageId = vpMessageResult.getId();
         const vpDocument = PolicyUtils.createVP(ref, user, vp);
         vpDocument.type = DocumentCategoryType.MINT;
@@ -358,7 +364,8 @@ export class MintBlock {
             vpMessageId,
             transactionMemo,
             documents,
-            signOptions
+            signOptions,
+            userId
         );
         return [savedVp, tokenValue];
     }
@@ -379,7 +386,7 @@ export class MintBlock {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
 
-        const docOwner = await PolicyUtils.getDocumentOwner(ref, docs[0]);
+        const docOwner = await PolicyUtils.getDocumentOwner(ref, docs[0], event.userId);
         if (!docOwner) {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
         }
@@ -400,15 +407,19 @@ export class MintBlock {
     @CatchErrors()
     async retryMint(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyTokenBlock>(this);
+
+        const credentials = await UserCredentials.create(ref, event.user.did);
+        const userId = credentials.userId;
+
         if (!event.data?.data) {
             throw new Error('Invalid data');
         }
         if (Array.isArray(event.data.data)) {
             for (const document of event.data.data) {
-                await MintService.retry(document.messageId, event.user.did, ref.policyOwner, ref);
+                await MintService.retry(document.messageId, event.user.did, ref.policyOwner, ref, userId);
             }
         } else {
-            await MintService.retry(event.data.data.messageId, event.user.did, ref.policyOwner, ref);
+            await MintService.retry(event.data.data.messageId, event.user.did, ref.policyOwner, ref, userId);
         }
 
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
@@ -435,7 +446,7 @@ export class MintBlock {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
 
-        const docOwner = await PolicyUtils.getDocumentOwner(ref, docs[0]);
+        const docOwner = await PolicyUtils.getDocumentOwner(ref, docs[0], event.userId);
         if (!docOwner) {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
         }
@@ -461,8 +472,13 @@ export class MintBlock {
         const { vcs, messages, topics, accounts } = this.getObjects(ref, docs);
         const additionalMessages = this.getAdditionalMessages(additionalDocs);
         const topicId = topics[0];
-        const accountId = await this.getAccount(ref, docs, accounts);
-        const [vp, amount] = await this.mintProcessing(token, topicId, user, accountId, vcs, messages, additionalMessages);
+
+        const credentials = await UserCredentials.create(ref, user.did);
+        const userId = credentials.userId
+
+        const accountId = await this.getAccount(ref, docs, accounts, userId);
+
+        const [vp, amount] = await this.mintProcessing(token, topicId, user, accountId, vcs, messages, additionalMessages, userId);
 
         const state: IPolicyEventState = event.data;
         state.result = vp;

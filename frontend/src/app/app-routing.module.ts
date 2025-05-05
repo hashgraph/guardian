@@ -262,13 +262,26 @@ const routes: Routes = [
         children: [
             { path: 'status', component: ServiceStatusComponent },
             { path: 'settings', component: SettingsViewComponent },
-            { path: 'logs', component: LogsViewComponent },
             { path: 'about', component: AboutViewComponent }
         ],
         data: {
             roles: [UserRole.STANDARD_REGISTRY],
             permissions: [
                 Permissions.SETTINGS_SETTINGS_READ,
+                Permissions.LOG_LOG_READ
+            ]
+        }
+    },
+    {
+        path: 'admin', component: AdminHeaderComponent,
+        canActivate: [PermissionsGuard],
+        canActivateChild: [PermissionsGuard],
+        children: [
+            { path: 'logs', component: LogsViewComponent },
+        ],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.USER],
+            permissions: [
                 Permissions.LOG_LOG_READ
             ]
         }

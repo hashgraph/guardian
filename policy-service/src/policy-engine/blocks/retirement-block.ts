@@ -111,9 +111,12 @@ export class RetirementBlock {
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
-        const didDocument = await root.loadDidDocument(ref);
-        const hederaCred = await root.loadHederaCredentials(ref);
-        const signOptions = await root.loadSignOptions(ref);
+        const credentials = await UserCredentials.create(ref, user.did);
+        const userId = credentials.userId;
+
+        const didDocument = await root.loadDidDocument(ref, userId);
+        const hederaCred = await root.loadHederaCredentials(ref, userId);
+        const signOptions = await root.loadSignOptions(ref, userId);
 
         const uuid: string = await ref.components.generateUUID();
         const amount = PolicyUtils.aggregate(ref.options.rule, documents);
@@ -124,14 +127,14 @@ export class RetirementBlock {
 
         const messageServer = new MessageServer(hederaCred.hederaAccountId, hederaCred.hederaAccountKey, signOptions, ref.dryRun);
         ref.log(`Topic Id: ${topicId}`);
-        const topic = await PolicyUtils.getPolicyTopic(ref, topicId);
+        const topic = await PolicyUtils.getPolicyTopic(ref, topicId, userId);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(wipeVC);
         vcMessage.setRelationships(relationships);
         vcMessage.setUser(null);
         const vcMessageResult = await messageServer
             .setTopicObject(topic)
-            .sendMessage(vcMessage);
+            .sendMessage(vcMessage, true, null, userId);
 
         const vcDocument = PolicyUtils.createVC(ref, user, wipeVC);
         vcDocument.type = DocumentCategoryType.RETIREMENT;
@@ -150,7 +153,7 @@ export class RetirementBlock {
 
         const vpMessageResult = await messageServer
             .setTopicObject(topic)
-            .sendMessage(vpMessage);
+            .sendMessage(vpMessage, true, null, userId);
 
         const vpDocument = PolicyUtils.createVP(ref, user, vp);
         vpDocument.type = DocumentCategoryType.RETIREMENT;
@@ -159,7 +162,7 @@ export class RetirementBlock {
         vpDocument.relationships = relationships;
         await ref.databaseServer.saveVP(vpDocument);
 
-        await MintService.wipe(ref, token, tokenValue, hederaCred, targetAccountId, vpMessageResult.getId());
+        await MintService.wipe(ref, token, tokenValue, hederaCred, targetAccountId, vpMessageResult.getId(), userId);
 
         return [vpDocument, tokenValue];
     }
@@ -190,7 +193,7 @@ export class RetirementBlock {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
 
-        const docOwner = await PolicyUtils.getDocumentOwner(ref, docs[0]);
+        const docOwner = await PolicyUtils.getDocumentOwner(ref, docs[0], event.userId);
         if (!docOwner) {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
         }
@@ -228,7 +231,7 @@ export class RetirementBlock {
         if (ref.options.accountId) {
             targetAccountId = firstAccounts;
         } else {
-            targetAccountId = await PolicyUtils.getHederaAccountId(ref, docs[0].owner);
+            targetAccountId = await PolicyUtils.getHederaAccountId(ref, docs[0].owner, event.userId);
         }
         if (!targetAccountId) {
             throw new BlockActionError('Token recipient is not set', ref.blockType, ref.uuid);

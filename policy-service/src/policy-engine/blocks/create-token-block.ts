@@ -14,7 +14,7 @@ import {
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { EventBlock } from '../helpers/decorators/event-block.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { PolicyUser } from '../policy-user.js';
+import {PolicyUser, UserCredentials} from '../policy-user.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import {
     insertVariables,
@@ -138,7 +138,7 @@ export class CreateTokenBlock {
     }
 
     private async _createToken(
-        user,
+        user: PolicyUser,
         ref: IPolicyRequestBlock,
         template: any,
         docs: IPolicyDocument | IPolicyDocument[]
@@ -156,6 +156,9 @@ export class CreateTokenBlock {
             ref.policyOwner
         );
 
+        const credentials = await UserCredentials.create(ref, user.did);
+        const userId = credentials.userId;
+
         if (!docs) {
             throw new BlockActionError(
                 'Documents is not defined',
@@ -169,14 +172,15 @@ export class CreateTokenBlock {
         const createdToken = await PolicyUtils.createTokenByTemplate(
             ref,
             template,
-            policyOwnerCred
+            policyOwnerCred,
+            userId
         );
         // #endregion
 
         // #region Send new token to hedera
-        const hederaCred = await policyOwnerCred.loadHederaCredentials(ref);
-        const signOptions = await policyOwnerCred.loadSignOptions(ref);
-        const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref);
+        const hederaCred = await policyOwnerCred.loadHederaCredentials(ref, userId);
+        const signOptions = await policyOwnerCred.loadSignOptions(ref, userId);
+        const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref, userId);
         const messageServer = new MessageServer(
             hederaCred.hederaAccountId,
             hederaCred.hederaAccountKey,
@@ -185,7 +189,7 @@ export class CreateTokenBlock {
         ).setTopicObject(rootTopic);
         const tokenMessage = new TokenMessage(MessageAction.CreateToken);
         tokenMessage.setDocument(createdToken);
-        await messageServer.sendMessage(tokenMessage);
+        await messageServer.sendMessage(tokenMessage, true, null, userId);
         // #endregion
 
         // #region Set token in document

@@ -207,7 +207,7 @@ export async function findAndPublishSchema(
     item = await DatabaseServer.getSchema(id);
 
     notifier.completedAndStart('Resolve topic');
-    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true);
+    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true, user.id);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topic);
     notifier.completedAndStart('Publish schema');

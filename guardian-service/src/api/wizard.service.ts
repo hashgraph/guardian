@@ -166,7 +166,8 @@ export async function wizardAPI(logger: PinoLogger): Promise<void> {
         });
 
     ApiResponse(MessageAPI.WIZARD_GET_POLICY_CONFIG,
-        async (msg: { policyId: string, config: any, owner: IOwner }) => {
+        async (msg: { policyId: string, config: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 // tslint:disable-next-line:prefer-const
                 let { policyId, config, owner } = msg;
@@ -195,7 +196,7 @@ export async function wizardAPI(logger: PinoLogger): Promise<void> {
                     wizardConfig: config,
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });

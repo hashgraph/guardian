@@ -20,19 +20,19 @@ export async function configAPI(
      * Update settings
      *
      */
-    ApiResponse(MessageAPI.UPDATE_SETTINGS, async (settings: CommonSettings) => {
+    ApiResponse(MessageAPI.UPDATE_SETTINGS, async ({settings, userId} :{settings: CommonSettings, userId: string }) => {
         try {
             const secretManager = SecretManager.New();
             try {
                 AccountId.fromString(settings.operatorId);
             } catch (error) {
-                await logger.error('OPERATOR_ID: ' + error.message, ['GUARDIAN_SERVICE']);
+                await logger.error('OPERATOR_ID: ' + error.message, ['GUARDIAN_SERVICE'], userId);
                 throw new Error('OPERATOR_ID: ' + error.message);
             }
             try {
                 PrivateKey.fromString(settings.operatorKey);
             } catch (error) {
-                await logger.error('OPERATOR_KEY: ' + error.message, ['GUARDIAN_SERVICE']);
+                await logger.error('OPERATOR_KEY: ' + error.message, ['GUARDIAN_SERVICE'], userId);
                 throw new Error('OPERATOR_KEY: ' + error.message);
             }
 
@@ -48,7 +48,7 @@ export async function configAPI(
             return new MessageResponse(null);
         }
         catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -56,7 +56,8 @@ export async function configAPI(
     /**
      * Get settings
      */
-    ApiResponse(MessageAPI.GET_SETTINGS, async (_: any) => {
+    ApiResponse(MessageAPI.GET_SETTINGS, async (msg: any) => {
+        const userId = msg?.userId
         try {
             const secretManager = SecretManager.New();
             const { OPERATOR_ID } = await secretManager.getSecrets('keys/operator');
@@ -69,7 +70,7 @@ export async function configAPI(
             });
         }
         catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });

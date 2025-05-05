@@ -1,4 +1,4 @@
-import { PriorityStatus } from "../types";
+import { PriorityStatus } from '../types';
 
 /**
  * Data Priority Loading Progress

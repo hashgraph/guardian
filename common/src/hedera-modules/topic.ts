@@ -110,8 +110,9 @@ export class TopicConfig {
      * Create topic config by json
      * @param topic
      * @param needKey
+     * @param userId
      */
-    public static async fromObject(topic: Topic, needKey: boolean = false): Promise<TopicConfig> {
+    public static async fromObject(topic: Topic, needKey: boolean = false, userId: string | null): Promise<TopicConfig> {
         if (!topic) {
             return null;
         }
@@ -120,7 +121,8 @@ export class TopicConfig {
             const submitKey = await wallet.getUserKey(
                 topic.owner,
                 KeyType.TOPIC_SUBMIT_KEY,
-                topic.topicId
+                topic.topicId,
+                userId
             );
             return new TopicConfig(topic, null, submitKey);
         } else {
@@ -149,7 +151,7 @@ export class TopicConfig {
     /**
      * Get topic object
      */
-    public async saveKeys(): Promise<void> {
+    public async saveKeys(userId: string | null): Promise<void> {
         if (this.owner) {
             const wallet = new Wallet();
             if (this.adminKey) {
@@ -157,7 +159,8 @@ export class TopicConfig {
                     this.owner,
                     KeyType.TOPIC_ADMIN_KEY,
                     this.topicId,
-                    this.adminKey
+                    this.adminKey,
+                    userId
                 );
             }
             if (this.submitKey) {
@@ -165,7 +168,8 @@ export class TopicConfig {
                     this.owner,
                     KeyType.TOPIC_SUBMIT_KEY,
                     this.topicId,
-                    this.submitKey
+                    this.submitKey,
+                    userId
                 );
             }
         }
