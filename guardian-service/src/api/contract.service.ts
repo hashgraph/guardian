@@ -238,9 +238,9 @@ async function setPool(
         })
     );
 
-    const contract = await dataBaseServer.findOne(Contract,{
+    const contract = await dataBaseServer.findOne(Contract, {
         contractId,
-    }) as Contract & {wipeTokenIds: string[]};
+    }) as Contract & { wipeTokenIds: string[] };
 
     pool.enabled =
         pool.tokens.findIndex(
@@ -280,7 +280,7 @@ async function setContractWiperPermissions(
 ) {
     const contracts = await dataBaseServer.find(Contract, {
         contractId,
-    })  as (Contract & {wipeTokenIds: string[]})[];
+    }) as (Contract & { wipeTokenIds: string[] })[];
     if (contracts.length === 0) {
         return;
     }
@@ -323,7 +323,7 @@ async function setContractWiperPermissions(
             pools.map(async (pool) => {
                 const contract = await dataBaseServer.findOne(Contract, {
                     contractId,
-                }) as Contract & {wipeTokenIds: string[]};
+                }) as Contract & { wipeTokenIds: string[] };
 
                 pool.enabled =
                     pool.tokens.findIndex(
@@ -437,7 +437,7 @@ export async function syncWipeContracts(
         {
             fields: ['contractId', 'lastSyncEventTimeStamp', 'version'],
         }
-    ) as (Contract & {version: string})[];
+    ) as (Contract & { version: string })[];
 
     const contractVersions = new Map<string, string>();
     const maxTimestamps = new Map<string, string>();
@@ -1097,8 +1097,8 @@ async function isContractWiper(
                     } else {
                         if (
                             (AccountId.fromSolidityAddress(data[0]).toString() ===
-                            retireContractId) && (TokenId.fromSolidityAddress(data[1]).toString() ===
-                            token)
+                                retireContractId) && (TokenId.fromSolidityAddress(data[1]).toString() ===
+                                    token)
                         ) {
                             return true;
                         }
@@ -1116,8 +1116,8 @@ async function isContractWiper(
                     } else {
                         if (
                             (AccountId.fromSolidityAddress(data[0]).toString() ===
-                            retireContractId) && (TokenId.fromSolidityAddress(data[1]).toString() ===
-                            token)
+                                retireContractId) && (TokenId.fromSolidityAddress(data[1]).toString() ===
+                                    token)
                         ) {
                             return false;
                         }
@@ -1276,10 +1276,9 @@ export async function contractAPI(
         owner: IOwner,
         type: ContractType,
         pageIndex?: any,
-        pageSize?: any,
-        userId: string | null
+        pageSize?: any
     }) => {
-        const userId = msg?.userId
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1325,10 +1324,9 @@ export async function contractAPI(
     ApiResponse(ContractAPI.CREATE_CONTRACT, async (msg: {
         owner: IOwner,
         description: string,
-        type: ContractType,
-        userId: string | null
+        type: ContractType
     }) => {
-        const userId = msg?.userId
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1420,10 +1418,9 @@ export async function contractAPI(
     ApiResponse(ContractAPI.IMPORT_CONTRACT, async (msg: {
         owner: IOwner,
         contractId: string,
-        description: string,
-        userId: string | null
+        description: string
     }) => {
-        const userId = msg?.userId
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid contract identifier');
@@ -1454,7 +1451,7 @@ export async function contractAPI(
                 rootKey
             );
 
-            const [contractMessage, memo] = await getContractMessage(workers, contractId, userId) as [ContractMessage & {version: string}, string];
+            const [contractMessage, memo] = await getContractMessage(workers, contractId, userId) as [ContractMessage & { version: string }, string];
 
             const existingContract = await dataBaseServer.findOne(Contract, {
                 contractId,
@@ -1522,10 +1519,9 @@ export async function contractAPI(
 
     ApiResponse(ContractAPI.CONTRACT_PERMISSIONS, async (msg: {
         owner: IOwner,
-        id: string,
-        userId: string | null
+        id: string
     }) => {
-        const userId = msg?.userId
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1537,7 +1533,7 @@ export async function contractAPI(
                 throw new Error('Invalid contract identifier');
             }
 
-            const contract = await  dataBaseServer.findOne(Contract, id, {
+            const contract = await dataBaseServer.findOne(Contract, id, {
                 fields: ['contractId'],
             });
             if (!contract) {
@@ -1580,8 +1576,11 @@ export async function contractAPI(
     });
 
     ApiResponse(ContractAPI.REMOVE_CONTRACT,
-        async (msg: { owner: IOwner, id: string, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            owner: IOwner,
+            id: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -1631,10 +1630,9 @@ export async function contractAPI(
         owner: IOwner,
         contractId?: string,
         pageIndex?: any,
-        pageSize?: any,
-        userId: string | null
+        pageSize?: any
     }) => {
-        const userId = msg?.userId
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1684,8 +1682,11 @@ export async function contractAPI(
     });
 
     ApiResponse(ContractAPI.ENABLE_WIPE_REQUESTS,
-        async (msg: { owner: IOwner, id: string, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            owner: IOwner,
+            id: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -1735,8 +1736,11 @@ export async function contractAPI(
         });
 
     ApiResponse(ContractAPI.DISABLE_WIPE_REQUESTS,
-        async (msg: { owner: IOwner, id: string, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            owner: IOwner,
+            id: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -1786,8 +1790,11 @@ export async function contractAPI(
         });
 
     ApiResponse(ContractAPI.APPROVE_WIPE_REQUEST,
-        async (msg: { owner: IOwner, requestId: string, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            owner: IOwner,
+            requestId: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -1804,7 +1811,7 @@ export async function contractAPI(
 
                 const request = await dataBaseServer.findOne(WiperRequest, {
                     id: requestId,
-                }) as WiperRequest & {token: string};
+                }) as WiperRequest & { token: string };
                 if (!request) {
                     throw new Error('Request is not found');
                 }
@@ -1869,10 +1876,9 @@ export async function contractAPI(
     ApiResponse(ContractAPI.REJECT_WIPE_REQUEST, async (msg: {
         owner: IOwner,
         requestId: string,
-        ban: boolean,
-        userId: string | null
+        ban: boolean
     }) => {
-        const userId = msg?.userId
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1889,7 +1895,7 @@ export async function contractAPI(
 
             const request = await dataBaseServer.findOne(WiperRequest, {
                 id: requestId,
-            }) as WiperRequest & {token: string};
+            }) as WiperRequest & { token: string };
             if (!request) {
                 throw new Error('Request is not found');
             }
@@ -1949,8 +1955,12 @@ export async function contractAPI(
     });
 
     ApiResponse(ContractAPI.CLEAR_WIPE_REQUESTS,
-        async (msg: { owner: IOwner, id: string, hederaId?: string, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            owner: IOwner,
+            id: string,
+            hederaId?: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -2015,10 +2025,9 @@ export async function contractAPI(
     ApiResponse(ContractAPI.ADD_WIPE_ADMIN, async (msg: {
         owner: IOwner,
         id: string,
-        hederaId: string,
-        userId: string | null
+        hederaId: string
     }) => {
-        const userId = msg?.userId
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2081,10 +2090,9 @@ export async function contractAPI(
     ApiResponse(ContractAPI.REMOVE_WIPE_ADMIN, async (msg: {
         owner: IOwner,
         id: string,
-        hederaId: string,
-        userId: string | null
+        hederaId: string
     }) => {
-        const userId = msg?.userId
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2147,10 +2155,9 @@ export async function contractAPI(
     ApiResponse(ContractAPI.ADD_WIPE_MANAGER, async (msg: {
         owner: IOwner,
         id: string,
-        hederaId: string,
-        userId: string | null
+        hederaId: string
     }) => {
-        const userId = msg?.userId
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2213,10 +2220,9 @@ export async function contractAPI(
     ApiResponse(ContractAPI.REMOVE_WIPE_MANAGER, async (msg: {
         owner: IOwner,
         id: string,
-        hederaId: string,
-        userId: string | null
+        hederaId: string
     }) => {
-        const userId = msg?.userId
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2280,10 +2286,9 @@ export async function contractAPI(
         owner: IOwner,
         id: string,
         hederaId: string
-        tokenId?: string,
-        userId: string | null
+        tokenId?: string
     }) => {
-        const userId = msg?.userId
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2358,10 +2363,9 @@ export async function contractAPI(
         owner: IOwner,
         id: string,
         hederaId: string
-        tokenId?: string,
-        userId: string | null
+        tokenId?: string
     }) => {
-        const userId = msg?.userId
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2432,8 +2436,11 @@ export async function contractAPI(
     });
 
     ApiResponse(ContractAPI.SYNC_RETIRE_POOLS,
-        async (msg: { owner: IOwner, id: string, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            owner: IOwner,
+            id: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -2493,8 +2500,8 @@ export async function contractAPI(
                                 userId,
                                 token.token
                             );
-                        // tslint:disable-next-line:no-empty
-                        } catch {}
+                            // tslint:disable-next-line:no-empty
+                        } catch { }
                         await setContractWiperPermissions(
                             dataBaseServer,
                             contractId,
@@ -2544,10 +2551,9 @@ export async function contractAPI(
         owner: IOwner,
         contractId?: string,
         pageIndex?: any,
-        pageSize?: any,
-        userId: string | null
+        pageSize?: any
     }) => {
-        const userId = msg?.userId
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2606,10 +2612,9 @@ export async function contractAPI(
         tokens?: string[],
         contractId?: string,
         pageIndex?: any,
-        pageSize?: any,
-        userId: string | null
+        pageSize?: any
     }) => {
-        const userId = msg?.userId
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2675,8 +2680,11 @@ export async function contractAPI(
     });
 
     ApiResponse(ContractAPI.CLEAR_RETIRE_REQUESTS,
-        async (msg: { owner: IOwner, id: string, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            owner: IOwner,
+            id: string,
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -2750,8 +2758,11 @@ export async function contractAPI(
         });
 
     ApiResponse(ContractAPI.CLEAR_RETIRE_POOLS,
-        async (msg: { owner: IOwner, id: string, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            owner: IOwner,
+            id: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -2827,10 +2838,9 @@ export async function contractAPI(
     ApiResponse(ContractAPI.SET_RETIRE_POOLS, async (msg: {
         owner: IOwner,
         id: string,
-        options: { tokens: RetireTokenPool[]; immediately: boolean },
-        userId: string | null
+        options: { tokens: RetireTokenPool[]; immediately: boolean }
     }) => {
-        const userId = msg?.userId
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid add contract pair parameters');
@@ -2899,8 +2909,11 @@ export async function contractAPI(
     });
 
     ApiResponse(ContractAPI.UNSET_RETIRE_POOLS,
-        async (msg: { owner: IOwner, poolId: string, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            owner: IOwner,
+            poolId: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid add contract pair parameters');
@@ -2960,8 +2973,11 @@ export async function contractAPI(
         });
 
     ApiResponse(ContractAPI.UNSET_RETIRE_REQUEST,
-        async (msg: { owner: IOwner, requestId: string, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            owner: IOwner,
+            requestId: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid add contract pair parameters');
@@ -3028,10 +3044,9 @@ export async function contractAPI(
     ApiResponse(ContractAPI.RETIRE, async (msg: {
         owner: IOwner,
         poolId: string,
-        tokens: RetireTokenRequest[],
-        userId: string | null
+        tokens: RetireTokenRequest[]
     }) => {
-        const userId = msg?.userId
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid add contract pair parameters');
@@ -3138,8 +3153,11 @@ export async function contractAPI(
     });
 
     ApiResponse(ContractAPI.APPROVE_RETIRE,
-        async (msg: { owner: IOwner, requestId: string, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            owner: IOwner,
+            requestId: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid add contract pair parameters');
@@ -3247,8 +3265,11 @@ export async function contractAPI(
         });
 
     ApiResponse(ContractAPI.CANCEL_RETIRE,
-        async (msg: { owner: IOwner, requestId: string, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            owner: IOwner,
+            requestId: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid add contract pair parameters');
@@ -3310,10 +3331,9 @@ export async function contractAPI(
     ApiResponse(ContractAPI.ADD_RETIRE_ADMIN, async (msg: {
         owner: IOwner,
         id: string,
-        hederaId: string,
-        userId: string | null
+        hederaId: string
     }) => {
-        const userId = msg?.userId
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -3376,10 +3396,9 @@ export async function contractAPI(
     ApiResponse(ContractAPI.REMOVE_RETIRE_ADMIN, async (msg: {
         owner: IOwner,
         id: string,
-        hederaId: string,
-        userId: string | null
+        hederaId: string
     }) => {
-        const userId = msg?.userId
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -3442,10 +3461,9 @@ export async function contractAPI(
     ApiResponse(ContractAPI.GET_RETIRE_VCS, async (msg: {
         owner: IOwner,
         pageIndex?: any,
-        pageSize?: any,
-        userId: string | null
+        pageSize?: any
     }) => {
-        const userId = msg?.userId
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -3492,10 +3510,9 @@ export async function contractAPI(
 
     ApiResponse(ContractAPI.GET_RETIRE_VCS_FROM_INDEXER, async (msg: {
         owner: IOwner,
-        contractTopicId: string,
-        userId: string | null
+        contractTopicId: string
     }) => {
-        const userId = msg?.userId
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
