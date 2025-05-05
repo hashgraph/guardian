@@ -1,7 +1,7 @@
 {
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
-        "@nestjs/common": "^11.0.11",
+        "@nestjs/common": "^10.4.16",
         "@nestjs/core": "^11.0.11",
         "@nestjs/microservices": "^11.0.11",
         "cross-blob": "^2.0.1",

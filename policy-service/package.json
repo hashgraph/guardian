@@ -19,7 +19,7 @@
         "@guardian/interfaces": "^3.2.0-rc",
         "@mikro-orm/core": "6.2.2",
         "@mikro-orm/mongodb": "6.2.2",
-        "@nestjs/common": "^11.0.11",
+        "@nestjs/common": "^10.4.16",
         "@nestjs/core": "^11.0.11",
         "@nestjs/microservices": "^11.0.11",
         "cron": "^2.0.0",
