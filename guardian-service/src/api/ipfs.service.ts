@@ -103,7 +103,7 @@ export async function ipfsAPI(logger: PinoLogger): Promise<void> {
     ApiResponse(MessageAPI.IPFS_GET_FILE, async (msg: {
         user: IAuthUser,
         cid: string,
-        responseType: any
+        responseType: 'json' | 'raw' | 'str'
     }) => {
         try {
             if (!msg) {
