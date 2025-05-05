@@ -17,8 +17,8 @@ export class ExternalPoliciesApi {
     @Get('/')
     @Auth(Permissions.POLICIES_EXTERNAL_POLICY_READ)
     @ApiOperation({
-        summary: 'Return a list of all external policies.',
-        description: 'Returns all external policies.',
+        summary: 'Returns the list of requests for adding remote policies.',
+        description: 'Returns the list of requests for adding remote policies.',
     })
     @ApiQuery({
         name: 'pageIndex',
@@ -76,8 +76,8 @@ export class ExternalPoliciesApi {
     @Post('/preview')
     @Auth(Permissions.POLICIES_EXTERNAL_POLICY_CREATE)
     @ApiOperation({
-        summary: 'Policy preview from IPFS.',
-        description: 'Previews the policy from IPFS without loading it into the local DB.',
+        summary: 'Returns preview of the remote policies.',
+        description: 'Returns preview of the remote policies.',
     })
     @ApiBody({
         description: 'Message.',
@@ -116,8 +116,8 @@ export class ExternalPoliciesApi {
     @Post('/import')
     @Auth(Permissions.POLICIES_EXTERNAL_POLICY_CREATE)
     @ApiOperation({
-        summary: 'Policy import from IPFS.',
-        description: 'Imports the policy from IPFS without loading it into the local DB.',
+        summary: 'Creates a request to import a remote policy.',
+        description: 'Creates a request to import a remote policy.',
     })
     @ApiBody({
         description: 'Message.',
@@ -156,8 +156,8 @@ export class ExternalPoliciesApi {
     @Post('/push/:messageId/approve')
     @Auth(Permissions.POLICIES_EXTERNAL_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Approves policy.',
-        description: 'Approves policy for the specified policy ID.',
+        summary: 'Approves the request to import a remote policy, and imports it.',
+        description: 'Approves the request to import a remote policy, and imports it.',
     })
     @ApiParam({
         name: 'messageId',
@@ -212,8 +212,8 @@ export class ExternalPoliciesApi {
     @Post('/push/:messageId/reject')
     @Auth(Permissions.POLICIES_EXTERNAL_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Rejects policy.',
-        description: 'Rejects policy for the specified policy ID.',
+        summary: 'Rejects the request to import a remote policy.',
+        description: 'Rejects the request to import a remote policy.',
     })
     @ApiParam({
         name: 'messageId',
@@ -268,8 +268,8 @@ export class ExternalPoliciesApi {
     @Post('/:messageId/approve')
     @Auth(Permissions.POLICIES_EXTERNAL_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Approves policy.',
-        description: 'Approves policy for the specified policy ID.',
+        summary: 'Approves the request to import a remote policy, and imports it.',
+        description: 'Approves the request to import a remote policy, and imports it.',
     })
     @ApiParam({
         name: 'messageId',
@@ -314,8 +314,8 @@ export class ExternalPoliciesApi {
     @Post('/:messageId/reject')
     @Auth(Permissions.POLICIES_EXTERNAL_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Rejects policy.',
-        description: 'Rejects policy for the specified policy ID.',
+        summary: 'Rejects the request to import a remote policy.',
+        description: 'Rejects the request to import a remote policy.',
     })
     @ApiParam({
         name: 'messageId',
@@ -364,8 +364,8 @@ export class ExternalPoliciesApi {
         Permissions.POLICIES_POLICY_MANAGE,
     )
     @ApiOperation({
-        summary: 'Return a list of all policies.',
-        description: 'Returns all policies.',
+        summary: 'Returns the list of requests for action from remote Guardians.',
+        description: 'Returns the list of requests for action from remote Guardians.',
     })
     @ApiQuery({
         name: 'pageIndex',
@@ -433,8 +433,8 @@ export class ExternalPoliciesApi {
         Permissions.POLICIES_POLICY_MANAGE,
     )
     @ApiOperation({
-        summary: 'Updates schema rule.',
-        description: 'Updates schema rule configuration for the specified rule ID.',
+        summary: 'Approves a request for an action from a remote Guardian.',
+        description: 'Approves a request for an action from a remote Guardian.',
     })
     @ApiParam({
         name: 'messageId',
@@ -483,8 +483,8 @@ export class ExternalPoliciesApi {
         Permissions.POLICIES_POLICY_MANAGE,
     )
     @ApiOperation({
-        summary: 'Updates schema rule.',
-        description: 'Updates schema rule configuration for the specified rule ID.',
+        summary: 'Rejects a request for an action from a remote Guardian',
+        description: 'Rejects a request for an action from a remote Guardian',
     })
     @ApiParam({
         name: 'messageId',
@@ -533,8 +533,8 @@ export class ExternalPoliciesApi {
         Permissions.POLICIES_POLICY_MANAGE,
     )
     @ApiOperation({
-        summary: 'Return a count of policy requests.',
-        description: 'Return a count of policy requests.',
+        summary: 'Returns the count of entries in the list of requests for actions from remote Guardians.',
+        description: 'Returns the count of entries in the list of requests for actions from remote Guardians.',
     })
     @ApiQuery({
         name: 'policyId',
