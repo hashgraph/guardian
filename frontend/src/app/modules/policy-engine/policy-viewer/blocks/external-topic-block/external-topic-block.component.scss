@@ -243,3 +243,8 @@
 .form-content.step-three .text.second {
     margin-top: 8px;
 }
+
+*[readonly-block="true"] {
+    pointer-events: none !important;
+    filter: grayscale(1);
+}

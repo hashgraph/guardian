@@ -1,11 +1,14 @@
 import { EntityData, MongoDriver, MongoEntityManager } from '@mikro-orm/mongodb';
 import { LogService } from './log-service.js';
 import { HederaService } from '../loaders/hedera-service.js';
-import { DataBaseHelper, Job, NftCache, NFT, TokenCache, Utils } from '@indexer/common';
+import { DataBaseHelper, Job, NftCache, NFT, TokenCache, Utils, IndexerMessageAPI } from '@indexer/common';
 import { TopicService } from './topic-service.js';
+import { PriorityStatus } from '@indexer/interfaces';
+import { ChannelService } from 'api/channel.service.js';
 
 export class TokenService {
     public static CYCLE_TIME: number = 0;
+    public static CHANNEL: ChannelService | null;
 
     public static async updateToken(job: Job) {
         try {
@@ -57,15 +60,35 @@ export class TokenService {
                     data.serialNumber = nfts.nfts[nfts.nfts.length - 1].serial_number;
                     data.lastUpdate = Date.now();
                     data.hasNext = !!nfts.links.next;
+                    data.priorityDate = !!nfts.links.next ? row.priorityDate : null;
+                    data.priorityStatus = !!nfts.links.next ? PriorityStatus.RUNNING : PriorityStatus.FINISHED;
+                } else if (row.priorityDate) {
+                    await em.nativeUpdate(TokenCache, { tokenId: row.tokenId }, {
+                        priorityDate: null,
+                        priorityStatus: PriorityStatus.FINISHED,
+                    });
                 }
                 await em.nativeUpdate(TokenCache, { tokenId: row.tokenId }, data);
             } else if (data.type === 'FUNGIBLE_COMMON') {
+                data.priorityDate = null;
+                data.priorityStatus = PriorityStatus.FINISHED;
                 await em.nativeUpdate(TokenCache, { tokenId: row.tokenId }, data);
             } else {
+                data.priorityDate = null;
+                data.priorityStatus = PriorityStatus.FINISHED;
                 await em.nativeUpdate(TokenCache, { tokenId: row.tokenId }, data);
             }
+            TokenService.onTokenFinished(data);
         } catch (error) {
             await LogService.error(error, 'update token');
+        }
+    }
+        
+    public static onTokenFinished(row: any) {
+        if (TokenService.CHANNEL && row.priorityTimestamp) {
+            TokenService.CHANNEL.publicMessage(IndexerMessageAPI.ON_PRIORITY_DATA_LOADED, {
+                priorityTimestamp: row.priorityTimestamp
+            });
         }
     }
 
@@ -87,7 +110,8 @@ export class TokenService {
                     type: '',
                     treasury: '',
                     memo: '',
-                    totalSupply: 0
+                    totalSupply: 0,
+                    priorityDate: null,
                 }));
                 return true;
             } else {
@@ -112,16 +136,30 @@ export class TokenService {
         const rows = await em.find(TokenCache,
             {
                 $or: [
+                    { priorityDate: { $ne: null } },
                     { lastUpdate: { $lt: delay } },
                     { hasNext: true }
                 ]
             },
             {
+                orderBy: [
+                    { priorityDate: 'DESC' },
+                ],
                 limit: 50
             }
         )
-        const index = Math.min(Math.floor(Math.random() * rows.length), rows.length - 1);
-        const row = rows[index];
+
+        if (!rows || rows.length <= 0) {
+            return null;
+        }
+
+        let row: any;
+        if (rows[0].priorityDate) {
+            row = rows[0]
+        } else {
+            const index = Math.min(Math.floor(Math.random() * rows.length), rows.length - 1);
+            row = rows[index];
+        }
 
         if (!row) {
             return null;
@@ -131,6 +169,7 @@ export class TokenService {
         const count = await em.nativeUpdate(TokenCache, {
             tokenId: row.tokenId,
             $or: [
+                { priorityDate: { $ne: null } },
                 { lastUpdate: { $lt: delay } },
                 { hasNext: true }
             ]

@@ -114,7 +114,6 @@ import { AISearchService } from './services/ai-search.service';
 import { DndModule } from 'ngx-drag-drop';
 import { PasswordModule } from 'primeng/password';
 import { RegisterDialogComponent } from './views/login/register-dialogs/register-dialog/register-dialog.component';
-import { TermsConditionsComponent } from './views/login/register-dialogs/terms-conditions-dialog/terms-conditions.component';
 import { AccountTypeSelectorDialogComponent } from './views/login/register-dialogs/account-type-selector-dialog/account-type-selector-dialog.component';
 import { ForgotPasswordDialogComponent } from './views/login/forgot-password-dialog/forgot-password-dialog.component';
 import { MultiSelectModule } from 'primeng/multiselect';
@@ -130,6 +129,7 @@ import '../prototypes/date-prototype';
 import { OnlyForDemoDirective } from './directives/onlyfordemo.directive';
 import { UseWithServiceDirective } from './directives/use-with-service.directive';
 import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
+import { ExternalPoliciesService } from './services/external-policy.service';
 
 @NgModule({
     declarations: [
@@ -166,7 +166,6 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         SearchResultCardComponent,
         ListOfTokensUserComponent,
         RegisterDialogComponent,
-        TermsConditionsComponent,
         AccountTypeSelectorDialogComponent,
         ForgotPasswordDialogComponent,
         OnlyForDemoDirective,
@@ -254,6 +253,7 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         CompareStorage,
         ProjectComparisonService,
         FormulasService,
+        ExternalPoliciesService,
         PermissionsService,
         PermissionsGuard,
         {

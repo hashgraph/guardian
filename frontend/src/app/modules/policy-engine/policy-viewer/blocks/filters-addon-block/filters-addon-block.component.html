@@ -2,7 +2,7 @@
     <div class="btn-link" (click)="onFilters()">{{content}}</div>
 </div> -->
 
-<div class="content">
+<div class="content" [attr.readonly-block]="readonly">
     <div class="content-name">
         {{content}}
     </div>

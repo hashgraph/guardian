@@ -35,4 +35,10 @@ export class Log extends BaseEntity implements ILog {
         index: true
     })
     attributes?: string[];
+
+    /**
+     * User Id
+     */
+    @Property({ nullable: true, index: true })
+    userId?: string;
 }

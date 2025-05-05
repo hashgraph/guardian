@@ -288,6 +288,28 @@ export class WebSocketsService {
             return new MessageResponse({});
         });
 
+        this.channel.subscribe('update-request', async (msg) => {
+            this.wss.clients.forEach((client: any) => {
+                if (this.checkUserByDid(client, msg)) {
+                    this.send(client, {
+                        type: MessageAPI.UPDATE_REQUEST_EVENT,
+                        data: msg,
+                    });
+                }
+            });
+            return new MessageResponse({});
+        });
+
+        this.channel.subscribe('update-restore', async (msg) => {
+            this.wss.clients.forEach((client: any) => {
+                this.send(client, {
+                    type: MessageAPI.UPDATE_RESTORE_EVENT,
+                    data: msg,
+                });
+            });
+            return new MessageResponse({});
+        });
+
         this.channel.subscribe('update-test',
             async (msg: any) => {
                 this.wss.clients.forEach((client: any) => {
@@ -417,7 +439,6 @@ export class WebSocketsService {
             ws.on('close', () => {
                 this.clients.delete(clientId);
             });
-            ws.user = await this.getUserByUrl(req.url);
         });
     }
 
@@ -503,7 +524,7 @@ export class WebSocketsService {
                     break;
             }
         } catch (error) {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], null);
         }
     }
 
@@ -517,26 +538,7 @@ export class WebSocketsService {
         try {
             ws.send(JSON.stringify(message));
         } catch (error) {
-            this.logger.error(error, ['API_GATEWAY', 'websocket', 'send']);
-        }
-    }
-
-    /**
-     * Get User by url
-     * @param url
-     * @private
-     */
-    private async getUserByUrl(url: string): Promise<any> {
-        try {
-            const params = url.split('?')[1];
-            const token = new URLSearchParams(params).get('token');
-            if (token) {
-                return await new Users().getUserByToken(token);
-            }
-            return null;
-        } catch (error) {
-            await this.logger.warn(error.message || error, ['API_GATEWAY']);
-            return null;
+            this.logger.error(error, ['API_GATEWAY', 'websocket', 'send'], null);
         }
     }
 

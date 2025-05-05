@@ -27,6 +27,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
     buttons: any;
     commonVisible: boolean = true;
     enableIndividualFilters = false;
+    readonly: boolean = false;
     private readonly _commentField: string = 'option.comment';
 
     constructor(
@@ -114,6 +115,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
 
     setData(data: any) {
         if (data) {
+            this.readonly = !!data.readonly;
             this.data = data.data;
             this.uiMetaData = data.uiMetaData || {};
             this.enableIndividualFilters = this.uiMetaData.enableIndividualFilters;

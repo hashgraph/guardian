@@ -4,6 +4,7 @@ import { PolicyUtils } from '../../helpers/utils.js';
 import { IHederaCredentials } from '../../policy-user.js';
 import { TypedMint } from './typed-mint.js';
 import { TokenConfig } from '../configs/token-config.js';
+import { PolicyComponentsUtils } from '../../policy-components-utils.js';
 
 /**
  * Mint NFT
@@ -63,6 +64,7 @@ export class MintNFT extends TypedMint {
             tokenId: string;
             tokenType: TokenType;
             decimals: number;
+            policyId: string;
             metadata?: string;
             secondaryVpIds?: string[];
         },
@@ -103,6 +105,7 @@ export class MintNFT extends TypedMint {
                 await this._db.createMintTransactions(
                     {
                         mintRequestId: this._mintRequest.id,
+                        policyId: this._mintRequest.policyId,
                         amount: 10,
                         mintStatus: MintTransactionStatus.NEW,
                         transferStatus: this._mintRequest.isTransferNeeded
@@ -116,6 +119,7 @@ export class MintNFT extends TypedMint {
             if (restCount > 0) {
                 await this._db.saveMintTransaction({
                     mintRequestId: this._mintRequest.id,
+                    policyId: this._mintRequest.policyId,
                     amount: restCount,
                     mintStatus: MintTransactionStatus.NEW,
                     transferStatus: this._mintRequest.isTransferNeeded
@@ -123,6 +127,7 @@ export class MintNFT extends TypedMint {
                         : MintTransactionStatus.NONE,
                     serials: [],
                 });
+                PolicyComponentsUtils.backup(this._mintRequest.policyId);
             }
         }
 
@@ -138,6 +143,7 @@ export class MintNFT extends TypedMint {
                             tokenId: this._token.tokenId,
                             limit: 1,
                             order: 'desc',
+                            payload: { userId },
                         },
                     },
                     1,
@@ -148,11 +154,11 @@ export class MintNFT extends TypedMint {
                         this._mintRequest.startSerial = startSerial[0] || 0;
                         await this._db.saveMintRequest(this._mintRequest);
                     } catch (error) {
-                        this.error(error);
+                        this.error(error, userId);
                     }
-                }).catch((error) => this.error(error));
+                }).catch((error) => this.error(error, userId));
             } catch (error) {
-                this.error(error);
+                this.error(error, userId);
             }
         }
 
@@ -188,9 +194,10 @@ export class MintNFT extends TypedMint {
                                 supplyKey: this._token.supplyKey,
                                 metaData: new Array(
                                     transaction.amount -
-                                        transaction.serials.length
+                                    transaction.serials.length
                                 ).fill(this._mintRequest.metadata),
                                 transactionMemo: this._mintRequest.memo,
+                                payload: { userId }
                             },
                         },
                         1, 0, userId
@@ -205,6 +212,7 @@ export class MintNFT extends TypedMint {
                     throw error;
                 } finally {
                     await this._db.saveMintTransaction(transaction);
+                    PolicyComponentsUtils.backup(transaction.policyId);
                 }
             };
 
@@ -279,6 +287,7 @@ export class MintNFT extends TypedMint {
                                 treasuryKey: this._token.treasuryKey,
                                 element: transaction.serials,
                                 transactionMemo: this._mintRequest.memo,
+                                payload: { userId }
                             },
                         },
                         1,
@@ -297,6 +306,7 @@ export class MintNFT extends TypedMint {
                     throw error;
                 } finally {
                     await this._db.saveMintTransaction(transaction);
+                    PolicyComponentsUtils.backup(transaction.policyId);
                 }
             };
             notifier?.step(
@@ -326,7 +336,7 @@ export class MintNFT extends TypedMint {
     /**
      * Resolve pending transactions
      */
-    protected override async resolvePendingTransactions() {
+    protected override async resolvePendingTransactions(userId: string | null) {
         if (this._mintRequest.isMintNeeded) {
             const mintedSerials = await new Workers().addRetryableTask(
                 {
@@ -339,6 +349,7 @@ export class MintNFT extends TypedMint {
                         serialnumber: this._mintRequest.startSerial
                             ? `gte:${this._mintRequest.startSerial}`
                             : null,
+                        payload: { userId }
                     },
                 },
                 1,
@@ -365,7 +376,7 @@ export class MintNFT extends TypedMint {
                     );
                     mintPendingTransaction.mintStatus =
                         mintPendingTransaction.amount ===
-                        mintPendingTransaction.serials.length
+                            mintPendingTransaction.serials.length
                             ? MintTransactionStatus.SUCCESS
                             : MintTransactionStatus.NEW;
                 } else {
@@ -373,6 +384,7 @@ export class MintNFT extends TypedMint {
                         MintTransactionStatus.NEW;
                 }
                 await this._db.saveMintTransaction(mintPendingTransaction);
+                PolicyComponentsUtils.backup(mintPendingTransaction.policyId);
             }
         }
         if (this._mintRequest.isTransferNeeded) {
@@ -388,6 +400,7 @@ export class MintNFT extends TypedMint {
                         serialnumber: this._mintRequest.startSerial
                             ? `gte:${this._mintRequest.startSerial}`
                             : null,
+                        payload: { userId }
                     },
                 },
                 1,
@@ -406,6 +419,7 @@ export class MintNFT extends TypedMint {
                         ? MintTransactionStatus.NEW
                         : MintTransactionStatus.SUCCESS;
                 await this._db.saveMintTransaction(transferPendingTransaction);
+                PolicyComponentsUtils.backup(transferPendingTransaction.policyId);
             }
         }
     }
@@ -414,7 +428,7 @@ export class MintNFT extends TypedMint {
      * Mint tokens
      * @returns Processed
      */
-    override async mint(): Promise<boolean> {
-        return await super.mint(true);
+    override async mint(isProgressNeeded: boolean = false, userId: string | null): Promise<boolean> {
+        return await super.mint(isProgressNeeded, userId);
     }
 }

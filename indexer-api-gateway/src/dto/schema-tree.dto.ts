@@ -36,7 +36,7 @@ export class SchemaTreeNodeDTO implements SchemaTreeNode {
     data: SchemaTreeNodeDataDTO;
     @ApiProperty({
         description: 'Schema tree node children',
-        type: 'object',
+        type: 'array',
     })
     children: SchemaTreeNode[];
 }

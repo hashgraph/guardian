@@ -1,6 +1,6 @@
 import { DatabaseServer, PolicyStatistic, SchemaConverterUtils, TopicConfig, TopicHelper, Users, VcDocument, VcHelper } from '@guardian/common';
-import { GenerateUUIDv4, IOwner, IStatisticConfig, PolicyType, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
-import { generateSchemaContext } from './schema-publish-helper.js';
+import { GenerateUUIDv4, IOwner, IStatisticConfig, PolicyStatus, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
+import { generateSchemaContext } from '../../helpers/import-helpers/index.js';
 
 export async function addPrevRelationships(doc: VcDocument, relationships: Set<string>) {
     if (doc && doc.relationships) {
@@ -195,27 +195,27 @@ export async function generateVcDocument(document: any, schema: Schema, owner: I
     if (!res.ok) {
         throw Error(JSON.stringify(res.error));
     }
-    const didDocument = await vcHelper.loadDidDocument(owner.creator);
+    const didDocument = await vcHelper.loadDidDocument(owner.creator, owner.id);
     const vcObject = await vcHelper.createVerifiableCredential(document, didDocument, null, null);
     return vcObject;
 }
 
-export async function getOrCreateTopic(item: PolicyStatistic): Promise<TopicConfig> {
+export async function getOrCreateTopic(item: PolicyStatistic, userId: string | null): Promise<TopicConfig> {
     let topic: TopicConfig;
     if (item.topicId) {
-        topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true);
+        topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true, userId);
         if (topic) {
             return topic;
         }
     }
 
     const policy = await DatabaseServer.getPolicyById(item.policyId);
-    if (!policy || policy.status !== PolicyType.PUBLISH) {
+    if (!policy || policy.status !== PolicyStatus.PUBLISH) {
         throw Error('Item does not exist.');
     }
 
-    const rootTopic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(policy.instanceTopicId), true);
-    const root = await (new Users()).getHederaAccount(item.owner);
+    const rootTopic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(policy.instanceTopicId), true, userId);
+    const root = await (new Users()).getHederaAccount(item.owner, userId);
     const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
     topic = await topicHelper.create({
         type: TopicType.StatisticTopic,
@@ -224,9 +224,9 @@ export async function getOrCreateTopic(item: PolicyStatistic): Promise<TopicConf
         description: 'POLICY_STATISTICS',
         policyId: policy.id,
         policyUUID: policy.uuid
-    }, { admin: true, submit: false });
-    await topic.saveKeys();
-    await topicHelper.twoWayLink(topic, rootTopic, null);
+    }, userId, { admin: true, submit: false });
+    await topic.saveKeys(userId);
+    await topicHelper.twoWayLink(topic, rootTopic, null, userId);
     await DatabaseServer.saveTopic(topic.toObject());
     return topic;
 }
@@ -267,7 +267,6 @@ export function uniqueDocuments(documents: VcDocument[]): VcDocument[] {
     }
     const result: VcDocument[] = [];
     for (const item of map.values()) {
-        console.log(item.size)
         for (const doc of item.values()) {
             if (Array.isArray(doc.relationships)) {
                 for (const messageId of doc.relationships) {

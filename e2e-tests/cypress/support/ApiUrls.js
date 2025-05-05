@@ -1,5 +1,6 @@
 const API = {
-    ApiServer: "http://localhost:" + Cypress.env("portApi") + "/",
+    ApiServer: `http://localhost:${Cypress.env("portApi")}/`,
+    ApiIndexer: `http://localhost:${Cypress.env("portIndexer")}/`,
 
     //Accounts
     Accounts: "accounts/",
@@ -77,6 +78,7 @@ const API = {
 
     //Settings
     SettingsEnv: "settings/environment",
+    SettingsAbout: "settings/about",
 
     //External
     External: "external",
@@ -116,7 +118,7 @@ const API = {
     GetIssues: "tag/issue_requests_grid(evident)/blocks",
     ApproveIssueRequestsBtn: "tag/approve_issue_requests_btn/blocks",
     CreateIssue: "tag/create_issue_request_form/blocks",
-    Categories: "methodologies/categories",
+    Categories: "methodologies/categories/",
 
     //Records
     Record: "record/",
@@ -165,5 +167,51 @@ const API = {
     Assign: "assign/",
     Test: "test/",
     Start: "start/",
+    Config: "config/",
+
+    //Indexer
+    IndexerRegistries: "entities/registries/",
+    IndexerUsers: "entities/registry-users/",
+
+    IndexerDIDs: "entities/did-documents/",
+    IndexerVCs: "entities/vc-documents/",
+    IndexerVPs: "entities/vp-documents/",
+    IndexerStatisticVCs: "entities/statistic-documents/",
+    IndexerLabelVPs: "entities/label-documents/",
+    
+    IndexerPolicies: "entities/policies/",
+    IndexerTools: "entities/tools/",
+    IndexerModules: "entities/modules/",
+    IndexerSchemas: "entities/schemas/",
+    IndexerTokens: "entities/tokens/",
+    IndexerRoles: "entities/roles/",
+    IndexerStatistics: "entities/statistics/",
+    IndexerLabels: "entities/labels/",
+    IndexerFormulas: "entities/formulas/",
+    
+    IndexerNFTs: "entities/nfts/",
+    IndexerTopics: "entities/topics/",
+    IndexerContracts: "entities/contracts/",
+
+    //Worker tasks
+    WorkerTasks: "worker-tasks/",
+
+    //Themes
+    Themes: "themes/",
+
+    //Branding
+    Branding: "branding/",
+
+    //Notifications
+    Notifications: "notifications/",
+    NewNotifications: "notifications/new/",
+    Progresses: "notifications/progresses/",
+    ReadAll: "notifications/read/all/",
+    DeleteNotification: "notifications/delete/",
+
+    //Wizard
+    WizardPolicy: "wizard/policy/",
+    WizardPolicyAsync: "wizard/push/policy/",
+    Wizard: "wizard/",
 };
 export default API;

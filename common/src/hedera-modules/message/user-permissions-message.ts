@@ -38,6 +38,16 @@ export class UserPermissionsMessage extends VCMessage {
         return result;
     }
 
+    public static fromJson(json: any): UserPermissionsMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
+        const result = VCMessage._fromJson(new UserPermissionsMessage(json.action), json);
+        result.user = json.user;
+        return result;
+    }
+
     /**
      * To message object
      */

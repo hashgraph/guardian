@@ -1,4 +1,4 @@
-<div *ngIf="tags" class="content">
+<div *ngIf="tags" class="content" [attr.readonly-block]="readonly">
     <tags-explorer 
         [data]="tags" 
         [owner]="owner" 

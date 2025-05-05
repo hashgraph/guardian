@@ -51,7 +51,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.getRecordStatus(policyId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -100,7 +100,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.startRecording(policyId, owner, options);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -156,7 +156,7 @@ export class RecordApi {
             res.header('Content-type', 'application/zip');
             return res.send(result);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -200,7 +200,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.getRecordedActions(policyId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -250,7 +250,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.runRecord(policyId, owner, options);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -299,7 +299,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.stopRunning(policyId, owner, options);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -342,7 +342,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.getRecordResults(policyId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -385,7 +385,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.getRecordDetails(policyId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -434,7 +434,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.fastForward(policyId, owner, options);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -483,7 +483,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.retryStep(policyId, owner, options);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -532,7 +532,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.skipStep(policyId, owner, options);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

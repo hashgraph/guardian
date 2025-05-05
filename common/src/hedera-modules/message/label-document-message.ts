@@ -235,6 +235,21 @@ export class LabelDocumentMessage extends Message {
         return result;
     }
 
+    public static fromJson(json: any): LabelDocumentMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
+        const result = Message._fromJson(new LabelDocumentMessage(json.action), json);
+        result.issuer = json.issuer;
+        result.hash = json.hash;
+        result.relationships = json.relationships;
+        result.target = json.target;
+        result.definition = json.definition;
+        result.document = json.document;
+        return result;
+    }
+
     /**
      * Get User DID
      */

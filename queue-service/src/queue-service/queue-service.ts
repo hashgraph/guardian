@@ -1,9 +1,9 @@
-import { DatabaseServer, MAP_TASKS_AGGREGATION_FILTERS, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
+import { DatabaseServer, IAuthUser, MAP_TASKS_AGGREGATION_FILTERS, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
 import { GenerateUUIDv4, ITask, OrderDirection, QueueEvents, WorkerEvents } from '@guardian/interfaces';
 import { TaskEntity } from '../entity/task';
 
 @Singleton
-export class QueueService extends NatsService{
+export class QueueService extends NatsService {
     public messageQueueName = 'queue-service';
     public replySubject = 'reply-queue-service-' + GenerateUUIDv4();
 
@@ -42,7 +42,7 @@ export class QueueService extends NatsService{
         this.getMessages(WorkerEvents.TASK_COMPLETE, async (data: any) => {
             const dataBaseServer = new DatabaseServer();
 
-            const task = await dataBaseServer.findOne(TaskEntity, {taskId: data.id});
+            const task = await dataBaseServer.findOne(TaskEntity, { taskId: data.id });
             if (!data.error || !task.isRetryableTask) {
                 await this.completeTaskInQueue(data.id, data.data, data.error);
                 return;
@@ -70,8 +70,13 @@ export class QueueService extends NatsService{
             await dataBaseServer.save(TaskEntity, task);
         });
 
-        this.getMessages(QueueEvents.GET_TASKS_BY_USER, async (data: { userId: string, pageIndex: number, pageSize: number }) => {
-            const {userId, pageSize, pageIndex} = data;
+        this.getMessages(QueueEvents.GET_TASKS_BY_USER, async (data: {
+            user: IAuthUser,
+            pageIndex: number,
+            pageSize: number
+        }) => {
+            const { user, pageSize, pageIndex } = data;
+            const userId = user?.id?.toString();
             const options: any =
                 typeof pageIndex === 'number' && typeof pageSize === 'number'
                     ? {
@@ -86,7 +91,7 @@ export class QueueService extends NatsService{
                             processedTime: OrderDirection.DESC,
                         },
                     };
-            const result = await new DatabaseServer().findAndCount(TaskEntity, {userId}, options);
+            const result = await new DatabaseServer().findAndCount(TaskEntity, { userId }, options);
             for (const task of result[0]) {
                 if (task.data) {
                     delete task.data;
@@ -103,7 +108,7 @@ export class QueueService extends NatsService{
         this.getMessages(QueueEvents.RESTART_TASK, async (data: { taskId: string, userId: string }) => {
             const dataBaseServer = new DatabaseServer();
 
-            const task = await dataBaseServer.findOne(TaskEntity, {taskId: data.taskId});
+            const task = await dataBaseServer.findOne(TaskEntity, { taskId: data.taskId });
             if (data.userId !== task.userId) {
                 throw new MessageError('Wrong user')
             }
@@ -118,12 +123,12 @@ export class QueueService extends NatsService{
         this.getMessages(QueueEvents.DELETE_TASK, async (data: { taskId: string, userId: string }) => {
             const dataBaseServer = new DatabaseServer();
 
-            const task = await dataBaseServer.findOne(TaskEntity, {taskId: data.taskId});
+            const task = await dataBaseServer.findOne(TaskEntity, { taskId: data.taskId });
             if (data.userId !== task.userId) {
                 throw new MessageError('Wrong user')
             }
             await this.completeTaskInQueue(data.taskId, null, task.errorReason);
-            await dataBaseServer.deleteEntity(TaskEntity, {taskId: data.taskId});
+            await dataBaseServer.deleteEntity(TaskEntity, { taskId: data.taskId });
         });
     }
 
@@ -138,7 +143,7 @@ export class QueueService extends NatsService{
     async completeTaskInQueue(taskId: string, data: any, error: any): Promise<void> {
         const dataBaseServer = new DatabaseServer();
 
-        const task = await dataBaseServer.findOne(TaskEntity, {taskId});
+        const task = await dataBaseServer.findOne(TaskEntity, { taskId });
         if (!task) {
             return;
         }

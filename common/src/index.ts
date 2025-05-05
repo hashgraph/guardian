@@ -15,5 +15,6 @@ export * from './secret-manager/index.js';
 export * from './import-export/index.js';
 export * from './xlsx/index.js';
 export * from './metrics/index.js';
+export * from './topic-listener/topic-listener.js';
 
 export const entities = Object.values(ent);

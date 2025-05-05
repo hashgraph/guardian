@@ -259,7 +259,7 @@ export class Relationships {
             }
         }
 
-        if (item.analytics.tokens?.length > 0) {
+        if (item?.analytics?.tokens?.length > 0) {
             const tokenMessages = await this.em.find(Message, {
                 topicId: item.topicId,
                 type: MessageType.TOKEN,

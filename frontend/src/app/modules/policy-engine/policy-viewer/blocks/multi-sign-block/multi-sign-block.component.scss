@@ -218,15 +218,24 @@
 
 .icon-details {
     color: #0b73f8;
-    position: absolute;
     top: 2px;
     right: 0;
     pointer-events: none;
+    display: grid;
+    align-content: center;
 }
 
 .progress-container {
     position: relative;
-    width: 200px;
+    width: 210px;
     padding: 5px 22px 5px 0px;
     cursor: pointer;
+    display: grid;
+    grid-template-columns: auto max-content;
+    column-gap: 5px;
+}
+
+*[readonly-block="true"] {
+    pointer-events: none !important;
+    filter: grayscale(1);
 }

@@ -63,6 +63,11 @@
                     <span class="demo-color">Demo</span>
                 </div>
 
+                <div *ngIf="policyTemplate.isView" class="top-toolbar-btn top-toolbar-label">
+                    <i class="pi pi-globe demo-color"></i>
+                    <span class="demo-color">View</span>
+                </div>
+
                 <div class="delimiter"></div>
 
                 <div (click)="validationPolicy()" *ngIf="policyTemplate.isDraft" [attr.errors-count]="errorsCount"

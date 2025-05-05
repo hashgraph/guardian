@@ -1,0 +1,1481 @@
+var _pp = {
+  "G5": {
+    "G5": "Brazilian Regenerative Agriculture for Cerrado’s Carbon Credit (BRA-3C)",
+    "G6": "5043",
+    "G7": "https://www.mycarbon.solutions",
+    "G8": "01-january-2024 to 31-december-2064",
+    "G9": "2024-03-28",
+    "G10": "2024-04-07",
+    "G11": "01",
+    "G12": "4.7",
+    "G13": "MYCARBON3"
+  },
+  "G15": {
+    "G6": "The BRA-3C Project adopts the methodology approved by VCS Methodology VM0042: Methodology for Agricultural Land Management (Version 2.0). The BRA-3C Project seeks to implement sustainable soil management practices, highlighting crop rotation to guarantee the diversification of commercial plantations, cover cropping to maximize land use through the sowing of two crops in a single season, and the maintenance of plant residues and living plants in the soil, promoting carbon retention, and strengthening soil fertility. Regarding emissions, the project promotes the spread of biologicals as soil conditioners, which include fungal and microbial inoculants. Their use is expected to contribute to soil health improvement. Furthermore, the system’s efficiency with respect to nitrogen will be maximized with the help of cover crops, and with close control over the timing and dosage of the nutrient application, based on the principles of the 4R Nutrient Stewardship – right source, right rate, right time, and right place. The splitting of nitrogen fertilizer doses, and the use of enhanced efficiency fertilizers such as urease/nitrification inhibitors and controlled-release fertilizers, will provide another opportunity to reduce emissions and enhance other aspects of sustainability. The BRA-3C Project aims to increase soil organic carbon (SOC) stocks and adopt input management mechanisms to reduce emissions from agricultural activities in the Cerrado biome. The proposed project aims to implement sustainable intensification practices for agricultural land use, to increase land and food productivity, while also expanding the conservation of natural resources. In total, the BRA-3C Project estimates to produce 10,361,853 tCO2e, with an annual average of approximately 259,046 tCO2e/year. The grouped project location includes the geographical extension of the Cerrado Biome within the geographic boundaries of Brazil (geographic coordinates from 3° to 25° South latitude and from 42° to 60° West longitude). The Brazilian Cerrado biome is the country's main producer of cereals and animal protein. This biome is classified as Savanna, with approximately 2 million km², the second largest biome in South America and Brazil 1–4 . Biodiversity and participation in the water cycle in Brazil are also highlights of this biome. On the other hand, the Cerrado is also one of the most threatened biomes on the planet 5. Approximately half of its original area has already been deforested 3, and a large part of its territory is severely affected by desertification, which is increasingly accelerated due to the increase in global and regional average temperature 5–8 The project activities are directly aligned with the guidelines demanded by the VCS methodologies (VM0042 version 2.0 and VDM0053 version 2.0), as well as directly linked to the United Nations (UN) Sustainable Development Goals (SDGs) published in 2015. It is important to note that the SDGs chosen as a priority by the Brazilian government were also the focus objectives of this project. Some of the Sustainable Development Goals (SDGs) addressed by this project are: i) SDG 2 - Zero Hunger and Sustainable Agriculture; ii) SDG 8 - Decent Work and Economic Growth; iii) SDG 12 - Responsible Consumption and Production; vi) SDG 13 - Climate Action; and v) SDG 15 - Life on Land. The baseline scenario before the implementation of the project shows that 68% of the pastures located in the Brazilian Cerrado have some level of degradation, according to a study carried out by MapBiomas. In 2022, the study found that the Cerrado has 51.2 million hectares of pastures, of which 34.9 million hectares are experiencing some level of degradation. Another important point of the baseline is the expansion of agribusiness in the Brazilian Cerrado, which is replacing natural habitat and great biodiversity with agricultural and pasture lands, resulting in the reduction of the biome's native vegetation (Tisott, S. T., & Schmidt, V. (2021). Expansion and intensification of agricultural crops in the Cerrado Biome in the Midwest Region of Brazil. Brazilian Journal of Business, 3(3), 2280-2294.) Being considered one of the world's hotspots, the use of regenerative agriculture in the Cerrado is essential to increase productivity and maintain the balance of the ecosystem. The baseline of the project is in line with the Brazilian government's intention, which is the recovery and conversion of up to 40 million hectares of lowproductivity pastures into arable areas in ten years, which can practically double the area of food production in Brazil without deforestation, thus avoiding expansion over areas of native vegetation. ",
+    "G9": "No",
+    "G19": [],
+    "G23": [
+      {
+        "G5": "Scope 14: Agriculture, Forestry and Other Land Uses (AFOLU)",
+        "G6": "Agriculture Land Management.",
+        "G7": "Improved Cropland management (ICM) and Cropland and Grassland Land-use Conversions (CGLC)."
+      }
+    ],
+    "G29": "The proposed project meets all the requirements outlined in the VCS (Voluntary Carbon Standard) standard, VCS program as well as with the VCS Methodology VM0042: Methodology for Agricultural Land Management (Version 2.0), dated May 30, 2023 and VMD0053 (Version 2.0). The BRA-3C project is a grouped project involving multiple activities. This is a voluntary initiative with the goal of promoting sustainable intensification of land use and occupation in the Brazilian Cerrado biome. The project eligibility within the VCS Program is described and justified accordingly with the criteria listed in Section 2.1 of the VCS standard, V4.7",
+    "G31": "This project has utilized and will continue to use control mechanisms to comply with the restrictions outlined by the methodology, following the spatial eligibility constraints within the project development area. This methodology is not applicable under the following conditions: The project area has been cleared of native ecosystems within the 10 years immediately preceding the project start date. Satellite images have been used to monitor this aspect. Further details on this topic have been demonstrated in section 1.5.1. The project activity is expected to cause a sustained reduction in productivity exceeding 5 percent, as demonstrated by peer-reviewed and/or published studies on the activity in the region or a comparable region. The project activity involves the application of biochar. Biochar can be applied as a soil amendment in the project area, provided that the total organic carbon content of the applied biochar is subtracted from the estimated change in soil organic carbon (SOC) stock in the project scenario at each verification event. Project activities take place in a wetland area; this condition does not exclude crops subject to artificial flooding when it is demonstrated that the cultivation of these crops has no impact on the hydrology of any nearby wetlands.",
+    "G33": "There is no transfer of projects involved.",
+    "G35": "Grouped project",
+    "G37": "The BRA-3C Project is a Grouped Project that allows for the addition of new instances of project activities throughout its lifespan, following the initial validation. The Project was designed to reward farmers who will transition from conventional agricultural practices to more sustainable ones, as outlined in the project methodology",
+    "G40": [
+      {
+        "G5": "MYCARBON3",
+        "G6": "Marta Lisli Ribeiro de Morais Giannichi / Guilherme Moraes Ferraudo ",
+        "G7": "Director / Project Manager",
+        "G8": "R. Leopoldo Couto Magalhães Jr, 758, 8º andar - Itaim Bibi, 04542-000, São Paulo/SP – Brazil.",
+        "G9": "+55 (11) 3074-2444",
+        "G10": "mycarbon3@minervafoods.com"
+      }
+    ],
+    "G50": [],
+    "G59": "The project areas will be formalized with the owners by means of the commercialization contract, where the agricultural management practices determined by the project and the awarded emissions reductions will also be formalized. The BRA-3C Project proponent will present these contracts to the Validation Verification Body and Verra as commercially sensitive information. The agricultural properties, the project’s development location, are private properties. The BRA-3C Project developed a process to identify and properly classify the farmers participating in the project, which ensures the verification of the titles to land. The rights to emission reductions and/or removals produced by the project will be formalized through a signed agreement between the proponent and the landowner, which declares their agreement to assign all legal rights and ERRs. The BRA-3C Project relies on a process of identifying and classifying the farmers participating in the project; this process ensures the verification of land titles. The rights to emission reductions and/or removals (ERRs) produced by the project are established through a signed agreement between the proponent and the landowner.",
+    "G60": [
+      "ipfs://a092abe59d018fdcea06977a6a03da7c"
+    ],
+    "G62": "2023-09-04",
+    "G63": "This date represents the moment when the project started its field assessment and on-site implementation.",
+    "G65": "Other (state the selected crediting period and justify how it conforms with the VCS Program requirements)",
+    "G67": "2024-01-01",
+    "field0": "2064-12-31",
+    "G70": 20,
+    "G72": "< 300,000 tCO2e/year (project)",
+    "G74": [
+      {
+        "G5": "2024",
+        "G6": -136
+      },
+      {
+        "G5": "2025",
+        "G6": 35766.67
+      },
+      {
+        "G5": "2026",
+        "G6": 180703.33
+      },
+      {
+        "G5": "2027",
+        "G6": 407645
+      },
+      {
+        "G5": "2028",
+        "G6": 634416.67
+      },
+      {
+        "G5": "2029",
+        "G6": 907766.67
+      },
+      {
+        "G5": "2030",
+        "G6": 907766.67
+      },
+      {
+        "G5": "2031",
+        "G6": 907766.67
+      },
+      {
+        "G5": "2032",
+        "G6": 907766.67
+      },
+      {
+        "G5": "2033",
+        "G6": 907766.67
+      },
+      {
+        "G5": "2034",
+        "G6": 882043.33
+      },
+      {
+        "G5": "2035",
+        "G6": 779150
+      },
+      {
+        "G5": "2036",
+        "G6": 618379.33
+      },
+      {
+        "G5": "2037",
+        "G6": 457484.33
+      },
+      {
+        "G5": "2038",
+        "G6": 264063.33
+      },
+      {
+        "G5": "2039",
+        "G6": 252875
+      },
+      {
+        "G5": "2040",
+        "G6": 2104366.7
+      },
+      {
+        "G5": "2041",
+        "G6": 144383.33
+      },
+      {
+        "G5": "2042",
+        "G6": 79237.5
+      },
+      {
+        "G5": "2043",
+        "G6": 1075
+      },
+      {
+        "G5": "2044",
+        "G6": 960
+      },
+      {
+        "G5": "2045",
+        "G6": 800
+      },
+      {
+        "G5": "2046",
+        "G6": 550
+      },
+      {
+        "G5": "2047",
+        "G6": 300
+      },
+      {
+        "G5": "2048",
+        "G6": 0
+      },
+      {
+        "G5": "2049",
+        "G6": 0
+      },
+      {
+        "G5": "2050",
+        "G6": 0
+      },
+      {
+        "G5": "2051",
+        "G6": 0
+      },
+      {
+        "G5": "2052",
+        "G6": 0
+      },
+      {
+        "G5": "2053",
+        "G6": 0
+      },
+      {
+        "G5": "2054",
+        "G6": 0
+      },
+      {
+        "G5": "2055",
+        "G6": 0
+      },
+      {
+        "G5": "2056",
+        "G6": 0
+      },
+      {
+        "G5": "2057",
+        "G6": 0
+      },
+      {
+        "G5": "2058",
+        "G6": 0
+      },
+      {
+        "G5": "2059",
+        "G6": 0
+      },
+      {
+        "G5": "2060",
+        "G6": 0
+      },
+      {
+        "G5": "2061",
+        "G6": 0
+      },
+      {
+        "G5": "2062",
+        "G6": 0
+      },
+      {
+        "G5": "2063",
+        "G6": 0
+      }
+    ],
+    "G77": 9488.967,
+    "G78": 40,
+    "G79": 237244,
+    "G81": "1) Delimitation of Geographical Areas All instances of project activities will take place within the Brazilian Cerrado, one of the largest and most biodiverse savannas in the world. The specific areas where the project activities will be implemented have been determined using precise geodetic polygons as described in Section 3.11. These polygons were drawn up based on geographical coordinates to ensure a clear and precise delimitation of the intervention areas To facilitate access and visualization of these areas, a detailed KML file has been created and will be available on the Verra website along with the project description (PD). This KML file will allow visualization of the geographical areas, providing a clear visual understanding of the specific areas of project implementation. 2) Baseline Determination The project will utilize a measurement and modeling system that includes detailed soil data collection to establish an accurate baseline. After the initial definition of the baseline, we will proceed with the modeling using the RothC model, which integrates climate data from the project area. This model will allow us to simulate the effects of proposed agricultural practices on soil carbon sequestration over time. In accordance with VM0042 guidelines, we plan to perform new Soil Organic Carbon (SOC) collections at the intervention site every maximum interval of 5 years. These collections will be essential for monitoring and verifying the results of the practices implemented, ensuring the continued effectiveness of the project in reducing greenhouse gas emissions and removing carbon dioxide (CO2) from the atmosphere. 3) Demonstration of Additionality The additionality of the project will be demonstrated according to the requirements of the applied methodology. The proposed agricultural practices are not common in the Cerrado region and present barriers that prevent their adoption without the incentive of the project. Among the practices adopted are: • Cover Cropping: Introduction of cover crops, which can be a mix of cover crops, to improve soil health and increase carbon retention. In addition to assisting in thermal insulation and contributing to a more stable soil temperature over time. • Crop Rotation: Implementation of a crop rotation system to reduce soil degradation and improve agricultural productivity. • Santa Fe System: Integration of crops in the same space to maximize land use efficiency and increase carbon sequestration. • Santa Brígida System: Use of intercropping of agricultural crops to promote sustainability and soil regeneration. 4) Eligibility Criteria For the inclusion of new instances of project activity in subsequent verification events, the following eligibility criteria have been defined: • Legal Compliance: Comply with applicable national and regional laws. • Verra criteria: Compliance with Verra's criteria, including the absence of deforestation in the last 10 years in the project area. • Land Use: Not be located in a public area or in a protected area. • Geographic Location: Location within the geographic areas bounded by geodetic polygons in the Brazilian Cerrado.",
+    "G82": [
+      {
+        "G5": "FZTZJMA00A",
+        "G6": "Brazil",
+        "G7": "South America",
+        "G8": "São Paulo",
+        "G9": "São Paulo",
+        "G10": {
+          "type": "Point",
+          "coordinates": [
+            -46.6333,
+            -23.5505
+          ]
+        },
+        "G11": 1148,
+        "G12": "Hectares"
+      }
+    ],
+    "G92": "The use of geospatial monitoring to determine successive transformations in land use represents a significant advancement in environmental understanding and management. Before the commencement of a project, a meticulous data collection process is undertaken in the three years preceding, focusing on removals and emissions critical for establishing a robust baseline. Data collection on removals is a pivotal component of this procedure, aiming to identify and record any substantial changes in vegetation cover, deforestation, urbanization, or other interventions directly shaping the land's morphology. These detailed pieces of information provide a holistic view of changes in the agriculture environment, crucial for assessing the impacts and dynamics of land use. Thus, where the baseline scenario is the same as the conditions existing prior to the project initiation, there is no need to repeat the description of the scenarios; state that this is the case and refer the reader to Section 3.4 (Baseline Scenario). • Ecosystem type: Cerrado is a tropical savannah biome characterized by twisted trees, shrubs, Poaceae (Grasses), and rich biodiversity. It is the second-largest biome in Brazil, covering approximately 20% of the national territory 8–11 . • Current and historical land-use: Historically, Cerrado was primarily used for extensive livestock farming and agriculture. In recent decades, the expansion of agricultural frontiers and mining has driven the transformation of the biome's land use. • Present and prior environmental conditions of the project area: Climate: The climate of the Cerrado is tropical seasonal, with two well-defined seasons: the dry season, lasting from May to October, and the rainy season, lasting from November to April. The average annual precipitation in the Cerrado is 1,500 mm, but it can vary from 750 mm to 2,000 mm, depending on the region. The rainy season accounts for about 80% of the annual precipitation. The relative humidity in the Cerrado is relatively high, ranging from 60% to 80%. Average temperatures range from 21.3 °C to 27.2 °C, being higher in the rainy season and lower in the dry season. The dry season is a period of stress for Cerrado vegetation. Trees shed their leaves to reduce water loss, and animals migrate to more humid areas. The rainy season is a period of growth and reproduction for Cerrado vegetation and fauna. Trees sprout again, and flowers and fruits appear 28–30 . The Brazilian Cerrado, according to the Köppen classification (Figure 10), is generally classified as type Aw. The Köppen classification is a climate classification system that categorizes different climates based on temperature and precipitation patterns. The Aw category refers to tropical savanna climates, characterized by monthly average temperatures always above 18 °C (64 °F), with a marked dry season. In the case of the Cerrado, this dry season usually occurs during the austral winter months (from May to September), while the rainy season occurs during the summer months (from October to April).",
+    "G94": "The ALM Project BRA-3C does not conflict with national or regional legislation. Below, it presents the relevant legislation that contextualizes the implementation of a carbon project within the scope of the ALM in Brazil. Law 12,651/12 Native Vegetation Protection Law (New Brazilian Forest Code): Law 12,651/12, also known as the New Brazilian Forest Code, is a federal law that establishes general standards for the protection of native vegetation in Brazil. The law was sanctioned in May 2012 and came into force in July 2013. Law 6,938/81: National Environmental Policy: Law 6,938/81 establishes the principles and guidelines of Brazilian environmental policy. One of its main tools is environmental licensing, which is mandatory for activities that use natural resources or that may cause pollution or environmental degradation. Law 9,433/97 National Water Resources Policy Law 9,433, of January 8, 1997, also known as the Water Law, is a Brazilian federal law that establishes the National Water Resources Policy (PNRH - Política Nacional de Recursos Hídricos, in Portuguese). The law was created in 1997 and aims to promote the sustainable use of water resources in Brazil. PNRH is based on the principle that water is a public asset and that its use must be regulated to ensure its availability for current and future generations. The law establishes the following objectives: guarantee the availability of water at appropriate standards according to use; protect water resources from contamination and degradation; promote the multiple use of water resources; and encourage society's participation in the management of water resources. Law 8,171/91 Agricultural Policy Law 8,171/91, also known as Agricultural Policy, is a federal law that establishes the principles and guidelines of Brazilian agricultural policy. The law was sanctioned in January 1991 and came into force in March 1991. Law No. 12,187/09 National Policy on Climate Change Law No. 12,187/09, also known as the National Policy on Climate Change (PNMC), was instituted in 2009 and aims to promote sustainable development in Brazil, ensuring food security, generating employment and income, and preserving the environment. environment, in line with the commitments assumed by the country in the Paris Agreement. Law No. 10,803/03 Determination of penalties for the crime of a condition analogous to slavery Law No. 10,803/03 criminalizes the reduction to a condition like that of slavery, which consists of subjecting someone to forced labor or exhausting working hours, subjecting them to degrading working conditions or restricting movement due to debt contracted with the employer or agent",
+    "G97": "No",
+    "G100": "No",
+    "G102": "No",
+    "G105": "No",
+    "G109": "No",
+    "G112": "No",
+    "G115": "Yes",
+    "G120": "The BRA-3C Project proposes a regenerative agriculture approach that aims to improve soil health and increase agricultural productivity, while strengthening resilience to climate change projected for the next decade. This initiative not only promotes the economic development of farmers, but also offers a number of benefits that transcend simple food production. BRA-3C's regenerative agriculture focuses on reducing production costs, facilitating access to diversified markets, promoting access to credit and sustainable financing, and technically empowering producers. In addition, the project plays a crucial role in mitigating climate change by directly addressing environmental challenges associated with conventional agriculture. Its contributions include carbon sequestration in the soil, strengthening climate resilience, reducing the use of chemical inputs, conserving water, reducing deforestation, and reducing dependence on fossil fuels. Through practices such as crop rotation and diversification, use of cover crops, no-tillage, and adoption of biological products, the project not only seeks to maintain but also improve agricultural ecosystems, promoting soil and agroecosystem biodiversity. In addition to its environmental and economic contributions, the BRA-3C Project is aligned with the Brazilian federal government's goals of recovering and converting up to 40 million hectares of low-productivity pastures into arable areas over the next ten years. This initiative aims to virtually double the area of food production in Brazil without resorting to deforestation, thus protecting significant areas of native vegetation. Therefore, the BRA-3C Project not only proposes innovative regenerative agriculture practices to promote sustainable development and adaptation to climate change, but also contributes significantly to national priorities for environmental conservation and food security",
+    "G123": "As one of the Project's objectives is to increase productivity on agricultural farms, no significant leaks are expected. However, some management practices, such as intensification of agricultural production, can lead to increased fertilizer application, soil losses and other biological changes in adjacent areas. To monitor these potential leaks, project proponents will follow the guidelines of Methodology VM0042 for Improving Agricultural Management. The main areas of focus will be: 1. Increased use of fertilizers: Project BRA-3C encourages a shift to more efficient agricultural practices, but if it leads to increased use of nitrogen fertilizers, this could increase emissions of nitrous oxide, a potent greenhouse gas. a. The. To monitor the use of fertilizers, the project proponent will verify the use and consumption of fertilizers through invoices. b. Furthermore, the entire process will be monitored by the field team with the project. 2. Indirect deforestation: If a project leads to the intensification of agriculture in adjacent areas, this may lead to deforestation to expand agricultural production, which would result in GHG emissions: a. To contain deforestation in adjacent areas, the farmer will declare on the contract to meet the environmental deforestation legislation. b. Remote sensing data (vegetation index) and public monitoring mechanisms (PRODES Cerrado - Instituto Nacional de Pesquisas Espaciais, in Portuguese) will be used to continuously monitor the property's native vegetation. 3. Land use changes: After implementation in the project, the farmer will drastically reduce the cultivated crop, this can lead to the loss of carbon from the soil and the emission of GHG: a. For control, the farmer will sign the contract declaring to meet the environmental legislation. b. Images from remote sensing (vegetation index) will be used to monitor activities within the rural property",
+    "G125": "To comply with registration process guidelines, the body of the Project Description (PD) does not contain commercially sensitive information. However, appendices (2, 3, 4 and 5) containing strategic information were attached. These appendices were designed to make important information about the BRA-3C Project available to the VERRS Standard and the Validation and Verification Body (VVB).",
+    "G127": "Further information is attached.",
+    "G69": "The crediting period will be a minimum of 20 years, and projects must have a minimum lifespan of 40 years, as required for ALM AFOLU projects described in section 3.2.11 of the VCS Standard v4.7, published on December 11, 2023.",
+    "G116": {
+      "G116": "No"
+    }
+  },
+  "G139": {
+    "G9": "The main stakeholders considered in this project are: • Pinheiro Neto Advogados • UNESP • Banco do Brasil • ABAG • UNEM • Coalizão Brasil • SEMA TO • UFRGS • ABRAPA • LDC (Louis Dreyfus Company)",
+    "G11": "Through the contract, we formalize cooperation between the parties to implement sustainable land management practices or reduce emissions, with the aim of generating carbon credits. These credits, which represent the reduction or removal of greenhouse gases, will be traded on the carbon market. The contract establishes responsibilities, monitoring methods, verification criteria and the division of financial benefits, as well as specifying the duration of the project, applicable legal requirements and penalties for non-compliance. The aim is to align environmental sustainability with economic incentives for producers, making a significant contribution to tackling climate change.",
+    "G13": "The PP is a reference company in the sector and has been developing projects with different producers for several years. In the PP experience there are no changes on the stakeholder’s diversity over time, only a possible increase in the number of producers to become part of one of the future instances of the current project, but there is a continuous channel of communication for any project clarification that may occur for any giving stakeholder.",
+    "G15": "Since the project is quite specific regarding the activity and operation, since there are only positive environmental and social impacts in the project facilities as well as in the surrounding areas to the sites. Also, it presents very small risks both in terms of the construction as in the operation. The project has quite a positive impact environmentally but also, since it is developed in already operating sites, being, in the end, a better management activity for the main operation of the site owners, presents zero negative impacts. Also, being an addition, in terms best practices, the site owners also have a positive impact in the production since they are doing a more advanced management than the one commonly adopted by farmers. The project has developed, according with the indication of the methodology VM0042 v.2.1, the assessment of the risks of the project which are fully address in section 4.4 4.4 Estimated GHG Emission Reductions and Carbon Dioxide Removals and Appendix VIII – NON PERMANTENCE RISK ASSESSMENT TOOL.",
+    "G17": "Cerrado Biome",
+    "G19": "All the sites included in the project activity are within private properties and therefore with limited access to each project site owner. Each producer is owner of its farm, and the remaining stakeholders are not involved in the operational process. ",
+    "G22": "2024-12-11",
+    "G24": "My Carbon has sent an invitation to all the stakeholders mentioned above in the previous section of this document. The invitation letter was sent by email due to the physical distance between the different stakeholders. With the local producers, My Carbon has met individually to clarify the project, answer their questions which preceded the signing of the contract related to the ownership of the carbon project. That visit occurred between the 28th February 2023 and the 2nd of March 2023 and the contract signing was finalized in the 3rd of October 2023. The public consultation started in the day My Carbon sent the letter and has the channel open (phone and email) until the present day. The PP also answer all the questions of each stakeholder either my email of by meeting and has all that information fully documented. As it was mentioned above, due to the distance between the different stakeholders, My Carbon has also scheduled and presented a webinar, in 11/12/2024, once the PD was concluded, to present its evolution and its final version before being uploaded for validation. This webinar was recorded for auditing evidence purposes. The invitation letters sent by email are presented below.",
+    "G26": "My Carbon has addressed all the comments during the period after doing the first consultation. No negative comments were received, only questions and suggestions which were dully answered and/or addressed. The public consultation started in the day My Carbon sent the letter and has the channel open (phone and email) until the present day. • Email: contato@mycarbon.solutions • Phone: +55 (11) 3074-2444 After the first direct consultation (mentioned above), the PP did not receive any comments from the stakeholders. My Carbon procedure, if and/or when any communication should be received is: • Realtime access to email and phone (the two ways to contact us) • Analyze and address the questioning within 5 week days • Wait for feedback and if nothing is received, follow up within one month of the response. For further detail please consult Appendix 11 – Communication Plan.",
+    "G28": "The mechanism for on-going communication with local stakeholders Is the same as the one included in the invite letter, meaning a dedicated phone number and email address, which is still available up to this day. My Carbon has received some comments, in the form of questions and suggestions which were fully answered and/or address in the current version of the PD. In the second section the PP presented the final document prior to upload in a webinar with the same stakeholders above mentioned. The PD version presented was the review dated 06/12/2024 and all the significant parts of the PD were presented to the stakeholders. How due account of all and any input received during the consultation has been taken. Include details on any updates to the project design or justify why updates are not appropriate.",
+    "G30": "The PP has accommodated all comments from the stakeholders. The questions and suggestions that occurred during the first section of consultation were fully answered and/or included in the current version of the PD. During the second section there was one comment made from one of the stakeholders, regarding the process of validation and also the means to assure the continuity of the producers during the entire project lifetime. The answer was fully address and the stakeholder was fully satisfied with the clarifications. The webinar was recorded for auditing evidence purposes. ",
+    "G34": "All project sites are located within private properties with pre-existing economic and commercial activities. To facilitate the development of project activities at all the locations, each farm has been duly formalized under a contract that includes an action plan with the rural property owners, ensuring full access for monitoring project activities. ",
+    "G36": "As previously stated, all the sites included in the project activity are within private properties and therefore with limited access to each project site owner. Each farm included in the project activity was subjected to an individual contract, with the length of the entire crediting period. Additionally, since the project is developed in an already existing operation, it did not encroach on land, relocated people without consent, and forced physical or economic displacement.",
+    "G39": "No grievance redress procedures were developed since neither for the current project activity nor for the remain of the other projects the PP has, no conflicts happened between the PP and the stakeholders. As stated previously, the PP is quite known and well reputed in the region due to the carbon projects developed. Part of that recognition resides in the total availability for accommodate all the possible concerns and inputs of any stakeholder, which can be made either by the institutional channel presented above or by the presential contact with the regional technicians or with the company operations director. ",
+    "G41": "The PP has a direct contact with all the stakeholders, especially with the project site owners since the monitoring process is conducted monthly (or less when needed) with a direct line contact with project team in order to address any possible Grievance redress. ",
+    "G42": [
+      {
+        "G6": "Question from Luis Ungur during the Webinar (11/12/2024) “Is there a certificate or an external editor who monitors the total project cycle? Any way to accompany and encourage the farmer to stay until the end of the cycle and thus obtain the full benefit of the project?”",
+        "G8": "The stakeholder was answered during the event (which was recorded for evidence purposes). Regarding the first part of the question, the stakeholder was explained on the entire validation and verification processes, including the role of the VVB in both processes. Additionally, the stakeholder was also fully explain in great detail, the contract and incentive mechanisms that the PP has to assure the permanence of the producers until the end of the project cycle"
+      }
+    ],
+    "G49": "Integrating sustainable practices into agricultural production is crucial for addressing food security challenges and mitigating climate change. MyCarbon is at the forefront of this challenge, developing high-quality carbon credits in accordance with international standards to create incentives for the largescale adoption of sustainable agricultural practices in South America. MyCarbon is in South America, a continent with significant comparative advantage in the potential to sequester carbon through nature-based solutions, including on productive land. Our carbon projects support the restoration of degraded productive areas, offering numerous socio-environmental benefits, boosting productivity and rural incomes while decreasing the pressure to expand agricultural land, all while storing carbon in the soil and reducing emissions from productive activities. MyCarbon as a subsidiary of a leading agro-industry player leverage extensive resources and knowledge to deliver reliable results. We are leading develops carbon projects that promote regenerative agriculture, protect forests and biodiversity, and benefit local communities. Strategically connected to landowners, we develop and source high quality carbon projects.",
+    "G50": "Described below",
+    "G53": "No risk identified ",
+    "G54": "My Carbon project is developed in agricultural areas, within rural properties, without any natural nor human-induced risks to the stakeholders wellbeing. Additionally, the project does not affect the safety of any population",
+    "G56": "No risk identified",
+    "G57": "All the Stakeholders have the same communication channel as the ones during the stakeholder consultation, prior to the registry of the project in VERRA. No communications nor grievance were received as stated in the points above",
+    "G59": "No risk identified",
+    "G60": "As part of the Minerva Foods Group, the company follows the same guidelines for occupational safety, slave and child labor, prohibited work in dangerous and/or unhealthy places, labor relations, diversity and inclusion.",
+    "G62": "No risk identified",
+    "G63": "As part of the Minerva Foods Group, the company follows the same guidelines for occupational safety, slave and child labor, prohibited work in dangerous and/or unhealthy places, labor relations, diversity and inclusion.",
+    "G65": "No risk identified",
+    "G66": "As part of the Minerva Foods Group, the company follows the same guidelines for occupational safety, slave and child labor, prohibited work in dangerous and/or unhealthy places, labor relations, diversity and inclusion.",
+    "G68": "No risk identified",
+    "G69": "My Carbon project is developed in confined areas, within rural properties, increasing the quality of life of the surroundings by adopting best agricultural practices. There are no pollutants discharged or emitted, in fact, they are avoided by the project activity due to the reduction of the use of fertilizers",
+    "G70": [],
+    "G77": "No risk identified",
+    "G78": "As part of the Minerva Foods Group, the company follows the same guidelines for occupational safety, slave and child labor, prohibited work in dangerous and/or unhealthy places, labor relations, diversity and inclusion.",
+    "G80": "No risk identified",
+    "G81": "As part of the Minerva Foods Group, the company follows the same guidelines for occupational safety, slave and child labor, prohibited work in dangerous and/or unhealthy places, labor relations, diversity and inclusion.",
+    "G83": "No risk identified",
+    "G84": "As part of the Minerva Foods Group, the company follows the same guidelines for occupational safety, slave and child labor, prohibited work in dangerous and/or unhealthy places, labor relations, diversity and inclusion.",
+    "G86": "No risk identified",
+    "G87": "As part of the Minerva Foods Group, the company follows the same guidelines for occupational safety, slave and child labor, prohibited work in dangerous and/or unhealthy places, labor relations, diversity and inclusion.",
+    "G89": "No risk identified",
+    "G90": "As part of the Minerva Foods Group, the company follows the same guidelines for occupational safety, slave and child labor, prohibited work in dangerous and/or unhealthy places, labor relations, diversity and inclusion.",
+    "G92": "No risk identified",
+    "G93": "As part of the Minerva Foods Group, the company follows the same guidelines for occupational safety, slave and child labor, prohibited work in dangerous and/or unhealthy places, labor relations, diversity and inclusion.",
+    "G95": "No risk identified",
+    "G96": "As part of the Minerva Foods Group, the company follows the same guidelines for occupational safety, slave and child labor, prohibited work in dangerous and/or unhealthy places, labor relations, diversity and inclusion.",
+    "G97": [],
+    "G102": [
+      {
+        "G5": "No risk identified ",
+        "G6": "As part of the Minerva Foods group, which is a signatory to important agreements on supply chain management and human rights in South America, the company follows the same commitments."
+      }
+    ],
+    "G107": [
+      {
+        "G5": "No risk identified ",
+        "G6": "everyone involved in the project must respect the communities in the localities in which they are located, their culture, customs and way of life. They must also contribute to the development and generation of value in the region."
+      }
+    ],
+    "G112": [
+      {
+        "G5": "No risk identified",
+        "G6": "All project sites are located within private properties with pre-existing economic and commercial activities. To facilitate the development of project activities at all the locations, each farm has been duly formalized under a contract that includes an action plan with the rural property owners, ensuring full access for monitoring project activities. The project activity does not have issues regarding the protection or preservation of property rights since the contract between the PP and the involved stakeholders (project site owner) considers the activity to be developed, the length of the project activity, the stakeholders compensation and the access to the project sites which, as stated are all within private properties with already ongoing economic activities."
+      }
+    ],
+    "G118": "The process will be described in each contract with the landowner",
+    "G120": "There will be a fair distribution between MyCarbon and each landowner participating in the project. Benefit sharing has 3 classes (gold, silver and bronze) that will define the percentage of VCUs that will be directed to the landowner and to MyCarbon. The value of the buffer and leakage for each instance will be discounted as described in Section 4 and Appendix VIII. Every 10 years the landowner will be entitled to a permanence incentive, which will add a certain % of VCUs in the last issue",
+    "G122": "During the presentation of the project to the landowner and thereafter it will be described in each contract with the landowner.",
+    "G126": "No Risk Identified ",
+    "G127": "My Carbon project is developed in confined areas, within rural properties, increasing the quality of life of the surroundings as described above. There are no Impacts on biodiversity and ecosystems, in fact, they are prevented by the project activity.",
+    "G129": "No Risk Identified ",
+    "G130": "My Carbon project is developed in confined areas, within rural properties, increasing the quality of life of the surroundings as described above. There are no Soil Degradation or Erosion, in fact, they are prevented by the project activity.",
+    "G132": "No Risk Identified ",
+    "G133": "My Carbon project is developed in confined areas, within rural properties, increasing the quality of life of the surroundings as described above. Due to the best agricultural practices implemented by the project activity, water consumption and stress should be reduced.",
+    "G134": [],
+    "G138": "No",
+    "G157": [
+      {
+        "G5": "N/A",
+        "G6": "N/A",
+        "G7": "N/A",
+        "G8": "N/A"
+      }
+    ],
+    "G163": [
+      {
+        "G5": "N/A",
+        "G6": "N/A"
+      }
+    ],
+    "G167": [
+      {
+        "G6": "N/A",
+        "G7": "N/A"
+      }
+    ],
+    "G172": "No"
+  },
+  "G313": {
+    "G5": [
+      {
+        "G6": "Methodology",
+        "G7": "VM0042",
+        "G8": "Methodology for Agricultural Land Management",
+        "G9": "2.1"
+      },
+      {
+        "G6": "Tools ",
+        "G7": "VT0001",
+        "G8": "Tool for the Demonstration and Assessment of Additionality",
+        "G9": "3.0"
+      },
+      {
+        "G6": "VCS Module",
+        "G7": "VMD0053",
+        "G8": "Model Calibration, Validation, and Uncertainty Guidance for the Methodology for Improved Agricultural Land Management",
+        "G9": "2.0"
+      },
+      {
+        "G6": "Tools ",
+        "G7": "N/A",
+        "G8": "AFOLU Non-Permanence Risk Tool",
+        "G9": "4.2"
+      }
+    ],
+    "G11": [
+      {
+        "G7": "In the Project, farmers agree to adopt one or more changes in agricultural practices through the contract that will describe the action plan between the proponent and farmer, defined in specific categories. These changes will be monitored by the Project proponents, who will use field visits, a monitoring platform and remote sensing data.",
+        "G9": "Rural producers who participate in the project must follow the strategy defined in the action plan. They must also inform the project proponent of all activities carried out on the rural property that are directed to the carbon credit project. To verify these activities, we will use satellite images system, in addition to the digital Measurement, Reporting and Verification (MRV) system.",
+        "G11": "In the Project, farmers agree to adopt one or more changes in agricultural practices through the contract that will describe the action plan between the proponent and farmer, defined in specific categories. These changes will be monitored by the Project proponents, who will use field visits, a monitoring platform and remote sensing data.",
+        "G13": "The proponent will provide a validation report demonstrating how the project followed the requirements of VMD0053, and how the RothC model will support repeat design model simulations.",
+        "G16": "To check whether there has been conversion of native areas in the last 10 years, we will use public deforestation data and remote sensing data, such as satellite images, drones to detect any changes and land use in the last 10 years.",
+        "G18": "Different scientific articles report that increasing soil organic matter improves soil compaction, acidity, and fertility, for several important factors for agricultural productivity, this is the expected result in the medium term. 50,51. Therefore, project activities are not expected to result in a sustained reduction of greater than 5% in productivity 32,35,36,52. To ensure productivity is maintained, project activities will be monitored and reported over time.",
+        "G20": "Not applicable. Project activities do not include the application of biochar.",
+        "field0": "The project will not be implemented in humid areas. Local vegetation characterization data and information from remote sensing data made available by official bodies will be used."
+      }
+    ],
+    "G29": {
+      "G6": {
+        "G5": "Excluded",
+        "G8": "It is excluded from the baseline scenario and project scenario, as burning of crop residue is prohibited by law and regulation.",
+        "G10": "It is excluded from the baseline scenario and project scenario, as burning of crop residue is prohibited by law and regulation.",
+        "G11": "Included",
+        "G14": "The sources of fossil fuel emissions are vehicles (mobile sources, such as trucks, tractors, etc.) and mechanical equipment required by the ALM activity. Farmers are envisaged to reduce/minimize the use of fossil fuels in vehicles and mechanical equipment's in the project activity",
+        "G15": "Excluded",
+        "G17": "There is no livestock present in the project or baseline scenario.",
+        "G19": "There is no livestock present in the project or baseline scenario.",
+        "G20": "Included",
+        "G22": "Major source. Farmers involved the project activity will reduce the use of nitrogen fertilizers.",
+        "G23": "Included",
+        "G25": "Major source. Quantified as stock change in the pool, rather than an emissions source.",
+        "G26": "Excluded",
+        "G29": "It is excluded from the baseline and project scenario. The project area involved in the project activity is dry cropland, the project activity will not significantly increase emissions compared to the baseline scenario and will not reduce emissions compared to the baseline scenario.",
+        "G30": "Excluded",
+        "G33": "It is excluded from the baseline scenario and project scenario, as agroforestry and other tree plantations are not part of the project activity.",
+        "G34": "Excluded",
+        "G37": "It is excluded from the baseline scenario and project scenario, as agroforestry and other tree plantations are not part of the project activity.",
+        "G38": "Excluded",
+        "G40": "There is no livestock present in the project or baseline scenario.",
+        "G41": "Included",
+        "G43": "Major source. Farmers involved the project activity will reduce the use of nitrogen fertilizers.",
+        "G44": "Included",
+        "G46": "Application of lime is quantified",
+        "G12": true
+      },
+      "G49": {
+        "G5": "Excluded",
+        "G8": "It is excluded from the baseline scenario and project scenario, as burning of crop residue is prohibited by law and regulation.",
+        "G10": "It is excluded from the baseline scenario and project scenario, as burning of crop residue is prohibited by law and regulation.",
+        "G11": "Included",
+        "G14": "The sources of fossil fuel emissions are vehicles (mobile sources, such as trucks, tractors, etc.) and mechanical equipment required by the ALM activity. Farmers are envisaged to reduce/minimize the use of fossil fuels in vehicles and mechanical equipment's in the project activity",
+        "G15": "Excluded",
+        "G17": "There is no livestock present in the project or baseline scenario.",
+        "G19": "There is no livestock present in the project or baseline scenario.",
+        "G20": "Included",
+        "G22": "If nitrogen fixing species are planted in the project, N2O emissions from nitrogen fixing species will be included in the project boundary.",
+        "G23": "Included",
+        "G25": "Major source. Quantified as stock change in the pool, rather than an emissions source.",
+        "G26": "Included",
+        "G29": "It is excluded from the baseline and project scenario. The project area involved in the project activity are dry cropland, the project activity will not significantly increase emissions compared to the baseline scenario and will not reduce emissions compared to the baseline scenario.",
+        "G30": "Excluded",
+        "G33": "It is excluded from the baseline scenario and project scenario, as agroforestry and other tree plantations are not part of the project activity.",
+        "G34": "Excluded",
+        "G37": "It is excluded from the baseline scenario and project scenario, as agroforestry and other tree plantations are not part of the project activity.",
+        "G38": "Excluded",
+        "G40": "There is no livestock present in the project or baseline scenario.",
+        "G41": "Included",
+        "G43": "Major source. Farmers involved the project activity will reduce the use of nitrogen fertilizers.",
+        "G44": "Included",
+        "G46": "Application of lime is quantified",
+        "G12": true,
+        "G27": true
+      },
+      "G92": [
+        "ipfs://bccfa38bf1d73d2dc304837aac1327f3"
+      ]
+    },
+    "G119": "In section 1.12 of the current document, when described the project activity, the PP have already referrer and describe the baseline scenario in terms of the common agricultural practices, in opposition with the best practices presented by the project activity. Additionally, the present document has and entire appendix (Appendix 10) exclusively this this description purpose. Hence, in this section we will further describe the way to measure the baseline scenario for purpose of baseline and ERR calculation. The BRA-3C project chose to make the combined use of measurements (with sampling every 10 hectares, please see also Appendix 9) and modeling (such as the RothC model) of carbon (as described in section 1.12) in the soil allows to capture variations with greater detail and precision, covering physical and chemical properties such as texture (silt, clay and sand), carbon content and bulk density. This approach makes it possible to update carbon calculations over time without the need for constant measurements across the entire area, providing robust data for analysis and decision-making. In addition, it allows the cross-reference of agricultural data with month-to-month carbon data, enabling data-based agronomic recommendations. As the project progresses, it is possible to maintain the same level of detail and accuracy, reducing the number of sampling points by integrating precision agriculture information, remote sensing, and carbon model data. The modeling complements the measurements by predicting the behavior of carbon over longer periods or in areas not directly sampled, contributing to cost reduction and resource optimization. This combination provides reliable information to quantify carbon stocks efficiently, in addition to meeting the requirements of audits and certifications. This integration between measurement and modeling strengthens continuous monitoring and improves soil management, consolidating the technical and economic feasibility of carbon projects. As per provisions of the VCS Standard (version 4.7) the baseline scenario is determined using the provisions of the applicable methodology VM0042 version 2.1. According to the applicable methodology, continuing the pre-project practices is the most plausible baseline scenario. In this sense, productive practices of the baseline scenario of each sample unit are going to be identified, based on the historic look-back period3. Subsequently, the annual schedule is generated, and the baseline emissions and stock changes are determined using a model under Quantification Approach 1 and Approach 3. The project will apply measurement and modelling activities using soil data collection in the historic period and later, the baseline SOC stocks are going to be directly measured in the baseline sites following a design arrangement available at the time of the validation. Data will then be back modelled to align with t=0. In order to reflect the current and most common practices in the Cerrado region, the project will re-assess the baseline scenario in accordance with provisions of the latest version of the VCS Standard (version 4.7) on section 3.2.5 and 3.2.7 on ALM baseline re-assessment, every ten years. For a property to be eligible for the BRA-3C carbon credit project, it must initially go through the eligibility process, meeting the methodological requirements of the certification (described in section 1.4) and national legislation (described in section 1.15). After this stage, an analysis of the questionnaire filled out by the owner is carried out, which describes the common agricultural practices and productivity of the area, as well as the use of pesticides, mineral fertilization and fuel expenditure. This analysis allows us to verify whether there is potential to generate additionality in the agricultural practices of the property and whether the average productivity is below the national average of agricultural production, according to data from the National Supply Company (CONAB). With this information, we proceed to verify the potential of the areas, using remote sensing to analyze key variables, such as: • SMAP (Soil Moisture Active Passive): measures soil moisture. • NDVI (Normalized Difference Vegetation Index): An index that quantifies the health and density of vegetation. • LAI (Leaf Area Index): leaf area index, which indicates the amount of leaf area per unit of soil. • SIF (Solar-Induced Fluorescence): fluorescence induced by sunlight, which allows the evaluation of the photosynthetic activity of vegetation. • Precipitation: volume of rain in the region. • Temperature: Average, maximum and minimum temperature data. • LST Amplitude (Land Surface Temperature Amplitude): the temperature range of the Earth's surface, which indicates thermal variations throughout the day and night. • CEC (Cation Exchange Capacity): the soil's ability to retain and exchange nutrients, essential for fertility. • pH: level of acidity or alkalinity of the soil. • Nitrogen: amount of nitrogen available in the soil, important for crop productivity. These variables are correlated to determine the potential for generating carbon credits through remote sensing. To increase the accuracy of the potential analysis, we asked the owner for a chemical analysis of the soil of the plots — a common practice among Brazilian farmers. With the data from the chemical analysis, we correlated the levels of organic matter and CEC with the reference data of the Brazilian Agricultural Research Corporation (Embrapa) for the Cerrado biome, which classifies the carbon content as low, medium, adequate or high, depending on the soil texture. For the property to be included in the project, it must not have high levels of CEC and organic matter. With this classification, we determine the class of potentiality and decide whether the field can be part of the project or not. Further information can be found in Appendix X of the current document. Quantification Approach 1: Measure and Model An acceptable model is used to estimate GHG flux based on soil characteristics, implemented ALM practices, and measured initial SOC stocks and climatic conditions in sample units. Measurements of SOC stocks are required every five years or more frequently. The remeasurement data is used to reestimate model prediction error and recalibrate the model. The baseline is modelled for each sample unit. The model serves to project future stock change/emissions resulting from the schedule of ALM activities taking place in the baseline scenario. Soil Sampling Procedures Determination of homogeneous areas Starting from a geospatial work, the homogeneous areas were determined using the overlay of the different attributes of the project area. Geospatial information was collected following the requirements set by the VCS Program in the methodology VM0042 v.2 of appendix 2 and criteria established by national public agencies, EMBRAPA and IBGE (please see also Appendix 9 for further detail): 1. Slope Classes 2. Soil typology 3. Texture 4. Land use history 5. Agricultural potential. This process allowed the elaboration of zones of potential, which represent the agricultural potential of the area, its homogeneity and its ability to comply with the guidelines guided by the applicable methodology VM0042. The characteristics of the agricultural potential classes of the areas are described below: • Very Good: soils with high natural potential for agriculture, with high fertility, good drainage and smooth relief. • Good: soils with good natural potential for agriculture, with medium fertility, adequate drainage and undulating relief. • Moderate: soils with natural potential for agriculture, with low to medium fertility, adequate drainage and undulating to steep relief. • Restrictive: soils with limited potential for agriculture, with low fertility, poor drainage and steep relief. • Strongly Restrictive: soils with unsuitable potential for agriculture, with very low fertility, poor drainage and very steep relief. Once the homogeneous areas have been identified, it is possible to develop the randomization stage of the soil sample collection points, for each homogeneous area grouping. Random Distribution of Collection Points In addition to demonstrating the homogeneous areas of the project area, Figure 14 also demonstrates the management plots of the property, highlighted in blue. Within the blue polygons, red dots can be observed. These red dots are the collection points that are randomly generated and generating 1 sampling point for every 10 hectares (see Appendix 9).",
+    "G120": "As per the guidance of Methodology VM0042, the demonstration of additionality is developed by using the project method approach. This method includes the assessment and demonstration in three steps: i) regulatory surplus, ii) identification of barriers that would prevent the implementation of a change in the pre-existing agricultural practices, and iii) demonstrate that the adoption of the suite of proposed activities is not common practice. Furthermore, all the new instances will be assessed under the same project method approach. Lastly, the project activity is in a UNFCCC non-Annex I country, and no systematically enforced law, statute, or other regulatory framework is applicable to the activities to improve ALM. ",
+    "G123": "Non-Annex 1 country",
+    "G124": "No",
+    "G126": "Described below",
+    "G131": "The implementation of improved ALM activities is not mandated by law in Brazil, or by other forms of legal enforcement at the national or state level, nor to the area where the grouped project is developed. The proposed improved ALM activities are voluntarily adopted and exceed any regulation in place. Participation is voluntary, and landowners or land users do not have the obligation to implement improved ALM or to participate in mitigation projects.",
+    "G134": "In Brazil and the Cerrado region, several obstacles have been found to lie in the way of adopting better ALM practices. These include obstacles to implementing better ALM procedures, such as information and technical support access and credit availability (Newton et al, 2016) . In addition, institutional concerns, technology-related problems, and investment concerns impede the implementation of enhanced ALM (as well as Improved Cropland management, -ICM- and Cropland and Grassland Land-use Conversions -CGLC- as project activities) are investment issues, technology-related issues, and institutional matters (Soren et al, 2017). Investment Barriers According to the national agricultural census (IBGE, 2017), less than 20% of Brazil's agricultural production uses rural loans, which reduces the opportunities for the adoption of alternative production methods, including the implementation of enhanced ALM procedures, access to credit and increase in interest rates becomes a pressing matter of implementation (Henderson et al, 2020). Furthermore, farmers are deterred from adopting better ALM techniques by the upfront costs associated with changing infrastructure and agricultural practices. Lastly, investment costs of monitoring an operation of improved ALM practices have an impact on cashflows of farmers and landowners. Technological Barriers Despite the increase in the total figures of land dedicated to agricultural production, the implementation of improved ALM practices is not well extended. Among the several reasons is the limitations related to technological improvements in production practices. Even though the amount of land used for agriculture has increased overall, better ALM techniques, such as those implemented by the project, are not being widely implemented (Ipea, 2021). In turn, implementing precision agriculture requires advanced technology and specialized personnel for implementation. It also has to be accounted the need for constant training of farmers and the updating of techniques, beyond the support activities. In terms of measurement and monitoring, aside from the high degree of spatial variability in soil carbon content at the field scale, local farmers lack the knowledge and expertise to design and develop a suitable MRV system adjusted to the project and the requirements of the applicable methodology. Furthermore, calculations of changes in soil carbon stock over time either through sampling or modelling are not common knowledge. It discourages potential implementations. Alongside, in some cases, the need for machinery requires the replacement of equipment and therefore increases the costs associated with the implementation of improved ALM practices. Institutional Barriers Multiple factors, from institutional, financial, organizational, and cultural to social constraints, have prevented the target communities of the Cerrado region from implementing collective, landscape-scale, improved ALM practices. Despite efforts from the local and regional levels, such as the ABC Plan launched in 2010, the increased land dedicated to agricultural activities does not stimulate improved ALM practices. Brazil's land use trend now shows that there is a drop in forest area, a fall in grasslands, and an increase in the overall area used for agriculture. In this case, the nation's institutional architecture must quickly put better ALM into practice. Nonetheless, maintaining or even increasing crop productivity is a difficult result.",
+    "G138": "Step 3: Demonstrate that adoption of the suite of proposed project activities is not common practice According to the applicable methodology (VM0042), common practice is defined as adoption of 20% or more of practices that the project activity implemented. The demonstration method makes use of the that the weighted mean to calculate the percentage of adoption within the project boundary, using equation 1 of the methodology: 𝐴𝑅=((𝐸𝐴𝑎1×𝑃𝐴𝑎1)+(𝐸𝐴𝑎2×𝑃𝐴𝑎2) +⋯+ (𝐸𝐴𝑎𝑦×𝑃𝐴𝑎𝑦) Where: And: AR = Weighted average adoption rate in the region (%) EAay = Existing adoption rate of proposed project activity ay in the region(%) PAay = Ratio of proposed project-level adoption of activity a relative to proposed project-level adoption of all activities in the region Areaay = Area of proposed project-level adoption of activity ay in the region (hectares) Ay = 1, …, ay proposed project activities ranked by area covered in the region, where 1 = largest area covered It is important to give an overview of the country’s reality in order to demonstrate the additionality assessment. Hence it should be highlighted that there was a Brazilian program developed, ABC CERRADO PROJECT, with the objective of promoting the adoption of selected low-carbon sustainable agricultural practices by small and medium-sized agricultural producers in the Cerrado through a pilot training and technical assistance program with the aim of reducing the technological knowledge gap. The project is coordinated by the Ministry of Agriculture, Livestock and Supply (MAPA) and executed by SENAR Central and the Regional Administrations, with support from Embrapa. Producers from the states of Goiás, Maranhão, Mato Grosso do Sul, Minas Gerais and Tocantins participated in the research and the final sample had 741 producers. The Project focused on four sustainable low-carbon agricultural practices of the ABC Plan: (i) no-tillage system (NTS); (ii) recovery of degraded pastures (RPD); (iii) crop-livestock-forest integration (iLPF); and (iv) planted forests (FP). The outcomes of the project where: - In relation to the % of the total area with sustainable low-carbon agricultural practices by experimental groups, there was 8.7% adoption, ranging from 5.9% to 11.6%; - In relation to the % of the arable area with sustainable low-carbon agricultural practices by experimental groups, we have 11.5% adoption, ranging between 7.9% and 15% Having all this into consideration, the PP has developed a dedicated spreadsheet in order to accommodate the calculation of the formula above. The Cerrado region does not have supporting information regarding the whole combined practices the current project activity proposes. Hence it was obtained an estimated value of 14,8% upon several considerations from different bibliographic references in order to obtain the most accurate value possible for the intersection of the combined practices of the project and the different values from practices within the scope of the project. ",
+    "G140": "No",
+    "G141": "No methodology deviations are required for this project"
+  },
+  "AR_AM_Tool_04": {
+    "G5": {
+      "G5": [
+        {
+          "G5": "Site Preparation",
+          "G6": "CO2",
+          "G7": 120.5,
+          "G8": "IPCC Default Value"
+        }
+      ]
+    },
+    "G11": {
+      "G5": [
+        {
+          "G5": "Increased Fuel Usage",
+          "G6": "CO2",
+          "G7": 30,
+          "G8": "IPPCC Default Value"
+        }
+      ]
+    },
+    "G17": {
+      "G5": [
+        {
+          "G5": "2006",
+          "G6": 2.01,
+          "G7": "Yes"
+        }
+      ]
+    },
+    "G22": {
+      "G5": [
+        {
+          "G5": "CH4",
+          "G6": 2.5,
+          "G7": 28,
+          "G8": 70
+        }
+      ]
+    },
+    "G28": {
+      "G5": [
+        {
+          "G5": "Site Preparation",
+          "G6": 120.5,
+          "G7": 322,
+          "G8": 0.374
+        }
+      ]
+    },
+    "G34": {
+      "G5": [
+        {
+          "G5": "Site Preparation",
+          "G6": 0.374,
+          "G7": 1
+        }
+      ]
+    },
+    "G35": [
+      {
+        "G5": "Site Preparation",
+        "G6": 0.374,
+        "G7": 1
+      }
+    ],
+    "G39": {
+      "G5": [
+        {
+          "G5": "Site Preparation",
+          "G6": 0.374,
+          "G7": "Yes",
+          "G8": "Yes"
+        }
+      ]
+    },
+    "G40": [
+      {
+        "G5": "Site Preparation",
+        "G6": 0.374,
+        "G7": "Yes",
+        "G8": "Yes"
+      }
+    ]
+  },
+  "Tool_24": {
+    "G5": {
+      "G5": "Total Design Capacity (in MW, tons, etc.): [User Input]"
+    },
+    "G7": {
+      "G5": "Geographical Area: [User Input]",
+      "G6": "Measure Description: [User Input]",
+      "G7": "Energy Source/Fuel/Feedstock: [User Input]",
+      "G8": "Comparable Goods/Services Description: [User Input]",
+      "G9": "Yes",
+      "G10": "Commercial Operation Start Date: [Date Input]"
+    },
+    "G14": {
+      "G5": "List of Projects: [User Input]",
+      "G6": 20
+    },
+    "G17": {
+      "G5": "List of Projects with Different Technologies: [User Input]",
+      "G6": 3
+    },
+    "G20": {}
+  },
+  "G453": "The methodology VM0042 provides a flexible approach to quantifying emission reductions and removals from the adoption of improved ALM practices in the project compared to the baseline scenario. Baseline and project emissions are defined in terms of flux of “CH4, N2O and CO2 in tonnes of CO2e per unit area per monitoring period. Within each sample unit, stock and emission changes in each included pool or flux are treated on a per unit area basis in accounting procedures” (VM0042). When a monitoring period encompasses several calendar years, the equations will specify emissions annually to confine vintage periods suitably. For each pool/source, subdivisions of the project area using different quantification approaches must be stratified and accounted separately. A project may switch between allowable quantification approaches for a given source during the project crediting period, provided that the same approach is used for both the project and baseline scenarios. Soil organic carbon stocks Soil organic carbon stocks are estimated under Quantification Approach 1, using Equation 1 below: Equation (6): Where: SOCbsl,I,t – Carbon stocks in the soil organic carbon pool in the baseline scenario for sample unit i at the end of period t; tCO2e/unit area fSCObsl,I,t – Modelled soil organic carbon stocks in the baseline scenario for sample unit i at the end of period t; tCO2e/unit area i – Sample unit  Nitrous Oxide Emissions from Nitrogen Fertilizers and Nitrogen-Fixing Species Nitrous oxide emissions due to nitrification/denitrification include direct and indirect emissions from nitrogen fertilizers and direct emissions from nitrogen-fixing species. Nitrous oxide emissions due to nitrogen inputs to soils from nitrogen fertilizers and nitrogen-fixing species are quantified in the baseline scenario under Quantification Approach 3. Following the 2019 Refinement to the 2006 IPCC Guidelines for National Greenhouse Gas Inventories, quantification is differentiated by livestock type, manure management system, and productivity system. Nitrous oxide emissions due to nitrogen inputs to soils in the baseline scenario are estimated by applying Equation ( 17 ): 𝑁20𝑠𝑜𝑖𝑙𝑏𝑠𝑙,𝑖,𝑡 = 𝑁2𝑂𝑓𝑒𝑟𝑡𝑏𝑠𝑙,𝑖,𝑡 + 𝑁2𝑂𝑚𝑑𝑏𝑠𝑙,𝑖,𝑡 + 𝑁2𝑂𝑁𝑓𝑖𝑥𝑏𝑠𝑙,𝑖,𝑡 ( 17 ) Where: 𝑁20𝑠𝑜𝑖𝑙𝑏𝑠𝑙,𝑖,𝑡 𝑡 𝐶𝑂2𝑒 ℎ𝑎 Nitrous oxide emissions due to nitrogen inputs to soils in the baseline scenario for quantification unit i in year t 𝑁2𝑂𝑓𝑒𝑟𝑡𝑏𝑠𝑙,𝑖,𝑡 𝑡 𝐶𝑂2𝑒 ℎ𝑎 Nitrous oxide emissions due to fertilizer use in the baseline scenario for quantification unit i in year t 𝑁2𝑂𝑚𝑑𝑏𝑠𝑙,𝑖,𝑡 𝑡 𝐶𝑂2𝑒 ℎ𝑎 Nitrous oxide emissions due to manure deposition in the baseline scenario for quantification unit i in year t 𝑁2𝑂𝑁𝑓𝑖𝑥𝑏𝑠𝑙,𝑖,𝑡 𝑡 𝐶𝑂2𝑒 ℎ𝑎 Nitrous oxide emissions from crop residues due to the use of N-fixing species in the baseline scenario for quantification unit i in year t Nitrous oxide emissions due to fertilizer use are quantified using Equations ( 18 ) -( 24 ). 𝑁2𝑂𝑓𝑒𝑟𝑡𝑏𝑠𝑙,𝑖,𝑡 = 𝑁2𝑂𝑓𝑒𝑟𝑡𝐷𝑖𝑟𝑒𝑐𝑡𝑏𝑠𝑙,𝑖,𝑡 + 𝑁2𝑂𝑓𝑒𝑟𝑡𝐼𝑛𝑑𝑖𝑟𝑒𝑐𝑡𝑏𝑠𝑙,𝑖,𝑡 ( 18 ) Where: 𝑁2𝑂𝑓𝑒𝑟𝑡𝑏𝑠𝑙,𝑖,𝑡 𝑡 𝐶𝑂2𝑒 ℎ𝑎 Nitrous oxide emissions due to fertilizer use in the baseline scenario for quantification unit i in year t 𝑁2𝑂𝑓𝑒𝑟𝑡𝐷𝑖𝑟𝑒𝑐𝑡𝑏𝑠𝑙,𝑖,𝑡 𝑡 𝐶𝑂2𝑒 ℎ𝑎 Direct nitrous oxide emissions due to fertilizer use in the baseline scenario for quantification unit i in year t 𝑁2𝑂𝑓𝑒𝑟𝑡𝐼𝑛𝑑𝑖𝑟𝑒𝑐𝑡𝑏𝑠𝑙,𝑖,𝑡 𝑡 𝐶𝑂2𝑒 ℎ𝑎 Indirect nitrous oxide emissions due to fertilizer use in the baseline scenario for quantification unit i in year t Direct nitrous oxide emissions due to fertilizer use in the baseline scenario are quantified in Equations ( 19 )-( 21 ). 𝑁2𝑂𝑓𝑒𝑟𝑡𝐷𝑖𝑟𝑒𝑐𝑡𝑏𝑠𝑙,𝑖,𝑡 = 𝑆𝑁𝐹𝑏𝑠𝑙,𝑖,𝑡 × 𝐸𝐹 𝑁 𝐷𝑖𝑟𝑒𝑐𝑡 𝑆𝐹 + 𝑂𝑁𝐹𝑏𝑠𝑙,𝑖,𝑡 × 𝐸𝐹 𝑁 𝐷𝑖𝑟𝑒𝑐𝑡 𝑂𝐹 𝐴𝑖 × 44 28 × 𝐺𝑊𝑃𝑁2𝑂 ( 19 ) 𝑆𝑁𝐹𝑏𝑠𝑙,𝑖,𝑡 = ∑ 𝑆𝐹 𝑀𝑏𝑠𝑙,𝑆𝐹,𝑖,𝑡 × 𝑁𝐶𝑆𝐹 ( 20 ) 𝑂𝑁𝐹𝑏𝑠𝑙,𝑖,𝑡 = ∑ 𝑂𝐹 𝑀𝑏𝑠𝑙,𝑂𝐹,𝑖,𝑡 × 𝑁𝐶𝑂𝐹 ( 21 ) Where: 𝑁2𝑂𝑓𝑒𝑟𝑡𝐷𝑖𝑟𝑒𝑐𝑡𝑏𝑠𝑙,𝑖,𝑡 𝑡 𝐶𝑂2𝑒 ℎ𝑎 Areal mean direct nitrous oxide emissions due to fertilizer use in the baseline scenario for quantification unit i in year t 𝑆𝑁𝐹𝑏𝑠𝑙,𝑖,𝑡 𝑡 𝑁 Synthetic Nitrogen Fertilizer applied to quantification unit i in year t 𝐸𝐹 𝑁 𝐷𝑖𝑟𝑒𝑐𝑡 𝑆𝐹 𝑡 𝑁20 − 𝑁 𝑡 𝑁 Emission factor for nitrous oxide emissions from N additions from synthetic fertilizers 𝑂𝑁𝐹𝑏𝑠𝑙,𝑖,𝑡 𝑡 𝑁 Organic Nitrogen Fertilizer applied to quantification unit i in year t 𝐸𝐹 𝑁 𝐷𝑖𝑟𝑒𝑐𝑡 𝑂𝐹 𝑡 𝑁20 − 𝑁 𝑡 𝑁 Emission factor for nitrous oxide emissions from N additions from organic fertilizers 𝑀𝑏𝑠𝑙,𝑆𝐹,𝑖,𝑡 𝑡𝑜𝑛𝑛𝑒𝑠 Mass of N-containing synthetic fertilizer type SF applied to quantification unit i in year t 𝑁𝐶𝑆𝐹 % N content of synthetic fertilizer type SF 𝑀𝑏𝑠𝑙,𝑂𝐹,𝑖,𝑡 𝑡𝑜𝑛𝑛𝑒𝑠 Mass of N-containing organic fertilizer type OF applied to quantification unit i in year t 𝑁𝐶𝑂𝐹 % N content of organic fertilizer type OF Indirect nitrous oxide emissions due to fertilizer use in the baseline scenario are quantified in Equations ( 22 )-( 24 ). 𝑁2𝑂𝑓𝑒𝑟𝑡𝐼𝑛𝑑𝑖𝑟𝑒𝑐𝑡𝑏𝑠𝑙,𝑖,𝑡 = (𝑁2𝑂𝑓𝑒𝑟𝑡𝑉𝑜𝑙𝑎𝑡𝑏𝑠𝑙,𝑖,𝑡 + 𝑁2𝑂𝑓𝑒𝑟𝑡𝐿𝑒𝑎𝑐ℎ𝑏𝑠𝑙,𝑖,𝑡) × 1 𝐴𝑖 ( 22 ) 𝑁2𝑂𝑓𝑒𝑟𝑡𝑉𝑜𝑙𝑎𝑡𝑏𝑠𝑙,𝑖,𝑡 = [𝑆𝑁𝐹𝑏𝑠,𝑖,𝑡 × 𝐹𝑟𝑎𝑐 𝑉𝑂𝐿𝐴𝑇 𝑆𝐹𝑙,𝑆 + 𝑂𝑁𝐹𝑏𝑠,𝑖,𝑡 × 𝐹𝑟𝑎𝑐 𝑉𝑂𝐿𝐴𝑇 𝑂𝐹𝑙,𝑆 ] × 𝐸𝐹 𝑉𝑂𝐿𝐴𝑇 × 44 28 × 𝐺𝑊𝑃𝑁20 ( 23 ) 𝑁2𝑂𝑓𝑒𝑟𝑡𝐿𝑒𝑎𝑐ℎ𝑏𝑠𝑙,𝑖,𝑡 = [𝑆𝑁𝐹𝑏𝑠,𝑖,𝑡 + 𝑂𝑁𝐹𝑏𝑠,𝑖,𝑡 ] × 𝐹𝑟𝑎𝑐 𝐿𝐸𝐴𝐶𝐻𝑙,𝑆 × 𝐸𝐹 𝐿𝐸𝐴𝐶𝐻 × 44 28 × 𝐺𝑊𝑃𝑁20 ( 24 ) Where: 𝑁2𝑂𝑓𝑒𝑟𝑡𝐼𝑛𝑑𝑖𝑟𝑒𝑐𝑡𝑏𝑠𝑙,𝑖,𝑡 𝑡 𝐶𝑂2𝑒 ℎ𝑎 Areal mean indirect nitrous oxide emissions due to fertilizer use in the baseline scenario for quantification unit i in year t 𝑁2𝑂𝑓𝑒𝑟𝑡𝑉𝑜𝑙𝑎𝑡𝑏𝑠𝑙,𝑖,𝑡 𝑡 𝐶𝑂2𝑒 Indirect nitrous oxide emissions produced from atmospheric deposition of N volatilized due to fertilizer use in the baseline scenario in quantification unit i in year t 𝑁2𝑂𝑓𝑒𝑟𝑡𝐿𝑒𝑎𝑐ℎ𝑏𝑠𝑙,𝑖,𝑡 𝑡 𝐶𝑂2𝑒 Indirect nitrous oxide emissions produced from leaching and runoff of N, in regions where leaching and runoff occurs, due to fertilizer use in the baseline scenario in quantification unit i in year t 𝐹𝑟𝑎𝑐 𝑉𝑂𝐿𝐴𝑇 𝑆𝐹𝑙,𝑆 % Fraction of all synthetic N added to soils that volatilizes as NH3 and NOx (kg N volatilized/kg of N applied) 𝐹𝑟𝑎𝑐 𝑉𝑂𝐿𝐴𝑇 𝑂𝐹𝑙,𝑆 % Fraction of applied organic N fertilizer (𝐹𝑂𝑁𝑏𝑠𝑙,𝑖,𝑡) that volatilizes as NH3 and NOx (kg N volatilized/kg of N applied or deposited) 𝐸𝐹 𝑉𝑂𝐿𝐴𝑇 𝑡 𝑁2𝑂𝑁 𝑡 𝑁𝐻3𝑁 + 𝑁𝑂𝑥𝑁 Emission factor for nitrous oxide emissions from atmospheric deposition of N on soils and water surfaces 𝐹𝑟𝑎𝑐 𝐿𝐸𝐴𝐶𝐻𝑙,𝑆 % Fraction of N (synthetic or organic) added to soils and in manure and urine deposited on soils that is lost through leaching and runoff, in regions where leaching and runoff occurs 𝐸𝐹 𝐿𝐸𝐴𝐶𝐻 𝑡 𝑁2𝑂𝑁 𝑡 𝑁 𝑙𝑒𝑎𝑐ℎ𝑒𝑑 Emission factor for nitrous oxide emissions from leaching and runoff Nitrous oxide emissions due to the use of N-fixing species are quantified using Equations ( 25 ). Since the proposed project activity accounts for the N-fixing species, the calculations of the amount of nitrogen in N-fixing species is carried out by using the following equation 𝑁2𝑂𝑁𝑓𝑖𝑥𝑏𝑠𝑙,𝑖,𝑡 = 𝐹 𝐶𝑅𝑏𝑠𝑙,𝑖,𝑡 × 𝐸𝐹 𝑁 𝐷𝑖𝑟𝑒𝑐𝑡 𝑂𝐹 × 44 28 × 𝐺𝑊𝑃𝑁2𝑂 × 1 𝐴i  ( 25 ) 𝑁2𝑂𝑁𝑓𝑖𝑥𝑏𝑠𝑙,𝐼,𝑡 𝑡 𝐶𝑂2𝑒 ℎ𝑎 Areal mean nitrous oxide emissions from crop residues due to the use of N-fixing species in the baseline scenario for quantification unit i in year t 𝐹 𝐶𝑅𝑏𝑠𝑙,𝑖,𝑡 𝑡 𝑁 Amount of N in N-fixing species (above- and belowground) returned to soils for quantification unit i in year t 𝐸𝐹 𝑁 𝐷𝑖𝑟𝑒𝑐𝑡 𝑂𝐹 𝑡 𝑁20 − 𝑁 𝑡 𝑁 Emission factor for nitrous oxide emissions from N additions from organic fertilizers Calculations of the amount of nitrogen in N-fixing species follow a methodology deviation and a more sophisticated calculation method than requested in VM0042. Reasoning on the deviation can be found in the chapter on methodology deviations. The amount of nitrogen in N-fixing species is subdivided into nitrogen residues from harvested crops (main crops or cash crops), and into nitrogen from non-harvested crops (ie. cover crops). The following equations (29) – (33) are not mentioned in the methodology but the parameters are required for application in equation (25). Hence the following calculation was developed by the PP together with their consultant team, using as references IPCC guidelines among others. For harvested crops, we strictly follows IPCC 2019 equation and associated parameters: 𝐹 𝐶𝑅𝑏𝑠𝑙,𝑖,𝑡 = (𝐹 𝐶𝑅 ℎ𝑎𝑟𝑣𝑒𝑠𝑡𝑏𝑠𝑙,𝑖,𝑡 + 𝐹 𝐶𝑅 𝑛𝑜𝑛ℎ𝑎𝑟𝑣𝑒𝑠𝑡𝑏𝑠𝑙,𝑖,𝑡) × 1 1000 ( 29 ) Where: 𝐹 𝐶𝑅 ℎ𝑎𝑟𝑣𝑒𝑠𝑡𝑏𝑠𝑙,𝑔,𝑖,𝑡 𝑘𝑔 𝑁 Amount of N in N-fixing harvested species g (above- and belowground) returned to soils for quantification unit i in year t 𝐹 𝐶𝑅 𝑛𝑜𝑛ℎ𝑎𝑟𝑣𝑒𝑠𝑡𝑏𝑠𝑙,𝑔,𝑖,𝑡 𝑘𝑔 𝑁 Amount of N in N-fixing non-harvested species g (aboveand belowground) returned to soils for quantification unit i in year t The amount of nitrogen in N-fixing species from harvested crops is subdivided into nitrogen residues from above-ground, and below-ground crop residues. 𝐹 𝐶𝑅 ℎ𝑎𝑟𝑣𝑒𝑠𝑡𝑏𝑠𝑙,𝑖,𝑡 = ∑ 𝐺 𝑔=1 [𝑀𝐵 𝐴𝐺𝑔,𝑖,𝑡 × 𝑁 𝐴𝐺𝑔 + 𝑀𝐵 𝐵𝐺𝑔,𝑖,𝑡 × 𝑁 𝐵𝐺𝑔] × 𝐴𝑖,𝑡 ( 30 ) 𝑀𝐵 𝐴𝐺𝑏𝑠𝑙,𝑔,𝑖,𝑡 = 𝐴𝐺 𝑑𝑚𝑏𝑠𝑙,𝑔,𝑖,𝑡 × (1 − 𝑒𝑥𝑝𝑜𝑟𝑡𝑔,𝑖,𝑡 × 𝐹𝑅𝐴𝐶 𝑒𝑥𝑝𝑜𝑟𝑡𝑔) ( 31 ) (a) 𝐴𝐺 𝑑𝑚𝑏𝑠𝑙,𝑔,𝑖,𝑡 = 𝐷𝑟𝑦 𝑌𝑖𝑒𝑙𝑑𝑏𝑠𝑙,𝑔,𝑖,𝑡 ∗ 𝑅 𝐴𝐺𝑔 ( 31 ) (b) 𝑀𝐵 𝐵𝐺𝑏𝑠𝑙,𝑔,𝑖,𝑡 = (𝐷𝑟𝑦 𝑌𝑖𝑒𝑙𝑑𝑏𝑠𝑙,𝑔,𝑖,𝑡 + 𝐴𝐺 𝑑𝑚𝑏𝑠𝑙,𝑔,𝑖,𝑡) × 𝑅𝑆𝑔 ( 32 ) Where: 𝑀𝐵 𝐴𝐺𝑏𝑠𝑙,𝑔,𝑖,𝑡 𝑘𝑔 𝑑. 𝑚. ℎ𝑎 Above-ground residues of N-fixing species g that remains in the quantification unit i in year t 𝑁 𝐴𝐺𝑔 % The nitrogen content of N-fixing species residues g above-ground 𝑀𝐵 𝐵𝐺𝑏𝑠𝑙,𝑔,𝑖,𝑡 𝑘𝑔 𝑑. 𝑚. ℎ𝑎 Below-ground residues of N-fixing species g in the quantification unit i in year t 𝑁 𝐵𝐺𝑔 % The nitrogen content of N-fixing species g below ground 𝐴𝐺 𝑑𝑚𝑏𝑠𝑙,𝑔,𝑖,𝑡 𝑘𝑔 𝑑. 𝑚. ℎ𝑎 Quantity of dry matter in above-ground residues of Nfixing species g 𝑅 𝐴𝐺𝑔 Ratio of above-ground residue dry matter to harvested yield for N-fixing species g 𝑒𝑥𝑝𝑜𝑟𝑡𝑔,𝑡 Binary variable (1= crop residues are exported; 0= crop residues not exported) 𝐹𝑅𝐴𝐶 𝑒𝑥𝑝𝑜𝑟𝑡𝑔 % The fraction of above ground residues from N-fixing species g exported. When the aerial residues are harvested, some of them are left on the plot. The proportion of above-ground residues exported from the plot therefore depends on the fate of the residues (buried or exported).  𝑀𝐵 𝐴𝐺𝑏𝑠𝑙,𝑔,𝑖,𝑡 𝑘𝑔 𝑑. 𝑚. ℎ𝑎 Above-ground residues of N-fixing species g that remains in the quantification unit i in year t 𝑁 𝐴𝐺𝑔 % The nitrogen content of N-fixing species residues g above-ground 𝑀𝐵 𝐵𝐺𝑏𝑠𝑙,𝑔,𝑖,𝑡 𝑘𝑔 𝑑. 𝑚. ℎ𝑎 Below-ground residues of N-fixing species g in the quantification unit i in year t 𝑁 𝐵𝐺𝑔 % The nitrogen content of N-fixing species g below ground 𝐷𝑟𝑦 𝑌𝑖𝑒𝑙𝑑𝑏𝑠𝑙,𝑔,𝑖,𝑡 𝑡 𝑑. 𝑚. ℎ𝑎 The harvested aboveground dry matter biomass produced by species g on quantification unit i in year t such as the grains 𝑅𝑆𝑔 % The ratio of root N-fixing species to the N-fixing species' above-ground biomass For non harvested crops, we currently use this equation described in Label Bas Carbone: 𝐹 𝐶𝑅 𝑛𝑜𝑛ℎ𝑎𝑟𝑣𝑒𝑠𝑡𝑏𝑠𝑙,𝑖,𝑡 = ∑ 𝐺 𝑔=1 [𝐵𝑖𝑜𝑚𝑎𝑠𝑠𝑏𝑠𝑙,𝑔,𝑖,𝑡 × 𝑁 𝐴𝐺𝑔 × 𝑅𝑜𝑜𝑡 𝐶𝑜𝑒𝑓𝑓𝑖𝑐𝑖𝑒𝑛𝑡𝑔 × 1000] × 𝐴𝑖 ( 33 ) Where: 𝐵𝑖𝑜𝑚𝑎𝑠𝑠𝑏𝑠𝑙,𝑔,𝑖,𝑡 𝑡 𝑑. 𝑚. ℎ𝑎 The aboveground dry matter biomass produced by nitrogen-fixing species g on quantification unit i in year t  𝑅𝑜𝑜𝑡 𝐶𝑜𝑒𝑓𝑓𝑖𝑐𝑖𝑒𝑛𝑡𝑔 N/A Root nitrogen correction coefficient for N-fixing species g If the nitrogen correction coefficient becomes difficult to obtain with Brazilian literature a potential solutions would be to consider MB AGbsl,g,i,t as expected to be directly retrieved has “no exports” always applies to the cover crops and no biomass is harvested at all. Uncertainty Uncertainty deductions are estimated separately for each GHG source within a project. Deductions are based on an estimate of the total error of the project’s calculated reductions and removals for that source over a given verification period. Sources of uncertainty that contribute to this error differ by quantification approach. A key error source is sampling error, which emerges from only being able to measure/model a portion of the total project area. Appropriate estimates of this source of error are specific to the sample design employed. The sample design is stratified random sampling. Strata are based on physical and management factors that minimize within-strata variability. Individual sample points are allocated randomly within those strata. All soil sampling/analysis and modeling occurs on a point basis. In other words, the model is run in a manner to represent a single point in space at which initial soil data and management data have been collected, and uncertainty is calculated by combining estimates of sampling, modeling, and measurement error based on the design chosen to select the points. This corresponds to the standard case proposed in VM0042. In the stratified random sampling design followed by the proposed project activity following guidelines of the VM0042 V2.1 methodology, the project is divided into homogenous strata and points within those strata were placed using simple random sampling with replacement. Soil samples are collected at these points and the model is run. Uncertainty under Quantification Approach 1 Quantification Approach 1 is a measure and model approach in which a biogeochemical model is used to simulate changes in SOC stocks and GHG fluxes over a given period in both the project and baseline scenarios. Initial measures of SOC are taken at the project start for use within the model. SOC is periodically remeasured throughout the project period to true-up modeled estimates of SOC stock changes. Key sources of error accounted for under Quantification Approach 1 include: • Model prediction error resulting from uncertainty in model parameters or model structural errors (i.e., inaccurate representation of actual biogeochemical processes). Model prediction error is calculated using independent statistical validation datasets per the processes outlined in VMD0053. • Sampling error resulting from measuring/modeling only a portion of the project area. Estimates of sampling error are contingent on the sampling design. • Measurement error of model inputs, including initial SOC content, bulk density, soil texture, and management data, where applicable. In many cases, the impact of these measurement errors on the error of estimated reductions and removals is assumed to be captured in model prediction error and/or sampling error. For each carbon pool or GHG flux, these sources of error are estimated separately and then combined to estimate a single uncertainty deduction for that carbon pool or GHG flux across the entire project. Analytical Calculation of Error Propagation In this approach, the various sources of error outlined above are independently estimated for each GHG source or carbon pool ∙ that results in a reduction or removal. The estimated errors are then combined to provide an estimate of the total variance of the areal mean emission reductions and removals across the project for each source in each verification period 𝑠 2 ∆∙,𝑡 . This is used to determine an appropriate uncertainty deduction. Model Prediction Error Model prediction error includes model structural error (i.e., parameter uncertainty) and any errors related to model data inputs (e.g., inaccuracy of source for soil texture data), which result in incorrect estimation of a flux or change in stock in either the project or baseline scenarios or both. Model prediction error is quantified by using a statistical validation dataset that includes ground-truth measurements of stock changes or fluxes for the baseline and project scenario practices. Differences between these groundtruth measurements and model simulations of the same locations/practices are calculated, and assuming the model is unbiased, model prediction error is captured by the variance of these errors. The ideal statistical validation dataset would come from controlled experimental field trials in which practices that simulate a project scenario are used in one part of the field and practices that simulate a baseline scenario are used in another part of the same field. Then, errors of the project minus baseline emissions of a certain gas or pool, ∆ ∙, are computed directly at each site 𝑖 using 𝑒𝑟𝑟𝑜𝑟∆∙,𝑖 = ∆̂∙ 𝑖 − ∆ ∙ 𝑖. The model uncertainty is estimated as the variance of 𝑒𝑟𝑟𝑜𝑟∆∙,𝑖 across all sites in the statistical validation dataset. Statistical validation data come from experiments that range in duration from a few years to many decades, and model prediction error at each point is derived from simulations that match the durations of those experiments. This means that these errors necessarily represent the accumulated model error over varying time intervals. When estimating model prediction error for verification, model error from a single verification period – which may range from one to five years – is required and is likely to be smaller than the raw mean squared statistical validation error. For verification periods shorter than the median length of experiments in the statistical validation dataset, a single mixed-duration estimate of model prediction error is conservative and acceptable to use at verification. For example, where a model is validated against a dataset containing experiments with lengths of 2, 2, 3, 5, 9, and 48 years, the error from this statistical validation dataset may be applied to any simulation of length four years (the median length of experiments in the dataset) or shorter. Where insufficient data are available to use the approach described above, quantification of model error is split into two separate tasks: • Model predictions and ground truth measurements may be used to estimate typical errors of the prediction of reductions and removals in one scenario (e.g., just the project scenario), and • The correlation of errors between project and baseline scenarios may be estimated from a more limited number of side-by-side field trials such as those described above. Assuming that the variance of the model prediction is the same in the project and baseline scenarios (𝑠𝑚𝑜𝑑𝑒𝑙,∙,𝑤𝑝 2 = 𝑠𝑚𝑜𝑑𝑒𝑙,∙,𝑏𝑠𝑙 2 ), then: 𝑠𝑚𝑜𝑑𝑒𝑙,∆∙ 2 = 𝑠 2 (∆̂∙ 𝑏𝑠𝑙 − ∆̂∙ 𝑝𝑟) = 2[𝑠𝑚𝑜𝑑𝑒𝑙,∙ 2 − 𝑐𝑜𝑣(∆̂∙ 𝑤𝑝,∆̂∙ 𝑏𝑠𝑙)] ( 58 ) Where: 𝑠𝑚𝑜𝑑𝑒𝑙,∆∙ 2 ( 𝑡 𝐶𝑂2𝑒 ℎ𝑎 ) 2 Variance of modeled estimates of emission reductions in gas or pool • ∆̂∙ 𝑏𝑠𝑙 𝑡 𝐶𝑂2𝑒 Modeled estimate of change in emission reductions in gas or pool • in the baseline scenario ∆̂∙ 𝑤𝑝 𝑡 𝐶𝑂2𝑒 Modeled estimate of change in emission reductions in gas or pool • in the project scenario 𝑠𝑚𝑜𝑑𝑒𝑙,∙ 2 ( 𝑡 𝐶𝑂2𝑒 ℎ𝑎 ) 2 Estimated variance of errors made by model prediction of emissions in gas or pool • (estimated from measurements in fields that need not be side-by-side trials with baseline and project scenarios) By writing 𝑐𝑜𝑣(𝛥̂∙𝑤𝑝 , 𝛥̂∙𝑏𝑠𝑙) in terms of a correlation coefficient: 𝜌 = 𝑐𝑜𝑣(𝛥̂∙𝑤𝑝 , 𝛥̂∙𝑏𝑠𝑙) √(𝑠𝑚𝑜𝑑𝑒𝑙,∙𝑤𝑝 2 )(𝑠𝑚𝑜𝑑𝑒𝑙,∙𝑏𝑠𝑙 2 ) ( 59 ) Then: 𝑠𝑚𝑜𝑑𝑒𝑙,∆∙ 2 = 2𝑠𝑚𝑜𝑑𝑒𝑙,∙ 2 (1 − 𝜌) Where: 𝜌 Correlation of errors in project and baseline scenario pairs (estimated from side-by-side field trials of baseline and project scenarios) Because side-by-side trials are rare, ρ is estimated from fewer data points than smodel,∙ 2 . In the initial stages of a project, the datasets used to estimate model prediction error will be from peer-reviewed publications or readily available benchmark datasets that meet the requirements outlined in VMD0053. As the project proceeds and SOC stocks in the project scenario are periodically remeasured, data from true-up sampling is added to the model calibration/validation dataset to update the estimate of model prediction error for the SOC pool. Model Input and measurement Error As the project follows the data collection procedures outlined in Box 1 to determine ALM activities used as model inputs across the entire project area, this source of error is assumed to be sufficiently minor. Similarly, uncertainty related to estimation of area is considered to be negligible as GIS boundaries of the project area are based on highly reliable governmental sources. Measurement error of physical properties (e.g., precipitation, soil texture) used as model inputs are automatically captured by the estimate of sample error discussed below. Similarly, for inputs such as precipitation, which are the same across baseline and project scenarios and for which estimates are retrieved for a given point from the same data source (e.g., GIS data products, digital soil maps), the influence of such measurement error on estimates of reductions and removals is captured in the estimate of model prediction error generated through model calibration/validation procedures. Sampling Error Sampling error derives from the fact that we can only measure or model a subset of the entire project area. Sampling error is determined by calculating the approximate standard error of GHG fluxes or carbon stock changes as simulated by the model for a given verification period. The uncertainty estimator used must be based on the sampling design employed. 𝑠𝑠𝑎𝑚𝑝𝑙𝑖𝑛𝑔,𝛥∙,𝑡 2 = ∑ 𝐻 ℎ=1 𝑠𝑠𝑎𝑚𝑝𝑙𝑖𝑛𝑔,𝛥∙,ℎ,𝑡 2 ( 60 ) , and 𝑠𝑠𝑎𝑚𝑝𝑙𝑖𝑛𝑔,𝛥∙,ℎ,𝑡 2 = 𝐴ℎ 2 𝑛ℎ(𝑛ℎ − 1) ∑ ℎℎ 𝑖𝑝=1 (𝛥 ∙ℎ,𝑖𝑝,𝑡− 𝛥 ∙ℎ,𝑡) 2 61 ) Where: 𝑠𝑠𝑎𝑚𝑝𝑙𝑖𝑛𝑔,𝛥∙,𝑡 2 (𝑡 𝐶𝑂2𝑒) 2 Variance of reductions and removals in gas or pool • due to sampling error at time t across the entire project area 𝑠𝑠𝑎𝑚𝑝𝑙𝑖𝑛𝑔,𝛥∙,ℎ,𝑡 2 (𝑡 𝐶𝑂2𝑒) 2 Variance of reductions and removals in gas or pool • within stratum h due to sampling error at time t 𝛥 ∙ℎ,𝑡 𝑡 𝐶𝑂2𝑒 ℎ𝑎 Areal mean reductions and removals in gas or pool • in stratum h at time t, computed as the mean across the sample points in stratum h 𝛥 ∙ℎ,𝑖𝑝,𝑡 𝑡 𝐶𝑂2𝑒 ℎ𝑎 Estimated reductions and removals of gas or pool • on an area basis in year t in stratum h at point ip ℎ 1, ..., 𝐻 strata across the entire project area 𝑖𝑝 1, ..., 𝑛ℎ sample points within stratum h 𝐴ℎ ℎ𝑎 Area of stratum ℎ Combined Sample and Model Error To incorporate model errors, we assume that they are uncorrelated with the input data in the sample and are independent across samples. Then, the variance of 𝛥 ∙ℎ,𝑡 incorporating sample uncertainty and model prediction uncertainty is estimated by combining the variance estimates of both error sources divided by the square of the total project area. Note that only the estimate of sampling error is divided by the square of the project area as the model prediction error has already been determined on an area basis as per Equations ( 58 ) and ( 59 ). 𝑠𝛥∙ ,𝑡 2 = 𝑠𝑠𝑎𝑚𝑝𝑙𝑖𝑛𝑔,𝛥∙,𝑡 2 𝐴2 + 𝑠𝑚𝑜𝑑𝑒𝑙 2 ( 62 ) Where: 𝑠𝛥∙ ,𝑡 2 ( 𝑡 𝐶𝑂2𝑒 ℎ𝑎 ) 2 Variance of the estimate of mean reductions and removals from gas or pool • at time t 𝑠𝑚𝑜𝑑𝑒𝑙 2 ( 𝑡 𝐶𝑂2𝑒 ℎ𝑎 ) 2 Variance of the estimate of reductions and removals in gas or pool • due to model prediction error 𝐴 ℎ𝑎 Total Project Area Lastly, 𝑠𝑚𝑜𝑑𝑒𝑙 2 is an estimate of average variance of model prediction errors across the project and is estimated using an estimator appropriate to the project sampling design. The model prediction error value for each stratum is selected based on the specific project and baseline scenarios being implemented in that stratum and as such 𝑠𝑚𝑜𝑑𝑒𝑙 2 is estimated using an area-weighted uncertainty estimator. 𝑠𝑚𝑜𝑑𝑒𝑙 2 = ∑ 𝐻 ℎ=1 𝐴ℎ 2 𝐴2 𝑠𝑚𝑜𝑑𝑒𝑙,ℎ Emissions from Fossil Fuel Combustion The proposed project activity makes use of fossil fuels as stated in the project´s boundary. The emissions associated to the consumption of these fossil fuels are calculated following equation (7) and (() of the applicable methodology, VM0042 V2, as follows: Where: 𝐶𝑂2___𝑓𝑓𝑏𝑠𝑙,_𝑖,_𝑡̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅ _=Areal mean carbon dioxide emissions from fossil fuel combustion in the baseline scenario for sample unit I in year t(tCO2e/ha) EFFbsl,j,i,t = Carbon dioxide emissions from fossil fuel combustion in the baseline scenario in vehicle/equipment type j for sample unit i in year t (tCOe) Ai = Area of sample unit I (ha) J = Type of fossil fuel (gasoline or diesel) In turn, the parameter EFFbsl,j,i,t is estimated as follows: Where: FFCbsl,j,i,t = Consumption of fossil fuel type j for sample unit I in year t(liters) EFCO2,j = Emission factor for combustion of fossil fuel type j(tCO2e/liter)  Carbon Dioxide Emissions from Liming Lastly the baseline scenario considers liming as an activity due to the application of calcitic limestone (CaCO3) or dolomite (CaMg (CO3) and the subsequent release of CO2. The parameter 𝐶𝑂2___𝑙𝑖𝑚𝑒𝑏𝑠𝑙,_𝑖,_𝑡̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅ _is calculated as follows: Where: 𝐶𝑂2___𝑙𝑖𝑚𝑒𝑏𝑠𝑙,_𝑖,_𝑡̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅ _= Areal mean carbon dioxide emissions from liming in the baseline scenario for sample unit I in year t(tCO2e/ha) ELbsl,i,t = Carbon dioxide emissions from liming in the baseline scenario for sample unit I in year t(tCO2e)",
+  "G455": "Stock change/emissions resulting from agricultural management activities taking place in the project scenario are either calculated or modelled on the basis of monitored inputs. The estimation of emissions of CO2, CH4, and N2O in the project scenario from included sources must follow approaches provided in Table 1 in methodology and using the same equations in Section 4.1. Quantification Approach 1 is applied for the estimation of emissions from soil organic carbon stocks only. Model inputs will be collected according to the “Table 8 Guidance on collection of model inputs for the project scenario, where required by the model selected” in section 8.3 of the applied methodology version 2.1. For all equations, the subscript bsl must be substituted by wp to make clear that the relevant values are being quantified for the project scenario. Soil Organic Carbon Stocks SOC stocks in the project scenario are either calculated from collected soil samples or modeled using the biogeochemical model. For measurement and calculation of project SOC from collected soil samples, please refer to Section 5.3. When using the model, SOC stocks in the project scenario are modelled using the equation below: SOCwp,i,t – Carbon stocks in the soil organic carbon pool in the project scenario for sample unit i at the end of period t; tCO2e/unit area fSOCwp,i,t – Modeled soil organic carbon stocks in the project scenario for sample unit i at the end of period t; tCO2e/unit area The project adopts Quantification Approach 1 to estimate project emission. Model inputs must be collected following Table 7.",
+  "G457": "As per the applicable methodology, VM0042 V2.1, the calculation of leakage emissions accounts for the “new application of organic amendments from outside the project area, productivity declines, displacement of livestock outside the project boundary and diversion of biomass residue that were used for bioenergy applications in the baseline scenario”. In this sense, the proposed project activity does not involve the addition of organic amendments, neither livestock production activities, nor the diversion of biomass for any purpose. The single activity considered as a likely source of leakage emissions is the leakage from productivity declines. For this reason, the calculation of the leakage is based on: The Project activity does not comprises new application of organic amendments from outside the project area, displacement of livestock outside the project boundary and diversion of biomass residue that were used for bioenergy applications in the baseline scenario in any part of its life time. Hence the only Leakage to be calculated is the Accounting for Leakage from Productivity Declines. Accounting for Leakage from Productivity Declines Market leakage may be considered negligible as the land within the project scenario continues to be used for agricultural production. Additionally, producers are unlikely to implement and sustain management practices that lead to productivity declines since their livelihood depends on crop yields as a source of income. However, to ensure no leakage occurs, the following steps must be completed every 10 years: Step 1: Demonstrate that the productivity of each crop/livestock product has not declined by more than 5% in the project scenario by: 1- Comparing average with-project productivity (excluding years with extreme weather events) during the project period to average baseline productivity during the historical look-back period, by crop/livestock product, using Equation below. Equation (35): Where: △ P – Change in productivity (%) Pwp. p – Average productivity for product p during the project period (output/ha) Pbsl, p – Average productivity for product p during the historical look-back period (output/ha) p – crop/livestock product Or 2- Comparing the ratio of average baseline productivity to average regional productivity during the historical look-back period with the ratio of average with-project productivity to average regional productivity during the project period, by crop/livestock product, using Equation below and regional data from government (e.g., USDA Actual Production History (APH) data), industry, peer-reviewed, academic or international organization (e.g., FA0) sources. Equation (36): Where: △ PR – Change in productivity ratio per hectare (%) .Pwpp,p – Average productivity for crop/livestock product p during the project period (output/ha) .RPwp,p – Average regional productivity for product p during the same years as the project period RPbsl,p – Average regional productivity product p during the same years as the historical look-back period P – crop/livestock product Equation 36 is chosen for this topic to calculate the change in productivity (∆P). New crop/livestock products introduced as part of the project (e.g., new crop in rotation. introduction of livestock) that are not present in the historical look-back period should use regional data sources instead of project-specific data sources to determine historical productivity of the crop/livestock product and set Pbslp equal to RPbsl,p. With-project productivity averages must be based on data collected in the previous 10 years Productivity averages must not include data that are more than 10 years old. Where productivity has improved, stayed constant or declined by less than 5 percent for a crop/livestock product, no further action is needed. Where a reduction in productivity of greater than 5 percent is observed in one or more crop/livestock products. complete Step 2 for these products. Step 2: Determine whether the crop/livestock productivity decline was caused by a short-term change in productivity, by repeating the calculation in step 1 excluding all data inputs from the first three years of project implementation on a farm. If the with-project productivity of the crop/livestock product with the first three years removed is within 5% of the baseline productivity of the same crop/livestock product, no further action is needed. If a reduction in productivity of greater than 5% is still observed in one or more crop/livestock product(s), complete step 3 for these products. Step 3: Determine whether the productivity decline is limited to a certain combination of factors by stratifying the analysis by: 1. Practice change category, 2. Practice change category combinations, 3. Crop type, 4. Soil type, and/or 5. Climatic zone. Where the productivity decline is limited to a certain combination of factors, that combination becomes ineligible for future crediting. For example, where a 10 percent decline in corn yields was observed and stratification showed that the yield decline was linked to fertilizer rate reductions, rate reduction practices on corn fields would no longer be eligible for future crediting. Where the project proponent is unable to isolate the source(s) of leakage through stratification, the entire crop/livestock product becomes ineligible for future crediting. After the calculation of the Leakage for every crop of the project activity it was verified that the productivity, in the project scenario increases, when compared to the baseline production, hence the Leakage for the project activity is Zero. This assessment should and will be revised every time the PP conducts a verification of the project. As a conservative approach for the purpose of ERR calculation, a default value of 1% Leakage was considered.",
+  "G459": "As per the applied methodology, net GHG emission reductions and removals are quantified as: As per the applied methodology, net GHG emission reductions and removals are quantified using equations (37)-(39): Net GHG emission reductions are quantified as: Equation (37): Uncertainty Uncertainty deductions are estimated separately for each GHG source within a project. Deductions are based on an estimate of the total error of the project’s calculated reductions and removals for that source over a given verification period. Sources of uncertainty that contribute to this error differ by quantification approach. A key error source is sampling error, which emerges from only being able to measure/model a portion of the total project area. Appropriate estimates of this source of error are specific to the sample design employed. The sample design is stratified random sampling. Strata are based on physical and management factors that minimize within-strata variability. Individual sample points are allocated randomly within those strata. All soil sampling/analysis and modeling occurs on a point basis. In other words, the model is run in a manner to represent a single point in space at which initial soil data and management data have been collected, and uncertainty is calculated by combining estimates of sampling, modeling, and measurement error based on the design chosen to select the points. This corresponds to the standard case proposed in VM0042. In the stratified random sampling design followed by the proposed project activity following guidelines of the VM0042 V2.1 methodology, the project is divided into homogenous strata and points within those strata were placed using simple random sampling with replacement. Soil samples are collected at these points and the model is run. Uncertainty under Quantification Approach 1 Quantification Approach 1 is a measure and model approach in which a biogeochemical model is used to simulate changes in SOC stocks and GHG fluxes over a given period in both the project and baseline scenarios. Initial measures of SOC are taken at the project start for use within the model. SOC is periodically remeasured throughout the project period to true-up modeled estimates of SOC stock changes. Key sources of error accounted for under Quantification Approach 1 include: • Model prediction error resulting from uncertainty in model parameters or model structural errors (i.e., inaccurate representation of actual biogeochemical processes). Model prediction error is calculated using independent statistical validation datasets per the processes outlined in VMD0053. • Sampling error resulting from measuring/modeling only a portion of the project area. Estimates of sampling error are contingent on the sampling design. • Measurement error of model inputs, including initial SOC content, bulk density, soil texture, and management data, where applicable. In many cases, the impact of these measurement errors on the error of estimated reductions and removals is assumed to be captured in model prediction error and/or sampling error. For each carbon pool or GHG flux, these sources of error are estimated separately and then combined to estimate a single uncertainty deduction for that carbon pool or GHG flux across the entire project. Analytical Calculation of Error Propagation In this approach, the various sources of error outlined above are independently estimated for each GHG source or carbon pool ∙ that results in a reduction or removal. The estimated errors are then combined to provide an estimate of the total variance of the areal mean emission reductions and removals across the project for each source in each verification period 𝑠 2 ∆∙,𝑡 . This is used to determine an appropriate uncertainty deduction. Model Prediction Error Model prediction error includes model structural error (i.e., parameter uncertainty) and any errors related to model data inputs (e.g., inaccuracy of source for soil texture data), which result in incorrect estimation of a flux or change in stock in either the project or baseline scenarios or both. Model prediction error is quantified by using a statistical validation dataset that includes ground-truth measurements of stock changes or fluxes for the baseline and project scenario practices. Differences between these ground-truth measurements and model simulations of the same locations/practices are calculated, and assuming the model is unbiased, model prediction error is captured by the variance of these errors. The ideal statistical validation dataset would come from controlled experimental field trials in which practices that simulate a project scenario are used in one part of the field and practices that simulate a baseline scenario are used in another part of the same field. Then, errors of the project minus baseline emissions of a certain gas or pool, ∆ ∙, are computed directly at each site 𝑖 using 𝑒𝑟𝑟𝑜𝑟∆∙,𝑖 = ∆̂∙ 𝑖 − ∆ ∙ 𝑖. The model uncertainty is estimated as the variance of 𝑒𝑟𝑟𝑜𝑟∆∙,𝑖 across all sites in the statistical validation dataset. Statistical validation data come from experiments that range in duration from a few years to many decades, and model prediction error at each point is derived from simulations that match the durations of those experiments. This means that these errors necessarily represent the accumulated model error over varying time intervals. When estimating model prediction error for verification, model error from a single verification period – which may range from one to five years – is required and is likely to be smaller than the raw mean squared statistical validation error. For verification periods shorter than the median length of experiments in the statistical validation dataset, a single mixed-duration estimate of model prediction error is conservative and acceptable to use at verification. For example, where a model is validated against a dataset containing experiments with lengths of 2, 2, 3, 5, 9, and 48 years, the error from this statistical validation dataset may be applied to any simulation of length four years (the median length of experiments in the dataset) or shorter. Where insufficient data are available to use the approach described above, quantification of model error is split into two separate tasks: • Model predictions and ground truth measurements may be used to estimate typical errors of the prediction of reductions and removals in one scenario (e.g., just the project scenario), and • The correlation of errors between project and baseline scenarios may be estimated from a more limited number of side-by-side field trials such as those described above. Assuming that the variance of the model prediction is the same in the project and baseline scenarios (𝑠𝑚𝑜𝑑𝑒𝑙,∙,𝑤𝑝 2 = 𝑠𝑚𝑜𝑑𝑒𝑙,∙,𝑏𝑠𝑙 2 ), then:",
+  "G460": [
+    {
+      "G5": "2024",
+      "G6": 77480,
+      "G7": 77616,
+      "G8": 0.1,
+      "G9": -136,
+      "G10": 0,
+      "G11": -136
+    },
+    {
+      "G5": "2025",
+      "G6": 387400,
+      "G7": 388080,
+      "G8": 0.1,
+      "G9": -680,
+      "G10": 36446.67,
+      "G11": 35766.67
+    },
+    {
+      "G5": "2026",
+      "G6": 871650,
+      "G7": 873180,
+      "G8": 0.1,
+      "G9": -1530,
+      "G10": 182233.33,
+      "G11": 180703.33
+    },
+    {
+      "G5": "2027",
+      "G6": 1355900,
+      "G7": 1358280,
+      "G8": 0.1,
+      "G9": -2380,
+      "G10": 410025,
+      "G11": 407645
+    },
+    {
+      "G5": "2028",
+      "G6": 197000,
+      "G7": 1940400,
+      "G8": 0.1,
+      "G9": -3400,
+      "G10": 637816.67,
+      "G11": 634416.67
+    },
+    {
+      "G5": "2029",
+      "G6": 1937000,
+      "G7": 1940400,
+      "G8": 0.1,
+      "G9": -3400,
+      "G10": 911166.67,
+      "G11": 907766.67
+    },
+    {
+      "G5": "2030",
+      "G6": 1937000,
+      "G7": 194400,
+      "G8": 0.1,
+      "G9": -3400,
+      "G10": 911166.67,
+      "G11": 907766.67
+    },
+    {
+      "G5": "2031",
+      "G6": 1937000,
+      "G7": 1940400,
+      "G8": 0.1,
+      "G9": -3400,
+      "G10": 911166.67,
+      "G11": 907766.67
+    },
+    {
+      "G5": "2032",
+      "G6": 1937000,
+      "G7": 1940400,
+      "G8": 0.1,
+      "G9": -3400,
+      "G10": 911166.67,
+      "G11": 907766.67
+    },
+    {
+      "G5": "2033",
+      "G6": 1937000,
+      "G7": 1940400,
+      "G8": 0.1,
+      "G9": -34000,
+      "G10": 911166.67,
+      "G11": 907766.67
+    },
+    {
+      "G5": "2034",
+      "G6": 1937000,
+      "G7": 1940400,
+      "G8": 0.1,
+      "G9": -3400,
+      "G10": 911166.67,
+      "G11": 907766.67
+    },
+    {
+      "G5": "2035",
+      "G6": 1937000,
+      "G7": 1938850,
+      "G8": 0.1,
+      "G9": -1850,
+      "G10": 781000,
+      "G11": 779150
+    },
+    {
+      "G5": "2036",
+      "G6": 1937000,
+      "G7": 1936912.5,
+      "G8": 0.1,
+      "G9": 87.5,
+      "G10": 618291.67,
+      "G11": 618379.17
+    },
+    {
+      "G5": "2037",
+      "G6": 1937000,
+      "G7": 1935099,
+      "G8": 0.1,
+      "G9": 1901,
+      "G10": 455583.33,
+      "G11": 457484.33
+    },
+    {
+      "G5": "2038",
+      "G6": 1937000,
+      "G7": 1933270,
+      "G8": 0.1,
+      "G9": 3730,
+      "G10": 260333.33,
+      "G11": 264063.33
+    },
+    {
+      "G5": "2039",
+      "G6": 1937000,
+      "G7": 1934045,
+      "G8": 0.1,
+      "G9": 2955,
+      "G10": 249920,
+      "G11": 252875
+    },
+    {
+      "G5": "2040",
+      "G6": 1937000,
+      "G7": 1934830,
+      "G8": 0.1,
+      "G9": 2170,
+      "G10": 208266.67,
+      "G11": 210436.67
+    },
+    {
+      "G5": "2041",
+      "G6": 1937000,
+      "G7": 1935800,
+      "G8": 0.1,
+      "G9": 1200,
+      "G10": 143183.33,
+      "G11": 144383.33
+    },
+    {
+      "G5": "2042",
+      "G6": 1937000,
+      "G7": 1935862.5,
+      "G8": 0.1,
+      "G9": 1137.5,
+      "G10": 78100,
+      "G11": 79237.5
+    },
+    {
+      "G5": "2043",
+      "G6": 1937000,
+      "G7": 1935925,
+      "G8": 0.1,
+      "G9": 1075,
+      "G10": 0,
+      "G11": 1075
+    },
+    {
+      "G5": "2044",
+      "G6": 1859520,
+      "G7": 1858560,
+      "G8": 0.1,
+      "G9": 960,
+      "G10": 0,
+      "G11": 960
+    },
+    {
+      "G5": "2045",
+      "G6": 1549600,
+      "G7": 1548800,
+      "G8": 0.1,
+      "G9": 800,
+      "G10": 0,
+      "G11": 800
+    },
+    {
+      "G5": "2047",
+      "G6": 1065350,
+      "G7": 1064800,
+      "G8": 0.1,
+      "G9": 550,
+      "G10": 0,
+      "G11": 550
+    },
+    {
+      "G5": "2047",
+      "G6": 581100,
+      "G7": 580800,
+      "G8": 0.1,
+      "G9": 300,
+      "G10": 0,
+      "G11": 300
+    },
+    {
+      "G5": "2048",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0,
+      "G10": 0,
+      "G11": 0
+    },
+    {
+      "G5": "2049",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0,
+      "G10": 0,
+      "G11": 0
+    },
+    {
+      "G5": "2050",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0,
+      "G10": 0,
+      "G11": 0
+    },
+    {
+      "G5": "2051",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0,
+      "G10": 0,
+      "G11": 0
+    },
+    {
+      "G5": "2052",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0,
+      "G10": 0,
+      "G11": 0
+    },
+    {
+      "G5": "2053",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0,
+      "G10": 0,
+      "G11": 0
+    },
+    {
+      "G5": "2054",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0,
+      "G10": 0,
+      "G11": 0
+    },
+    {
+      "G5": "2055",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0,
+      "G10": 0,
+      "G11": 0
+    },
+    {
+      "G5": "2056",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0,
+      "G10": 0,
+      "G11": 0
+    },
+    {
+      "G5": "2057",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0,
+      "G10": 0,
+      "G11": 0
+    },
+    {
+      "G5": "2058",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0,
+      "G10": 0,
+      "G11": 0
+    },
+    {
+      "G5": "2059",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0,
+      "G10": 0,
+      "G11": 0
+    },
+    {
+      "G5": "2060",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0,
+      "G10": 0,
+      "G11": 0
+    },
+    {
+      "G5": "2061",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0,
+      "G10": 0,
+      "G11": 0
+    },
+    {
+      "G5": "2062",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0,
+      "G10": 0,
+      "G11": 0
+    },
+    {
+      "G5": "2063",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0,
+      "G10": 0,
+      "G11": 0
+    }
+  ],
+  "G468": 3874000,
+  "G469": 38753200,
+  "G470": 0.1,
+  "G471": -13200,
+  "G472": 9502166.67,
+  "G473": 9488966.67,
+  "G476": "28",
+  "G477": "Yes",
+  "G479": "N/A",
+  "G480": "No",
+  "G482": "N/A",
+  "G483": "No",
+  "G486": [
+    {
+      "G5": "2024",
+      "G6": 77480,
+      "G7": 77616,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": -136,
+      "G11": 0,
+      "G12": -136
+    },
+    {
+      "G5": "2025",
+      "G6": 387400,
+      "G7": 388080,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": -680,
+      "G11": 36446.67,
+      "G12": 35766.67
+    },
+    {
+      "G5": "2026",
+      "G6": 871650,
+      "G7": 873180,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": -2380,
+      "G11": 410025,
+      "G12": 407645
+    },
+    {
+      "G5": "2027",
+      "G6": 1355900,
+      "G7": 1358280,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": -2380,
+      "G11": 410025,
+      "G12": 407645
+    },
+    {
+      "G5": "2028",
+      "G6": 1937000,
+      "G7": 1940400,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": -3400,
+      "G11": 637813.67,
+      "G12": 634416.67
+    },
+    {
+      "G5": "2029",
+      "G6": 1937000,
+      "G7": 1940400,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": -3400,
+      "G11": 911166.67,
+      "G12": 907766.67
+    },
+    {
+      "G5": "2030",
+      "G6": 1937000,
+      "G7": 1940400,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": -3400,
+      "G11": 911166.67,
+      "G12": 907766.67
+    },
+    {
+      "G5": "2031",
+      "G6": 1937000,
+      "G7": 1940400,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": -3400,
+      "G11": 911166.67,
+      "G12": 907766.67
+    },
+    {
+      "G5": "2032",
+      "G6": 1937000,
+      "G7": 1940400,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": -3400,
+      "G11": 911166.67,
+      "G12": 907766.67
+    },
+    {
+      "G5": "2033",
+      "G6": 1937000,
+      "G7": 1940400,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": -3400,
+      "G11": 911166.67,
+      "G12": 907766.67
+    },
+    {
+      "G5": "2034",
+      "G6": 1937000,
+      "G7": 1940090,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": -3090,
+      "G11": 885133.33,
+      "G12": 882043.33
+    },
+    {
+      "G5": "2035",
+      "G6": 1937000,
+      "G7": 1938850,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": -1850,
+      "G11": 781000,
+      "G12": 779150
+    },
+    {
+      "G5": "2036",
+      "G6": 1937000,
+      "G7": 1936912.5,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": 87.5,
+      "G11": 618291.67,
+      "G12": 618379.17
+    },
+    {
+      "G5": "2037",
+      "G6": 1937000,
+      "G7": 1935099,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": 1901,
+      "G11": 455583.33,
+      "G12": 457484.33
+    },
+    {
+      "G5": "2038",
+      "G6": 1937000,
+      "G7": 1933270,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": 3730,
+      "G11": 260333.33,
+      "G12": 264063.33
+    },
+    {
+      "G5": "2039",
+      "G6": 1937000,
+      "G7": 1934045,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": 2955,
+      "G11": 249920,
+      "G12": 252875
+    },
+    {
+      "G5": "2040",
+      "G6": 1937000,
+      "G7": 1934830,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": 2170,
+      "G11": 208266.67,
+      "G12": 210436.67
+    },
+    {
+      "G5": "2041",
+      "G6": 1937000,
+      "G7": 1935800,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": 1200,
+      "G11": 143183.33,
+      "G12": 144383.33
+    },
+    {
+      "G5": "2042",
+      "G6": 1937000,
+      "G7": 1935852.5,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": 1137.5,
+      "G11": 78100,
+      "G12": 79237.5
+    },
+    {
+      "G5": "2043",
+      "G6": 1937000,
+      "G7": 1935925,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": 1075,
+      "G11": 0,
+      "G12": 1075
+    },
+    {
+      "G5": "2044",
+      "G6": 1859520,
+      "G7": 1858560,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": 960,
+      "G11": 0,
+      "G12": 960
+    },
+    {
+      "G5": "2045",
+      "G6": 1549600,
+      "G7": 1548800,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": 800,
+      "G11": 0,
+      "G12": 800
+    },
+    {
+      "G5": "2046",
+      "G6": 1065350,
+      "G7": 1064800,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": 550,
+      "G11": 0,
+      "G12": 550
+    },
+    {
+      "G5": "2047",
+      "G6": 581100,
+      "G7": 580800,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": 300,
+      "G11": 0,
+      "G12": 300
+    },
+    {
+      "G5": "2048",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": 0,
+      "G11": 0,
+      "G12": 0
+    },
+    {
+      "G5": "2048",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": 0,
+      "G11": 0,
+      "G12": 0
+    },
+    {
+      "G5": "2049",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": 0,
+      "G11": 0,
+      "G12": 0
+    },
+    {
+      "G5": "2050",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": 0,
+      "G11": 0,
+      "G12": 0
+    },
+    {
+      "G5": "2051",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": 0,
+      "G11": 0,
+      "G12": 0
+    },
+    {
+      "G5": "2052",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": 0,
+      "G11": 0,
+      "G12": 0
+    },
+    {
+      "G5": "2053",
+      "G6": 0,
+      "G7": 0,
+      "G8": 0.1,
+      "G9": 0.28,
+      "G10": 0,
+      "G11": 0,
+      "G12": 0
+    }
+  ],
+  "G495": 28740000,
+  "G496": 38753200,
+  "G497": 0.1,
+  "G498": 0.28,
+  "G499": -13200,
+  "G500": 9502166.67,
+  "G501": 9488966.67,
+  "G502": "Described below",
+  "G503": "Described below",
+  "G505": [
+    {
+      "G5": "AR",
+      "G6": "Percent",
+      "G7": "Weighted average adoption rate",
+      "G8": "Calculated for the project across the group or all activity instances.",
+      "G9": "1.91%",
+      "G10": "As per the applied methodology, weighted average adoption rates.",
+      "G11": "Common practice assessment",
+      "G12": "None"
+    },
+    {
+      "G5": "A",
+      "G6": "Hectares",
+      "G7": "Area of proposed project-level adoption of each activity",
+      "G8": " Farm records and project activity commitments",
+      "G9": "1,193.2 ha",
+      "G10": "These values depend on the farmers participation in the project, and the data are from the farm records which indicate that which fields are involved in the project and what practice changes will be adopted.",
+      "G11": "Common practice assessment",
+      "G12": "None"
+    },
+    {
+      "G5": "EAan",
+      "G6": "Percent",
+      "G7": "Adoption rate of the n largest most common proposed project activity in the region",
+      "G8": "Publicly available information contained in agricultural census or other government (e.g., survey) data, peer-reviewed scientific literature, independent research data, or reports/assessments compiled by industry associations. If all of the above sources are unavailable, signed and date attestation statement from a qualified independent local expert.",
+      "G9": "1.91%",
+      "G10": "See Section 7 of VM0042 methodology",
+      "G11": "Common practice assessment",
+      "G12": "None"
+    },
+    {
+      "G5": "A0",
+      "G6": "Unit area",
+      "G7": "Project area",
+      "G8": "Measured in project area",
+      "G9": "The project area is 1,193.2 ha.",
+      "G10": "Delineation of the project area uses a combination of GIS coverage and ground survey data. Any imagery or GIS datasets used must be geo-registered referencing corner points, clear landmarks or other intersection points.",
+      "G11": "Calculation of baseline and project emissions",
+      "G12": "None"
+    },
+    {
+      "G5": "GWPCH4",
+      "G6": "t CO2e/tCH4",
+      "G7": "Global warming potential for CH4",
+      "G8": "IPCC Fifth Assessment report",
+      "G9": "28",
+      "G10": "The data is determined by the methodology. It is from IPCC Fifth Assessment report.",
+      "G11": "Calculation of baseline and project emissions",
+      "G12": "None"
+    },
+    {
+      "G5": "GWPN2O",
+      "G6": "tCO2e/tN2O",
+      "G7": "Global warming potential for N2O",
+      "G8": "IPCC Fifth Assessment report",
+      "G9": "265",
+      "G10": "The data is determined by the methodology. It is from IPCC Fifth Assessment report",
+      "G11": "Calculation of baseline and project emissions",
+      "G12": "None"
+    },
+    {
+      "G5": "Pbslp",
+      "G6": "Output (kg)/ha",
+      "G7": "Average productivity for product p during the historical look-back period",
+      "G8": "Farm productivity (e.g., yield) records",
+      "G9": "Corn: Averagely 5,666 kh/ha Wheat: Averagely 2,989 kh/ha Soy: Averagely 3,532 kg/ha Cotton: Averagely 2,305 kg/ha Sorghum: Averagely 2,758 kg/ha Beans: Averagely 1,049 kg/ha",
+      "G10": "Average productivity for product p during the historical look-back period",
+      "G11": "Average productivity for product p during the historical look-back period",
+      "G12": "None"
+    }
+  ],
+  "G515": [
+    {
+      "G5": "Tillage, i, t",
+      "G6": "Unique selection",
+      "G7": "Tillage practice in field (sample unit) i at time t",
+      "G8": "Agronomic Roadmap and farm activity data entered into an MyEasyCarbon by the farmer.",
+      "G9": "See \"source of data\"",
+      "G10": "At least every five years,Or prior to verification",
+      "G11": "N/A",
+      "G12": "1) MyEasyCarbon data platform 2) Roadmap",
+      "G13": "1) Farmers enter data into MyEasyCarbon 2) It is generated signed reports based on the data entries in the MyEasyCarbon (.pdf) 3) If available: Management records from agricultural machinery data 4) If available: Management plans from direct API with Farm ",
+      "G14": "Quantification Approach 1",
+      "G15": "Not applicable",
+      "G16": "Measured parameter"
+    },
+    {
+      "G5": "CoverCrop, i, t",
+      "G6": "Unique selection",
+      "G7": "Cover crop practice in field (sample unit) i at time t",
+      "G8": "Agronomic Roadmap and farm activity data entered into MyEasyCarbon by the farmer.",
+      "G9": "See \"source of data\"",
+      "G10": "At least every five years,Or prior to verificatio",
+      "G11": "N/A",
+      "G12": "1) MyEasyCarbon data platform 2) Roadmap",
+      "G13": "1) Farmers enter data into MyEasyCarbon 2) It is generated signed reports based on the data entries in the MyEasyCarbon (.pdf) 3) If available: Management records from agricultural machinery data 4) If available: Management plans from direct API with Farm Management Systems",
+      "G14": "Quantification Approach 1",
+      "G15": "Not applicable",
+      "G16": "Measured parameter"
+    },
+    {
+      "G5": "Fertilizer, i, t",
+      "G6": "Unique selection",
+      "G7": "Fertilizer treatment in field i at time t",
+      "G8": "Agronomic Roadmap and farm activity data entered into MyEasyCarbon by the farmer.",
+      "G9": "See \"source of data\"",
+      "G10": "At least every five years,Or prior to verification",
+      "G11": "N/A",
+      "G12": "1) MyEasyCarbon data platform 2) Roadmap",
+      "G13": "1) Farmers enter data into MyEasyCarbon 2) It is generated signed reports based on the data entries in the MyEasyCarbon (.pdf) 3) If available: Receipts or invoices of fertilizer purchases 4) If available: Management plans from direct API with Farm Management Systems",
+      "G14": "Quantification Approach 1",
+      "G15": "Not applicable",
+      "G16": "Measured parameter"
+    },
+    {
+      "G5": "Rotation, i, t",
+      "G6": "Unique selection",
+      "G7": "Crop Rotational practice in field i at time t",
+      "G8": "Agronomic Roadmap and farm activity data entered into an MyEasyCarbon by the farmer.",
+      "G9": "See \"source of data\"",
+      "G10": "At least every five years, Or prior to verification",
+      "G11": "N/A",
+      "G12": "1) MyEasyCarbon data platform 2) Roadmap",
+      "G13": "1) Farmers enter data into MyEasyCarbon 2) It is generated signed reports based on the data entries in the MyEasyCarbon (.pdf) 3) If available: Management plans from direct API with Farm Management Systems",
+      "G14": "Quantification Approach 1",
+      "G15": "Not applicable",
+      "G16": "Measured parameter"
+    },
+    {
+      "G5": "Residue, i, t",
+      "G6": "Unique selection",
+      "G7": "Crop residue practice management (exported or returned) in field i at time t",
+      "G8": "Agronomic Roadmap and farm activity data entered into MyEasyCarbon by the farmer",
+      "G9": "See \"source of data\"",
+      "G10": "At least every five years, or prior to verification",
+      "G11": "N/A",
+      "G12": "1) MyEasyCarbon data platform 2) Roadmap",
+      "G13": "1) Farmers enter data into MyEasyCarbon 2) It is generated signed reports based on the data entries in the MyEasyCarbon (.pdf) 3) If available: Management plans from direct API with Farm Management Systems",
+      "G14": "Quantification Approach 1",
+      "G15": "Not applicable",
+      "G16": "Measured parameter"
+    },
+    {
+      "G5": "MDD",
+      "G6": "t CO2e/ha",
+      "G7": "Minimum detectable difference in SOC stocks between two points in time",
+      "G8": "Result of equation (2)",
+      "G9": "Calculated",
+      "G10": "At least every five years,Or prior to verification",
+      "G11": "N/A",
+      "G12": "R statistical software",
+      "G13": "See Section 8.2.1 of VM0042 and chapter 4.1.1 and 5.3 of this document",
+      "G14": "Development of sampling strategy for baseline setting and measurements for monitoring",
+      "G15": "Not applicable",
+      "G16": "Calculation of the number of samples required to detect a minimum difference is optional Calculated parameter"
+    },
+    {
+      "G5": "S",
+      "G6": "Dimensionless",
+      "G7": "Standard deviation of the difference in SOC stocks between t0 and t1",
+      "G8": "1. Peer-reviewed scientific publications 2. First sampling campaign to calculate S proxy 3. Educated guess",
+      "G9": "See \"source of data\"",
+      "G10": "At least every five years,Or prior to verification",
+      "G11": "N/A",
+      "G12": "t 1. Google Scholar 2. Singular Sampling campaigns 3. Consecutive Sampling Campaign",
+      "G13": "See Section 8.2.1 of VM0042 and chapter 4.1.1 and 5.3 of this document",
+      "G14": "Development of sampling strategy for baseline setting and measurements for monitoring",
+      "G15": "Not applicable",
+      "G16": "We can only estimate the standard deviation of SOC stock changes in the first 5 years of the project, as we would need sampling results from t5 in order to calculate S. Calculated parameter"
+    },
+    {
+      "G5": "n",
+      "G6": "Dimensionless",
+      "G7": "Minimum number of samples",
+      "G8": "Result of equation (3)",
+      "G9": "Calculated",
+      "G10": "At least every five years,Or prior to verification",
+      "G11": "N/A",
+      "G12": "R statistical software",
+      "G13": "See Section 8.2.1 of VM0042 and chapter 4.1.1 and 5.3 of this document",
+      "G14": "Development of sampling strategy for baseline setting and measurements for monitoring",
+      "G15": "Not applicable",
+      "G16": "Calculation of the number of samples required to detect a minimum difference is optional according to VM0042. The estimate of the required sample number can only be as good as the estimate of Standard Deviation S. therefore, we use n as a guidance for sampling campaigns, and not as a strict rule. Calculated parameter"
+    },
+    {
+      "G5": "n − 1",
+      "G6": "Dimensionless",
+      "G7": "Degrees of freedom for the relevant t-distribution",
+      "G8": "1. Peer-reviewed scientific publications 2. First sampling campaign to calculate S proxy 3. Educated guess",
+      "G9": "See \"source of data\"",
+      "G10": "At least every five years,Or prior to verification",
+      "G11": "N/A",
+      "G12": "R statistical software",
+      "G13": "See Section 8.2.1 of VM0042 and chapter 4.1.1 and 5.3 of this document",
+      "G14": "Development of sampling strategy for baseline setting and measurements for monitoring",
+      "G15": "Not applicable",
+      "G16": "Calculation of the number of samples required to detect a minimum difference is optional Calculated paramete"
+    }
+  ],
+  "G529": "As for the purpose of BRA -3C project we apply quantification approaches 1 and 3, depending on the emission pools included in the project boundary. The following Monitoring plan outlines how the parameters listed above in chapter 5.1 and 5.2 are monitored and what QA/QC procedures apply. In addition, Appendix 13 presents the functional schema of the MRV of the project. The Monitoring of all parameters is based on the following methods to guarantee transparency and veracity of claims: ● MyEasyCarbon, a digital farm data platform that centralizes all data ● Farm specific data declared and signed by the farmer. ● Farm financial data, receipts and invoices to back up any purchase or sale All data collected as a part of the monitoring process, including QA/QC data, will be archived electronically and be kept at least for two years after the end of the last project crediting period. In addition, all data relating to the project simulations such as the clear versioning of the model, input parameters, SOC and other soil measurements will be stored. The observational database and computational code (model base code, processing scripts, uncertainty model code) necessary to fully reproduce all results generated in the course of the project is permanently archived and versioned. Soil organic carbon data will be collected at the beginning of each instance, and the locally calibrated RothC model will be employed to conduct simulations of the project activities using the MyEasyCarbon. Additionally, soil organic carbon stocks will be re measured at leas t every 5 years in each project instance to recalibrate the model, in accordance with the VM0042 methodology. The sample units and points required for estimating and modelling soil organic carbon stocks for the initial project instance will be shared with the VVB, along with a RothC calibration report. Operation and management structure The project proponent has hired local farmers and technicians for daily supervision and data management during the implementation of the project. The officials from the local agricultural authority will oversee the implementation of the project. A monitoring group has been established by the project proponent to carry out the monitoring task. The structure of the monitoring team is as following: The responsibilities of each role in the structure are: The project proponent will implement the project and provide training to all the farmers enrolled in the project. The office manager has the overall management responsibility of the monitoring of the project, especially supervising the implementation of the monitoring plan, and assigning each member of the monitoring teams' individual responsibility during the implementation of the project; Monitoring group consists of monitoring team and auditing team. Monitoring team members are responsible for supervising the farmers' logbooks, measuring all the required parameters of the project as listed in the section 5.2 above, collecting all the original evidence and documents, collecting and recording all the data. Auditing team members are responsible for performing internal auditing of all the measurements, process and recorded data, and reviewing all the evidence and relevant documents, including emission reductions/removals calculation to ensure consistency during the project crediting period, The procedure follows the need t design and mantain a QA/QC system able to assure the integrity of data. The local agricultural authority supervises the implementation of the project, and provide necessary technological guidance to the farmers. The PP will provide professional technicians related to monitoring activities to make sure all the monitoring activities meet the requirement of VCS and applied methodology. A Monitoring Manual will be provided to each member of the monitoring team with a specific explanation to make sure they fully understand all the monitoring process and issues in Appendix IX. Monitoring process 1) Definition of the accounting boundary of the project As per section 9.1 of the applied methodology, the project area A0 is measured prior to the validation as part of the design activities. The KML file delineating the project boundary and project area will be saved and uploaded as required by VCS. The accounting boundary of the project is defined as the aggregation of all the enrolled farmers' fields (Project instances). Only those project fields which are enrolled in the project and cultivated according to the practices adopted in the description, are accounted as valid and reliable boundary and area of the project. A cultivation logbook will be recorded and maintained by each household enrolled in the project. The cultivation logbook will record data belonging to all the necessary parameters related to the cultivation practice, including land preparation date, sowing date, fertilizer information, irrigation information, tillage information, crop information, crop yield, crop rotation information, cover crop information etc. The project proponent and the local agricultural authority shall record each household involved in the project and establish a farmers' database. In the database, each farmer has a unique ID, their name, location and area of their lands, the date of the agreement with the project proponent, the starting date of changing the cultivation practice should be clearly stated in the database. In order to determine whether the project fields belong to accounting project boundary, farmers' compliance with project cultivation practices shall be monitored in a sampled way on the basis of the farmers' database, and Standard QA/QC procedures for soil inventory including field data collection and data management must be applied. Use or adaptation of QA/QC procedures available from published handbooks is recommended, such as those produced by FAO and available on the FAO Soils Portal, the ISO standards on soil sampling (including ISO 18400 Soil quality Sampling Part: Strategies) or the IPCC Good Practice Guidance LULUCF 2003. For all directly sampled parameters, the project monitoring plan must clearly spatially delineate the sample population and specify sampling intensities, selection of sample units and sampling stages (where applicable). The statistical analysis measurements plan must be submitted as part of the sampling plan for project validation. The detailed sample design must be specified in the monitoring plan, and unbiased estimators of population parameters identified for application in calculations. 2) Monitoring of the implementation In order to determine whether the project fields are cultivated according to conservational tillage practice, and thus assure that measurements on the reference fields are representative for the emissions from the project fields, a cultivation logbook shall be maintained for all project fields. With the help of the logbook, all parameters, as following, that are part of the project cultivation practice shall be documented by the farmers: (a) Sowing and harvest date (b) Tillage date and depth (c) Tillage method (d) Application amount and type of fertilizer, organic amendments, and crop protection application (date and amount) (e) Crop type (f) Yield In addition, farmers shall state whether they have followed fertilization recommendations provided with the introduction of the adjusted water management practice. Project proponent has established a database which holds data and information of farmers involved in this project activity, which contains the name, ID number, address of the technical manager, size of the field, completion date of construction, the starting date of no-tillage. Therefore, the next sampling below is based on the database. 3) Recording of the data and parameters monitored and monitoring frequency Quantification Approach 1 and Quantification Approach 3 will be used to account for changes in soil organic carbon stocks, N2O and CO2 emission reductions. As per the applied methodology, the following parameters shall be monitored and recorded during the project crediting period: I. For the estimation of the annual N2O emissions from the use of synthetic N fertilizers and organic fertilizers, mass and type of N containing synthetic fertilizers and organic fertilizers applied in the project for sample units, and N content of synthetic fertilizers and organic fertilizers applied in the project for sample units shall be monitored and recorded at each application and reported annually during the crediting period. II. For the estimation of the annual CO2 emissions from fossil fuel consumption for the project, quantity and type of fossil fuels applied in the project for sample units, and type of machine in the project shall be recorded at each time when machines are used and reported annually during the crediting period. III. For the estimation of removals due to the changes in SOC, the following parameters must be monitored and recorded at the project start and every five years or less during the crediting period: Soil mass in one sample depth layer, Number of cores sampled, soil organic carbon content in each sample, soil bulk density in each sample, , roots and other residues. The soil sampling, handling and storage, processing and measurement, and quality control procedures implemented in soil organic carbon analysis shall follow the applied methodology and nationally approved standard. The project will use Quantification Approach 1 to model the removals due to changes in SOC, and sampling procedures were designed such that the statistical significance of soil carbon stock changes can be determined with a 95 percent confidence interval. The Guidelines for sampling and surveys for CDM project activities and program of activities will be followed to determine the sampling procedure and sample size. Sampling design and stratification As per the applied methodology, Quantification Approach 1 will be used in the project to estimate the changes in SOC in the project scenario and baseline scenario. Due to variability of soil properties and heterogeneity of SOC, Stratifying the project area into homogeneous strata defined by factors that influence SOC stocks will usually reduce errors associated with projectscale estimates of SOC stocks. In the project, individual farmers change their management practices and enroll their fields in the projects. Different farmers within the same county usually take the same technical guide from the local agricultural authority, then they usually make the same management decisions and have the same baseline and project management practices. So, the first element to be considered to stratify the project area is the geographic proximity, in this project, it is county level. There are different management practices involved in the project. one type of crops is involved, and in the baseline scenario and project scenario, management practices are same for the crops respectively. Then the second element to be considered to stratify the project area is crop type, in this project are corn, wheat, soy, cotton, sorghum and beans. According to the applied methodology, in the project, sample unit is the strata. All the calculation of emission reductions and simulation of SOC sequestration will be aggregated to this basis. The ex-post stratification should be updated if unexpected disturbances occurring during the project crediting period affecting parts of the original homogeneous stratum or management activities may be implemented in a way that affects the existing stratification. Guidelines for sampling and surveys for CDM project activities and programs of activities (version 4.0) will be followed to determine the sample points before the initial measurement of the baseline scenario and periodic measurement of the project scenario every five years or less before each verification. Field sampling and conventional laboratory analysis techniques are to be used to determine soil carbon content and bulk density of soils at points selected per APPENDIX 9: PLAN FOR SOIL SAMPLING. Sample collection at each sample plot and laboratory analysis will be strictly in line with the applied methodology VM0042 and national standard (HJ/T 166-2004 and NY/T 1121.6- 2006). Monitoring of leakage emissions At validation, no leakage emissions are considered. During the verification, leakage emissions will be monitored as per the applied methodology VM0042. according to the methodology, the following parameters will be monitored: mass of manure applied as a fertilizer from outside of the project area and carbon content of manure applied as a fertilizer from outside of the project area will be monitored and recorded annually. The average productivity for products will be monitored and recorded annually and relevant leakage emissions will be assessed every 10 years. Data management All data collected as part of monitoring is archived electronically. All information should be stored by the technology department of the project proponent in the company´s servers and cloud services.. And all data collected shall be archived for a period of at least two years after the end of the last crediting period of the project activity. QA/QC procedures Training will be provided to the staff to guarantee the implementation of the monitoring plan, and all the relevant staff is obliged to take the training course before the operation starts. A systematic internal review and correction process will be used to assure/control the quality. The technicians are required to check the logbooks from farmers once a month and cross- check the data with experts. The data of SOC measurement will be provided by the contracted third party and reviewed by the local experts. The process of monitoring is also supervised by experts. All the monitored data will be reviewed by the experts. When they find some unusual data, they will feedback to technicians and then correct the data by the experts, and the explanation and justification will be recorded. Standard QA/QC procedures for soil inventory including field data collection and data management must be applied. Use or adaptation of QA/QC procedures available from published handbooks is recommended, such as those produced by FAO and available on the FAO Soils Portal, the ISO standards on soil sampling (including ISO 18400 Soil quality Sampling Part: Strategies) or the IPCC Good Practice Guidance LULUCF 2003. 10-year baseline re-evaluation plan At the end of the 10-year of project crediting period, baseline re-evaluation will be done by an authorized VVB. A basic survey will be done by an authorized VVB and the report will be used as the basis of re-evaluation of the baseline scenario. Modeling plan The project will use the model to estimate the net impact of project activities on soil carbon stocks across the project area. The model will be validated as per the procedures outlined in VMD0053, and the corresponding Model Validation Report will be provided during the verification. The Model Validation Report will describe more extensive detail on model calibration, structure/parameters, and uncertainty, as well as all validation datasets employed. SOC estimation in this project is performed using Quantification Approach 1. The RothC model, initially developed for arable soils, has gained significant validation and successful application across different spatial scales in grassland systems (Jebari et al., 2021). To estimate SOC evolution with project activities, we will utilize the RothC model (Coleman and Jenkinson, 2014). This model, originally developed based on long term experiments in the UK, has also been proven successful in modeling SOC dynamics in the Cerrado region in Brazil through studies conducted by Battle-Bayer, L., Batjes, N. H., & Bindraban, P. S. (2010), Leite et al. (2010 and 2011), among others. To ensure accurate estimates of SOC stock accumulation, the RothC model will be calibrated using the Markov Chain Monte Carlo (MCMC) algorithm. This calibration process enables the model to provide unbiased and efficient estimates by incorporating organic matter inputs under various management practices over the long term. Model Description RothC is a model for the turnover of organic carbon in non-waterlogged top-soils that allows for the effects of soil type, temperature, moisture content and plant cover on the turnover process. It uses a monthly time step to calculate total organic carbon (tha -1), microbial biomass carbon (tha -1) and δ 14C (from which the equivalent radiocarbon age of the soil can be calculated) on a years to centuries timescale (Jenkinson, 1990; Jenkinson et al., 1991; Jenkinson and Coleman, 1994; Jenkinson et al., 1992; Jenkinson et al., 1987). It needs few inputs and those it needs are easily obtainable. It is an extension of the earlier model described by Jenkinson and Rayner (1977) and by Hart (1984). A comparative study of C turnover models, including RothC, was published (Smith et al., 1997). RothC is designed to run in two modes: ‘forward’ in which known inputs are used to calculate changes in soil organic matter and ‘inverse’, when inputs are calculated from known changes in soil organic matter. RothC was originally developed and parameterized to model the turnover of organic C in arable top-soils from the Rothamsted Long Term Field Experiments - hence the name. Later, it was extended to model turnover in grassland and in woodland and to operate in different soils and under different climates. It should be used cautiously on subsoils, soils developed on recent volcanic ash (but see Saggar et al., 1996; Shirato et al., 2004; Tate et al., 1994), soils from the tundra and taiga and not at all on soils that are permanently waterlogged. It has also been used to model changes in soil carbon in Pinus radiata on Mediterranean agricultural soils (Romanya et al., 2000), forest and pasture ecosystems of Amazon, Brazil (Cerri et al., 2003), Mediterranean agro-silvopastoral systems (Francaviglia et al., 2012). Farina et al. (2013) modified the soil water dynamics for semi-arid regions, and Giongo et al. (2020) created a daily version and modified the soil water dynamics, for Caatinga shrublands, in the semiarid region, North-East Brazil. 1) Monthly rainfall (mm). 2) Monthly open pan evaporation (mm). Rainfall and open-pan evaporation are used to calculate topsoil moisture deficit (TSMD), as it is easier to do this than obtain monthly measurements of the actual topsoil water deficit. If openpan evaporation is not available, monthly potential evapotranspiration can be calculated with adequate accuracy from Müller (1982) collection of meteorological data for sites around the world. Sites should be selected from Müller's collection that are as similar climatically as possible to the site under investigation. Column 14 in Müller’s Tables is headed 'Mean potential evaporation', but in fact this column gives calculated mean monthly potential evapotranspiration. If Müller's 'Mean potential transpiration' is used, you must remember to convert his values to open-pan evaporation by dividing them by 0.75. This is most important because the model is presently primed to run on open-pan evaporation data, which is then multiplied internally by 0.75 to give evapotranspiration. i.e., if Müller's data are used as an input for the model, Openpan evaporation = ‘Mean potential transpiration' / 0.75 3) Average monthly mean air temperature (oC). Air temperature is used rather than soil temperature because it is more easily obtainable for most sites. For Rothamsted, monthly air temperature satisfactorily represents the monthly mean soil temperature in topsoil, the soil temperature at 20 cm showing a difference of only +1oC of the annual minimum and -1 oC of the annual maximum. 4) Clay content of the soil (as a percentage). Clay content is used to calculate how much plant available water the topsoil can hold; it also affects the way organic matter decomposes. 5) An estimate of the decomposability of the incoming plant material - the DPM/RPM ratio. 6) Soil cover - Is the soil bare or vegetated in a particular month?. It is necessary to indicate whether or not the soil is vegetated because decomposition has been found to be faster in fallow soil than in cropped soil, even when the cropped soil is not allowed to dry out (Jenkinson et al., 1987; Sommers et al., 1981; Sparling et al., 1982). 7) Monthly input of plant residues (t C ha-1 ). The plant residue input is the amount of carbon that is put into the soil per month (t C ha-1 ), including carbon released from roots during crop growth. As this input is rarely known, the model is most often run in ‘inverse' mode, generating input from known soil, site and weather data. 8) Monthly input of farmyard manure (FYM) (t C ha-1 ), if any The amount of FYM (t C ha-1 ) put on the soil, if any, is inputted separately, because FYM is treated slightly differently from inputs of fresh plant residues. 9) Depth of soil layer sampled (cm) Soil organic carbon is split into four active compartments and a small amount of inert organic matter (IOM). The four active compartments are Decomposable Plant Material (DPM), Resistant Plant Material (RPM), Microbial Biomass (BIO) and Humified Organic Matter (HUM). Each compartment decomposes by a first-order process with its own characteristic rate. The IOM compartment is resistant to decomposition. The structure of the model is shown in Figure 18.",
+  "G530": [],
+  "G531": {
+    "G5": "APPENDIX 7: REFERENCES",
+    "G6": "Soares, M. B. et al. Integrated production systems: An alternative to soil chemical quality restoration in the Cerrado-Amazon ecotone. Catena (Amst) 185, 104279 (2020). 2. Pacheco, A., De Queiroz Chaves, R., Maia, C. & Nicoli, L. Integration of crops, livestock, and forestry: A system of production for the Brazilian Cerrados. Eco-efficiency: from vision to reality 51–60 (2012). 3. Batlle-Bayer, L., Batjes, N. H. & Bindraban, P. S. Changes in organic carbon stocks upon land use conversion in the Brazilian Cerrado: A review. Agriculture, Ecosystems and Environment vol. 137 47–58 Preprint at https://doi.org/10.1016/j.agee.2010.02.003 (2010). 4. Tavanti, R. F. R. et al. What is the impact of pasture reform on organic carbon compartments and CO2 emissions in the Brazilian Cerrado? Catena (Amst) 194, 104702 (2020). 5. Vieira, R. M. D. S. P. et al. Desertification risk assessment in Northeast Brazil: Current trends and future scenarios. Land Degrad Dev 32, 224–240 (2021). 6. Tomasella, J. et al. Desertification trends in the Northeast of Brazil over the period 2000–2016. International Journal of Applied Earth Observation and Geoinformation 73, 197–206 (2018). 7. Vendruscolo, J. et al. Monitoring desertification in semiarid Brazil: Using the Desertification Degree Index (DDI). Land Degrad Dev 32, 684–698 (2021). 8. Atlas das Pastagens. Laboratório de Processamento de Imagens e Geoprocessamento (Lapig). Universidade Federal de Goiás (UFG). https://atlasdaspastagens.ufg.br/map (2022). 9. MapBiomas. MapBiomas Brasil. https://mapbiomas.org/ (2022). 10. Dias-Filho, M. B. Degradação de pastagens: o que é e como evitar. Embrapa Gado de … 19 (2017). 11. Figueiredo, E. B. et al. Soil CO2–C Emissions and Correlations with Soil Properties in Degraded and Managed Pastures in Southern Brazil. Land Degrad Dev 28, 1263–1273 (2017). 12. Campos, M. O. de, Cerri, C. E. P. & Scala Jr, N. La. Remote Sensing Applications: Society and Environment Atmospheric CO2, soil carbon stock and control variables in managed and degraded pastures in central Brazil. Remote Sens Appl 28, 100848 (2022). 13. Conceição, M. C. G. da, S. Matos, E., Bidone, E. D., Rodrigues, R. de A. R. & Cordeiro, R. C. Changes in Soil Carbon Stocks under Integrated Crop-Livestock-Forest System in the Brazilian Amazon Region. Agricultural Sciences 08, 904–913 (2017). . Barrachina, M., Cristóbal, J. & Tulla, A. F. Estimating above-ground biomass on mountain meadows and pastures through remote sensing. International Journal of Applied Earth Observation and Geoinformation 38, 184–192 (2015). 15. Santos, R. F. dos. O crédito rural na modernização da agricultura brasileira. R. Econ. Sociol. rural, Brasília 26, 393–404 (1988). 16. Lopes, D., Lowery, S. & Peroba, T. L. C. Crédito rural no Brasil: desafios e oportunidades para a promoção da agropecuária sustentável. Revista do BNDES 155–196 (2016). 17. Newton, P. et al. Overcoming barriers to low carbon agriculture and forest restoration in Brazil: The Rural Sustentável project. World Dev Perspect 4, 5–7 (2016). 18. Tomazoni, A., Paulo Gieh, C., Sordi, A. & Cericato, A. Potencial Produtivo de Milho Consorciado Com Braquiária Baseado No Sistema Grass Intercropping No Oeste de Santa Catarina. (2016). 19. Feltran-Barbieri, R. & Féres, J. G. Degraded pastures in Brazil: Improving livestock production and forest restoration. R Soc Open Sci 8, (2021). 20. Oliveira Silva, R. et al. Sustainable intensification of Brazilian livestock production through optimized pasture restoration. Agric Syst 153, 201–211 (2017). 21. Trumbore, S. E. Colloquium Paper This Paper Was Presented at a Colloquium Entitled’ Carbon Dioxide and Climate Change. vol. 94 www.pnas.org. (1997). 22. Smith, P., Fang, C., Dawson, J. J. C. & Moncrieff, J. B. Impact of Global Warming on Soil Organic Carbon. Advances in Agronomy vol. 97 1–43 Preprint at https://doi.org/10.1016/S0065-2113(07)00001-6 (2008). 23. Jobbágy, E. G. & Jackson, R. B. The vertical distribution of soil organic carbon and its relation to climate and vegetation. Ecological Applications 10, 423–436 (2000). 24. de Figueiredo, E. B. et al. Greenhouse gas balance and carbon footprint of beef cattle in three contrasting pasture-management systems in Brazil. J Clean Prod 142, 420–431 (2017). 25. Braz, S. P. et al. Soil Carbon Stocks under Productive and Degraded Brachiaria Pastures in the Brazilian Cerrado. Soil Science Society of America Journal 77, 914–928 (2013). 26. da Silva Quinaia, T. L. et al. Application of an improved vegetation index based on the visible spectrum in the diagnosis of degraded pastures: Implications for development. Land Degrad Dev 1–15 (2021) doi:10.1002/ldr.4071. 27. Garcia, R. A. & Machado, L. A. Z. Braquiária com Crotalária na Entressafra: Efeito Positivo na Soja em Sucessão. Embrapa Agropecuária Oeste (2019)."
+  },
+  "G481": "Not applicable to the proposed project activity",
+  "G484": "Not applicable since the proposed project activity does not develop activities in the IFM or ARR context"
+}
+Object.values(__request).forEach(r=>r.preset(_pp));

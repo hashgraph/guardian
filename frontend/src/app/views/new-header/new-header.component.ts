@@ -1,21 +1,23 @@
-import {Component, Input, OnInit} from '@angular/core';
-import {getMenuItems, NavbarMenuItem} from './menu.model';
-import {IUser, UserCategory, UserPermissions, UserRole} from '@guardian/interfaces';
-import {AuthStateService} from '../../services/auth-state.service';
-import {AuthService} from '../../services/auth.service';
-import {DemoService} from '../../services/demo.service';
-import {NavigationEnd, Router} from '@angular/router';
-import {ProfileService} from '../../services/profile.service';
-import {WebSocketService} from '../../services/web-socket.service';
-import {HeaderPropsService} from '../../services/header-props.service';
-import {BrandingService} from '../../services/branding.service';
+import { Component, Input, OnInit, AfterViewInit, ElementRef, ViewChild, NgZone, AfterViewChecked } from '@angular/core';
+import { getMenuItems, NavbarMenuItem } from './menu.model';
+import { IUser, UserCategory, UserPermissions, UserRole } from '@guardian/interfaces';
+import { AuthStateService } from '../../services/auth-state.service';
+import { AuthService } from '../../services/auth.service';
+import { DemoService } from '../../services/demo.service';
+import { NavigationEnd, Router } from '@angular/router';
+import { ProfileService } from '../../services/profile.service';
+import { WebSocketService } from '../../services/web-socket.service';
+import { HeaderPropsService } from '../../services/header-props.service';
+import { BrandingService } from '../../services/branding.service';
+import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-new-header',
     templateUrl: './new-header.component.html',
     styleUrls: ['./new-header.component.scss'],
 })
-export class NewHeaderComponent implements OnInit {
+export class NewHeaderComponent implements OnInit, AfterViewChecked {
     public isLogin: boolean = false;
     public user: UserPermissions = new UserPermissions();
     public username: string | null = null;
@@ -26,13 +28,21 @@ export class NewHeaderComponent implements OnInit {
     public activeLink: string = '';
     public activeLinkRoot: string = '';
 
+    public policyRequests = 0;
+    public newPolicyRequests = 0;
+
     private commonLinksDisabled: boolean = false;
     private balanceType: string;
     private balanceInit: boolean = false;
     private ws!: any;
     private authSubscription!: any;
+    private policyRequestsSubscription = new Subscription();
 
     @Input() remoteContainerMethod: any;
+
+    @ViewChild('usernameSpan', { static: false }) usernameSpanRef!: ElementRef;
+    public isUsernameOverflowing: boolean = false;
+    private usernameChecked = false;
 
     constructor(
         public authState: AuthStateService,
@@ -42,7 +52,8 @@ export class NewHeaderComponent implements OnInit {
         public profileService: ProfileService,
         public webSocketService: WebSocketService,
         public headerProps: HeaderPropsService,
-        private brandingService: BrandingService) {
+        private brandingService: BrandingService,
+        private externalPoliciesService: ExternalPoliciesService) {
         this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {
                 this.update();
@@ -79,6 +90,28 @@ export class NewHeaderComponent implements OnInit {
                 this.getBalance();
             }
         });
+
+        this.policyRequestsSubscription.add(
+            this.webSocketService.requestSubscribe((message => {
+                this.updateRemotePolicyRequests();
+            }))
+        );
+    }
+
+    ngAfterViewChecked(): void {
+        if (!this.usernameChecked && this.usernameSpanRef?.nativeElement && this.username) {
+            this.checkUsernameOverflow();
+            this.usernameChecked = true;
+        }
+    }
+
+    ngAfterViewInit(): void {
+        setTimeout(() => {
+            if (!this.usernameSpanRef) {
+            } else {
+                this.checkUsernameOverflow();
+            }
+        });
     }
 
     ngOnDestroy(): void {
@@ -90,6 +123,7 @@ export class NewHeaderComponent implements OnInit {
             this.authSubscription.unsubscribe();
             this.authSubscription = null;
         }
+        this.policyRequestsSubscription.unsubscribe();
     }
 
     private getBalance() {
@@ -142,6 +176,7 @@ export class NewHeaderComponent implements OnInit {
             } else {
                 this.remoteContainerMethod(this.smallMenuMode ? 'COLLAPSE' : 'EXPAND');
             }
+            this.updateRemotePolicyRequests();
             this.brandingService.getBrandingData().then(res => {
                 const logo = document.getElementById('company-logo') as HTMLImageElement;
                 if (logo) {
@@ -156,12 +191,19 @@ export class NewHeaderComponent implements OnInit {
                 if (document.getElementById('company-name')) {
                     document.getElementById('company-name')!.innerText = res.companyName;
                 }
-
             })
 
         }, () => {
             this.setStatus(false, null);
         });
+    }
+
+    private checkUsernameOverflow(): void {
+        if (!this.usernameSpanRef) {
+            return;
+        }
+        const el = this.usernameSpanRef.nativeElement;
+        this.isUsernameOverflowing = el.scrollWidth > el.clientWidth;
     }
 
     private setStatus(isLogin: boolean, user: any) {
@@ -172,6 +214,8 @@ export class NewHeaderComponent implements OnInit {
             this.user = new UserPermissions(user);
             this.menuItems = getMenuItems(this.user);
         }
+
+        setTimeout(() => this.checkUsernameOverflow());
     }
 
     public logOut() {
@@ -220,5 +264,17 @@ export class NewHeaderComponent implements OnInit {
         } else {
             this.router.navigate([barItem.routerLink]);
         }
+    }
+
+    private updateRemotePolicyRequests() {
+        if (!this.isLogin) {
+            return;
+        }
+        this.externalPoliciesService.getActionRequestsCount().subscribe((response) => {
+            if (response?.body) {
+                this.newPolicyRequests = response.body.requestsCount;
+                this.policyRequests = response.body.total;
+            }
+        })
     }
 }

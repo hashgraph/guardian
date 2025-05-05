@@ -5,10 +5,12 @@ import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
-import { PolicyUser, UserCredentials } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { Inject } from '../../helpers/decorators/inject.js';
+import { LocationType } from '@guardian/interfaces';
+import { PolicyActionsUtils } from '../policy-actions/utils.js';
 
 /**
  * Reassigning block
@@ -16,6 +18,7 @@ import { Inject } from '../../helpers/decorators/inject.js';
 @BasicBlock({
     blockType: 'reassigningBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Reassigning',
         title: `Add 'Reassigning' Block`,
@@ -47,8 +50,9 @@ export class ReassigningBlock {
      * Document reassigning
      * @param document
      * @param user
+     * @param userId
      */
-    async documentReassigning(document: IPolicyDocument, user: PolicyUser): Promise<{
+    async documentReassigning(document: IPolicyDocument, user: PolicyUser, userId: string | null): Promise<{
         /**
          * New Document
          */
@@ -59,41 +63,36 @@ export class ReassigningBlock {
         actor: PolicyUser
     }> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const vcDocument = document.document;
-        const owner: PolicyUser = await PolicyUtils.getDocumentOwner(ref, document);
+        const owner: PolicyUser = await PolicyUtils.getDocumentOwner(ref, document, userId);
 
-        let root: UserCredentials;
         let groupContext: any;
-
+        let issuer: string;
         if (ref.options.issuer === 'owner') {
-            root = await PolicyUtils.getUserCredentials(ref, document.owner);
+            const cred = await PolicyUtils.getUserCredentials(ref, document.owner, userId);
+            issuer = cred.did;
             groupContext = await PolicyUtils.getGroupContext(ref, owner);
         } else if (ref.options.issuer === 'policyOwner') {
-            root = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
+            const cred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
+            issuer = cred.did;
             groupContext = null;
         } else {
-            root = await PolicyUtils.getUserCredentials(ref, user.did);
+            const cred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
+            issuer = cred.did;
             groupContext = await PolicyUtils.getGroupContext(ref, user);
         }
 
         let actor: PolicyUser;
         if (ref.options.actor === 'owner') {
-            actor = await PolicyUtils.getDocumentOwner(ref, document);
+            actor = await PolicyUtils.getDocumentOwner(ref, document, userId);
         } else if (ref.options.actor === 'issuer') {
-            actor = await PolicyUtils.getPolicyUser(ref, root.did, document.group);
+            actor = await PolicyUtils.getPolicyUser(ref, issuer, document.group, userId);
         } else {
             actor = user;
         }
 
-        const didDocument = await root.loadDidDocument(ref);
         const uuid = await ref.components.generateUUID();
-        const credentialSubject = vcDocument.credentialSubject[0];
-        const vc: any = await this.vcHelper.createVerifiableCredential(
-            credentialSubject,
-            didDocument,
-            null,
-            { uuid, group: groupContext }
-        );
+        const credentialSubject = document.document.credentialSubject[0];
+        const vc = await PolicyActionsUtils.signVC(ref, credentialSubject, issuer, { uuid, group: groupContext }, user.userId);
 
         let item = PolicyUtils.createVC(ref, owner, vc);
         item.type = document.type;
@@ -128,12 +127,12 @@ export class ReassigningBlock {
         if (Array.isArray(documents)) {
             result = [];
             for (const doc of documents) {
-                const { item, actor } = await this.documentReassigning(doc, event.user);
+                const { item, actor } = await this.documentReassigning(doc, event.user, event?.user?.userId);
                 result.push(item);
                 user = actor;
             }
         } else {
-            const { item, actor } = await this.documentReassigning(documents, event.user);
+            const { item, actor } = await this.documentReassigning(documents, event.user, event?.user?.userId);
             result = item;
             user = actor;
         }
@@ -148,5 +147,6 @@ export class ReassigningBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             documents: ExternalDocuments(result)
         }));
+        ref.backup();
     }
 }

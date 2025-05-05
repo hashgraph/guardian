@@ -1,0 +1,25 @@
+<div class="page-content">
+    <div class="content">
+        <h1 class="content__header">{{ 'header.priority_queue' | transloco }}</h1>
+        <div class="priority-options">
+            <div class="search-field">
+                <p-iconField class="icon-field header-nav-search__field">
+                    <p-inputIcon styleClass="pi pi-search icon-field__icon" (click)="search.focus()" />
+                    <input #search pInputText
+                        [placeholder]="'priority_queue.search_placeholder' | transloco" type="text"
+                        [formControl]="topicIdSearch.control" />
+                </p-iconField>
+            </div>
+            <div class="add-to-queue">
+                <input pInputText [formControl]="priorityControl" [placeholder]="'priority_queue.enter_topic_id' | transloco" />
+                <p-button class="add-to-queue-button" [label]="'priority_queue.add_to_queue' | transloco" (onClick)="setPriorityDataLoading()" />
+            </div>
+        </div>
+        <div class="content__table">
+            <app-table class="collection-container__table" [loading]="loadingData" [columns]="columns" [data]="items"
+                [pageIndex]="pageIndex" [pageSize]="pageSize" [total]="total" (onPage)="onPage($event)"
+                [sortColumn]="orderField" [sortDirection]="orderDir" (onSort)="onSort($event)">
+            </app-table>
+        </div>
+    </div>
+</div>

@@ -1,5 +1,5 @@
 import { DatabaseServer, DidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method, IAuthUser, KeyType, PolicyRoles, Users, Wallet } from '@guardian/common';
-import { ISignOptions, Permissions, PolicyRole, SignType } from '@guardian/interfaces';
+import { ISignOptions, LocationType, Permissions, PolicyRole, PolicyStatus, SignType } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyDocument, IPolicyInstance } from './policy-engine.interface.js';
 
 /**
@@ -53,25 +53,55 @@ export class PolicyUser {
      */
     public readonly policyOwner: string | null;
     /**
+     * Policy status
+     */
+    public readonly policyStatus: PolicyStatus | null;
+    /**
      * Permissions
      */
     public readonly permissions: string[];
+    /**
+     * Location
+     */
+    public readonly location: LocationType;
+    /**
+     * Location
+     */
+    public readonly policyLocation: LocationType;
 
-    constructor(arg: IAuthUser | string, instance: IPolicyInstance | AnyBlockType) {
+    /**
+     * User id
+     */
+    private readonly _userId: string;
+
+    public get userId(): string {
+        return this._userId;
+    }
+
+    constructor(
+        arg: IAuthUser | string,
+        instance: IPolicyInstance | AnyBlockType
+    ) {
         if (typeof arg === 'string') {
             this.did = arg;
             this.username = null;
             this.permissions = [];
+            this.location = LocationType.LOCAL;
+            this._userId = null;
         } else {
             this.did = arg.did;
             this.username = arg.username;
             this.permissions = arg.permissions || [];
+            this.location = arg.location || LocationType.LOCAL;
+            this._userId = arg.id;
         }
         this.role = null;
         this.group = null;
         this.roleMessage = null;
         this.policyId = instance.policyId;
         this.policyOwner = instance.policyOwner;
+        this.policyStatus = instance.policyStatus;
+        this.policyLocation = instance.locationType;
     }
 
     public get id(): string {
@@ -134,8 +164,10 @@ export class PolicyUser {
 
     public get isAdmin(): boolean {
         return (
-            this._did === this.policyOwner ||
-            this.permissions.includes(Permissions.POLICIES_POLICY_MANAGE)
+            this.policyLocation !== LocationType.REMOTE && (
+                this._did === this.policyOwner ||
+                this.permissions.includes(Permissions.POLICIES_POLICY_MANAGE)
+            )
         );
     }
 
@@ -209,6 +241,19 @@ export class UserCredentials {
      * Hedera account id
      */
     private _hederaAccountId: string;
+    /**
+     * User location
+     */
+    private _location: LocationType;
+
+    /**
+     * User id
+     */
+    private _userId: string;
+
+    public get userId(): string {
+        return this._userId;
+    }
 
     public get did(): string {
         return this._did;
@@ -218,23 +263,29 @@ export class UserCredentials {
         return this._hederaAccountId;
     }
 
+    public get location(): LocationType {
+        return this._location;
+    }
+
     constructor(ref: AnyBlockType, userDid: string) {
         this._dryRun = !!ref.dryRun;
         this._did = userDid;
         this._owner = ref.policyOwner;
+        this._location = LocationType.LOCAL;
     }
 
-    public async load(ref: AnyBlockType): Promise<UserCredentials> {
+    public async load(ref: AnyBlockType, userId: string | null): Promise<UserCredentials> {
         let userFull: IAuthUser;
         if (this._dryRun) {
             userFull = await ref.databaseServer.getVirtualUser(this._did);
         } else {
             const users = new Users();
-            userFull = await users.getUserById(this._did);
+            userFull = await users.getUserById(this._did, userId);
         }
         if (!userFull) {
             throw new Error('Virtual User not found');
         }
+        this._location = userFull.location || LocationType.LOCAL;
         this._hederaAccountId = userFull.hederaAccountId;
         this._did = userFull.did;
         if (!this._did || !this._hederaAccountId) {
@@ -243,41 +294,64 @@ export class UserCredentials {
         return this;
     }
 
-    public async loadHederaKey(ref: AnyBlockType): Promise<any> {
+    public async loadByAccount(ref: AnyBlockType, accountId: string, userId: string | null): Promise<UserCredentials> {
+        let userFull: IAuthUser;
+        if (this._dryRun) {
+            userFull = await ref.databaseServer.getVirtualUserByAccount(accountId);
+        } else {
+            const users = new Users();
+            userFull = await users.getUserByAccount(accountId, userId);
+        }
+        if (!userFull) {
+            throw new Error('Virtual User not found');
+        }
+        this._location = userFull.location || LocationType.LOCAL;
+        this._hederaAccountId = userFull.hederaAccountId;
+        this._did = userFull.did;
+        if (!this._did || !this._hederaAccountId) {
+            throw new Error('Hedera Account not found.');
+        }
+
+        this._userId = userFull.id;
+
+        return this;
+    }
+
+    public async loadHederaKey(ref: AnyBlockType, userId: string | null): Promise<any> {
         if (this._dryRun) {
             return await ref.databaseServer.getVirtualKey(this._did, this._did);
         } else {
             const wallet = new Wallet();
-            return await wallet.getUserKey(this._did, KeyType.KEY, this._did);
+            return await wallet.getUserKey(this._did, KeyType.KEY, this._did, userId);
         }
     }
 
-    public async loadSignOptions(ref: AnyBlockType): Promise<ISignOptions> {
+    public async loadSignOptions(ref: AnyBlockType, userId: string | null): Promise<ISignOptions> {
         if (this._dryRun) {
             return {
                 signType: SignType.INTERNAL
             }
         } else {
             const users = new Users()
-            const userFull = await users.getUserById(this._did);
+            const userFull = await users.getUserById(this._did, userId);
             const wallet = new Wallet();
             return await wallet.getUserSignOptions(userFull)
         }
     }
 
-    public async loadHederaCredentials(ref: AnyBlockType): Promise<IHederaCredentials> {
-        const hederaKey = await this.loadHederaKey(ref);
+    public async loadHederaCredentials(ref: AnyBlockType, userId: string | null): Promise<IHederaCredentials> {
+        const hederaKey = await this.loadHederaKey(ref, userId);
         return {
             hederaAccountId: this._hederaAccountId,
             hederaAccountKey: hederaKey
         }
     }
 
-    public async loadDidDocument(ref: AnyBlockType): Promise<HederaDidDocument> {
-        return await this.loadSubDidDocument(ref, this._did);
+    public async loadDidDocument(ref: AnyBlockType, userId: string | null): Promise<HederaDidDocument> {
+        return await this.loadSubDidDocument(ref, this._did, userId);
     }
 
-    public async loadSubDidDocument(ref: AnyBlockType, subDid: string): Promise<HederaDidDocument> {
+    public async loadSubDidDocument(ref: AnyBlockType, subDid: string, userId: string | null): Promise<HederaDidDocument> {
         const virtualUser = this._dryRun && subDid !== this._owner;
 
         let row: DidDocument;
@@ -318,10 +392,10 @@ export class UserCredentials {
         } else {
             const wallet = new Wallet();
             //Default key
-            const hederaPrivateKey = await wallet.getUserKey(walletToken, KeyType.KEY, subDid);
+            const hederaPrivateKey = await wallet.getUserKey(walletToken, KeyType.KEY, subDid, userId);
             //Ed25519Signature2018
             if (Ed25519Signature2018) {
-                const privateKey = await wallet.getUserKey(walletToken, KeyType.DID_KEYS, Ed25519Signature2018);
+                const privateKey = await wallet.getUserKey(walletToken, KeyType.DID_KEYS, Ed25519Signature2018, userId);
                 document.setPrivateKey(Ed25519Signature2018, privateKey);
             } else {
                 const { id, privateKey } = await HederaEd25519Method.generateKeyPair(subDid, hederaPrivateKey);
@@ -329,7 +403,7 @@ export class UserCredentials {
             }
             //BbsBlsSignature2020
             if (BbsBlsSignature2020) {
-                const privateKey = await wallet.getUserKey(walletToken, KeyType.DID_KEYS, BbsBlsSignature2020);
+                const privateKey = await wallet.getUserKey(walletToken, KeyType.DID_KEYS, BbsBlsSignature2020, userId);
                 document.setPrivateKey(BbsBlsSignature2020, privateKey);
             } else {
                 const { id, privateKey } = await HederaBBSMethod.generateKeyPair(subDid, hederaPrivateKey);
@@ -343,18 +417,21 @@ export class UserCredentials {
     public async saveDidDocument(
         ref: AnyBlockType,
         row: IPolicyDocument,
-        document: HederaDidDocument
+        document: HederaDidDocument,
+        userId: string | null
     ): Promise<void> {
-        await this.saveSubDidDocument(ref, row, document);
+        await this.saveSubDidDocument(ref, row, document, userId);
     }
 
     public async saveSubDidDocument(
         ref: AnyBlockType,
         row: any,
-        document: HederaDidDocument
+        document: HederaDidDocument,
+        userId: string | null
     ): Promise<void> {
         const walletToken = this._did;
         const keys = document.getPrivateKeys();
+        row.policyId = ref.policyId;
         row.verificationMethods = {};
         for (const item of keys) {
             const { id, type, key } = item;
@@ -363,13 +440,17 @@ export class UserCredentials {
                 await ref.databaseServer.setVirtualKey(walletToken, id, key);
             } else {
                 const wallet = new Wallet();
-                await wallet.setUserKey(walletToken, KeyType.DID_KEYS, id, key);
+                await wallet.setUserKey(walletToken, KeyType.DID_KEYS, id, key, userId);
             }
         }
         await ref.databaseServer.saveDid(row);
     }
 
-    public static async create(ref: AnyBlockType, userDid: string): Promise<UserCredentials> {
-        return await (new UserCredentials(ref, userDid)).load(ref);
+    public static async create(ref: AnyBlockType, userDid: string, userId: string | null): Promise<UserCredentials> {
+        return await (new UserCredentials(ref, userDid)).load(ref, userId);
+    }
+
+    public static async createByAccount(ref: AnyBlockType, accountId: string, userId: string | null): Promise<UserCredentials> {
+        return await (new UserCredentials(ref, null)).loadByAccount(ref, accountId, userId);
     }
 }

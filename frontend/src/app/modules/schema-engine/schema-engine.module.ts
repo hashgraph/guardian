@@ -31,7 +31,6 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { DropdownModule } from 'primeng/dropdown';
 import { CalendarModule } from 'primeng/calendar';
 import { RadioButtonModule } from 'primeng/radiobutton';
-import { DeleteSchemaDialogComponent } from './delete-schema-dialog/delete-schema-dialog.component';
 import { ServiceUnavailableDialog } from './service-unavailable-dialog/service-unavailable-dialog.component';
 import { SchemaFormDialog } from './schema-form-dialog/schema-form-dialog.component';
 import { SchemaTreeComponent } from './schema-tree/schema-tree.component';
@@ -65,7 +64,6 @@ import { DialogService } from 'primeng/dynamicdialog';
         CompareSchemaDialog,
         GeojsonTypeComponent,
         SentinelHubTypeComponent,
-        DeleteSchemaDialogComponent,
         ServiceUnavailableDialog,
         SchemaTreeComponent,
         SchemaFormDialog,

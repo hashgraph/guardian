@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, PolicyType, UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -107,7 +107,7 @@ export class FormulasComponent implements OnInit {
         disable: (value: string, item?: any): boolean => {
             return (
                 (value !== EntityStatus.DRAFT && value !== EntityStatus.ERROR) ||
-                (item?.policyStatus !== PolicyType.PUBLISH)
+                (item?.policyStatus !== PolicyStatus.PUBLISH)
             );
         }
     }, {

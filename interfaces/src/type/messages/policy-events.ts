@@ -22,6 +22,7 @@ export enum PolicyEvents {
     GET_BLOCK_PARENTS = 'policy-event-get-block-parents',
     BLOCK_UPDATE_BROADCAST = 'policy-event-block-update-broadcast',
     MRV_DATA = 'policy-event-mrv-data',
+    MRV_DATA_CUSTOM = 'policy-event-mrv-data-custom',
     GET_BLOCK_ABOUT = 'policy-event-get-block-about',
     CHECK_IF_ALIVE = 'check-if-alive',
     CREATE_VIRTUAL_USER = 'policy-event-create-virtual-user',
@@ -40,5 +41,9 @@ export enum PolicyEvents {
     RECORD_RETRY_STEP = 'policy-event-retry-step',
     RECORD_SKIP_STEP = 'policy-event-skip-step',
     REFRESH_MODEL = 'policy-event-refresh-model',
-    GET_TAG_BLOCK_MAP = 'policy-event-get-tag-block-map'
+    GET_TAG_BLOCK_MAP = 'policy-event-get-tag-block-map',
+    APPROVE_REMOTE_REQUEST = 'approve-remote-request',
+    REJECT_REMOTE_REQUEST = 'reject-remote-request',
+    REQUEST_UPDATE_BROADCAST = 'policy-event-request-update-broadcast',
+    RESTORE_UPDATE_BROADCAST = 'policy-event-restore-update-broadcast',
 }

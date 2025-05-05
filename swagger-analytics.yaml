@@ -2,9 +2,8 @@ openapi: 3.0.0
 paths:
   /analytics/report:
     get:
-      operationId: AnalyticsApi_getCurrentReport
-      summary: Returns the status of the current report.
       description: Returns the status of the current report.
+      operationId: AnalyticsApi_getCurrentReport
       parameters: []
       responses:
         '200':
@@ -19,13 +18,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_0
+      summary: Returns the status of the current report.
+      tags:
         - analytics
   /analytics/report/update:
     get:
-      operationId: AnalyticsApi_updateReport
-      summary: Update current report.
       description: Update current report.
+      operationId: AnalyticsApi_updateReport
       parameters: []
       responses:
         '200':
@@ -40,12 +39,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Update current report.
+      tags:
+        - analytics
   /analytics/reports:
     get:
-      operationId: AnalyticsApi_getReports
-      summary: Returns all reports.
       description: Returns all reports.
+      operationId: AnalyticsApi_getReports
       parameters: []
       responses:
         '200':
@@ -62,12 +62,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Returns all reports.
+      tags:
+        - analytics
   /analytics/reports/{uuid}:
     get:
-      operationId: AnalyticsApi_getReport
-      summary: Returns report data by report uuid.
       description: Returns report data by report uuid.
+      operationId: AnalyticsApi_getReport
       parameters:
         - name: uuid
           required: true
@@ -88,12 +89,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Returns report data by report uuid.
+      tags:
+        - analytics
   /analytics/reports/{uuid}/export/csv:
     get:
-      operationId: AnalyticsApi_exportToCsv
-      summary: Export report data in a csv file format.
       description: Returns a csv file.
+      operationId: AnalyticsApi_exportToCsv
       parameters:
         - name: uuid
           required: true
@@ -115,12 +117,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Export report data in a csv file format.
+      tags:
+        - analytics
   /analytics/reports/{uuid}/export/xlsx:
     get:
-      operationId: AnalyticsApi_exportToXlsx
-      summary: Export report data in a xlsx file format.
       description: Returns a xlsx file.
+      operationId: AnalyticsApi_exportToXlsx
       parameters:
         - name: uuid
           required: true
@@ -142,12 +145,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Export report data in a xlsx file format.
+      tags:
+        - analytics
   /analytics/dashboards:
     get:
-      operationId: AnalyticsApi_getDashboards
-      summary: Returns all dashboards.
       description: Returns all dashboards.
+      operationId: AnalyticsApi_getDashboards
       parameters: []
       responses:
         '200':
@@ -164,12 +168,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Returns all dashboards.
+      tags:
+        - analytics
   /analytics/dashboards/{id}:
     get:
-      operationId: AnalyticsApi_getDashboardById
-      summary: Returns dashboard by uuid.
       description: Returns dashboard by uuid.
+      operationId: AnalyticsApi_getDashboardById
       parameters:
         - name: id
           required: true
@@ -190,7 +195,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_0
+      summary: Returns dashboard by uuid.
+      tags:
+        - analytics
   /metrics:
     get:
       operationId: MetricsApi_getMetrics
@@ -208,7 +215,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 3.1.1
+  version: 3.2.0-rc
   contact:
     name: API developer
     url: https://envisionblockchain.com

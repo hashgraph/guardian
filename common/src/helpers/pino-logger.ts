@@ -29,7 +29,7 @@ interface LoggerOptions {
     logLevel: LogType;
     collectionName: string;
     transports: string;
-    mapTransports: { [key: string]: any};
+    mapTransports: { [key: string]: any };
 }
 
 /**
@@ -85,13 +85,19 @@ export class PinoLogger {
      * Create debug log message
      * @param message
      * @param attributes
+     * @param userId
      */
-    public async debug(message: string, attributes?: string[], level?: number): Promise<void> {
+    public async debug(
+        message: string,
+        attributes: string[] | null,
+        userId: string | null = null
+    ): Promise<void> {
         this.logger.debug({
             message,
             attributes,
             type: LogType.INFO,
             datetime: new Date(),
+            userId,
         });
     }
 
@@ -99,13 +105,19 @@ export class PinoLogger {
      * Create info log message
      * @param message
      * @param attributes
+     * @param userId
      */
-    public async info(message: string, attributes?: string[], level?: number): Promise<void> {
+    public async info(
+        message: string,
+        attributes: string[] | null,
+        userId: string | null = null
+    ): Promise<void> {
         this.logger.info({
             message,
             attributes,
             type: LogType.INFO,
             datetime: new Date(),
+            userId
         });
     }
 
@@ -113,13 +125,19 @@ export class PinoLogger {
      * Create warning log message
      * @param message
      * @param attributes
+     * @param userId
      */
-    public async warn(message: string, attributes?: string[], level?: number): Promise<void> {
+    public async warn(
+        message: string,
+        attributes: string[] | null,
+        userId: string | null = null
+    ): Promise<void> {
         this.logger.warn({
             message,
             attributes,
             type: LogType.WARN,
             datetime: new Date(),
+            userId
         });
     }
 
@@ -127,14 +145,20 @@ export class PinoLogger {
      * Create error log message
      * @param error
      * @param attributes
+     * @param userId
      */
-    public async error(error: string | Error, attributes?: string[], level?: number): Promise<void> {
+    public async error(
+        error: string | Error,
+        attributes: string[] | null,
+        userId: string | null = null
+    ): Promise<void> {
         const message = !error ? 'Unknown error' : (typeof error === 'string' ? error : error.stack);
         this.logger.error({
             message,
             attributes,
             type: LogType.ERROR,
             datetime: new Date(),
+            userId
         });
     }
 }

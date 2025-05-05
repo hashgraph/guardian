@@ -95,8 +95,8 @@ export const ONLY_SR = ' Only users with the Standard Registry role are allowed 
  * @param error
  * @param logger
  */
-export async function InternalException(error: HttpException | string | MessageError, logger: PinoLogger) {
-    await logger.error(error, ['API_GATEWAY']);
+export async function InternalException(error: HttpException | string | MessageError, logger: PinoLogger, userId: string = null) {
+    await logger.error(error, ['API_GATEWAY'], userId);
     if (error instanceof HttpException) {
         throw error;
     } else if (typeof error === 'string') {
