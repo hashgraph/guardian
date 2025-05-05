@@ -368,10 +368,13 @@ export class ExternalTopicBlock {
      */
     private async searchTopic(
         topicId: string,
-        topicTree: TopicResult = {},
+        topicTree: TopicResult,
         userId: string | null
     ): Promise<TopicResult> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        if (!topicTree) {
+            topicTree = {};
+        }
         if (topicTree.count) {
             topicTree.count++;
         } else {
