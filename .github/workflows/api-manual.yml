@@ -174,3 +174,6 @@ jobs:
 
             - name: Publish API Test Results
               uses: EnricoMi/publish-unit-test-result-action@170bf24d20d201b842d7a52403b73ed297e6645b
+              if: always()
+              with:
+                  files: e2e-tests/cypress/test_results/**/*.xml
