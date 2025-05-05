@@ -329,7 +329,7 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     @AfterDelete()
     override async deleteCache() {
         try {
-            new DataBaseHelper(DeleteCache).save({
+            new DataBaseHelper(DeleteCache).insert({
                 rowId: this._id?.toString(),
                 policyId: this.policyId,
                 collection: 'VcDocument',

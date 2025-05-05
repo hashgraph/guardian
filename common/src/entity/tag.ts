@@ -142,7 +142,7 @@ export class Tag extends RestoreEntity {
     @AfterDelete()
     override async deleteCache() {
         try {
-            new DataBaseHelper(DeleteCache).save({
+            new DataBaseHelper(DeleteCache).insert({
                 rowId: this._id?.toString(),
                 policyId: this.policyId,
                 collection: 'Tag',
