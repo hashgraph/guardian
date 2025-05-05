@@ -2,6 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 context("Register", { tags: ['accounts', 'firstPool', 'all'] }, () => {
+
     const name = "TestUserRegistration";
     const SRUsername = Cypress.env('SRUser');
 
@@ -19,7 +20,6 @@ context("Register", { tags: ['accounts', 'firstPool', 'all'] }, () => {
             expect(response.status).to.eq(STATUS_CODE.SUCCESS);
             expect(response.body).to.have.property("username", name);
             expect(response.body).to.have.property("id");
-        }).then(() => {
             cy.request({
                 method: METHOD.POST,
                 url: API.ApiServer + API.AccountsLogin,
@@ -46,7 +46,6 @@ context("Register", { tags: ['accounts', 'firstPool', 'all'] }, () => {
             expect(response.status).eql(STATUS_CODE.UNPROCESSABLE);
         });
     });
-
 
     it('Register without username - Negative', () => {
         cy.request({

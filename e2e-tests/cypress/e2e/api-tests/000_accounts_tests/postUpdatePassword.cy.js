@@ -2,6 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
+
     const name = "TestUserRegistration";
 
     it("Change password", () => {
@@ -17,7 +18,6 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
             expect(response.status).to.eq(STATUS_CODE.OK);
             expect(response.body).to.have.property("username", name);
             expect(response.body).to.have.property("role", "USER");
-        }).then(() => {
             cy.request({
                 method: METHOD.POST,
                 url: API.ApiServer + API.AccountsLogin,
@@ -41,8 +41,8 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
             });
-        });
-    });
+        })
+    })
 
     it("Change password without body - Negative", () => {
         cy.request({
@@ -52,7 +52,7 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
         }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
         })
-    });
+    })
 
     it("Change password with wrong password body - Negative", () => {
         cy.request({
@@ -67,7 +67,7 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
         }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         })
-    });
+    })
 
     it('Change password without username - Negative', () => {
         cy.request({
@@ -81,7 +81,7 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
         }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
         })
-    });
+    })
 
     it('Change password without old password - Negative', () => {
         cy.request({
@@ -95,7 +95,7 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
         }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
         })
-    });
+    })
 
     it('Change password with wrong username - Negative', () => {
         cy.request({
@@ -110,7 +110,7 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
         }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         })
-    });
+    })
 
     it('Change password with sql infection - Negative', () => {
         cy.request({
@@ -125,5 +125,5 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
         }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         })
-    });
-});
+    })
+})

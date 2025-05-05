@@ -3,6 +3,7 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 context("Get balance", { tags: ['accounts', 'firstPool', 'all'] }, () => {
+
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 

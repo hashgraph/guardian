@@ -12,7 +12,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                 method: METHOD.POST,
                 url: API.ApiServer + API.PolicisImportMsg,
                 body: { 
-                    "messageId": "1707126227.976010003" },
+                    "messageId": "1707126227.976010003"},
                 headers: {
                     authorization,
                 },

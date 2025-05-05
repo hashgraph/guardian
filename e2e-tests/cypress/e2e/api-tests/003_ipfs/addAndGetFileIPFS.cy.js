@@ -3,8 +3,10 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
+    
     const SRUsername = Cypress.env('SRUser');
-    let cid
+    
+    let cid;
 
     it("Add file to ipfs", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {

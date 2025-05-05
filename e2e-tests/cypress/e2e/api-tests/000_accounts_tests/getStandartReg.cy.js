@@ -3,6 +3,7 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 context("Get SRs", { tags: ['accounts', 'firstPool', 'all'] }, () => {
+
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 
@@ -46,6 +47,7 @@ context("Get SRs", { tags: ['accounts', 'firstPool', 'all'] }, () => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
+
     it("Get list of Standard Registries with invalid auth token - Negative", () => {
         cy.request({
             method: METHOD.GET,
@@ -58,6 +60,7 @@ context("Get SRs", { tags: ['accounts', 'firstPool', 'all'] }, () => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
+
     it("Get list of Standard Registries with empty auth token - Negative", () => {
         cy.request({
             method: METHOD.GET,
