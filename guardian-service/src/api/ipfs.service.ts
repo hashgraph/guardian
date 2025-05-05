@@ -56,14 +56,14 @@ export async function ipfsAPI(logger: PinoLogger): Promise<void> {
         }
     });
 
-    //TODO: userId was not implemented, need to understand buffer is Buffer or not// implemented, need to check and remove this line
     ApiResponse(MessageAPI.IPFS_ADD_FILE, async (msg: {
         user: IAuthUser,
-        buffer: any
+        buffer: any //ArrayBuffer | string
     }) => {
         try {
             const { user, buffer } = msg;
-            const result = await IPFS.addFile(buffer.content, user.id);
+            const result = await IPFS.addFile(buffer, user.id);
+
             return new MessageResponse(result);
         }
         catch (error) {

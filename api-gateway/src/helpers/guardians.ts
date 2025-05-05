@@ -1003,13 +1003,12 @@ export class Guardians extends NatsService {
         });
     }
 
-    //TODO: userId was not implemented, need to understand buffer is Buffer or not// implemented, need to check and remove this line
     /**
      * Add file to IPFS
      * @param buffer File
      * @returns CID, URL
      */
-    public async addFileIpfs(user: IAuthUser, buffer: any): Promise<{
+    public async addFileIpfs(user: IAuthUser, buffer: ArrayBuffer | string): Promise<{
         /**
          * CID
          */
