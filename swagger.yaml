@@ -17361,7 +17361,6 @@ components:
           example: private
       required:
         - policyVersion
-        - policyAvailability
     PolicyValidationDTO:
       type: object
       properties:
