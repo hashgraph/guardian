@@ -15752,46 +15752,16 @@ components:
         - hederaAccountId
         - vcDocument
         - policies
-    UserDTO:
+    UserAccountDTO:
       type: object
       properties:
         username:
           type: string
-          example: username
-        role:
-          type: string
-          enum:
-            - STANDARD_REGISTRY
-            - USER
-            - AUDITOR
-          example: USER
-        permissionsGroup:
-          example:
-            - {}
-          type: array
-          items:
-            type: string
-        permissions:
-          example:
-            - POLICIES_POLICY_READ
-          type: array
-          items:
-            type: string
         did:
           type: string
-          example: >-
-            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
-        parent:
-          type: string
-          example: >-
-            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
-        hederaAccountId:
-          type: string
-          example: 0.0.1
       required:
         - username
-        - role
-        - permissions
+        - did
     BalanceResponseDTO:
       type: object
       properties:
@@ -15800,7 +15770,7 @@ components:
         unit:
           type: string
         user:
-          $ref: '#/components/schemas/UserDTO'
+          $ref: '#/components/schemas/UserAccountDTO'
       required:
         - balance
         - unit
@@ -18614,6 +18584,46 @@ components:
         - action
         - disabled
         - dependOn
+    UserDTO:
+      type: object
+      properties:
+        username:
+          type: string
+          example: username
+        role:
+          type: string
+          enum:
+            - STANDARD_REGISTRY
+            - USER
+            - AUDITOR
+          example: USER
+        permissionsGroup:
+          example:
+            - {}
+          type: array
+          items:
+            type: string
+        permissions:
+          example:
+            - POLICIES_POLICY_READ
+          type: array
+          items:
+            type: string
+        did:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        parent:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        hederaAccountId:
+          type: string
+          example: 0.0.1
+      required:
+        - username
+        - role
+        - permissions
     AssignPolicyDTO:
       type: object
       properties:
