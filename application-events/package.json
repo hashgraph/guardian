@@ -21,7 +21,7 @@
         "image-size": "1.0.2"
     },
     "imports": {
-      "#constants": "./dist/constants/index.js"
+        "#constants": "./dist/constants/index.js"
     },
     "dependencies": {
         "@guardian/common": "^3.2.0-rc",

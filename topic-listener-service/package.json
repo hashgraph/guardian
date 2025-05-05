@@ -1,8 +1,8 @@
 {
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
-      "@guardian/common": "^3.2.0-rc",
-      "@guardian/interfaces": "^3.2.0-rc",
+        "@guardian/common": "^3.2.0-rc",
+        "@guardian/interfaces": "^3.2.0-rc",
         "@hashgraph/sdk": "2.52.0",
         "@nestjs/common": "^9.4.1",
         "@nestjs/core": "^9.4.1",
@@ -42,7 +42,7 @@
     "main": "dist/index.js",
     "name": "topic-listener-service",
     "imports": {
-      "#constants": "./dist/constants/index.js"
+        "#constants": "./dist/constants/index.js"
     },
     "scripts": {
         "build": "tsc && tsc-alias",
