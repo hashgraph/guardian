@@ -1033,7 +1033,7 @@ export class PolicyEngineService {
                 policyId: string,
                 options: {
                     policyVersion: string,
-                    policyAvailability: PolicyAvailability
+                    policyAvailability?: PolicyAvailability
                 },
                 owner: IOwner
             }): Promise<IMessageResponse<any>> => {
@@ -1060,7 +1060,7 @@ export class PolicyEngineService {
                 policyId: string,
                 options: {
                     policyVersion: string,
-                    policyAvailability: PolicyAvailability
+                    policyAvailability?: PolicyAvailability
                 },
                 owner: IOwner,
                 task: any

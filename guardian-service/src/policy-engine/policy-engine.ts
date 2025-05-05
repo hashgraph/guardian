@@ -539,7 +539,7 @@ export class PolicyEngine extends NatsService {
         user: IOwner,
         notifier: INotifier,
         logger: PinoLogger,
-        userId:string | null
+        userId: string | null
     ): Promise<{
         /**
          * New Policy
@@ -1258,7 +1258,7 @@ export class PolicyEngine extends NatsService {
     public async validateAndPublishPolicy(
         options: {
             policyVersion: string,
-            policyAvailability: PolicyAvailability
+            policyAvailability?: PolicyAvailability
         },
         policyId: string,
         owner: IOwner,
@@ -1267,7 +1267,7 @@ export class PolicyEngine extends NatsService {
         userId: string | null
     ): Promise<IPublishResult> {
         const version = options.policyVersion;
-        const availability = options.policyAvailability;
+        const availability = options.policyAvailability || PolicyAvailability.PRIVATE;
 
         notifier.start('Find and validate policy');
         const policy = await DatabaseServer.getPolicyById(policyId);

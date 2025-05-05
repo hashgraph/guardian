@@ -496,7 +496,7 @@ export class PolicyVersionDTO {
 
     @ApiProperty({
         type: 'string',
-        required: true,
+        required: false,
         enum: PolicyAvailability,
         example: 'private'
     })
