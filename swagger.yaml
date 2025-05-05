@@ -14003,7 +14003,7 @@ paths:
         - formulas
   /external-policies:
     get:
-      description: Returns all external policies.
+      description: Returns the list of requests for adding remote policies.
       operationId: ExternalPoliciesApi_getExternalPolicies
       parameters:
         - name: pageIndex
@@ -14048,12 +14048,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Return a list of all external policies.
+      summary: Returns the list of requests for adding remote policies.
       tags:
         - external-policies
   /external-policies/preview:
     post:
-      description: Previews the policy from IPFS without loading it into the local DB.
+      description: Returns preview of the remote policies.
       operationId: ExternalPoliciesApi_previewExternalPolicy
       parameters: []
       requestBody:
@@ -14082,12 +14082,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Policy preview from IPFS.
+      summary: Returns preview of the remote policies.
       tags:
         - external-policies
   /external-policies/import:
     post:
-      description: Imports the policy from IPFS without loading it into the local DB.
+      description: Creates a request to import a remote policy.
       operationId: ExternalPoliciesApi_importExternalPolicy
       parameters: []
       requestBody:
@@ -14116,12 +14116,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Policy import from IPFS.
+      summary: Creates a request to import a remote policy.
       tags:
         - external-policies
   /external-policies/push/{messageId}/approve:
     post:
-      description: Approves policy for the specified policy ID.
+      description: Approves the request to import a remote policy, and imports it.
       operationId: ExternalPoliciesApi_approveExternalPolicyAsync
       parameters:
         - name: messageId
@@ -14150,12 +14150,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Approves policy.
+      summary: Approves the request to import a remote policy, and imports it.
       tags:
         - external-policies
   /external-policies/push/{messageId}/reject:
     post:
-      description: Rejects policy for the specified policy ID.
+      description: Rejects the request to import a remote policy.
       operationId: ExternalPoliciesApi_rejectExternalPolicyAsync
       parameters:
         - name: messageId
@@ -14184,12 +14184,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Rejects policy.
+      summary: Rejects the request to import a remote policy.
       tags:
         - external-policies
   /external-policies/{messageId}/approve:
     post:
-      description: Approves policy for the specified policy ID.
+      description: Approves the request to import a remote policy, and imports it.
       operationId: ExternalPoliciesApi_approveExternalPolicy
       parameters:
         - name: messageId
@@ -14218,12 +14218,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Approves policy.
+      summary: Approves the request to import a remote policy, and imports it.
       tags:
         - external-policies
   /external-policies/{messageId}/reject:
     post:
-      description: Rejects policy for the specified policy ID.
+      description: Rejects the request to import a remote policy.
       operationId: ExternalPoliciesApi_rejectExternalPolicy
       parameters:
         - name: messageId
@@ -14252,12 +14252,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Rejects policy.
+      summary: Rejects the request to import a remote policy.
       tags:
         - external-policies
   /external-policies/requests:
     get:
-      description: Returns all policies.
+      description: Returns the list of requests for action from remote Guardians.
       operationId: ExternalPoliciesApi_getRemoteRequests
       parameters:
         - name: pageIndex
@@ -14309,12 +14309,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Return a list of all policies.
+      summary: Returns the list of requests for action from remote Guardians.
       tags:
         - external-policies
   /external-policies/requests/{messageId}/approve:
     put:
-      description: Updates schema rule configuration for the specified rule ID.
+      description: Approves a request for an action from a remote Guardian.
       operationId: ExternalPoliciesApi_approveRemoteRequest
       parameters:
         - name: messageId
@@ -14350,12 +14350,12 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Updates schema rule.
+      summary: Approves a request for an action from a remote Guardian.
       tags:
         - external-policies
   /external-policies/requests/{messageId}/reject:
     put:
-      description: Updates schema rule configuration for the specified rule ID.
+      description: Rejects a request for an action from a remote Guardian
       operationId: ExternalPoliciesApi_rejectRemoteRequest
       parameters:
         - name: messageId
@@ -14391,12 +14391,14 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Updates schema rule.
+      summary: Rejects a request for an action from a remote Guardian
       tags:
         - external-policies
   /external-policies/requests/count:
     get:
-      description: Return a count of policy requests.
+      description: >-
+        Returns the count of entries in the list of requests for actions from
+        remote Guardians.
       operationId: ExternalPoliciesApi_getRemoteRequestsCount
       parameters:
         - name: policyId
@@ -14425,7 +14427,9 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Return a count of policy requests.
+      summary: >-
+        Returns the count of entries in the list of requests for actions from
+        remote Guardians.
       tags:
         - external-policies
   /policy-labels:
