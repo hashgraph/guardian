@@ -1,5 +1,5 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { MessageError, MessageResponse, PinoLogger } from '@guardian/common';
+import { IAuthUser, MessageError, MessageResponse, PinoLogger } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 
 /**
@@ -13,22 +13,24 @@ export async function mapAPI(logger: PinoLogger): Promise<void> {
      *
      * @returns {any} Artifacts and count
      */
-    ApiResponse(MessageAPI.GET_MAP_API_KEY, async (msg:any) => {
-        const userId = msg?.userId
+    ApiResponse(MessageAPI.GET_MAP_API_KEY, async (msg: {
+        user: IAuthUser
+    }) => {
         try {
             return new MessageResponse(process.env.MAP_API_KEY || '');
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+            await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
             return new MessageError(error);
         }
     });
 
-    ApiResponse(MessageAPI.GET_SENTINEL_API_KEY, async (msg:any) => {
-        const userId = msg?.userId
+    ApiResponse(MessageAPI.GET_SENTINEL_API_KEY, async (msg: {
+        user: IAuthUser
+    }) => {
         try {
             return new MessageResponse(process.env.GET_SENTINEL_API_KEY || '');
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+            await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
             return new MessageError(error);
         }
     });

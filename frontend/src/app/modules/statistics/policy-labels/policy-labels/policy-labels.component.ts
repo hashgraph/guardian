@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, PolicyType, UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -147,7 +147,7 @@ export class PolicyLabelsComponent implements OnInit {
             this.user = new UserPermissions(profile);
             this.owner = this.user.did;
             this.allPolicies = policies || [];
-            this.allPolicies = this.allPolicies.filter((p) => p.status === PolicyType.PUBLISH);
+            this.allPolicies = this.allPolicies.filter((p) => p.status === PolicyStatus.PUBLISH);
             this.allPolicies.unshift({
                 name: 'All',
                 instanceTopicId: null

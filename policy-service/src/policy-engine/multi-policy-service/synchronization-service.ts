@@ -1,4 +1,4 @@
-import { IRootConfig, PolicyType, WorkerTaskType } from '@guardian/interfaces';
+import { IRootConfig, PolicyStatus, WorkerTaskType } from '@guardian/interfaces';
 import { CronJob } from 'cron';
 import { MintService } from '../mint/mint-service.js';
 import { DatabaseServer, MessageAction, MessageServer, MultiPolicyTransaction, NotificationHelper, PinoLogger, Policy, SynchronizationMessage, Token, TopicConfig, Users, Workers } from '@guardian/common';
@@ -42,7 +42,7 @@ export class SynchronizationService {
      */
     public start(): boolean {
         if (
-            this.policy.status !== PolicyType.PUBLISH ||
+            this.policy.status !== PolicyStatus.PUBLISH ||
             !this.policy.synchronizationTopicId
         ) {
             return false;
@@ -116,8 +116,6 @@ export class SynchronizationService {
             const messages = await workers.addRetryableTask({
                 type: WorkerTaskType.GET_TOPIC_MESSAGES,
                 data: {
-                    operatorId: null,
-                    operatorKey: null,
                     dryRun: false,
                     topic: policy.synchronizationTopicId,
                     payload: { userId: policyOwnerId },
@@ -236,6 +234,7 @@ export class SynchronizationService {
                         transaction.target,
                         messageIds,
                         transaction.vpMessageId,
+                        policy.id?.toString(),
                         policyOwner?.id,
                         notifier
                     ).catch(error => {

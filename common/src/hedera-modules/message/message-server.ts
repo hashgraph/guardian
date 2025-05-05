@@ -26,6 +26,9 @@ import { UserPermissionsMessage } from './user-permissions-message.js';
 import { StatisticMessage } from './statistic-message.js';
 import { LabelMessage } from './label-message.js';
 import { FormulaMessage } from './formula-message.js';
+import { PolicyDiffMessage } from './policy-diff-message.js';
+import { PolicyActionMessage } from './policy-action-message.js';
+import { ContractMessage } from './contract-message.js';
 
 /**
  * Message server
@@ -323,6 +326,12 @@ export class MessageServer {
             case MessageType.Formula:
                 message = FormulaMessage.fromMessageObject(json);
                 break;
+            case MessageType.PolicyDiff:
+                message = PolicyDiffMessage.fromMessageObject(json);
+                break;
+            case MessageType.PolicyAction:
+                message = PolicyActionMessage.fromMessageObject(json);
+                break;
             // Default schemas
             case 'schema-document':
                 message = SchemaMessage.fromMessageObject(json);
@@ -333,6 +342,90 @@ export class MessageServer {
         }
         if (!message.validate()) {
             new PinoLogger().error(`Invalid json: ${json.type || 'UNKNOWN TYPE'}`, ['GUARDIAN_SERVICE'], userId);
+            throw new Error(`Invalid json: ${json.type}`);
+        }
+        return message as T;
+    }
+
+    /**
+     * From message object
+     * @param json
+     * @param type
+     */
+    public static fromJson<T extends Message>(json: any): T {
+        let message: Message;
+        json.type = json.type;
+        switch (json.type) {
+            case MessageType.Contract:
+                message = ContractMessage.fromJson(json);
+                break;
+            case MessageType.EVCDocument:
+            case MessageType.VCDocument:
+                message = VCMessage.fromJson(json);
+                break;
+            case MessageType.DIDDocument:
+                message = DIDMessage.fromJson(json);
+                break;
+            case MessageType.Schema:
+                message = SchemaMessage.fromJson(json);
+                break;
+            case MessageType.Policy:
+            case MessageType.InstancePolicy:
+                message = PolicyMessage.fromJson(json);
+                break;
+            case MessageType.VPDocument:
+                message = VPMessage.fromJson(json);
+                break;
+            case MessageType.StandardRegistry:
+                message = RegistrationMessage.fromJson(json);
+                break;
+            case MessageType.Topic:
+                message = TopicMessage.fromJson(json);
+                break;
+            case MessageType.Token:
+                message = TokenMessage.fromJson(json);
+                break;
+            case MessageType.Module:
+                message = ModuleMessage.fromJson(json);
+                break;
+            case MessageType.Tool:
+                message = ToolMessage.fromJson(json);
+                break;
+            case MessageType.Tag:
+                message = TagMessage.fromJson(json);
+                break;
+            case MessageType.RoleDocument:
+                message = RoleMessage.fromJson(json);
+                break;
+            case MessageType.GuardianRole:
+                message = GuardianRoleMessage.fromJson(json);
+                break;
+            case MessageType.UserPermissions:
+                message = UserPermissionsMessage.fromJson(json);
+                break;
+            case MessageType.PolicyStatistic:
+                message = StatisticMessage.fromJson(json);
+                break;
+            case MessageType.PolicyLabel:
+                message = LabelMessage.fromJson(json);
+                break;
+            case MessageType.Formula:
+                message = FormulaMessage.fromJson(json);
+                break;
+            case MessageType.PolicyDiff:
+                message = PolicyDiffMessage.fromJson(json);
+                break;
+            case MessageType.PolicyAction:
+                message = PolicyActionMessage.fromJson(json);
+                break;
+            // Default schemas
+            case 'schema-document':
+                message = SchemaMessage.fromJson(json);
+                break;
+            default:
+                throw new Error(`Invalid format message: ${json.type || 'UNKNOWN TYPE'}`);
+        }
+        if (!message.validate()) {
             throw new Error(`Invalid json: ${json.type}`);
         }
         return message as T;
@@ -359,67 +452,11 @@ export class MessageServer {
             item.setIndex(message.sequence_number);
             item.setId(message.id);
             item.setTopicId(message.topicId);
+            item.setMemo(message.memo);
             return item as T;
         } catch (error) {
             return null;
         }
-    }
-
-    /**
-     * Get messages
-     * @param topicId
-     * @param userId
-     * @param type
-     * @param action
-     * @param timeStamp
-     */
-    public static async getMessages<T extends Message>(
-        topicId: string | TopicId,
-        userId: string | null,
-        type?: MessageType,
-        action?: MessageAction,
-        timeStamp?: string
-    ): Promise<T[]> {
-        if (!topicId) {
-            throw new Error(`Invalid Topic Id`);
-        }
-        if (timeStamp && typeof timeStamp === 'string') {
-            timeStamp = timeStamp.trim();
-        }
-        const topic = topicId.toString();
-        const workers = new Workers();
-        const messages = await workers.addNonRetryableTask({
-            type: WorkerTaskType.GET_TOPIC_MESSAGES,
-            data: {
-                topic,
-                timeStamp,
-                payload: { userId }
-            }
-        }, 10);
-        new PinoLogger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE'], userId);
-        const result: Message[] = [];
-        for (const message of messages) {
-            try {
-                const item = MessageServer.fromMessage(message.message, userId);
-                let filter = true;
-                if (type) {
-                    filter = filter && item.type === type;
-                }
-                if (action) {
-                    filter = filter && item.action === action;
-                }
-                if (filter) {
-                    item.setAccount(message.payer_account_id);
-                    item.setIndex(message.sequence_number);
-                    item.setId(message.id);
-                    item.setTopicId(topic);
-                    result.push(item);
-                }
-            } catch (error) {
-                console.error(error.message);
-            }
-        }
-        return result as T[];
     }
 
     /**
@@ -435,9 +472,14 @@ export class MessageServer {
         }
 
         message.setLang(MessageServer.lang);
+        if (memo) {
+            message.setMemo(memo);
+        } else {
+            message.setMemo(MessageMemo.getMessageMemo(message));
+        }
         const time = await this.messageStartLog('Hedera', userId);
         const buffer = message.toMessage();
-      const timestamp = await new Workers().addRetryableTask({
+        const timestamp = await new Workers().addRetryableTask({
             type: WorkerTaskType.SEND_HEDERA,
             data: {
                 topicId: this.topicId,
@@ -448,13 +490,13 @@ export class MessageServer {
                 localNodeAddress: Environment.localNodeAddress,
                 localNodeProtocol: Environment.localNodeProtocol,
                 signOptions: this.signOptions,
-                memo: memo || MessageMemo.getMessageMemo(message),
+                memo: message.getMemo(),
                 dryRun: this.dryRun,
                 payload: { userId },
             }
         }, 10, 0, userId);
         await this.messageEndLog(time, 'Hedera', userId);
-      message.setId(timestamp);
+        message.setId(timestamp);
         message.setTopicId(this.topicId);
         return message;
     }
@@ -486,49 +528,13 @@ export class MessageServer {
                 item.setAccount(message.payer_account_id);
                 item.setIndex(message.sequence_number);
                 item.setId(message.id);
+                item.setMemo(message.memo);
                 item.setTopicId(topic);
                 return item;
             }
             return null;
         } catch (error) {
             return null;
-        }
-    }
-
-    /**
-     * Get messages
-     * @param topicId
-     * @param userId
-     * @param type
-     * @param action
-     */
-    public async getMessages<T extends Message>(topicId: string | TopicId, userId: string | null, type?: MessageType, action?: MessageAction): Promise<T[]> {
-        if (this.dryRun) {
-            const messages = await DatabaseServer.getVirtualMessages(this.dryRun, topicId);
-            const result: T[] = [];
-            for (const message of messages) {
-                try {
-                    const item = MessageServer.fromMessage<T>(message.document, userId);
-                    let filter = true;
-                    if (type) {
-                        filter = filter && item.type === type;
-                    }
-                    if (action) {
-                        filter = filter && item.action === action;
-                    }
-                    if (filter) {
-                        item.setId(message.messageId);
-                        item.setTopicId(message.topicId);
-                        result.push(item);
-                    }
-                } catch (error) {
-                    console.error(error.message);
-                }
-            }
-            return result;
-        } else {
-            const messages = await this.getTopicMessages(topicId, userId, type, action);
-            return messages as T[];
         }
     }
 
@@ -601,6 +607,7 @@ export class MessageServer {
             const result = MessageServer.fromMessage<T>(message.document, userId, type);
             result.setId(message.messageId);
             result.setTopicId(message.topicId);
+            result.setMemo(message.memo);
             return result;
         } else {
             let message = await this.getTopicMessage<T>(id, type, userId);
@@ -669,6 +676,193 @@ export class MessageServer {
         result.setIndex(message.sequence_number);
         result.setId(timeStamp);
         result.setTopicId(topicId);
+        result.setMemo(message.memo);
+        return result;
+    }
+
+    /**
+     * Get messages
+     * @param topicId
+     * @param userId
+     * @param type
+     * @param action
+     */
+    public static async getMessages<T extends Message>(
+        dryRun: string,
+        topicId: string | TopicId,
+        userId: string | null,
+        type?: MessageType,
+        action?: MessageAction
+    ): Promise<T[]> {
+        if (dryRun) {
+            return await MessageServer.getDryRunMessages(dryRun, topicId, userId, type, action) as T[];
+        } else {
+            return await MessageServer.getTopicMessages(topicId, userId, type, action) as T[];
+        }
+    }
+
+    /**
+     * Get topic message
+     * @param dryRun
+     * @param topicId
+     * @param userId
+     * @param type
+     * @param action
+     * @param timeStamp
+     */
+    public static async getDryRunMessages<T extends Message>(
+        dryRun: string,
+        topicId: string | TopicId,
+        userId: string | null,
+        type?: MessageType,
+        action?: MessageAction,
+        timeStamp?: string
+    ) {
+        const messages = await DatabaseServer.getVirtualMessages(dryRun, topicId);
+        const result: T[] = [];
+        for (const message of messages) {
+            try {
+                const item = MessageServer.fromMessage<T>(message.document, userId);
+                let filter = true;
+                if (type) {
+                    filter = filter && item.type === type;
+                }
+                if (action) {
+                    filter = filter && item.action === action;
+                }
+                if (filter) {
+                    item.setId(message.messageId);
+                    item.setTopicId(message.topicId);
+                    item.setMemo(message.memo);
+                    result.push(item);
+                }
+            } catch (error) {
+                console.error(error.message);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get topic message
+     * @param topicId
+     * @param userId
+     * @param type
+     * @param action
+     * @param timeStamp
+     */
+    public static async getTopicMessages<T extends Message>(
+        topicId: string | TopicId,
+        userId: string | null,
+        type?: MessageType,
+        action?: MessageAction,
+        timeStamp?: string
+    ): Promise<T[]> {
+        if (!topicId) {
+            throw new Error(`Invalid Topic Id`);
+        }
+
+        if (timeStamp && typeof timeStamp === 'string') {
+            timeStamp = timeStamp.trim();
+        }
+
+        const topic = topicId.toString();
+        const workers = new Workers();
+        const messages = await workers.addNonRetryableTask({
+            type: WorkerTaskType.GET_TOPIC_MESSAGES,
+            data: {
+                topic,
+                timeStamp,
+                payload: { userId }
+            }
+        }, 10);
+        new PinoLogger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE'], userId);
+        const result: Message[] = [];
+        for (const message of messages) {
+            try {
+                const item = MessageServer.fromMessage(message.message, userId);
+                let filter = true;
+                if (type) {
+                    filter = filter && item.type === type;
+                }
+                if (action) {
+                    filter = filter && item.action === action;
+                }
+                if (filter) {
+                    item.setAccount(message.payer_account_id);
+                    item.setIndex(message.sequence_number);
+                    item.setId(message.id);
+                    item.setTopicId(topic);
+                    item.setMemo(message.memo);
+                    result.push(item);
+                }
+            } catch (error) {
+                console.error(error.message);
+            }
+        }
+        return result as T[];
+    }
+
+    /**
+     * Get messages
+     * @param topicId
+     * @param userId
+     * @param type
+     * @param action
+     */
+    public async getMessages<T extends Message>(
+        topicId: string | TopicId,
+        userId: string | null,
+        type?: MessageType,
+        action?: MessageAction
+    ): Promise<T[]> {
+        if (this.dryRun) {
+            return await this.getDryRunMessages(this.dryRun, topicId, userId, type, action) as T[];
+        } else {
+            return await this.getTopicMessages(topicId, userId, type, action) as T[];
+        }
+    }
+
+    /**
+     * Get topic message
+     * @param dryRun
+     * @param topicId
+     * @param userId
+     * @param type
+     * @param action
+     * @param timeStamp
+     * @private
+     */
+    public async getDryRunMessages<T extends Message>(
+        dryRun: string,
+        topicId: string | TopicId,
+        userId: string | null,
+        type?: MessageType,
+        action?: MessageAction,
+        timeStamp?: string
+    ): Promise<Message[]> {
+        const messages = await DatabaseServer.getVirtualMessages(dryRun, topicId);
+        const result: T[] = [];
+        for (const message of messages) {
+            try {
+                const item = MessageServer.fromMessage<T>(message.document, userId);
+                let filter = true;
+                if (type) {
+                    filter = filter && item.type === type;
+                }
+                if (action) {
+                    filter = filter && item.action === action;
+                }
+                if (filter) {
+                    item.setId(message.messageId);
+                    item.setTopicId(message.topicId);
+                    item.setMemo(message.memo);
+                    result.push(item);
+                }
+            } catch (error) {
+                console.error(error.message);
+            }
+        }
         return result;
     }
 
@@ -679,16 +873,15 @@ export class MessageServer {
      * @param type
      * @param action
      * @param timeStamp
-     * @private
      */
-    private async getTopicMessages(
+    public async getTopicMessages(
         topicId: string | TopicId,
         userId: string | null,
         type?: MessageType,
         action?: MessageAction,
         timeStamp?: string
     ): Promise<Message[]> {
-        const { operatorId, operatorKey, dryRun } = this.clientOptions;
+        const { operatorId, dryRun } = this.clientOptions;
 
         if (!topicId) {
             throw new Error(`Invalid Topic Id`);
@@ -703,8 +896,6 @@ export class MessageServer {
         const messages = await workers.addNonRetryableTask({
             type: WorkerTaskType.GET_TOPIC_MESSAGES,
             data: {
-                operatorId,
-                operatorKey,
                 dryRun,
                 topic,
                 timeStamp,
@@ -729,6 +920,7 @@ export class MessageServer {
                     item.setIndex(message.sequence_number);
                     item.setId(message.id);
                     item.setTopicId(topic);
+                    item.setMemo(message.memo);
                     result.push(item);
                 }
             } catch (error) {

@@ -15,5 +15,7 @@ export enum TopicType {
     ToolTopic = 'TOOL_TOPIC',
     TagsTopic = 'TAGS_TOPIC',
     StatisticTopic = 'STATISTIC_TOPIC',
-    LabelTopic = 'LABEL_TOPIC'
+    LabelTopic = 'LABEL_TOPIC',
+    RestoreTopic = 'RESTORE_TOPIC',
+    ActionsTopic = 'ACTIONS_TOPIC'
 }

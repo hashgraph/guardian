@@ -49,7 +49,7 @@ export class SingleSchemaApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            const schema = await guardians.getSchemaById(schemaId, user.id);
+            const schema = await guardians.getSchemaById(user, schemaId);
             if (!schema) {
                 throw new HttpException(`Schema not found.`, HttpStatus.NOT_FOUND);
             }
@@ -547,7 +547,7 @@ export class SchemaApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            schema = await guardians.getSchemaByType(schemaType, user.id);
+            schema = await guardians.getSchemaByType(user, schemaType);
             if (!schema) {
                 throw new HttpException(`Schema not found: ${schemaType}`, HttpStatus.NOT_FOUND);
             }
@@ -605,7 +605,7 @@ export class SchemaApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            schema = await guardians.getSchemaByType(schemaType, user.did);
+            schema = await guardians.getSchemaByType(user, schemaType, user.did);
             if (!schema) {
                 throw new HttpException(`Schema not found: ${schemaType}`, HttpStatus.NOT_FOUND);
             }
@@ -664,7 +664,7 @@ export class SchemaApi {
             const guardians = new Guardians();
             if (user.did) {
                 const owner = new EntityOwner(user);
-                return await guardians.getListSchemas(owner, user.id);
+                return await guardians.getListSchemas(owner);
             } else {
                 return [];
             }
@@ -725,7 +725,7 @@ export class SchemaApi {
                 return [];
             }
             const owner = new EntityOwner(user);
-            return await guardians.getSubSchemas(category, topicId, owner, user.id);
+            return await guardians.getSubSchemas(category, topicId, owner);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -788,11 +788,11 @@ export class SchemaApi {
             let promiseSchema: Promise<ISchema | void> = new Promise<void>(resolve => resolve())
 
             if (schemaId) {
-                promiseSchema = guardians.getSchemaById(schemaId, user.id)
+                promiseSchema = guardians.getSchemaById(user, schemaId)
             }
 
             const [schema, subSchemas] =
-                await Promise.all([promiseSchema, guardians.getSubSchemas(category, topicId, owner, user.id)]);
+                await Promise.all([promiseSchema, guardians.getSubSchemas(category, topicId, owner)]);
 
             return { schema, subSchemas };
         } catch (error) {
@@ -1014,7 +1014,7 @@ export class SchemaApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            const schema = await guardians.getSchemaById(newSchema.id, user.id);
+            const schema = await guardians.getSchemaById(user, newSchema.id);
             if (!schema) {
                 throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
             }
@@ -1085,7 +1085,7 @@ export class SchemaApi {
         const owner = new EntityOwner(user);
 
         try {
-            schema = await guardians.getSchemaById(schemaId, user.id);
+            schema = await guardians.getSchemaById(user, schemaId);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -1172,7 +1172,7 @@ export class SchemaApi {
         let allVersion: ISchema[];
         const owner = new EntityOwner(user);
         try {
-            schema = await guardians.getSchemaById(schemaId, user.id);
+            schema = await guardians.getSchemaById(user, schemaId);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -1180,7 +1180,7 @@ export class SchemaApi {
             throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
         }
         try {
-            allVersion = await guardians.getSchemasByUUID(schema.uuid, user.id);
+            allVersion = await guardians.getSchemasByUUID(owner, schema.uuid);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -1263,7 +1263,7 @@ export class SchemaApi {
     ): Promise<TaskDTO> {
         const guardians = new Guardians();
         const owner = new EntityOwner(user);
-        const schema = await guardians.getSchemaById(schemaId, user.id);
+        const schema = await guardians.getSchemaById(user, schemaId);
         if (!schema) {
             throw new HttpException('Schema not found', HttpStatus.NOT_FOUND)
         }
@@ -1283,7 +1283,7 @@ export class SchemaApi {
                 taskManager.addError(task.taskId, { code: 500, message: 'Schema imported in demo mode.' });
                 return;
             }
-            const allVersion = await guardians.getSchemasByUUID(schema.uuid, user.id);
+            const allVersion = await guardians.getSchemasByUUID(owner, schema.uuid);
             if (allVersion.findIndex(s => s.version === version) !== -1) {
                 taskManager.addError(task.taskId, { code: 500, message: 'Version already exists.' });
                 return;
@@ -1346,7 +1346,8 @@ export class SchemaApi {
         }
         try {
             const guardians = new Guardians();
-            return await guardians.previewSchemasByMessages([messageId], user.id);
+            const owner = new EntityOwner(user);
+            return await guardians.previewSchemasByMessages(owner, [messageId]);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -1398,7 +1399,8 @@ export class SchemaApi {
         const task = taskManager.start(TaskAction.PREVIEW_SCHEMA_MESSAGE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.previewSchemasByMessagesAsync([messageId], task, user.id);
+            const owner = new EntityOwner(user);
+            await guardians.previewSchemasByMessagesAsync(owner, [messageId], task);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
@@ -1812,7 +1814,7 @@ export class SchemaApi {
                 throw new HttpException(`Cannot export schema ${schemaId}`, HttpStatus.UNPROCESSABLE_ENTITY)
             }
             const ids = schemas.map(s => s.id);
-            const tags = await guardians.exportTags('Schema', ids, user.id);
+            const tags = await guardians.exportTags(owner, 'Schema', ids);
             const name = `${Date.now()}`;
             const zip = await SchemaImportExport.generateZipFile({ schemas, tags });
             const arcStream = zip.generateNodeStream({
@@ -1886,7 +1888,7 @@ export class SchemaApi {
             delete newSchema.topicId;
 
             SchemaHelper.updateOwner(newSchema, owner);
-            const schema = await guardians.createSystemSchema(newSchema, user.id);
+            const schema = await guardians.createSystemSchema(newSchema, owner);
 
             const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
 
@@ -1954,7 +1956,7 @@ export class SchemaApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            const { items, count } = await guardians.getSystemSchemas(user.id, pageIndex, pageSize);
+            const { items, count } = await guardians.getSystemSchemas(user, pageIndex, pageSize);
             items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner.owner });
             return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
@@ -2020,7 +2022,7 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             const fields: string[] = Object.values(SCHEMA_REQUIRED_PROPS)
 
-            const { items, count } = await guardians.getSystemSchemasV2(fields, user.id, pageIndex, pageSize);
+            const { items, count } = await guardians.getSystemSchemasV2(user, fields, pageIndex, pageSize);
             items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner.owner });
             return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
@@ -2064,7 +2066,7 @@ export class SchemaApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            const schema = await guardians.getSchemaById(schemaId, user.id);
+            const schema = await guardians.getSchemaById(user, schemaId);
             if (!schema) {
                 throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
             }
@@ -2129,7 +2131,7 @@ export class SchemaApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            const schema = await guardians.getSchemaById(newSchema.id, user.id);
+            const schema = await guardians.getSchemaById(user, newSchema.id);
             if (!schema) {
                 throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND);
             }
@@ -2191,7 +2193,7 @@ export class SchemaApi {
     ): Promise<any> {
         try {
             const guardians = new Guardians();
-            const schema = await guardians.getSchemaById(schemaId, user.id);
+            const schema = await guardians.getSchemaById(user, schemaId);
             if (!schema) {
                 throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND);
             }
@@ -2201,7 +2203,8 @@ export class SchemaApi {
             if (schema.active) {
                 throw new HttpException('Schema is active.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            await guardians.activeSchema(schemaId, user.id);
+            const owner = new EntityOwner(user);
+            await guardians.activeSchema(schemaId, owner);
 
             const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
 
@@ -2245,7 +2248,7 @@ export class SchemaApi {
     ): Promise<SchemaDTO> {
         try {
             const guardians = new Guardians();
-            const schema = await guardians.getSchemaByEntity(schemaEntity, user.id);
+            const schema = await guardians.getSchemaByEntity(user, schemaEntity);
             if (!schema) {
                 return null;
             }
@@ -2305,7 +2308,7 @@ export class SchemaApi {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
             const file: any = await guardians.exportSchemasXlsx(owner, [schemaId]);
-            const schema: any = await guardians.getSchemaById(schemaId, user.id);
+            const schema: any = await guardians.getSchemaById(user, schemaId);
             res.header('Content-disposition', `attachment; filename=${schema.name}`);
             res.header('Content-type', 'application/zip');
             return res.send(file);
@@ -2521,7 +2524,8 @@ export class SchemaApi {
         try {
             const filename = 'template.xlsx';
             const guardians = new Guardians();
-            const file = await guardians.getFileTemplate(filename, user.id);
+            const owner = new EntityOwner(user);
+            const file = await guardians.getFileTemplate(owner, filename);
             const fileBuffer = Buffer.from(file, 'base64');
             res.header('Content-disposition', `attachment; filename=` + filename);
             res.header('Content-type', 'application/zip');

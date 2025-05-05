@@ -255,3 +255,8 @@ form {
 .invite-container {
     position: relative;
 }
+
+*[readonly-block="true"] {
+    pointer-events: none !important;
+    filter: grayscale(1);
+}

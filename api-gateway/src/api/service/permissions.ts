@@ -1,5 +1,5 @@
 import { IAuthUser, PinoLogger } from '@guardian/common';
-import { AssignedEntityType, Permissions, PolicyType, UserPermissions } from '@guardian/interfaces';
+import { AssignedEntityType, Permissions, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import {
     Body,
     Controller,
@@ -18,9 +18,9 @@ import {
 import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { AssignPolicyDTO, Examples, InternalServerErrorDTO, PermissionsDTO, PolicyDTO, RoleDTO, UserDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
-import {CacheService, EntityOwner, getCacheKey, Guardians, InternalException, Users} from '#helpers';
+import { CacheService, EntityOwner, getCacheKey, Guardians, InternalException, Users } from '#helpers';
 import { WebSocketsService } from './websockets.js';
-import {CACHE_PREFIXES, PREFIXES} from '#constants';
+import { CACHE_PREFIXES, PREFIXES } from '#constants';
 
 @Controller('permissions')
 @ApiTags('permissions')
@@ -425,7 +425,7 @@ export class PermissionsApi {
             const { items, count } = await (new Users()).getWorkers(options, user.id);
             const guardians = new Guardians();
             for (const item of items) {
-                item.assignedEntities = await guardians.assignedEntities(item.did, user.id);
+                item.assignedEntities = await guardians.assignedEntities(user, item.did);
             }
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
@@ -590,7 +590,7 @@ export class PermissionsApi {
     @ApiQuery({
         name: 'status',
         type: String,
-        enum: PolicyType,
+        enum: PolicyStatus,
         description: 'Filter by status',
         required: false,
         example: 'Active'
@@ -635,7 +635,8 @@ export class PermissionsApi {
                 pageSize,
                 status
             };
-            const { policies, count } = await (new Guardians()).getAssignedPolicies(options, user.id);
+            const { policies, count } = await (new Guardians())
+                .getAssignedPolicies(user, options);
             return res.header('X-Total-Count', count).send(policies);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -693,12 +694,12 @@ export class PermissionsApi {
         try {
             const { policyIds, assign } = body;
             return await (new Guardians()).assignEntity(
+                user,
                 AssignedEntityType.Policy,
                 policyIds,
                 assign,
                 row.did,
-                user.did,
-                user.id
+                user.did
             );
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -819,12 +820,12 @@ export class PermissionsApi {
         try {
             const { policyIds, assign } = body;
             return await (new Guardians()).delegateEntity(
+                user,
                 AssignedEntityType.Policy,
                 policyIds,
                 assign,
                 row.did,
-                user.did,
-                user.id
+                user.did
             );
         } catch (error) {
             await InternalException(error, this.logger, user.id);

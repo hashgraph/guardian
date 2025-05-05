@@ -153,6 +153,20 @@ export class ContractMessage extends Message {
         return result;
     }
 
+    public static fromJson(json: any): ContractMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
+        const result = Message._fromJson(new ContractMessage(json.action), json);
+        result.contractId = json.contractId;
+        result.description = json.description;
+        result.contractType = json.contractType;
+        result.owner = json.owner;
+        result.version = json.version;
+        return result;
+    }
+
     /**
      * Get User DID
      */

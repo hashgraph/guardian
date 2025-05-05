@@ -35,7 +35,7 @@ import {
     getVCField
 } from '@guardian/common';
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { IOwner, MessageAPI, PolicyType, UserRole, WorkerTaskType } from '@guardian/interfaces';
+import { IOwner, MessageAPI, PolicyStatus, UserRole, WorkerTaskType } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import process from 'process';
@@ -247,9 +247,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 eventsLvl: string | number,
                 idLvl: string | number
             },
-            userId: string | null
         }) => {
-            const userId = msg?.userId;
             try {
                 const { user, type, policies, options } = msg;
                 const compareOptions = CompareOptions.from(options);
@@ -266,7 +264,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 const result = comparator.to(results, type);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 return new MessageError(error);
             }
         });
@@ -281,9 +279,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
             propLvl: string | number,
             childrenLvl: string | number,
             idLvl: string | number,
-            userId: string | null
         }) => {
-            const userId = msg?.userId;
             try {
                 const {
                     type,
@@ -328,7 +324,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageResponse(result);
                 }
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 return new MessageError(error);
             }
         });
@@ -347,9 +343,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 }
             }[],
             idLvl: string | number,
-            userId: string | null
         }) => {
-            const userId = msg?.userId;
             try {
                 const {
                     user,
@@ -383,7 +377,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageResponse(result);
                 }
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 return new MessageError(error);
             }
         });
@@ -488,9 +482,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
             idLvl: string | number,
             keyLvl: string | number,
             refLvl: string | number,
-            userId: string | null
         }) => {
-            const userId = msg?.userId;
             try {
                 const {
                     user,
@@ -545,7 +537,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Invalid size');
                 }
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 return new MessageError(error);
             }
         });
@@ -560,9 +552,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
         idLvl: string | number,
         keyLvl: string | number,
         refLvl: string | number,
-        userId: string | null
     }) => {
-        const userId = msg?.userId;
         try {
             const {
                 user,
@@ -621,7 +611,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
             return new MessageResponse(comparisonVpArray);
 
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+            await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
             return new MessageError(error);
         }
     });
@@ -634,9 +624,7 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
         propLvl: string | number,
         childrenLvl: string | number,
         idLvl: string | number,
-        userId: string | null
     }) => {
-        const userId = msg?.userId;
         try {
             const {
                 user,
@@ -689,18 +677,22 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 return new MessageError('Invalid size');
             }
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+            await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
             return new MessageError(error);
         }
     });
 
     ApiResponse(MessageAPI.SEARCH_BLOCKS,
-        async (msg: { config: any, blockId: string, user: IAuthUser, userId: string | null }) => {
-            const userId = msg?.userId;
+        async (msg: {
+            config: any,
+            blockId: string,
+            user: IAuthUser
+        }) => {
             try {
                 const {
                     config,
-                    blockId
+                    blockId,
+                    user
                 } = msg;
 
                 const filterPolicyModel = RootSearchModel.fromConfig(config);
@@ -710,13 +702,15 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const policyModels: PolicySearchModel[] = [];
-                const policies = await DatabaseServer.getPolicies({ status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] } });
+                const policies = await DatabaseServer.getPolicies({
+                    status: { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] }
+                });
                 for (const row of policies) {
                     try {
                         const model = new PolicySearchModel(row);
                         policyModels.push(model);
                     } catch (error) {
-                        await logger.error(error, ['GUARDIAN_SERVICE']);
+                        await logger.error(error, ['GUARDIAN_SERVICE'], user.id);
                     }
                 }
 
@@ -742,18 +736,18 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 result.sort((a, b) => a.hash > b.hash ? -1 : 1);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.GET_INDEXER_AVAILABILITY,
-        async (msg: { userId: string | null }) => {
-            const userId = msg?.userId;
+        async (msg: { user: IAuthUser }) => {
             try {
+                const user = msg.user;
                 const result = await new Workers().addNonRetryableTask({
                     type: WorkerTaskType.ANALYTICS_GET_INDEXER_AVAILABILITY,
-                    data: {payload: { userId }}
+                    data: { payload: { userId: user?.id } }
                 }, 2);
 
                 return new MessageResponse(result);

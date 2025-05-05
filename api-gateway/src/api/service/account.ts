@@ -1,5 +1,5 @@
 import { IAuthUser, NotificationHelper, PinoLogger } from '@guardian/common';
-import { Permissions, PolicyType, SchemaEntity, UserRole } from '@guardian/interfaces';
+import { Permissions, PolicyStatus, SchemaEntity, UserRole } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -143,7 +143,7 @@ export class AccountApi {
             const users = new Users();
             return await users.generateNewToken(username, password);
         } catch (error) {
-            await this.logger.warn(error.message, ['API_GATEWAY']);
+            await this.logger.warn(error.message, ['API_GATEWAY'], null);
             throw new HttpException(error.message, error.code || HttpStatus.UNAUTHORIZED);
         }
     }
@@ -177,7 +177,7 @@ export class AccountApi {
             const users = new Users();
             return await users.changeUserPassword(username, oldPassword, newPassword);
         } catch (error) {
-            await this.logger.warn(error.message, ['API_GATEWAY']);
+            await this.logger.warn(error.message, ['API_GATEWAY'], null);
             throw new HttpException(error.message, error.code || HttpStatus.UNAUTHORIZED);
         }
     }
@@ -318,10 +318,10 @@ export class AccountApi {
                 .map(async ({ did, username }) => {
                     let vcDocument = {};
                     const user = await users.getUser(username, userParent.id);
-                    const vcDocuments = await guardians.getVcDocuments({
+                    const vcDocuments = await guardians.getVcDocuments(userParent, {
                         owner: did,
                         type: SchemaEntity.STANDARD_REGISTRY
-                    }, userParent.id);
+                    });
                     if (vcDocuments && vcDocuments.length) {
                         vcDocument = vcDocuments[vcDocuments.length - 1];
                     }
@@ -329,7 +329,7 @@ export class AccountApi {
                     const { policies } = await engineService.getPolicies(
                         {
                             filters: {
-                                status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] }
+                                status: { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] }
                             },
                             userDid: did
                         },
@@ -378,7 +378,7 @@ export class AccountApi {
         @AuthUser() user: IAuthUser,
     ): Promise<any> {
         try {
-            return await (new Guardians()).getBalance(user.username, user.id);
+            return await (new Guardians()).getBalance(user, user.username);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

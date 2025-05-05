@@ -69,7 +69,7 @@ export class BrandingApi {
                 termsAndConditions
             };
             const guardians = new Guardians();
-            await guardians.setBranding(JSON.stringify(data), user.id);
+            await guardians.setBranding(user, JSON.stringify(data));
 
             await this.cacheService.invalidate(getCacheKey([req.url], req.user))
         } catch (error) {

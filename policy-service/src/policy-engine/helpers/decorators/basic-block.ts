@@ -1,7 +1,7 @@
 import { PolicyBlockDefaultOptions } from '../../helpers/policy-block-default-options.js';
 import { BlockCacheType, EventConfig } from '../../interfaces/index.js';
 import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '../../interfaces/block-options.js';
-import { PolicyHelper, PolicyRole, PolicyType } from '@guardian/interfaces';
+import { LocationType, PolicyAvailability, PolicyHelper, PolicyRole, PolicyStatus } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '../../policy-engine.interface.js';
 import { PolicyComponentsUtils } from '../../policy-components-utils.js';
 import { IPolicyEvent, PolicyLink } from '../../interfaces/policy-event.js';
@@ -73,11 +73,11 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             /**
              * Block type
              */
-            static blockType = defaultOptions.blockType;
+            public static blockType = defaultOptions.blockType;
             /**
              * Block about
              */
-            static about = defaultOptions.about;
+            public static about = defaultOptions.about;
             /**
              * Old data state
              * @protected
@@ -149,6 +149,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Database service
              */
             public readonly databaseServer: DatabaseServer;
+            /**
+             * Block about
+             */
+            public readonly actionType: LocationType;
 
             constructor(
                 _uuid: string,
@@ -208,6 +212,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
 
                 this.variables = defaultOptions.variables || [];
+                this.actionType = defaultOptions.actionType || LocationType.REMOTE;
             }
 
             /**
@@ -215,6 +220,27 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             public get dryRun(): string {
                 return this._dryRun;
+            }
+
+            /**
+             * Policy status
+             */
+            public get policyStatus(): PolicyStatus | null {
+                return this.policyInstance?.status || null;
+            }
+
+            /**
+             * Policy availability
+             */
+            public get policyAvailability(): PolicyAvailability | null {
+                return this.policyInstance?.availability || null;
+            }
+
+            /**
+             * Policy location
+             */
+            public get locationType(): LocationType | null {
+                return this.policyInstance?.locationType || null;
             }
 
             /**
@@ -357,7 +383,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param {IPolicyEvent} event
              */
             public async runAction(event: IPolicyEvent<any>): Promise<any> {
-                if (this.policyInstance.status === PolicyType.DISCONTINUED) {
+                if (this.policyInstance.status === PolicyStatus.DISCONTINUED) {
                     return;
                 }
                 const parent = this.parent as any;
@@ -380,7 +406,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 if (typeof super.refreshAction === 'function') {
                     return await super.refreshAction(event);
                 }
-                this.updateBlock(event.data, event.user, this.tag, event.userId);
+                this.updateBlock(event.data, event.user, this.tag, event?.user?.userId);
             }
 
             /**
@@ -521,8 +547,8 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             public async saveState(): Promise<void> {
                 const stateFields = PolicyComponentsUtils.GetStateFields(this);
-                if (stateFields && (Object.keys(stateFields).length > 0) && this.policyId) {
-                    await this.databaseServer.saveBlockState(this.policyId, this.uuid, stateFields);
+                if (this.policyId && stateFields && (Object.keys(stateFields).length > 0)) {
+                    await this.databaseServer.saveBlockState(this.policyId, this.uuid, this.tag, stateFields);
                 }
             }
 
@@ -530,7 +556,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Restore block state
              */
             public async restoreState(): Promise<void> {
-                const stateEntity = await this.databaseServer.getBlockState(this.policyId, this.uuid);
+                const stateEntity = await this.databaseServer.getBlockState(this.policyId, this.uuid, this.tag);
 
                 if (!stateEntity) {
                     return;
@@ -723,6 +749,14 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             protected triggerInternalEvent(type: string, data: any) {
                 PolicyComponentsUtils.TriggerInternalEvent(type, this.policyId, data);
+            }
+
+            /**
+             * Create backup
+             * @protected
+             */
+            protected backup(): void {
+                PolicyComponentsUtils.backup(this.policyId);
             }
 
             /**

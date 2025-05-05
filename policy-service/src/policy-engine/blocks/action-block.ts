@@ -1,7 +1,7 @@
 import { EventBlock } from '../helpers/decorators/index.js';
-import { UserType, Schema } from '@guardian/interfaces';
+import { UserType, Schema, LocationType } from '@guardian/interfaces';
 import { findOptions } from '../helpers/find-options.js';
-import { IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyInterfaceBlock } from '../policy-engine.interface.js';
+import { IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyGetData, IPolicyInterfaceBlock } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
@@ -9,6 +9,7 @@ import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { KeyType } from '@guardian/common';
+import { PolicyActionsUtils } from '../policy-actions/utils.js';
 
 /**
  * Document action clock with UI
@@ -16,6 +17,7 @@ import { KeyType } from '@guardian/common';
 @EventBlock({
     blockType: 'interfaceActionBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Action',
         title: `Add 'Action' Block`,
@@ -39,12 +41,17 @@ export class InterfaceDocumentActionBlock {
      * Get block data
      * @param user
      */
-    async getData(user: PolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
-        const data: any = {
+        const data: IPolicyGetData = {
             id: ref.uuid,
             blockType: ref.blockType,
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            ),
             type: ref.options.type,
             uiMetaData: ref.options.uiMetaData,
             user: ref.options.user
@@ -73,9 +80,8 @@ export class InterfaceDocumentActionBlock {
      * Set block data
      * @param user
      * @param document
-     * @param userId
      */
-    async setData(user: PolicyUser, document: IPolicyDocument, userId: string | null): Promise<any> {
+    async setData(user: PolicyUser, document: IPolicyDocument): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
 
         const state: IPolicyEventState = { data: document };
@@ -86,14 +92,14 @@ export class InterfaceDocumentActionBlock {
             if (option) {
                 const newUser = option.user === UserType.CURRENT
                     ? user
-                    : await PolicyUtils.getDocumentOwner(ref, document, userId);
+                    : await PolicyUtils.getDocumentOwner(ref, document, user.userId);
                 ref.triggerEvents(option.tag, newUser, state);
                 ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state);
             }
         }
 
         if (ref.options.type === 'dropdown') {
-            const newUser = await PolicyUtils.getDocumentOwner(ref, document, userId);
+            const newUser = await PolicyUtils.getDocumentOwner(ref, document, user.userId);
             ref.triggerEvents(PolicyOutputEventType.DropdownEvent, newUser, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state);
         }
@@ -101,19 +107,17 @@ export class InterfaceDocumentActionBlock {
         if (ref.options.type === 'download') {
             const sensorDid = document.document.credentialSubject[0].id;
             const userDID = document.owner;
-            const userCred = await PolicyUtils.getUserCredentials(ref, userDID);
-            const hederaCred = await userCred.loadHederaCredentials(ref, userId);
             const schemaObject = await PolicyUtils.loadSchemaByID(ref, ref.options.schema);
             const schema = new Schema(schemaObject);
-            const didDocument = await userCred.loadSubDidDocument(ref, sensorDid, userId);
-            const sensorKey = await PolicyUtils.getAccountKey(ref, userDID, KeyType.KEY, sensorDid, userId);
+            const sensorKey = await PolicyUtils.getAccountKey(ref, userDID, KeyType.KEY, sensorDid, user.userId);
+            const key = await PolicyActionsUtils.downloadPrivateDocument(ref, userDID, sensorDid, user.userId);
             result = {
                 fileName: ref.options.filename || `${sensorDid}.config.json`,
                 body: {
                     'url': ref.options.targetUrl || process.env.MRV_ADDRESS,
                     'topic': ref.policyInstance?.topicId,
-                    'hederaAccountId': hederaCred.hederaAccountId,
-                    'hederaAccountKey': hederaCred.hederaAccountKey,
+                    'hederaAccountId': key.hederaAccountId,
+                    'hederaAccountKey': key.hederaAccountKey,
                     'installer': userDID,
                     'did': sensorDid,
                     'key': sensorKey,
@@ -123,7 +127,7 @@ export class InterfaceDocumentActionBlock {
                         'type': schema.type,
                         '@context': [schema.contextURL]
                     },
-                    'didDocument': didDocument.getPrivateDocument(),
+                    'didDocument': key.didDocument,
                     'policyId': ref.policyId,
                     'policyTag': ref.policyInstance?.policyTag,
                     'ref': sensorDid
@@ -135,6 +139,7 @@ export class InterfaceDocumentActionBlock {
             action: ref.options.type,
             documents: ExternalDocuments(document)
         }));
+        ref.backup();
 
         return result;
     }

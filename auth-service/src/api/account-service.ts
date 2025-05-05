@@ -86,7 +86,10 @@ export class AccountService extends NatsService {
          * @param username - username
          */
         this.getMessages<IGetUserMessage, User>(AuthEvents.GET_USER,
-            async (msg: { username: string, userId: string | null }) => {
+            async (msg: {
+                username: string,
+                userId: string | null
+            }) => {
                 const { username, userId } = msg;
                 try {
                     const user = await UserUtils.getUser({ username }, UserProp.WITH_KEYS);
@@ -182,7 +185,7 @@ export class AccountService extends NatsService {
          * Get All 'User'
          */
         this.getMessages<any, IGetAllUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS,
-            async (msg: {userId: string | null}) => {
+            async (msg: { userId: string | null }) => {
                 const userId = msg?.userId;
                 try {
                     const userRepository = new DatabaseServer()
@@ -190,10 +193,10 @@ export class AccountService extends NatsService {
                     const users = await userRepository.find(User, { role: UserRole.USER })
 
                     const userAccounts = users.map((e) => ({
-                            username: e.username,
-                            parent: e.parent,
-                            did: e.did
-                        }));
+                        username: e.username,
+                        parent: e.parent,
+                        did: e.did
+                    }));
 
                     return new MessageResponse(userAccounts);
                 } catch (error) {
@@ -206,7 +209,7 @@ export class AccountService extends NatsService {
          * Get All 'Standard Registry'
          */
         this.getMessages<any, IStandardRegistryUserResponse[]>(AuthEvents.GET_ALL_STANDARD_REGISTRY_ACCOUNTS,
-            async (msg: {userId: string | null}) => {
+            async (msg: { userId: string | null }) => {
                 const userId = msg?.userId;
                 try {
                     const userRepository = new DatabaseServer()
@@ -229,7 +232,7 @@ export class AccountService extends NatsService {
          * Get All
          */
         this.getMessages<any, IGetDemoUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO,
-            async (msg: {userId: string | null}) => {
+            async (msg: { userId: string | null }) => {
                 const userId = msg?.userId;
                 try {
                     const userRepository = new DatabaseServer()
@@ -273,7 +276,7 @@ export class AccountService extends NatsService {
 
                     return new MessageResponse(user);
                 } catch (error) {
-                    await logger.error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE'], null);
                     return new MessageError(error)
                 }
             });
@@ -285,7 +288,7 @@ export class AccountService extends NatsService {
                     const user = await UserUtils.createUserTemplate(role, parent, did);
                     return new MessageResponse(user);
                 } catch (error) {
-                    await logger.error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE'], null);
                     return new MessageError(error)
                 }
             });
@@ -314,7 +317,7 @@ export class AccountService extends NatsService {
                         accessToken
                     })
                 } catch (error) {
-                    await logger.error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE'], null);
                     return new MessageError(error)
                 }
             });
@@ -330,7 +333,7 @@ export class AccountService extends NatsService {
                                 const userAccessTokenService = await UserAccessTokenService.New();
                                 const token = userAccessTokenService.generateRefreshToken(user);
                                 if (!Array.isArray(user.refreshToken)) {
-                                  user.refreshToken = [];
+                                    user.refreshToken = [];
                                 }
                                 user.refreshToken.push(token.id);
 
@@ -350,7 +353,7 @@ export class AccountService extends NatsService {
                     }
                     return new MessageError('Unauthorized request', 401);
                 } catch (error) {
-                    await logger.error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE'], null);
                     return new MessageError(error);
                 }
             });
@@ -372,7 +375,7 @@ export class AccountService extends NatsService {
                     user.salt = passwordDigest.salt;
                     user.passwordVersion = passwordDigest.passwordVersion;
                     if (!Array.isArray(user.refreshToken)) {
-                      user.refreshToken = [];
+                        user.refreshToken = [];
                     }
                     user.refreshToken.push(token.id);
 
@@ -427,7 +430,7 @@ export class AccountService extends NatsService {
                     }
 
                     Object.assign(user, item);
-                    const template = await usersRepository.findOne(User,{ did: item.did, template: true });
+                    const template = await usersRepository.findOne(User, { did: item.did, template: true });
                     if (template) {
                         user.permissions = template.permissions;
                         user.permissionsGroup = template.permissionsGroup;

@@ -63,7 +63,6 @@ export class MintService {
                     KeyType.TOKEN_TREASURY_KEY,
                     token.tokenId,
                     userId
-
                 ),
                 MintService.wallet.getUserKey(
                     token.owner,
@@ -137,7 +136,8 @@ export class MintService {
             if (multipleConfig.type === 'Main') {
                 const user = await PolicyUtils.getUserCredentials(
                     ref,
-                    documentOwner.did
+                    documentOwner.did,
+                    userId
                 );
                 await DatabaseServer.createMultiPolicyTransaction({
                     uuid: GenerateUUIDv4(),
@@ -173,6 +173,7 @@ export class MintService {
                         tokenType: token.tokenType,
                         decimals: token.decimals,
                         memo: transactionMemo,
+                        policyId: ref.policyId
                     },
                     root,
                     tokenConfig,
@@ -200,6 +201,7 @@ export class MintService {
                         tokenType: token.tokenType,
                         decimals: token.decimals,
                         memo: transactionMemo,
+                        policyId: ref.policyId
                     },
                     root,
                     tokenConfig,
@@ -320,17 +322,16 @@ export class MintService {
         if (
             request.processDate &&
             Date.now() - request.processDate.getTime() <
-                MintService.RETRY_MINT_INTERVAL * (60 * 1000)
+            MintService.RETRY_MINT_INTERVAL * (60 * 1000)
         ) {
             NotificationHelper.warn(
                 `Retry mint`,
-                `Mint process for ${
-                    request.vpMessageId
+                `Mint process for ${request.vpMessageId
                 } can't be retried. Try after ${Math.ceil(
                     (request.processDate.getTime() +
                         MintService.RETRY_MINT_INTERVAL * (60 * 1000) -
                         Date.now()) /
-                        (60 * 1000)
+                    (60 * 1000)
                 )} minutes`,
                 userId
             );
@@ -425,12 +426,13 @@ export class MintService {
 
     /**
      * Mint
+     * @param root
      * @param token
      * @param tokenValue
-     * @param root
      * @param targetAccount
      * @param ids
      * @param vpMessageId
+     * @param policyId
      * @param userId
      * @param notifier
      */
@@ -441,6 +443,7 @@ export class MintService {
         targetAccount: string,
         ids: string[],
         vpMessageId: string,
+        policyId: string,
         userId: string | null,
         notifier?: NotificationHelper
     ): Promise<void> {
@@ -482,6 +485,7 @@ export class MintService {
                     tokenId: token.tokenId,
                     tokenType: token.tokenType,
                     decimals: token.decimals,
+                    policyId
                 },
                 root,
                 tokenConfig,
@@ -510,6 +514,7 @@ export class MintService {
                     tokenId: token.tokenId,
                     tokenType: token.tokenType,
                     decimals: token.decimals,
+                    policyId
                 },
                 root,
                 tokenConfig,

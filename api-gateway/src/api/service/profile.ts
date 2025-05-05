@@ -1,11 +1,11 @@
-import { DidDocumentStatus, Permissions, SchemaEntity, TaskAction, TopicType } from '@guardian/interfaces';
+import { Permissions, TaskAction } from '@guardian/interfaces';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO, InternalServerErrorDTO, ProfileDTO, TaskDTO } from '#middlewares';
 import { Auth, AuthUser } from '#auth';
 import { CacheService, getCacheKey, Guardians, InternalException, ServiceError, TaskManager, UseCache } from '#helpers';
-import {CACHE, PREFIXES} from '#constants';
+import { CACHE, PREFIXES } from '#constants';
 
 @Controller('profiles')
 @ApiTags('profiles')
@@ -17,12 +17,7 @@ export class ProfileApi {
      * Get user profile.
      */
     @Get('/:username/')
-    @Auth(
-        Permissions.PROFILES_USER_READ
-        // UserRole.STANDARD_REGISTRY,
-        // UserRole.USER,
-        // UserRole.AUDITOR
-    )
+    @Auth(Permissions.PROFILES_USER_READ)
     @ApiOperation({
         summary: 'Returns user account info.',
         description: 'Returns user account information. For users with the Standard Registry role it also returns address book and VC document information.',
@@ -48,64 +43,9 @@ export class ProfileApi {
     async getProfile(
         @AuthUser() user: IAuthUser
     ): Promise<ProfileDTO> {
-        const guardians = new Guardians();
         try {
-            let didDocument: any = null;
-            if (user.did) {
-                const didDocuments = await guardians.getDidDocuments({ did: user.did }, user.id);
-                if (didDocuments) {
-                    didDocument = didDocuments[didDocuments.length - 1];
-                }
-            }
-
-            let vcDocument: any = null;
-            if (user.did) {
-                let vcDocuments = await guardians.getVcDocuments({
-                    owner: user.did,
-                    type: SchemaEntity.USER
-                }, user.id);
-                if (vcDocuments && vcDocuments.length) {
-                    vcDocument = vcDocuments[vcDocuments.length - 1];
-                }
-                vcDocuments = await guardians.getVcDocuments({
-                    owner: user.did,
-                    type: SchemaEntity.STANDARD_REGISTRY
-                }, user.id);
-                if (vcDocuments && vcDocuments.length) {
-                    vcDocument = vcDocuments[vcDocuments.length - 1];
-                }
-            }
-
-            let topic: any;
-            if (user.did || user.parent) {
-                const filters = [];
-                if (user.did) {
-                    filters.push(user.did);
-                }
-                if (user.parent) {
-                    filters.push(user.parent);
-                }
-                topic = await guardians.getTopic({
-                    type: TopicType.UserTopic,
-                    owner: { $in: filters }
-                }, user.id);
-            }
-
-            return {
-                username: user.username,
-                role: user.role,
-                permissionsGroup: user.permissionsGroup,
-                permissions: user.permissions,
-                did: user.did,
-                parent: user.parent,
-                hederaAccountId: user.hederaAccountId,
-                confirmed: !!(didDocument && didDocument.status === DidDocumentStatus.CREATE),
-                failed: !!(didDocument && didDocument.status === DidDocumentStatus.FAILED),
-                topicId: topic?.topicId,
-                parentTopicId: topic?.parent,
-                didDocument,
-                vcDocument
-            };
+            const guardians = new Guardians();
+            return await guardians.getProfile(user);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -154,7 +94,7 @@ export class ProfileApi {
         const username: string = user.username;
         const guardians = new Guardians();
         try {
-            await guardians.createUserProfileCommon(username, profile, user.id);
+            await guardians.createUserProfileCommon(user, username, profile);
         } catch (error) {
             throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
         }
@@ -211,7 +151,7 @@ export class ProfileApi {
         const invalidedCacheTags = [`/${PREFIXES.PROFILES}/${username}`, `/${PREFIXES.ACCOUNTS}/session`];
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.createUserProfileCommonAsync(username, profile, task, user.id);
+            await guardians.createUserProfileCommonAsync(user, username, profile, task);
 
             setTimeout(async () => await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user)), 10000)
         }, async (error) => {
@@ -263,7 +203,7 @@ export class ProfileApi {
             return null;
         }
         const guardians = new Guardians();
-        const balance = await guardians.getUserBalance(username, user.id);
+        const balance = await guardians.getUserBalance(user, username);
         if (isNaN(parseFloat(balance))) {
             throw new HttpException(balance, HttpStatus.UNPROCESSABLE_ENTITY);
         }
@@ -317,7 +257,7 @@ export class ProfileApi {
         const invalidedCacheTags = [`/${PREFIXES.PROFILES}/${username}`];
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.restoreUserProfileCommonAsync(username, profile, task, user.id);
+            await guardians.restoreUserProfileCommonAsync(user, username, profile, task);
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
         }, async (error) => {
@@ -375,7 +315,7 @@ export class ProfileApi {
         const invalidedCacheTags = [`/${PREFIXES.PROFILES}/${username}`];
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.getAllUserTopicsAsync(username, profile, task, user.id);
+            await guardians.getAllUserTopicsAsync(user, username, profile, task);
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
         }, async (error) => {
@@ -424,7 +364,7 @@ export class ProfileApi {
         }
         try {
             const guardians = new Guardians();
-            return await guardians.validateDidDocument(document, user.id);
+            return await guardians.validateDidDocument(user, document);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -474,7 +414,7 @@ export class ProfileApi {
         }
         try {
             const guardians = new Guardians();
-            return await guardians.validateDidKeys(document, keys, user.id);
+            return await guardians.validateDidKeys(user, document, keys);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

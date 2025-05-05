@@ -3,7 +3,7 @@ import { Controller, Get, HttpCode, HttpStatus, Param, Query, Response } from '@
 import { Permissions } from '@guardian/interfaces';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiInternalServerErrorResponse, ApiExtraModels, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { Guardians, Users, UseCache, ONLY_SR, InternalException } from '#helpers';
-import {Auth, AuthUser} from '#auth';
+import { Auth, AuthUser } from '#auth';
 import { Examples, InternalServerErrorDTO, VpDocumentDTO, pageHeader } from '#middlewares';
 
 @Controller('trust-chains')
@@ -80,7 +80,7 @@ export class TrustChainsApi {
             } else if (policyOwner) {
                 filters = { policyOwner }
             }
-            const { items, count } = await guardians.getVpDocuments(user.id, { filters, pageIndex, pageSize });
+            const { items, count } = await guardians.getVpDocuments(user, { filters, pageIndex, pageSize });
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -187,7 +187,7 @@ export class TrustChainsApi {
     ): Promise<any> {
         try {
             const guardians = new Guardians();
-            const chain = await guardians.getChain(hash, authUser.id);
+            const chain = await guardians.getChain(authUser, hash);
             const DIDs = chain.map((item) => {
                 if (item.type === 'VC' && item.document) {
                     if (typeof item.document.issuer === 'string') {

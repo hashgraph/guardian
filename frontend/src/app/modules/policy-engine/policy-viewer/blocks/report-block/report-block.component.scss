@@ -897,3 +897,8 @@ h3 {
         white-space: break-spaces;
     }
 }
+
+*[readonly-block="true"] {
+    pointer-events: none !important;
+    filter: grayscale(1);
+}

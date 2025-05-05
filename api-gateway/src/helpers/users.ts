@@ -234,7 +234,7 @@ export class Users extends NatsService {
     }
 
     public async generateNewUserTokenBasedOnExternalUserProvider(userProvider: ProviderAuthUser): Promise<any> {
-        return await this.sendMessage(AuthEvents.GENERATE_NEW_TOKEN_BASED_ON_USER_PROVIDER, {...userProvider, userId: null});
+        return await this.sendMessage(AuthEvents.GENERATE_NEW_TOKEN_BASED_ON_USER_PROVIDER, { ...userProvider, userId: null });
     }
 
     /**
@@ -243,7 +243,7 @@ export class Users extends NatsService {
      * @param userId
      */
     public async getPermissions(userId: string | null): Promise<any[]> {
-        return await this.sendMessage(AuthEvents.GET_PERMISSIONS, {userId});
+        return await this.sendMessage(AuthEvents.GET_PERMISSIONS, { userId });
     }
 
     /**
@@ -253,7 +253,7 @@ export class Users extends NatsService {
      * @returns Operation Success
      */
     public async getRoles(options: any, userId: string | null): Promise<ResponseAndCount<any>> {
-        return await this.sendMessage(AuthEvents.GET_ROLES, {...options, userId});
+        return await this.sendMessage(AuthEvents.GET_ROLES, { ...options, userId });
     }
 
     /**
@@ -316,7 +316,7 @@ export class Users extends NatsService {
      * @returns Operation Success
      */
     public async getWorkers(options: any, userId: string | null): Promise<ResponseAndCount<any>> {
-        return await this.sendMessage(AuthEvents.GET_USER_ACCOUNTS, {...options, userId});
+        return await this.sendMessage(AuthEvents.GET_USER_ACCOUNTS, { ...options, userId });
     }
 
     /**
@@ -511,7 +511,7 @@ export class UsersService {
         return await this.users.getStatus();
     }
 
-    public async generateNewUserTokenBasedOnExternalUserProvider(userProvider: ProviderAuthUser,): Promise<any> {
+    public async generateNewUserTokenBasedOnExternalUserProvider(userProvider: ProviderAuthUser): Promise<any> {
         return await this.users.generateNewUserTokenBasedOnExternalUserProvider(userProvider);
     }
 }

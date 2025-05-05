@@ -4,6 +4,7 @@ import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { SynchronizationMessageBody } from './message-body.interface.js';
 import { MultiPolicy } from '../../entity/index.js';
+import { MultiPolicyType } from '@guardian/interfaces';
 
 /**
  * Synchronization message
@@ -24,7 +25,7 @@ export class SynchronizationMessage extends Message {
     /**
      * Policy Type
      */
-    public policyType: string;
+    public policyType: MultiPolicyType;
     /**
      * Message Id
      */
@@ -188,6 +189,24 @@ export class SynchronizationMessage extends Message {
         result.memo = this.memo;
         result.target = this.target;
         result.policyOwner = this.policyOwner;
+        return result;
+    }
+
+    public static fromJson(json: any): SynchronizationMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
+        const result = Message._fromJson(new SynchronizationMessage(json.action), json);
+        result.user = json.user;
+        result.policy = json.policy;
+        result.policyType = json.policyType;
+        result.messageId = json.messageId;
+        result.tokenId = json.tokenId;
+        result.amount = json.amount;
+        result.memo = json.memo;
+        result.target = json.target;
+        result.policyOwner = json.policyOwner;
         return result;
     }
 

@@ -17,8 +17,6 @@ export class RemoteDidLoader extends DocumentLoader {
             {
                 type: WorkerTaskType.GET_TOPIC_MESSAGES,
                 data: {
-                    operatorId: null,
-                    operatorKey: null,
                     dryRun: false,
                     topic: topicId,
                     payload: { userId: null }

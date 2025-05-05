@@ -9,6 +9,7 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { FilterQuery } from '@mikro-orm/core';
 import { VcDocument, VpDocument } from '@guardian/common';
+import { LocationType } from '@guardian/interfaces';
 
 /**
  * Document Validator
@@ -16,6 +17,7 @@ import { VcDocument, VpDocument } from '@guardian/common';
 @ValidatorBlock({
     blockType: 'documentValidatorBlock',
     commonBlock: false,
+    actionType: LocationType.LOCAL,
     about: {
         label: 'Validator',
         title: `Add 'Validator' Block`,
@@ -211,5 +213,6 @@ export class DocumentValidatorBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
             documents: ExternalDocuments(event?.data?.data)
         }));
+        ref.backup();
     }
 }

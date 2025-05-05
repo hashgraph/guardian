@@ -5,17 +5,20 @@ import {
     OnLoad,
     Property,
     AfterDelete,
+    AfterUpdate,
+    AfterCreate
 } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { RestoreEntity } from '../models/index.js';
 import { GenerateUUIDv4, IVC } from '@guardian/interfaces';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers/index.js';
+import { DeleteCache } from './delete-cache.js';
 
 /**
  * MultiDocuments collection
  */
 @Entity()
-export class MultiDocuments extends BaseEntity {
+export class MultiDocuments extends RestoreEntity {
     /**
      * Block UUID
      */
@@ -71,22 +74,21 @@ export class MultiDocuments extends BaseEntity {
     documentFileId?: ObjectId;
 
     /**
-     * Create document
+     * Policy id
      */
-    @BeforeCreate()
-    async createDocument() {
-        await new Promise<void>((resolve, reject) => {
+    @Property({
+        nullable: true,
+        index: true
+    })
+    policyId?: string;
+
+    private _createDocument(document: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
             try {
-                if (this.document) {
-                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                        GenerateUUIDv4()
-                    );
-                    this.documentFileId = fileStream.id;
-                    fileStream.write(JSON.stringify(this.document));
-                    fileStream.end(() => resolve());
-                } else {
-                    resolve();
-                }
+                const fileStream = DataBaseHelper.gridFS.openUploadStream(GenerateUUIDv4());
+                this.documentFileId = fileStream.id;
+                fileStream.write(document);
+                fileStream.end(() => resolve());
             } catch (error) {
                 reject(error)
             }
@@ -94,24 +96,48 @@ export class MultiDocuments extends BaseEntity {
     }
 
     /**
+     * Create document
+     */
+    @BeforeCreate()
+    async createDocument() {
+        if (this.document) {
+            const document = JSON.stringify(this.document);
+            await this._createDocument(document);
+            delete this.document;
+            this._updateDocHash(document);
+        } else {
+            this._updateDocHash('');
+        }
+        const prop: any = {};
+        prop.uuid = this.uuid;
+        prop.userId = this.userId;
+        prop.did = this.did;
+        prop.username = this.username;
+        prop.group = this.group;
+        prop.status = this.status;
+        prop.documentId = this.documentId;
+        this._updatePropHash(prop);
+    }
+
+    /**
      * Update document
      */
     @BeforeUpdate()
     async updateDocument() {
-        if (this.document) {
-            if (this.documentFileId) {
-                DataBaseHelper.gridFS
-                    .delete(this.documentFileId)
-                    .catch(console.error);
-            }
-            await this.createDocument();
+        if (this.document && this.documentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.documentFileId)
+                .catch(console.error);
         }
+        await this.createDocument();
     }
 
     /**
      * Load document
      */
     @OnLoad()
+    @AfterUpdate()
+    @AfterCreate()
     async loadDocument() {
         if (this.documentFileId) {
             const fileStream = DataBaseHelper.gridFS.openDownloadStream(
@@ -135,6 +161,22 @@ export class MultiDocuments extends BaseEntity {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
                 .catch(console.error);
+        }
+    }
+
+    /**
+     * Save delete cache
+     */
+    @AfterDelete()
+    override async deleteCache() {
+        try {
+            new DataBaseHelper(DeleteCache).save({
+                rowId: this._id?.toString(),
+                policyId: this.policyId,
+                collection: 'MultiDocuments',
+            })
+        } catch (error) {
+            console.error(error);
         }
     }
 }

@@ -254,3 +254,8 @@
     flex-direction: column;
     align-items: center;
 }
+
+*[readonly-block="true"] {
+    pointer-events: none !important;
+    filter: grayscale(1);
+}

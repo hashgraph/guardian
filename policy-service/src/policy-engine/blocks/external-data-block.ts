@@ -1,5 +1,5 @@
 import { ActionCallback, ExternalData } from '../helpers/decorators/index.js';
-import { DocumentSignature, Schema } from '@guardian/interfaces';
+import { DocumentSignature, LocationType, Schema } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyOutputEventType } from '../interfaces/index.js';
@@ -21,6 +21,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 @ExternalData({
     blockType: 'externalDataBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'External Data',
         title: `Add 'External Data' Block`,
@@ -154,18 +155,16 @@ export class ExternalDataBlock {
                 verify = await VCHelper.verifyVC(data.document);
             }
         } catch (error) {
-            ref.error(`Verify VC: ${PolicyUtils.getErrorMessage(error)}`)
+            ref.error(`Verify VC: ${PolicyUtils.getErrorMessage(error)}`);
             verify = false;
         }
 
-        const docOwner = await PolicyUtils.getUserCredentials(ref, data.owner);
-        const userId = docOwner.userId
-
-        const user: PolicyUser = await PolicyUtils.getDocumentOwner(ref, data, userId);
+        const user: PolicyUser = await PolicyUtils.getDocumentOwner(ref, data, null);
+        const docOwnerAccountId = await PolicyUtils.getHederaAccountId(ref, data.owner, user.userId);
         const documentRef = await this.getRelationships(ref, data.ref);
         const schema = await this.getSchema();
         const vc = VcDocument.fromJsonTree(data.document);
-        const accounts = PolicyUtils.getHederaAccounts(vc, docOwner.hederaAccountId, schema);
+        const accounts = PolicyUtils.getHederaAccounts(vc, docOwnerAccountId, schema);
 
         let doc = PolicyUtils.createVC(ref, user, vc);
         doc.type = ref.options.entityType;
@@ -189,5 +188,6 @@ export class ExternalDataBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             documents: ExternalDocuments(doc)
         }));
+        ref.backup();
     }
 }

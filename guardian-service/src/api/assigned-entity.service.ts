@@ -1,6 +1,7 @@
 import { ApiResponse } from './helpers/api-response.js';
 import {
     DatabaseServer,
+    IAuthUser,
     MessageError,
     MessageResponse,
     PinoLogger,
@@ -44,14 +45,13 @@ export async function AssignedEntityAPI(logger: PinoLogger): Promise<void> {
      * @param payload - option
      */
     ApiResponse(MessageAPI.ASSIGN_ENTITY, async (msg: {
+        user: IAuthUser,
         type: AssignedEntityType,
         entityIds: string[],
         assign: boolean,
         did: string,
         owner: string,
-        userId: string | null
     }) => {
-        const userId = msg?.userId
         try {
             if (!msg) {
                 throw new Error('Invalid assign parameters');
@@ -73,7 +73,7 @@ export async function AssignedEntityAPI(logger: PinoLogger): Promise<void> {
             }
             return new MessageResponse(assign);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+            await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
             return new MessageError(error);
         }
     });
@@ -84,13 +84,12 @@ export async function AssignedEntityAPI(logger: PinoLogger): Promise<void> {
      * @param payload - option
      */
     ApiResponse(MessageAPI.CHECK_ENTITY, async (msg: {
+        user: IAuthUser,
         type: AssignedEntityType,
         entityId: string,
         checkAssign: boolean,
         did: string,
-        userId: string | null
     }) => {
-        const userId = msg?.userId
         try {
             if (!msg) {
                 throw new Error('Invalid assign parameters');
@@ -109,7 +108,7 @@ export async function AssignedEntityAPI(logger: PinoLogger): Promise<void> {
 
             return new MessageResponse(true);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+            await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
             return new MessageError(error);
         }
     });
@@ -120,11 +119,10 @@ export async function AssignedEntityAPI(logger: PinoLogger): Promise<void> {
      * @param payload - option
      */
     ApiResponse(MessageAPI.ASSIGNED_ENTITIES, async (msg: {
+        user: IAuthUser,
         did: string,
-        type?: AssignedEntityType,
-        userId: string | null
+        type?: AssignedEntityType
     }) => {
-        const userId = msg?.userId
         try {
             if (!msg) {
                 throw new Error('Invalid assign parameters');
@@ -133,7 +131,7 @@ export async function AssignedEntityAPI(logger: PinoLogger): Promise<void> {
             const items = await DatabaseServer.getAssignedEntities(did, type);
             return new MessageResponse(items);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+            await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
             return new MessageError(error);
         }
     });
@@ -144,14 +142,13 @@ export async function AssignedEntityAPI(logger: PinoLogger): Promise<void> {
      * @param payload - option
      */
     ApiResponse(MessageAPI.DELEGATE_ENTITY, async (msg: {
+        user: IAuthUser,
         type: AssignedEntityType,
         entityIds: string[],
         assign: boolean,
         did: string,
-        owner: string,
-        userId: string | null
+        owner: string
     }) => {
-        const userId = msg?.userId
         try {
             if (!msg) {
                 throw new Error('Invalid assign parameters');
@@ -177,23 +174,26 @@ export async function AssignedEntityAPI(logger: PinoLogger): Promise<void> {
             }
             return new MessageResponse(assign);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+            await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
             return new MessageError(error);
         }
     });
 
     ApiResponse(MessageAPI.GET_ASSIGNED_POLICIES,
         async (msg: {
-            owner: string,
-            user: string,
-            target: string,
-            status: string,
-            onlyOwn: boolean,
-            pageIndex: string,
-            pageSize: string
+            user: IAuthUser,
+            options: {
+                owner: string,
+                user: string,
+                target: string,
+                status: string,
+                onlyOwn: boolean,
+                pageIndex: string,
+                pageSize: string
+            }
         }) => {
             try {
-                const { owner, user, target, status, onlyOwn, pageIndex, pageSize } = msg;
+                const { owner, user, target, status, onlyOwn, pageIndex, pageSize } = msg.options;
                 const otherOptions: any = {
                     fields: [
                         'id',

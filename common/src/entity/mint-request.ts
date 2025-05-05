@@ -1,12 +1,14 @@
-import { Entity, Enum, Property } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { Entity, Enum, Property, BeforeCreate, BeforeUpdate, AfterDelete } from '@mikro-orm/core';
+import { RestoreEntity } from '../models/index.js';
 import { TokenType } from '@guardian/interfaces';
+import { DataBaseHelper } from '../helpers/db-helper.js';
+import { DeleteCache } from './delete-cache.js';
 
 /**
  * Mint request
  */
 @Entity()
-export class MintRequest extends BaseEntity {
+export class MintRequest extends RestoreEntity {
     /**
      * Amount
      */
@@ -105,4 +107,63 @@ export class MintRequest extends BaseEntity {
      */
     @Property({ nullable: true })
     processDate?: Date;
+
+    /**
+     * Policy id
+     */
+    @Property({
+        nullable: true,
+        index: true
+    })
+    policyId?: string;
+
+    /**
+     * Readonly
+     */
+    @Property({ nullable: true })
+    readonly?: boolean;
+
+    /**
+     * Create document
+     */
+    @BeforeCreate()
+    @BeforeUpdate()
+    async createDocument() {
+        const prop: any = {};
+        prop.amount = this.amount;
+        prop.tokenId = this.tokenId;
+        prop.tokenType = this.tokenType;
+        prop.decimals = this.decimals;
+        prop.target = this.target;
+        prop.vpMessageId = this.vpMessageId;
+        prop.secondaryVpIds = this.secondaryVpIds;
+        prop.startSerial = this.startSerial;
+        prop.startTransaction = this.startTransaction;
+        prop.isMintNeeded = this.isMintNeeded;
+        prop.isTransferNeeded = this.isTransferNeeded;
+        prop.wasTransferNeeded = this.wasTransferNeeded;
+        prop.memo = this.memo;
+        prop.metadata = this.metadata;
+        prop.error = this.error;
+        prop.processDate = this.processDate;
+        prop.policyId = this.policyId;
+        this._updatePropHash(prop);
+        this._updateDocHash('');
+    }
+
+    /**
+     * Save delete cache
+     */
+    @AfterDelete()
+    override async deleteCache() {
+        try {
+            new DataBaseHelper(DeleteCache).save({
+                rowId: this._id?.toString(),
+                policyId: this.policyId,
+                collection: 'BlockState',
+            })
+        } catch (error) {
+            console.error(error);
+        }
+    }
 }

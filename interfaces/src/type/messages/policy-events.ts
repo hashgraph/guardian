@@ -41,5 +41,9 @@ export enum PolicyEvents {
     RECORD_RETRY_STEP = 'policy-event-retry-step',
     RECORD_SKIP_STEP = 'policy-event-skip-step',
     REFRESH_MODEL = 'policy-event-refresh-model',
-    GET_TAG_BLOCK_MAP = 'policy-event-get-tag-block-map'
+    GET_TAG_BLOCK_MAP = 'policy-event-get-tag-block-map',
+    APPROVE_REMOTE_REQUEST = 'approve-remote-request',
+    REJECT_REMOTE_REQUEST = 'reject-remote-request',
+    REQUEST_UPDATE_BROADCAST = 'policy-event-request-update-broadcast',
+    RESTORE_UPDATE_BROADCAST = 'policy-event-restore-update-broadcast',
 }

@@ -2,10 +2,10 @@ import { AboutInterface, CommonSettings, Permissions } from '@guardian/interface
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SettingsDTO, InternalServerErrorDTO } from '#middlewares';
-import {Auth, AuthUser} from '#auth';
+import { Auth, AuthUser } from '#auth';
 import { Guardians, InternalException } from '#helpers';
 import process from 'process';
-import {IAuthUser, PinoLogger} from '@guardian/common';
+import { IAuthUser, PinoLogger } from '@guardian/common';
 
 @Controller('settings')
 @ApiTags('settings')
@@ -46,7 +46,7 @@ export class SettingsApi {
         try {
             const settings = body as CommonSettings;
             const guardians = new Guardians();
-            await Promise.all([guardians.updateSettings(settings, user.id)]);
+            await Promise.all([guardians.updateSettings(user, settings)]);
             return null;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -80,7 +80,7 @@ export class SettingsApi {
     ): Promise<SettingsDTO> {
         try {
             const guardians = new Guardians();
-            const [guardiansSettings] = await Promise.all([guardians.getSettings(user.id)]);
+            const [guardiansSettings] = await Promise.all([guardians.getSettings(user)]);
             return { ...guardiansSettings } as any;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -111,7 +111,7 @@ export class SettingsApi {
     ): Promise<string> {
         try {
             const guardians = new Guardians();
-            return await guardians.getEnvironment(user.id);
+            return await guardians.getEnvironment(user);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

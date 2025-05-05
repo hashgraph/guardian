@@ -3,7 +3,7 @@ import client, { Registry } from 'prom-client';
 import process from 'process';
 import { PinoLogger } from '../helpers/index.js';
 
-export class MetricsService{
+export class MetricsService {
     private readonly logger: PinoLogger;
     private readonly server: Express;
     private readonly register: Registry;
@@ -23,7 +23,8 @@ export class MetricsService{
         });
 
         this.server.listen(this.port, () => {
-            this.logger.info(`Prometeus client listening on port ${this.port}`);
+            this.logger
+                .info(`Prometeus client listening on port ${this.port}`, null, null);
         })
     }
 }

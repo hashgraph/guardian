@@ -1,8 +1,8 @@
-import { Entity, Enum, Index, Property } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
-import {
-    MintTransactionStatus,
-} from '@guardian/interfaces';
+import { Entity, Enum, Index, Property, BeforeCreate, BeforeUpdate, AfterDelete } from '@mikro-orm/core';
+import { RestoreEntity } from '../models/index.js';
+import { MintTransactionStatus } from '@guardian/interfaces';
+import { DataBaseHelper } from '../helpers/db-helper.js';
+import { DeleteCache } from './delete-cache.js';
 
 /**
  * Mint transaction
@@ -16,7 +16,7 @@ import {
     name: 'transfer_status_index',
 })
 @Entity()
-export class MintTransaction extends BaseEntity {
+export class MintTransaction extends RestoreEntity {
     /**
      * Amount
      */
@@ -52,4 +52,53 @@ export class MintTransaction extends BaseEntity {
      */
     @Property({ nullable: true })
     error?: string;
+
+    /**
+     * Policy id
+     */
+    @Property({
+        nullable: true,
+        index: true
+    })
+    policyId?: string;
+
+    /**
+     * Readonly
+     */
+    @Property({ nullable: true })
+    readonly?: boolean;
+
+    /**
+     * Create document
+     */
+    @BeforeCreate()
+    @BeforeUpdate()
+    async createDocument() {
+        const prop: any = {};
+        prop.amount = this.amount;
+        prop.mintRequestId = this.mintRequestId;
+        prop.mintStatus = this.mintStatus;
+        prop.transferStatus = this.transferStatus;
+        prop.serials = this.serials;
+        prop.error = this.error;
+        prop.policyId = this.policyId;
+        this._updatePropHash(prop);
+        this._updateDocHash('');
+    }
+
+    /**
+     * Save delete cache
+     */
+    @AfterDelete()
+    override async deleteCache() {
+        try {
+            new DataBaseHelper(DeleteCache).save({
+                rowId: this._id?.toString(),
+                policyId: this.policyId,
+                collection: 'BlockState',
+            })
+        } catch (error) {
+            console.error(error);
+        }
+    }
 }

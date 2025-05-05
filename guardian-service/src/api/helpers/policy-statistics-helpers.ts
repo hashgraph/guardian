@@ -1,6 +1,6 @@
 import { DatabaseServer, PolicyStatistic, SchemaConverterUtils, TopicConfig, TopicHelper, Users, VcDocument, VcHelper } from '@guardian/common';
-import { GenerateUUIDv4, IOwner, IStatisticConfig, PolicyType, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
-import { generateSchemaContext } from './schema-publish-helper.js';
+import { GenerateUUIDv4, IOwner, IStatisticConfig, PolicyStatus, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
+import { generateSchemaContext } from '../../helpers/import-helpers/index.js';
 
 export async function addPrevRelationships(doc: VcDocument, relationships: Set<string>) {
     if (doc && doc.relationships) {
@@ -210,7 +210,7 @@ export async function getOrCreateTopic(item: PolicyStatistic, userId: string | n
     }
 
     const policy = await DatabaseServer.getPolicyById(item.policyId);
-    if (!policy || policy.status !== PolicyType.PUBLISH) {
+    if (!policy || policy.status !== PolicyStatus.PUBLISH) {
         throw Error('Item does not exist.');
     }
 
@@ -267,7 +267,6 @@ export function uniqueDocuments(documents: VcDocument[]): VcDocument[] {
     }
     const result: VcDocument[] = [];
     for (const item of map.values()) {
-        console.log(item.size)
         for (const doc of item.values()) {
             if (Array.isArray(doc.relationships)) {
                 for (const messageId of doc.relationships) {

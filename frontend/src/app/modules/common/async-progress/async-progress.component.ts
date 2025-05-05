@@ -259,6 +259,20 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     });
                 }
                 break;
+            case TaskAction.APPROVE_EXTERNAL_POLICY:
+                if (result) {
+                    const { isValid, errors, policyId } = result;
+                    if (!isValid) {
+                        this._configurationErrors.set(policyId, errors);
+                    }
+                    this.router.navigate(['policy-viewer'], {
+                        queryParams: {
+                            tab: 'remote',
+                        },
+                        replaceUrl: true,
+                    });
+                }
+                break;
             case TaskAction.PUBLISH_TOOL:
                 if (result) {
                     const { isValid, errors, tool } = result;
@@ -330,7 +344,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 this.router.navigate(['policy-labels'], {
                     replaceUrl: true,
                 });
-                break;  
+                break;
         }
     }
 

@@ -1,206 +1,7 @@
-import { DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, PinoLogger, Policy as PolicyCollection, PolicyModule as ModuleCollection, PolicyTool as PolicyToolCollection, Schema as SchemaCollection, Tag, TagMessage, Token as TokenCollection, TopicConfig, UrlType, Users, VcHelper } from '@guardian/common';
-import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
+import { DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, PinoLogger, Tag, TagMessage, TopicConfig, Users, VcHelper } from '@guardian/common';
+import { GenerateUUIDv4, IOwner, MessageAPI, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
-
-/**
- * Publish schema tags
- * @param schema
- * @param owner
- * @param root
- */
-export async function publishSchemaTags(
-    schema: SchemaCollection,
-    owner: IOwner,
-    root: IRootConfig
-): Promise<void> {
-    const filter: any = {
-        localTarget: schema.id,
-        entity: TagType.Schema,
-        status: 'Draft'
-    }
-    const tags = await DatabaseServer.getTags(filter);
-
-    const topic = await DatabaseServer.getTopicById(schema.topicId);
-    const topicConfig = await TopicConfig.fromObject(topic, true, owner.id);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
-        .setTopicObject(topicConfig);
-
-    const tagObjects = []
-
-    for (const tag of tags) {
-        tag.target = schema.messageId;
-        await publishTag(tag, messageServer, owner);
-
-        tagObjects.push(tag);
-    }
-
-    await new DatabaseServer().updateTags(tagObjects);
-}
-
-/**
- * Publish policy tags
- * @param policy
- * @param owner
- * @param root
- */
-export async function publishPolicyTags(
-    policy: PolicyCollection,
-    owner: IOwner,
-    root: IRootConfig
-): Promise<void> {
-    const filter: any = {
-        localTarget: policy.id,
-        entity: TagType.Policy,
-        status: 'Draft'
-    }
-    const tags = await DatabaseServer.getTags(filter);
-
-    const topic = await DatabaseServer.getTopicById(policy.topicId);
-    const topicConfig = await TopicConfig.fromObject(topic, true, owner.id);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
-        .setTopicObject(topicConfig);
-
-    const tagObjects = []
-
-    for (const tag of tags) {
-        tag.target = policy.messageId;
-        await publishTag(tag, messageServer, owner);
-
-        tagObjects.push(tag);
-    }
-
-    await new DatabaseServer().updateTags(tagObjects);
-}
-
-/**
- * Publish token tags
- * @param token
- * @param owner
- * @param root
- */
-export async function publishTokenTags(
-    token: TokenCollection,
-    owner: IOwner,
-    root: IRootConfig
-): Promise<void> {
-    const filter: any = {
-        localTarget: token.id,
-        entity: TagType.Token,
-        status: 'Draft'
-    }
-    const tags = await DatabaseServer.getTags(filter);
-
-    const topic = await DatabaseServer.getTopicById(token.topicId);
-    const topicConfig = await TopicConfig.fromObject(topic, true, owner.id);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
-        .setTopicObject(topicConfig);
-
-    const tagObjects = []
-
-    for (const tag of tags) {
-        tag.target = token.tokenId;
-        await publishTag(tag, messageServer, owner);
-
-        tagObjects.push(tag);
-    }
-
-    await new DatabaseServer().updateTags(tagObjects);
-}
-
-/**
- * Publish tool tags
- * @param tool
- * @param owner
- * @param root
- */
-export async function publishToolTags(
-    tool: PolicyToolCollection,
-    owner: IOwner,
-    root: IRootConfig
-): Promise<void> {
-    const filter: any = {
-        localTarget: tool.id,
-        entity: TagType.Tool,
-        status: 'Draft'
-    }
-    const tags = await DatabaseServer.getTags(filter);
-    const topic = await DatabaseServer.getTopicById(tool.tagsTopicId);
-    const topicConfig = await TopicConfig.fromObject(topic, true, owner.id);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
-        .setTopicObject(topicConfig);
-
-    const tagObjects = []
-
-    for (const tag of tags) {
-        tag.target = tool.tagsTopicId;
-        await publishTag(tag, messageServer, owner);
-
-        tagObjects.push(tag);
-    }
-
-    await new DatabaseServer().updateTags(tagObjects);
-}
-
-/**
- * Publish module tags
- * @param module
- * @param owner
- * @param root
- */
-export async function publishModuleTags(
-    module: ModuleCollection,
-    owner: IOwner,
-    root: IRootConfig
-): Promise<void> {
-    const filter: any = {
-        localTarget: module.id,
-        entity: TagType.Module,
-        status: 'Draft'
-    }
-    const tags = await DatabaseServer.getTags(filter);
-
-    const topic = await DatabaseServer.getTopicById(module.topicId);
-    const topicConfig = await TopicConfig.fromObject(topic, true, owner.id);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
-        .setTopicObject(topicConfig);
-
-    const tagObjects = []
-
-    for (const tag of tags) {
-        tag.target = module.messageId;
-        await publishTag(tag, messageServer, owner);
-
-        tagObjects.push(tag);
-    }
-
-    await new DatabaseServer().updateTags(tagObjects);
-}
-
-/**
- * Publish tag
- * @param item
- * @param messageServer
- * @param owner
- */
-export async function publishTag(
-    item: Tag,
-    messageServer: MessageServer,
-    owner: IOwner
-): Promise<any> {
-    item.operation = 'Create';
-    item.status = 'Published';
-    item.date = item.date || (new Date()).toISOString();
-    const message = new TagMessage(MessageAction.PublishTag);
-    message.setDocument(item);
-    const result = await messageServer
-        .sendMessage(message, true, null, owner.id);
-    const messageId = result.getId();
-    const topicId = result.getTopicId();
-    item.messageId = messageId;
-    item.topicId = topicId;
-    item.uri = result.getDocumentUrl(UrlType.url);
-    return item;
-}
+import { publishTag } from '../helpers/import-helpers/index.js'
 
 /**
  * Delete tag
@@ -355,8 +156,10 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
      * @returns {Tag} new tag
      */
     ApiResponse(MessageAPI.CREATE_TAG,
-        async (msg: { tag: any, owner: IOwner, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            tag: any,
+            owner: IOwner
+        }) => {
             try {
                 if (!msg) {
                     throw new Error('Invalid Params');
@@ -371,7 +174,7 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 const target = await getTarget(tag.entity, tag.localTarget || tag.target);
                 if (target) {
                     const users = new Users();
-                    const root = await users.getHederaAccount(owner.creator, userId);
+                    const root = await users.getHederaAccount(owner.creator, owner?.id);
                     //Document
                     if (tag.document && typeof tag.document === 'object') {
                         const vcHelper = new VcHelper();
@@ -388,7 +191,7 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                             credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
                         }
 
-                        const didDocument = await vcHelper.loadDidDocument(owner.creator, userId);
+                        const didDocument = await vcHelper.loadDidDocument(owner.creator, owner?.id);
                         const vcObject = await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
                         tag.document = vcObject.getDocument();
                     } else {
@@ -400,7 +203,7 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                         tag.localTarget = target.id;
                         tag.status = 'Published';
                         const topic = await DatabaseServer.getTopicById(target.topicId);
-                        const topicConfig = await TopicConfig.fromObject(topic, true, userId);
+                        const topicConfig = await TopicConfig.fromObject(topic, true, owner?.id);
                         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
                             .setTopicObject(topicConfig);
                         await publishTag(tag, messageServer, owner);
@@ -415,59 +218,69 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('Invalid target');
                 }
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.GET_TAGS,
-        async (msg: { entity: string, targets: string[], userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            owner: IOwner,
+            entity: string,
+            targets: string[]
+        }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid load tags parameter');
                 }
                 const { targets, entity } = msg;
                 const filter: any = {
-                        localTarget: { $in: targets },
-                        entity
+                    localTarget: { $in: targets },
+                    entity
                 }
                 const items = await DatabaseServer.getTags(filter);
                 return new MessageResponse(items);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.GET_TAG_CACHE,
-        async (msg: { entity: string, targets: string[], userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            owner: IOwner,
+            entity: string,
+            targets: string[]
+        }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid load tags parameter');
                 }
                 const { targets, entity } = msg;
                 const filter: any = {
-                        localTarget: { $in: targets },
-                        entity
+                    localTarget: { $in: targets },
+                    entity
                 }
                 const items = await DatabaseServer.getTagCache(filter);
                 return new MessageResponse(items);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.GET_SYNCHRONIZATION_TAGS,
-        async (msg: { entity: TagType, target: string, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            owner: IOwner,
+            entity: TagType,
+            target: string
+        }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid load tags parameter');
                 }
-                const { target, entity } = msg;
+
+                const { owner, target, entity } = msg;
                 const localTarget = target;
                 const filter: any = { localTarget, entity };
 
@@ -475,7 +288,7 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 if (targetObject) {
                     if (targetObject.topicId) {
                         const messageServer = new MessageServer(null, null);
-                        const messages = await messageServer.getMessages<TagMessage>(targetObject.topicId, MessageType.Tag);
+                        const messages = await messageServer.getMessages<TagMessage>(targetObject.topicId, owner.id, MessageType.Tag);
                         const items = await DatabaseServer.getTags({ localTarget, entity, status: 'Published' });
                         const map = new Map<string, any>();
                         for (const message of messages) {
@@ -527,12 +340,10 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 const date = (new Date()).toISOString()
                 const cache = await DatabaseServer.getTagCache(filter);
                 if (cache.length) {
-
                     const tagCacheObjects = []
 
                     for (const item of cache) {
                         item.date = date;
-
                         tagCacheObjects.push(item);
                     }
 
@@ -544,14 +355,16 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 const tags = await DatabaseServer.getTags(filter);
                 return new MessageResponse(tags);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.DELETE_TAG,
-        async (msg: { uuid: string, owner: IOwner, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            uuid: string,
+            owner: IOwner
+        }) => {
             try {
                 const { uuid, owner } = msg;
 
@@ -566,9 +379,9 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
 
                 if (item.topicId && item.status === 'Published') {
                     const users = new Users();
-                    const root = await users.getHederaAccount(owner.creator, userId);
+                    const root = await users.getHederaAccount(owner.creator, owner?.id);
                     const topic = await DatabaseServer.getTopicById(item.topicId);
-                    const topicConfig = await TopicConfig.fromObject(topic, true, userId);
+                    const topicConfig = await TopicConfig.fromObject(topic, true, owner?.id);
                     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
                         .setTopicObject(topicConfig);
                     await deleteTag(item, messageServer, owner);
@@ -576,22 +389,25 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.EXPORT_TAGS,
-        async (msg: { entity: string, targets: string[], userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            owner: IOwner,
+            entity: string,
+            targets: string[]
+        }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid load tags parameter');
                 }
                 const { targets, entity } = msg;
                 const filter: any = {
-                        localTarget: { $in: targets },
-                        entity
+                    localTarget: { $in: targets },
+                    entity
                 }
                 const items = await DatabaseServer.getTags(filter);
                 for (const item of items) {
@@ -601,7 +417,7 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 }
                 return new MessageResponse(items);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });

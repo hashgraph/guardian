@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
-import {IUser, PolicyType, UserPermissions} from '@guardian/interfaces';
+import {IUser, PolicyStatus, UserPermissions} from '@guardian/interfaces';
 import {HttpResponse} from '@angular/common/http';
 import {forkJoin} from 'rxjs';
 import {PolicyEngineService} from 'src/app/services/policy-engine.service';
@@ -113,7 +113,7 @@ export class ArtifactConfigComponent implements OnInit {
             this.artifacts = artifactResponse.body?.map(item => {
                 const policy = this.filterOptions?.find(policy => policy.id === item.policyId)
                 return Object.assign(item, {
-                    editable: !policy || policy.status === PolicyType.DRAFT
+                    editable: !policy || policy.status === PolicyStatus.DRAFT
                 })
             }) || [];
             this.artifactsCount = artifactResponse.headers.get('X-Total-Count') || this.artifacts.length;

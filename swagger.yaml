@@ -4692,6 +4692,13 @@ paths:
           schema:
             example: 20
             type: number
+        - name: type
+          required: false
+          in: query
+          description: Policy type
+          schema:
+            example: local
+            type: string
       responses:
         '200':
           description: Successful operation.
@@ -5047,10 +5054,11 @@ paths:
             type: string
       requestBody:
         required: true
+        description: Options.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PolicyDTO'
+              $ref: '#/components/schemas/PolicyVersionDTO'
       responses:
         '200':
           description: Successful operation.
@@ -5091,11 +5099,11 @@ paths:
             type: string
       requestBody:
         required: true
-        description: Policy configuration.
+        description: Options.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PolicyDTO'
+              $ref: '#/components/schemas/PolicyVersionDTO'
       responses:
         '200':
           description: Successful operation.
@@ -12378,6 +12386,7 @@ paths:
               - PUBLISH
               - DISCONTINUED
               - DEMO
+              - VIEW
             type: string
       responses:
         '200':
@@ -13992,6 +14001,437 @@ paths:
       summary: ''
       tags:
         - formulas
+  /external-policies:
+    get:
+      description: Returns the list of requests for adding remote policies.
+      operationId: ExternalPoliciesApi_getExternalPolicies
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          schema:
+            example: 20
+            type: number
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExternalPolicyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns the list of requests for adding remote policies.
+      tags:
+        - external-policies
+  /external-policies/preview:
+    post:
+      description: Returns preview of the remote policies.
+      operationId: ExternalPoliciesApi_previewExternalPolicy
+      parameters: []
+      requestBody:
+        required: true
+        description: Message.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportMessageDTO'
+      responses:
+        '200':
+          description: Policy preview.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyPreviewDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns preview of the remote policies.
+      tags:
+        - external-policies
+  /external-policies/import:
+    post:
+      description: Creates a request to import a remote policy.
+      operationId: ExternalPoliciesApi_importExternalPolicy
+      parameters: []
+      requestBody:
+        required: true
+        description: Message.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportMessageDTO'
+      responses:
+        '200':
+          description: Policy.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalPolicyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Creates a request to import a remote policy.
+      tags:
+        - external-policies
+  /external-policies/push/{messageId}/approve:
+    post:
+      description: Approves the request to import a remote policy, and imports it.
+      operationId: ExternalPoliciesApi_approveExternalPolicyAsync
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Policy message id
+          schema:
+            example: '0000000000.000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Approves the request to import a remote policy, and imports it.
+      tags:
+        - external-policies
+  /external-policies/push/{messageId}/reject:
+    post:
+      description: Rejects the request to import a remote policy.
+      operationId: ExternalPoliciesApi_rejectExternalPolicyAsync
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Policy message id
+          schema:
+            example: '0000000000.000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Rejects the request to import a remote policy.
+      tags:
+        - external-policies
+  /external-policies/{messageId}/approve:
+    post:
+      description: Approves the request to import a remote policy, and imports it.
+      operationId: ExternalPoliciesApi_approveExternalPolicy
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Policy message id
+          schema:
+            example: '0000000000.000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Approves the request to import a remote policy, and imports it.
+      tags:
+        - external-policies
+  /external-policies/{messageId}/reject:
+    post:
+      description: Rejects the request to import a remote policy.
+      operationId: ExternalPoliciesApi_rejectExternalPolicy
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Policy message id
+          schema:
+            example: '0000000000.000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Rejects the request to import a remote policy.
+      tags:
+        - external-policies
+  /external-policies/requests:
+    get:
+      description: Returns the list of requests for action from remote Guardians.
+      operationId: ExternalPoliciesApi_getRemoteRequests
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          schema:
+            example: 20
+            type: number
+        - name: policyId
+          required: false
+          in: query
+          description: Policy Id
+          schema:
+            example: '001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns the list of requests for action from remote Guardians.
+      tags:
+        - external-policies
+  /external-policies/requests/{messageId}/approve:
+    put:
+      description: Approves a request for an action from a remote Guardian.
+      operationId: ExternalPoliciesApi_approveRemoteRequest
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Schema Rule Identifier
+          schema:
+            example: '0000000000.000000001'
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains a configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Approves a request for an action from a remote Guardian.
+      tags:
+        - external-policies
+  /external-policies/requests/{messageId}/reject:
+    put:
+      description: Rejects a request for an action from a remote Guardian
+      operationId: ExternalPoliciesApi_rejectRemoteRequest
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Schema Rule Identifier
+          schema:
+            example: '0000000000.000000001'
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains a configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Rejects a request for an action from a remote Guardian
+      tags:
+        - external-policies
+  /external-policies/requests/count:
+    get:
+      description: >-
+        Returns the count of entries in the list of requests for actions from
+        remote Guardians.
+      operationId: ExternalPoliciesApi_getRemoteRequestsCount
+      parameters:
+        - name: policyId
+          required: false
+          in: query
+          description: Policy Id
+          schema:
+            example: '001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: number
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: >-
+        Returns the count of entries in the list of requests for actions from
+        remote Guardians.
+      tags:
+        - external-policies
   /policy-labels:
     post:
       description: Creates a new policy label.
@@ -15149,6 +15589,7 @@ components:
             - PUBLISH
             - DISCONTINUED
             - DEMO
+            - VIEW
           example: DRAFT
         creator:
           type: string
@@ -15311,46 +15752,16 @@ components:
         - hederaAccountId
         - vcDocument
         - policies
-    UserDTO:
+    UserAccountDTO:
       type: object
       properties:
         username:
           type: string
-          example: username
-        role:
-          type: string
-          enum:
-            - STANDARD_REGISTRY
-            - USER
-            - AUDITOR
-          example: USER
-        permissionsGroup:
-          example:
-            - {}
-          type: array
-          items:
-            type: string
-        permissions:
-          example:
-            - POLICIES_POLICY_READ
-          type: array
-          items:
-            type: string
         did:
           type: string
-          example: >-
-            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
-        parent:
-          type: string
-          example: >-
-            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
-        hederaAccountId:
-          type: string
-          example: 0.0.1
       required:
         - username
-        - role
-        - permissions
+        - did
     BalanceResponseDTO:
       type: object
       properties:
@@ -15359,7 +15770,7 @@ components:
         unit:
           type: string
         user:
-          $ref: '#/components/schemas/UserDTO'
+          $ref: '#/components/schemas/UserAccountDTO'
       required:
         - balance
         - unit
@@ -15437,6 +15848,7 @@ components:
             - PUBLISH
             - DISCONTINUED
             - DEMO
+            - VIEW
           example: DRAFT
         owner:
           type: string
@@ -16347,6 +16759,7 @@ components:
             - UNPUBLISHED
             - ERROR
             - DEMO
+            - VIEW
           example: DRAFT
         topicId:
           type: string
@@ -16934,6 +17347,20 @@ components:
         - policies
         - isValid
         - errors
+    PolicyVersionDTO:
+      type: object
+      properties:
+        policyVersion:
+          type: string
+          example: 1.0.0
+        policyAvailability:
+          type: string
+          enum:
+            - private
+            - public
+          example: private
+      required:
+        - policyVersion
     PolicyValidationDTO:
       type: object
       properties:
@@ -17926,6 +18353,10 @@ components:
             - POLICIES_POLICY_REVIEW
             - POLICIES_POLICY_EXECUTE
             - POLICIES_POLICY_MANAGE
+            - POLICIES_EXTERNAL_POLICY_READ
+            - POLICIES_EXTERNAL_POLICY_CREATE
+            - POLICIES_EXTERNAL_POLICY_UPDATE
+            - POLICIES_EXTERNAL_POLICY_DELETE
             - SCHEMAS_SCHEMA_READ
             - SCHEMAS_SCHEMA_CREATE
             - SCHEMAS_SCHEMA_UPDATE
@@ -18004,6 +18435,10 @@ components:
             - POLICIES_POLICY_REVIEW
             - POLICIES_POLICY_EXECUTE
             - POLICIES_POLICY_MANAGE
+            - POLICIES_EXTERNAL_POLICY_READ
+            - POLICIES_EXTERNAL_POLICY_CREATE
+            - POLICIES_EXTERNAL_POLICY_UPDATE
+            - POLICIES_EXTERNAL_POLICY_DELETE
             - SCHEMAS_SCHEMA_READ
             - SCHEMAS_SCHEMA_CREATE
             - SCHEMAS_SCHEMA_UPDATE
@@ -18112,6 +18547,7 @@ components:
             - RULE
             - LABEL
             - FORMULA
+            - EXTERNAL_POLICY
           example: POLICY
         action:
           type: string
@@ -18147,6 +18583,46 @@ components:
         - action
         - disabled
         - dependOn
+    UserDTO:
+      type: object
+      properties:
+        username:
+          type: string
+          example: username
+        role:
+          type: string
+          enum:
+            - STANDARD_REGISTRY
+            - USER
+            - AUDITOR
+          example: USER
+        permissionsGroup:
+          example:
+            - {}
+          type: array
+          items:
+            type: string
+        permissions:
+          example:
+            - POLICIES_POLICY_READ
+          type: array
+          items:
+            type: string
+        did:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        parent:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        hederaAccountId:
+          type: string
+          example: 0.0.1
+      required:
+        - username
+        - role
+        - permissions
     AssignPolicyDTO:
       type: object
       properties:
@@ -18459,6 +18935,64 @@ components:
         parentId:
           type: string
           example: '000000000000000000000001'
+    ExternalPolicyDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '000000000000000000000001'
+        uuid:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        name:
+          type: string
+          example: Policy name
+        description:
+          type: string
+          example: Description
+        version:
+          type: string
+          example: 1.0.0
+        topicId:
+          type: string
+          example: 0.0.1
+        instanceTopicId:
+          type: string
+          example: 0.0.1
+        messageId:
+          type: string
+          example: '0000000000.000000001'
+        policyTag:
+          type: string
+          example: Tag
+        creator:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        status:
+          type: string
+          enum:
+            - NEW
+            - APPROVED
+            - REJECTED
+          example: NEW
+      required:
+        - id
+        - uuid
+        - name
+        - description
+        - version
+        - topicId
+        - instanceTopicId
+        - messageId
+        - policyTag
+        - creator
+        - owner
+        - status
     PolicyLabelDTO:
       type: object
       properties:

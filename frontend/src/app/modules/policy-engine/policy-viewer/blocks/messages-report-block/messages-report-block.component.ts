@@ -224,6 +224,7 @@ export class MessagesReportBlockComponent implements OnInit {
     public searchForm = this.fb.group({
         value: ['', Validators.required]
     });
+    public readonly: boolean = false;
 
     gridSize: number = 0;
     mintTokenId: string;
@@ -330,6 +331,7 @@ export class MessagesReportBlockComponent implements OnInit {
         this._gridTemplateColumns2 = '';
 
         if (data) {
+            this.readonly = !!data.readonly;
             this.status = data.status;
             this.report = data.report;
             this.target = data.target;

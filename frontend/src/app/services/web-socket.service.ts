@@ -51,6 +51,8 @@ export class WebSocketService {
     private meecoVerifyVPSubject: Subject<any> = new Subject();
     private meecoVerifyVPFailedSubject: Subject<any> = new Subject();
     private meecoApproveVCSubject: Subject<any> = new Subject();
+    private policyRequestUpdateSubject: Subject<any>;
+    private policyRestoreUpdateSubject: Subject<any>;
     private serviesStates: any = [];
     private sendingEvent: boolean;
 
@@ -73,6 +75,8 @@ export class WebSocketService {
         this.createProgress = new Subject();
         this.updateProgress = new Subject();
         this.deleteProgress = new Subject();
+        this.policyRequestUpdateSubject = new Subject();
+        this.policyRestoreUpdateSubject = new Subject();
         this.socket = null;
         this.sendingEvent = false;
 
@@ -255,14 +259,22 @@ export class WebSocketService {
                     this.blockUpdateSubject.next(data);
                     break;
                 }
+                case MessageAPI.UPDATE_REQUEST_EVENT: {
+                    this.policyRequestUpdateSubject.next(event);
+                    break;
+                }
+                case MessageAPI.UPDATE_RESTORE_EVENT: {
+                    this.policyRestoreUpdateSubject.next(event);
+                    break;
+                }
                 case MessageAPI.ERROR_EVENT: {
                     if (!data.blockType.includes('401'))
-                    this.toastr.error(data.message, data.blockType, {
-                        timeOut: 10000,
-                        closeButton: true,
-                        positionClass: 'toast-bottom-right',
-                        enableHtml: true
-                    });
+                        this.toastr.error(data.message, data.blockType, {
+                            timeOut: 10000,
+                            closeButton: true,
+                            positionClass: 'toast-bottom-right',
+                            enableHtml: true
+                        });
                     break;
                 }
                 case MessageAPI.UPDATE_USER_INFO_EVENT: {
@@ -344,6 +356,22 @@ export class WebSocketService {
         complete?: (() => void)
     ): Subscription {
         return this.recordUpdateSubject.subscribe(next, error, complete);
+    }
+
+    public requestSubscribe(
+        next?: ((id: any) => void),
+        error?: ((error: any) => void),
+        complete?: (() => void)
+    ): Subscription {
+        return this.policyRequestUpdateSubject.subscribe(next, error, complete);
+    }
+
+    public restoreSubscribe(
+        next?: ((id: any) => void),
+        error?: ((error: any) => void),
+        complete?: (() => void)
+    ): Subscription {
+        return this.policyRestoreUpdateSubject.subscribe(next, error, complete);
     }
 
     public testSubscribe(

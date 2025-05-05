@@ -538,6 +538,23 @@ export class UserPermissions {
         return this.check(Permissions.FORMULAS_FORMULA_READ);
     }
 
+    //EXTERNAL POLICY
+    public get POLICIES_EXTERNAL_POLICY_READ(): boolean {
+        return this.check(Permissions.POLICIES_EXTERNAL_POLICY_READ);
+    }
+
+    public get POLICIES_EXTERNAL_POLICY_CREATE(): boolean {
+        return this.check(Permissions.POLICIES_EXTERNAL_POLICY_CREATE);
+    }
+
+    public get POLICIES_EXTERNAL_POLICY_DELETE(): boolean {
+        return this.check(Permissions.POLICIES_EXTERNAL_POLICY_DELETE);
+    }
+
+    public get POLICIES_EXTERNAL_POLICY_UPDATE(): boolean {
+        return this.check(Permissions.POLICIES_EXTERNAL_POLICY_UPDATE);
+    }
+
     public static isPolicyAdmin(user: any): boolean {
         return (
             UserPermissions.has(user, Permissions.POLICIES_MIGRATION_CREATE) ||

@@ -1,5 +1,5 @@
 import { Guardians, PolicyEngine, TaskManager, ServiceError, InternalException, ONLY_SR, parseInteger, EntityOwner, getCacheKey, CacheService } from '#helpers';
-import { IOwner, IToken, Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
+import { IOwner, IToken, Permissions, PolicyStatus, TaskAction, UserPermissions } from '@guardian/interfaces';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { AuthUser, Auth } from '#auth';
@@ -149,8 +149,8 @@ export class TokensApi {
             const owner = new EntityOwner(user);
             if (owner) {
                 if (UserPermissions.has(user, Permissions.TOKENS_TOKEN_EXECUTE) && status !== 'All') {
-                    tokensAndCount = await guardians.getAssociatedTokens(user.did, parseInteger(pageIndex), parseInteger(pageSize), user.id);
-                    const map = await engineService.getTokensMap(owner, 'PUBLISH');
+                    tokensAndCount = await guardians.getAssociatedTokens(owner, user.did, parseInteger(pageIndex), parseInteger(pageSize));
+                    const map = await engineService.getTokensMap(owner, [PolicyStatus.PUBLISH, PolicyStatus.VIEW]);
                     tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
                     tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, true);
                 } else {
@@ -242,8 +242,8 @@ export class TokensApi {
             const owner = new EntityOwner(user);
             if (owner) {
                 if (UserPermissions.has(user, Permissions.TOKENS_TOKEN_EXECUTE) && status !== 'All') {
-                    tokensAndCount = await guardians.getAssociatedTokens(user.did, parseInteger(pageIndex), parseInteger(pageSize), user.id);
-                    const map = await engineService.getTokensMap(owner, 'PUBLISH');
+                    tokensAndCount = await guardians.getAssociatedTokens(owner, user.did, parseInteger(pageIndex), parseInteger(pageSize));
+                    const map = await engineService.getTokensMap(owner, [PolicyStatus.PUBLISH, PolicyStatus.VIEW]);
                     tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
                     tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, true);
                 } else {
@@ -1371,7 +1371,8 @@ export class TokensApi {
     ): Promise<number[]> {
         try {
             const guardians = new Guardians();
-            return await guardians.getTokenSerials(tokenId, user.did, user.id);
+            const owner = new EntityOwner(user);
+            return await guardians.getTokenSerials(owner, tokenId, user.did);
         } catch (error) {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             if (error?.message?.toLowerCase().includes('user not found')) {
@@ -1416,7 +1417,7 @@ export class TokensApi {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
             const engineService = new PolicyEngine();
-            const map = await engineService.getTokensMap(owner, 'PUBLISH');
+            const map = await engineService.getTokensMap(owner, [PolicyStatus.PUBLISH, PolicyStatus.VIEW]);
             let items = await guardians.getTokens({}, owner);
             items = await setDynamicTokenPolicy(items, owner);
             items = setTokensPolicies(items, map, null, false);

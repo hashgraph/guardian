@@ -1,5 +1,5 @@
 import { BaseEntity } from '../models/index.js';
-import { GenerateUUIDv4, PolicyCategoryExport, PolicyType } from '@guardian/interfaces';
+import { GenerateUUIDv4, LocationType, PolicyAvailability, PolicyCategoryExport, PolicyStatus } from '@guardian/interfaces';
 import { AfterDelete, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property, Unique } from '@mikro-orm/core';
 import { DataBaseHelper } from '../helpers/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
@@ -63,7 +63,7 @@ export class Policy extends BaseEntity {
      * Policy status
      */
     @Property({ nullable: true })
-    status?: PolicyType;
+    status?: PolicyStatus;
 
     /**
      * Policy creator
@@ -234,11 +234,37 @@ export class Policy extends BaseEntity {
     discontinuedDate?: Date;
 
     /**
+     * TopicId
+     */
+    @Property({ nullable: true })
+    restoreTopicId?: string;
+
+    /**
+     * Policy Availability
+     */
+    @Property({ nullable: true })
+    availability?: PolicyAvailability;
+
+    /**
+     * Location Type
+     */
+    @Property({ nullable: true })
+    locationType?: LocationType;
+
+    /**
+     * TopicId
+     */
+    @Property({ nullable: true })
+    actionsTopicId?: string;
+
+    /**
      * Set policy defaults
      */
     @BeforeCreate()
     setDefaults() {
-        this.status = this.status || PolicyType.DRAFT;
+        this.locationType = this.locationType || LocationType.LOCAL;
+        this.status = this.status || PolicyStatus.DRAFT;
+        this.availability = this.availability || PolicyAvailability.PRIVATE;
         this.uuid = this.uuid || GenerateUUIDv4();
         this.codeVersion = this.codeVersion || '1.0.0';
         delete this.registeredUsers;

@@ -3,11 +3,12 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { PolicyUser } from '../policy-user.js';
-import { DocumentCategoryType, GroupAccessType, GroupRelationshipType, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
+import { DocumentCategoryType, GroupAccessType, GroupRelationshipType, LocationType, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
-import { AnyBlockType } from '../policy-engine.interface.js';
+import { AnyBlockType, IPolicyGetData } from '../policy-engine.interface.js';
 import { PolicyUtils } from '../helpers/utils.js';
-import { VcHelper, MessageAction, MessageServer, RoleMessage, IAuthUser } from '@guardian/common';
+import { PolicyActionsUtils } from '../policy-actions/utils.js';
+import { IAuthUser } from '@guardian/common';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
@@ -105,6 +106,7 @@ interface IGroupConfig {
 @EventBlock({
     blockType: 'policyRolesBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Roles',
         title: `Add 'Choice Of Roles' Block`,
@@ -315,14 +317,8 @@ export class PolicyRolesBlock {
         if (!policySchema) {
             return null;
         }
-        const userCred = await PolicyUtils.getUserCredentials(ref, group.owner);
-        const userId = userCred.userId;
-        const hederaCred = await userCred.loadHederaCredentials(ref, userId);
-        const signOptions = await userCred.loadSignOptions(ref, userId)
-        const didDocument = await userCred.loadDidDocument(ref, userId);
 
         const uuid: string = await ref.components.generateUUID();
-        const vcHelper = new VcHelper();
         const vcSubject: any = {
             ...SchemaHelper.getContext(policySchema),
             id: uuid,
@@ -343,37 +339,23 @@ export class PolicyRolesBlock {
             vcSubject.groupLabel = group.groupLabel;
         }
 
-        const userVC = await vcHelper.createVerifiableCredential(
-            vcSubject,
-            didDocument,
-            null,
-            { uuid }
-        );
+        const { vc, message } = await PolicyActionsUtils.signAndSendRole(ref, vcSubject, group, uuid, user.userId);
 
-        const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref, userId);
-        const messageServer = new MessageServer(hederaCred.hederaAccountId, hederaCred.hederaAccountKey, signOptions, ref.dryRun);
-        const vcMessage = new RoleMessage(MessageAction.CreateVC);
-        vcMessage.setDocument(userVC);
-        vcMessage.setRole(group);
-        const vcMessageResult = await messageServer
-            .setTopicObject(rootTopic)
-            .sendMessage(vcMessage, true, null, userId);
-
-        const vcDocument = PolicyUtils.createVC(ref, user, userVC);
+        const vcDocument = PolicyUtils.createVC(ref, user, vc);
         vcDocument.type = DocumentCategoryType.USER_ROLE;
-        vcDocument.schema = `#${userVC.getSubjectType()}`;
-        vcDocument.messageId = vcMessageResult.getId();
-        vcDocument.topicId = vcMessageResult.getTopicId();
+        vcDocument.schema = `#${vc.getSubjectType()}`;
+        vcDocument.messageId = message.getId();
+        vcDocument.topicId = message.getTopicId();
         vcDocument.relationships = null;
         await ref.databaseServer.saveVC(vcDocument);
-        return vcMessageResult.getId();
+        return message.getId();
     }
 
     /**
      * Get block data
      * @param user
      */
-    async getData(user: PolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const roles: string[] = Array.isArray(ref.options.roles) ? ref.options.roles : [];
         const groups: string[] = Array.isArray(ref.options.groups) ? ref.options.groups : [];
@@ -388,6 +370,13 @@ export class PolicyRolesBlock {
             }
         }
         return {
+            id: ref.uuid,
+            blockType: ref.blockType,
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            ),
             roles,
             groups,
             groupMap,
@@ -400,15 +389,14 @@ export class PolicyRolesBlock {
      * Set block data
      * @param user
      * @param data
-     * @param userId
      */
     @ActionCallback({
         output: [PolicyOutputEventType.JoinGroup, PolicyOutputEventType.CreateGroup]
     })
-    async setData(user: PolicyUser, data: any, userId: string | null): Promise<any> {
+    async setData(user: PolicyUser, data: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const did = user?.did;
-        const curUser = await PolicyUtils.getUser(ref, did, userId);
+        const curUser = await PolicyUtils.getUser(ref, did, user.userId);
 
         if (!did) {
             throw new BlockActionError('Invalid user', ref.blockType, ref.uuid);
@@ -435,7 +423,7 @@ export class PolicyRolesBlock {
         group.messageId = await this.createVC(ref, user, group);
 
         const userGroup = await ref.databaseServer.setUserInGroup(group);
-        const newUser = await PolicyComponentsUtils.GetPolicyUserByGroup(userGroup, ref, userId);
+        const newUser = await PolicyComponentsUtils.GetPolicyUserByGroup(userGroup, ref, user.userId);
         if (data.invitation) {
             ref.triggerEvents(PolicyOutputEventType.JoinGroup, newUser, null);
         } else {
@@ -448,6 +436,7 @@ export class PolicyRolesBlock {
             group: group.uuid,
             role: group.role
         }));
+        ref.backup();
 
         return true;
     }

@@ -134,8 +134,9 @@ export class TagsApi {
             }
 
             const guardians = new Guardians();
-            const items = await guardians.getTags(entity, _targets, user.id);
-            const dates = await guardians.getTagCache(entity, _targets, user.id);
+            const owner = new EntityOwner(user);
+            const items = await guardians.getTags(owner, entity, _targets);
+            const dates = await guardians.getTagCache(owner, entity, _targets);
 
             const dateMap = {};
             for (const date of dates) {
@@ -267,7 +268,8 @@ export class TagsApi {
             }
 
             const guardians = new Guardians();
-            const tags = await guardians.synchronizationTags(entity, target, user.id);
+            const owner = new EntityOwner(user);
+            const tags = await guardians.synchronizationTags(owner, entity, target);
 
             const invalidedCacheTags = [`${PREFIXES.TAGS}schemas`];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], req.user));
@@ -399,7 +401,7 @@ export class TagsApi {
             const owner = new EntityOwner(user);
             const fields: string[] = Object.values(SCHEMA_REQUIRED_PROPS)
 
-            const { items, count } = await guardians.getTagSchemasV2(fields, owner, pageIndex, pageSize);
+            const { items, count } = await guardians.getTagSchemasV2(owner, fields, pageIndex, pageSize);
             items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner.creator });
 
             req.locals = SchemaUtils.toOld(items)
@@ -503,7 +505,7 @@ export class TagsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            const schema = await guardians.getSchemaById(schemaId, user.id);
+            const schema = await guardians.getSchemaById(user, schemaId);
             const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.TAG);
             if (error) {
                 throw new HttpException(error, HttpStatus.FORBIDDEN);
@@ -562,7 +564,7 @@ export class TagsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            const schema = await guardians.getSchemaById(newSchema.id, user.id);
+            const schema = await guardians.getSchemaById(user, newSchema.id);
             const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.TAG);
             if (error) {
                 throw new HttpException(error, HttpStatus.FORBIDDEN);
@@ -618,7 +620,7 @@ export class TagsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            const schema = await guardians.getSchemaById(schemaId, user.id);
+            const schema = await guardians.getSchemaById(user, schemaId);
             const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.TAG);
             if (error) {
                 throw new HttpException(error, HttpStatus.FORBIDDEN)
@@ -658,7 +660,7 @@ export class TagsApi {
     ): Promise<SchemaDTO[]> {
         try {
             const guardians = new Guardians();
-            return await guardians.getPublishedTagSchemas(user.id);
+            return await guardians.getPublishedTagSchemas(user);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

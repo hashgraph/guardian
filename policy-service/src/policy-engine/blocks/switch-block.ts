@@ -7,6 +7,7 @@ import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
 import { IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { LocationType } from '@guardian/interfaces';
 
 /**
  * Switch block
@@ -14,6 +15,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 @BasicBlock({
     blockType: 'switchBlock',
     commonBlock: true,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Switch',
         title: `Add 'Switch' Block`,
@@ -154,9 +156,9 @@ export class SwitchBlock {
 
             let curUser: PolicyUser = event.user;
             if (actor === 'owner' && owner) {
-                curUser = await PolicyUtils.getPolicyUser(ref, owner, group, event.userId);
+                curUser = await PolicyUtils.getPolicyUser(ref, owner, group, event?.user?.userId);
             } else if (actor === 'issuer' && issuer) {
-                curUser = await PolicyUtils.getPolicyUser(ref, issuer, group, event.userId);
+                curUser = await PolicyUtils.getPolicyUser(ref, issuer, group, event?.user?.userId);
             }
 
             ref.log(`check condition: ${curUser?.id}, ${type},  ${value},  ${result}, ${JSON.stringify(scope)}`);
@@ -175,5 +177,7 @@ export class SwitchBlock {
             conditions: tags,
             documents: ExternalDocuments(docs),
         }));
+
+        ref.backup();
     }
 }

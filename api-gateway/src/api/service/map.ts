@@ -3,8 +3,8 @@ import { ApiExtraModels, ApiTags, ApiOperation, ApiOkResponse, ApiInternalServer
 import { CACHE } from '../../constants/index.js';
 import { UseCache, Guardians } from '#helpers';
 import { InternalServerErrorDTO } from '#middlewares';
-import {Auth, AuthUser} from '#auth';
-import {IAuthUser} from '@guardian/common';
+import { Auth, AuthUser } from '#auth';
+import { IAuthUser } from '@guardian/common';
 
 @Controller('map')
 @ApiTags('map')
@@ -33,7 +33,7 @@ export class MapApi {
         @AuthUser() user: IAuthUser,
     ): Promise<string> {
         const guardians = new Guardians();
-        return await guardians.getMapApiKey(user.id);
+        return await guardians.getMapApiKey(user);
     }
 
     /**
@@ -60,6 +60,6 @@ export class MapApi {
         @AuthUser() user: IAuthUser,
     ): Promise<string> {
         const guardians = new Guardians();
-        return await guardians.getSentinelApiKey(user.id);
+        return await guardians.getSentinelApiKey(user);
     }
 }

@@ -141,7 +141,7 @@ export abstract class AbstractDatabaseServer {
      *
      * @virtual
      */
-    public static async setVirtualFile(policyId: string, file: ArrayBuffer, url: {url: string}): Promise<void> {
+    public static async setVirtualFile(policyId: string, file: ArrayBuffer, url: { url: string }): Promise<void> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.setVirtualFile.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
@@ -784,7 +784,7 @@ export abstract class AbstractDatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getTagCache(filters?: Partial<TagCache> , options?: unknown): Promise<TagCache[]> {
+    public static async getTagCache(filters?: Partial<TagCache>, options?: unknown): Promise<TagCache[]> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.getTagCache.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
@@ -1434,21 +1434,23 @@ export abstract class AbstractDatabaseServer {
     /**
      * Save Block State
      * @param policyId
-     * @param uuid
+     * @param blockId
+     * @param blockTag
      * @param state
      *
      * @virtual
      */
-    public abstract saveBlockState(policyId: string, uuid: string, state: unknown): Promise<void>;
+    public abstract saveBlockState(policyId: string, blockId: string, blockTag: string, state: unknown): Promise<void>;
 
     /**
      * Get Block State
      * @param policyId
-     * @param uuid
+     * @param blockId
+     * @param blockTag
      *
      * @virtual
      */
-    public abstract getBlockState(policyId: string, uuid: string): Promise<BlockState | null>;
+    public abstract getBlockState(policyId: string, blockId: string, blockTag: string): Promise<BlockState | null>;
 
     /**
      * Get block states
@@ -1705,7 +1707,7 @@ export abstract class AbstractDatabaseServer {
      *
      * @virtual
      */
-    public abstract createAggregateDocuments(item: VcDocumentCollection & {blockId: string}, blockId: string): Promise<void>;
+    public abstract createAggregateDocuments(item: VcDocumentCollection & { blockId: string }, blockId: string): Promise<void>;
 
     /**
      * Get Vc Document
@@ -1961,7 +1963,7 @@ export abstract class AbstractDatabaseServer {
      *
      * @virtual
      */
-    public abstract checkUserInGroup(group: {policyId: string, did: string, owner: string, uuid: string}): Promise<PolicyRolesCollection | null>;
+    public abstract checkUserInGroup(group: { policyId: string, did: string, owner: string, uuid: string }): Promise<PolicyRolesCollection | null>;
 
     /**
      * Get Groups By User
@@ -2101,7 +2103,13 @@ export abstract class AbstractDatabaseServer {
      *
      * @virtual
      */
-    public abstract setMultiSigStatus(uuid: string, documentId: string, group: string, status: string): Promise<MultiDocuments>
+    public abstract setMultiSigStatus(
+        uuid: string,
+        policyId: string,
+        documentId: string,
+        group: string,
+        status: string
+    ): Promise<MultiDocuments>
 
     /**
      * Save mint request
@@ -2228,7 +2236,7 @@ export abstract class AbstractDatabaseServer {
         vpDocument: VpDocument
     ): Promise<
         [
-            serials: {serial: number; tokenId: string}[],
+            serials: { serial: number; tokenId: string }[],
             amount: number,
             error: string,
             wasTransferNeeded: boolean,
@@ -2251,8 +2259,9 @@ export abstract class AbstractDatabaseServer {
      */
     public abstract setMultiSigDocument(
         uuid: string,
+        policyId: string,
         documentId: string,
-        user: {id: string, did: string, group: string, username: string},
+        user: { id: string, did: string, group: string, username: string },
         status: string,
         document: IVC
     ): Promise<MultiDocuments>

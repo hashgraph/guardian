@@ -1,12 +1,12 @@
-import { NatsService } from '@guardian/common';
-import { ApplicationStates, CommonSettings, GenerateUUIDv4, IFileResponse, MessageAPI } from '@guardian/interfaces';
+import { IAuthUser, NatsService } from '@guardian/common';
+import { CommonSettings, GenerateUUIDv4, IFileResponse, MessageAPI } from '@guardian/interfaces';
 import { Singleton } from './decorators/singleton.js';
 
 /**
  * IPFS service
  */
 @Singleton
-export class IPFS extends NatsService{
+export class IPFS extends NatsService {
 
     /**
      * Message queue name
@@ -23,11 +23,15 @@ export class IPFS extends NatsService{
      * Return hash of added file
      * @param {ArrayBuffer} file file to upload on IPFS
      *
-     * @param userId
      * @returns {{ cid: string, url: string }} - hash
      */
-    public async addFile(file: ArrayBuffer, userId: string | null): Promise<IFileResponse> {
-        const res = (await this.sendMessage(MessageAPI.IPFS_ADD_FILE, { content: Buffer.from(file).toString('base64'), userId })) as any;
+    public async addFile(user: IAuthUser, file: ArrayBuffer): Promise<IFileResponse> {
+        const res = (await this.sendMessage(MessageAPI.IPFS_ADD_FILE, {
+            user,
+            buffer: {
+                content: Buffer.from(file).toString('base64')
+            }
+        })) as any;
         if (!res) {
             throw new Error('Invalid IPFS response');
         }
@@ -44,8 +48,8 @@ export class IPFS extends NatsService{
      * @param userId
      * @returns File
      */
-    public async getFile(cid: string, responseType: 'json' | 'raw' | 'str', userId?: string): Promise<any> {
-        const res = await this.sendMessage(MessageAPI.IPFS_GET_FILE, {cid, responseType, userId}) as any;
+    public async getFile(user: IAuthUser, cid: string, responseType: 'json' | 'raw' | 'str'): Promise<any> {
+        const res = await this.sendMessage(MessageAPI.IPFS_GET_FILE, { user, cid, responseType }) as any;
         if (!res) {
             throw new Error('Invalid IPFS response');
         }
@@ -64,8 +68,8 @@ export class IPFS extends NatsService{
      * @param userId
      * @returns File
      */
-    public async getFileAsync(cid: string, responseType: 'json' | 'raw' | 'str', userId?: string): Promise<any> {
-        const res = await this.sendMessage(MessageAPI.IPFS_GET_FILE_ASYNC, {cid, responseType, userId}) as any;
+    public async getFileAsync(user: IAuthUser, cid: string, responseType: 'json' | 'raw' | 'str'): Promise<any> {
+        const res = await this.sendMessage(MessageAPI.IPFS_GET_FILE_ASYNC, { user, cid, responseType }) as any;
         if (!res) {
             throw new Error('Invalid IPFS response');
         }
@@ -80,10 +84,9 @@ export class IPFS extends NatsService{
     /**
      * Update settings
      * @param settings Settings to update
-     * @param userId
      */
-    public async updateSettings(settings: CommonSettings, userId: string | null): Promise<void> {
-        const res = await this.sendMessage(MessageAPI.UPDATE_SETTINGS, {settings, userId}) as any;
+    public async updateSettings(user: IAuthUser, settings: CommonSettings): Promise<void> {
+        const res = await this.sendMessage(MessageAPI.UPDATE_SETTINGS, { user, settings }) as any;
         if (!res) {
             throw new Error('Invalid IPFS response');
         }
@@ -96,28 +99,14 @@ export class IPFS extends NatsService{
      * Get settings
      * @returns Settings
      */
-    public async getSettings(userId: string | null): Promise<any> {
-        const res = (await this.sendMessage(MessageAPI.GET_SETTINGS, {userId})) as any;
+    public async getSettings(user: IAuthUser): Promise<any> {
+        const res = (await this.sendMessage(MessageAPI.GET_SETTINGS, { user })) as any;
         if (!res) {
             throw new Error('Invalid IPFS response');
         }
         if (res.error) {
             throw new Error(res.error);
         }
-        return res.body;
-    }
-
-    /**
-     * Get service status
-     *
-     * @returns {ApplicationStates} Service state
-     */
-    public async getStatus(userId: string | null): Promise<ApplicationStates> {
-        const res = await this.sendMessage(MessageAPI.GET_STATUS, {userId}) as any;
-        if (!res) {
-            return ApplicationStates.STOPPED;
-        }
-
         return res.body;
     }
 }

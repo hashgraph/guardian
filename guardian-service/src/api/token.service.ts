@@ -2,8 +2,8 @@ import { ApiResponse } from '../api/helpers/api-response.js';
 import { ArrayMessageResponse, DatabaseServer, KeyType, MessageError, MessageResponse, PinoLogger, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, OrderDirection, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
-import { publishTokenTags } from './tag.service.js';
 import { FilterObject } from '@mikro-orm/core';
+import { publishTokenTags } from '../helpers/import-helpers/index.js'
 
 /**
  * Create token in Hedera network
@@ -11,21 +11,26 @@ import { FilterObject } from '@mikro-orm/core';
  * @param user
  * @param userId
  */
-export async function createHederaToken(token: any, user: IRootConfig, userId: string | null) {
+export async function createHederaToken(
+    token: any,
+    user: IRootConfig,
+    userId: string | null
+) {
     const topicHelper = new TopicHelper(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
-    const topic = await topicHelper.create({
-        type: TopicType.TokenTopic,
-        name: TopicType.TokenTopic,
-        description: TopicType.TokenTopic,
-        owner: user.did,
-        policyId: null,
-        policyUUID: null
-    },
-    userId,
-    {
-        admin: true,
-        submit: false
-    });
+    const topic = await topicHelper.create(
+        {
+            type: TopicType.TokenTopic,
+            name: TopicType.TokenTopic,
+            description: TopicType.TokenTopic,
+            owner: user.did,
+            policyId: null,
+            policyUUID: null
+        },
+        userId,
+        {
+            admin: true,
+            submit: false
+        });
     await topic.saveKeys(userId);
     await DatabaseServer.saveTopic(topic.toObject());
 
@@ -159,7 +164,8 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
  * @param owner
  * @param dataBaseServer
  * @param notifier
- */async function createToken(
+ */
+async function createToken(
     token: Token,
     user: IOwner,
     dataBaseServer: DatabaseServer,
@@ -208,13 +214,15 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
  * @param dataBaseServer
  * @param notifier
  * @param log
- */async function updateToken(
+ */
+async function updateToken(
     oldToken: Token,
     newToken: Token,
     user: IOwner,
     dataBaseServer: DatabaseServer,
     notifier: INotifier,
-    log: PinoLogger
+    log: PinoLogger,
+    userId: string
 ): Promise<Token> {
     if (oldToken.draftToken && newToken.draftToken) {
         notifier.start('Update token');
@@ -237,9 +245,9 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
 
         notifier.completedAndStart('Publish tags');
         try {
-            await publishTokenTags(result, user, root);
+            await publishTokenTags(result, user, root, userId);
         } catch (error) {
-            log.error(error, ['GUARDIAN_SERVICE, TAGS']);
+            log.error(error, ['GUARDIAN_SERVICE, TAGS'], userId);
         }
 
         notifier.completed();
@@ -604,8 +612,11 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
      * @returns all tokens
      */
     ApiResponse(MessageAPI.SET_TOKEN,
-        async (msg: { item: Token, owner: IOwner, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            item: Token,
+            owner: IOwner,
+            userId: string | null
+        }) => {
             try {
                 if (!msg) {
                     throw new Error('Invalid Params');
@@ -618,14 +629,18 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 const tokens = await dataBaseServer.findAll(Token);
                 return new MessageResponse(tokens);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.SET_TOKEN_ASYNC,
-        async (msg: { token: Token, owner: IOwner, task: any, userId: string | null }) => {
-            const { token, owner, task, userId } = msg;
+        async (msg: {
+            token: Token,
+            owner: IOwner,
+            task: any
+        }) => {
+            const { token, owner, task } = msg;
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
@@ -635,7 +650,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 const result = await createToken(token, owner, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 notifier.error(error);
             });
 
@@ -643,8 +658,10 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         });
 
     ApiResponse(MessageAPI.UPDATE_TOKEN,
-        async (msg: { token: Token, owner: IOwner, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            token: Token,
+            owner: IOwner
+        }) => {
             try {
                 const { token, owner } = msg;
                 if (!msg) {
@@ -655,16 +672,22 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                     throw new Error('Token not found');
                 }
 
-                return new MessageResponse(await updateToken(item, token, owner, dataBaseServer, emptyNotifier(), logger));
+                return new MessageResponse(
+                    await updateToken(item, token, owner, dataBaseServer, emptyNotifier(), logger, owner?.id)
+                );
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.UPDATE_TOKEN_ASYNC,
-        async (msg: { token: Token, owner: IOwner, task: any, userId: string | null }) => {
-            const { token, owner, task, userId } = msg;
+        async (msg: {
+            token: Token,
+            owner: IOwner,
+            task: any
+        }) => {
+            const { token, owner, task } = msg;
             const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
                 if (!msg) {
@@ -675,10 +698,10 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                     throw new Error('Token not found');
                 }
 
-                const result = await updateToken(item, token, owner, dataBaseServer, notifier, logger);
+                const result = await updateToken(item, token, owner, dataBaseServer, notifier, logger, owner?.id);
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 notifier.error(error);
             });
 
@@ -686,8 +709,12 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         });
 
     ApiResponse(MessageAPI.DELETE_TOKEN_ASYNC,
-        async (msg: { tokenId: string, owner: IOwner, task: any, userId: string | null }) => {
-            const { tokenId, owner, task, userId } = msg;
+        async (msg: {
+            tokenId: string,
+            owner: IOwner,
+            task: any
+        }) => {
+            const { tokenId, owner, task } = msg;
             const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
                 if (!msg) {
@@ -700,35 +727,45 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 const result = await deleteToken(item, owner, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 notifier.error(error);
             });
             return new MessageResponse(task);
         });
 
     ApiResponse(MessageAPI.FREEZE_TOKEN,
-        async (msg: { tokenId: string, username: string, owner: IOwner, freeze: boolean, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            tokenId: string,
+            username: string,
+            owner: IOwner,
+            freeze: boolean
+        }) => {
             try {
                 const { tokenId, username, owner, freeze } = msg;
                 const result = await freezeToken(tokenId, username, owner, freeze, dataBaseServer, emptyNotifier());
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error, 400);
             }
         });
 
     ApiResponse(MessageAPI.FREEZE_TOKEN_ASYNC,
-        async (msg: { tokenId: string, username: string, owner: IOwner, freeze: boolean, task: any, userId: string | null  }) => {
-            const { tokenId, username, owner, freeze, task, userId } = msg;
+        async (msg: {
+            tokenId: string,
+            username: string,
+            owner: IOwner,
+            freeze: boolean,
+            task: any
+        }) => {
+            const { tokenId, username, owner, freeze, task } = msg;
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
                 const result = await freezeToken(tokenId, username, owner, freeze, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 notifier.error(error);
             });
 
@@ -736,28 +773,38 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         });
 
     ApiResponse(MessageAPI.KYC_TOKEN,
-        async (msg: { tokenId: string, username: string, owner: IOwner, grant: boolean, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            tokenId: string,
+            username: string,
+            owner: IOwner,
+            grant: boolean
+        }) => {
             try {
                 const { tokenId, username, owner, grant } = msg;
                 const result = await grantKycToken(tokenId, username, owner, grant, dataBaseServer, emptyNotifier());
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error, 400);
             }
         });
 
     ApiResponse(MessageAPI.KYC_TOKEN_ASYNC,
-        async (msg: { tokenId: string, username: string, owner: IOwner, grant: boolean, task: any, userId: string | null }) => {
-            const { tokenId, username, owner, grant, task, userId } = msg;
+        async (msg: {
+            tokenId: string,
+            username: string,
+            owner: IOwner,
+            grant: boolean,
+            task: any
+        }) => {
+            const { tokenId, username, owner, grant, task } = msg;
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
                 const result = await grantKycToken(tokenId, username, owner, grant, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 notifier.error(error);
             });
 
@@ -765,28 +812,36 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         });
 
     ApiResponse(MessageAPI.ASSOCIATE_TOKEN,
-        async (msg: { tokenId: string, owner: IOwner, associate: boolean, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            tokenId: string,
+            owner: IOwner,
+            associate: boolean
+        }) => {
             try {
                 const { tokenId, owner, associate } = msg;
                 const result = await associateToken(tokenId, owner, associate, dataBaseServer, emptyNotifier());
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error, 400);
             }
         })
 
     ApiResponse(MessageAPI.ASSOCIATE_TOKEN_ASYNC,
-        async (msg: { tokenId: string, owner: IOwner, associate: boolean, task: any, userId: string | null }) => {
-            const { tokenId, owner, associate, task, userId } = msg;
+        async (msg: {
+            tokenId: string,
+            owner: IOwner,
+            associate: boolean,
+            task: any
+        }) => {
+            const { tokenId, owner, associate, task } = msg;
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
                 const result = await associateToken(tokenId, owner, associate, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
                 notifier.error(error);
             });
 
@@ -794,13 +849,16 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         })
 
     ApiResponse(MessageAPI.GET_INFO_TOKEN,
-        async (msg: { tokenId: string, username: string, owner: IOwner, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            tokenId: string,
+            username: string,
+            owner: IOwner
+        }) => {
             try {
                 const { tokenId, username, owner } = msg;
 
                 const users = new Users();
-                const user = await users.getUser(username, userId);
+                const user = await users.getUser(username, owner?.id);
                 if (!user) {
                     throw new Error('User not found');
                 }
@@ -814,7 +872,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                     return new MessageResponse(getTokenInfo(null, token));
                 }
 
-                const root = await users.getHederaAccount(owner.creator, userId);
+                const root = await users.getHederaAccount(owner.creator, owner?.id);
                 const workers = new Workers();
                 const info = await workers.addNonRetryableTask({
                     type: WorkerTaskType.GET_ACCOUNT_INFO,
@@ -822,7 +880,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                         userID: root.hederaAccountId,
                         userKey: root.hederaAccountKey,
                         hederaAccountId: user.hederaAccountId,
-                        payload: { userId }
+                        payload: { userId: owner?.id }
                     }
                 }, 20);
 
@@ -830,20 +888,24 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
 
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error, 400);
             }
         })
 
     ApiResponse(MessageAPI.GET_ASSOCIATED_TOKENS,
-        async (msg: { did: string, pageIndex: number, pageSize: number, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            owner: IOwner,
+            did: string,
+            pageIndex: number,
+            pageSize: number
+        }) => {
             try {
                 const wallet = new Wallet();
                 const users = new Users();
-                const { did } = msg;
+                const { owner, did } = msg;
 
-                const user = await users.getUserById(did, userId);
+                const user = await users.getUserById(did, owner?.id);
                 const userID = user.hederaAccountId;
                 const userDID = user.did;
                 const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
@@ -863,16 +925,16 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                         userID,
                         userKey,
                         hederaAccountId: user.hederaAccountId,
-                        payload: { userId }
+                        payload: { userId: owner?.id }
                     }
                 }, 20);
 
-                const [tokens, count] = await dataBaseServer.findAndCount(Token,user.parent
+                const [tokens, count] = await dataBaseServer.findAndCount(Token, user.parent
                     ? {
-                         $or: [
-                             { owner: { $eq: user.parent } },
-                             { owner: { $exists: false } }
-                         ]
+                        $or: [
+                            { owner: { $eq: user.parent } },
+                            { owner: { $exists: false } }
+                        ]
                     } as FilterObject<Token>
                     : {}
                 );
@@ -884,7 +946,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                             data: {
                                 operatorId: userID,
                                 operatorKey: userKey,
-                                payload: { userId }
+                                payload: { userId: owner?.id }
                             },
                         },
                         20
@@ -897,7 +959,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
 
                 return new ArrayMessageResponse(result, count);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error, 400);
             }
         })
@@ -912,7 +974,10 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
      * @returns tokens
      */
     ApiResponse(MessageAPI.GET_TOKENS,
-        async (msg: { filters: any, owner: IOwner }) => {
+        async (msg: {
+            filters: any,
+            owner: IOwner
+        }) => {
             const { filters, owner } = msg;
             const option: any = {
                 $or: [
@@ -940,7 +1005,11 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
      * @returns {any[], number} - tokens and count
      */
     ApiResponse(MessageAPI.GET_TOKENS_PAGE,
-        async (msg: { owner: IOwner, pageIndex: any, pageSize: any }): Promise<any> => {
+        async (msg: {
+            owner: IOwner,
+            pageIndex: any,
+            pageSize: any
+        }): Promise<any> => {
             const { owner, pageIndex, pageSize } = msg;
 
             const options =
@@ -980,7 +1049,12 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
      * @returns {any[], number} - tokens and count
      */
     ApiResponse(MessageAPI.GET_TOKENS_PAGE_V2,
-        async (msg: {fields: string[], owner: IOwner, pageIndex: any, pageSize: any }): Promise<any> => {
+        async (msg: {
+            fields: string[],
+            owner: IOwner,
+            pageIndex: any,
+            pageSize: any
+        }): Promise<any> => {
             const { fields, owner, pageIndex, pageSize } = msg;
 
             const options =
@@ -1036,19 +1110,22 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
      * Get token serials
      */
     ApiResponse(MessageAPI.GET_SERIALS,
-        async (msg: { tokenId: string, did: string, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            owner: IOwner,
+            tokenId: string,
+            did: string
+        }) => {
             try {
                 const wallet = new Wallet();
                 const users = new Users();
-                const { did, tokenId } = msg;
+                const { owner, did, tokenId } = msg;
                 if (!did) {
                     throw new Error('DID is required');
                 }
                 if (!tokenId) {
                     throw new Error('Token identifier is required');
                 }
-                const user = await users.getUserById(did, userId);
+                const user = await users.getUserById(did, owner?.id);
                 const userID = user.hederaAccountId;
                 const userDID = user.did;
                 const userKey = await wallet.getKey(
@@ -1065,14 +1142,14 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                                 operatorId: userID,
                                 operatorKey: userKey,
                                 tokenId,
-                                payload: { userId }
+                                payload: { userId: owner?.id }
                             },
                         },
                         20
                     ));
                 return new MessageResponse(serials[tokenId] || []);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error, 400);
             }
         });

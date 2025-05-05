@@ -29,8 +29,9 @@ import { ContractAPI, ContractParamType, ContractType, EntityOwner, IOwner, Reti
 import { AccountId, TokenId } from '@hashgraph/sdk';
 import { proto } from '@hashgraph/proto';
 import * as ethers from 'ethers';
-import { contractCall, contractQuery, createContract, customContractCall, publishSystemSchema } from './helpers/index.js';
+import { contractCall, contractQuery, createContract, customContractCall } from './helpers/index.js';
 import { emptyNotifier } from '../helpers/notifier.js';
+import { publishSystemSchema } from '../helpers/import-helpers/index.js';
 
 const retireAbi = new ethers.Interface([
     'function approveRetire(address, tuple(address, int64, int64[])[])',

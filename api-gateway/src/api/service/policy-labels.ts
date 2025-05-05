@@ -340,7 +340,7 @@ export class PolicyLabelsApi {
             RunFunctionAsync<ServiceError>(async () => {
                 await guardians.publishPolicyLabelAsync(definitionId, owner, task);
             }, async (error) => {
-                await this.logger.error(error, ['API_GATEWAY']);
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
                 taskManager.addError(task.taskId, { code: 500, message: error.message || error });
             });
 

@@ -1,3 +1,4 @@
+import { LocationType } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { DataSourceAddon } from '../helpers/decorators/data-source-addon.js';
 import { findOptions } from '../helpers/find-options.js';
@@ -5,7 +6,7 @@ import { PolicyUtils, QueryType } from '../helpers/utils.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { IPolicyAddonBlock } from '../policy-engine.interface.js';
+import { IPolicyAddonBlock, IPolicyGetData } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
 
 /**
@@ -13,6 +14,7 @@ import { PolicyUser } from '../policy-user.js';
  */
 @DataSourceAddon({
     blockType: 'filtersAddon',
+    actionType: LocationType.LOCAL,
     about: {
         label: 'Filters Addon',
         title: `Add 'Filters' Addon`,
@@ -133,12 +135,17 @@ export class FiltersAddonBlock {
      * Get block data
      * @param user
      */
-    async getData(user: PolicyUser) {
+    async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
-        const block: any = {
+        const block: IPolicyGetData = {
             id: ref.uuid,
             blockType: 'filtersAddon',
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            ),
             type: ref.options.type,
             uiMetaData: ref.options.uiMetaData,
             canBeEmpty: ref.options.canBeEmpty,
