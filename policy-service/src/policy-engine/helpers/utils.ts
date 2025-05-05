@@ -492,10 +492,7 @@ export class PolicyUtils {
                     payload: { userId }
                 }
             }, 20);
-            const userProfile = await new Users().getUserByAccount(
-                user.hederaAccountId,
-                userId
-            );
+            const userProfile = await new Users().getUserByAccount(user.hederaAccountId, userId);
             await NotificationHelper.info(
                 `Associate token`,
                 `${token.tokenName} associated`,
@@ -533,10 +530,7 @@ export class PolicyUtils {
                     payload: { userId }
                 }
             }, 20);
-            const userProfile = await new Users().getUserByAccount(
-                user.hederaAccountId,
-                userId
-            );
+            const userProfile = await new Users().getUserByAccount(user.hederaAccountId, userId);
             await NotificationHelper.info(
                 `Dissociate token`,
                 `${token.tokenName} dissociated`,
@@ -784,12 +778,12 @@ export class PolicyUtils {
      * @param account
      * @param userId
      */
-    public static async checkAccountId(account: IHederaCredentials, userId: string | null): Promise<void> {
+    public static async checkAccountId(hederaAccountId: string, userId: string | null): Promise<void> {
         const workers = new Workers();
         return await workers.addNonRetryableTask({
             type: WorkerTaskType.CHECK_ACCOUNT,
             data: {
-                hederaAccountId: account.hederaAccountId,
+                hederaAccountId,
                 payload: { userId }
             }
         }, 20);
@@ -1008,8 +1002,29 @@ export class PolicyUtils {
      * @param ref
      * @param did
      */
-    public static async getUserCredentials(ref: AnyBlockType, did: string): Promise<UserCredentials> {
-        return await UserCredentials.create(ref, did);
+    public static async getUserCredentials(ref: AnyBlockType, did: string, userId: string | null): Promise<UserCredentials> {
+        return await UserCredentials.create(ref, did, userId);
+    }
+
+    /**
+     * Get Hedera Account and Private Key
+     * @param ref
+     * @param did
+     */
+    public static async getUserCredentialsByAccount(ref: AnyBlockType, accountId: string, userId: string | null): Promise<UserCredentials> {
+        return await UserCredentials.createByAccount(ref, accountId, userId);
+    }
+
+    /**
+     * Get Hedera Account and Private Key
+     * @param hederaAccountId
+     * @param hederaAccountKey
+     */
+    public static createHederaCredentials(
+        hederaAccountId: string,
+        hederaAccountKey: string = null
+    ): IHederaCredentials {
+        return { hederaAccountId, hederaAccountKey }
     }
 
     /**

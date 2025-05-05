@@ -2,12 +2,15 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../in
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
-import { IPolicyBlock, IPolicyEventState } from '../policy-engine.interface.js';
+import { IPolicyBlock, IPolicyEventState, IPolicyGetData } from '../policy-engine.interface.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyUtils } from '../helpers/utils.js';
-import { IHederaCredentials, PolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { BlockActionError } from '../errors/index.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { LocationType } from '@guardian/interfaces';
+import { Token } from '@guardian/common';
+import { PolicyActionsUtils } from '../policy-actions/utils.js';
 
 /**
  * Information block
@@ -15,6 +18,7 @@ import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.j
 @BasicBlock({
     blockType: 'tokenActionBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Token Action',
         title: `Add 'Token Action' Block`,
@@ -42,9 +46,18 @@ export class TokenActionBlock {
      * Get block data
      * @param user
      */
-    async getData(user: PolicyUser): Promise<any> {
-        const { options } = PolicyComponentsUtils.GetBlockRef(this);
-        return { uiMetaData: options.uiMetaData };
+    async getData(user: PolicyUser): Promise<IPolicyGetData> {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        return {
+            id: ref.uuid,
+            blockType: ref.blockType,
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            ),
+            uiMetaData: ref.options?.uiMetaData
+        };
     }
 
     /**
@@ -61,69 +74,72 @@ export class TokenActionBlock {
     })
     @CatchErrors()
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
+        const userId = event?.user?.userId;
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`runAction`);
         const field = ref.options.accountId;
         const documents = event?.data?.data;
         const doc = Array.isArray(documents) ? documents[0] : documents;
 
-        let token;
+        let token: Token | null;
         if (!ref.options.useTemplate) {
             token = await ref.databaseServer.getToken(ref.options.tokenId);
         }
-
-        let account: IHederaCredentials = null;
-        if (doc) {
-            if (field) {
-                if (doc.accounts) {
-                    account = {
-                        hederaAccountId: doc.accounts[field],
-                        hederaAccountKey: null
-                    }
-                }
-            } else {
-                const user = await PolicyUtils.getUserCredentials(ref, doc.owner);
-                account = await user.loadHederaCredentials(ref, event.userId);
-            }
-            if (ref.options.useTemplate) {
-                if (doc.tokens) {
-                    token = await ref.databaseServer.getToken(doc.tokens[ref.options.template], ref.dryRun);
-                }
-            }
+        if (ref.options.useTemplate && doc && doc.tokens) {
+            token = await ref.databaseServer.getToken(doc.tokens[ref.options.template], ref.dryRun);
         }
-
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
 
-        const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
-        const ownerCredentials = await policyOwner.loadHederaCredentials(ref, event.userId);
-        const userId = policyOwner.userId;
-
-        await PolicyUtils.checkAccountId(account, userId);
+        let userHederaAccountId: string = null;
+        let userDID: string = null;
+        if (doc) {
+            if (field) {
+                if (doc.accounts) {
+                    userHederaAccountId = doc.accounts[field];
+                }
+            } else {
+                userDID = doc.owner;
+                userHederaAccountId = await PolicyUtils.getHederaAccountId(ref, doc.owner, userId);
+            }
+        }
+        await PolicyUtils.checkAccountId(userHederaAccountId, userId);
 
         switch (ref.options.action) {
             case 'associate': {
-                await PolicyUtils.associate(ref, token, account, userId);
+                await PolicyActionsUtils.associateToken(ref, token, userDID, userId);
                 break;
             }
             case 'dissociate': {
-                await PolicyUtils.dissociate(ref, token, account, userId);
+                await PolicyActionsUtils.dissociateToken(ref, token, userDID, userId);
                 break;
             }
             case 'freeze': {
+                const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
+                const ownerCredentials = await policyOwner.loadHederaCredentials(ref, userId);
+                const account = PolicyUtils.createHederaCredentials(userHederaAccountId);
                 await PolicyUtils.freeze(ref, token, account, ownerCredentials, userId);
                 break;
             }
             case 'unfreeze': {
+                const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
+                const ownerCredentials = await policyOwner.loadHederaCredentials(ref, userId);
+                const account = PolicyUtils.createHederaCredentials(userHederaAccountId);
                 await PolicyUtils.unfreeze(ref, token, account, ownerCredentials, userId);
                 break;
             }
             case 'grantKyc': {
+                const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
+                const ownerCredentials = await policyOwner.loadHederaCredentials(ref, userId);
+                const account = PolicyUtils.createHederaCredentials(userHederaAccountId);
                 await PolicyUtils.grantKyc(ref, token, account, ownerCredentials, userId);
                 break;
             }
             case 'revokeKyc': {
+                const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
+                const ownerCredentials = await policyOwner.loadHederaCredentials(ref, userId);
+                const account = PolicyUtils.createHederaCredentials(userHederaAccountId);
                 await PolicyUtils.revokeKyc(ref, token, account, ownerCredentials, userId);
                 break;
             }
@@ -137,5 +153,7 @@ export class TokenActionBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event.user, {
             action: ref.options.action
         }));
+
+        ref.backup();
     }
 }

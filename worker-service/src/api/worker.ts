@@ -147,9 +147,9 @@ export class Worker extends NatsService {
         await super.init();
         this.channel = new MessageBrokerChannel(this.connection, 'worker');
         try {
-            await this.ipfsClient.createClient()
+            await this.ipfsClient.createClient();
         } catch (e) {
-            this.logger.error(`Could not create IPFS client instance. ${e.message}`, [this.workerID, 'WORKER'])
+            this.logger.error(`Could not create IPFS client instance. ${e.message}`, [this.workerID, 'WORKER'], null);
         }
 
         this.subscribe(WorkerEvents.GET_FREE_WORKERS, async (msg) => {
@@ -403,7 +403,7 @@ export class Worker extends NatsService {
                 }
 
                 case WorkerTaskType.SEND_HEDERA: {
-                    const { operatorId, operatorKey, dryRun} = task.data.clientOptions;
+                    const { operatorId, operatorKey, dryRun } = task.data.clientOptions;
 
                     const userId = task.data.payload?.userId;
 
@@ -432,6 +432,13 @@ export class Worker extends NatsService {
                     const { hederaAccountId, hederaAccountKey } = task.data;
                     client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, null, networkOptions);
                     result.data = await client.balance(hederaAccountId);
+
+                    break;
+                }
+
+                case WorkerTaskType.GET_USER_BALANCE_REST: {
+                    const { hederaAccountId } = task.data;
+                    result.data = await HederaSDKHelper.balanceRest(hederaAccountId);
 
                     break;
                 }
@@ -707,7 +714,7 @@ export class Worker extends NatsService {
                         token,
                         wipeKey,
                         uuid,
-                        payload: {userId}
+                        payload: { userId }
                     } = task.data;
                     client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
                     if (token.tokenType === 'non-fungible') {
@@ -721,7 +728,7 @@ export class Worker extends NatsService {
                 }
 
                 case WorkerTaskType.NEW_TOPIC: {
-                    const { hederaAccountId, hederaAccountKey, dryRun, topicMemo, keys, payload: {userId} } = task.data;
+                    const { hederaAccountId, hederaAccountKey, dryRun, topicMemo, keys, payload: { userId } } = task.data;
                     client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
                     let adminKey: any = null;
                     let submitKey: any = null;

@@ -1,7 +1,7 @@
 import { Auth, AuthUser } from '#auth';
 import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache } from '#helpers';
-import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyTestDTO, PolicyValidationDTO, RunningDetailsDTO, ServiceUnavailableErrorDTO, TaskDTO } from '#middlewares';
+import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyTestDTO, PolicyValidationDTO, PolicyVersionDTO, RunningDetailsDTO, ServiceUnavailableErrorDTO, TaskDTO } from '#middlewares';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyHelper, TaskAction, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
@@ -53,6 +53,13 @@ export class PolicyApi {
         required: false,
         example: 20
     })
+    @ApiQuery({
+        name: 'type',
+        type: String,
+        description: 'Policy type',
+        required: false,
+        example: 'local'
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -69,7 +76,8 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
-        @Query('pageSize') pageSize?: number
+        @Query('pageSize') pageSize?: number,
+        @Query('type') type?: string
     ): Promise<any> {
         if (!user.did && user.role !== UserRole.AUDITOR) {
             return res.header('X-Total-Count', 0).send([]);
@@ -78,7 +86,8 @@ export class PolicyApi {
             const options: any = {
                 filters: {},
                 pageIndex,
-                pageSize
+                pageSize,
+                type
             };
             const engineService = new PolicyEngine();
             const owner = new EntityOwner(user);
@@ -120,6 +129,13 @@ export class PolicyApi {
         required: false,
         example: 20
     })
+    @ApiQuery({
+        name: 'type',
+        type: String,
+        description: 'Policy type',
+        required: false,
+        example: 'local'
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -137,7 +153,8 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
-        @Query('pageSize') pageSize?: number
+        @Query('pageSize') pageSize?: number,
+        @Query('type') type?: string
     ): Promise<any> {
         if (!user.did && user.role !== UserRole.AUDITOR) {
             return res.header('X-Total-Count', 0).send([]);
@@ -146,6 +163,7 @@ export class PolicyApi {
             const options: any = {
                 fields: Object.values(POLICY_REQUIRED_PROPS),
                 filters: {},
+                type,
                 pageIndex,
                 pageSize
             };
@@ -588,6 +606,10 @@ export class PolicyApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiBody({
+        description: 'Options.',
+        type: PolicyVersionDTO,
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PoliciesValidationDTO
@@ -601,7 +623,7 @@ export class PolicyApi {
     async publishPolicy(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: PolicyDTO,
+        @Body() body: PolicyVersionDTO,
         @Req() req
     ): Promise<PoliciesValidationDTO> {
         try {
@@ -638,8 +660,8 @@ export class PolicyApi {
         example: Examples.DB_ID
     })
     @ApiBody({
-        description: 'Policy configuration.',
-        type: PolicyDTO,
+        description: 'Options.',
+        type: PolicyVersionDTO,
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -654,7 +676,7 @@ export class PolicyApi {
     async publishPolicyAsync(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: PolicyDTO,
+        @Body() body: PolicyVersionDTO,
         @Req() req
     ): Promise<TaskDTO> {
         const taskManager = new TaskManager();
@@ -1796,7 +1818,7 @@ export class PolicyApi {
     ) {
         try {
             const engineService = new PolicyEngine();
-            return await engineService.blockAbout(user.id);
+            return await engineService.blockAbout(user);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -2828,26 +2850,26 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-                      summary: 'Create dry-run savepoint.',
-                      description: 'Create dry-run savepoint.' + ONLY_SR
-                  })
+        summary: 'Create dry-run savepoint.',
+        description: 'Create dry-run savepoint.' + ONLY_SR
+    })
     @ApiParam({
-                  name: 'policyId',
-                  type: String,
-                  description: 'Policy Id',
-                  required: true,
-                  example: Examples.DB_ID
-              })
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
     @ApiBody({
-                 description: '.'
-             })
+        description: '.'
+    })
     @ApiOkResponse({
-                       description: '.'
-                   })
+        description: '.'
+    })
     @ApiInternalServerErrorResponse({
-                                        description: 'Internal server error.',
-                                        type: InternalServerErrorDTO
-                                    })
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async createSavepoint(
@@ -2884,26 +2906,26 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-                      summary: 'Delete dry-run savepoint.',
-                      description: 'Delete dry-run savepoint.' + ONLY_SR
-                  })
+        summary: 'Delete dry-run savepoint.',
+        description: 'Delete dry-run savepoint.' + ONLY_SR
+    })
     @ApiParam({
-                  name: 'policyId',
-                  type: String,
-                  description: 'Policy Id',
-                  required: true,
-                  example: Examples.DB_ID
-              })
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
     @ApiBody({
-                 description: '.'
-             })
+        description: '.'
+    })
     @ApiOkResponse({
-                       description: '.'
-                   })
+        description: '.'
+    })
     @ApiInternalServerErrorResponse({
-                                        description: 'Internal server error.',
-                                        type: InternalServerErrorDTO
-                                    })
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async deleteSavepoint(
@@ -2940,26 +2962,26 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-                      summary: 'Get savepoint state.',
-                      description: 'Get savepoint state.' + ONLY_SR
-                  })
+        summary: 'Get savepoint state.',
+        description: 'Get savepoint state.' + ONLY_SR
+    })
     @ApiParam({
-                  name: 'policyId',
-                  type: String,
-                  description: 'Policy Id',
-                  required: true,
-                  example: Examples.DB_ID
-              })
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
     @ApiBody({
-                 description: '.'
-             })
+        description: '.'
+    })
     @ApiOkResponse({
-                       description: '.'
-                   })
+        description: '.'
+    })
     @ApiInternalServerErrorResponse({
-                                        description: 'Internal server error.',
-                                        type: InternalServerErrorDTO
-                                    })
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getSavepointState(
@@ -2993,26 +3015,26 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-                      summary: 'Restore dry-run savepoint.',
-                      description: 'Restore dry-run savepoint.' + ONLY_SR
-                  })
+        summary: 'Restore dry-run savepoint.',
+        description: 'Restore dry-run savepoint.' + ONLY_SR
+    })
     @ApiParam({
-                  name: 'policyId',
-                  type: String,
-                  description: 'Policy Id',
-                  required: true,
-                  example: Examples.DB_ID
-              })
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
     @ApiBody({
-                 description: '.'
-             })
+        description: '.'
+    })
     @ApiOkResponse({
-                       description: '.'
-                   })
+        description: '.'
+    })
     @ApiInternalServerErrorResponse({
-                                        description: 'Internal server error.',
-                                        type: InternalServerErrorDTO
-                                    })
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async restoreSavepoint(

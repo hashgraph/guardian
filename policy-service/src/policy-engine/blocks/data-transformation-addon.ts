@@ -6,12 +6,14 @@ import { fileURLToPath } from 'url';
 import { Worker } from 'node:worker_threads';
 import { BasicBlock } from '../helpers/decorators/basic-block.js';
 import path from 'path';
+import { LocationType } from '@guardian/interfaces';
 
 const filename = fileURLToPath(import.meta.url);
 
 @BasicBlock({
     blockType: 'dataTransformationAddon',
     commonBlock: true,
+    actionType: LocationType.LOCAL,
     about: {
         label: 'Data Transformation Addon',
         title: `Add 'Data Transformation' Addon`,

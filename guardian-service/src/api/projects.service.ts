@@ -84,8 +84,10 @@ export async function getProjectsData(documents: VcDocument[], allPolicies: Poli
  */
 export async function projectsAPI(logger: PinoLogger): Promise<void> {
     ApiResponse(MessageAPI.SEARCH_PROJECTS,
-        async (msg: { categoryIds: string[], policyIds: string[], userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            categoryIds: string[],
+            policyIds: string[]
+        }) => {
             try {
                 const { categoryIds, policyIds } = msg;
 
@@ -137,28 +139,28 @@ export async function projectsAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse(projects);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], null);
                 return new MessageError(error);
             }
         });
 
-    ApiResponse(MessageAPI.GET_POLICY_CATEGORIES, async ({userId}: {userId: string | null}) => {
+    ApiResponse(MessageAPI.GET_POLICY_CATEGORIES, async () => {
         try {
             const policyCategories = await DatabaseServer.getPolicyCategories();
             return new MessageResponse(policyCategories);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+            await logger.error(error, ['GUARDIAN_SERVICE'], null);
             return new MessageError(error);
         }
     });
 
-    ApiResponse(MessageAPI.GET_POLICY_PROPERTIES, async ({userId}: {userId: string | null}) => {
+    ApiResponse(MessageAPI.GET_POLICY_PROPERTIES, async () => {
         try {
             const policyProperties = await DatabaseServer.getPolicyProperties();
             return new MessageResponse(policyProperties);
         } catch (error) {
             console.log(error);
-            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+            await logger.error(error, ['GUARDIAN_SERVICE'], null);
             return new MessageError(error);
         }
     });

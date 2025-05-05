@@ -278,10 +278,10 @@ export class PolicyContainer extends NatsService {
 
         execFile(this.runServiceScript, (error, _data) => {
             if (error) {
-                this.logger.error(error, ['POLICY_SERVICE', this.runServiceScript]);
+                this.logger.error(error, ['POLICY_SERVICE', this.runServiceScript], null);
                 return;
             }
-            this.logger.info(_data, ['POLICY_SERVICE', this.runServiceScript]);
+            this.logger.info(_data, ['POLICY_SERVICE', this.runServiceScript], null);
         });
         this.startNewPolicyServiceTriggered = true;
     }

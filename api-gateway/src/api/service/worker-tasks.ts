@@ -50,7 +50,7 @@ export class WorkerTasksController{
         @Query('pageSize') pageSize?: number,
     ) {
         const guardians = new Guardians();
-        const [tasks, count] = await guardians.getAllWorkerTasks(user, parseInteger(pageIndex), parseInteger(pageSize), user.id);
+        const [tasks, count] = await guardians.getAllWorkerTasks(user, parseInteger(pageIndex), parseInteger(pageSize));
         res.header('X-Total-Count', count).send(tasks);
     }
 

@@ -1100,6 +1100,7 @@ export class PolicyDataMigrator {
             await this._db.saveBlockState(
                 this._policyId,
                 this._blocks[state.blockId],
+                null,
                 data
             );
         }

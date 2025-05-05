@@ -1,63 +1,60 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DatabaseServer, Environment, MessageError, MessageResponse, PinoLogger, SecretManager, Topic, ValidateConfiguration, Workers } from '@guardian/common';
+import { Environment, IAuthUser, MessageError, MessageResponse, PinoLogger, SecretManager, ValidateConfiguration, Workers } from '@guardian/common';
 import { CommonSettings, MessageAPI } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 
 /**
  * Connecting to the message broker methods of working with root address book.
  */
-export async function configAPI(
-    dataBaseServer: DatabaseServer,
-    logger: PinoLogger,
-): Promise<void> {
-
-    ApiResponse(MessageAPI.GET_TOPIC, async (msg) => {
-        const topic = await dataBaseServer.findOne(Topic, msg);
-        return new MessageResponse(topic);
-    });
-
+export async function configAPI(logger: PinoLogger): Promise<void> {
     /**
      * Update settings
      *
      */
-    ApiResponse(MessageAPI.UPDATE_SETTINGS, async ({settings, userId} :{settings: CommonSettings, userId: string }) => {
-        try {
-            const secretManager = SecretManager.New();
+    ApiResponse(MessageAPI.UPDATE_SETTINGS,
+        async (msg: {
+            user: IAuthUser,
+            settings: CommonSettings
+        }) => {
             try {
-                AccountId.fromString(settings.operatorId);
-            } catch (error) {
-                await logger.error('OPERATOR_ID: ' + error.message, ['GUARDIAN_SERVICE'], userId);
-                throw new Error('OPERATOR_ID: ' + error.message);
-            }
-            try {
-                PrivateKey.fromString(settings.operatorKey);
-            } catch (error) {
-                await logger.error('OPERATOR_KEY: ' + error.message, ['GUARDIAN_SERVICE'], userId);
-                throw new Error('OPERATOR_KEY: ' + error.message);
-            }
+                const { user, settings } = msg;
+                const secretManager = SecretManager.New();
+                try {
+                    AccountId.fromString(settings.operatorId);
+                } catch (error) {
+                    await logger.error('OPERATOR_ID: ' + error.message, ['GUARDIAN_SERVICE'], user.id);
+                    throw new Error('OPERATOR_ID: ' + error.message);
+                }
+                try {
+                    PrivateKey.fromString(settings.operatorKey);
+                } catch (error) {
+                    await logger.error('OPERATOR_KEY: ' + error.message, ['GUARDIAN_SERVICE'], user.id);
+                    throw new Error('OPERATOR_KEY: ' + error.message);
+                }
 
-            await secretManager.setSecrets('keys/operator', {
-                OPERATOR_ID: settings.operatorId,
-                OPERATOR_KEY: settings.operatorKey
-            });
-            const validator = new ValidateConfiguration();
-            await validator.validate();
-            await new Workers().updateSettings({
-                ipfsStorageApiKey: settings.ipfsStorageApiKey
-            });
-            return new MessageResponse(null);
-        }
-        catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
-            return new MessageError(error);
-        }
-    });
+                await secretManager.setSecrets('keys/operator', {
+                    OPERATOR_ID: settings.operatorId,
+                    OPERATOR_KEY: settings.operatorKey
+                });
+                const validator = new ValidateConfiguration();
+                await validator.validate();
+                await new Workers().updateSettings({
+                    ipfsStorageApiKey: settings.ipfsStorageApiKey
+                });
+                return new MessageResponse(null);
+            }
+            catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                return new MessageError(error);
+            }
+        });
 
     /**
      * Get settings
      */
-    ApiResponse(MessageAPI.GET_SETTINGS, async (msg: any) => {
-        const userId = msg?.userId
+    ApiResponse(MessageAPI.GET_SETTINGS, async (msg: {
+        user: IAuthUser
+    }) => {
         try {
             const secretManager = SecretManager.New();
             const { OPERATOR_ID } = await secretManager.getSecrets('keys/operator');
@@ -70,7 +67,7 @@ export async function configAPI(
             });
         }
         catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+            await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
             return new MessageError(error);
         }
     });

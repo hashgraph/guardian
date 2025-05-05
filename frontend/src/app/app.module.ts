@@ -129,6 +129,7 @@ import '../prototypes/date-prototype';
 import { OnlyForDemoDirective } from './directives/onlyfordemo.directive';
 import { UseWithServiceDirective } from './directives/use-with-service.directive';
 import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
+import { ExternalPoliciesService } from './services/external-policy.service';
 
 @NgModule({
     declarations: [
@@ -252,6 +253,7 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         CompareStorage,
         ProjectComparisonService,
         FormulasService,
+        ExternalPoliciesService,
         PermissionsService,
         PermissionsGuard,
         {

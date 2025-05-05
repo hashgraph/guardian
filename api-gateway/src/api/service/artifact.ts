@@ -79,7 +79,7 @@ export class ArtifactApi {
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    @UseCache({isFastify: true})
+    @UseCache({ isFastify: true })
     async getArtifacts(
         @AuthUser() user: IAuthUser,
         @Response() res: any,
@@ -112,7 +112,7 @@ export class ArtifactApi {
                 options.pageSize = pageSize;
             }
             const guardians = new Guardians();
-            const { artifacts, count } = await guardians.getArtifacts(options, user.id);
+            const { artifacts, count } = await guardians.getArtifacts(user, options);
 
             req.locals = artifacts
 
@@ -223,7 +223,7 @@ export class ArtifactApi {
             options.fields = Object.values(ARTIFACT_REQUIRED_PROPS)
 
             const guardians = new Guardians();
-            const { artifacts, count } = await guardians.getArtifactsV2(options, user.id);
+            const { artifacts, count } = await guardians.getArtifactsV2(user, options);
 
             return res.header('X-Total-Count', count).send(artifacts);
         } catch (error) {

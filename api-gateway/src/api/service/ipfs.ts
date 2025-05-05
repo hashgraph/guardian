@@ -1,10 +1,10 @@
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Req, StreamableFile } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Permissions } from '@guardian/interfaces';
-import {Auth, AuthUser} from '#auth';
+import { Auth, AuthUser } from '#auth';
 import { Examples, InternalServerErrorDTO } from '#middlewares';
 import { CacheService, getCacheKey, Guardians, InternalException, UseCache } from '#helpers';
-import {IAuthUser, PinoLogger} from '@guardian/common';
+import { IAuthUser, PinoLogger } from '@guardian/common';
 import { CACHE, PREFIXES } from '#constants';
 
 @Controller('ipfs')
@@ -52,7 +52,7 @@ export class IpfsApi {
             }
 
             const guardians = new Guardians();
-            const { cid } = await guardians.addFileIpfs(body, user.id);
+            const { cid } = await guardians.addFileIpfs(user, body);
             if (!cid) {
                 throw new HttpException('File is not uploaded', HttpStatus.BAD_REQUEST);
             }
@@ -116,7 +116,7 @@ export class IpfsApi {
             }
 
             const guardians = new Guardians();
-            const { cid } = await guardians.addFileToDryRunStorage(body, policyId, user.id);
+            const { cid } = await guardians.addFileToDryRunStorage(user, body, policyId);
 
             const invalidedCacheTags = [
                 `${PREFIXES.IPFS}file/${cid}`,
@@ -170,7 +170,7 @@ export class IpfsApi {
     ): Promise<any> {
         try {
             const guardians = new Guardians();
-            const result = await guardians.getFileIpfs(cid, 'raw');
+            const result = await guardians.getFileIpfs(user, cid, 'raw');
             if (result.type !== 'Buffer') {
                 throw new HttpException('File is not found', HttpStatus.NOT_FOUND)
             }
@@ -220,7 +220,7 @@ export class IpfsApi {
     ): Promise<any> {
         try {
             const guardians = new Guardians();
-            const result = await guardians.getFileFromDryRunStorage(cid, 'raw', user.id);
+            const result = await guardians.getFileFromDryRunStorage(user, cid, 'raw');
             if (result.type !== 'Buffer') {
                 throw new HttpException('File is not found', HttpStatus.NOT_FOUND)
             }

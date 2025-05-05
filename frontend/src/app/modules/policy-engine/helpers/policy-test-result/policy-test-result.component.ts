@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import moment from 'moment';
 import { PolicyTestDialog } from '../../dialogs/policy-test-dialog/policy-test-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
-import { PolicyType } from '@guardian/interfaces';
+import { PolicyStatus } from '@guardian/interfaces';
 
 /**
  * Help Icon
@@ -93,7 +93,7 @@ export class PolicyTestResult {
     }
 
     public onRun(last: any) {
-        if ((this.status === PolicyType.DRY_RUN || this.status === PolicyType.DEMO)) {
+        if ((this.status === PolicyStatus.DRY_RUN || this.status === PolicyStatus.DEMO)) {
             this.runTest.emit({ policy: this.policy, test: last })
         }
     }
@@ -105,10 +105,10 @@ export class PolicyTestResult {
     }
 
     public isRun(policy: any): boolean {
-        return policy.status === PolicyType.DRY_RUN || policy.status === PolicyType.DEMO;
+        return policy.status === PolicyStatus.DRY_RUN || policy.status === PolicyStatus.DEMO;
     }
 
     public isPublished(policy: any): boolean {
-        return policy.status === PolicyType.PUBLISH || policy.status === PolicyType.DISCONTINUED;
+        return policy.status === PolicyStatus.PUBLISH || policy.status === PolicyStatus.DISCONTINUED;
     }
 }

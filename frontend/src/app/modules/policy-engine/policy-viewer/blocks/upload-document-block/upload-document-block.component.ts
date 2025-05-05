@@ -35,6 +35,7 @@ export class UploadDocumentBlockComponent implements OnInit {
     pageDescription: string = '';
     dialogDescription: string = '';
     buttonClass: string = '';
+    readonly: boolean = false;
 
     public items: unknown[] = []
 
@@ -98,6 +99,7 @@ export class UploadDocumentBlockComponent implements OnInit {
 
     setData(data: any) {
         if (data) {
+            this.readonly = !!data.readonly;
             this.type = data.uiMetaData.type;
             if (this.type == 'dialog') {
                 this.buttonText = data.uiMetaData.buttonText;

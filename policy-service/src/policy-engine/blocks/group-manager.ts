@@ -1,10 +1,10 @@
 import { EventBlock } from '../helpers/decorators/index.js';
-import { GroupAccessType, GroupRelationshipType } from '@guardian/interfaces';
-import { IPolicyInterfaceBlock } from '../policy-engine.interface.js';
+import { GroupAccessType, GroupRelationshipType, LocationType } from '@guardian/interfaces';
+import { IPolicyGetData, IPolicyInterfaceBlock } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyInputEventType } from '../interfaces/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import {PolicyUser, UserCredentials} from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { MessageServer, MessageStatus, PolicyRoles } from '@guardian/common';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
@@ -15,6 +15,7 @@ import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.j
 @EventBlock({
     blockType: 'groupManagerBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Group Manager',
         title: `Add 'Group Manager' Block`,
@@ -82,11 +83,9 @@ export class GroupManagerBlock {
         user: PolicyUser,
         groupId: string,
         did: string,
-        text: string
+        text: string,
+        userId: string | null
     ): Promise<void> {
-        const credentials = await UserCredentials.create(ref, user.did);
-        const userId = credentials.userId;
-
         if (user.did === did) {
             throw new Error(`Permission denied`);
         }
@@ -114,7 +113,7 @@ export class GroupManagerBlock {
         }
 
         if (member.messageId) {
-            const userCred = await PolicyUtils.getUserCredentials(ref, user.did);
+            const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
             const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
             const signOptions = await userCred.loadSignOptions(ref, userId);
             const messageServer = new MessageServer(
@@ -129,7 +128,7 @@ export class GroupManagerBlock {
         }
 
         const target = await PolicyComponentsUtils.GetPolicyUserByGroup(member, ref, userId);
-        ref.triggerInternalEvent('remove-user', target);
+        ref.triggerInternalEvent('remove-user', { target, user });
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.DeleteMember, ref, user, null));
     }
 
@@ -171,7 +170,7 @@ export class GroupManagerBlock {
      * Get block data
      * @param user
      */
-    async getData(user: PolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         if (!user && !user.did) {
             throw new Error(`Permission denied`);
@@ -184,7 +183,16 @@ export class GroupManagerBlock {
             data.push(await this.groupMapping(ref, user, group));
         }
 
-        return { data };
+        return {
+            id: ref.uuid,
+            blockType: ref.blockType,
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            ),
+            data
+        };
     }
 
     /**
@@ -197,9 +205,10 @@ export class GroupManagerBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
             action: blockData?.action
         }));
+        let result: any;
         if (blockData.action === 'invite') {
             const invitation = await this.createInvite(ref, user, blockData.group, blockData.role);
-            return { invitation };
+            result = { invitation };
         }
         if (blockData.action === 'delete') {
             await this.deleteMember(
@@ -207,9 +216,12 @@ export class GroupManagerBlock {
                 user,
                 blockData.group,
                 blockData.user,
-                blockData.message
+                blockData.message,
+                user.userId
             );
-            return { deleted: true };
+            result = { deleted: true };
         }
+        ref.backup();
+        return result;
     }
 }

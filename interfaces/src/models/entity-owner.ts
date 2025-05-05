@@ -48,6 +48,7 @@ export class EntityOwner implements IOwner {
                 this.access = AccessType.NONE;
             }
         } else {
+            this.id = null;
             this.creator = null;
             this.owner = null;
             this.access = AccessType.NONE;

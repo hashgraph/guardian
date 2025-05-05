@@ -12,7 +12,7 @@ import {
     VcHelper,
     VcDocumentDefinition as VcDocument,
 } from '@guardian/common';
-import { SchemaEntity } from '@guardian/interfaces';
+import { LocationType, SchemaEntity } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { Inject } from '../../helpers/decorators/inject.js';
@@ -23,6 +23,7 @@ import { Inject } from '../../helpers/decorators/inject.js';
 @BasicBlock({
     blockType: 'splitBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Split Block',
         title: `Add 'Split' Block`,
@@ -253,7 +254,7 @@ export class SplitBlock {
      */
     private async addDocs(ref: IPolicyBlock, user: PolicyUser, documents: IPolicyDocument[], userId: string | null) {
         const residue = await ref.databaseServer.getResidue(ref.policyId, ref.uuid, user.id);
-        const root = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
+        const root = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
 
         let current = residue;
 
@@ -302,9 +303,11 @@ export class SplitBlock {
             documents: ExternalDocuments(docs)
         }));
         if (Array.isArray(docs)) {
-            await this.addDocs(ref, event.user, docs, event.userId);
+            await this.addDocs(ref, event.user, docs, event?.user?.userId);
         } else {
-            await this.addDocs(ref, event.user, [docs], event.userId);
+            await this.addDocs(ref, event.user, [docs], event?.user?.userId);
         }
+
+        ref.backup();
     }
 }

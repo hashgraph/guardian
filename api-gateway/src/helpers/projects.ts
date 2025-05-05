@@ -27,7 +27,7 @@ export class ProjectService extends NatsService {
      * @returns Suitable documents
      */
     public async search(categoryIds: string[], policyIds: string[]): Promise<any> {
-        const res = (await this.sendMessage(MessageAPI.SEARCH_PROJECTS, { categoryIds, policyIds, userId: null })) as any;
+        const res = (await this.sendMessage(MessageAPI.SEARCH_PROJECTS, { categoryIds, policyIds })) as any;
         if (!res) {
             throw new Error('Invalid projects search response');
         }
@@ -41,13 +41,13 @@ export class ProjectService extends NatsService {
      * Get policy categories
      */
     public async getPolicyCategories() {
-        return await this.sendMessage(MessageAPI.GET_POLICY_CATEGORIES, {userId: null});
+        return await this.sendMessage(MessageAPI.GET_POLICY_CATEGORIES, {});
     }
 
     /**
      * Get policy properties
      */
     public async getPolicyProperties() {
-        return await this.sendMessage(MessageAPI.GET_POLICY_PROPERTIES, {userId: null});
+        return await this.sendMessage(MessageAPI.GET_POLICY_PROPERTIES, {});
     }
 }

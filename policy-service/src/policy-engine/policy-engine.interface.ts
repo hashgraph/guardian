@@ -2,6 +2,7 @@ import { BlockCacheType, EventConfig, IPolicyEvent, PolicyOutputEventType } from
 import { DatabaseServer, Policy } from '@guardian/common';
 import { PolicyUser, UserCredentials } from './policy-user.js';
 import { ComponentsService } from './helpers/components-service.js';
+import { LocationType, PolicyAvailability, PolicyStatus } from '@guardian/interfaces';
 
 /**
  * Policy roles interface
@@ -111,6 +112,10 @@ export interface IPolicyBlock {
      */
     about?: string;
     /**
+     * Action location
+     */
+    actionType?: LocationType;
+    /**
      * Block permissions
      */
     readonly permissions: string[];
@@ -150,6 +155,21 @@ export interface IPolicyBlock {
      * Dry-run
      */
     readonly dryRun: string;
+
+    /**
+     * Policy status
+     */
+    readonly policyStatus: PolicyStatus;
+
+    /**
+     * Policy availability
+     */
+    readonly policyAvailability: PolicyAvailability;
+
+    /**
+     * Policy location
+     */
+    readonly locationType: LocationType;
 
     /**
      * Set policy owner
@@ -205,7 +225,7 @@ export interface IPolicyBlock {
      * @param user
      * @param tag
      */
-    updateBlock(state: any, user: PolicyUser, tag?: string): any;
+    updateBlock(state: any, user: PolicyUser, tag: string, userId: string | null): any;
 
     /**
      * Check permissions
@@ -287,9 +307,19 @@ export interface IPolicyBlock {
     ): void;
 
     /**
+     * Create backup
+     */
+    backup(): void
+
+    /**
      * Save block state
      */
     saveState(): Promise<void>;
+
+    /**
+     * Restore block state
+     */
+    restoreState(): Promise<void>;
 
     /**
      * Before init callback
@@ -993,7 +1023,17 @@ export interface IPolicyInstance {
     /**
      * Policy Owner
      */
-    readonly components: ComponentsService
+    readonly components: ComponentsService;
+
+    /**
+     * Policy Status
+     */
+    readonly policyStatus: PolicyStatus;
+
+    /**
+     * Policy location
+     */
+    readonly locationType: LocationType;
 }
 
 /**
@@ -1030,4 +1070,28 @@ export interface IPolicyNavigationStep {
      * Data
      */
     level: number;
+}
+
+/**
+ * Block get data
+ */
+export interface IPolicyGetData {
+    /**
+     * Block ID
+     */
+    id: string;
+    /**
+     * Block Type
+     */
+    blockType: string;
+    /**
+     * Action Type
+     */
+    actionType: LocationType;
+    /**
+     * Readonly
+     */
+    readonly: boolean;
+
+    [x: string]: any;
 }

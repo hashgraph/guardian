@@ -2,7 +2,7 @@ name: Guardian CI UI Tests(Manual)
 run-name: Guardian CI UI Tests(Manual)
 on:
     workflow_dispatch:
-        description: 'Manual run'
+
 jobs:
     buildAndTest:
         name: Build and Test (Manual)
@@ -18,7 +18,7 @@ jobs:
                 mongodb-version: [ 7.0.5 ]
         steps:
             - name: Harden Runner
-              uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7618a84e # v2.10.4
+              uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
               with:
                   egress-policy: audit
 
@@ -60,6 +60,9 @@ jobs:
                   pushd queue-service
                   yarn run build
                   popd
+                  pushd topic-listener-service
+                  yarn run build
+                  popd
                   pushd guardian-service
                   yarn run build
                   popd
@@ -78,7 +81,7 @@ jobs:
                   port: '4222'
 
             - name: Start MongoDB
-              uses: step-security/mongodb-github-action@ff3d5a3dec0957be7ef99d3d1c9ca4499e8a4cb8 # v1.11.0
+              uses: step-security/mongodb-github-action@0b5e704ee1061d729c20e0df4204e69ba6ac6cee # v1.11.1
               with:
                   mongodb-version: ${{ matrix.mongodb-version }}
 
@@ -105,6 +108,10 @@ jobs:
                   sleep 20
                   popd
                   pushd queue-service
+                  npm start &
+                  sleep 20
+                  popd
+                  pushd topic-listener-service
                   npm start &
                   sleep 20
                   popd
@@ -138,7 +145,7 @@ jobs:
               run: |
                   pushd e2e-tests
                   npm install
-                  npx cypress run --headed --env "operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=ui,grepFilterSpecs=true" --spec "cypress/e2e/ui-tests/**/*.cy.js" --browser chrome         
+                  npx cypress run --headed --env "operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=ui,grepFilterSpecs=true" --spec "cypress/e2e/ui-tests/**/*.cy.js" --browser chrome
                   popd
             - name: Publish API Test Results
               uses: EnricoMi/publish-unit-test-result-action@170bf24d20d201b842d7a52403b73ed297e6645b # v2.18.0

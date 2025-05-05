@@ -1,5 +1,5 @@
 import { DatabaseServer, DidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method, IAuthUser, KeyType, PolicyRoles, Users, Wallet } from '@guardian/common';
-import { ISignOptions, Permissions, PolicyRole, SignType } from '@guardian/interfaces';
+import { ISignOptions, LocationType, Permissions, PolicyRole, PolicyStatus, SignType } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyDocument, IPolicyInstance } from './policy-engine.interface.js';
 
 /**
@@ -53,25 +53,55 @@ export class PolicyUser {
      */
     public readonly policyOwner: string | null;
     /**
+     * Policy status
+     */
+    public readonly policyStatus: PolicyStatus | null;
+    /**
      * Permissions
      */
     public readonly permissions: string[];
+    /**
+     * Location
+     */
+    public readonly location: LocationType;
+    /**
+     * Location
+     */
+    public readonly policyLocation: LocationType;
 
-    constructor(arg: IAuthUser | string, instance: IPolicyInstance | AnyBlockType) {
+    /**
+     * User id
+     */
+    private readonly _userId: string;
+
+    public get userId(): string {
+        return this._userId;
+    }
+
+    constructor(
+        arg: IAuthUser | string,
+        instance: IPolicyInstance | AnyBlockType
+    ) {
         if (typeof arg === 'string') {
             this.did = arg;
             this.username = null;
             this.permissions = [];
+            this.location = LocationType.LOCAL;
+            this._userId = null;
         } else {
             this.did = arg.did;
             this.username = arg.username;
             this.permissions = arg.permissions || [];
+            this.location = arg.location || LocationType.LOCAL;
+            this._userId = arg.id;
         }
         this.role = null;
         this.group = null;
         this.roleMessage = null;
         this.policyId = instance.policyId;
         this.policyOwner = instance.policyOwner;
+        this.policyStatus = instance.policyStatus;
+        this.policyLocation = instance.locationType;
     }
 
     public get id(): string {
@@ -134,8 +164,10 @@ export class PolicyUser {
 
     public get isAdmin(): boolean {
         return (
-            this._did === this.policyOwner ||
-            this.permissions.includes(Permissions.POLICIES_POLICY_MANAGE)
+            this.policyLocation !== LocationType.REMOTE && (
+                this._did === this.policyOwner ||
+                this.permissions.includes(Permissions.POLICIES_POLICY_MANAGE)
+            )
         );
     }
 
@@ -209,6 +241,10 @@ export class UserCredentials {
      * Hedera account id
      */
     private _hederaAccountId: string;
+    /**
+     * User location
+     */
+    private _location: LocationType;
 
     /**
      * User id
@@ -227,23 +263,49 @@ export class UserCredentials {
         return this._hederaAccountId;
     }
 
+    public get location(): LocationType {
+        return this._location;
+    }
+
     constructor(ref: AnyBlockType, userDid: string) {
         this._dryRun = !!ref.dryRun;
         this._did = userDid;
         this._owner = ref.policyOwner;
+        this._location = LocationType.LOCAL;
     }
 
-    public async load(ref: AnyBlockType): Promise<UserCredentials> {
+    public async load(ref: AnyBlockType, userId: string | null): Promise<UserCredentials> {
         let userFull: IAuthUser;
         if (this._dryRun) {
             userFull = await ref.databaseServer.getVirtualUser(this._did);
         } else {
             const users = new Users();
-            userFull = await users.getUserById(this._did, null);
+            userFull = await users.getUserById(this._did, userId);
         }
         if (!userFull) {
             throw new Error('Virtual User not found');
         }
+        this._location = userFull.location || LocationType.LOCAL;
+        this._hederaAccountId = userFull.hederaAccountId;
+        this._did = userFull.did;
+        if (!this._did || !this._hederaAccountId) {
+            throw new Error('Hedera Account not found.');
+        }
+        return this;
+    }
+
+    public async loadByAccount(ref: AnyBlockType, accountId: string, userId: string | null): Promise<UserCredentials> {
+        let userFull: IAuthUser;
+        if (this._dryRun) {
+            userFull = await ref.databaseServer.getVirtualUserByAccount(accountId);
+        } else {
+            const users = new Users();
+            userFull = await users.getUserByAccount(accountId, userId);
+        }
+        if (!userFull) {
+            throw new Error('Virtual User not found');
+        }
+        this._location = userFull.location || LocationType.LOCAL;
         this._hederaAccountId = userFull.hederaAccountId;
         this._did = userFull.did;
         if (!this._did || !this._hederaAccountId) {
@@ -369,6 +431,7 @@ export class UserCredentials {
     ): Promise<void> {
         const walletToken = this._did;
         const keys = document.getPrivateKeys();
+        row.policyId = ref.policyId;
         row.verificationMethods = {};
         for (const item of keys) {
             const { id, type, key } = item;
@@ -383,7 +446,11 @@ export class UserCredentials {
         await ref.databaseServer.saveDid(row);
     }
 
-    public static async create(ref: AnyBlockType, userDid: string): Promise<UserCredentials> {
-        return await (new UserCredentials(ref, userDid)).load(ref);
+    public static async create(ref: AnyBlockType, userDid: string, userId: string | null): Promise<UserCredentials> {
+        return await (new UserCredentials(ref, userDid)).load(ref, userId);
+    }
+
+    public static async createByAccount(ref: AnyBlockType, accountId: string, userId: string | null): Promise<UserCredentials> {
+        return await (new UserCredentials(ref, null)).loadByAccount(ref, accountId, userId);
     }
 }

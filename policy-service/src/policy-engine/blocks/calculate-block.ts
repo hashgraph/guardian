@@ -1,4 +1,4 @@
-import { IVC, SchemaHelper } from '@guardian/interfaces';
+import { IVC, LocationType, SchemaHelper } from '@guardian/interfaces';
 import { ActionCallback, CalculateBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
@@ -28,6 +28,7 @@ interface IMetadata {
 @CalculateBlock({
     blockType: 'calculateContainerBlock',
     commonBlock: true,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Calculate',
         title: `Add 'Calculate' Block`,
@@ -145,7 +146,7 @@ export class CalculateContainerBlock {
             return await this.createUnsignedDocument(newJson, ref);
         } else {
             const metadata = await this.aggregateMetadata(documents, ref, userId);
-            return await this.createDocument(newJson, metadata, ref);
+            return await this.createDocument(newJson, metadata, ref, userId);
         }
     }
 
@@ -215,7 +216,8 @@ export class CalculateContainerBlock {
     private async createDocument(
         json: any,
         metadata: IMetadata,
-        ref: IPolicyCalculateBlock
+        ref: IPolicyCalculateBlock,
+        userId: string | null
     ): Promise<IPolicyDocument> {
         const {
             owner,
@@ -242,9 +244,7 @@ export class CalculateContainerBlock {
             VCHelper.addDryRunContext(vcSubject);
         }
 
-        const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
-        const userId = policyOwnerCred.userId;
-
+        const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
         const didDocument = await policyOwnerCred.loadDidDocument(ref, userId);
         const uuid = await ref.components.generateUUID();
         const newVC = await VCHelper.createVerifiableCredential(
@@ -298,15 +298,15 @@ export class CalculateContainerBlock {
             if (Array.isArray(event.data.data)) {
                 const result: IPolicyDocument[] = [];
                 for (const doc of event.data.data) {
-                    const newVC = await this.process(doc, ref, event.userId);
+                    const newVC = await this.process(doc, ref, event?.user?.userId);
                     result.push(newVC)
                 }
                 event.data.data = result;
             } else {
-                event.data.data = await this.process(event.data.data, ref, event.userId);
+                event.data.data = await this.process(event.data.data, ref, event?.user?.userId);
             }
         } else {
-            event.data.data = await this.process(event.data.data, ref, event.userId);
+            event.data.data = await this.process(event.data.data, ref, event?.user?.userId);
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
@@ -315,5 +315,6 @@ export class CalculateContainerBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event.user, {
             documents: ExternalDocuments(event.data?.data)
         }));
+        ref.backup();
     }
 }

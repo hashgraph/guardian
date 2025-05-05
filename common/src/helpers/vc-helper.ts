@@ -97,7 +97,7 @@ export class VcHelper extends VCJS {
         this.buildDocumentLoader();
         this.buildSchemaLoader();
 
-        this.dataBaseServer =  new DatabaseServer()
+        this.dataBaseServer = new DatabaseServer()
     }
 
     /**
@@ -146,7 +146,11 @@ export class VcHelper extends VCJS {
      * @param userId
      * @param user
      */
-    public async loadDidDocument(did: string, userId: string | null, user?: IAuthUser): Promise<HederaDidDocument> {
+    public async loadDidDocument(
+        did: string,
+        userId: string | null,
+        user?: IAuthUser
+    ): Promise<HederaDidDocument> {
         if (!did) {
             return null;
         }

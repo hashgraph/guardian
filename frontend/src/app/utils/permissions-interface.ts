@@ -95,6 +95,7 @@ export const entityNames = new Map<PermissionEntities, string>([
     [PermissionEntities.RESTORE, 'Restore'],
     [PermissionEntities.RECORD, 'Record'],
     [PermissionEntities.POLICY, 'Policy'],
+    [PermissionEntities.EXTERNAL_POLICY, 'Remote Policy'],
     [PermissionEntities.TOOL, 'Tool'],
     [PermissionEntities.DOCUMENT, 'Document'],
     [PermissionEntities.SCHEMA, 'Schema'],

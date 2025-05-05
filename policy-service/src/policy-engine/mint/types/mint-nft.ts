@@ -4,6 +4,7 @@ import { PolicyUtils } from '../../helpers/utils.js';
 import { IHederaCredentials } from '../../policy-user.js';
 import { TypedMint } from './typed-mint.js';
 import { TokenConfig } from '../configs/token-config.js';
+import { PolicyComponentsUtils } from '../../policy-components-utils.js';
 
 /**
  * Mint NFT
@@ -63,6 +64,7 @@ export class MintNFT extends TypedMint {
             tokenId: string;
             tokenType: TokenType;
             decimals: number;
+            policyId: string;
             metadata?: string;
             secondaryVpIds?: string[];
         },
@@ -103,6 +105,7 @@ export class MintNFT extends TypedMint {
                 await this._db.createMintTransactions(
                     {
                         mintRequestId: this._mintRequest.id,
+                        policyId: this._mintRequest.policyId,
                         amount: 10,
                         mintStatus: MintTransactionStatus.NEW,
                         transferStatus: this._mintRequest.isTransferNeeded
@@ -116,6 +119,7 @@ export class MintNFT extends TypedMint {
             if (restCount > 0) {
                 await this._db.saveMintTransaction({
                     mintRequestId: this._mintRequest.id,
+                    policyId: this._mintRequest.policyId,
                     amount: restCount,
                     mintStatus: MintTransactionStatus.NEW,
                     transferStatus: this._mintRequest.isTransferNeeded
@@ -123,6 +127,7 @@ export class MintNFT extends TypedMint {
                         : MintTransactionStatus.NONE,
                     serials: [],
                 });
+                PolicyComponentsUtils.backup(this._mintRequest.policyId);
             }
         }
 
@@ -189,7 +194,7 @@ export class MintNFT extends TypedMint {
                                 supplyKey: this._token.supplyKey,
                                 metaData: new Array(
                                     transaction.amount -
-                                        transaction.serials.length
+                                    transaction.serials.length
                                 ).fill(this._mintRequest.metadata),
                                 transactionMemo: this._mintRequest.memo,
                                 payload: { userId }
@@ -207,6 +212,7 @@ export class MintNFT extends TypedMint {
                     throw error;
                 } finally {
                     await this._db.saveMintTransaction(transaction);
+                    PolicyComponentsUtils.backup(transaction.policyId);
                 }
             };
 
@@ -300,6 +306,7 @@ export class MintNFT extends TypedMint {
                     throw error;
                 } finally {
                     await this._db.saveMintTransaction(transaction);
+                    PolicyComponentsUtils.backup(transaction.policyId);
                 }
             };
             notifier?.step(
@@ -369,7 +376,7 @@ export class MintNFT extends TypedMint {
                     );
                     mintPendingTransaction.mintStatus =
                         mintPendingTransaction.amount ===
-                        mintPendingTransaction.serials.length
+                            mintPendingTransaction.serials.length
                             ? MintTransactionStatus.SUCCESS
                             : MintTransactionStatus.NEW;
                 } else {
@@ -377,6 +384,7 @@ export class MintNFT extends TypedMint {
                         MintTransactionStatus.NEW;
                 }
                 await this._db.saveMintTransaction(mintPendingTransaction);
+                PolicyComponentsUtils.backup(mintPendingTransaction.policyId);
             }
         }
         if (this._mintRequest.isTransferNeeded) {
@@ -411,6 +419,7 @@ export class MintNFT extends TypedMint {
                         ? MintTransactionStatus.NEW
                         : MintTransactionStatus.SUCCESS;
                 await this._db.saveMintTransaction(transferPendingTransaction);
+                PolicyComponentsUtils.backup(transferPendingTransaction.policyId);
             }
         }
     }

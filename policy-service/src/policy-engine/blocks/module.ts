@@ -5,7 +5,8 @@ import { PolicyUser } from '../policy-user.js';
 import { ActionCallback } from '../helpers/decorators/index.js';
 import { IPolicyEvent } from '../interfaces/index.js';
 import { PolicyInputEventType } from '../interfaces/policy-event-type.js';
-import { IPolicyEventState } from '../policy-engine.interface.js';
+import { IPolicyAddonBlock, IPolicyEventState, IPolicyGetData } from '../policy-engine.interface.js';
+import { LocationType } from '@guardian/interfaces';
 
 /**
  * Container block with UI
@@ -13,6 +14,7 @@ import { IPolicyEventState } from '../policy-engine.interface.js';
 @ContainerBlock({
     blockType: 'module',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Module',
         title: `Add 'Module' Block`,
@@ -49,8 +51,17 @@ export class ModuleBlock {
      * Get block data
      * @param user
      */
-    async getData(user: PolicyUser): Promise<any> {
-        return {};
+    async getData(user: PolicyUser): Promise<IPolicyGetData> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        return {
+            id: ref.uuid,
+            blockType: ref.blockType,
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            )
+        };
     }
 
     /**

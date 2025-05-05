@@ -8,13 +8,14 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { VcDocumentDefinition as VcDocument, VcHelper, Workers } from '@guardian/common';
-import { WorkerTaskType } from '@guardian/interfaces';
+import { LocationType, WorkerTaskType } from '@guardian/interfaces';
 
 /**
  * Http request block
  */
 @BasicBlock({
     blockType: 'httpRequestBlock',
+    actionType: LocationType.REMOTE,
     commonBlock: false,
     about: {
         label: 'Request data',
@@ -163,8 +164,7 @@ export class HttpRequestBlock {
         }
         const requestBody = this.replaceVariablesInString(JSON.stringify(inputObject), variablesObj);
 
-        const doc =
-            await this.requestDocument(method, url, headers, requestBody ? JSON.parse(requestBody) : undefined, event?.user?.id);
+        const doc = await this.requestDocument(method, url, headers, requestBody ? JSON.parse(requestBody) : undefined, event?.user?.userId);
         const item = PolicyUtils.createVC(ref, event.user, doc);
 
         const state: IPolicyEventState = { data: item };
@@ -176,5 +176,6 @@ export class HttpRequestBlock {
                 documents: ExternalDocuments(item)
             })
         );
+        ref.backup();
     }
 }

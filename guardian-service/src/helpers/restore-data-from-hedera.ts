@@ -39,7 +39,7 @@ import {
     DidDocumentStatus,
     EntityOwner,
     ISchema,
-    PolicyType,
+    PolicyStatus,
     SchemaCategory,
     SchemaEntity,
     SchemaStatus,
@@ -115,8 +115,6 @@ export class RestoreDataFromHedera {
             {
                 type: WorkerTaskType.GET_TOPIC_MESSAGES,
                 data: {
-                    operatorId: null,
-                    operatorKey: null,
                     dryRun: false,
                     topic: topicId,
                     payload: { userId }
@@ -415,7 +413,7 @@ export class RestoreDataFromHedera {
                 policyObject.instanceTopicId = policy.instanceTopicId;
                 policyObject.synchronizationTopicId =
                     policy.synchronizationTopicId;
-                policyObject.status = PolicyType.PUBLISH;
+                policyObject.status = PolicyStatus.PUBLISH;
                 policyObject.topicId = policyTopicId;
 
                 if (!policyObject.instanceTopicId) {

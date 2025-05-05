@@ -4,6 +4,7 @@ import { ActionCallback, StateField } from '../helpers/decorators/index.js';
 import {
     IPolicyDocument,
     IPolicyEventState,
+    IPolicyGetData,
     IPolicyRequestBlock,
 } from '../policy-engine.interface.js';
 import {
@@ -14,7 +15,7 @@ import {
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { EventBlock } from '../helpers/decorators/event-block.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import {PolicyUser, UserCredentials} from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import {
     insertVariables,
@@ -26,6 +27,7 @@ import {
     ExternalEvent,
     ExternalEventType,
 } from '../interfaces/external-event.js';
+import { LocationType } from '@guardian/interfaces';
 
 /**
  * Create Token block
@@ -33,6 +35,7 @@ import {
 @EventBlock({
     blockType: 'createTokenBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Create Token',
         title: `Add 'Create Token' Block`,
@@ -111,9 +114,8 @@ export class CreateTokenBlock {
      * Get block data
      * @param user
      */
-    async getData(user: PolicyUser): Promise<any> {
-        const ref =
-            PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+    async getData(user: PolicyUser): Promise<IPolicyGetData> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         if (ref.options.autorun) {
             throw new BlockActionError(
                 `Block is autorunable and doesn't return any data`,
@@ -131,6 +133,11 @@ export class CreateTokenBlock {
         return {
             id: ref.uuid,
             blockType: ref.blockType,
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            ),
             active: ref.isBlockActive(user),
             data: tokenTemplate,
             ...ref.options,
@@ -141,7 +148,8 @@ export class CreateTokenBlock {
         user: PolicyUser,
         ref: IPolicyRequestBlock,
         template: any,
-        docs: IPolicyDocument | IPolicyDocument[]
+        docs: IPolicyDocument | IPolicyDocument[],
+        userId: string | null
     ) {
         if (!template) {
             throw new BlockActionError(
@@ -151,13 +159,7 @@ export class CreateTokenBlock {
             );
         }
 
-        const policyOwnerCred = await PolicyUtils.getUserCredentials(
-            ref,
-            ref.policyOwner
-        );
-
-        const credentials = await UserCredentials.create(ref, user.did);
-        const userId = credentials.userId;
+        const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner,userId);
 
         if (!docs) {
             throw new BlockActionError(
@@ -242,8 +244,7 @@ export class CreateTokenBlock {
         ],
     })
     async setData(user: PolicyUser, template: any): Promise<any> {
-        const ref =
-            PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         ref.log(`setData`);
 
         if (ref.options.autorun) {
@@ -276,7 +277,8 @@ export class CreateTokenBlock {
                         })
                     )
                 ),
-                this.state?.[user.id]?.data?.data
+                this.state?.[user.id]?.data?.data,
+                user.userId
             );
             delete this.state?.[user.id];
             await ref.saveState();
@@ -284,6 +286,7 @@ export class CreateTokenBlock {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
+        ref.backup();
 
         return {};
     }
@@ -298,8 +301,7 @@ export class CreateTokenBlock {
     })
     @CatchErrors()
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
-        const ref =
-            PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         ref.log(`runAction`);
 
         const user = event.user;
@@ -323,7 +325,8 @@ export class CreateTokenBlock {
                         index: this.state.tokenNumber,
                     })
                 ),
-                eventData.data
+                eventData.data,
+                event?.user?.userId
             );
         } else {
             if (!this.state.hasOwnProperty(user.id)) {
@@ -340,5 +343,6 @@ export class CreateTokenBlock {
         PolicyComponentsUtils.ExternalEventFn(
             new ExternalEvent(ExternalEventType.Run, ref, user, null)
         );
+        ref.backup();
     }
 }

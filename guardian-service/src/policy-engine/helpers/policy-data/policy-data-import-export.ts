@@ -41,7 +41,9 @@ type StaticLoaders =
     | typeof MultiSignDocumentLoader
     | typeof MintRequestLoader
     | typeof MintTransactionLoader
-    | typeof DocumentStateLoader;
+    | typeof DocumentStateLoader
+    | typeof TokensLoader
+    | typeof RetirePoolLoader;
 /**
  * Policy data import export
  */

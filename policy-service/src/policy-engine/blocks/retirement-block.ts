@@ -1,6 +1,6 @@
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { BlockActionError } from '../errors/index.js';
-import { DocumentCategoryType, DocumentSignature, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
+import { DocumentCategoryType, DocumentSignature, LocationType, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { Token as TokenCollection, VcHelper, VcDocumentDefinition as VcDocument, MessageServer, VCMessage, MessageAction, VPMessage, HederaDidDocument } from '@guardian/common';
@@ -18,6 +18,7 @@ import { MintService } from '../mint/mint-service.js';
 @BasicBlock({
     blockType: 'retirementDocumentBlock',
     commonBlock: true,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Wipe',
         title: `Add 'Wipe' Block`,
@@ -107,12 +108,10 @@ export class RetirementBlock {
         topicId: string,
         root: UserCredentials,
         user: PolicyUser,
-        targetAccountId: string
+        targetAccountId: string,
+        userId: string | null
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-
-        const credentials = await UserCredentials.create(ref, user.did);
-        const userId = credentials.userId;
 
         const didDocument = await root.loadDidDocument(ref, userId);
         const hederaCred = await root.loadHederaCredentials(ref, userId);
@@ -193,7 +192,7 @@ export class RetirementBlock {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
 
-        const docOwner = await PolicyUtils.getDocumentOwner(ref, docs[0], event.userId);
+        const docOwner = await PolicyUtils.getDocumentOwner(ref, docs[0], event?.user?.userId);
         if (!docOwner) {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
         }
@@ -231,13 +230,13 @@ export class RetirementBlock {
         if (ref.options.accountId) {
             targetAccountId = firstAccounts;
         } else {
-            targetAccountId = await PolicyUtils.getHederaAccountId(ref, docs[0].owner, event.userId);
+            targetAccountId = await PolicyUtils.getHederaAccountId(ref, docs[0].owner, event?.user?.userId);
         }
         if (!targetAccountId) {
             throw new BlockActionError('Token recipient is not set', ref.blockType, ref.uuid);
         }
 
-        const root = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
+        const root = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, event?.user?.userId);
 
         const [vp, tokenValue] = await this.retirementProcessing(
             token,
@@ -246,7 +245,8 @@ export class RetirementBlock {
             topicId,
             root,
             docOwner,
-            targetAccountId
+            targetAccountId,
+            event?.user?.userId
         );
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, docOwner, event.data);
@@ -260,5 +260,7 @@ export class RetirementBlock {
             documents: ExternalDocuments(docs),
             result: ExternalDocuments(vp),
         }));
+
+        ref.backup();
     }
 }

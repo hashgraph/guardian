@@ -103,7 +103,7 @@ export class MintService {
                 userId: policyOwner?.id
             }, signOptions);
             if (multipleConfig.type === 'Main') {
-                const user = await PolicyUtils.getUserCredentials(ref, documentOwner.did);
+                const user = await PolicyUtils.getUserCredentials(ref, documentOwner.did, userId);
                 await DatabaseServer.createMultiPolicyTransaction({
                     uuid: GenerateUUIDv4(),
                     policyId: ref.policyId,

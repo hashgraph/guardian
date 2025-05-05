@@ -1,6 +1,6 @@
 import { ActionCallback, TokenBlock } from '../helpers/decorators/index.js';
 import { BlockActionError } from '../errors/index.js';
-import { DocumentSignature, SchemaEntity, SchemaHelper, DocumentCategoryType } from '@guardian/interfaces';
+import { DocumentSignature, SchemaEntity, SchemaHelper, DocumentCategoryType, LocationType } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { HederaDidDocument, MessageAction, MessageMemo, MessageServer, Token as TokenCollection, VcDocumentDefinition as VcDocument, VcHelper, VCMessage, VPMessage, } from '@guardian/common';
@@ -19,6 +19,7 @@ import { MintService } from '../mint/mint-service.js';
 @TokenBlock({
     blockType: 'mintDocumentBlock',
     commonBlock: true,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Mint',
         title: `Add 'Mint' Block`,
@@ -284,7 +285,7 @@ export class MintBlock {
         }
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
 
-        const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
+        const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner,userId);
         const policyOwnerDid = await policyOwnerCred.loadDidDocument(ref, userId);
 
         const mintVC = await this.createMintVC(policyOwnerDid, token, tokenAmount, ref);
@@ -386,14 +387,14 @@ export class MintBlock {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
 
-        const docOwner = await PolicyUtils.getDocumentOwner(ref, docs[0], event.userId);
+        const docOwner = await PolicyUtils.getDocumentOwner(ref, docs[0], event?.user?.userId);
         if (!docOwner) {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
         }
 
         const additionalDocs = PolicyUtils.getArray<IPolicyDocument>(event.data.result);
 
-        await this.run(ref, event, docOwner, docs, additionalDocs);
+        await this.run(ref, event, docOwner, docs, additionalDocs, event?.user?.userId);
     }
 
     /**
@@ -408,18 +409,15 @@ export class MintBlock {
     async retryMint(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyTokenBlock>(this);
 
-        const credentials = await UserCredentials.create(ref, event.user.did);
-        const userId = credentials.userId;
-
         if (!event.data?.data) {
             throw new Error('Invalid data');
         }
         if (Array.isArray(event.data.data)) {
             for (const document of event.data.data) {
-                await MintService.retry(document.messageId, event.user.did, ref.policyOwner, ref, userId);
+                await MintService.retry(document.messageId, event.user.did, ref.policyOwner, ref, event?.user?.userId);
             }
         } else {
-            await MintService.retry(event.data.data.messageId, event.user.did, ref.policyOwner, ref, userId);
+            await MintService.retry(event.data.data.messageId, event.user.did, ref.policyOwner, ref, event?.user?.userId);
         }
 
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
@@ -446,12 +444,12 @@ export class MintBlock {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
 
-        const docOwner = await PolicyUtils.getDocumentOwner(ref, docs[0], event.userId);
+        const docOwner = await PolicyUtils.getDocumentOwner(ref, docs[0], event?.user?.userId);
         if (!docOwner) {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
         }
 
-        await this.run(ref, event, docOwner, docs);
+        await this.run(ref, event, docOwner, docs, null, event?.user?.userId);
     }
 
     /**
@@ -466,15 +464,13 @@ export class MintBlock {
         event: IPolicyEvent<IPolicyEventState>,
         user: PolicyUser,
         docs: IPolicyDocument[],
-        additionalDocs?: IPolicyDocument[]
+        additionalDocs: IPolicyDocument[],
+        userId: string | null
     ) {
         const token = await this.getToken(ref, docs);
         const { vcs, messages, topics, accounts } = this.getObjects(ref, docs);
         const additionalMessages = this.getAdditionalMessages(additionalDocs);
         const topicId = topics[0];
-
-        const credentials = await UserCredentials.create(ref, user.did);
-        const userId = credentials.userId
 
         const accountId = await this.getAccount(ref, docs, accounts, userId);
 
@@ -493,5 +489,6 @@ export class MintBlock {
             documents: ExternalDocuments(docs),
             result: ExternalDocuments(vp),
         }));
+        ref.backup();
     }
 }

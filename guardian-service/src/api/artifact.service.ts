@@ -1,6 +1,6 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DatabaseServer, getArtifactExtention, getArtifactType, MessageError, MessageResponse, PinoLogger } from '@guardian/common';
-import { IOwner, MessageAPI, ModuleStatus, PolicyType } from '@guardian/interfaces';
+import { DatabaseServer, getArtifactExtention, getArtifactType, IAuthUser, MessageError, MessageResponse, PinoLogger } from '@guardian/common';
+import { IOwner, MessageAPI, ModuleStatus, PolicyStatus } from '@guardian/interfaces';
 
 export async function getParent(parentId: string) {
     if (!parentId) {
@@ -37,10 +37,8 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
     ApiResponse(MessageAPI.UPLOAD_ARTIFACT, async (msg: {
         artifact: any,
         owner: IOwner,
-        parentId: string,
-        userId: string | null
+        parentId: string
     }) => {
-        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Invalid get artifact parameters');
@@ -59,7 +57,7 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
 
             const category: string = parent.type;
             if (parent.type === 'policy') {
-                if (parent.item.status !== PolicyType.DRAFT) {
+                if (parent.item.status !== PolicyStatus.DRAFT) {
                     throw new Error('There is no appropriate policy or policy is not in DRAFT status');
                 }
             } else if (parent.type === 'tool') {
@@ -81,7 +79,7 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
             await DatabaseServer.saveArtifactFile(row.uuid, Buffer.from(msg.artifact.buffer));
             return new MessageResponse(row);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+            await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
             return new MessageError(error.message);
         }
     });
@@ -94,18 +92,19 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} Artifacts and count
      */
     ApiResponse(MessageAPI.GET_ARTIFACTS, async (msg: {
-        type: string,
-        id: string,
-        toolId: string,
-        policyId: string,
-        pageIndex: string,
-        pageSize: string,
-        owner: IOwner,
-        userId: string | null
+        user: IAuthUser,
+        options: {
+            type: string,
+            id: string,
+            toolId: string,
+            policyId: string,
+            pageIndex: string,
+            pageSize: string,
+            owner: IOwner,
+        }
     }) => {
-        const userId = msg?.userId
         try {
-            if (!msg) {
+            if (!msg || !msg.options) {
                 return new MessageError('Invalid get artifact parameters');
             }
 
@@ -117,7 +116,7 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
                 pageIndex,
                 pageSize,
                 owner
-            } = msg;
+            } = msg.options;
             const filter: any = {};
 
             if (owner) {
@@ -158,7 +157,7 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
                 count
             });
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+            await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
             return new MessageError(error);
         }
     });
@@ -171,19 +170,20 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} Artifacts and count
      */
     ApiResponse(MessageAPI.GET_ARTIFACTS_V2, async (msg: {
-        fields: string[],
-        type: string,
-        id: string,
-        toolId: string,
-        policyId: string,
-        pageIndex: string,
-        pageSize: string,
-        owner: IOwner,
-        userId: string | null
+        user: IAuthUser,
+        options: {
+            fields: string[],
+            type: string,
+            id: string,
+            toolId: string,
+            policyId: string,
+            pageIndex: string,
+            pageSize: string,
+            owner: IOwner
+        }
     }) => {
-        const userId = msg?.userId
         try {
-            if (!msg) {
+            if (!msg || !msg.options) {
                 return new MessageError('Invalid get artifact parameters');
             }
 
@@ -196,7 +196,7 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
                 pageIndex,
                 pageSize,
                 owner
-            } = msg;
+            } = msg.options;
             const filter: any = {};
 
             if (owner) {
@@ -237,7 +237,7 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
                 count
             });
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+            await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
             return new MessageError(error);
         }
     });
@@ -250,8 +250,10 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
      * @returns {boolean} - Operation success
      */
     ApiResponse(MessageAPI.DELETE_ARTIFACT,
-        async (msg: { artifactId: string, owner: IOwner, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            artifactId: string,
+            owner: IOwner
+        }) => {
             try {
                 const { artifactId, owner } = msg;
                 if (!artifactId || !owner) {
@@ -271,7 +273,7 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
                 const parent = await getParent(parentId);
                 if (parent) {
                     if (parent.type === 'policy') {
-                        if (parent.item.status !== PolicyType.DRAFT) {
+                        if (parent.item.status !== PolicyStatus.DRAFT) {
                             throw new Error('There is no appropriate policy or policy is not in DRAFT status');
                         }
                     } else if (parent.type === 'tool') {
@@ -284,7 +286,7 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
                 await DatabaseServer.removeArtifact(artifactToDelete);
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });

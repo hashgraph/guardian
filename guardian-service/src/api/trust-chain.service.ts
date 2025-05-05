@@ -1,6 +1,6 @@
 import { IChainItem, MessageAPI, SchemaEntity } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DatabaseServer, DidDocument, MessageError, MessageResponse, PinoLogger, VcDocument, VpDocument, VpDocumentDefinition as HVpDocument } from '@guardian/common';
+import { DatabaseServer, DidDocument, MessageError, MessageResponse, PinoLogger, VcDocument, VpDocument, VpDocumentDefinition as HVpDocument, IAuthUser } from '@guardian/common';
 import { FilterQuery } from '@mikro-orm/core';
 
 /**
@@ -206,8 +206,10 @@ export async function trustChainAPI(
      *
      * @returns {IChainItem[]} - trust chain
      */
-    ApiResponse(MessageAPI.GET_CHAIN, async (msg) => {
-        const userId = msg?.userId
+    ApiResponse(MessageAPI.GET_CHAIN, async (msg: {
+        user: IAuthUser,
+        id: string
+    }) => {
         try {
             const hash = msg.id;
             const chain: IChainItem[] = [];
@@ -269,7 +271,7 @@ export async function trustChainAPI(
             await getPolicyInfo(chain, null);
             return new MessageResponse(chain);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+            await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
             console.error(error);
             return new MessageError(error);
         }

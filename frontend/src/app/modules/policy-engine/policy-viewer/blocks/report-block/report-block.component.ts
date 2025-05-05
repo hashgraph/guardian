@@ -44,6 +44,7 @@ export class ReportBlockComponent implements OnInit {
     searchForm = this.fb.group({
         value: ['', Validators.required]
     });
+    readonly: boolean = false;
 
     vpDocument: any;
     mintTokenId: string;
@@ -115,6 +116,7 @@ export class ReportBlockComponent implements OnInit {
     }
 
     setData(data: any) {
+        this.readonly = !!data?.readonly;
         if (data && data.data) {
             this.chainVisible = true;
             this.loadTrustChainData(data);

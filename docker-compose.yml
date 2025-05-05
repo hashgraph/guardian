@@ -48,7 +48,7 @@ services:
 #      - seq_data:/data
 
   ipfs-node:
-    image: ipfs/kubo:v0.31.0
+    image: ipfs/kubo:v0.34.1
     ports:
       - "5001:5001"
       - "4001:4001"
@@ -111,6 +111,18 @@ services:
       - 6555
     volumes:
       - ./queue-service/configs:/usr/local/app/configs:ro
+
+  topic-listener-service:
+    <<: *service-template
+    image: gcr.io/hedera-registry/topic-listener-service:${GUARDIAN_VERSION:-latest}
+    depends_on:
+      - mongo
+      - message-broker
+      - queue-service
+    expose:
+      - 6555
+    volumes:
+      - ./topic-listener-service/configs:/usr/local/app/configs:ro
 
   worker-service:
     <<: *service-template

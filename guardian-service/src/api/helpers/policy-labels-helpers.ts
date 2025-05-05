@@ -18,7 +18,7 @@ import {
     IPolicyLabelConfig,
     IStepDocument,
     NavItemType,
-    PolicyType,
+    PolicyStatus,
     Schema,
     SchemaCategory,
     SchemaHelper,
@@ -26,7 +26,7 @@ import {
     TopicType
 } from '@guardian/interfaces';
 import { generateSchema as generateStatisticSchema } from './policy-statistics-helpers.js';
-import { generateSchemaContext } from './schema-publish-helper.js';
+import { generateSchemaContext } from '../../helpers/import-helpers/index.js';
 
 export function publishLabelConfig(data?: IPolicyLabelConfig): IPolicyLabelConfig {
     return data;
@@ -42,7 +42,7 @@ export async function getOrCreateTopic(item: PolicyLabel, userId: string | null)
     }
 
     const policy = await DatabaseServer.getPolicyById(item.policyId);
-    if (!policy || policy.status !== PolicyType.PUBLISH) {
+    if (!policy || policy.status !== PolicyStatus.PUBLISH) {
         throw Error('Item does not exist.');
     }
 

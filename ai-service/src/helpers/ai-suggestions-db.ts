@@ -53,7 +53,7 @@ export class AISuggestionsDB extends NatsService {
             topicId: policy.topicId
         }));
 
-        const res = (await this.sendMessage(PolicyEngineEvents.GET_FIELDS_DESCRIPTIONS, {policiesData})) as any;
+        const res = (await this.sendMessage(PolicyEngineEvents.GET_FIELDS_DESCRIPTIONS, { policiesData })) as any;
 
         if (!res) {
             throw new Error('Invalid AI response');

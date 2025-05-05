@@ -445,3 +445,8 @@
         line-height: 32px;
     }
 }
+
+*[readonly-block="true"] {
+    pointer-events: none !important;
+    filter: grayscale(1);
+}

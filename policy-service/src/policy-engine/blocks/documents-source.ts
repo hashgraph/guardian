@@ -1,6 +1,6 @@
 import { DataSourceBlock } from '../helpers/decorators/data-source-block.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { IPolicyAddonBlock, IPolicyEventState, IPolicySourceBlock } from '../policy-engine.interface.js';
+import { IPolicyAddonBlock, IPolicyEventState, IPolicyGetData, IPolicySourceBlock } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyInputEventType } from '../interfaces/index.js';
 import { PolicyUser } from '../policy-user.js';
@@ -9,6 +9,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 import ObjGet from 'lodash.get';
 import { BlockActionError } from '../errors/index.js';
 import { MAP_DOCUMENT_AGGREGATION_FILTERS } from '@guardian/common';
+import { LocationType } from '@guardian/interfaces';
 
 /**
  * Document source block with UI
@@ -16,6 +17,7 @@ import { MAP_DOCUMENT_AGGREGATION_FILTERS } from '@guardian/common';
 @DataSourceBlock({
     blockType: 'interfaceDocumentsSourceBlock',
     commonBlock: false,
+    actionType: LocationType.LOCAL,
     about: {
         label: 'Documents',
         title: `Add 'Documents Source' Block`,
@@ -119,12 +121,12 @@ export class InterfaceDocumentsSource {
     ) {
         return enableCommonSorting
             ? await this.getDataByAggregationFilters(
-                  ref,
-                  user,
-                  sortState,
-                  paginationData,
-                  history
-              )
+                ref,
+                user,
+                sortState,
+                paginationData,
+                history
+            )
             : await ref.getGlobalSources(user, paginationData);
     }
 
@@ -134,16 +136,24 @@ export class InterfaceDocumentsSource {
      * @param uuid
      * @param queryParams
      */
-    async getData(user: PolicyUser, uuid: string, queryParams: any): Promise<any> {
+    async getData(user: PolicyUser, uuid: string, queryParams: any): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
 
-        let ret = {};
+        let ret: IPolicyGetData = {
+            id: ref.uuid,
+            blockType: ref.blockType,
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            )
+        };
 
         if (!queryParams) {
             queryParams = {};
         }
 
-        const {itemsPerPage, page, size, filterByUUID, sortDirection, sortField, useStrict, ...filterIds} = queryParams;
+        const { itemsPerPage, page, size, filterByUUID, sortDirection, sortField, useStrict, ...filterIds } = queryParams;
 
         const filterAddons = ref.getFiltersAddons();
         const filters = filterAddons.map(addon => {
@@ -163,9 +173,9 @@ export class InterfaceDocumentsSource {
                 });
                 if (filter) {
                     if (useStrict === 'true') {
-                      await (filter as IPolicyAddonBlock).setFiltersStrict(user, {filterValue});
+                        await (filter as IPolicyAddonBlock).setFiltersStrict(user, { filterValue });
                     } else {
-                      await (filter as IPolicyAddonBlock).setFilterState(user, {filterValue});
+                        await (filter as IPolicyAddonBlock).setFilterState(user, { filterValue });
                     }
                 }
             }
@@ -304,7 +314,7 @@ export class InterfaceDocumentsSource {
      * @param paginationData Paginaton data
      * @returns Data
      */
-    private async getDataByAggregationFilters(ref: IPolicySourceBlock, user: PolicyUser, sortState: any, paginationData: any, history? : IPolicyAddonBlock) {
+    private async getDataByAggregationFilters(ref: IPolicySourceBlock, user: PolicyUser, sortState: any, paginationData: any, history?: IPolicyAddonBlock) {
         const filtersAndDataType = await ref.getGlobalSourcesFilters(user);
 
         const aggregation = [...filtersAndDataType.filters] as unknown[];
@@ -385,7 +395,7 @@ export class InterfaceDocumentsSource {
                     policyId: ref.policyId,
                 });
 
-                const data =  await ref.databaseServer.getVpDocumentsByAggregation(aggregation);
+                const data = await ref.databaseServer.getVpDocumentsByAggregation(aggregation);
                 for (const item of data as any[]) {
                     [item.serials, item.amount, item.error, item.wasTransferNeeded, item.transferSerials, item.transferAmount, item.tokenIds] = await ref.databaseServer.getVPMintInformation(item);
                 }

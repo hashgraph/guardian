@@ -53,14 +53,24 @@ export class PolicyMessage extends Message {
     public synchronizationTopicId: string;
     /**
      * Policy topic ID
-     * @private
      */
     public policyTopicId: string;
-
     /**
      * Discontinued date
      */
     public discontinuedDate?: Date;
+    /**
+     * Availability
+     */
+    public availability: string;
+    /**
+     * Restore Topic Id
+     */
+    public restoreTopicId: string;
+    /**
+     * Actions Topic Id
+     */
+    public actionsTopicId: string;
 
     constructor(type: MessageType.Policy | MessageType.InstancePolicy, action: MessageAction) {
         super(action, type);
@@ -85,6 +95,9 @@ export class PolicyMessage extends Message {
         this.instanceTopicId = model.instanceTopicId;
         this.synchronizationTopicId = model.synchronizationTopicId;
         this.discontinuedDate = model.discontinuedDate;
+        this.availability = model.availability;
+        this.restoreTopicId = model.restoreTopicId;
+        this.actionsTopicId = model.actionsTopicId;
         this.document = zip;
     }
 
@@ -115,6 +128,9 @@ export class PolicyMessage extends Message {
             topicId: this.policyTopicId?.toString(),
             instanceTopicId: this.instanceTopicId,
             synchronizationTopicId: this.synchronizationTopicId,
+            availability: this.availability,
+            restoreTopicId: this.restoreTopicId,
+            actionsTopicId: this.actionsTopicId,
             cid: this.getDocumentUrl(UrlType.cid),
             uri: this.getDocumentUrl(UrlType.url)
         };
@@ -188,6 +204,9 @@ export class PolicyMessage extends Message {
         message.policyTopicId = json.topicId;
         message.instanceTopicId = json.instanceTopicId;
         message.synchronizationTopicId = json.synchronizationTopicId;
+        message.availability = json.availability;
+        message.restoreTopicId = json.restoreTopicId;
+        message.actionsTopicId = json.actionsTopicId;
         if ([MessageAction.DeferredDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(json.action)
             && json.effectiveDate) {
             message.discontinuedDate = new Date(json.effectiveDate)
@@ -243,10 +262,37 @@ export class PolicyMessage extends Message {
         result.policyTopicId = this.policyTopicId;
         result.instanceTopicId = this.instanceTopicId;
         result.synchronizationTopicId = this.synchronizationTopicId;
+        result.availability = this.availability;
+        result.restoreTopicId = this.restoreTopicId;
+        result.actionsTopicId = this.actionsTopicId;
         if ([MessageAction.DeferredDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(this.action)) {
             result.effectiveDate = this.discontinuedDate;
         }
         result.document = this.document;
+        return result;
+    }
+
+    public static fromJson(json: any): PolicyMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
+        const result = Message._fromJson(new PolicyMessage(json.type, json.action), json);
+        result.uuid = json.uuid;
+        result.name = json.name;
+        result.description = json.description;
+        result.owner = json.owner;
+        result.topicDescription = json.topicDescription;
+        result.version = json.version;
+        result.policyTag = json.policyTag;
+        result.policyTopicId = json.policyTopicId;
+        result.instanceTopicId = json.instanceTopicId;
+        result.synchronizationTopicId = json.synchronizationTopicId;
+        result.availability = json.availability;
+        result.restoreTopicId = json.restoreTopicId;
+        result.actionsTopicId = json.actionsTopicId;
+        result.discontinuedDate = json.effectiveDate;
+        result.document = json.document;
         return result;
     }
 

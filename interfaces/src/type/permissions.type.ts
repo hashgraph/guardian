@@ -69,6 +69,7 @@ export enum PermissionEntities {
     RULE = 'RULE',
     LABEL = 'LABEL',
     FORMULA = 'FORMULA',
+    EXTERNAL_POLICY = 'EXTERNAL_POLICY',
 }
 
 /**
@@ -168,6 +169,11 @@ export enum Permissions {
     POLICIES_RECORD_ALL = 'POLICIES_RECORD_ALL',
     POLICIES_POLICY_AUDIT = 'POLICIES_POLICY_AUDIT', //only UserRole.AUDITOR
     POLICIES_POLICY_MANAGE = 'POLICIES_POLICY_MANAGE', //Policy Owner
+    //POLICY
+    POLICIES_EXTERNAL_POLICY_READ = 'POLICIES_EXTERNAL_POLICY_READ',
+    POLICIES_EXTERNAL_POLICY_CREATE = 'POLICIES_EXTERNAL_POLICY_CREATE',
+    POLICIES_EXTERNAL_POLICY_UPDATE = 'POLICIES_EXTERNAL_POLICY_UPDATE',
+    POLICIES_EXTERNAL_POLICY_DELETE = 'POLICIES_EXTERNAL_POLICY_DELETE',
     //SCHEMAS
     SCHEMAS_SCHEMA_READ = 'SCHEMAS_SCHEMA_READ',
     SCHEMAS_SCHEMA_CREATE = 'SCHEMAS_SCHEMA_CREATE',
@@ -675,7 +681,6 @@ export const PermissionsArray: {
             dependOn: [
                 Permissions.POLICIES_POLICY_READ
             ]
-
         },
         {
             name: Permissions.POLICIES_POLICY_UPDATE,
@@ -765,6 +770,44 @@ export const PermissionsArray: {
             entity: PermissionEntities.RECORD,
             action: PermissionActions.ALL,
             disabled: true
+        },
+        //EXTERNAL_POLICY
+        {
+            name: Permissions.POLICIES_EXTERNAL_POLICY_READ,
+            category: PermissionCategories.POLICIES,
+            entity: PermissionEntities.EXTERNAL_POLICY,
+            action: PermissionActions.READ,
+            disabled: false
+        },
+        {
+            name: Permissions.POLICIES_EXTERNAL_POLICY_CREATE,
+            category: PermissionCategories.POLICIES,
+            entity: PermissionEntities.EXTERNAL_POLICY,
+            action: PermissionActions.CREATE,
+            disabled: false,
+            dependOn: [
+                Permissions.POLICIES_EXTERNAL_POLICY_READ
+            ]
+        },
+        {
+            name: Permissions.POLICIES_EXTERNAL_POLICY_UPDATE,
+            category: PermissionCategories.POLICIES,
+            entity: PermissionEntities.EXTERNAL_POLICY,
+            action: PermissionActions.UPDATE,
+            disabled: false,
+            dependOn: [
+                Permissions.POLICIES_EXTERNAL_POLICY_READ
+            ]
+        },
+        {
+            name: Permissions.POLICIES_EXTERNAL_POLICY_DELETE,
+            category: PermissionCategories.POLICIES,
+            entity: PermissionEntities.EXTERNAL_POLICY,
+            action: PermissionActions.DELETE,
+            disabled: false,
+            dependOn: [
+                Permissions.POLICIES_EXTERNAL_POLICY_READ
+            ]
         },
         //SCHEMAS
         {
@@ -1325,6 +1368,7 @@ export const SRDefaultPermission: Permissions[] = [
     Permissions.CONTRACTS_RETIRE_ADMIN_DELETE,
     Permissions.CONTRACTS_PERMISSIONS_READ,
     Permissions.CONTRACTS_DOCUMENT_READ,
+    Permissions.LOG_LOG_READ,
     Permissions.MODULES_MODULE_READ,
     Permissions.MODULES_MODULE_CREATE,
     Permissions.MODULES_MODULE_UPDATE,
@@ -1382,6 +1426,11 @@ export const SRDefaultPermission: Permissions[] = [
     Permissions.SCHEMAS_RULE_EXECUTE,
     Permissions.FORMULAS_FORMULA_CREATE,
     Permissions.FORMULAS_FORMULA_READ,
+
+    Permissions.POLICIES_EXTERNAL_POLICY_READ,
+    Permissions.POLICIES_EXTERNAL_POLICY_CREATE,
+    Permissions.POLICIES_EXTERNAL_POLICY_UPDATE,
+    Permissions.POLICIES_EXTERNAL_POLICY_DELETE,
     Permissions.LOG_LOG_READ,
     Permissions.LOG_SYSTEM_READ,
     // Permissions.LOG_USERS_READ,

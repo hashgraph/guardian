@@ -1,4 +1,4 @@
-import { BlockType, GenerateUUIDv4, GroupRelationshipType, PolicyType, Schema, Token, } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, GroupRelationshipType, PolicyStatus, Schema, Token, } from '@guardian/interfaces';
 import { PolicyRole } from './policy-role.model';
 import { PolicyGroup } from './policy-group.model';
 import { PolicyToken } from './policy-token.model';
@@ -73,6 +73,7 @@ export class PolicyTemplate {
     public readonly isPublishError: boolean = false;
     public readonly isDemo: boolean = false;
     public readonly isRun: boolean = false;
+    public readonly isView: boolean = false;
 
     constructor(policy?: any) {
         this._changed = false;
@@ -101,12 +102,19 @@ export class PolicyTemplate {
         this.buildPolicy(policy);
         this.buildBlock(policy.config);
 
-        this.isDraft = this.status === PolicyType.DRAFT;
-        this.isPublished = this.status === PolicyType.PUBLISH || this.status === PolicyType.DISCONTINUED;
-        this.isDryRun = this.status === PolicyType.DRY_RUN;
-        this.isPublishError = this.status === PolicyType.PUBLISH_ERROR;
-        this.isDemo = this.status === PolicyType.DEMO;
-        this.readonly = this.isPublished || this.isDryRun || this.isPublishError || this.isDemo;
+        this.isDraft = this.status === PolicyStatus.DRAFT;
+        this.isPublished = this.status === PolicyStatus.PUBLISH || this.status === PolicyStatus.DISCONTINUED;
+        this.isDryRun = this.status === PolicyStatus.DRY_RUN;
+        this.isPublishError = this.status === PolicyStatus.PUBLISH_ERROR;
+        this.isDemo = this.status === PolicyStatus.DEMO;
+        this.isView = this.status === PolicyStatus.VIEW;
+        this.readonly = (
+            this.isPublished ||
+            this.isDryRun ||
+            this.isPublishError ||
+            this.isDemo ||
+            this.isView
+        );
         this.isRun = this.isDryRun || this.isPublished || this.isDemo
     }
 

@@ -1,7 +1,7 @@
 import { Report } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { IPolicyReportBlock } from '../policy-engine.interface.js';
-import { IImpactReport, IPolicyReport, IReport, IReportItem, IVCReport, SchemaEntity, } from '@guardian/interfaces';
+import { IPolicyGetData, IPolicyReportBlock } from '../policy-engine.interface.js';
+import { IImpactReport, IPolicyReport, IReport, IReportItem, IVCReport, LocationType, SchemaEntity, } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyInputEventType } from '../interfaces/index.js';
@@ -17,6 +17,7 @@ import { FilterObject } from '@mikro-orm/core';
 @Report({
     blockType: 'reportBlock',
     commonBlock: false,
+    actionType: LocationType.LOCAL,
     about: {
         label: 'Report',
         title: `Add 'Report' Block`,
@@ -396,14 +397,20 @@ export class ReportBlock {
      * Get block data
      * @param user
      * @param uuid
-     * @param userId
      */
-    async getData(user: PolicyUser, uuid: string, userId: string | null): Promise<any> {
+    async getData(user: PolicyUser, uuid: string): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
             const blockState = this.state[user.id] || {};
             if (!blockState.lastValue) {
                 return {
+                    id: ref.uuid,
+                    blockType: ref.blockType,
+                    actionType: ref.actionType,
+                    readonly: (
+                        ref.actionType === LocationType.REMOTE &&
+                        user.location === LocationType.REMOTE
+                    ),
                     hash: null,
                     uiMetaData: ref.options.uiMetaData,
                     data: null
@@ -430,7 +437,16 @@ export class ReportBlock {
 
             const vp: any = await ref.databaseServer.getVpDocument({ hash, policyId: ref.policyId });
             if (vp) {
-                [vp.serials, vp.amount, vp.error, vp.wasTransferNeeded, vp.transferSerials, vp.transferAmount, vp.tokenIds, vp.target] = await ref.databaseServer.getVPMintInformation(vp);
+                [
+                    vp.serials,
+                    vp.amount,
+                    vp.error,
+                    vp.wasTransferNeeded,
+                    vp.transferSerials,
+                    vp.transferAmount,
+                    vp.tokenIds,
+                    vp.target
+                ] = await ref.databaseServer.getVPMintInformation(vp);
                 report = await this.addReportByVP(report, variables, vp, true);
             } else {
                 const vc = await ref.databaseServer.getVcDocument({ hash, policyId: ref.policyId })
@@ -459,14 +475,21 @@ export class ReportBlock {
                 }
             }
 
-            report = await this.reportUserMap(report, userId);
+            report = await this.reportUserMap(report, user.userId);
             if (report.additionalDocuments) {
                 for (let i = 0; i < report.additionalDocuments.length; i++) {
-                    report.additionalDocuments[i] = await this.reportUserMap(report.additionalDocuments[i], userId);
+                    report.additionalDocuments[i] = await this.reportUserMap(report.additionalDocuments[i], user.userId);
                 }
             }
 
             return {
+                id: ref.uuid,
+                blockType: ref.blockType,
+                actionType: ref.actionType,
+                readonly: (
+                    ref.actionType === LocationType.REMOTE &&
+                    user.location === LocationType.REMOTE
+                ),
                 hash,
                 uiMetaData: ref.options.uiMetaData,
                 data: report
@@ -491,6 +514,7 @@ export class ReportBlock {
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
                 value
             }));
+            ref.backup();
         } catch (error) {
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }

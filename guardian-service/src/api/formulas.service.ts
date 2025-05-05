@@ -10,7 +10,7 @@ import {
     PolicyImportExport,
     Users
 } from '@guardian/common';
-import { EntityStatus, IOwner, MessageAPI, PolicyType, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
+import { EntityStatus, IOwner, MessageAPI, PolicyStatus, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
 import { getFormulasData, publishFormula } from './helpers/formulas-helpers.js';
 import { emptyNotifier } from '../helpers/notifier.js';
 
@@ -387,7 +387,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 const { policyId } = options;
 
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                if (!policy || policy.status !== PolicyStatus.PUBLISH) {
                     return new MessageResponse(null);
                 }
 
@@ -438,7 +438,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
 
                 const policyId = item.policyId;
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                if (!policy || policy.status !== PolicyStatus.PUBLISH) {
                     return new MessageError('The policy has not published yet.');
                 }
 

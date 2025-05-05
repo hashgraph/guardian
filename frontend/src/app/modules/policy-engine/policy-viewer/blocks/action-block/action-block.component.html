@@ -1,4 +1,4 @@
-<div *ngIf="type == 'selector' && visible" class="content">
+<div *ngIf="type == 'selector' && visible" class="content" [attr.readonly-block]="readonly">
     <ng-container *ngFor="let option of options">
         <div *ngIf="option.name" class="btn-option {{option.uiClass}}" (click)="onSelect(option.value)">
             {{ option.name }}
@@ -6,11 +6,11 @@
     </ng-container>
 </div>
 
-<div *ngIf="type == 'download'" class="content">
+<div *ngIf="type == 'download'" class="content" [attr.readonly-block]="readonly">
     <div class="btn-link" (click)="onDownload()">{{ content }}</div>
 </div>
 
-<div *ngIf="type == 'dropdown'" class="content-dropdown">
+<div *ngIf="type == 'dropdown'" class="content-dropdown" [attr.readonly-block]="readonly">
     <p-dropdown
         class="guardian-dropdown"
         panelStyleClass="guardian-dropdown-panel"

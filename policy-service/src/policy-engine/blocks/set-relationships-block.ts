@@ -4,6 +4,7 @@ import { IPolicyDocument, IPolicyEventState, IPolicyRequestBlock } from '../poli
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { LocationType } from '@guardian/interfaces';
 
 /**
  * Set document relationships action
@@ -11,6 +12,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 @SetRelationships({
     blockType: 'setRelationshipsBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Set Relationships',
         title: `Add 'Relationships' Block`,
@@ -129,5 +131,7 @@ export class SetRelationshipsBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
             documents: ExternalDocuments(event.data?.data),
         }));
+
+        ref.backup();
     }
 }

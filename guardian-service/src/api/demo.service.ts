@@ -65,28 +65,32 @@ export async function demoAPI(
     logger: PinoLogger
 ): Promise<void> {
     ApiResponse(MessageAPI.GENERATE_DEMO_KEY,
-        async (msg: { role: string, userId: string }) => {
-            const userId = msg?.userId
+        async (msg: {
+            role: string
+        }) => {
             try {
                 const role = msg?.role;
-                const result = await generateDemoKey(role, emptyNotifier(), userId);
+                const result = await generateDemoKey(role, emptyNotifier(), null);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], null);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.GENERATE_DEMO_KEY_ASYNC,
-        async (msg: { role: string, task: any, userId: string }) => {
-            const {role, task, userId} = msg;
+        async (msg: {
+            role: string,
+            task: any
+        }) => {
+            const { role, task } = msg;
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
-                const result = await generateDemoKey(role, notifier, userId);
+                const result = await generateDemoKey(role, notifier, null);
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], null);
                 notifier.error(error);
             });
 
@@ -94,8 +98,9 @@ export async function demoAPI(
         });
 
     ApiResponse(MessageAPI.GET_USER_ROLES,
-        async (msg: { did: string, userId: string | null }) => {
-            const userId = msg?.userId
+        async (msg: {
+            did: string
+        }) => {
             try {
                 const did = msg.did;
                 const policies = await dataBaseServer.findAll(Policy);
@@ -113,7 +118,7 @@ export async function demoAPI(
                 };
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                await logger.error(error, ['GUARDIAN_SERVICE'], null);
                 return new MessageError(error);
             }
         })

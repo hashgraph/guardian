@@ -1,6 +1,6 @@
 import { ApiResponse } from './helpers/api-response.js';
 import { BinaryMessageResponse, DatabaseServer, MessageError, MessageResponse, PinoLogger, PolicyImportExport, SchemaRule, SchemaRuleImportExport } from '@guardian/common';
-import { EntityStatus, IOwner, MessageAPI, PolicyType, SchemaStatus } from '@guardian/interfaces';
+import { EntityStatus, IOwner, MessageAPI, PolicyStatus, SchemaStatus } from '@guardian/interfaces';
 import { getSchemaRuleData, publishRuleConfig } from './helpers/schema-rules-helpers.js';
 
 /**
@@ -29,7 +29,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
 
                 const policyId = rule.policyId;
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                if (!policy || policy.status !== PolicyStatus.PUBLISH) {
                     return new MessageError('Item does not exist.');
                 }
 
@@ -150,7 +150,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 }
                 const policyId = item.policyId;
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                if (!policy || policy.status !== PolicyStatus.PUBLISH) {
                     return new MessageError('Item does not exist.');
                 }
                 const { schemas, toolSchemas } = await PolicyImportExport.loadAllSchemas(policy);
@@ -409,7 +409,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                if (!policy || policy.status !== PolicyStatus.PUBLISH) {
                     return new MessageError('Item does not exist.');
                 }
 

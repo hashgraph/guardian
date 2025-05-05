@@ -8,7 +8,7 @@ import { IPolicyEvent } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { PolicyType } from '@guardian/interfaces';
+import { LocationType, PolicyStatus } from '@guardian/interfaces';
 
 /**
  * Timer block
@@ -16,6 +16,7 @@ import { PolicyType } from '@guardian/interfaces';
 @BasicBlock({
     blockType: 'timerBlock',
     commonBlock: true,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Timer',
         title: `Add 'Timer' Block`,
@@ -71,7 +72,7 @@ export class TimerBlock {
      */
     afterInit() {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        if (ref.policyInstance.status !== PolicyType.DISCONTINUED) {
+        if (ref.policyInstance.status !== PolicyStatus.DISCONTINUED) {
             this.startCron(ref);
         }
     }
@@ -225,6 +226,7 @@ export class TimerBlock {
 
         ref.triggerEvents<string[]>(PolicyOutputEventType.TimerEvent, null, map);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.TickCron, ref, null, null));
+        ref.backup();
     }
 
     /**
@@ -248,6 +250,7 @@ export class TimerBlock {
         ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
+        ref.backup();
     }
 
     /**
@@ -266,6 +269,7 @@ export class TimerBlock {
             ref.log(`start scheduler for: ${id}`);
         }
         await ref.saveState();
+        ref.backup();
     }
 
     /**
@@ -284,5 +288,6 @@ export class TimerBlock {
             ref.log(`stop scheduler for: ${id}`);
         }
         await ref.saveState();
+        ref.backup();
     }
 }

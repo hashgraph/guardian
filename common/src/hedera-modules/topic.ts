@@ -1,6 +1,8 @@
 import { Topic } from '../entity/index.js';
 import { TopicType } from '@guardian/interfaces';
-import { KeyType, Wallet } from '../helpers/index.js';
+import { KeyType, Users, Wallet } from '../helpers/index.js';
+import { DatabaseServer } from '../database-modules/database-server.js';
+import { Wallet as WalletManager } from '../wallet/index.js'
 
 /**
  * Topic Config
@@ -112,7 +114,7 @@ export class TopicConfig {
      * @param needKey
      * @param userId
      */
-    public static async fromObject(topic: Topic, needKey: boolean = false, userId: string | null): Promise<TopicConfig> {
+    public static async fromObject(topic: Topic, needKey: boolean, userId: string | null): Promise<TopicConfig> {
         if (!topic) {
             return null;
         }
@@ -128,6 +130,32 @@ export class TopicConfig {
         } else {
             return new TopicConfig(topic, null, null);
         }
+    }
+
+    /**
+     * Create topic config by json
+     * @param topic
+     * @param needKey
+     */
+    public static async fromObjectV2(topic: Topic, userId: string | null): Promise<TopicConfig> {
+        if (!topic) {
+            return null;
+        }
+
+        const hasPermissions = await (new DatabaseServer()).count(Topic, {
+            owner: topic.owner,
+            topicId: topic.topicId
+        }) > 0
+
+        const user = new Users();
+        const { walletToken } = await user.getUserById(topic.owner, userId);
+
+        const wallet = new WalletManager();
+        const submitKey = hasPermissions
+            ? await wallet.getKey(walletToken, KeyType.TOPIC_SUBMIT_KEY, topic.topicId)
+            : null;
+
+        return new TopicConfig(topic, null, submitKey);
     }
 
     /**

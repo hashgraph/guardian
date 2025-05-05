@@ -1,8 +1,8 @@
-import { DocumentSignature, Schema } from '@guardian/interfaces';
+import { DocumentSignature, LocationType, Schema } from '@guardian/interfaces';
 import { PolicyUtils } from '../helpers/utils.js';
 import { BlockActionError } from '../errors/index.js';
 import { ActionCallback } from '../helpers/decorators/index.js';
-import { IPolicyEventState, IPolicyRequestBlock } from '../policy-engine.interface.js';
+import { IPolicyEventState, IPolicyGetData, IPolicyRequestBlock } from '../policy-engine.interface.js';
 import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { EventBlock } from '../helpers/decorators/event-block.js';
@@ -17,6 +17,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 @EventBlock({
     blockType: 'uploadVcDocumentBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Upload',
         title: `Add 'Upload' Block`,
@@ -134,13 +135,18 @@ export class UploadVcDocumentBlock {
      * Get block data
      * @param user
      */
-    async getData(user: PolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const options = PolicyComponentsUtils.GetBlockUniqueOptionsObject(this);
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
         return {
             id: ref.uuid,
             blockType: ref.blockType,
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            ),
             uiMetaData: options.uiMetaData || {},
         };
     }
@@ -201,6 +207,8 @@ export class UploadVcDocumentBlock {
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
                 documents: ExternalDocuments(retArray)
             }));
+
+            ref.backup();
 
             return {
                 verified: retArray,
