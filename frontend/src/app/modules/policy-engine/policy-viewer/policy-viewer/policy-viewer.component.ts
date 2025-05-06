@@ -53,6 +53,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public prevButtonDisabled = false;
     public nextButtonDisabled = false;
     public permissions: UserPermissions;
+    public activeTabIndex = 0;
 
     constructor(
         private profileService: ProfileService,
@@ -125,6 +126,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.loading = true;
         this.subscription.add(
             this.route.queryParams.subscribe((queryParams) => {
+                if (queryParams.tab) {
+                    this.activeTabIndex = queryParams.tab;
+                }
+                
                 this.loadPolicy();
             })
         );
@@ -523,5 +528,13 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     public onBack() {
         this.router.navigate(['/policy-viewer']);
+    }
+
+    public onTabChange(index: number) {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { tab: index },
+        queryParamsHandling: 'merge',
+      });
     }
 }

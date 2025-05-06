@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { ISchema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -48,10 +48,11 @@ export class ProjectDataExportComponent implements OnInit {
     public selectedSchemas!: ISchema[];
     public selectedOwners!: string[];
     public selectedTokens!: string[];
+    public selectedAll: boolean = false;
 
     private subscription = new Subscription();
 
-    public alreadyRelated: boolean = true;
+    private params: Params;
 
     public filtersForm = new UntypedFormGroup({
         textSearch: new UntypedFormControl(''),
@@ -123,9 +124,7 @@ export class ProjectDataExportComponent implements OnInit {
 
         this.subscription.add(
             this.route.queryParams.subscribe((params) => {
-                console.log(params);
-                
-                this.setFiltersFromQueryParams(params);
+                this.params = params;
                 this.loadProfile();
             })
         );
@@ -168,6 +167,7 @@ export class ProjectDataExportComponent implements OnInit {
                 this.tokens = tokens;
             }
             
+            this.setFiltersFromQueryParams(this.params);
             this.loadData();
         });
     }
@@ -254,6 +254,10 @@ export class ProjectDataExportComponent implements OnInit {
                     for (const item of this.page) {
                         item.issuanceDate = item.document?.issuanceDate || item.createDate;
                         item.schemaName = this.schemas.find(schema => schema.iri == item.schema)?.name || item.schema || 'NONE';
+
+                        if (this.related.some(id => id === item.messageId)) {
+                            this.selectedRows.push(item);
+                        }
                     }
             
                     setTimeout(() => {
@@ -311,25 +315,21 @@ export class ProjectDataExportComponent implements OnInit {
     }
 
     public applyFilters(): void {
-        const currentParams = { ...this.route.snapshot.queryParams };
         const filters = this.filtersForm.value;
-        
-        Object.keys(filters).forEach(key => {
-            if (filters[key] && filters[key].length) {
-                currentParams[key] = filters[key].join(',');
-            } else {
-                delete currentParams[key];
-            }
-        });
 
+        this.selectedAll = false;
+        
         this.router.navigate([], {
             relativeTo: this.route,
-            queryParams: currentParams,
-            replaceUrl: true,
+            queryParams: {
+                tab: 1,
+                schemas: (filters?.schemas.length > 0 && filters?.schemas.join(',')) || null,
+                owners: (filters?.owners.length > 0 && filters?.owners.join(',')) || null,
+                tokens: (filters?.tokens.length > 0 && filters?.tokens.join(',')) || null,
+                related: (filters?.related.length > 0 && filters?.related.join(',')) || null
+            },
+            queryParamsHandling: 'merge',
         });
-
-        // this.pageIndex = 0;
-        // this.loadData();
     }
 
     public onFindRelated() {
@@ -418,5 +418,17 @@ export class ProjectDataExportComponent implements OnInit {
 
     public canShowFindRelatedButton(): boolean {
         return this.selectedRows && this.selectedRows.length > 0 && this.selectedRows.filter(row => row.messageId).length > 0;
+    }
+
+    public selectRow() {
+        this.selectedAll = false;
+    }
+
+    public selectAllRows($event: any) {
+        if ($event.checked) {
+            this.selectedRows = this.page;
+        } else {
+            this.selectedRows = [];
+        }
     }
 }

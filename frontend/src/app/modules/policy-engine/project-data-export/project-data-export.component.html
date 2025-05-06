@@ -18,7 +18,7 @@
                 <div>
                     <button (click)="clearFilters()"
                         type="button"
-                        [disabled]="!filtersForm.dirty"
+                        [disabled]="filtersCount <= 0"
                         class="button secondary"
                         label="Clear filters"
                         pButton></button>
@@ -142,7 +142,19 @@
                                 <th 
                                     *ngIf="!column.canDisplay || column.canDisplay()"
                                     class="header-cell-{{column.type}} col-{{column.size}}" 
-                                    >{{column.title}}</th>
+                                    [ngSwitch]="column.id"
+                                >
+                                    <ng-container *ngSwitchCase="'select'">
+                                        <p-checkbox
+                                            [binary]="true"
+                                            [(ngModel)]="selectedAll"
+                                            (onChange)="selectAllRows($event)"
+                                        />
+                                    </ng-container>
+                                    <ng-container *ngSwitchDefault>
+                                        {{column.title}}
+                                    </ng-container>
+                                </th>
                             </ng-container>
                         </tr>
                     </ng-template>
@@ -160,17 +172,11 @@
                                 >
                                     <ng-container *ngSwitchCase="'select'">
                                         <p-checkbox
-                                            *ngIf="!isRelated(row)"
                                             [inputId]="row.messageId"
                                             name="group"
                                             [value]="row"
                                             [(ngModel)]="selectedRows"
-                                        />
-                                        <p-checkbox
-                                            *ngIf="isRelated(row)"
-                                            [binary]="true"
-                                            [disabled]="true"
-                                            [(ngModel)]="alreadyRelated"
+                                            (onChange)="selectRow()"
                                         />
                                     </ng-container>
                                     <ng-container *ngSwitchDefault>

@@ -2392,8 +2392,9 @@ export class PolicyEngineService {
 
                     for (const data of results) {
                         const csv = CompareUtils.objectToCsv(data.document);
-                        csvData.set(data.document.id, csv.result());
+                        csvData.set(data.documentFileId.toString(), csv.result());
                     }
+                    
                     
                     const zip = await PolicyImportExport.generateProjectData(csvData);
                     const file = await zip.generateAsync({
