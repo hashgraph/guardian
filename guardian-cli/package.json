@@ -1,31 +1,31 @@
 {
-  "name": "guardian-cli",
-  "version": "0.1.0",
-  "description": "guardian-cli is a command line tool for management of the Guardian Application",
-  "main": "dist/index.js",
-  "bin": {
-    "guardian-cli": "dist/index.js"
-  },
-  "scripts": {
-    "build": "tsc",
-    "lint": "tslint --config ../tslint.json --project ."
-  },
-  "keywords": [
-    "guardian",
-    "guardian-cli"
-  ],
-  "author": "IntellectEU <info@intellecteu.com>",
-  "license": "Apache-2.0",
-  "devDependencies": {
-    "@types/node": "^22.10.10",
-    "typescript": "^5.0.2"
-  },
-  "dependencies": {
-    "@hashgraph/sdk": "2.60.1",
-    "axios": "^1.6.7",
-    "commander": "^10.0.0",
-    "solc": "0.8.11",
-    "ws": "^8.16.0"
-  },
-  "type": "module"
+    "name": "guardian-cli",
+    "version": "0.1.0",
+    "description": "guardian-cli is a command line tool for management of the Guardian Application",
+    "main": "dist/index.js",
+    "bin": {
+        "guardian-cli": "dist/index.js"
+    },
+    "scripts": {
+        "build": "tsc",
+        "lint": "tslint --config ../tslint.json --project ."
+    },
+    "keywords": [
+        "guardian",
+        "guardian-cli"
+    ],
+    "author": "IntellectEU <info@intellecteu.com>",
+    "license": "Apache-2.0",
+    "devDependencies": {
+        "@types/node": "^22.10.10",
+        "typescript": "^5.0.2"
+    },
+    "dependencies": {
+        "@hashgraph/sdk": "2.63.0",
+        "axios": "^1.6.7",
+        "commander": "^10.0.0",
+        "solc": "0.8.11",
+        "ws": "^8.16.0"
+    },
+    "type": "module"
 }
