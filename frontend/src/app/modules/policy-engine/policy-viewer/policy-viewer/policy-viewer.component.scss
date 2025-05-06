@@ -13,10 +13,19 @@
                 margin-left: 48px;
             }
         }
+
+        .p-tabview {
+            height: 100%;
+        }
         
         .p-tabview-panels {
+            height: 100%;
             background: none;
             padding: 0;
+
+            .p-tabview-panel {
+                height: 100%;
+            }
         }
     }
 }
@@ -87,6 +96,23 @@ a.go-back-link svg {
 }
 
 .back-button {
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 16px;
+    cursor: pointer;
+    color: var(--color-primary);
+
+    &:hover {
+        color: #d5d5d5 !important;
+
+        svg {
+            fill: #d5d5d5 !important;
+            color: #d5d5d5 !important;
+        }
+    }
+}
+
+.dry-run-back-button {
     background: none !important;
     color: #ffffff !important;
     border: 1px solid #fff !important;

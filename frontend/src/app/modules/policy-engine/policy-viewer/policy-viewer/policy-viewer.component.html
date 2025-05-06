@@ -121,11 +121,18 @@
             [attr.expired]="!!policyInfo.discontinuedDate" 
             [attr.policy-status]="policyInfo.status"
             class="policy-header">
-            <div class="guardian-user-back-button">
+            <div *ngIf="!isDryRun && !policyInfo.discontinuedDate">
+                <a
+                    (click)="onBack()"
+                    class="back-button"
+                >
+                    List of Policies
+                </a>
+            </div>
+            <div *ngIf="isDryRun || !!policyInfo.discontinuedDate" class="guardian-user-back-button">
                 <button
                     (click)="onBack()"
-                    [ngClass]="{ 'back-button': isDryRun || !!policyInfo.discontinuedDate }"
-                    class="guardian-button guardian-button-secondary"
+                    class="dry-run-back-button guardian-button guardian-button-secondary"
                 >
                     <div class="guardian-button-icon">
                         <svg-icon class="icon-btn svg-icon"
@@ -175,6 +182,7 @@
             [attr.hidden-container]="view !== 'policy'"
             [attr.policy-status]="policyInfo.status"
             *ngIf="view == 'policy'"
+            style="height: 100%;"
         >
             <p-tabView [(activeIndex)]="activeTabIndex" (activeIndexChange)="onTabChange($event)">
                 <p-tabPanel [header]="'General'">
@@ -183,7 +191,7 @@
                             *ngIf="steps && steps.length > 0"
                             [steps]="steps"
                         ></progress-tracker>
-                        <div style="width: 100%; overflow-y: scroll;">
+                        <div style="width: 100%;">
                             <render-block
                                 [block]="policy"
                                 [dryRun]="isDryRun"
