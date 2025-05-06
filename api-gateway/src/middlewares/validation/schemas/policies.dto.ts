@@ -501,5 +501,6 @@ export class PolicyVersionDTO {
         example: 'private'
     })
     @IsString()
-    policyAvailability: PolicyAvailability;
+    @IsOptional()
+    policyAvailability?: PolicyAvailability;
 }
