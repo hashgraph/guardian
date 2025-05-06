@@ -7,11 +7,12 @@ import * as Signer from '@ucanto/principal/ed25519';
 import * as Client from '@web3-storage/w3up-client';
 import * as url from 'url';
 import { StoreMemory } from '@web3-storage/access'
+import CID from 'cids';
 
 /**
  * Providers enum, add a new provider enum type here.
  */
-enum IpfsProvider{
+enum IpfsProvider {
     FILEBASE = 'filebase',
     WEB3STORAGE = 'web3storage',
     LOCAL = 'local',
@@ -44,7 +45,7 @@ export class IpfsClientClass {
      * Client options
      * @private
      */
-    private readonly options: {[key: string]: any} = {};
+    private readonly options: { [key: string]: any } = {};
 
     constructor(
         w3sKey?: string,
@@ -88,7 +89,7 @@ export class IpfsClientClass {
                     throw new Error('Filebase Bucket token is not set')
                 }
 
-                client = new FilebaseClient({token: this.options.filebase} as any)
+                client = new FilebaseClient({ token: this.options.filebase } as any)
 
                 break;
             }
@@ -97,7 +98,7 @@ export class IpfsClientClass {
                 if (!this.options.nodeAddress) {
                     throw new Error('IPFS_NODE_ADDRESS variable is not set');
                 }
-                const {protocol, hostname, port} = url.parse(this.options.nodeAddress);
+                const { protocol, hostname, port } = url.parse(this.options.nodeAddress);
                 client = create({
                     protocol,
                     host: hostname,
@@ -120,7 +121,7 @@ export class IpfsClientClass {
      * @param beforeCallback
      */
     public async addFile(file: Buffer): Promise<string> {
-        let cid;
+        let cid:string;
         switch (this.IPFS_PROVIDER) {
             case IpfsProvider.WEB3STORAGE: {
                 const result = await this.client.uploadFile(new Blob([file]));
@@ -161,7 +162,7 @@ export class IpfsClientClass {
      */
     public async getFile(cid: string): Promise<any> {
         const fileRes = await axios.get(
-            this.IPFS_PUBLIC_GATEWAY?.replace('${cid}', cid),
+            this.IPFS_PUBLIC_GATEWAY?.replace('${cid}', this.parseCID(cid)),
             {
                 responseType: 'arraybuffer',
                 timeout:
@@ -169,5 +170,14 @@ export class IpfsClientClass {
             }
         );
         return fileRes.data;
+    }
+
+
+    private parseCID(cid: string): string {
+        try {
+            return new CID(cid).toV1().toString('base32');
+        } catch (error) {
+            return cid;
+        }
     }
 }

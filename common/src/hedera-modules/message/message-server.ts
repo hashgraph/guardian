@@ -199,9 +199,10 @@ export class MessageServer {
      */
     public async loadIPFS<T extends Message>(message: T): Promise<T> {
         const urls = message.getUrls();
-        const promises = urls.map(url => {
-            return this.getFile(url.cid, message.responseType);
-        });
+        const promises = urls
+            .map(url => {
+                return this.getFile(url.cid, message.responseType);
+            });
         const documents = await Promise.all(promises);
         message = (await message.loadDocuments(
             documents,
@@ -215,14 +216,17 @@ export class MessageServer {
      * @param message
      * @private
      */
-    public static async loadIPFS<T extends Message>(message: T): Promise<T> {
+    public static async loadIPFS<T extends Message>(
+        message: T,
+        key?: string
+    ): Promise<T> {
         const urls = message.getUrls();
         const promises = urls
             .map(url => {
                 return IPFS.getFile(url.cid, message.responseType);
             });
         const documents = await Promise.all(promises);
-        message = await message.loadDocuments(documents) as T;
+        message = await message.loadDocuments(documents, key) as T;
         return message;
     }
 
@@ -432,34 +436,6 @@ export class MessageServer {
     }
 
     /**
-     * Get messages
-     * @param messageId
-     * @param userId
-     */
-    public static async getMessage<T extends Message>(messageId: string, userId: string | null): Promise<T> {
-        try {
-            if (!messageId || typeof messageId !== 'string') {
-                return null;
-            }
-            const timeStamp = messageId.trim();
-            const workers = new Workers();
-            const message = await workers.addNonRetryableTask({
-                type: WorkerTaskType.GET_TOPIC_MESSAGE,
-                data: { timeStamp, payload: { userId } }
-            }, 10);
-            const item = MessageServer.fromMessage(message.message, userId);
-            item.setAccount(message.payer_account_id);
-            item.setIndex(message.sequence_number);
-            item.setId(message.id);
-            item.setTopicId(message.topicId);
-            item.setMemo(message.memo);
-            return item as T;
-        } catch (error) {
-            return null;
-        }
-    }
-
-    /**
      * Send to hedera
      * @param message
      * @param memo
@@ -596,27 +572,6 @@ export class MessageServer {
     }
 
     /**
-     * Get message
-     * @param id
-     * @param type
-     * @param userId
-     */
-    public async getMessage<T extends Message>(id: string, type?: MessageType, userId?: string): Promise<T> {
-        if (this.dryRun) {
-            const message = await DatabaseServer.getVirtualMessage(this.dryRun, id);
-            const result = MessageServer.fromMessage<T>(message.document, userId, type);
-            result.setId(message.messageId);
-            result.setTopicId(message.topicId);
-            result.setMemo(message.memo);
-            return result;
-        } else {
-            let message = await this.getTopicMessage<T>(id, type, userId);
-            message = await this.loadIPFS(message);
-            return message as T;
-        }
-    }
-
-    /**
      * Find topic
      * @param messageId
      * @param userId
@@ -646,38 +601,188 @@ export class MessageServer {
     }
 
     /**
+     * Get messages
+     * @param messageId
+     * @param userId
+     */
+    public static async getMessage<T extends Message>(
+        dryRun: string,
+        messageId: string,
+        loadIPFS: boolean,
+        type: MessageType | null,
+        userId: string | null
+    ): Promise<T> {
+        try {
+            if (messageId && typeof messageId === 'string') {
+                messageId = messageId.trim();
+            }
+            if (!messageId || typeof messageId !== 'string') {
+                return null;
+            }
+            if (dryRun) {
+                return await MessageServer.getDryRunTopicMessage<T>(dryRun, messageId, type, userId);
+            } else {
+                let message = await MessageServer.getTopicMessage<T>(messageId, type, userId);
+                if (loadIPFS) {
+                    message = await MessageServer.loadIPFS(message, null);
+                }
+                return message;
+            }
+        } catch (error) {
+            return null;
+        }
+    }
+
+    /**
+     * Get message
+     * @param messageId
+     * @param type
+     * @param userId
+     */
+    public async getMessage<T extends Message>(
+        messageId: string,
+        loadIPFS: boolean,
+        type: MessageType | null,
+        userId: string | null
+    ): Promise<T> {
+        try {
+            if (messageId && typeof messageId === 'string') {
+                messageId = messageId.trim();
+            }
+            if (!messageId || typeof messageId !== 'string') {
+                return null;
+            }
+            if (this.dryRun) {
+                return await this.getDryRunTopicMessage<T>(messageId, type, userId);
+            } else {
+                let message = await this.getTopicMessage<T>(messageId, type, userId);
+                if (loadIPFS) {
+                    message = await this.loadIPFS(message);
+                }
+                return message as T;
+            }
+        } catch (error) {
+            return null;
+        }
+    }
+
+    /**
      * Get topic message
      * @param timeStamp
      * @param type
      * @param userId
      * @private
      */
-    private async getTopicMessage<T extends Message>(timeStamp: string, type?: MessageType, userId?: string): Promise<T> {
-        if (timeStamp && typeof timeStamp === 'string') {
-            timeStamp = timeStamp.trim();
-        }
-
+    private async getTopicMessage<T extends Message>(
+        timeStamp: string,
+        type: MessageType | null,
+        userId: string | null
+    ): Promise<T> {
         const { operatorId, operatorKey, dryRun } = this.clientOptions;
         const workers = new Workers();
-        const { topicId, message } = await workers.addRetryableTask({
+        const {
+            id,
+            payer_account_id,
+            sequence_number,
+            topicId,
+            message
+        } = await workers.addRetryableTask({
             type: WorkerTaskType.GET_TOPIC_MESSAGE,
             data: {
+                timeStamp,
                 operatorId,
                 operatorKey,
                 dryRun,
+                payload: { userId }
+            }
+        }, 10, null, userId);
+        const item = MessageServer.fromMessage<T>(message, userId, type);
+        item.setAccount(payer_account_id);
+        item.setIndex(sequence_number);
+        item.setId(id);
+        item.setTopicId(topicId);
+        item.setMemo(null);
+        return item as T;
+    }
+
+    /**
+     * Get topic message
+     * @param timeStamp
+     * @param type
+     * @param userId
+     * @private
+     */
+    private static async getTopicMessage<T extends Message>(
+        timeStamp: string,
+        type: MessageType | null,
+        userId: string | null
+    ): Promise<T> {
+        const workers = new Workers();
+        const {
+            id,
+            payer_account_id,
+            sequence_number,
+            topicId,
+            message
+        } = await workers.addRetryableTask({
+            type: WorkerTaskType.GET_TOPIC_MESSAGE,
+            data: {
                 timeStamp,
                 payload: { userId }
             }
         }, 10, null, userId);
+        const item = MessageServer.fromMessage<T>(message, userId, type);
+        item.setAccount(payer_account_id);
+        item.setIndex(sequence_number);
+        item.setId(id);
+        item.setTopicId(topicId);
+        item.setMemo(null);
+        return item as T;
+    }
 
-        new PinoLogger().info(`getTopicMessage, ${timeStamp}, ${topicId}, ${message}`, ['GUARDIAN_SERVICE'], userId);
-        const result = MessageServer.fromMessage<T>(message, userId, type);
-        result.setAccount(message.payer_account_id);
-        result.setIndex(message.sequence_number);
-        result.setId(timeStamp);
-        result.setTopicId(topicId);
-        result.setMemo(message.memo);
-        return result;
+    /**
+     * Get topic message
+     * @param timeStamp
+     * @param type
+     * @param userId
+     * @private
+     */
+    private async getDryRunTopicMessage<T extends Message>(
+        timeStamp: string,
+        type: MessageType | null,
+        userId: string | null
+    ): Promise<T> {
+        const message = await DatabaseServer.getVirtualMessage(this.dryRun, timeStamp);
+        const item = MessageServer.fromMessage<T>(message.document, userId, type);
+        item.setAccount(null);
+        item.setIndex(null);
+        item.setId(message.messageId);
+        item.setTopicId(message.topicId);
+        item.setMemo(message.memo);
+        return item;
+    }
+
+    /**
+     * Get topic message
+     * @param timeStamp
+     * @param type
+     * @param userId
+     * @private
+     */
+    private static async getDryRunTopicMessage<T extends Message>(
+        dryRun: string,
+        timeStamp: string,
+        type: MessageType | null,
+        userId: string | null
+    ): Promise<T> {
+        const message = await DatabaseServer.getVirtualMessage(dryRun, timeStamp);
+        const item = MessageServer.fromMessage<T>(message.document, userId, type);
+        item.setAccount(null);
+        item.setIndex(null);
+        item.setId(message.messageId);
+        item.setTopicId(message.topicId);
+        item.setMemo(message.memo);
+        return item;
     }
 
     /**

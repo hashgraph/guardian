@@ -41,7 +41,8 @@ async function preparePolicyPreviewMessage(
     const root = await users.getHederaAccount(user.creator, userId);
 
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
-    const message = await messageServer.getMessage<PolicyMessage>(messageId);
+    const message = await messageServer
+        .getMessage<PolicyMessage>(messageId, true, null, userId);
     if (message.type !== MessageType.InstancePolicy) {
         throw new Error('Invalid Message Type');
     }

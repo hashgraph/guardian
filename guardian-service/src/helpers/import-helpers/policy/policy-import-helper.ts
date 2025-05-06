@@ -251,7 +251,8 @@ export class PolicyImportExportHelper {
             hederaAccount.hederaAccountKey,
             hederaAccount.signOptions
         );
-        const message = await messageServer.getMessage<PolicyMessage>(messageId);
+        const message = await messageServer
+            .getMessage<PolicyMessage>(messageId, true, null, userId);
         if (message.type !== MessageType.InstancePolicy) {
             throw new Error('Invalid Message Type');
         }

@@ -8,6 +8,7 @@ import { PolicyUser } from '../policy-user.js';
 import { MessageServer, MessageStatus, PolicyRoles } from '@guardian/common';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { PolicyActionsUtils } from '../policy-actions/utils.js';
 
 /**
  * Document action clock with UI
@@ -113,18 +114,12 @@ export class GroupManagerBlock {
         }
 
         if (member.messageId) {
-            const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
-            const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
-            const signOptions = await userCred.loadSignOptions(ref, userId);
-            const messageServer = new MessageServer(
-                userHederaCred.hederaAccountId, userHederaCred.hederaAccountKey, signOptions, ref.dryRun
-            );
-            const message = await messageServer.getMessage(member.messageId);
+            const message = await MessageServer
+                .getMessage(ref.dryRun, member.messageId, true, null, userId);
             const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId, userId);
             message.setMessageStatus(MessageStatus.WITHDRAW, text);
-            await messageServer
-                .setTopicObject(topic)
-                .sendMessage(message, false, null, userId);
+            await PolicyActionsUtils
+                .sendMessage(ref, topic, message, user.did, false, userId);
         }
 
         const target = await PolicyComponentsUtils.GetPolicyUserByGroup(member, ref, userId);

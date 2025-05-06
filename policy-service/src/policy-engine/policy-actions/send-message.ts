@@ -109,10 +109,11 @@ export class SendMessage {
             const data = response.document;
             const { updateIpfs, messageId } = data;
 
-            const message = await MessageServer.getMessage(messageId, userId);
-            if (updateIpfs) {
-                await MessageServer.loadDocument(message);
-            }
+            const message = await MessageServer
+                .getMessage(null, messageId, updateIpfs, null, userId);
+            // if (updateIpfs) {
+            //     await MessageServer.loadDocument(message);
+            // }
 
             data.message = message;
 

@@ -77,7 +77,7 @@ export class MessagesReport {
      * @param messageId
      * @param userId
      */
-    public async start(messageId: string,  userId: string | null) {
+    public async start(messageId: string, userId: string | null) {
         await this.checkMessage(messageId, userId);
         await this.checkUsers(userId);
     }
@@ -105,7 +105,8 @@ export class MessagesReport {
         }
         this.messages.set(timestamp, null);
 
-        const message = await MessageServer.getMessage(timestamp, userId);
+        const message = await MessageServer
+            .getMessage(null, timestamp, false, null, userId);
         if (!message) {
             return;
         }

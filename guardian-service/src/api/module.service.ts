@@ -44,7 +44,8 @@ export async function preparePreviewMessage(
     const users = new Users();
     const root = await users.getHederaAccount(user.creator, user.id);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
-    const message = await messageServer.getMessage<ModuleMessage>(messageId);
+    const message = await messageServer
+        .getMessage<ModuleMessage>(messageId, true, null, user.id);
     if (message.type !== MessageType.Module) {
         throw new Error('Invalid Message Type');
     }
