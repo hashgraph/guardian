@@ -110,10 +110,11 @@ export class SendMessage {
             const { updateIpfs, messageId } = data;
 
             const message = await MessageServer
-                .getMessage(null, messageId, updateIpfs, null, userId);
-            // if (updateIpfs) {
-            //     await MessageServer.loadDocument(message);
-            // }
+                .getMessage({
+                    messageId,
+                    loadIPFS: updateIpfs,
+                    userId
+                });
 
             data.message = message;
 

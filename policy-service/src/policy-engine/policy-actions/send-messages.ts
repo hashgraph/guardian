@@ -129,10 +129,11 @@ export class SendMessages {
             const messages: Message[] = [];
             for (const messageId of messageIds) {
                 const message = await MessageServer
-                    .getMessage(null, messageId, updateIpfs, null, userId);
-                // if (updateIpfs) {
-                //     await MessageServer.loadDocument(message);
-                // }
+                    .getMessage({
+                        messageId,
+                        loadIPFS: updateIpfs,
+                        userId
+                    });
                 messages.push(message);
             }
 

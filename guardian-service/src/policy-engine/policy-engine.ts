@@ -1374,7 +1374,11 @@ export class PolicyEngine extends NatsService {
 
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
         const message = await messageServer
-            .getMessage<PolicyMessage>(messageId, true, null, userId);
+            .getMessage<PolicyMessage>({
+                messageId,
+                loadIPFS: true,
+                userId
+            });
         if (message.type !== MessageType.InstancePolicy) {
             throw new Error('Invalid Message Type');
         }

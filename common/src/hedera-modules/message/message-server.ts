@@ -30,6 +30,23 @@ import { PolicyDiffMessage } from './policy-diff-message.js';
 import { PolicyActionMessage } from './policy-action-message.js';
 import { ContractMessage } from './contract-message.js';
 
+interface LoadMessageOptions {
+    messageId: string,
+    loadIPFS?: boolean,
+    type?: MessageType | null,
+    userId?: string | null,
+    dryRun?: string,
+}
+
+interface LoadMessagesOptions {
+    topicId: string | TopicId,
+    dryRun?: string,
+    userId?: string | null,
+    type?: MessageType,
+    action?: MessageAction,
+    timeStamp?: string
+}
+
 /**
  * Message server
  */
@@ -605,14 +622,12 @@ export class MessageServer {
      * @param messageId
      * @param userId
      */
-    public static async getMessage<T extends Message>(
-        dryRun: string,
-        messageId: string,
-        loadIPFS: boolean,
-        type: MessageType | null,
-        userId: string | null
-    ): Promise<T> {
+    public static async getMessage<T extends Message>(options: LoadMessageOptions): Promise<T> {
         try {
+            if (!options) {
+                return null;
+            }
+            let { messageId, loadIPFS, type, userId, dryRun } = options;
             if (messageId && typeof messageId === 'string') {
                 messageId = messageId.trim();
             }
@@ -639,13 +654,12 @@ export class MessageServer {
      * @param type
      * @param userId
      */
-    public async getMessage<T extends Message>(
-        messageId: string,
-        loadIPFS: boolean,
-        type: MessageType | null,
-        userId: string | null
-    ): Promise<T> {
+    public async getMessage<T extends Message>(options: LoadMessageOptions): Promise<T> {
         try {
+            if (!options) {
+                return null;
+            }
+            let { messageId, loadIPFS, type, userId } = options;
             if (messageId && typeof messageId === 'string') {
                 messageId = messageId.trim();
             }
@@ -792,17 +806,11 @@ export class MessageServer {
      * @param type
      * @param action
      */
-    public static async getMessages<T extends Message>(
-        dryRun: string,
-        topicId: string | TopicId,
-        userId: string | null,
-        type?: MessageType,
-        action?: MessageAction
-    ): Promise<T[]> {
-        if (dryRun) {
-            return await MessageServer.getDryRunMessages(dryRun, topicId, userId, type, action) as T[];
+    public static async getMessages<T extends Message>(options: LoadMessagesOptions): Promise<T[]> {
+        if (options.dryRun) {
+            return await MessageServer.getDryRunMessages(options) as T[];
         } else {
-            return await MessageServer.getTopicMessages(topicId, userId, type, action) as T[];
+            return await MessageServer.getTopicMessages(options) as T[];
         }
     }
 
@@ -815,14 +823,9 @@ export class MessageServer {
      * @param action
      * @param timeStamp
      */
-    public static async getDryRunMessages<T extends Message>(
-        dryRun: string,
-        topicId: string | TopicId,
-        userId: string | null,
-        type?: MessageType,
-        action?: MessageAction,
-        timeStamp?: string
-    ) {
+    public static async getDryRunMessages<T extends Message>(options: LoadMessagesOptions) {
+        const { dryRun, topicId, userId, type, action } = options;
+
         const messages = await DatabaseServer.getVirtualMessages(dryRun, topicId);
         const result: T[] = [];
         for (const message of messages) {
@@ -856,13 +859,9 @@ export class MessageServer {
      * @param action
      * @param timeStamp
      */
-    public static async getTopicMessages<T extends Message>(
-        topicId: string | TopicId,
-        userId: string | null,
-        type?: MessageType,
-        action?: MessageAction,
-        timeStamp?: string
-    ): Promise<T[]> {
+    public static async getTopicMessages<T extends Message>(options: LoadMessagesOptions): Promise<T[]> {
+        let { topicId, userId, type, action, timeStamp } = options;
+
         if (!topicId) {
             throw new Error(`Invalid Topic Id`);
         }

@@ -86,7 +86,7 @@ export async function importToolByMessage(
     }
     messageId = messageId.trim();
     const message = await messageServer
-        .getMessage<ToolMessage>(messageId, true, null, userId);
+        .getMessage<ToolMessage>({ messageId, loadIPFS: true, userId });
     if (!message) {
         throw new Error('Invalid Message');
     }
@@ -500,7 +500,8 @@ export async function previewToolByMessage(messageId: string, userId: string | n
 
     messageId = messageId.trim();
     const message = await MessageServer
-        .getMessage<ToolMessage>(null, messageId, true, null, userId);
+        .getMessage<ToolMessage>({ messageId, loadIPFS: true, userId });
+
     if (!message) {
         throw new Error('Invalid Message');
     }

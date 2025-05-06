@@ -124,7 +124,11 @@ export class RevokeBlock {
 
         const policyTopicsMessages = [];
         for (const topic of policyTopics) {
-            const topicMessages = await MessageServer.getMessages(ref.dryRun, topic.topicId, userId);
+            const topicMessages = await MessageServer.getMessages({
+                dryRun: ref.dryRun,
+                topicId: topic.topicId,
+                userId
+            });
             policyTopicsMessages.push(...topicMessages);
         }
         const messagesToFind = policyTopicsMessages

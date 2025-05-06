@@ -106,7 +106,11 @@ export class MessagesReport {
         this.messages.set(timestamp, null);
 
         const message = await MessageServer
-            .getMessage(null, timestamp, false, null, userId);
+            .getMessage({
+                messageId: timestamp,
+                loadIPFS: false,
+                userId,
+            });
         if (!message) {
             return;
         }
@@ -192,7 +196,10 @@ export class MessagesReport {
      */
     private async checkSchemas(message: TopicMessage, userId: string | null) {
         if (message.messageType === TopicType.PolicyTopic) {
-            const messages: any[] = await MessageServer.getTopicMessages(message.getTopicId(), userId);
+            const messages: any[] = await MessageServer.getTopicMessages({
+                topicId: message.getTopicId(),
+                userId
+            });
             const schemas: SchemaMessage[] = messages.filter((m: SchemaMessage) => m.action === MessageAction.PublishSchema ||
                 m.action === MessageAction.PublishSystemSchema);
             for (const schema of schemas) {
@@ -221,7 +228,7 @@ export class MessagesReport {
         }
         for (const topicId of topics) {
             try {
-                const messages: any[] = await MessageServer.getTopicMessages(topicId, userId);
+                const messages: any[] = await MessageServer.getTopicMessages({ topicId, userId });
                 const documents: DIDMessage[] = messages.filter((m: DIDMessage) => m.action === MessageAction.CreateDID);
                 for (const document of documents) {
                     if (this.users.has(document.did) && !this.users.get(document.did)) {

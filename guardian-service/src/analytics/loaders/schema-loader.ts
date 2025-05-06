@@ -59,7 +59,11 @@ export class SchemaLoader {
 
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
         const message = await messageServer
-            .getMessage<PolicyMessage>(messageId, true, null, user.id);
+            .getMessage<PolicyMessage>({
+                messageId,
+                loadIPFS: true,
+                userId: user.id
+            });
         if (message.type !== MessageType.InstancePolicy) {
             throw new Error('Invalid Message Type');
         }

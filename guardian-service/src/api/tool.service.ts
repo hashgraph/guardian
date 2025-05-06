@@ -48,7 +48,11 @@ export async function preparePreviewMessage(
     const root = await users.getHederaAccount(user.creator, user.id);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
     const message = await messageServer
-        .getMessage<ToolMessage>(messageId, true, null, user.id);
+        .getMessage<ToolMessage>({
+            messageId,
+            loadIPFS: true,
+            userId: user.id
+        });
     if (message.type !== MessageType.Tool) {
         throw new Error('Invalid Message Type');
     }
@@ -743,7 +747,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('file in body is empty');
                 }
                 const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
-                const { tool, errors } = await importToolByFile(owner, preview, emptyNotifier(),  metadata, owner.id);
+                const { tool, errors } = await importToolByFile(owner, preview, emptyNotifier(), metadata, owner.id);
                 if (errors?.length) {
                     const message = importToolErrors(errors);
                     await logger.warn(message, ['GUARDIAN_SERVICE'], owner?.id);

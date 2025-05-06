@@ -115,7 +115,12 @@ export class GroupManagerBlock {
 
         if (member.messageId) {
             const message = await MessageServer
-                .getMessage(ref.dryRun, member.messageId, true, null, userId);
+                .getMessage({
+                    dryRun: ref.dryRun,
+                    messageId: member.messageId,
+                    loadIPFS: true,
+                    userId
+                });
             const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId, userId);
             message.setMessageStatus(MessageStatus.WITHDRAW, text);
             await PolicyActionsUtils
