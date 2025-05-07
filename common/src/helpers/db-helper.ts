@@ -959,4 +959,13 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
         await this._em.flush();
         return result;
     }
+
+    public async insert(
+        entity: Partial<T>
+    ): Promise<T | T[]> {
+        const repository = this._em.getRepository(this.entityClass);
+        const row = repository.create({ ...entity });
+        repository.insert(row);
+        return row;
+    }
 }
