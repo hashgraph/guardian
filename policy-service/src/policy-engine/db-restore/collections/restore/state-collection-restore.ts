@@ -33,4 +33,8 @@ export class StateCollectionRestore extends CollectionRestore<BlockState> {
     protected override createRow(data: BlockState): BlockState {
         return data;
     }
+    
+    protected override async decryptRow(row: BlockState): Promise<BlockState> {
+        return row;
+    }
 }

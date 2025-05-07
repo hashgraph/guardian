@@ -934,6 +934,11 @@ export interface IPolicyDBDocument<T> {
     document?: T;
 
     /**
+     * Document instance
+     */
+    encryptedDocument?: string;
+
+    /**
      * Token identifier
      */
     tokenId?: string;

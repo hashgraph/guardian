@@ -8,6 +8,7 @@ import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { LocationType } from '@guardian/interfaces';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
+import { PolicyUtils } from '../helpers/utils.js';
 
 export const RevokedStatus = 'Revoked';
 
@@ -188,12 +189,8 @@ export class RevocationBlock {
             const prevDocument = prevDocs[prevDocs.length - 1];
             if (prevDocument) {
                 prevDocument.option.status = ref.options.prevDocStatus;
-                await ref.databaseServer.updateVC(prevDocument);
-                await ref.databaseServer.saveDocumentState({
-                    documentId: prevDocument.id,
-                    document: prevDocument,
-                    policyId: ref.policyId
-                });
+                await PolicyUtils.updateVC(ref, prevDocument, userId);
+                await PolicyUtils.saveDocumentState(ref, prevDocument);
             }
         }
 

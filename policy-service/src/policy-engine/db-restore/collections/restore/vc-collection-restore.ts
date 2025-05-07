@@ -1,4 +1,4 @@
-import { DataBaseHelper, VcDocument } from '@guardian/common';
+import { DataBaseHelper, EncryptVcHelper, KeyType, VcDocument, Wallet } from '@guardian/common';
 import { CollectionRestore, IDiffAction } from '../../index.js';
 
 export class VcCollectionRestore extends CollectionRestore<VcDocument> {
@@ -35,6 +35,20 @@ export class VcCollectionRestore extends CollectionRestore<VcDocument> {
             const document = Buffer.from((data as any).document, 'base64').toString();
             data.document = JSON.parse(document);
         }
+        if (data.encryptedDocument) {
+            const document = Buffer.from((data as any).document, 'base64').toString();
+            data.encryptedDocument = document;
+        }
         return data;
+    }
+
+    protected override async decryptRow(row: VcDocument): Promise<VcDocument> {
+        if (row.encryptedDocument) {
+            const wallet = new Wallet();
+            const messageKey = await wallet.getUserKey(row.owner, KeyType.MESSAGE_KEY, row.owner, null);
+            const data = await EncryptVcHelper.encrypt(row.encryptedDocument, messageKey);
+            row.document = JSON.parse(data);
+        }
+        return row;
     }
 }

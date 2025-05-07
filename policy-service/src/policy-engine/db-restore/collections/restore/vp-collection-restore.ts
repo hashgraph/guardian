@@ -37,4 +37,8 @@ export class VpCollectionRestore extends CollectionRestore<VpDocument> {
         }
         return data;
     }
+
+    protected override async decryptRow(row: VpDocument): Promise<VpDocument> {
+        return row;
+    }
 }

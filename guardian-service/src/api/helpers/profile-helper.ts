@@ -63,6 +63,7 @@ export interface ICredentials {
     parent: string;
     hederaAccountId: string;
     hederaAccountKey: string;
+    messageKey: string;
     vcDocument: any;
     didDocument: any;
     didKeys: IDidKey[];
@@ -130,18 +131,27 @@ export async function setupUserProfile(
         if (!profile.hederaAccountKey) {
             throw new MessageError('Invalid Hedera Account Key', 403);
         }
+        // if (!profile.messageKey) {
+        //     throw new MessageError('Invalid Message Key', 403);
+        // }
         const did = await createUserProfile(profile, notifier, user, logger, logId);
         await saveUserProfile(username, did, profile, notifier, user, logger, logId);
         return did;
     } else if (user.role === UserRole.USER) {
         profile.entity = SchemaEntity.USER;
         if (profile.type === LocationType.REMOTE) {
+            if (!profile.messageKey) {
+                throw new MessageError('Invalid Message Key', 403);
+            }
             const did = await createRemoteUserProfile(profile, notifier, user, logger);
             await saveRemoteUserProfile(username, did, profile, notifier, user, logger, logId);
             return did;
         } else {
             if (!profile.hederaAccountKey) {
                 throw new MessageError('Invalid Hedera Account Key', 403);
+            }
+            if (!profile.messageKey) {
+                throw new MessageError('Invalid Message Key', 403);
             }
             const did = await createUserProfile(profile, notifier, user, logger, logId);
             await saveUserProfile(username, did, profile, notifier, user, logger, logId);
@@ -584,6 +594,7 @@ export async function saveUserProfile(
     notifier.completedAndStart('Set up wallet');
     const wallet = new Wallet();
     await wallet.setKey(user.walletToken, KeyType.KEY, did, profile.hederaAccountKey);
+    await wallet.setKey(user.walletToken, KeyType.MESSAGE_KEY, did, profile.messageKey);
     if (profile.useFireblocksSigning) {
         await wallet.setKey(user.walletToken, KeyType.FIREBLOCKS_KEY, did, JSON.stringify(profile.fireblocksConfig));
     }

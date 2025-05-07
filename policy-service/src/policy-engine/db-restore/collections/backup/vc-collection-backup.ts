@@ -52,7 +52,13 @@ export class VcCollectionBackup extends CollectionBackup<VcDocument> {
                 return row;
             }
             delete row.document;
-            if (row.documentFileId) {
+            delete row.encryptedDocument;
+            if (row.encryptedDocumentFileId) {
+                const buffer = await DataBaseHelper.loadFile(row.encryptedDocumentFileId);
+                if (buffer) {
+                    (row as any).encryptedDocument = buffer.toString('base64');
+                }
+            } else if (row.documentFileId) {
                 const buffer = await DataBaseHelper.loadFile(row.documentFileId);
                 if (buffer) {
                     (row as any).document = buffer.toString('base64');

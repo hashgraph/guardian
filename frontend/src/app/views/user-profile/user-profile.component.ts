@@ -132,6 +132,7 @@ export class UserProfileComponent implements OnInit {
         this.hederaCredentialsForm = new UntypedFormGroup({
             id: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()]),
             key: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()]),
+            messageKey: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()]),
             useFireblocksSigning: new UntypedFormControl(false),
             fireBlocksVaultId: new UntypedFormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
             fireBlocksAssetId: new UntypedFormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
@@ -154,6 +155,7 @@ export class UserProfileComponent implements OnInit {
         this.remoteCredentialsForm = new UntypedFormGroup({
             id: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()]),
             topicId: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()]),
+            messageKey: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()]),
         });
         this.remoteDidDocumentForm = new UntypedFormControl('', [Validators.required]);
 
@@ -779,6 +781,7 @@ export class UserProfileComponent implements OnInit {
             profile.type = LocationType.REMOTE;
             profile.parent = data.standardRegistry;
             profile.hederaAccountId = data.hederaCredentials.id?.trim();
+            profile.messageKey = data.hederaCredentials.messageKey?.trim();
             profile.topicId = data.hederaCredentials.topicId;
             profile.didDocument = data.didDocument;
         } else {
@@ -788,6 +791,7 @@ export class UserProfileComponent implements OnInit {
             profile.parent = data.standardRegistry;
             profile.hederaAccountId = data.hederaCredentials.id?.trim();
             profile.hederaAccountKey = data.hederaCredentials.key?.trim();
+            profile.messageKey = data.hederaCredentials.messageKey?.trim();
             profile.useFireblocksSigning = data.hederaCredentials.useFireblocksSigning;
             profile.fireblocksConfig = {
                 fireBlocksVaultId: data.hederaCredentials.fireBlocksVaultId,

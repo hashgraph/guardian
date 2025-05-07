@@ -317,7 +317,7 @@ export class UserCredentials {
         return this;
     }
 
-    public async loadHederaKey(ref: AnyBlockType, userId: string | null): Promise<any> {
+    public async loadHederaKey(ref: AnyBlockType, userId: string | null): Promise<string | null> {
         if (this._dryRun) {
             return await ref.databaseServer.getVirtualKey(this._did, this._did);
         } else {
@@ -344,6 +344,15 @@ export class UserCredentials {
         return {
             hederaAccountId: this._hederaAccountId,
             hederaAccountKey: hederaKey
+        }
+    }
+
+    public async loadMessageKey(ref: AnyBlockType, userId: string | null): Promise<string | null> {
+        if (this._dryRun) {
+            return await ref.databaseServer.getVirtualKey(this._did, this._did);
+        } else {
+            const wallet = new Wallet();
+            return await wallet.getUserKey(this._did, KeyType.MESSAGE_KEY, this._did, userId);
         }
     }
 

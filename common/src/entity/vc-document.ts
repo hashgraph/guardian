@@ -30,6 +30,72 @@ import { DeleteCache } from './delete-cache.js';
 @Entity()
 export class VcDocument extends RestoreEntity implements IVCDocument {
     /**
+     * Document hash
+     */
+    @Property({
+        nullable: true,
+        index: true
+    })
+    hash?: string;
+
+    /**
+     * Document hedera status
+     */
+    @Enum({ nullable: true })
+    hederaStatus?: DocumentStatus;
+
+    /**
+     * Document signature
+     */
+    @Enum({ nullable: true })
+    signature?: DocumentSignature;
+
+    /**
+     * Type
+     */
+    @Property({ nullable: true })
+    type?: string;
+
+    /**
+     * Policy id
+     */
+    @Property({
+        nullable: true,
+        index: true,
+    })
+    policyId?: string;
+
+    /**
+     * Tag
+     */
+    @Property({ nullable: true })
+    tag?: string;
+
+    /**
+     * Document schema
+     */
+    @Property({ nullable: true })
+    schema?: string;
+
+    /**
+     * Document option
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    option?: any;
+
+    /**
+     * Relationships
+     */
+    @Property({ nullable: true })
+    relationships?: string[];
+
+    /**
+     * Comment
+     */
+    @Property({ nullable: true })
+    comment?: string;
+
+    /**
      * Document owner
      */
     @Property({
@@ -57,106 +123,14 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     assignedToGroup?: string;
 
     /**
-     * Document hash
-     */
-    @Property({
-        nullable: true,
-        index: true
-    })
-    hash?: string;
-
-    /**
-     * Document instance
-     */
-    @Property({ nullable: true, type: 'unknown' })
-    document?: IVC;
-
-    /**
-     * Document file id
-     */
-    @Property({ nullable: true })
-    documentFileId?: ObjectId;
-
-    /**
-     * Document fields
-     */
-    @Property({ nullable: true })
-    documentFields?: string[];
-
-    /**
-     * Document hedera status
-     */
-    @Enum({ nullable: true })
-    hederaStatus?: DocumentStatus;
-
-    /**
-     * Document signature
-     */
-    @Enum({ nullable: true })
-    signature?: DocumentSignature;
-
-    /**
-     * Document processing status
-     */
-    @Property({ nullable: true })
-    processingStatus?: string;
-
-    /**
-     * Type
-     */
-    @Property({ nullable: true })
-    type?: string;
-
-    /**
-     * Policy id
+     * User group
      */
     @Property({
         nullable: true,
         index: true,
+        type: 'unknown'
     })
-    policyId?: string;
-
-    /**
-     * Tag
-     */
-    @Property({ nullable: true })
-    tag?: string;
-
-    /**
-     * Document option
-     */
-    @Property({ nullable: true, type: 'unknown' })
-    option?: any;
-
-    /**
-     * Document schema
-     */
-    @Property({ nullable: true })
-    schema?: string;
-
-    /**
-     * Message id
-     */
-    @Property({ nullable: true })
-    messageId?: string;
-
-    /**
-     * Topic id
-     */
-    @Property({ nullable: true })
-    topicId?: string;
-
-    /**
-     * Relationships
-     */
-    @Property({ nullable: true })
-    relationships?: string[];
-
-    /**
-     * Comment
-     */
-    @Property({ nullable: true })
-    comment?: string;
+    group?: any;
 
     /**
      * Hedera Accounts
@@ -171,14 +145,16 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     tokens?: any;
 
     /**
-     * User group
+     * Topic id
      */
-    @Property({
-        nullable: true,
-        index: true,
-        type: 'unknown'
-    })
-    group?: any;
+    @Property({ nullable: true })
+    topicId?: string;
+
+    /**
+     * Message id
+     */
+    @Property({ nullable: true })
+    messageId?: string;
 
     /**
      * Hedera Hash
@@ -193,6 +169,42 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     messageIds?: string[];
 
     /**
+     * Document processing status
+     */
+    @Property({ nullable: true })
+    processingStatus?: string;
+
+    /**
+     * Document instance
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    document?: IVC;
+
+    /**
+     * Document file id
+     */
+    @Property({ nullable: true })
+    documentFileId?: ObjectId;
+
+    /**
+     * Document instance
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    encryptedDocument?: string;
+
+    /**
+     * Document file id
+     */
+    @Property({ nullable: true })
+    encryptedDocumentFileId?: ObjectId;
+
+    /**
+     * Document fields
+     */
+    @Property({ nullable: true })
+    documentFields?: string[];
+
+    /**
      * Document defaults
      */
     @BeforeCreate()
@@ -203,17 +215,27 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
         this.option.status = this.option.status || ApproveStatus.NEW;
     }
 
-    private _createDocument(document: string): Promise<void> {
+    private _createDocument(field: string, document: string): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             try {
                 const fileStream = DataBaseHelper.gridFS.openUploadStream(GenerateUUIDv4());
-                this.documentFileId = fileStream.id;
+                this[field] = fileStream.id;
                 fileStream.write(document);
                 fileStream.end(() => resolve());
             } catch (error) {
                 reject(error)
             }
         });
+    }
+
+    private async _loadDocument(fileId: ObjectId): Promise<string> {
+        const fileStream = DataBaseHelper.gridFS.openDownloadStream(fileId);
+        const bufferArray = [];
+        for await (const data of fileStream) {
+            bufferArray.push(data);
+        }
+        const buffer = Buffer.concat(bufferArray);
+        return buffer.toString();
     }
 
     private _createFieldCache(fields?: string[]): any {
@@ -237,22 +259,7 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
         }
     }
 
-    /**
-     * Create document
-     */
-    @BeforeCreate()
-    async createDocument() {
-        if (this.document) {
-            const document = JSON.stringify(this.document);
-            await this._createDocument(document);
-            this.document = this._createFieldCache(this.documentFields);
-            if (!this.document) {
-                delete this.document;
-            }
-            this._updateDocHash(document);
-        } else {
-            this._updateDocHash('');
-        }
+    private _createProp(): any {
         const prop: any = {};
         prop.accounts = this.accounts;
         prop.assignedTo = this.assignedTo;
@@ -275,7 +282,31 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
         prop.relationships = this.relationships;
         prop.processingStatus = this.processingStatus;
         prop.policyId = this.policyId;
-        this._updatePropHash(prop);
+        return prop;
+    }
+
+    /**
+     * Create document
+     */
+    @BeforeCreate()
+    async createDocument() {
+        if (this.document) {
+            const document = JSON.stringify(this.document);
+            await this._createDocument('documentFileId', document);
+            this.document = this._createFieldCache(this.documentFields);
+            if (!this.document) {
+                delete this.document;
+            }
+            this._updateDocHash(document);
+        } else {
+            this._updateDocHash('');
+        }
+        if (this.encryptedDocument) {
+            await this._createDocument('encryptedDocumentFileId', this.encryptedDocument);
+            delete this.encryptedDocument;
+        }
+
+        this._updatePropHash(this._createProp());
     }
 
     /**
@@ -286,6 +317,11 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
         if (this.document && this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
+                .catch(console.error);
+        }
+        if (this.encryptedDocument && this.encryptedDocumentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.encryptedDocumentFileId)
                 .catch(console.error);
         }
         await this.createDocument();
@@ -299,15 +335,12 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     @AfterCreate()
     async loadDocument() {
         if (this.documentFileId) {
-            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
-                this.documentFileId
-            );
-            const bufferArray = [];
-            for await (const data of fileStream) {
-                bufferArray.push(data);
-            }
-            const buffer = Buffer.concat(bufferArray);
-            this.document = JSON.parse(buffer.toString());
+            const buffer = await this._loadDocument(this.documentFileId)
+            this.document = JSON.parse(buffer);
+        }
+        if (this.encryptedDocumentFileId) {
+            const buffer = await this._loadDocument(this.encryptedDocumentFileId)
+            this.encryptedDocument = buffer;
         }
     }
 
@@ -319,6 +352,11 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
         if (this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
+                .catch(console.error);
+        }
+        if (this.encryptedDocumentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.encryptedDocumentFileId)
                 .catch(console.error);
         }
     }
