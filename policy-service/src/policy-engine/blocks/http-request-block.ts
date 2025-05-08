@@ -9,6 +9,8 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 import { PolicyUtils } from '../helpers/utils.js';
 import { VcDocumentDefinition as VcDocument, VcHelper, Workers } from '@guardian/common';
 import { LocationType, WorkerTaskType } from '@guardian/interfaces';
+import dns from 'node:dns/promises';
+import net from 'node:net';
 
 /**
  * Http request block
@@ -84,6 +86,81 @@ export class HttpRequestBlock {
         return result;
     }
 
+    private validateProtocol(url: string): void {
+        const parsedUrl = new URL(url);
+        const protocol = parsedUrl.protocol.replace(':', '').toLowerCase();
+
+        const raw = process.env.ALLOWED_PROTOCOLS || '';
+        const allowedProtocols = raw
+            .split(',')
+            .map(p => p.trim().toLowerCase())
+            .filter(Boolean);
+
+        if (!allowedProtocols.includes(protocol)) {
+            throw new Error(
+                `Protocol "${parsedUrl.protocol}" is not allowed. Allowed protocols: ${allowedProtocols.join(', ')}`
+            );
+        }
+    }
+
+    private isPrivateIP(ip: string, family: number): boolean {
+        if (family === 4) {
+            const octets = ip.split('.').map(Number);
+            if (octets.length !== 4 || octets.some(o => isNaN(o))) {
+                return false;
+            }
+
+            const [a, b] = octets;
+            return (
+                a === 10 ||
+                (a === 172 && b >= 16 && b <= 31) ||
+                (a === 192 && b === 168) ||
+                a === 127 ||
+                (a === 169 && b === 254)
+            );
+        }
+
+        if (family === 6) {
+            const normalized = ip.toLowerCase();
+
+            return (
+                normalized === '::1' ||
+                normalized.startsWith('fc') ||
+                normalized.startsWith('fd') ||
+                normalized.startsWith('fe80')
+            );
+        }
+
+        return false;
+    }
+
+    private async validatePrivateIp(url: string): Promise<void> {
+        const blockPrivate = process.env.BLOCK_PRIVATE_IP === 'true';
+        if (!blockPrivate) {
+            return;
+        }
+
+        const parsedUrl = new URL(url);
+        const hostname = parsedUrl.hostname;
+
+        const directFamily = net.isIP(hostname);
+        if (directFamily) {
+            if (this.isPrivateIP(hostname, directFamily)) {
+                throw new Error(`Blocked request to private IP address: ${hostname}`);
+            }
+            return;
+        }
+
+        try {
+            const { address, family } = await dns.lookup(hostname);
+            if (this.isPrivateIP(address, family)) {
+                throw new Error(`Blocked request to private IP address: ${address}`);
+            }
+        } catch (error) {
+            throw new Error(`Failed to resolve host "${hostname}": ${error.message}`);
+        }
+    }
+
     /**
      * Request document
      * @param method
@@ -93,12 +170,15 @@ export class HttpRequestBlock {
      * @param userId
      */
     async requestDocument(method, url, headers, body, userId: string | null): Promise<VcDocument> {
+        this.validateProtocol(url);
+        await this.validatePrivateIp(url)
+
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
 
         const res = await new Workers().addNonRetryableTask({
             type: WorkerTaskType.HTTP_REQUEST,
             data: {
-                payload: { method, url, headers, body, userId }
+                payload: { method, url, headers, body, userId, maxRedirects: 0 }
             }
         }, 10);
         if (!res) {
