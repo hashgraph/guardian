@@ -28,7 +28,7 @@
         "express": "^4.17.1",
         "lodash.get": "^4.4.2",
         "lodash.set": "^4.3.2",
-        "mathjs": "^10.1.0",
+        "mathjs": "^14.4.0",
         "module-alias": "^2.2.2",
         "moment": "^2.29.2",
         "prom-client": "^14.1.1",
