@@ -9,6 +9,13 @@
     border-radius: 5px;
 }
 
+.map-container {
+    .map {
+        width: 100%;
+        height: 250px;
+    }
+}
+
 :host .google-map-container ::ng-deep .map-container {
     border-radius: 5px;
 }

@@ -14,7 +14,7 @@
             [(ngModel)]="jsonInput"
             (ngModelChange)="jsonChanged()"
             class="full-width">
-    </textarea>
+        </textarea>
     </div>
 </ng-container>
 <ng-template #form>
@@ -32,8 +32,12 @@
         <small *ngIf="!type" class="p-error">This field is required.</small>
     </div>
 
+    <div class="map-container">
+        <div class="map" #map id="map"></div>
+    </div>
+
     <div class="google-map-container" *ngIf="mapService.mapLoaded">
-        <google-map (authFailure)="authFailed()" [center]="center" (mapDblclick)="mapDblclick()"
+        <!-- <google-map (authFailure)="authFailed()" [center]="center" (mapDblclick)="mapDblclick()"
                     (mapClick)="mapClick($event)"
                     (mapRightclick)="mapRightclick()" height="300px" [options]="mapOptions" width="auto">
             <ng-container *ngIf="markers">
@@ -53,7 +57,7 @@
                 <map-polyline *ngFor="let line of lines" [path]="line.path" [options]="commonOptions">
                 </map-polyline>
             </ng-container>
-        </google-map>
+        </google-map> -->
     </div>
     <div class="form-group type-selector">
         <label for="coordinatesInput" class="form-label">Coordinates2:</label>
