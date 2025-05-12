@@ -40,7 +40,11 @@ async function preparePolicyPreviewMessage(
     const users = new Users();
     const root = await users.getHederaAccount(user.creator, userId);
 
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
+    const messageServer = new MessageServer({
+        operatorId: root.hederaAccountId,
+        operatorKey: root.hederaAccountKey,
+        signOptions: root.signOptions
+    });
     const message = await messageServer
         .getMessage<PolicyMessage>({ messageId, loadIPFS: true, userId });
     if (message.type !== MessageType.InstancePolicy) {

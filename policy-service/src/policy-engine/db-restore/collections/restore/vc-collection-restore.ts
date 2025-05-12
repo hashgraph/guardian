@@ -1,5 +1,6 @@
 import { DataBaseHelper, EncryptVcHelper, KeyType, VcDocument, Wallet } from '@guardian/common';
 import { CollectionRestore, IDiffAction } from '../../index.js';
+import { UserCredentials } from './../../../policy-user.js';
 
 export class VcCollectionRestore extends CollectionRestore<VcDocument> {
     protected override actionHash(hash: string, action: IDiffAction<VcDocument>, row?: VcDocument): string {
@@ -44,8 +45,7 @@ export class VcCollectionRestore extends CollectionRestore<VcDocument> {
 
     protected override async decryptRow(row: VcDocument): Promise<VcDocument> {
         if (row.encryptedDocument) {
-            const wallet = new Wallet();
-            const messageKey = await wallet.getUserKey(row.owner, KeyType.MESSAGE_KEY, row.owner, null);
+            const messageKey = await UserCredentials.loadMessageKey(this.messageId, row.owner, null);
             const data = await EncryptVcHelper.encrypt(row.encryptedDocument, messageKey);
             row.document = JSON.parse(data);
         }

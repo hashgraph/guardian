@@ -10,9 +10,11 @@ interface DiffResult<T extends RestoreEntity> {
 
 export abstract class CollectionBackup<T extends RestoreEntity> {
     protected readonly policyId: string;
+    protected readonly messageId: string;
 
-    constructor(policyId: string) {
+    constructor(policyId: string, messageId: string) {
         this.policyId = policyId;
+        this.messageId = messageId;
     }
 
     public async createCollectionBackup(): Promise<DiffResult<T>> {

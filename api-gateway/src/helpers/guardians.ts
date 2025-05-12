@@ -3716,4 +3716,28 @@ export class Guardians extends NatsService {
     public async getProfile(user: IAuthUser): Promise<ProfileDTO> {
         return await this.sendMessage(MessageAPI.GET_USER_PROFILE, { user });
     }
+
+    /**
+     * Return keys
+     * @param user
+     * @param filters
+     *
+     * @returns {ResponseAndCount<PolicyLabelDTO>}
+     */
+    public async getKeys(user: IAuthUser, filters: { pageIndex: any, pageSize: any }): Promise<ResponseAndCount<PolicyLabelDTO>> {
+        return await this.sendMessage(MessageAPI.GET_USER_KEYS, { filters, user });
+    }
+
+    /**
+     * Return User Profile
+     *
+     * @param {IAuthUser} user - user
+     * @param {string} messageId - messageId
+     * @param {string} key - key
+     *
+     * @returns {string} - key
+     */
+    public async generateKey(user: IAuthUser, messageId: string, key?: string): Promise<string> {
+        return await this.sendMessage(MessageAPI.GENERATE_USER_KEYS, { user, messageId, key });
+    }
 }

@@ -15,85 +15,208 @@
             <div class="header">
                 <h1>Profile</h1>
             </div>
-            <div class="user-info-container">
-                <div class="item-header">Account</div>
-                <div class="item">
-                    <span>User Name</span>
-                    <span class="value-text">{{ profile!.username }}</span>
-                </div>
-                <div class="item">
-                    <span>Password</span>
-                    <div (click)="changePassword(profile)" class="view-document-button">
-                        <span>Change Password</span>
-                    </div>
-                </div>
 
-                <div class="item-header">Hedera</div>
-                <div class="item">
-                    <span>Hedera Account ID</span>
-                    <div>
-                        <hedera-explorer [params]="profile.hederaAccountId || ''" type="accounts">
-                            {{ profile.hederaAccountId }}
-                        </hedera-explorer>
-                    </div>
-                </div>
-                <div *ngIf="profile.topicId" class="item">
-                    <span>User Topic</span>
-                    <div>
-                        <hedera-explorer [params]="profile.topicId" type="topics">
-                            {{ profile.topicId }}
-                        </hedera-explorer>
-                    </div>
-                </div>
-                <div class="item">
-                    <span>Balance</span>
-                    <span class="value-text">{{ balance }}</span>
-                </div>
-
-
-                <div class="item-header">Documents</div>
-                <div class="item">
-                    <span>Standard Registry</span>
-                    <span class="value-text">{{ profile.parent }}</span>
-                </div>
-                <div class="item">
-                    <span>DID</span>
-                    <span class="value-text">{{ profile.did }}</span>
-                </div>
-                <div class="item">
-                    <span>DID Document</span>
-                    <div
-                        (click)="openDIDDocument(didDocument, 'DID Document')"
-                        class="view-document-button"
-                    >
-                        <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color">
-                        </svg-icon>
-                        <span>View document</span>
-                    </div>
-                </div>
-                <div *ngIf="vcDocument" class="item">
-                    <span>VC Document</span>
-                    <div
-                        (click)="openVCDocument(vcDocument, 'VC Document')"
-                        class="view-document-button"
-                    >
-                        <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color">
-                        </svg-icon>
-                        <span>View document</span>
-                    </div>
-                </div>
-
-                <div *ngIf="profile" class="item">
-                    <div class="download-button">
-                        <p-button
-                            (click)="download()"
-                            label="Download profile"
-                            icon="pi pi-download"
-                        >
-                        </p-button>
-                    </div>
-                </div>
+            <div class="tabs-nav">
+                <p-tabView (onChange)="onChangeTab($event)" class="guardian-header-tabs">
+                    <p-tabPanel [selected]="tab === 'general'">
+                        <ng-template pTemplate="header">
+                            <div class="tabview-label">General</div>
+                        </ng-template>
+                    </p-tabPanel>
+                    <p-tabPanel [selected]="tab === 'keys'">
+                        <ng-template pTemplate="header">
+                            <div class="tabview-label">Keys</div>
+                        </ng-template>
+                    </p-tabPanel>
+                </p-tabView>
             </div>
+
+            <ng-container *ngIf="tab === 'general'">
+                <div *ngIf="tab === 'general'" class="user-info-container">
+                    <div class="item-header">Account</div>
+                    <div class="item">
+                        <span>User Name</span>
+                        <span class="value-text">{{ profile!.username }}</span>
+                    </div>
+                    <div class="item">
+                        <span>Password</span>
+                        <div (click)="changePassword(profile)" class="view-document-button">
+                            <span>Change Password</span>
+                        </div>
+                    </div>
+
+                    <div class="item-header">Hedera</div>
+                    <div class="item">
+                        <span>Hedera Account ID</span>
+                        <div>
+                            <hedera-explorer [params]="profile.hederaAccountId || ''" type="accounts">
+                                {{ profile.hederaAccountId }}
+                            </hedera-explorer>
+                        </div>
+                    </div>
+                    <div *ngIf="profile.topicId" class="item">
+                        <span>User Topic</span>
+                        <div>
+                            <hedera-explorer [params]="profile.topicId" type="topics">
+                                {{ profile.topicId }}
+                            </hedera-explorer>
+                        </div>
+                    </div>
+                    <div class="item">
+                        <span>Balance</span>
+                        <span class="value-text">{{ balance }}</span>
+                    </div>
+
+
+                    <div class="item-header">Documents</div>
+                    <div class="item">
+                        <span>Standard Registry</span>
+                        <span class="value-text">{{ profile.parent }}</span>
+                    </div>
+                    <div class="item">
+                        <span>DID</span>
+                        <span class="value-text">{{ profile.did }}</span>
+                    </div>
+                    <div class="item">
+                        <span>DID Document</span>
+                        <div
+                            (click)="openDIDDocument(didDocument, 'DID Document')"
+                            class="view-document-button"
+                        >
+                            <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color">
+                            </svg-icon>
+                            <span>View document</span>
+                        </div>
+                    </div>
+                    <div *ngIf="vcDocument" class="item">
+                        <span>VC Document</span>
+                        <div
+                            (click)="openVCDocument(vcDocument, 'VC Document')"
+                            class="view-document-button"
+                        >
+                            <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color">
+                            </svg-icon>
+                            <span>View document</span>
+                        </div>
+                    </div>
+
+                    <div *ngIf="profile" class="item">
+                        <div class="download-button">
+                            <p-button
+                                (click)="download()"
+                                label="Download profile"
+                                icon="pi pi-download"
+                            >
+                            </p-button>
+                        </div>
+                    </div>
+                </div>
+           </ng-container>
+           <ng-container *ngIf="tab === 'keys'">
+                <div class="guardian-user-page-toolbar">
+                    <div class="guardian-user-page-filters"></div>
+                    <div class="guardian-user-page-buttons">
+                        <button
+                            *ngIf="location === 'remote'"
+                            (click)="onCreateKey()"
+                            class="guardian-button guardian-button-primary">
+                            <div class="guardian-button-icon">
+                                <svg-icon
+                                    class="icon-btn"
+                                    src="/assets/images/icons/add.svg"
+                                    svgClass="icon-color-secondary">
+                                </svg-icon>
+                            </div>
+                            <div class="guardian-button-label">Generate Key</div>
+                        </button>
+                        <button
+                            *ngIf="location === 'local'"
+                            (click)="onImportKey()"
+                            class="guardian-button guardian-button-primary">
+                            <div class="guardian-button-icon">
+                                <svg-icon
+                                    class="icon-btn"
+                                    src="/assets/images/icons/add.svg"
+                                    svgClass="icon-color-secondary">
+                                </svg-icon>
+                            </div>
+                            <div class="guardian-button-label">Import Key</div>
+                        </button>
+                    </div>
+                </div>
+                <div class="guardian-user-page-grid">
+                    <ng-container *ngIf="keys && keys.length > 0; else noData">
+                        <div class="guardian-grid-container">
+                            <p-table
+                                class="guardian-grid-table"
+                                [value]="keys"
+                                [scrollable]="true"
+                            >
+                                <ng-template pTemplate="header">
+                                    <tr class="guardian-grid-header">
+                                        <ng-container *ngFor="let column of columns">
+                                            <th
+                                                *ngIf="!column.canDisplay || column.canDisplay()"
+                                                class="header-cell-{{column.type}} col-{{column.size}}"
+                                                >{{column.title}}</th>
+                                        </ng-container>
+                                    </tr>
+                                </ng-template>
+                                <ng-template let-row pTemplate="body">
+                                    <tr class="guardian-grid-row">
+                                        <ng-container *ngFor="let column of columns">
+                                            <td
+                                                *ngIf="!column.canDisplay || column.canDisplay()"
+                                                class="row-cell-{{column.type}} col-{{column.size}}"
+                                                pTooltip="{{row[column.id]}}"
+                                                [tooltipDisabled]="!column.tooltip"
+                                                tooltipPosition="top"
+                                                [showDelay]="1000"
+                                                [ngSwitch]="column.id"
+                                            >
+                                                <ng-container *ngSwitchCase="'delete'">
+                                                    <div
+                                                        [attr.disabled]="row.status === 'PUBLISHED'"
+                                                        class="guardian-icon-button big"
+                                                        (click)="onDeleteKey(row)">
+                                                        <svg-icon
+                                                            class="icon-btn"
+                                                            src="/assets/images/icons/delete.svg"
+                                                            svgClass="icon-color-delete">
+                                                        </svg-icon>
+                                                    </div>
+                                                </ng-container>
+                                                <ng-container *ngSwitchDefault>
+                                                    <span class="text-truncate">{{row[column.id]}}</span>
+                                                </ng-container>
+                                            </td>
+                                        </ng-container>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                            <div class="guardian-grid-paginator">
+                                <app-paginator
+                                    class="guardian-grid-paginator"
+                                    [pageIndex]="pageIndex"
+                                    [pageSize]="pageSize"
+                                    [length]="pageCount"
+                                    (page)="onPage($event)"
+                                ></app-paginator>
+                            </div>
+                        </div>
+                    </ng-container>
+                    <ng-template #noData>
+                        <div class="guardian-user-not-data">
+                            <svg-icon
+                                class="svg-icon-32"
+                                src="/assets/images/icons/32/list.svg"
+                                svgClass="icon-color-disabled"></svg-icon>
+                            <span class="guardian-user-not-data__text-strong">There are no policies imported yet</span>
+                            <span class="guardian-user-not-data__text">Please import a new policy to see the data</span>
+                        </div>
+                    </ng-template>
+                </div>
+            </ng-container>
         </div>
     </ng-container>
     <ng-template #elseTemplate>
@@ -256,18 +379,6 @@
                                                 />
                                             </div>
                                             <div class="input-field-container">
-                                                <label class="form-label" htmlFor="messageKey">
-                                                    * Message Key (Private Key):
-                                                </label>
-                                                <input
-                                                    formControlName="messageKey"
-                                                    id="messageKey"
-                                                    pInputText
-                                                    placeholder="302e020100300506032b657004220420e..."
-                                                    type="text"
-                                                />
-                                            </div>
-                                            <div class="input-field-container">
                                                 <p-checkbox
                                                     [binary]="true"
                                                     formControlName="useFireblocksSigning"
@@ -390,18 +501,6 @@
                                                             id="topicId"
                                                             pInputText
                                                             placeholder="0.0.1548173"
-                                                            type="text"
-                                                        />
-                                                    </div>
-                                                    <div class="input-field-container">
-                                                        <label class="form-label" htmlFor="messageKey">
-                                                            * Message Key (Private Key):
-                                                        </label>
-                                                        <input
-                                                            formControlName="messageKey"
-                                                            id="messageKey"
-                                                            pInputText
-                                                            placeholder="302e020100300506032b657004220420e..."
                                                             type="text"
                                                         />
                                                     </div>

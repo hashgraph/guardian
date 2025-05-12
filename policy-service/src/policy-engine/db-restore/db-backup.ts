@@ -21,6 +21,7 @@ import {
 
 export class PolicyBackup {
     private readonly policyId: string;
+    private readonly messageId: string;
     private readonly vcBackup: VcCollectionBackup;
     private readonly vpBackup: VpCollectionBackup;
     private readonly didBackup: DidCollectionBackup;
@@ -38,24 +39,25 @@ export class PolicyBackup {
 
     private lastDiff: PolicyDiff | null;
 
-    constructor(policyId: string) {
+    constructor(policyId: string, messageId: string) {
         this.policyId = policyId;
+        this.messageId = messageId;
         this.lastDiff = null;
 
-        this.vcBackup = new VcCollectionBackup(this.policyId);
-        this.vpBackup = new VpCollectionBackup(this.policyId);
-        this.didBackup = new DidCollectionBackup(this.policyId);
-        this.stateBackup = new StateCollectionBackup(this.policyId);
-        this.roleBackup = new RoleCollectionBackup(this.policyId);
-        this.multiDocBackup = new MultiDocCollectionBackup(this.policyId);
-        this.tokenBackup = new TokenCollectionBackup(this.policyId);
-        this.tagBackup = new TagCollectionBackup(this.policyId);
-        this.docStateBackup = new DocStateCollectionBackup(this.policyId);
-        this.topicBackup = new TopicCollectionBackup(this.policyId);
-        this.externalDocBackup = new ExternalCollectionBackup(this.policyId);
-        this.approveBackup = new ApproveCollectionBackup(this.policyId);
-        this.mintRequestBackup = new MintRequestCollectionBackup(this.policyId);
-        this.mintTransactionBackup = new MintTransactionCollectionBackup(this.policyId);
+        this.vcBackup = new VcCollectionBackup(this.policyId, this.messageId);
+        this.vpBackup = new VpCollectionBackup(this.policyId, this.messageId);
+        this.didBackup = new DidCollectionBackup(this.policyId, this.messageId);
+        this.stateBackup = new StateCollectionBackup(this.policyId, this.messageId);
+        this.roleBackup = new RoleCollectionBackup(this.policyId, this.messageId);
+        this.multiDocBackup = new MultiDocCollectionBackup(this.policyId, this.messageId);
+        this.tokenBackup = new TokenCollectionBackup(this.policyId, this.messageId);
+        this.tagBackup = new TagCollectionBackup(this.policyId, this.messageId);
+        this.docStateBackup = new DocStateCollectionBackup(this.policyId, this.messageId);
+        this.topicBackup = new TopicCollectionBackup(this.policyId, this.messageId);
+        this.externalDocBackup = new ExternalCollectionBackup(this.policyId, this.messageId);
+        this.approveBackup = new ApproveCollectionBackup(this.policyId, this.messageId);
+        this.mintRequestBackup = new MintRequestCollectionBackup(this.policyId, this.messageId);
+        this.mintTransactionBackup = new MintTransactionCollectionBackup(this.policyId, this.messageId);
     }
 
     public async init(): Promise<void> {

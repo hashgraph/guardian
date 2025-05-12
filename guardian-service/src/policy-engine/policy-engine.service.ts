@@ -1146,7 +1146,11 @@ export class PolicyEngineService {
                     }
 
                     const root = await this.users.getHederaAccount(owner.creator, owner?.id);
-                    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
+                    const messageServer = new MessageServer({
+                        operatorId: root.hederaAccountId,
+                        operatorKey: root.hederaAccountKey,
+                        signOptions: root.signOptions
+                    });
                     let message: PolicyMessage;
                     if (date) {
                         const _date = new Date(date);

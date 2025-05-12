@@ -96,6 +96,10 @@ export interface IPolicyBlock {
      */
     policyId: string;
     /**
+     * Policy message id
+     */
+    messageId: string;
+    /**
      * Policy owner
      */
     policyOwner: string;

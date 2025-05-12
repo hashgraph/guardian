@@ -43,7 +43,11 @@ export async function preparePreviewMessage(
 
     const users = new Users();
     const root = await users.getHederaAccount(user.creator, user.id);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
+    const messageServer = new MessageServer({
+        operatorId: root.hederaAccountId,
+        operatorKey: root.hederaAccountKey,
+        signOptions: root.signOptions
+    });
     const message = await messageServer
         .getMessage<ModuleMessage>({
             messageId,
@@ -139,8 +143,11 @@ export async function publishModule(
         await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic),
         true, user.id
     );
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
-        .setTopicObject(userTopic);
+    const messageServer = new MessageServer({
+        operatorId: root.hederaAccountId,
+        operatorKey: root.hederaAccountKey,
+        signOptions: root.signOptions
+    }).setTopicObject(userTopic);
 
     notifier.completedAndStart('Create module topic');
     const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
@@ -555,7 +562,7 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                 const item = await DatabaseServer.createModules(module);
 
                 if (moduleTopicId) {
-                    const messageServer = new MessageServer(null, null);
+                    const messageServer = new MessageServer(null);
                     const tagMessages = await messageServer.getMessages<TagMessage>(
                         moduleTopicId,
                         userId,

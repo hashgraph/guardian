@@ -17,12 +17,13 @@ export class SendMessages {
         const userCred = await PolicyUtils.getUserCredentials(ref, owner, userId);
         const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
         const userSignOptions = await userCred.loadSignOptions(ref, userId);
-        const messageServer = new MessageServer(
-            userHederaCred.hederaAccountId,
-            userHederaCred.hederaAccountKey,
-            userSignOptions,
-            ref.dryRun
-        );
+        const messageServer = new MessageServer({
+            operatorId: userHederaCred.hederaAccountId,
+            operatorKey: userHederaCred.hederaAccountKey,
+            encryptKey: userHederaCred.hederaAccountKey,
+            signOptions: userSignOptions,
+            dryRun: ref.dryRun
+        });
 
         const results: Message[] = [];
         for (const message of messages) {
@@ -80,12 +81,13 @@ export class SendMessages {
         const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
         const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
         const userSignOptions = await userCred.loadSignOptions(ref, userId);
-        const messageServer = new MessageServer(
-            userHederaCred.hederaAccountId,
-            userHederaCred.hederaAccountKey,
-            userSignOptions,
-            ref.dryRun
-        );
+        const messageServer = new MessageServer({
+            operatorId: userHederaCred.hederaAccountId,
+            operatorKey: userHederaCred.hederaAccountKey,
+            encryptKey: userHederaCred.hederaAccountKey,
+            signOptions: userSignOptions,
+            dryRun: ref.dryRun
+        });
 
         const messageIds: string[] = [];
         for (let i = 0; i < documents.length; i++) {

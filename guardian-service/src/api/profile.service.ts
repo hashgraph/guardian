@@ -374,6 +374,7 @@ export function profileAPI(logger: PinoLogger) {
                     did: user.did,
                     parent: user.parent,
                     hederaAccountId: user.hederaAccountId,
+                    location: user.location,
                     confirmed: false,
                     failed: false,
                     topicId: undefined,
@@ -406,6 +407,82 @@ export function profileAPI(logger: PinoLogger) {
                     result.parentTopicId = topic?.parent;
                 }
                 return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Get keys
+     *
+     * @param {any} msg - filters
+     *
+     * @returns {any} - keys
+     */
+    ApiResponse(MessageAPI.GET_USER_KEYS,
+        async (msg: {
+            filters: any,
+            user: IAuthUser
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { filters, user } = msg;
+                const { pageIndex, pageSize } = filters;
+
+                const otherOptions: any = {};
+                const _pageSize = parseInt(pageSize, 10);
+                const _pageIndex = parseInt(pageIndex, 10);
+                if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = _pageSize;
+                    otherOptions.offset = _pageIndex * _pageSize;
+                } else {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = 100;
+                }
+                const query: any = {
+                    owner: user.did
+                };
+                const [items, count] = await DatabaseServer.getKeysAndCount(query, otherOptions);
+                return new MessageResponse({ items, count });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Generate keys
+     *
+     * @param {any} msg - filters
+     *
+     * @returns {any} - policy labels
+     */
+    ApiResponse(MessageAPI.GENERATE_USER_KEYS,
+        async (msg: {
+            user: IAuthUser,
+            messageId: string,
+            key: string
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { messageId, user } = msg;
+                let { key } = msg;
+                const item = await DatabaseServer.saveKey({
+                    messageId,
+                    owner: user.did
+                });
+                if (!key) {
+                    key = PrivateKey.generate().toString();
+                }
+                const wallet = new Wallet();
+                await wallet.setKey(user.walletToken, KeyType.MESSAGE_KEY, item.messageId, key);
+                return new MessageResponse({ ...item, key });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 return new MessageError(error);

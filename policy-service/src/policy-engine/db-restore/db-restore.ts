@@ -20,6 +20,7 @@ import {
 
 export class PolicyRestore {
     private readonly policyId: string;
+    private readonly messageId: string;
     private readonly vcRestore: VcCollectionRestore;
     private readonly vpRestore: VpCollectionRestore;
     private readonly didRestore: DidCollectionRestore;
@@ -37,24 +38,25 @@ export class PolicyRestore {
 
     private lastDiff: PolicyDiff | null;
 
-    constructor(policyId: string) {
+    constructor(policyId: string, messageId: string) {
         this.policyId = policyId;
+        this.messageId = messageId;
         this.lastDiff = null;
 
-        this.vcRestore = new VcCollectionRestore(this.policyId);
-        this.vpRestore = new VpCollectionRestore(this.policyId);
-        this.didRestore = new DidCollectionRestore(this.policyId);
-        this.stateRestore = new StateCollectionRestore(this.policyId);
-        this.roleRestore = new RoleCollectionRestore(this.policyId);
-        this.multiDocRestore = new MultiDocCollectionRestore(this.policyId);
-        this.tokenRestore = new TokenCollectionRestore(this.policyId);
-        this.tagRestore = new TagCollectionRestore(this.policyId);
-        this.docStateRestore = new DocStateCollectionRestore(this.policyId);
-        this.topicRestore = new TopicCollectionRestore(this.policyId);
-        this.externalDocRestore = new ExternalCollectionRestore(this.policyId);
-        this.approveRestore = new ApproveCollectionRestore(this.policyId);
-        this.mintRequestRestore = new MintRequestCollectionRestore(this.policyId);
-        this.mintTransactionRestore = new MintTransactionCollectionRestore(this.policyId);
+        this.vcRestore = new VcCollectionRestore(this.policyId, this.messageId);
+        this.vpRestore = new VpCollectionRestore(this.policyId, this.messageId);
+        this.didRestore = new DidCollectionRestore(this.policyId, this.messageId);
+        this.stateRestore = new StateCollectionRestore(this.policyId, this.messageId);
+        this.roleRestore = new RoleCollectionRestore(this.policyId, this.messageId);
+        this.multiDocRestore = new MultiDocCollectionRestore(this.policyId, this.messageId);
+        this.tokenRestore = new TokenCollectionRestore(this.policyId, this.messageId);
+        this.tagRestore = new TagCollectionRestore(this.policyId, this.messageId);
+        this.docStateRestore = new DocStateCollectionRestore(this.policyId, this.messageId);
+        this.topicRestore = new TopicCollectionRestore(this.policyId, this.messageId);
+        this.externalDocRestore = new ExternalCollectionRestore(this.policyId, this.messageId);
+        this.approveRestore = new ApproveCollectionRestore(this.policyId, this.messageId);
+        this.mintRequestRestore = new MintRequestCollectionRestore(this.policyId, this.messageId);
+        this.mintTransactionRestore = new MintTransactionCollectionRestore(this.policyId, this.messageId);
     }
 
     public async init(): Promise<void> {

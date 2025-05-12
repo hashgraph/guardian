@@ -5,9 +5,11 @@ import { ObjectId } from '@mikro-orm/mongodb';
 
 export abstract class CollectionRestore<T extends RestoreEntity> {
     protected readonly policyId: string;
+    protected readonly messageId: string;
 
-    constructor(policyId: string) {
+    constructor(policyId: string, messageId: string) {
         this.policyId = policyId;
+        this.messageId = messageId;
     }
 
     public async restoreBackup(backup: ICollectionDiff<T>): Promise<ICollectionDiff<T>> {

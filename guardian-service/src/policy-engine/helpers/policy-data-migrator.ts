@@ -138,12 +138,12 @@ export class PolicyDataMigrator {
         private readonly _notifier?: INotifier
     ) {
         this._db = new DatabaseServer(_dryRunId);
-        this._ms = new MessageServer(
-            _root.hederaAccountId,
-            _rootKey,
-            _signOptions,
-            _dryRunId,
-        );
+        this._ms = new MessageServer({
+            operatorId: _root.hederaAccountId,
+            operatorKey: _rootKey,
+            signOptions: _signOptions,
+            dryRun: _dryRunId,
+        });
         for (const [oldTokenId, newTokenId] of Object.entries(
             this._tokensMap
         )) {
@@ -932,7 +932,7 @@ export class PolicyDataMigrator {
      */
     private async _migrateDocument<T extends BaseEntity>(
         documents: T[],
-        migrateFn: (document: T,  userId: string | null) => Promise<T>,
+        migrateFn: (document: T, userId: string | null) => Promise<T>,
         saveFn: (document: Partial<T>) => Promise<T | void>,
         errors: DocumentError[],
         userId: string | null

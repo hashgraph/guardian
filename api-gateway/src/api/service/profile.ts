@@ -1,8 +1,8 @@
 import { Permissions, TaskAction } from '@guardian/interfaces';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req } from '@nestjs/common';
-import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
-import { CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO, InternalServerErrorDTO, ProfileDTO, TaskDTO } from '#middlewares';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req, Response, Query } from '@nestjs/common';
+import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO, InternalServerErrorDTO, ProfileDTO, TaskDTO, pageHeader } from '#middlewares';
 import { Auth, AuthUser } from '#auth';
 import { CacheService, getCacheKey, Guardians, InternalException, ServiceError, TaskManager, UseCache } from '#helpers';
 import { CACHE, PREFIXES } from '#constants';
@@ -415,6 +415,99 @@ export class ProfileApi {
         try {
             const guardians = new Guardians();
             return await guardians.validateDidKeys(user, document, keys);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Get page
+     */
+    @Get('/keys')
+    @Auth(Permissions.PROFILES_USER_UPDATE)
+    @ApiOperation({
+        summary: 'Return a list of keys.',
+        description: 'Returns all keys.',
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: String
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getPolicyLabels(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+    ): Promise<any[]> {
+        try {
+            const guardians = new Guardians();
+            const { items, count } = await guardians.getKeys(user, { pageIndex, pageSize });
+            return res.header('X-Total-Count', count).send(items);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Create policy key.
+     */
+    @Post('/keys')
+    @Auth(Permissions.PROFILES_USER_UPDATE)
+    @ApiOperation({
+        summary: 'Create policy key.',
+        description: 'Create policy key.',
+    })
+    @ApiBody({
+        description: 'DID Document and keys.',
+        required: true,
+        type: String
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: String,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(DidKeyStatusDTO, DidDocumentWithKeyDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async generateKey(
+        @AuthUser() user: IAuthUser,
+        @Body() body: any
+    ): Promise<string> {
+        if (!body) {
+            throw new HttpException('Body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
+        const { messageId, key } = body;
+        if (!messageId) {
+            throw new HttpException('Message ID is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
+        try {
+            const guardians = new Guardians();
+            return await guardians.generateKey(user, messageId, key);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

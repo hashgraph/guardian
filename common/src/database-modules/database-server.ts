@@ -50,7 +50,8 @@ import {
     VpDocument,
     VpDocument as VpDocumentCollection,
     ExternalPolicy,
-    PolicyAction
+    PolicyAction,
+    PolicyKey
 } from '../entity/index.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { Theme } from '../entity/theme.js';
@@ -4427,5 +4428,34 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getRemoteRequestsCount(filters?: FilterObject<PolicyAction>, options?: FindOptions<unknown>): Promise<number> {
         return await new DataBaseHelper(PolicyAction).count(filters, options);
+    }
+
+    /**
+     * Save PolicyKey
+     * @param row
+     *
+     * @virtual
+     */
+    public static async saveKey(row: Partial<PolicyKey>): Promise<PolicyKey> {
+        const item = new DataBaseHelper(PolicyKey).create(row);
+        return await new DataBaseHelper(PolicyKey).save(item);
+    }
+
+    /**
+     * Get PolicyKeys
+     * @param filters
+     * @param options
+     */
+    public static async getKeys(filters?: FilterQuery<PolicyKey>, options?: unknown): Promise<PolicyKey[]> {
+        return await new DataBaseHelper(PolicyKey).find(filters, options);
+    }
+
+    /**
+     * Get PolicyKeys
+     * @param filters
+     * @param options
+     */
+    public static async getKeysAndCount(filters?: FilterObject<PolicyKey>, options?: FindOptions<unknown>): Promise<[PolicyKey[], number]> {
+        return await new DataBaseHelper(PolicyKey).findAndCount(filters, options);
     }
 }

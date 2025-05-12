@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
 import { forkJoin } from 'rxjs';
-import { IPolicy, IStandardRegistryResponse, IUser, LocationType, Schema, SchemaEntity, } from '@guardian/interfaces';
+import { IPolicy, IStandardRegistryResponse, IUser, LocationType, Schema, SchemaEntity, UserPermissions, } from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
 //services
 import { AuthService } from '../../services/auth.service';
@@ -17,6 +17,7 @@ import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validato
 import { DialogService } from 'primeng/dynamicdialog';
 import { ValidateIfFieldEqual } from '../../validators/validate-if-field-equal';
 import { ChangePasswordComponent } from '../login/change-password/change-password.component';
+import { UserKeysDialog } from 'src/app/components/user-keys-dialog/user-keys-dialog.component';
 
 enum OperationMode {
     None,
@@ -34,6 +35,16 @@ interface IStep {
     next: () => void;
     canPrev: () => boolean;
     prev: () => void;
+}
+
+interface IColumn {
+    id: string;
+    title: string;
+    type: string;
+    size: string;
+    tooltip: boolean;
+    permissions?: (user: UserPermissions) => boolean;
+    canDisplay?: () => boolean;
 }
 
 /**
@@ -110,6 +121,15 @@ export class UserProfileComponent implements OnInit {
     public remoteDidDocumentForm!: UntypedFormControl;
     public didKeys: any[] = [];
 
+    public tab: 'general' | 'keys' = 'general';
+    public pageIndex: number;
+    public pageSize: number;
+    public pageCount: number;
+    public columns: IColumn[];
+    public keys: any[];
+
+    public location: LocationType | undefined;
+
     private interval: any;
     private operationMode: OperationMode = OperationMode.None;
     private standardRegistries: IStandardRegistryResponse[] = [];
@@ -132,7 +152,6 @@ export class UserProfileComponent implements OnInit {
         this.hederaCredentialsForm = new UntypedFormGroup({
             id: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()]),
             key: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()]),
-            messageKey: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()]),
             useFireblocksSigning: new UntypedFormControl(false),
             fireBlocksVaultId: new UntypedFormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
             fireBlocksAssetId: new UntypedFormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
@@ -154,8 +173,7 @@ export class UserProfileComponent implements OnInit {
         this.vcDocumentForm = new UntypedFormGroup({});
         this.remoteCredentialsForm = new UntypedFormGroup({
             id: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()]),
-            topicId: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()]),
-            messageKey: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()]),
+            topicId: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()])
         });
         this.remoteDidDocumentForm = new UntypedFormControl('', [Validators.required]);
 
@@ -331,6 +349,29 @@ export class UserProfileComponent implements OnInit {
             vcDocumentStep,
         ];
         this.currentStep = this.steps[0];
+        this.pageIndex = 0;
+        this.pageSize = 10;
+
+
+        this.columns = [{
+            id: 'createDate',
+            title: 'Date',
+            type: 'text',
+            size: '300',
+            tooltip: false
+        },{
+            id: 'messageId',
+            title: 'Message',
+            type: 'text',
+            size: 'auto',
+            tooltip: false
+        }, {
+            id: 'delete',
+            title: '',
+            type: 'text',
+            size: '64',
+            tooltip: false
+        }];
     }
 
     ngOnInit() {
@@ -370,6 +411,7 @@ export class UserProfileComponent implements OnInit {
                 this.isFailed = !!this.profile.failed;
                 this.isNewAccount = !this.profile.didDocument;
                 if (this.isConfirmed) {
+                    this.location = this.profile?.location;
                     this.didDocument = this.profile?.didDocument;
                     this.vcDocument = this.profile?.vcDocument;
                 }
@@ -781,7 +823,6 @@ export class UserProfileComponent implements OnInit {
             profile.type = LocationType.REMOTE;
             profile.parent = data.standardRegistry;
             profile.hederaAccountId = data.hederaCredentials.id?.trim();
-            profile.messageKey = data.hederaCredentials.messageKey?.trim();
             profile.topicId = data.hederaCredentials.topicId;
             profile.didDocument = data.didDocument;
         } else {
@@ -791,7 +832,6 @@ export class UserProfileComponent implements OnInit {
             profile.parent = data.standardRegistry;
             profile.hederaAccountId = data.hederaCredentials.id?.trim();
             profile.hederaAccountKey = data.hederaCredentials.key?.trim();
-            profile.messageKey = data.hederaCredentials.messageKey?.trim();
             profile.useFireblocksSigning = data.hederaCredentials.useFireblocksSigning;
             profile.fireblocksConfig = {
                 fireBlocksVaultId: data.hederaCredentials.fireBlocksVaultId,
@@ -878,5 +918,118 @@ export class UserProfileComponent implements OnInit {
             })
             this.remoteDidDocumentForm.setValue(JSON.stringify(config.didDocument))
         });
+    }
+
+    public onChangeTab(tab: any) {
+        this.loading = true;
+        this.tab = tab.index === 0 ? 'general' : 'keys';
+        this.pageIndex = 0;
+        this.router.navigate([], {
+            queryParams: { tab: this.tab }
+        });
+        if (this.tab === 'keys') {
+            this.loadKeys();
+        }
+    }
+
+    public loadKeys() {
+        this.loading = true;
+        this.profileService
+            .keys(this.pageIndex, this.pageSize)
+            .subscribe((response) => {
+                debugger
+                const { page, count } = this.profileService.parsePage(response);
+                this.keys = page;
+                this.pageCount = count;
+                this.loading = false;
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    public onPage(event: any): void {
+        if (this.pageSize != event.pageSize) {
+            this.pageIndex = 0;
+            this.pageSize = event.pageSize;
+        } else {
+            this.pageIndex = event.pageIndex;
+            this.pageSize = event.pageSize;
+        }
+        this.loadKeys();
+    }
+
+    public onCreateKey(): void {
+        const dialogRef = this.dialogService.open(UserKeysDialog, {
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
+            data: {
+                type: 'create',
+            },
+        });
+        dialogRef.onClose.subscribe(async (result: any | null) => {
+            if (result) {
+                this.createKey(result.messageId)
+            }
+        });
+    }
+
+    public onImportKey(): void {
+        const dialogRef = this.dialogService.open(UserKeysDialog, {
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
+            data: {
+                type: 'import',
+            },
+        });
+        dialogRef.onClose.subscribe(async (result: any | null) => {
+            if (result) {
+                this.createKey(result.messageId, result.key)
+            }
+        });
+    }
+
+    public preview(key: string): void {
+        const dialogRef = this.dialogService.open(UserKeysDialog, {
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
+            data: {
+                type: 'preview',
+                key
+            },
+        });
+        dialogRef.onClose.subscribe(async (result: any | null) => { });
+    }
+
+    public onDeleteKey(row: any): void {
+        this.profileService
+            .deleteKey(row.id)
+            .subscribe(() => {
+                debugger
+                this.loading = false;
+                this.loadKeys();
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    private createKey(messageId: string, key?: string) {
+        this.profileService
+            .createKey({
+                messageId,
+                key,
+            })
+            .subscribe((key) => {
+                debugger
+                this.loading = false;
+                this.loadKeys();
+                setTimeout(() => {
+                    this.preview(key);
+                }, 100)
+            }, (e) => {
+                this.loading = false;
+            });
     }
 }

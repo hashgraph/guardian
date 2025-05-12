@@ -34,11 +34,11 @@ export async function publishSchemaTags(
 
     const topic = await DatabaseServer.getTopicById(schema.topicId);
     const topicConfig = await TopicConfig.fromObject(topic, true, userId);
-    const messageServer = new MessageServer(
-        root.hederaAccountId,
-        root.hederaAccountKey,
-        root.signOptions
-    ).setTopicObject(topicConfig);
+    const messageServer = new MessageServer({
+        operatorId: root.hederaAccountId,
+        operatorKey: root.hederaAccountKey,
+        signOptions: root.signOptions
+    }).setTopicObject(topicConfig);
 
     const tagObjects = []
 
@@ -73,11 +73,11 @@ export async function publishPolicyTags(
 
     const topic = await DatabaseServer.getTopicById(policy.topicId);
     const topicConfig = await TopicConfig.fromObject(topic, true, userId);
-    const messageServer = new MessageServer(
-        root.hederaAccountId,
-        root.hederaAccountKey,
-        root.signOptions
-    ).setTopicObject(topicConfig);
+    const messageServer = new MessageServer({
+        operatorId: root.hederaAccountId,
+        operatorKey: root.hederaAccountKey,
+        signOptions: root.signOptions
+    }).setTopicObject(topicConfig);
 
     const tagObjects = []
 
@@ -112,11 +112,11 @@ export async function publishTokenTags(
 
     const topic = await DatabaseServer.getTopicById(token.topicId);
     const topicConfig = await TopicConfig.fromObject(topic, true, userId);
-    const messageServer = new MessageServer(
-        root.hederaAccountId,
-        root.hederaAccountKey,
-        root.signOptions
-    ).setTopicObject(topicConfig);
+    const messageServer = new MessageServer({
+        operatorId: root.hederaAccountId,
+        operatorKey: root.hederaAccountKey,
+        signOptions: root.signOptions
+    }).setTopicObject(topicConfig);
 
     const tagObjects = []
 
@@ -150,11 +150,11 @@ export async function publishToolTags(
     const tags = await DatabaseServer.getTags(filter);
     const topic = await DatabaseServer.getTopicById(tool.tagsTopicId);
     const topicConfig = await TopicConfig.fromObject(topic, true, userId);
-    const messageServer = new MessageServer(
-        root.hederaAccountId,
-        root.hederaAccountKey,
-        root.signOptions
-    ).setTopicObject(topicConfig);
+    const messageServer = new MessageServer({
+        operatorId: root.hederaAccountId,
+        operatorKey: root.hederaAccountKey,
+        signOptions: root.signOptions
+    }).setTopicObject(topicConfig);
 
     const tagObjects = []
 
@@ -189,11 +189,11 @@ export async function publishModuleTags(
 
     const topic = await DatabaseServer.getTopicById(module.topicId);
     const topicConfig = await TopicConfig.fromObject(topic, true, userId);
-    const messageServer = new MessageServer(
-        root.hederaAccountId,
-        root.hederaAccountKey,
-        root.signOptions
-    ).setTopicObject(topicConfig);
+    const messageServer = new MessageServer({
+        operatorId: root.hederaAccountId,
+        operatorKey: root.hederaAccountKey,
+        signOptions: root.signOptions
+    }).setTopicObject(topicConfig);
 
     const tagObjects = []
 

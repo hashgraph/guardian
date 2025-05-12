@@ -94,7 +94,11 @@ async function createMessageServer(owner: IOwner): Promise<MessageServer> {
     const topicConfig = await TopicConfig.fromObject(row, true, owner.id);
     const users = new Users();
     const root = await users.getHederaAccount(owner.creator, owner.id);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
+    const messageServer = new MessageServer({
+        operatorId: root.hederaAccountId,
+        operatorKey: root.hederaAccountKey,
+        signOptions: root.signOptions
+    });
     messageServer.setTopicObject(topicConfig);
     return messageServer;
 }

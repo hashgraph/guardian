@@ -57,7 +57,11 @@ export class SchemaLoader {
         const users = new Users()
         const root = await users.getHederaAccount(user.creator, user.id);
 
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
+        const messageServer = new MessageServer({
+            operatorId: root.hederaAccountId,
+            operatorKey: root.hederaAccountKey,
+            signOptions: root.signOptions
+        });
         const message = await messageServer
             .getMessage<PolicyMessage>({
                 messageId,

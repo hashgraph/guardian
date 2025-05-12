@@ -1,7 +1,7 @@
 import { DataBaseHelper, DatabaseServer, ITopicMessage, MessageAction, MessageServer, Policy, PolicyActionMessage, PolicyAction, TopicConfig, TopicListener } from '@guardian/common';
 import { GenerateUUIDv4, PolicyActionStatus, PolicyActionType, PolicyStatus } from '@guardian/interfaces';
 import { IPolicyInterfaceBlock } from './policy-engine.interface.js';
-import { PolicyUser } from './policy-user.js';
+import { PolicyUser, UserCredentials } from './policy-user.js';
 import { PolicyUtils } from './helpers/utils.js';
 import { PolicyComponentsUtils } from './policy-components-utils.js';
 import { PolicyActionsUtils } from './policy-actions/utils.js';
@@ -13,6 +13,7 @@ export class PolicyActionsService {
     private readonly policyInstance: IPolicyInterfaceBlock;
     private readonly policyOwner: string;
     private readonly policyOwnerId: string;
+    private readonly messageId: string;
 
     private topic: TopicConfig;
     private topicListener: TopicListener;
@@ -30,6 +31,7 @@ export class PolicyActionsService {
         this.policyInstance = policyInstance;
         this.policyOwner = policy.owner;
         this.policyOwnerId = policyOwnerId;
+        this.messageId = policy.messageId;
         this.callback = new Map<string, Function>();
     }
 
@@ -50,14 +52,18 @@ export class PolicyActionsService {
         user: PolicyUser,
         data: any
     ): Promise<any> {
-        const credentials = await PolicyUtils.getUserCredentials(block, user.did, user.userId);
-        const userHederaCred = await credentials.loadHederaCredentials(block, user.userId);
-        const signOptions = await credentials.loadSignOptions(block, user.userId);
-        const messageServer = new MessageServer(
-            userHederaCred.hederaAccountId,
-            userHederaCred.hederaAccountKey,
-            signOptions
-        );
+        const userCred = await PolicyUtils.getUserCredentials(block, user.did, user.userId);
+        const userHederaCred = await userCred.loadHederaCredentials(block, user.userId);
+        const userSignOptions = await userCred.loadSignOptions(block, user.userId);
+        const userMessageKey = await userCred.loadMessageKey(block, user.userId);
+
+        const messageServer = new MessageServer({
+            operatorId: userHederaCred.hederaAccountId,
+            operatorKey: userHederaCred.hederaAccountKey,
+            encryptKey: userMessageKey,
+            signOptions: userSignOptions,
+            dryRun: block.dryRun
+        });
         const row: any = {
             uuid: GenerateUUIDv4(),
             type: PolicyActionType.ACTION,
@@ -96,14 +102,17 @@ export class PolicyActionsService {
         callback: (action: PolicyAction) => Promise<void>,
         userId: string | null
     ): Promise<any> {
-        const root = await PolicyUtils.getUserCredentials(this.policyInstance, this.policyOwner, this.policyOwnerId);
-        const userHederaCred = await root.loadHederaCredentials(this.policyInstance, this.policyOwnerId);
-        const signOptions = await root.loadSignOptions(this.policyInstance, this.policyOwnerId);
-        const messageServer = new MessageServer(
-            userHederaCred.hederaAccountId,
-            userHederaCred.hederaAccountKey,
-            signOptions
-        );
+        const policyOwnerCred = await PolicyUtils.getUserCredentials(this.policyInstance, this.policyOwner, this.policyOwnerId);
+        const policyOwnerHederaCred = await policyOwnerCred.loadHederaCredentials(this.policyInstance, this.policyOwnerId);
+        const policyOwnerSignOptions = await policyOwnerCred.loadSignOptions(this.policyInstance, this.policyOwnerId);
+        const userMessageKey = await UserCredentials.loadMessageKeyByAccount(this.messageId, data.accountId, userId);
+
+        const messageServer = new MessageServer({
+            operatorId: policyOwnerHederaCred.hederaAccountId,
+            operatorKey: policyOwnerHederaCred.hederaAccountKey,
+            encryptKey: userMessageKey,
+            signOptions: policyOwnerSignOptions
+        });
         const collection = new DataBaseHelper(PolicyAction);
         const newRow = collection.create({
             status: PolicyActionStatus.NEW,
@@ -160,12 +169,14 @@ export class PolicyActionsService {
 
         const userCred = await PolicyUtils.getUserCredentials(this.policyInstance, user.did, user.userId);
         const userHederaCred = await userCred.loadHederaCredentials(this.policyInstance, user.userId);
-        const signOptions = await userCred.loadSignOptions(this.policyInstance, user.userId);
-        const messageServer = new MessageServer(
-            userHederaCred.hederaAccountId,
-            userHederaCred.hederaAccountKey,
-            signOptions
-        );
+        const userSignOptions = await userCred.loadSignOptions(this.policyInstance, user.userId);
+        const userMessageKey = await userCred.loadMessageKey(this.policyInstance, user.userId);
+        const messageServer = new MessageServer({
+            operatorId: userHederaCred.hederaAccountId,
+            operatorKey: userHederaCred.hederaAccountKey,
+            encryptKey: userMessageKey,
+            signOptions: userSignOptions
+        });
 
         const newRow = collection.create({
             status: PolicyActionStatus.COMPLETED,
@@ -389,22 +400,29 @@ export class PolicyActionsService {
             }
 
             const result = await block.setData(policyUser, row.document);
-            await this.sentCompleteMessage(row, result, this.policyOwnerId);
+            await this.sentCompleteMessage(row, policyUser, result, this.policyOwnerId);
         } catch (error) {
             await this.sentErrorMessage(row, error, this.policyOwnerId);
         }
     }
 
-    private async sentCompleteMessage(row: PolicyAction, result: any, userId: string | null) {
+    private async sentCompleteMessage(
+        row: PolicyAction,
+        policyUser: PolicyUser,
+        result: any,
+        userId: string | null
+    ) {
         try {
-            const root = await PolicyUtils.getUserCredentials(this.policyInstance, this.policyOwner, userId);
-            const rootHederaCred = await root.loadHederaCredentials(this.policyInstance, userId);
-            const rootSignOptions = await root.loadSignOptions(this.policyInstance, userId);
-            const messageServer = new MessageServer(
-                rootHederaCred.hederaAccountId,
-                rootHederaCred.hederaAccountKey,
-                rootSignOptions
-            );
+            const policyOwnerCred = await PolicyUtils.getUserCredentials(this.policyInstance, this.policyOwner, userId);
+            const policyOwnerHederaCred = await policyOwnerCred.loadHederaCredentials(this.policyInstance, userId);
+            const policyOwnerSignOptions = await policyOwnerCred.loadSignOptions(this.policyInstance, userId);
+            const userMessageKey = await UserCredentials.loadMessageKey(this.messageId, policyUser.did, userId);
+            const messageServer = new MessageServer({
+                operatorId: policyOwnerHederaCred.hederaAccountId,
+                operatorKey: policyOwnerHederaCred.hederaAccountKey,
+                encryptKey: userMessageKey,
+                signOptions: policyOwnerSignOptions
+            });
             const collection = new DataBaseHelper(PolicyAction);
             const newRow = collection.create({
                 status: PolicyActionStatus.COMPLETED,
@@ -441,7 +459,11 @@ export class PolicyActionsService {
         }
     }
 
-    private async sentErrorMessage(row: PolicyAction, error: string | Error, userId: string | null) {
+    private async sentErrorMessage(
+        row: PolicyAction,
+        error: string | Error,
+        userId: string | null
+    ) {
         try {
             if (row.sender !== row.accountId) {
                 return;
@@ -451,14 +473,16 @@ export class PolicyActionsService {
                 return;
             }
 
-            const root = await PolicyUtils.getUserCredentials(this.policyInstance, this.policyOwner, userId);
-            const rootHederaCred = await root.loadHederaCredentials(this.policyInstance, userId);
-            const rootSignOptions = await root.loadSignOptions(this.policyInstance, userId);
-            const messageServer = new MessageServer(
-                rootHederaCred.hederaAccountId,
-                rootHederaCred.hederaAccountKey,
-                rootSignOptions
-            );
+            const policyOwnerCred = await PolicyUtils.getUserCredentials(this.policyInstance, this.policyOwner, userId);
+            const policyOwnerHederaCred = await policyOwnerCred.loadHederaCredentials(this.policyInstance, userId);
+            const policyOwnerSignOptions = await policyOwnerCred.loadSignOptions(this.policyInstance, userId);
+            const userMessageKey = await UserCredentials.loadMessageKey(this.messageId, policyUser.did, userId);
+            const messageServer = new MessageServer({
+                operatorId: policyOwnerHederaCred.hederaAccountId,
+                operatorKey: policyOwnerHederaCred.hederaAccountKey,
+                encryptKey: userMessageKey,
+                signOptions: policyOwnerSignOptions
+            });
             const collection = new DataBaseHelper(PolicyAction);
             const newRow = collection.create({
                 type: row.type,

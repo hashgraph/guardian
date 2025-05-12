@@ -46,7 +46,11 @@ export async function preparePreviewMessage(
 
     const users = new Users();
     const root = await users.getHederaAccount(user.creator, user.id);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
+    const messageServer = new MessageServer({
+        operatorId: root.hederaAccountId,
+        operatorKey: root.hederaAccountKey,
+        signOptions: root.signOptions
+    });
     const message = await messageServer
         .getMessage<ToolMessage>({
             messageId,
@@ -140,8 +144,11 @@ export async function publishTool(
 
         notifier.completedAndStart('Find topic');
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(tool.topicId), true, user.id);
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
-            .setTopicObject(topic);
+        const messageServer = new MessageServer({
+            operatorId: root.hederaAccountId,
+            operatorKey: root.hederaAccountKey,
+            signOptions: root.signOptions
+        }).setTopicObject(topic);
 
         notifier.completedAndStart('Publish schemas');
         tool = await publishSchemas(tool, user, root, notifier);
@@ -316,7 +323,11 @@ export async function createTool(
             await topic.saveKeys(user.id);
 
             notifier.completedAndStart('Create tool in Hedera');
-            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
+            const messageServer = new MessageServer({
+                operatorId: root.hederaAccountId,
+                operatorKey: root.hederaAccountKey,
+                signOptions: root.signOptions
+            });
             const message = new ToolMessage(MessageType.Tool, MessageAction.CreateTool);
             message.setDocument(tool);
             const messageStatus = await messageServer

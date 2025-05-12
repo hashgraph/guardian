@@ -1062,3 +1062,20 @@ mat-radio-button {
 .remote-user-setup {
     flex-direction: column;
 }
+
+.tabs-nav {
+    margin: 24px 0px;
+}
+
+.guardian-button {
+    height: 40px;
+    margin-left: 18px;
+    min-width: 140px;
+}
+
+.guardian-user-page-toolbar {
+    display: flex;
+    height: 40px;
+    justify-content: flex-end;
+    margin-bottom: 18px;
+}

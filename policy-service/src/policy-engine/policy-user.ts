@@ -349,10 +349,10 @@ export class UserCredentials {
 
     public async loadMessageKey(ref: AnyBlockType, userId: string | null): Promise<string | null> {
         if (this._dryRun) {
-            return await ref.databaseServer.getVirtualKey(this._did, this._did);
+            return await ref.databaseServer.getVirtualKey(this._did, ref.messageId);
         } else {
             const wallet = new Wallet();
-            return await wallet.getUserKey(this._did, KeyType.MESSAGE_KEY, this._did, userId);
+            return await wallet.getUserKey(this._did, KeyType.MESSAGE_KEY, ref.messageId, userId);
         }
     }
 
@@ -461,5 +461,25 @@ export class UserCredentials {
 
     public static async createByAccount(ref: AnyBlockType, accountId: string, userId: string | null): Promise<UserCredentials> {
         return await (new UserCredentials(ref, null)).loadByAccount(ref, accountId, userId);
+    }
+
+    public static async loadMessageKey(
+        messageId: string,
+        did: string,
+        userId: string | null
+    ): Promise<string | null> {
+        const wallet = new Wallet();
+        return await wallet.getUserKey(did, KeyType.MESSAGE_KEY, messageId, userId);
+    }
+
+    public static async loadMessageKeyByAccount(
+        messageId: string,
+        accountId: string,
+        userId: string | null
+    ): Promise<string | null> {
+        const users = new Users();
+        const userFull = await users.getUserByAccount(accountId, userId);
+        const wallet = new Wallet();
+        return await wallet.getUserKey(userFull.did, KeyType.MESSAGE_KEY, messageId, userId);
     }
 }

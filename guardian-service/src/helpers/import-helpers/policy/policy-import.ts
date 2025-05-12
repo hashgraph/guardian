@@ -56,11 +56,11 @@ export class PolicyImport {
             this.root.hederaAccountKey,
             this.root.signOptions
         );
-        this.messageServer = new MessageServer(
-            this.root.hederaAccountId,
-            this.root.hederaAccountKey,
-            this.root.signOptions
-        );
+        this.messageServer = new MessageServer({
+            operatorId: this.root.hederaAccountId,
+            operatorKey: this.root.hederaAccountKey,
+            signOptions: this.root.signOptions
+        });
         this.owner = user;
         return this.root;
     }

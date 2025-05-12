@@ -47,6 +47,14 @@ interface LoadMessagesOptions {
     timeStamp?: string
 }
 
+interface MessageServerOptions {
+    operatorId?: string | AccountId | null,
+    operatorKey?: string | PrivateKey | null,
+    encryptKey?: string | PrivateKey | null,
+    signOptions?: ISignOptions,
+    dryRun?: string | null
+}
+
 /**
  * Message server
  */
@@ -74,10 +82,32 @@ export class MessageServer {
     private readonly dryRun: string = null;
 
     /**
+     * Operator Id
+     * @private
+     */
+    private readonly operatorId: string | null;
+
+    /**
+     * Operator Id
+     * @private
+     */
+    private readonly operatorKey: string | null;
+
+    /**
+     * Operator Id
+     * @private
+     */
+    private readonly encryptKey: string | null;
+
+    /**
      * Client options
      * @private
      */
-    private readonly clientOptions: any;
+    private readonly clientOptions: {
+        operatorId: string | null,
+        operatorKey: string | null,
+        dryRun: string | null
+    };
 
     /**
      * Sign options
@@ -85,16 +115,25 @@ export class MessageServer {
      */
     private readonly signOptions: ISignOptions;
 
-    constructor(
-        operatorId: string | AccountId | null,
-        operatorKey: string | PrivateKey | null,
-        signOptions: ISignOptions = { signType: SignType.INTERNAL },
-        dryRun: string = null
-    ) {
-        this.clientOptions = { operatorId, operatorKey, dryRun };
-        this.signOptions = signOptions;
-
-        this.dryRun = dryRun || null;
+    constructor(options: MessageServerOptions) {
+        if (options) {
+            this.operatorId = options.operatorId ? options.operatorId.toString() : null;
+            this.operatorKey = options.operatorKey ? options.operatorKey.toString() : null;
+            this.encryptKey = options.encryptKey ? options.encryptKey.toString() : this.operatorKey;
+            this.dryRun = options.dryRun || null;
+            this.signOptions = options.signOptions || { signType: SignType.INTERNAL };
+        } else {
+            this.operatorId = null;
+            this.operatorKey = null;
+            this.encryptKey = null;
+            this.dryRun = null;
+            this.signOptions = { signType: SignType.INTERNAL };
+        }
+        this.clientOptions = {
+            operatorId: this.operatorId,
+            operatorKey: this.operatorKey,
+            dryRun: this.dryRun
+        };
     }
 
     /**
@@ -221,10 +260,7 @@ export class MessageServer {
                 return this.getFile(url.cid, message.responseType);
             });
         const documents = await Promise.all(promises);
-        message = (await message.loadDocuments(
-            documents,
-            this.clientOptions.operatorKey
-        )) as T;
+        message = (await message.loadDocuments(documents, this.encryptKey)) as T;
         return message;
     }
 
@@ -254,9 +290,7 @@ export class MessageServer {
      * @private
      */
     private async sendIPFS<T extends Message>(message: T, userId: string = null): Promise<T> {
-        const buffers = await message.toDocuments(
-            this.clientOptions.operatorKey
-        );
+        const buffers = await message.toDocuments(this.encryptKey);
         if (buffers && buffers.length) {
             const time = await this.messageStartLog('IPFS', userId);
             const promises = buffers.map(buffer => {
@@ -551,7 +585,7 @@ export class MessageServer {
                 const doc = await this.getFile(url.cid, message.responseType);
                 documents.push(doc);
             }
-            await message.loadDocuments(documents, this.clientOptions.operatorKey);
+            await message.loadDocuments(documents, this.encryptKey);
         }
         return messages;
     }
@@ -597,14 +631,13 @@ export class MessageServer {
         try {
             if (messageId && typeof messageId === 'string') {
                 const timeStamp = messageId.trim();
-                const { operatorId, operatorKey, dryRun } = this.clientOptions;
                 const workers = new Workers();
                 const { topicId } = await workers.addNonRetryableTask({
                     type: WorkerTaskType.GET_TOPIC_MESSAGE,
                     data: {
-                        operatorId,
-                        operatorKey,
-                        dryRun,
+                        operatorId: this.operatorId,
+                        operatorKey: this.operatorKey,
+                        dryRun: this.dryRun,
                         timeStamp,
                         payload: { userId }
                     }
@@ -692,7 +725,6 @@ export class MessageServer {
         type: MessageType | null,
         userId: string | null
     ): Promise<T> {
-        const { operatorId, operatorKey, dryRun } = this.clientOptions;
         const workers = new Workers();
         const {
             id,
@@ -704,9 +736,9 @@ export class MessageServer {
             type: WorkerTaskType.GET_TOPIC_MESSAGE,
             data: {
                 timeStamp,
-                operatorId,
-                operatorKey,
-                dryRun,
+                operatorId: this.operatorId,
+                operatorKey: this.operatorKey,
+                dryRun: this.dryRun,
                 payload: { userId }
             }
         }, 10, null, userId);
@@ -985,8 +1017,6 @@ export class MessageServer {
         action?: MessageAction,
         timeStamp?: string
     ): Promise<Message[]> {
-        const { operatorId, dryRun } = this.clientOptions;
-
         if (!topicId) {
             throw new Error(`Invalid Topic Id`);
         }
@@ -1000,14 +1030,14 @@ export class MessageServer {
         const messages = await workers.addNonRetryableTask({
             type: WorkerTaskType.GET_TOPIC_MESSAGES,
             data: {
-                dryRun,
+                dryRun: this.dryRun,
                 topic,
                 timeStamp,
                 payload: { userId }
             }
         }, 10);
 
-        new PinoLogger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE', operatorId], userId);
+        new PinoLogger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE'], userId);
         const result: Message[] = [];
         for (const message of messages) {
             try {

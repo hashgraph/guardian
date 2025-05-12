@@ -456,7 +456,11 @@ export class PolicyEngine extends NatsService {
             model.topicId = topic.topicId;
 
             notifier.completedAndStart('Create policy in Hedera');
-            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
+            const messageServer = new MessageServer({
+                operatorId: root.hederaAccountId,
+                operatorKey: root.hederaAccountKey,
+                signOptions: root.signOptions
+            });
             const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
             message.setDocument(model);
             const messageStatus = await messageServer
@@ -701,7 +705,11 @@ export class PolicyEngine extends NatsService {
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(policyToDelete.topicId), true, user.id);
         const users = new Users();
         const root = await users.getHederaAccount(user.creator, user.id);
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
+        const messageServer = new MessageServer({
+            operatorId: root.hederaAccountId,
+            operatorKey: root.hederaAccountKey,
+            signOptions: root.signOptions
+        });
         const message = new PolicyMessage(MessageType.Policy, MessageAction.DeletePolicy);
         message.setDocument(policyToDelete);
         await messageServer.setTopicObject(topic)
@@ -873,8 +881,11 @@ export class PolicyEngine extends NatsService {
         model.availability = availability;
 
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(model.topicId), true, user.id);
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
-            .setTopicObject(topic);
+        const messageServer = new MessageServer({
+            operatorId: root.hederaAccountId,
+            operatorKey: root.hederaAccountKey,
+            signOptions: root.signOptions
+        }).setTopicObject(topic);
 
         const schemaMap = new Map<string, string>();
         notifier.completedAndStart('Publish schemas');
@@ -1151,9 +1162,12 @@ export class PolicyEngine extends NatsService {
             )
         ])
 
-        const messageServer = new MessageServer(
-            root.hederaAccountId, root.hederaAccountKey, root.signOptions, dryRunId
-        ).setTopicObject(topic);
+        const messageServer = new MessageServer({
+            operatorId: root.hederaAccountId,
+            operatorKey: root.hederaAccountKey,
+            signOptions: root.signOptions,
+            dryRun: dryRunId
+        }).setTopicObject(topic);
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions, dryRunId);
 
         //'Publish' policy schemas
@@ -1372,7 +1386,11 @@ export class PolicyEngine extends NatsService {
 
         const root = await this.users.getHederaAccount(user.creator, userId);
 
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
+        const messageServer = new MessageServer({
+            operatorId: root.hederaAccountId,
+            operatorKey: root.hederaAccountKey,
+            signOptions: root.signOptions
+        });
         const message = await messageServer
             .getMessage<PolicyMessage>({
                 messageId,
@@ -1528,7 +1546,11 @@ export class PolicyEngine extends NatsService {
 
         const message = new SynchronizationMessage(MessageAction.CreateMultiPolicy);
         message.setDocument(multipleConfig);
-        const messageServer = new MessageServer(userAccount.hederaAccountId, userAccount.hederaAccountKey, userAccount.signOptions);
+        const messageServer = new MessageServer({
+            operatorId: userAccount.hederaAccountId,
+            operatorKey: userAccount.hederaAccountKey,
+            signOptions: userAccount.signOptions
+        });
         const topic = new TopicConfig({ topicId: multipleConfig.synchronizationTopicId }, null, null);
         await messageServer
             .setTopicObject(topic)
