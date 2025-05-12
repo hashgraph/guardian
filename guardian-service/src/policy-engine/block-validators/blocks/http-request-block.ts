@@ -12,12 +12,17 @@ export class HttpRequestBlock {
      */
     public static readonly blockType: string = 'httpRequestBlock';
 
+    /**
+     * Validates the protocol of the provided URL against allowed protocols from environment config.
+     * Throws an error if the protocol is not allowed.
+     *
+     * @param url - The URL to validate
+     */
     private static validateProtocol(url: string): void {
         const parsedUrl = new URL(url);
         const protocol = parsedUrl.protocol.replace(':', '').toLowerCase();
 
         const raw = process.env.ALLOWED_PROTOCOLS || '';
-        console.log('raw', raw)
         const allowedProtocols = raw
             .split(',')
             .map(p => p.trim().toLowerCase())
@@ -30,6 +35,13 @@ export class HttpRequestBlock {
         }
     }
 
+    /**
+     * Checks whether the given IP address belongs to a private or sensitive range.
+     *
+     * @param ip - IP address to check
+     * @param family - IP family (4 or 6)
+     * @returns true if the IP is private, false otherwise
+     */
     private static isPrivateIP(ip: string, family: number): boolean {
         if (family === 4) {
             const octets = ip.split('.').map(Number);
@@ -61,6 +73,13 @@ export class HttpRequestBlock {
         return false;
     }
 
+    /**
+     * Validates that the URL does not resolve to a private IP address.
+     * Performs direct IP checks and DNS resolution.
+     * Throws an error if the resolved IP is private.
+     *
+     * @param url - The URL to validate
+     */
     private static async validatePrivateIp(url: string): Promise<void> {
         const blockPrivate = process.env.BLOCK_PRIVATE_IP === 'true';
         if (!blockPrivate) {
