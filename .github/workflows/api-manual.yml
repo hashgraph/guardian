@@ -173,7 +173,7 @@ jobs:
                   popd
 
             - name: Publish API Test Results
-              uses: EnricoMi/publish-unit-test-result-action@170bf24d20d201b842d7a52403b73ed297e6645b
+              uses: step-security/publish-unit-test-result-action@cc82caac074385ae176d39d2d143ad05e1130b2d # v2.18.0
               if: always()
               with:
                   files: e2e-tests/cypress/test_results/**/*.xml
