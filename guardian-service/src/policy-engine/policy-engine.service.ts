@@ -2096,49 +2096,11 @@ export class PolicyEngineService {
                     const offset = parsedPageIndex * parsedPageSize;
                     const limit = parsedPageSize;
 
-                    const otherOptions: any = {};
-
-                    const VcOtherOptions = {...otherOptions};
+                    const VcOtherOptions: any = {};
                     VcOtherOptions.fields = ['id', 'owner', 'messageId', 'relationships', 'documentFileId', 'schema'];
 
-
-                    const VpOtherOptions = {...otherOptions};
+                    const VpOtherOptions: any = {};
                     VpOtherOptions.fields = ['id', 'owner', 'messageId', 'relationships', 'documentFileId', 'createDate'];
-                    
-                    // const userPolicy = await DatabaseServer.getPolicyCache({
-                    //     id: policyId,
-                    //     userId: owner.creator,
-                    // });
-                    // if (userPolicy) { // ??
-                    //     otherOptions.fields.push('oldId');
-                    //     filters.cachePolicyId = policyId;
-                    //     if (type === DocumentType.VC) {
-                    //         filters.cacheCollection = 'vcs';
-                    //         otherOptions.fields.push('schema');
-                    //         filters.schema = {
-                    //             $ne: null,
-                    //         };
-                    //         filters.type = {
-                    //             $ne: DocumentCategoryType.USER_ROLE,
-                    //         };
-                    //         return new MessageResponse(
-                    //             await DatabaseServer.getAndCountPolicyCacheData(
-                    //                 filters,
-                    //                 otherOptions
-                    //             )
-                    //         );
-                    //     } else if (type === DocumentType.VP) {
-                    //         filters.cacheCollection = 'vps';
-                    //         return new MessageResponse(
-                    //             await DatabaseServer.getAndCountPolicyCacheData(
-                    //                 filters,
-                    //                 otherOptions
-                    //             )
-                    //         );
-                    //     } else {
-                    //         throw new Error(`Unknown type: ${type}`);
-                    //     }
-                    // }
 
                     const model = await DatabaseServer.getPolicy({ id: policyId });
                     await this.policyEngine.accessPolicy(model, owner, 'read');
@@ -2278,50 +2240,13 @@ export class PolicyEngineService {
                     } = msg;
 
                     const filters: any = {};
-                    const otherOptions: any = {};
 
-                    const VcOtherOptions = {...otherOptions};
+                    const VcOtherOptions: any = {};
                     VcOtherOptions.fields = ['id', 'owner', 'messageId', 'relationships', 'documentFileId', 'schema'];
 
-
-                    const VpOtherOptions = {...otherOptions};
+                    const VpOtherOptions: any = {};
                     VpOtherOptions.fields = ['id', 'owner', 'messageId', 'relationships', 'documentFileId', 'createDate'];
                     
-                    // const userPolicy = await DatabaseServer.getPolicyCache({
-                    //     id: policyId,
-                    //     userId: owner.creator,
-                    // });
-                    // if (userPolicy) { // ??
-                    //     otherOptions.fields.push('oldId');
-                    //     filters.cachePolicyId = policyId;
-                    //     if (type === DocumentType.VC) {
-                    //         filters.cacheCollection = 'vcs';
-                    //         otherOptions.fields.push('schema');
-                    //         filters.schema = {
-                    //             $ne: null,
-                    //         };
-                    //         filters.type = {
-                    //             $ne: DocumentCategoryType.USER_ROLE,
-                    //         };
-                    //         return new MessageResponse(
-                    //             await DatabaseServer.getAndCountPolicyCacheData(
-                    //                 filters,
-                    //                 otherOptions
-                    //             )
-                    //         );
-                    //     } else if (type === DocumentType.VP) {
-                    //         filters.cacheCollection = 'vps';
-                    //         return new MessageResponse(
-                    //             await DatabaseServer.getAndCountPolicyCacheData(
-                    //                 filters,
-                    //                 otherOptions
-                    //             )
-                    //         );
-                    //     } else {
-                    //         throw new Error(`Unknown type: ${type}`);
-                    //     }
-                    // }
-
                     const model = await DatabaseServer.getPolicy({ id: policyId });
                     await this.policyEngine.accessPolicy(model, owner, 'read');
                     if (!PolicyHelper.isRun(model)) {
@@ -2431,29 +2356,6 @@ export class PolicyEngineService {
                         id: policyId,
                         userId: owner.creator,
                     });
-                    
-                    console.log('userPolicy', userPolicy);
-                    
-                    // const type = 'VC';
-                    // if (userPolicy) { // ???
-                    //     otherOptions.fields.push('oldId');
-                    //     filters.cachePolicyId = policyId;
-
-                    //     filters.cacheCollection = 'vcs';
-                    //     otherOptions.fields.push('schema');
-                    //     filters.schema = {
-                    //         $ne: null,
-                    //     };
-                    //     filters.type = {
-                    //         $ne: DocumentCategoryType.USER_ROLE,
-                    //     };
-                    //     return new MessageResponse(
-                    //         await DatabaseServer.getAndCountPolicyCacheData(
-                    //             filters,
-                    //             otherOptions
-                    //         )
-                    //     );
-                    // }
                     
                     const model = await DatabaseServer.getPolicy({ id: policyId });
                     await this.policyEngine.accessPolicy(model, owner, 'read');

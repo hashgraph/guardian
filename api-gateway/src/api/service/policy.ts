@@ -1064,6 +1064,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/search-documents')
     @Auth(
+        Permissions.POLICIES_POLICY_READ,
         Permissions.POLICIES_POLICY_EXECUTE,
     )
     @ApiOperation({
@@ -1157,6 +1158,9 @@ export class PolicyApi {
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
+            if (user.role !== UserRole.STANDARD_REGISTRY) {
+                owners = user.did;
+            }
             const [documents, count] = await engineService.searchDocuments(
                 new EntityOwner(user),
                 policyId,
@@ -1179,6 +1183,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/export-documents')
     @Auth(
+        Permissions.POLICIES_POLICY_READ,
         Permissions.POLICIES_POLICY_EXECUTE,
     )
     @ApiOperation({
@@ -1257,6 +1262,9 @@ export class PolicyApi {
     ): Promise<any> {
         try {
             const owner = new EntityOwner(user);
+            if (user.role !== UserRole.STANDARD_REGISTRY) {
+                owners = user.did;
+            }
             const engineService = new PolicyEngine();
             const file = await engineService.exportDocuments(
                 owner,
@@ -1282,6 +1290,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/document-owners')
     @Auth(
+        Permissions.POLICIES_POLICY_READ,
         Permissions.POLICIES_POLICY_EXECUTE,
     )
     @ApiOperation({
@@ -1324,6 +1333,9 @@ export class PolicyApi {
                 new EntityOwner(user),
                 policyId,
             );
+            if (user.role !== UserRole.STANDARD_REGISTRY) {
+                return res.header('X-Total-Count', 1).send([user.did]);
+            }
             return res.header('X-Total-Count', owners.length).send(owners);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1335,6 +1347,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/tokens')
     @Auth(
+        Permissions.POLICIES_POLICY_READ,
         Permissions.POLICIES_POLICY_EXECUTE,
     )
     @ApiOperation({

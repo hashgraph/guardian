@@ -184,47 +184,85 @@
             *ngIf="view == 'policy'"
             style="height: 100%;"
         >
-            <p-tabView [(activeIndex)]="activeTabIndex" (activeIndexChange)="onTabChange($event)">
-                <p-tabPanel [header]="'General'">
-                    <div class="policy-container">
-                        <progress-tracker
-                            *ngIf="steps && steps.length > 0"
-                            [steps]="steps"
-                        ></progress-tracker>
-                        <div style="width: 100%;">
-                            <render-block
-                                [block]="policy"
-                                [dryRun]="isDryRun"
-                                [policyId]="policyId"
-                                style="width: 100%;"
-                            ></render-block>
-            
-                            <div *ngIf="!navigationFooterDisabled" class="progress-footer-container">
-                                <div class="progress-footer">
-                                    <button 
-                                        (click)="onNavigationPrevButton()" 
-                                        [disabled]="prevButtonDisabled" 
-                                        class="button"
-                                        label="Previous" 
-                                        pButton
-                                        type="button"></button>
-                                    <div *ngIf="!nextButtonDisabled">
+            <ng-container *ngIf="!isDryRun; else dryRunContent">
+                <p-tabView [(activeIndex)]="activeTabIndex" (activeIndexChange)="onTabChange($event)">
+                    <p-tabPanel [header]="'General'">
+                        <div class="policy-container">
+                            <progress-tracker
+                                *ngIf="steps && steps.length > 0"
+                                [steps]="steps"
+                            ></progress-tracker>
+                            <div style="width: 100%;">
+                                <render-block
+                                    [block]="policy"
+                                    [dryRun]="isDryRun"
+                                    [policyId]="policyId"
+                                    style="width: 100%;"
+                                ></render-block>
+                
+                                <div *ngIf="!navigationFooterDisabled" class="progress-footer-container">
+                                    <div class="progress-footer">
                                         <button 
-                                            (click)="onNavigationNextButton()"
-                                            class="p-button" 
-                                            label="Next" 
+                                            (click)="onNavigationPrevButton()" 
+                                            [disabled]="prevButtonDisabled" 
+                                            class="button"
+                                            label="Previous" 
                                             pButton
                                             type="button"></button>
+                                        <div *ngIf="!nextButtonDisabled">
+                                            <button 
+                                                (click)="onNavigationNextButton()"
+                                                class="p-button" 
+                                                label="Next" 
+                                                pButton
+                                                type="button"></button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </p-tabPanel>
+                    <p-tabPanel [header]="'Export Documents'">
+                        <app-project-data-export></app-project-data-export>
+                    </p-tabPanel>
+                </p-tabView>
+            </ng-container>
+            <ng-template #dryRunContent>
+                <div class="policy-container">
+                    <progress-tracker
+                        *ngIf="steps && steps.length > 0"
+                        [steps]="steps"
+                    ></progress-tracker>
+                    <div style="width: 100%;">
+                        <render-block
+                            [block]="policy"
+                            [dryRun]="isDryRun"
+                            [policyId]="policyId"
+                            style="width: 100%;"
+                        ></render-block>
+        
+                        <div *ngIf="!navigationFooterDisabled" class="progress-footer-container">
+                            <div class="progress-footer">
+                                <button 
+                                    (click)="onNavigationPrevButton()" 
+                                    [disabled]="prevButtonDisabled" 
+                                    class="button"
+                                    label="Previous" 
+                                    pButton
+                                    type="button"></button>
+                                <div *ngIf="!nextButtonDisabled">
+                                    <button 
+                                        (click)="onNavigationNextButton()"
+                                        class="p-button" 
+                                        label="Next" 
+                                        pButton
+                                        type="button"></button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </p-tabPanel>
-                <p-tabPanel [header]="'Export Documents'">
-                    <app-project-data-export></app-project-data-export>
-                </p-tabPanel>
-            </p-tabView>
+                </div>
+            </ng-template>
         </div>
 
         <div

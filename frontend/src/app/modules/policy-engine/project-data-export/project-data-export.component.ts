@@ -37,7 +37,7 @@ export class ProjectDataExportComponent implements OnInit {
     public currentPolicy: any = null;
 
     public filtersCount: number = 0;
-    public showMoreFilters = true;
+    public showMoreFilters = false;
 
     public schemas: ISchema[] = [];
     public owners: string[] = [];
@@ -235,6 +235,18 @@ export class ProjectDataExportComponent implements OnInit {
             options.related = filters.related;
             this.filtersCount++;
         }
+        if (this.filtersCount > 0) {
+            this.showMoreFilters = true;
+        }
+
+        if (!this.user.STANDARD_REGISTRY) {
+            const control = this.filtersForm.get('owners');
+            if (control) {
+                control.setValue([this.user.did]);
+                control.disable();
+            }
+            options.owners = [this.user.did];
+        }
 
         this.loading = true;
         this.policyEngineService
@@ -318,15 +330,15 @@ export class ProjectDataExportComponent implements OnInit {
         const filters = this.filtersForm.value;
 
         this.selectedAll = false;
-        
+
         this.router.navigate([], {
             relativeTo: this.route,
             queryParams: {
                 tab: 1,
-                schemas: (filters?.schemas.length > 0 && filters?.schemas.join(',')) || null,
-                owners: (filters?.owners.length > 0 && filters?.owners.join(',')) || null,
-                tokens: (filters?.tokens.length > 0 && filters?.tokens.join(',')) || null,
-                related: (filters?.related.length > 0 && filters?.related.join(',')) || null
+                schemas: (filters?.schemas?.length > 0 && filters?.schemas.join(',')) || null,
+                owners: (filters?.owners?.length > 0 && filters?.owners.join(',')) || null,
+                tokens: (filters?.tokens?.length > 0 && filters?.tokens.join(',')) || null,
+                related: (filters?.related?.length > 0 && filters?.related.join(',')) || null
             },
             queryParamsHandling: 'merge',
         });
