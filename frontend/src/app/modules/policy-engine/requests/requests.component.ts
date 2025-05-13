@@ -31,6 +31,7 @@ export class PolicyRequestsComponent implements OnInit {
 
     public loading: boolean = true;
     public isConfirmed: boolean = false;
+    public isLocalUser: boolean = false;
     public user: UserPermissions = new UserPermissions();
     public owner: string;
     public page: any[];
@@ -149,6 +150,7 @@ export class PolicyRequestsComponent implements OnInit {
             this.policyEngineService.all(LocationType.REMOTE),
         ]).subscribe(([profile, remotePolicies]) => {
             this.isConfirmed = !!(profile && profile.confirmed);
+            this.isLocalUser = profile.location === LocationType.LOCAL;
             this.user = new UserPermissions(profile);
             this.owner = this.user.did;
 

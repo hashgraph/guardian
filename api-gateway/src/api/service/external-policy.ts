@@ -1,10 +1,10 @@
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
-import { Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
+import { LocationType, Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, pageHeader, TaskDTO, ExternalPolicyDTO, ImportMessageDTO, PolicyPreviewDTO, PolicyDTO } from '#middlewares';
 import { Guardians, InternalException, EntityOwner, TaskManager, ServiceError, PolicyEngine } from '#helpers';
-import { AuthUser, Auth } from '#auth';
+import { AuthUser, Auth, AuthAndLocation } from '#auth';
 
 @Controller('external-policies')
 @ApiTags('external-policies')
@@ -427,10 +427,13 @@ export class ExternalPoliciesApi {
      * Update schema rule
      */
     @Put('/requests/:messageId/approve')
-    @Auth(
-        Permissions.POLICIES_POLICY_READ,
-        Permissions.POLICIES_POLICY_EXECUTE,
-        Permissions.POLICIES_POLICY_MANAGE,
+    @AuthAndLocation(
+        [LocationType.LOCAL],
+        [
+            Permissions.POLICIES_POLICY_READ,
+            Permissions.POLICIES_POLICY_EXECUTE,
+            Permissions.POLICIES_POLICY_MANAGE
+        ]
     )
     @ApiOperation({
         summary: 'Approves a request for an action from a remote Guardian.',
@@ -477,10 +480,13 @@ export class ExternalPoliciesApi {
      * Update schema rule
      */
     @Put('/requests/:messageId/reject')
-    @Auth(
-        Permissions.POLICIES_POLICY_READ,
-        Permissions.POLICIES_POLICY_EXECUTE,
-        Permissions.POLICIES_POLICY_MANAGE,
+    @AuthAndLocation(
+        [LocationType.LOCAL],
+        [
+            Permissions.POLICIES_POLICY_READ,
+            Permissions.POLICIES_POLICY_EXECUTE,
+            Permissions.POLICIES_POLICY_MANAGE
+        ]
     )
     @ApiOperation({
         summary: 'Rejects a request for an action from a remote Guardian',

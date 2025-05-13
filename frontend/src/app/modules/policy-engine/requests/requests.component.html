@@ -118,7 +118,7 @@
                                         </span>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'options'">
-                                        <div *ngIf="row.status === 'NEW'" class="option-btns">
+                                        <div *ngIf="row.status === 'NEW' && isLocalUser" class="option-btns">
                                             <button class="guardian-button approve-btn" (click)="onApprove(row)">Approve</button>
                                             <button class="guardian-button reject-btn" (click)="onReject(row)">Reject</button>
                                         </div>
