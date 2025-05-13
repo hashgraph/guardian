@@ -352,7 +352,7 @@ export class UserCredentials {
             return await ref.databaseServer.getVirtualKey(this._did, ref.messageId);
         } else {
             const wallet = new Wallet();
-            return await wallet.getUserKey(this._did, KeyType.MESSAGE_KEY, ref.messageId, userId);
+            return await wallet.getUserKey(this._did, KeyType.MESSAGE_KEY, `${this._did}#${ref.messageId}`, userId);
         }
     }
 
@@ -469,7 +469,7 @@ export class UserCredentials {
         userId: string | null
     ): Promise<string | null> {
         const wallet = new Wallet();
-        return await wallet.getUserKey(did, KeyType.MESSAGE_KEY, messageId, userId);
+        return await wallet.getUserKey(did, KeyType.MESSAGE_KEY, `${did}#${messageId}`, userId);
     }
 
     public static async loadMessageKeyByAccount(
@@ -480,6 +480,6 @@ export class UserCredentials {
         const users = new Users();
         const userFull = await users.getUserByAccount(accountId, userId);
         const wallet = new Wallet();
-        return await wallet.getUserKey(userFull.did, KeyType.MESSAGE_KEY, messageId, userId);
+        return await wallet.getUserKey(userFull.did, KeyType.MESSAGE_KEY, `${userFull.did}#${messageId}`, userId);
     }
 }

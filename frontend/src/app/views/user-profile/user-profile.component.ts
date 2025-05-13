@@ -1015,6 +1015,9 @@ export class UserProfileComponent implements OnInit {
     }
 
     private createKey(messageId: string, key?: string) {
+        if(messageId) {
+            messageId = messageId.trim();
+        }
         this.profileService
             .createKey({
                 messageId,
