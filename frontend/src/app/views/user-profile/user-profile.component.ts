@@ -359,7 +359,7 @@ export class UserProfileComponent implements OnInit {
             type: 'text',
             size: '300',
             tooltip: false
-        },{
+        }, {
             id: 'messageId',
             title: 'Message',
             type: 'text',
@@ -968,7 +968,8 @@ export class UserProfileComponent implements OnInit {
         });
         dialogRef.onClose.subscribe(async (result: any | null) => {
             if (result) {
-                this.createKey(result.messageId)
+                dialogRef.destroy();
+                this.createKey(result.messageId);
             }
         });
     }
@@ -991,6 +992,7 @@ export class UserProfileComponent implements OnInit {
 
     public preview(key: string): void {
         const dialogRef = this.dialogService.open(UserKeysDialog, {
+            duplicate: true,
             showHeader: false,
             width: '720px',
             styleClass: 'guardian-dialog',
@@ -1019,12 +1021,10 @@ export class UserProfileComponent implements OnInit {
                 messageId,
                 key,
             })
-            .subscribe((key) => {
+            .subscribe((item) => {
                 this.loading = false;
                 this.loadKeys();
-                setTimeout(() => {
-                    this.preview(key);
-                }, 100)
+                this.preview(item.key);
             }, (e) => {
                 this.loading = false;
             });
