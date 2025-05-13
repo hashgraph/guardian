@@ -306,10 +306,7 @@ export class PoliciesComponent implements OnInit {
     public showInstance(policy: any): string | null {
         switch (policy.status) {
             case PolicyStatus.VIEW: {
-                if (
-                    this.user.POLICIES_POLICY_MANAGE ||
-                    this.user.POLICIES_POLICY_EXECUTE
-                ) {
+                if (this.user.POLICIES_POLICY_EXECUTE) {
                     return 'Register';
                 } else {
                     return null;

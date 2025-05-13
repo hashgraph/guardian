@@ -1,5 +1,5 @@
 import { DataBaseHelper, DatabaseServer, ITopicMessage, MessageAction, MessageServer, Policy, PolicyActionMessage, PolicyAction, TopicConfig, TopicListener } from '@guardian/common';
-import { GenerateUUIDv4, PolicyActionStatus, PolicyActionType, PolicyStatus } from '@guardian/interfaces';
+import { AssignedEntityType, GenerateUUIDv4, Permissions, PolicyActionStatus, PolicyActionType, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { IPolicyInterfaceBlock } from './policy-engine.interface.js';
 import { PolicyUser, UserCredentials } from './policy-user.js';
 import { PolicyUtils } from './helpers/utils.js';
@@ -392,6 +392,11 @@ export class PolicyActionsService {
                 return;
             }
 
+            const access = await this.accessPolicy(policyUser);
+            if (!access) {
+                return;
+            }
+
             // Available
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(this.policyId, row.blockTag);
             const error = await PolicyComponentsUtils.isAvailableSetData(block, policyUser);
@@ -541,5 +546,21 @@ export class PolicyActionsService {
                 await callback(response);
             }
         }
+    }
+
+    private async accessPolicy(policyUser: PolicyUser): Promise<boolean> {
+        if (UserPermissions.has(policyUser, [
+            Permissions.ACCESS_POLICY_PUBLISHED,
+            Permissions.ACCESS_POLICY_ALL
+        ])) {
+            return true;
+        }
+        if (UserPermissions.has(policyUser, [
+            Permissions.ACCESS_POLICY_ASSIGNED,
+            Permissions.ACCESS_POLICY_ASSIGNED_AND_PUBLISHED
+        ])) {
+            return !!(await DatabaseServer.getAssignedEntity(AssignedEntityType.Policy, this.policyId, policyUser.did));
+        }
+        return false;
     }
 }
