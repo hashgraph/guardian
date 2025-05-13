@@ -45,6 +45,14 @@ export class OldSecretManager extends NatsService implements SecretManagerBase {
                 return {JWT_PRIVATE_KEY: JWT_PRIVATE_KEY.key, JWT_PUBLIC_KEY: JWT_PUBLIC_KEY.key};
 
             default:
+                if (path.startsWith('secretkey/jwt-service/')) {
+                    const SERVICE_JWT_SECRET_KEY = await this.sendMessage<IGetKeyResponse>(WalletEvents.GET_GLOBAL_APPLICATION_KEY, {type: path});
+                    return {SERVICE_JWT_SECRET_KEY: SERVICE_JWT_SECRET_KEY.key};
+                } else if (path.startsWith('publickey/jwt-service/')) {
+                    const SERVICE_JWT_PUBLIC_KEY = await this.sendMessage<IGetKeyResponse>(WalletEvents.GET_GLOBAL_APPLICATION_KEY, {type: path});
+                    return {SERVICE_JWT_PUBLIC_KEY: SERVICE_JWT_PUBLIC_KEY.key};
+                }
+
                 const wallet = await this.sendMessage<IGetKeyResponse>(WalletEvents.GET_KEY, addition);
                 return {
                     privateKey: wallet.key
@@ -83,6 +91,16 @@ export class OldSecretManager extends NatsService implements SecretManagerBase {
                 return;
 
             default:
+                if (path.startsWith('secretkey/jwt-service/')) {
+                    await this.sendMessage<IGetKeyResponse>(WalletEvents.SET_GLOBAL_APPLICATION_KEY, {type: path, key: data.SERVICE_JWT_SECRET_KEY});
+
+                    return;
+                } else if (path.startsWith('publickey/jwt-service/')) {
+                    await this.sendMessage<IGetKeyResponse>(WalletEvents.SET_GLOBAL_APPLICATION_KEY, {type: path, key: data.SERVICE_JWT_PUBLIC_KEY});
+
+                    return;
+                }
+
                 await this.sendMessage<any>(WalletEvents.SET_KEY, addition);
                 return;
         }
