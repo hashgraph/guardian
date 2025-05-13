@@ -484,7 +484,7 @@ export function profileAPI(logger: PinoLogger) {
                 await wallet.setUserKey(
                     user.did,
                     KeyType.MESSAGE_KEY,
-                    item.messageId,
+                    `${user.did}#${item.messageId}`,
                     key,
                     msg?.user?.id
                 );
