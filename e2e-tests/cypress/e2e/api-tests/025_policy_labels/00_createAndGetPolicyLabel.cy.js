@@ -139,7 +139,6 @@ context("Create policy labels", { tags: ['policy_labels', 'firstPool', 'all'] },
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                policyLabel = response.body;
                 expect(response.body).to.have.property("uuid");
 
                 expect(response.body.id).eql(labelId);

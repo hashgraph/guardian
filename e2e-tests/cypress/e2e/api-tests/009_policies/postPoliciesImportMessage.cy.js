@@ -6,7 +6,7 @@ import * as Authorization from "../../../support/authorization";
 context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
-    it('Imports new policy and all associated artifacts from file', { tags: ['smoke'] }, () => {
+    it('Imports new policy and all associated artifacts from file', { tags: ['policy_labels', 'formulas', 'trustchains', 'contracts', 'smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,

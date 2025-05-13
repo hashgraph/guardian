@@ -8,7 +8,7 @@ context("Export Module from File", { tags: ['modules', 'thirdPool', 'all'] }, ()
 
     let modules, lastModule, importedModule;
 
-    it("Import module from IPFS", { tags: ['smoke'] }, () => {
+    it("Import module from IPFS", { tags: ['smoke', 'analytics'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.fixture("exportedModule.module", "binary").then((binary) => Cypress.Blob.binaryStringToBlob(binary))
                 .then((file) => {

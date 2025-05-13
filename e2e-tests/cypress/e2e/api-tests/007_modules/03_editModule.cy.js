@@ -64,7 +64,7 @@ context("Edit Module", { tags: ['modules', 'thirdPool', 'all'] }, () => {
         })
     });
 
-    it("Edit module", () => {
+    it("Edit module", { tags: ['analytics'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.PUT,

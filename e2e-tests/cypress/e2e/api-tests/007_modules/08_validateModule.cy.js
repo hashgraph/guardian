@@ -61,7 +61,7 @@ context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
         })
     });
 
-    it("Validates selected module", () => {
+    it("Validates selected module", { tags: ['analytics'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,

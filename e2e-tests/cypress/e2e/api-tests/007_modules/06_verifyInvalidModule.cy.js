@@ -36,7 +36,7 @@ context("Validate Invalid Module", { tags: ['modules', 'thirdPool', 'all'] }, ()
         })
     });
 
-    it("Validate the module", () => {
+    it("Validate the module", { tags: ['analytics'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
