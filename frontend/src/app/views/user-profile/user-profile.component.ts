@@ -921,7 +921,6 @@ export class UserProfileComponent implements OnInit {
     }
 
     public onChangeTab(tab: any) {
-        this.loading = true;
         this.tab = tab.index === 0 ? 'general' : 'keys';
         this.pageIndex = 0;
         this.router.navigate([], {
@@ -1015,7 +1014,7 @@ export class UserProfileComponent implements OnInit {
     }
 
     private createKey(messageId: string, key?: string) {
-        if(messageId) {
+        if (messageId) {
             messageId = messageId.trim();
         }
         this.profileService
@@ -1026,7 +1025,9 @@ export class UserProfileComponent implements OnInit {
             .subscribe((item) => {
                 this.loading = false;
                 this.loadKeys();
-                this.preview(item.key);
+                if (!key) {
+                    this.preview(item.key);
+                }
             }, (e) => {
                 this.loading = false;
             });
