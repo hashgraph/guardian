@@ -2433,13 +2433,14 @@ export class PolicyEngineService {
                             $match:
                             {
                                 accountId: user.hederaAccountId,
-                                type: PolicyActionType.REQUEST,
+                                // type: PolicyActionType.REQUEST,
                             }
                         },
                         {
                             $group:
                             {
                                 _id: '$startMessageId',
+                                type: { $last: '$type' },
                                 statuses: { $addToSet: '$status' },
                                 createDate: { $last: '$createDate' },
                                 policyId: { $last: '$policyId' },
@@ -2452,6 +2453,7 @@ export class PolicyEngineService {
                         {
                             $project: {
                                 statuses: '$statuses',
+                                type: '$type',
                                 status: {
                                     $switch: {
                                         branches: [

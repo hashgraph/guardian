@@ -968,7 +968,6 @@ export class UserProfileComponent implements OnInit {
         });
         dialogRef.onClose.subscribe(async (result: any | null) => {
             if (result) {
-                dialogRef.destroy();
                 this.createKey(result.messageId);
             }
         });

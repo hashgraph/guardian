@@ -298,7 +298,8 @@ export class PolicyActionsService {
         const collection = new DataBaseHelper(PolicyAction);
         let document: any;
         try {
-            await MessageServer.loadDocument(message);
+            const userMessageKey = await UserCredentials.loadMessageKeyByAccount(this.messageId, message.payer, null);
+            await MessageServer.loadDocument(message, userMessageKey);
             document = message.getDocument();
         } catch (error) {
             document = null;

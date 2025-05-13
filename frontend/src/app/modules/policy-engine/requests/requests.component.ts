@@ -65,6 +65,13 @@ export class PolicyRequestsComponent implements OnInit {
                 tooltip: true
             },
             {
+                id: 'type',
+                title: 'Type',
+                type: 'text',
+                size: '140',
+                tooltip: true,
+            },
+            {
                 id: 'status',
                 title: 'Status',
                 type: 'text',
@@ -77,13 +84,6 @@ export class PolicyRequestsComponent implements OnInit {
                 type: 'text',
                 size: '135',
                 tooltip: true
-            },
-            {
-                id: 'documentType',
-                title: 'Document Type',
-                type: 'text',
-                size: '140',
-                tooltip: true,
             },
             {
                 id: 'messageId',

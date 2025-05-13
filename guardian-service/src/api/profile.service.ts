@@ -481,7 +481,13 @@ export function profileAPI(logger: PinoLogger) {
                     key = PrivateKey.generate().toString();
                 }
                 const wallet = new Wallet();
-                await wallet.setKey(user.walletToken, KeyType.MESSAGE_KEY, item.messageId, key);
+                await wallet.setUserKey(
+                    user.did,
+                    KeyType.MESSAGE_KEY,
+                    item.messageId,
+                    key,
+                    msg?.user?.id
+                );
                 return new MessageResponse({ ...item, key });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);

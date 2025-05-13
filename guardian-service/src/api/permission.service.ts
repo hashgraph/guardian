@@ -287,6 +287,8 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 switch (entity) {
                     case KeyEntity.KEY:
                         return new MessageResponse(did === entityId);
+                    case KeyEntity.MESSAGE:
+                        return new MessageResponse(true);
                     case KeyEntity.DID:
                         return new MessageResponse(
                             did === entityId?.split('#')[0]

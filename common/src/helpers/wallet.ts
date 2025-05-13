@@ -18,6 +18,7 @@ export enum KeyEntity {
     TOPIC = 'TOPIC',
     DID = 'DID',
     KEY = 'KEY',
+    MESSAGE = 'MESSAGE',
 }
 
 /**
@@ -43,6 +44,7 @@ export enum KeyType {
  * Key type - key entity mapping
  */
 export const KEY_TYPE_KEY_ENTITY: Map<KeyType, KeyEntity> = new Map([
+    [KeyType.MESSAGE_KEY, KeyEntity.MESSAGE],
     [KeyType.TOKEN_TREASURY_KEY, KeyEntity.TOKEN],
     [KeyType.TOKEN_ADMIN_KEY, KeyEntity.TOKEN],
     [KeyType.TOKEN_SUPPLY_KEY, KeyEntity.TOKEN],
@@ -122,13 +124,16 @@ export class Wallet extends NatsService {
             }
         );
 
+
+        if (!hasPermissions) {
+            return null;
+        }
+
         const user = new Users();
         const { walletToken } = await user.getUserById(did, userId);
-
         const wallet = new WalletManager();
-        return hasPermissions
-            ? await wallet.getKey(walletToken, keyType, entityId)
-            : null;
+
+        return await wallet.getKey(walletToken, keyType, entityId)
     }
 
     /**
