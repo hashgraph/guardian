@@ -422,7 +422,7 @@ export class ProjectDataExportComponent implements OnInit {
                 type: 'application/guardian-formula'
             })
         );
-        downloadLink.setAttribute('download', `${this.currentPolicy.name} Project Data ${Date.now()}.zip`);
+        downloadLink.setAttribute('download', `${this.currentPolicy.name}_${this.currentPolicy.version}.zip`);
         document.body.appendChild(downloadLink);
         downloadLink.click();
         downloadLink.remove();
