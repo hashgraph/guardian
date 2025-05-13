@@ -378,12 +378,8 @@ export class PolicyActionsService {
 
     private async executeAction(row: PolicyAction) {
         try {
-            if (!row || !row.document) {
-                throw new Error('Invalid document');
-            }
-
-            if (row.accountId !== row.sender) {
-                throw new Error('Invalid user');
+            if (!row || row.accountId !== row.sender) {
+                return;
             }
 
             // User
@@ -392,9 +388,13 @@ export class PolicyActionsService {
                 return;
             }
 
+            if (!row.document) {
+                throw new Error('Invalid document');
+            }
+
             const access = await this.accessPolicy(policyUser);
             if (!access) {
-                return;
+                throw new Error('Insufficient permissions to execute the policy.');
             }
 
             // Available
@@ -532,7 +532,7 @@ export class PolicyActionsService {
     }
 
     private async sentNotification(row: PolicyAction) {
-        PolicyComponentsUtils.sentRequestNotification(row);
+        PolicyComponentsUtils.sentRequestNotification(row).then();
     }
 
     private async completeRequest(response: PolicyAction) {

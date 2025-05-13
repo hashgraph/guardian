@@ -2552,12 +2552,18 @@ export class PolicyEngineService {
                         lastStatus: PolicyActionStatus.NEW,
                         type: PolicyActionType.ACTION
                     }, {});
+                    const delayCount = await DatabaseServer.getRemoteRequestsCount({
+                        ..._filters,
+                        lastStatus: PolicyActionStatus.COMPLETED,
+                        updateDate: { $gt: new Date(Date.now() - 60 * 1000) }
+                    }, {});
                     const total = await DatabaseServer.getRemoteRequestsCount({
                         ..._filters
                     }, {});
                     return new MessageResponse({
                         requestsCount,
                         actionsCount,
+                        delayCount,
                         total
                     });
                 } catch (error) {

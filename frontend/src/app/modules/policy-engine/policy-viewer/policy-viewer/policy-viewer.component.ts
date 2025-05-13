@@ -247,7 +247,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.getSavepointState();
 
                 this.newRequestsExist = count.requestsCount > 0;
-                this.newActionsExist = count.actionsCount > 0;
+                this.newActionsExist = count.actionsCount > 0 || count.delayCount > 0;
             }, (e) => {
                 this.loading = false;
             });
@@ -559,7 +559,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             .subscribe((response) => {
                 if (response?.body) {
                     this.newRequestsExist = response.body.requestsCount > 0;
-                    this.newActionsExist = response.body.actionsCount > 0;
+                    this.newActionsExist = response.body.actionsCount > 0 || response.body.delayCount > 0;
                 }
             })
     }

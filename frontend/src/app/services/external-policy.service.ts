@@ -94,6 +94,7 @@ export class ExternalPoliciesService {
     ): Observable<HttpResponse<{
         requestsCount: number,
         actionsCount: number,
+        delayCount: number,
         total: number
     }>> {
         const params = ExternalPoliciesService.getOptions(filters);
