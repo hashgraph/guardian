@@ -9,6 +9,7 @@ export enum WorkerTaskType {
     GET_USER_BALANCE = 'get-user-balance',
     GET_USER_BALANCE_REST = 'get-user-balance-rest',
     GET_ACCOUNT_INFO = 'get-account-info',
+    GET_ACCOUNT_INFO_REST = 'get-account-info-rest',
     CREATE_TOKEN = 'create-token',
     UPDATE_TOKEN = 'update-token',
     DELETE_TOKEN = 'delete-token',

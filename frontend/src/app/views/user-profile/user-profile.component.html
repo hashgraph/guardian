@@ -117,7 +117,7 @@
                     <div class="guardian-user-page-filters"></div>
                     <div class="guardian-user-page-buttons">
                         <button
-                            *ngIf="location === 'remote'"
+                            *ngIf="location === 'local'"
                             (click)="onCreateKey()"
                             class="guardian-button guardian-button-primary">
                             <div class="guardian-button-icon">
@@ -130,7 +130,7 @@
                             <div class="guardian-button-label">Generate Key</div>
                         </button>
                         <button
-                            *ngIf="location === 'local'"
+                            *ngIf="location === 'remote'"
                             (click)="onImportKey()"
                             class="guardian-button guardian-button-primary">
                             <div class="guardian-button-icon">

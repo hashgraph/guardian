@@ -3,7 +3,7 @@ import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { TokenService } from '../../services/token.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IUser, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
+import { IUser, LocationType, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
 import { InformService } from 'src/app/services/inform.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { forkJoin } from 'rxjs';
@@ -34,6 +34,7 @@ export class ListOfTokensUserComponent implements OnInit {
     public isConfirmed: boolean = false;
     public isFailed: boolean = false;
     public isNewAccount: boolean = false;
+    public isLocalUser: boolean = false;
 
     public value: any;
 
@@ -122,6 +123,7 @@ export class ListOfTokensUserComponent implements OnInit {
             this.isConfirmed = !!this.profile.confirmed;
             this.isFailed = !!this.profile.failed;
             this.isNewAccount = !this.profile.didDocument;
+            this.isLocalUser = this.profile.location === LocationType.LOCAL;
             this.owner = this.profile?.did;
 
             this.loadTokenData();
@@ -137,8 +139,8 @@ export class ListOfTokensUserComponent implements OnInit {
 
         forkJoin([
             this.tokenService.getTokensPage(
-                undefined, 
-                this.pageIndex, 
+                undefined,
+                this.pageIndex,
                 this.pageSize,
                 'Associated'
             ),
@@ -187,7 +189,7 @@ export class ListOfTokensUserComponent implements OnInit {
             setTimeout(() => {
                 this.loading = false;
             }, 500);
-        } 
+        }
     }
 
     associate(token: Token) {

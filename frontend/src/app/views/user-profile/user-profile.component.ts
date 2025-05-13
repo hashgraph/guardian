@@ -937,7 +937,6 @@ export class UserProfileComponent implements OnInit {
         this.profileService
             .keys(this.pageIndex, this.pageSize)
             .subscribe((response) => {
-                debugger
                 const { page, count } = this.profileService.parsePage(response);
                 this.keys = page;
                 this.pageCount = count;
@@ -1007,7 +1006,6 @@ export class UserProfileComponent implements OnInit {
         this.profileService
             .deleteKey(row.id)
             .subscribe(() => {
-                debugger
                 this.loading = false;
                 this.loadKeys();
             }, (e) => {
@@ -1022,7 +1020,6 @@ export class UserProfileComponent implements OnInit {
                 key,
             })
             .subscribe((key) => {
-                debugger
                 this.loading = false;
                 this.loadKeys();
                 setTimeout(() => {
