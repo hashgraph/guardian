@@ -47,6 +47,56 @@ export class PolicyActionsService {
         await this.topicListener.subscribe(this.loadTask.bind(this));
     }
 
+    public async selectGroup(
+        user: PolicyUser,
+        uuid: string
+    ): Promise<any> {
+        const data = { uuid };
+        const userCred = await PolicyUtils.getUserCredentials(this.policyInstance, user.did, user.userId);
+        const userHederaCred = await userCred.loadHederaCredentials(this.policyInstance, user.userId);
+        const userSignOptions = await userCred.loadSignOptions(this.policyInstance, user.userId);
+        const userMessageKey = await userCred.loadMessageKey(this.policyInstance, user.userId);
+
+        const messageServer = new MessageServer({
+            operatorId: userHederaCred.hederaAccountId,
+            operatorKey: userHederaCred.hederaAccountKey,
+            encryptKey: userMessageKey,
+            signOptions: userSignOptions,
+            dryRun: this.policyInstance.dryRun
+        });
+        const row: any = {
+            uuid: GenerateUUIDv4(),
+            type: PolicyActionType.ACTION,
+            owner: user.did,
+            creator: user.did,
+            topicId: this.topicId,
+            policyId: this.policyId,
+            status: PolicyActionStatus.NEW,
+            accountId: userHederaCred.hederaAccountId,
+            blockTag: 'Groups',
+            messageId: null,
+            startMessageId: null,
+            sender: null,
+            document: data,
+            lastStatus: PolicyActionStatus.NEW
+        };
+        const message = new PolicyActionMessage(MessageAction.CreatePolicyAction);
+        message.setDocument(row, data);
+
+        const messageResult = await messageServer
+            .setTopicObject(this.topic)
+            .sendMessage(message, true);
+        row.messageId = messageResult.getId();
+        row.startMessageId = messageResult.getId();
+        row.sender = messageResult.payer;
+        const collection = new DataBaseHelper(PolicyAction);
+        const newRow = collection.create(row);
+        await collection.insertOrUpdate([newRow], 'messageId');
+        await this.updateLastStatus(row);
+        await this.sentNotification(row);
+        return row;
+    }
+
     public async sendAction(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
@@ -401,18 +451,29 @@ export class PolicyActionsService {
                 throw new Error('Insufficient permissions to execute the policy.');
             }
 
-            // Available
-            const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(this.policyId, row.blockTag);
-            const error = await PolicyComponentsUtils.isAvailableSetData(block, policyUser);
-            if (error) {
-                return;
+            if (row.blockTag === 'Group') {
+                await this.executeBlock(row, policyUser);
+            } else {
+                await this.executeGroup(row, policyUser);
             }
-
-            const result = await block.setData(policyUser, row.document);
-            await this.sentCompleteMessage(row, policyUser, result, this.policyOwnerId);
         } catch (error) {
             await this.sentErrorMessage(row, error, this.policyOwnerId);
         }
+    }
+
+    private async executeBlock(row: PolicyAction, policyUser: PolicyUser) {
+        const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(this.policyId, row.blockTag);
+        const error = await PolicyComponentsUtils.isAvailableSetData(block, policyUser);
+        if (error) {
+            throw error;
+        }
+
+        const result = await block.setData(policyUser, row.document);
+        await this.sentCompleteMessage(row, policyUser, result, this.policyOwnerId);
+    }
+
+    private async executeGroup(row: PolicyAction, policyUser: PolicyUser) {
+        await this.policyInstance.components.selectGroup(policyUser, row.document?.uuid);
     }
 
     private async sentCompleteMessage(

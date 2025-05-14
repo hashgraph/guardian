@@ -1629,6 +1629,35 @@ export class PolicyComponentsUtils {
         }
     }
 
+    public static async selectGroup(
+        policyInstance: IPolicyInterfaceBlock,
+        user: PolicyUser,
+        uuid: string
+    ): Promise<MessageResponse<any> | MessageError<any>> {
+        if (policyInstance.actionType === LocationType.LOCAL) {
+            const result = policyInstance.components.selectGroup(user, uuid) as any;
+            return new MessageResponse(result);
+        }
+
+        if (user.location === LocationType.REMOTE) {
+            return new MessageError('Invalid action for remote user', 503);
+        }
+
+        if (policyInstance.locationType === LocationType.REMOTE) {
+            const controller = PolicyComponentsUtils.ActionsControllers.get(policyInstance.policyId);
+            if (controller) {
+                const result = await controller.selectGroup(user, uuid);
+                return new MessageResponse(result);
+            } else {
+                return new MessageError('Invalid policy controller', 500);
+            }
+        } else {
+            const result = policyInstance.components.selectGroup(user, uuid) as any;
+            return new MessageResponse(result);
+        }
+    }
+
+
     public static isAvailableReceiveData(block: IPolicyInterfaceBlock | IPolicyBlock | null, policyId: string): boolean {
         if (!block) {
             return false;
