@@ -1634,7 +1634,7 @@ export class PolicyComponentsUtils {
         user: PolicyUser,
         uuid: string
     ): Promise<MessageResponse<any> | MessageError<any>> {
-        if (policyInstance.actionType === LocationType.LOCAL) {
+        if (policyInstance.policyInstance?.locationType === LocationType.LOCAL) {
             const result = policyInstance.components.selectGroup(user, uuid) as any;
             return new MessageResponse(result);
         }

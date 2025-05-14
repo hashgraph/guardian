@@ -451,7 +451,7 @@ export class PolicyActionsService {
                 throw new Error('Insufficient permissions to execute the policy.');
             }
 
-            if (row.blockTag === 'Group') {
+            if (row.blockTag === 'Groups') {
                 await this.executeBlock(row, policyUser);
             } else {
                 await this.executeGroup(row, policyUser);
