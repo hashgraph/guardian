@@ -4754,6 +4754,40 @@ paths:
       summary: Create policy key.
       tags:
         - profiles
+  /profiles/keys/{id}:
+    delete:
+      description: Deletes the key with the provided ID.
+      operationId: ProfileApi_deleteKey
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Key Identifier
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Deletes the key.
+      tags:
+        - profiles
   /policies:
     get:
       description: Returns all policies.
