@@ -379,13 +379,16 @@ export class PolicyActionsService {
 
     private async executeAction(row: PolicyAction) {
         try {
-            if (!row || row.accountId !== row.sender) {
+            if (!row) {
                 return;
             }
 
             // User
-            const policyUser = await PolicyComponentsUtils.GetPolicyUserByAccount(row.sender, this.policyInstance, this.policyOwnerId);
+            const policyUser = await PolicyComponentsUtils.GetPolicyUserByDID(row.owner, null, this.policyInstance, this.policyOwnerId);
             if (!policyUser) {
+                return;
+            }
+            if (policyUser.hederaAccountId !== row.sender || row.accountId !== row.sender) {
                 return;
             }
 
@@ -474,7 +477,7 @@ export class PolicyActionsService {
             if (row.sender !== row.accountId) {
                 return;
             }
-            const policyUser = await PolicyComponentsUtils.GetPolicyUserByAccount(row.sender, this.policyInstance, userId);
+            const policyUser = await PolicyComponentsUtils.GetPolicyUserByDID(row.owner, null, this.policyInstance, userId);
             if (!policyUser) {
                 return;
             }
@@ -482,7 +485,7 @@ export class PolicyActionsService {
             const policyOwnerCred = await PolicyUtils.getUserCredentials(this.policyInstance, this.policyOwner, userId);
             const policyOwnerHederaCred = await policyOwnerCred.loadHederaCredentials(this.policyInstance, userId);
             const policyOwnerSignOptions = await policyOwnerCred.loadSignOptions(this.policyInstance, userId);
-            const userMessageKey = await UserCredentials.loadMessageKey(this.messageId, policyUser.did, userId);
+            const userMessageKey = await UserCredentials.loadMessageKey(this.messageId, row.owner, userId);
             const messageServer = new MessageServer({
                 operatorId: policyOwnerHederaCred.hederaAccountId,
                 operatorKey: policyOwnerHederaCred.hederaAccountKey,

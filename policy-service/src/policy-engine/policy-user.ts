@@ -33,6 +33,10 @@ export class PolicyUser {
      */
     private _username: string;
     /**
+     * User DID
+     */
+    private _hederaAccountId: string;
+    /**
      * User Role
      */
     private _role: PolicyRole | null;
@@ -88,12 +92,14 @@ export class PolicyUser {
             this.permissions = [];
             this.location = LocationType.LOCAL;
             this._userId = null;
+            this._hederaAccountId = null;
         } else {
             this.did = arg.did;
             this.username = arg.username;
             this.permissions = arg.permissions || [];
             this.location = arg.location || LocationType.LOCAL;
             this._userId = arg.id;
+            this._hederaAccountId = arg.hederaAccountId;
         }
         this.role = null;
         this.group = null;
@@ -110,6 +116,10 @@ export class PolicyUser {
 
     public get did(): string {
         return this._did;
+    }
+
+    public get hederaAccountId(): string {
+        return this._hederaAccountId;
     }
 
     protected set did(did: string) {
