@@ -105,7 +105,7 @@ export class PolicyActionsService {
         const policyOwnerCred = await PolicyUtils.getUserCredentials(this.policyInstance, this.policyOwner, this.policyOwnerId);
         const policyOwnerHederaCred = await policyOwnerCred.loadHederaCredentials(this.policyInstance, this.policyOwnerId);
         const policyOwnerSignOptions = await policyOwnerCred.loadSignOptions(this.policyInstance, this.policyOwnerId);
-        const userMessageKey = await UserCredentials.loadMessageKeyByAccount(this.messageId, data.accountId, userId);
+        const userMessageKey = await UserCredentials.loadMessageKey(this.messageId, data.owner, userId);
 
         const messageServer = new MessageServer({
             operatorId: policyOwnerHederaCred.hederaAccountId,
@@ -298,7 +298,7 @@ export class PolicyActionsService {
         const collection = new DataBaseHelper(PolicyAction);
         let document: any;
         try {
-            const userMessageKey = await UserCredentials.loadMessageKeyByAccount(this.messageId, message.accountId, null);
+            const userMessageKey = await UserCredentials.loadMessageKey(this.messageId, message.owner, null);
             await MessageServer.loadDocument(message, userMessageKey);
             document = message.getDocument();
         } catch (error) {

@@ -99,7 +99,7 @@ export class PolicyImport {
             policy.description = additionalPolicyConfig?.description || policy.description;
             policy.policyTag = additionalPolicyConfig?.policyTag || policy.policyTag;
             policy.status = PolicyStatus.VIEW;
-            policy.messageId = additionalPolicyConfig?.messageId || policy.messageId;
+            policy.messageId = (additionalPolicyConfig?.messageId || policy.messageId || '').trim();
             policy.locationType = LocationType.REMOTE;
         } else {
             delete policy._id;
