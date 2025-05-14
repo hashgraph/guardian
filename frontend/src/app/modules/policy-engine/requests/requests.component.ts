@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, ExternalPolicyStatus, LocationType, PolicyActionStatus, PolicyStatus, UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, ExternalPolicyStatus, LocationType, PolicyActionStatus, PolicyActionType, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { filter, forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -44,6 +44,36 @@ export class PolicyRequestsComponent implements OnInit {
     public allPolicies: any[] = [];
     public currentPolicy: any = null;
     public currentPolicyId: string;
+    public currentType: any = null;
+    public currentStatus: any = null;
+
+    public types = [{
+        name: 'All',
+        value: ''
+    }, {
+        name: 'Actions',
+        value: 'ACTION'
+    }, {
+        name: 'Requests',
+        value: 'REQUEST'
+    }];
+
+    public statuses = [{
+        name: 'All',
+        value: ''
+    }, {
+        name: 'New',
+        value: 'NEW'
+    }, {
+        name: 'Completed',
+        value: 'COMPLETED'
+    }, {
+        name: 'Rejected',
+        value: 'REJECTED'
+    }, {
+        name: 'Error',
+        value: 'ERROR'
+    }];
 
     private subscription = new Subscription();
 
@@ -128,6 +158,14 @@ export class PolicyRequestsComponent implements OnInit {
                 if (queryParams.policyId) {
                     this.currentPolicyId = queryParams.policyId;
                 }
+                if (queryParams.type) {
+                    this.currentStatus = queryParams.type;
+                }
+                if (queryParams.status) {
+                    this.currentType = queryParams.status;
+                }
+                this.currentStatus = this.statuses.find((p: any) => p.id === this.currentStatus) || this.statuses[0].value;
+                this.currentType = this.statuses.find((p: any) => p.id === this.currentType) || this.types[0].value;
                 this.loadProfile();
             })
         );
@@ -168,6 +206,9 @@ export class PolicyRequestsComponent implements OnInit {
                 }
             }
 
+            this.currentStatus = this.statuses.find((p: any) => p.id === this.currentStatus) || this.statuses[0].value;
+            this.currentType = this.statuses.find((p: any) => p.id === this.currentType) || this.types[0].value;
+
             if (this.user.POLICIES_EXTERNAL_POLICY_UPDATE) {
                 this.columns = [...this._defaultColumns, {
                     id: 'options',
@@ -198,6 +239,13 @@ export class PolicyRequestsComponent implements OnInit {
 
         if (this.currentPolicy) {
             filters.policyId = this.currentPolicy.id;
+        }
+        if (this.currentStatus) {
+            filters.status = this.currentStatus;
+        }
+
+        if (this.currentType) {
+            filters.type = this.currentType;
         }
 
         this.externalPoliciesService
@@ -243,10 +291,6 @@ export class PolicyRequestsComponent implements OnInit {
         this.loadData();
     }
 
-    public onEdit(item: any) {
-        this.router.navigate(['/policy-labels', item.id]);
-    }
-
     public onApprove(item: any) {
         this.loading = true;
         this.externalPoliciesService
@@ -281,6 +325,17 @@ export class PolicyRequestsComponent implements OnInit {
                 return 'Error';
             default:
                 return 'Incorrect status';
+        }
+    }
+
+    getTypeName(row: any) {
+        switch (row.type) {
+            case PolicyActionType.ACTION:
+                return 'Action';
+            case PolicyActionType.REQUEST:
+                return 'Request';
+            default:
+                return 'Incorrect type';
         }
     }
 

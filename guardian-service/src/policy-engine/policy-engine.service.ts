@@ -2388,14 +2388,36 @@ export class PolicyEngineService {
 
         //#region Requests
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_REMOTE_REQUESTS,
-            async (msg: { options: any, user: IAuthUser }) => {
+            async (msg: {
+                options: {
+                    filters: {
+                        policyId?: string,
+                        status?: string,
+                        type?: string
+                    },
+                    pageIndex: string,
+                    pageSize: string
+                }, user: IAuthUser
+            }) => {
                 try {
                     const { options, user } = msg;
-                    const { filters, pageIndex, pageSize, policyId } = options;
-                    const _filters: any = { ...filters };
-
-                    _filters.accountId = user.hederaAccountId;
-                    _filters.type = PolicyActionType.REQUEST;
+                    const {
+                        filters,
+                        pageIndex,
+                        pageSize,
+                    } = options;
+                    const _filters: any = {
+                        accountId: user.hederaAccountId
+                    };
+                    if (filters?.policyId) {
+                        _filters.policyId = filters.policyId;
+                    }
+                    if (filters?.status) {
+                        _filters.lastStatus = filters.status;
+                    }
+                    if (filters?.type) {
+                        _filters.type = filters.type;
+                    }
 
                     const otherOptions: any = {};
                     const _pageSize = parseInt(pageSize, 10);
@@ -2412,98 +2434,99 @@ export class PolicyEngineService {
                     const em = new DataBaseHelper(PolicyAction);
                     const total = await em.count(_filters, otherOptions);
 
-                    const aggregate: any[] = [
-                        {
-                            $project: {
-                                _id: '$_id',
-                                createDate: '$createDate',
-                                accountId: '$accountId',
-                                type: '$type',
-                                startMessageId: '$startMessageId',
-                                policyId: '$policyId',
-
-                                status: '$status',
-                                topicId: '$topicId',
-                                messageId: '$messageId',
-                                document: '$document',
-                                blockTag: '$blockTag',
-                            }
-                        },
-                        {
-                            $match:
-                            {
-                                accountId: user.hederaAccountId,
-                                // type: PolicyActionType.REQUEST,
-                            }
-                        },
-                        {
-                            $group:
-                            {
-                                _id: '$startMessageId',
-                                type: { $last: '$type' },
-                                statuses: { $addToSet: '$status' },
-                                createDate: { $last: '$createDate' },
-                                policyId: { $last: '$policyId' },
-                                topicId: { $last: '$topicId' },
-                                messageId: { $last: '$messageId' },
-                                blockTag: { $last: '$blockTag' },
-                                document: { $first: '$document' },
-                            }
-                        },
-                        {
-                            $project: {
-                                statuses: '$statuses',
-                                type: '$type',
-                                status: {
-                                    $switch: {
-                                        branches: [
-                                            { case: { $in: ['ERROR', '$statuses'] }, then: 'ERROR' },
-                                            { case: { $in: ['REJECTED', '$statuses'] }, then: 'REJECTED' },
-                                            { case: { $in: ['COMPLETED', '$statuses'] }, then: 'COMPLETED' },
-                                        ],
-                                        default: 'NEW'
-                                    }
-                                },
-                                policyId: '$policyId',
-                                createDate: '$createDate',
-                                topicId: '$topicId',
-                                messageId: '$messageId',
-                                document: '$document',
-                                blockTag: '$blockTag',
-                            }
+                    const aggregate: any[] = [{
+                        $project: {
+                            _id: '$_id',
+                            createDate: '$createDate',
+                            accountId: '$accountId',
+                            type: '$type',
+                            startMessageId: '$startMessageId',
+                            policyId: '$policyId',
+                            status: '$status',
+                            topicId: '$topicId',
+                            messageId: '$messageId',
+                            document: '$document',
+                            blockTag: '$blockTag',
                         }
-                    ];
+                    }, {
+                        $match: {
+                            accountId: user.hederaAccountId,
+                        }
+                    }, {
+                        $group: {
+                            _id: '$startMessageId',
+                            type: { $last: '$type' },
+                            statuses: { $addToSet: '$status' },
+                            createDate: { $last: '$createDate' },
+                            policyId: { $last: '$policyId' },
+                            topicId: { $last: '$topicId' },
+                            messageId: { $last: '$messageId' },
+                            blockTag: { $last: '$blockTag' },
+                            document: { $last: '$document' },
+                            documents: { $addToSet: '$document' },
+                        }
+                    }, {
+                        $project: {
+                            statuses: '$statuses',
+                            type: '$type',
+                            status: {
+                                $switch: {
+                                    branches: [
+                                        { case: { $in: ['ERROR', '$statuses'] }, then: 'ERROR' },
+                                        { case: { $in: ['REJECTED', '$statuses'] }, then: 'REJECTED' },
+                                        { case: { $in: ['COMPLETED', '$statuses'] }, then: 'COMPLETED' },
+                                    ],
+                                    default: 'NEW'
+                                }
+                            },
+                            policyId: '$policyId',
+                            createDate: '$createDate',
+                            topicId: '$topicId',
+                            messageId: '$messageId',
+                            document: '$document',
+                            documents: '$documents',
+                            blockTag: '$blockTag',
+                        }
+                    }];
 
-                    if (policyId) {
+                    if (filters?.policyId) {
                         aggregate.push({
                             $match: {
-                                policyId,
+                                policyId: filters.policyId,
+                            }
+                        })
+                    }
+                    if (filters?.status) {
+                        aggregate.push({
+                            $match: {
+                                status: filters.status,
+                            }
+                        })
+                    }
+                    if (filters?.type) {
+                        aggregate.push({
+                            $match: {
+                                type: filters.type,
                             }
                         })
                     }
 
                     if (otherOptions.orderBy) {
-                        aggregate.push(
-                            {
-                                $sort: otherOptions.orderBy
-                            }
-                        )
+                        aggregate.push({
+                            $sort: otherOptions.orderBy
+                        })
                     }
 
                     if (otherOptions.offset) {
-                        aggregate.push(
-                            {
-                                $skip: otherOptions.offset
-                            }
-                        )
+                        aggregate.push({
+                            $skip: otherOptions.offset
+                        })
                     }
 
                     if (otherOptions.limit) {
-                        aggregate.push(
-                            {
-                                $limit: otherOptions.limit
-                            }
-                        )
+                        aggregate.push({
+                            $limit: otherOptions.limit
+                        })
                     }
 
                     const items = await em.aggregate(aggregate);

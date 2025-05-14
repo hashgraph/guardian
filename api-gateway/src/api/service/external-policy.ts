@@ -388,6 +388,20 @@ export class ExternalPoliciesApi {
         required: false,
         example: '001'
     })
+    @ApiQuery({
+        name: 'status',
+        type: String,
+        description: 'Status',
+        required: false,
+        example: 'NEW'
+    })
+    @ApiQuery({
+        name: 'type',
+        type: String,
+        description: 'Type',
+        required: false,
+        example: 'ACTION'
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -406,13 +420,18 @@ export class ExternalPoliciesApi {
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
         @Query('policyId') policyId?: string,
+        @Query('status') status?: string,
+        @Query('type') type?: string,
     ): Promise<any> {
         try {
             const options: any = {
-                filters: {},
+                filters: {
+                    policyId,
+                    status,
+                    type
+                },
                 pageIndex,
-                pageSize,
-                policyId
+                pageSize
             };
             const engineService = new PolicyEngine();
             const { items, count } = await engineService.getRemoteRequests(options, user);
