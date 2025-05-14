@@ -452,9 +452,9 @@ export class PolicyActionsService {
             }
 
             if (row.blockTag === 'Groups') {
-                await this.executeBlock(row, policyUser);
-            } else {
                 await this.executeGroup(row, policyUser);
+            } else {
+                await this.executeBlock(row, policyUser);
             }
         } catch (error) {
             await this.sentErrorMessage(row, error, this.policyOwnerId);
@@ -473,7 +473,9 @@ export class PolicyActionsService {
     }
 
     private async executeGroup(row: PolicyAction, policyUser: PolicyUser) {
-        await this.policyInstance.components.selectGroup(policyUser, row.document?.uuid);
+        const result = await this.policyInstance.components.selectGroup(policyUser, row.document?.uuid);
+        this.policyInstance.backup();
+        await this.sentCompleteMessage(row, policyUser, result, this.policyOwnerId);
     }
 
     private async sentCompleteMessage(
