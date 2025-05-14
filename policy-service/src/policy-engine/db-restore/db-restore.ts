@@ -15,26 +15,29 @@ import {
     ExternalCollectionRestore,
     ApproveCollectionRestore,
     MintRequestCollectionRestore,
-    MintTransactionCollectionRestore
+    MintTransactionCollectionRestore,
+    PolicyInvitationsCollectionRestore
 } from './collections/index.js';
 
 export class PolicyRestore {
     private readonly policyId: string;
     private readonly messageId: string;
-    private readonly vcRestore: VcCollectionRestore;
-    private readonly vpRestore: VpCollectionRestore;
-    private readonly didRestore: DidCollectionRestore;
-    private readonly stateRestore: StateCollectionRestore;
-    private readonly roleRestore: RoleCollectionRestore;
-    private readonly multiDocRestore: MultiDocCollectionRestore;
-    private readonly tokenRestore: TokenCollectionRestore;
-    private readonly tagRestore: TagCollectionRestore;
-    private readonly docStateRestore: DocStateCollectionRestore;
-    private readonly topicRestore: TopicCollectionRestore;
-    private readonly externalDocRestore: ExternalCollectionRestore;
-    private readonly approveRestore: ApproveCollectionRestore;
-    private readonly mintRequestRestore: MintRequestCollectionRestore;
-    private readonly mintTransactionRestore: MintTransactionCollectionRestore;
+
+    private readonly vcCollectionRestore: VcCollectionRestore;
+    private readonly vpCollectionRestore: VpCollectionRestore;
+    private readonly didCollectionRestore: DidCollectionRestore;
+    private readonly stateCollectionRestore: StateCollectionRestore;
+    private readonly roleCollectionRestore: RoleCollectionRestore;
+    private readonly multiDocCollectionRestore: MultiDocCollectionRestore;
+    private readonly tokenCollectionRestore: TokenCollectionRestore;
+    private readonly tagCollectionRestore: TagCollectionRestore;
+    private readonly docStateCollectionRestore: DocStateCollectionRestore;
+    private readonly topicCollectionRestore: TopicCollectionRestore;
+    private readonly externalCollectionRestore: ExternalCollectionRestore;
+    private readonly approveCollectionRestore: ApproveCollectionRestore;
+    private readonly mintRequestCollectionRestore: MintRequestCollectionRestore;
+    private readonly mintTransactionCollectionRestore: MintTransactionCollectionRestore;
+    private readonly policyInvitationsCollectionRestore: PolicyInvitationsCollectionRestore;
 
     private lastDiff: PolicyDiff | null;
 
@@ -43,20 +46,21 @@ export class PolicyRestore {
         this.messageId = messageId;
         this.lastDiff = null;
 
-        this.vcRestore = new VcCollectionRestore(this.policyId, this.messageId);
-        this.vpRestore = new VpCollectionRestore(this.policyId, this.messageId);
-        this.didRestore = new DidCollectionRestore(this.policyId, this.messageId);
-        this.stateRestore = new StateCollectionRestore(this.policyId, this.messageId);
-        this.roleRestore = new RoleCollectionRestore(this.policyId, this.messageId);
-        this.multiDocRestore = new MultiDocCollectionRestore(this.policyId, this.messageId);
-        this.tokenRestore = new TokenCollectionRestore(this.policyId, this.messageId);
-        this.tagRestore = new TagCollectionRestore(this.policyId, this.messageId);
-        this.docStateRestore = new DocStateCollectionRestore(this.policyId, this.messageId);
-        this.topicRestore = new TopicCollectionRestore(this.policyId, this.messageId);
-        this.externalDocRestore = new ExternalCollectionRestore(this.policyId, this.messageId);
-        this.approveRestore = new ApproveCollectionRestore(this.policyId, this.messageId);
-        this.mintRequestRestore = new MintRequestCollectionRestore(this.policyId, this.messageId);
-        this.mintTransactionRestore = new MintTransactionCollectionRestore(this.policyId, this.messageId);
+        this.vcCollectionRestore = new VcCollectionRestore(this.policyId, this.messageId);
+        this.vpCollectionRestore = new VpCollectionRestore(this.policyId, this.messageId);
+        this.didCollectionRestore = new DidCollectionRestore(this.policyId, this.messageId);
+        this.stateCollectionRestore = new StateCollectionRestore(this.policyId, this.messageId);
+        this.roleCollectionRestore = new RoleCollectionRestore(this.policyId, this.messageId);
+        this.multiDocCollectionRestore = new MultiDocCollectionRestore(this.policyId, this.messageId);
+        this.tokenCollectionRestore = new TokenCollectionRestore(this.policyId, this.messageId);
+        this.tagCollectionRestore = new TagCollectionRestore(this.policyId, this.messageId);
+        this.docStateCollectionRestore = new DocStateCollectionRestore(this.policyId, this.messageId);
+        this.topicCollectionRestore = new TopicCollectionRestore(this.policyId, this.messageId);
+        this.externalCollectionRestore = new ExternalCollectionRestore(this.policyId, this.messageId);
+        this.approveCollectionRestore = new ApproveCollectionRestore(this.policyId, this.messageId);
+        this.mintRequestCollectionRestore = new MintRequestCollectionRestore(this.policyId, this.messageId);
+        this.mintTransactionCollectionRestore = new MintTransactionCollectionRestore(this.policyId, this.messageId);
+        this.policyInvitationsCollectionRestore = new PolicyInvitationsCollectionRestore(this.policyId, this.messageId);
     }
 
     public async init(): Promise<void> {
@@ -85,20 +89,21 @@ export class PolicyRestore {
         oldDiff.index = backup.index;
         oldDiff.lastUpdate = backup.lastUpdate;
         oldDiff.type = backup.type;
-        oldDiff.vcCollection = await this.vcRestore.restoreBackup(backup.vcCollection);
-        oldDiff.vpCollection = await this.vpRestore.restoreBackup(backup.vpCollection);
-        oldDiff.didCollection = await this.didRestore.restoreBackup(backup.didCollection);
-        oldDiff.stateCollection = await this.stateRestore.restoreBackup(backup.stateCollection);
-        oldDiff.roleCollection = await this.roleRestore.restoreBackup(backup.roleCollection);
-        oldDiff.multiDocCollection = await this.multiDocRestore.restoreBackup(backup.multiDocCollection);
-        oldDiff.tokenCollection = await this.tokenRestore.restoreBackup(backup.tokenCollection);
-        oldDiff.tagCollection = await this.tagRestore.restoreBackup(backup.tagCollection);
-        oldDiff.docStateCollection = await this.docStateRestore.restoreBackup(backup.docStateCollection);
-        oldDiff.topicCollection = await this.topicRestore.restoreBackup(backup.topicCollection);
-        oldDiff.externalDocCollection = await this.externalDocRestore.restoreBackup(backup.externalDocCollection);
-        oldDiff.approveCollection = await this.approveRestore.restoreBackup(backup.approveCollection);
-        oldDiff.mintRequestCollection = await this.mintRequestRestore.restoreBackup(backup.mintRequestCollection);
-        oldDiff.mintTransactionCollection = await this.mintTransactionRestore.restoreBackup(backup.mintTransactionCollection);
+        oldDiff.vcCollection = await this.vcCollectionRestore.restoreBackup(backup.vcCollection);
+        oldDiff.vpCollection = await this.vpCollectionRestore.restoreBackup(backup.vpCollection);
+        oldDiff.didCollection = await this.didCollectionRestore.restoreBackup(backup.didCollection);
+        oldDiff.stateCollection = await this.stateCollectionRestore.restoreBackup(backup.stateCollection);
+        oldDiff.roleCollection = await this.roleCollectionRestore.restoreBackup(backup.roleCollection);
+        oldDiff.multiDocCollection = await this.multiDocCollectionRestore.restoreBackup(backup.multiDocCollection);
+        oldDiff.tokenCollection = await this.tokenCollectionRestore.restoreBackup(backup.tokenCollection);
+        oldDiff.tagCollection = await this.tagCollectionRestore.restoreBackup(backup.tagCollection);
+        oldDiff.docStateCollection = await this.docStateCollectionRestore.restoreBackup(backup.docStateCollection);
+        oldDiff.topicCollection = await this.topicCollectionRestore.restoreBackup(backup.topicCollection);
+        oldDiff.externalDocCollection = await this.externalCollectionRestore.restoreBackup(backup.externalDocCollection);
+        oldDiff.approveCollection = await this.approveCollectionRestore.restoreBackup(backup.approveCollection);
+        oldDiff.mintRequestCollection = await this.mintRequestCollectionRestore.restoreBackup(backup.mintRequestCollection);
+        oldDiff.mintTransactionCollection = await this.mintTransactionCollectionRestore.restoreBackup(backup.mintTransactionCollection);
+        oldDiff.policyInvitationsCollection = await this.policyInvitationsCollectionRestore.restoreBackup(backup.policyInvitationsCollection);
 
         await this._saveBackup(oldDiff);
     }
@@ -109,20 +114,21 @@ export class PolicyRestore {
         oldDiff.index = diff.index;
         oldDiff.lastUpdate = diff.lastUpdate;
         oldDiff.type = diff.type;
-        oldDiff.vcCollection = await this.vcRestore.restoreDiff(diff.vcCollection, oldDiff.vcCollection);
-        oldDiff.vpCollection = await this.vpRestore.restoreDiff(diff.vpCollection, oldDiff.vpCollection);
-        oldDiff.didCollection = await this.didRestore.restoreDiff(diff.didCollection, oldDiff.didCollection);
-        oldDiff.stateCollection = await this.stateRestore.restoreDiff(diff.stateCollection, oldDiff.stateCollection);
-        oldDiff.roleCollection = await this.roleRestore.restoreDiff(diff.roleCollection, oldDiff.roleCollection);
-        oldDiff.multiDocCollection = await this.multiDocRestore.restoreDiff(diff.multiDocCollection, oldDiff.multiDocCollection);
-        oldDiff.tokenCollection = await this.tokenRestore.restoreDiff(diff.tokenCollection, oldDiff.tokenCollection);
-        oldDiff.tagCollection = await this.tagRestore.restoreDiff(diff.tagCollection, oldDiff.tagCollection);
-        oldDiff.docStateCollection = await this.docStateRestore.restoreDiff(diff.docStateCollection, oldDiff.docStateCollection);
-        oldDiff.topicCollection = await this.topicRestore.restoreDiff(diff.topicCollection, oldDiff.topicCollection);
-        oldDiff.externalDocCollection = await this.externalDocRestore.restoreDiff(diff.externalDocCollection, oldDiff.externalDocCollection);
-        oldDiff.approveCollection = await this.approveRestore.restoreDiff(diff.approveCollection, oldDiff.approveCollection);
-        oldDiff.mintRequestCollection = await this.mintRequestRestore.restoreDiff(diff.mintRequestCollection, oldDiff.mintRequestCollection);
-        oldDiff.mintTransactionCollection = await this.mintTransactionRestore.restoreDiff(diff.mintTransactionCollection, oldDiff.mintTransactionCollection);
+        oldDiff.vcCollection = await this.vcCollectionRestore.restoreDiff(diff.vcCollection, oldDiff.vcCollection);
+        oldDiff.vpCollection = await this.vpCollectionRestore.restoreDiff(diff.vpCollection, oldDiff.vpCollection);
+        oldDiff.didCollection = await this.didCollectionRestore.restoreDiff(diff.didCollection, oldDiff.didCollection);
+        oldDiff.stateCollection = await this.stateCollectionRestore.restoreDiff(diff.stateCollection, oldDiff.stateCollection);
+        oldDiff.roleCollection = await this.roleCollectionRestore.restoreDiff(diff.roleCollection, oldDiff.roleCollection);
+        oldDiff.multiDocCollection = await this.multiDocCollectionRestore.restoreDiff(diff.multiDocCollection, oldDiff.multiDocCollection);
+        oldDiff.tokenCollection = await this.tokenCollectionRestore.restoreDiff(diff.tokenCollection, oldDiff.tokenCollection);
+        oldDiff.tagCollection = await this.tagCollectionRestore.restoreDiff(diff.tagCollection, oldDiff.tagCollection);
+        oldDiff.docStateCollection = await this.docStateCollectionRestore.restoreDiff(diff.docStateCollection, oldDiff.docStateCollection);
+        oldDiff.topicCollection = await this.topicCollectionRestore.restoreDiff(diff.topicCollection, oldDiff.topicCollection);
+        oldDiff.externalDocCollection = await this.externalCollectionRestore.restoreDiff(diff.externalDocCollection, oldDiff.externalDocCollection);
+        oldDiff.approveCollection = await this.approveCollectionRestore.restoreDiff(diff.approveCollection, oldDiff.approveCollection);
+        oldDiff.mintRequestCollection = await this.mintRequestCollectionRestore.restoreDiff(diff.mintRequestCollection, oldDiff.mintRequestCollection);
+        oldDiff.mintTransactionCollection = await this.mintTransactionCollectionRestore.restoreDiff(diff.mintTransactionCollection, oldDiff.mintTransactionCollection);
+        oldDiff.policyInvitationsCollection = await this.policyInvitationsCollectionRestore.restoreDiff(diff.policyInvitationsCollection, oldDiff.policyInvitationsCollection);
 
         await this._saveBackup(oldDiff);
     }
@@ -160,7 +166,10 @@ export class PolicyRestore {
             !!backup.docStateCollection &&
             !!backup.topicCollection &&
             !!backup.externalDocCollection &&
-            !!backup.approveCollection
+            !!backup.approveCollection &&
+            !!backup.mintRequestCollection &&
+            !!backup.mintTransactionCollection &&
+            !!backup.policyInvitationsCollection
         )
 
         const fileId = await FileHelper.saveFile(backup);
