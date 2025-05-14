@@ -685,7 +685,9 @@ export class PolicyEngineService {
                 try {
                     const { options, owner } = msg;
                     const { fields, filters, pageIndex, pageSize } = options;
-                    const _filters: any = { ...filters };
+                    const _filters = { ...filters };
+
+                    const customStatus = _filters.status ? _filters.status.split(',') : undefined;
 
                     const otherOptions: any = { fields };
 
@@ -699,8 +701,7 @@ export class PolicyEngineService {
                         otherOptions.orderBy = { createDate: 'DESC' };
                         otherOptions.limit = 100;
                     }
-                    await this.policyEngine.addAccessFilters(_filters, owner);
-
+                    await this.policyEngine.addAccessFilters(_filters, owner, customStatus);
                     const [policies, count] = await DatabaseServer.getPoliciesAndCount(_filters, otherOptions);
                     for (const policy of policies) {
                         await PolicyComponentsUtils.GetPolicyInfo(policy, owner.creator);

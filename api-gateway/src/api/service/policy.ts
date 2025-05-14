@@ -3,7 +3,7 @@ import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache } from '#helpers';
 import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyTestDTO, PolicyValidationDTO, RunningDetailsDTO, ServiceUnavailableErrorDTO, TaskDTO } from '#middlewares';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
-import { DocumentType, Permissions, PolicyHelper, TaskAction, UserRole } from '@guardian/interfaces';
+import { DocumentType, Permissions, PolicyHelper, PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
 
@@ -120,6 +120,13 @@ export class PolicyApi {
         required: false,
         example: 20
     })
+    @ApiQuery({
+        name: 'status',
+        type: String,
+        description: 'Policy status',
+        required: false,
+        example: PolicyType.PUBLISH
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -137,7 +144,8 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
-        @Query('pageSize') pageSize?: number
+        @Query('pageSize') pageSize?: number,
+        @Query('status') status?: string
     ): Promise<any> {
         if (!user.did && user.role !== UserRole.AUDITOR) {
             return res.header('X-Total-Count', 0).send([]);
@@ -145,7 +153,7 @@ export class PolicyApi {
         try {
             const options: any = {
                 fields: Object.values(POLICY_REQUIRED_PROPS),
-                filters: {},
+                filters: { status },
                 pageIndex,
                 pageSize
             };

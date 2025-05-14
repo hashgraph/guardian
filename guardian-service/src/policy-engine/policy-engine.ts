@@ -224,36 +224,45 @@ export class PolicyEngine extends NatsService {
      * @param policy
      * @param user
      */
-    public async addAccessFilters(filters: { [field: string]: any }, user: IOwner): Promise<any> {
+    public async addAccessFilters(filters: { [field: string]: any }, user: IOwner, customStatus?: string[]): Promise<any> {
         filters.owner = user.owner;
         switch (user.access) {
             case AccessType.ALL: {
+                if (customStatus) {
+                    filters.status = { $in: customStatus };
+                }
                 break;
             }
             case AccessType.ASSIGNED_OR_PUBLISHED: {
                 const assigned = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
                 const assignedMap = assigned.map((e) => e.entityId);
+                const statusFilter = customStatus ? [PolicyType.PUBLISH, PolicyType.DISCONTINUED].filter((status) => customStatus.includes(status)) : [PolicyType.PUBLISH, PolicyType.DISCONTINUED];
                 filters.$or = [
-                    { status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] } },
+                    { status: { $in: statusFilter }},
                     { id: { $in: assignedMap } }
                 ];
                 break;
             }
             case AccessType.PUBLISHED: {
-                filters.status = { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] };
+                const statusFilter = customStatus ? [PolicyType.PUBLISH, PolicyType.DISCONTINUED].filter((status) => customStatus.includes(status)) : [PolicyType.PUBLISH, PolicyType.DISCONTINUED];
+                filters.status = { $in: statusFilter };
                 break;
             }
             case AccessType.ASSIGNED: {
                 const assigned = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
                 const assignedMap = assigned.map((e) => e.entityId);
                 filters.id = { $in: assignedMap };
+                if (customStatus) {
+                    filters.status = { $in: customStatus };
+                }
                 break;
             }
             case AccessType.ASSIGNED_AND_PUBLISHED: {
                 const assigned = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
                 const assignedMap = assigned.map((e) => e.entityId);
+                const statusFilter = customStatus ? [PolicyType.PUBLISH, PolicyType.DISCONTINUED].filter((status) => customStatus.includes(status)) : [PolicyType.PUBLISH, PolicyType.DISCONTINUED];
                 filters.id = { $in: assignedMap };
-                filters.status = { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] };
+                filters.status = { $in: statusFilter };
                 break;
             }
             case AccessType.NONE: {
