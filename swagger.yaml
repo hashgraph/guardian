@@ -14400,6 +14400,20 @@ paths:
           schema:
             example: '001'
             type: string
+        - name: status
+          required: false
+          in: query
+          description: Status
+          schema:
+            example: NEW
+            type: string
+        - name: type
+          required: false
+          in: query
+          description: Type
+          schema:
+            example: ACTION
+            type: string
       responses:
         '200':
           description: Successful operation.
