@@ -1,5 +1,5 @@
 import { FindCursor } from 'mongodb';
-import { DataBaseHelper, VpDocument } from '@guardian/common';
+import { DataBaseHelper, DeleteCache, VpDocument } from '@guardian/common';
 import { CollectionBackup } from '../collection-backup.js';
 import { IDiffAction } from '../../interfaces/action.interface.js';
 
@@ -18,10 +18,13 @@ export class VpCollectionBackup extends CollectionBackup<VpDocument> {
         return vcRows;
     }
 
-    protected override findDeletedDocuments(): FindCursor<VpDocument> {
-        const vcCollection = DataBaseHelper.orm.em.getCollection(this.collectionName);
-        const vcRows = vcCollection.find<any>({ policyId: this.policyId, t: 1 });
-        return vcRows;
+    protected override findDeletedDocuments(): FindCursor<DeleteCache> {
+        const collection = DataBaseHelper.orm.em.getCollection('DeleteCache');
+        const rows = collection.find<any>({ 
+            policyId: this.policyId, 
+            collection: this.collectionName
+        });
+        return rows;
     }
 
     protected override createBackupData(row: VpDocument): any {

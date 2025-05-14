@@ -1,4 +1,4 @@
-import { DataBaseHelper, MintRequest } from '@guardian/common';
+import { DataBaseHelper, DeleteCache, MintRequest } from '@guardian/common';
 import { FindCursor } from 'mongodb';
 import { CollectionBackup } from '../collection-backup.js';
 import { IDiffAction } from '../../interfaces/action.interface.js';
@@ -18,10 +18,13 @@ export class MintRequestCollectionBackup extends CollectionBackup<MintRequest> {
         return vcRows;
     }
 
-    protected override findDeletedDocuments(): FindCursor<MintRequest> {
-        const vcCollection = DataBaseHelper.orm.em.getCollection(this.collectionName);
-        const vcRows = vcCollection.find<any>({ policyId: this.policyId, t: 1 });
-        return vcRows;
+    protected override findDeletedDocuments(): FindCursor<DeleteCache> {
+        const collection = DataBaseHelper.orm.em.getCollection('DeleteCache');
+        const rows = collection.find<any>({ 
+            policyId: this.policyId, 
+            collection: this.collectionName
+        });
+        return rows;
     }
 
     protected override createBackupData(row: MintRequest): any {

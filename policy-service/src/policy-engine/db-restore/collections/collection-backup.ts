@@ -1,5 +1,5 @@
 import { FindCursor } from 'mongodb';
-import { RestoreEntity } from '@guardian/common';
+import { DeleteCache, RestoreEntity } from '@guardian/common';
 import { DiffActionType, ICollectionDiff, IDiffAction } from '../index.js';
 import crypto from 'crypto';
 
@@ -76,7 +76,7 @@ export abstract class CollectionBackup<T extends RestoreEntity> {
         const deletedList = new Set<string>();
         while (await deletedRows.hasNext()) {
             const deletedRow = await deletedRows.next();
-            const id = deletedRow._id.toString();
+            const id = deletedRow.rowId.toString();
             deletedList.add(id);
         }
 
@@ -207,7 +207,7 @@ export abstract class CollectionBackup<T extends RestoreEntity> {
 
     protected abstract findDocuments(lastUpdate?: Date): FindCursor<T>;
 
-    protected abstract findDeletedDocuments(): FindCursor<T>;
+    protected abstract findDeletedDocuments(): FindCursor<DeleteCache>;
 
     protected abstract needLoadFile(newRow: T, oldRow?: T): boolean;
 
