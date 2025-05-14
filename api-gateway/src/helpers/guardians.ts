@@ -3729,7 +3729,7 @@ export class Guardians extends NatsService {
     }
 
     /**
-     * Return User Profile
+     * Generate key
      *
      * @param {IAuthUser} user - user
      * @param {string} messageId - messageId
@@ -3739,5 +3739,17 @@ export class Guardians extends NatsService {
      */
     public async generateKey(user: IAuthUser, messageId: string, key?: string): Promise<string> {
         return await this.sendMessage(MessageAPI.GENERATE_USER_KEYS, { user, messageId, key });
+    }
+
+    /**
+     * Delete key
+     *
+     * @param {IAuthUser} user - user
+     * @param {string} id - id
+     *
+     * @returns {boolean}
+     */
+    public async deleteKey(user: IAuthUser, id: string): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_USER_KEYS, { user, id });
     }
 }

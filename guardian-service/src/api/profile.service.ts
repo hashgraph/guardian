@@ -457,9 +457,9 @@ export function profileAPI(logger: PinoLogger) {
     /**
      * Generate keys
      *
-     * @param {any} msg - filters
+     * @param {any} msg
      *
-     * @returns {any} - policy labels
+     * @returns {any} - key
      */
     ApiResponse(MessageAPI.GENERATE_USER_KEYS,
         async (msg: {
@@ -489,6 +489,35 @@ export function profileAPI(logger: PinoLogger) {
                     msg?.user?.id
                 );
                 return new MessageResponse({ ...item, key });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Delete key
+     *
+     * @param {any} msg
+     *
+     * @returns {boolean}
+     */
+    ApiResponse(MessageAPI.DELETE_USER_KEYS,
+        async (msg: {
+            user: IAuthUser,
+            id: string
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { user, id } = msg;
+                const item = await DatabaseServer.getKeyById(id);
+                if (!item || item.owner !== user.did) {
+                    throw new Error('Invalid key');
+                }
+                await DatabaseServer.deleteKey(item);
+                return new MessageResponse(true);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 return new MessageError(error);

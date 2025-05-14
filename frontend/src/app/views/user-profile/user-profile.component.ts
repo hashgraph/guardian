@@ -18,6 +18,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { ValidateIfFieldEqual } from '../../validators/validate-if-field-equal';
 import { ChangePasswordComponent } from '../login/change-password/change-password.component';
 import { UserKeysDialog } from 'src/app/components/user-keys-dialog/user-keys-dialog.component';
+import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 
 enum OperationMode {
     None,
@@ -1002,9 +1003,34 @@ export class UserProfileComponent implements OnInit {
         dialogRef.onClose.subscribe(async (result: any | null) => { });
     }
 
-    public onDeleteKey(row: any): void {
+    public onDeleteKey(item: any) {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete key',
+                text: `Are you sure want to delete key?`,
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Delete',
+                    class: 'delete'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Delete') {
+                this.deleteKey(item.id)
+            }
+        });
+    }
+
+    public deleteKey(id: string): void {
+        this.loading = true;
         this.profileService
-            .deleteKey(row.id)
+            .deleteKey(id)
             .subscribe(() => {
                 this.loading = false;
                 this.loadKeys();

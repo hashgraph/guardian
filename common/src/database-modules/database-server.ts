@@ -4458,4 +4458,20 @@ export class DatabaseServer extends AbstractDatabaseServer {
     public static async getKeysAndCount(filters?: FilterObject<PolicyKey>, options?: FindOptions<unknown>): Promise<[PolicyKey[], number]> {
         return await new DataBaseHelper(PolicyKey).findAndCount(filters, options);
     }
+
+    /**
+     * Get key By ID
+     * @param id
+     */
+    public static async getKeyById(id: string): Promise<PolicyKey | null> {
+        return await new DataBaseHelper(PolicyKey).findOne(id);
+    }
+
+    /**
+     * Delete key
+     * @param key
+     */
+    public static async deleteKey(key: PolicyKey): Promise<void> {
+        return await new DataBaseHelper(PolicyKey).remove(key);
+    }
 }

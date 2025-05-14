@@ -1,4 +1,4 @@
-import { DatabaseServer } from '@guardian/common';
+import { DatabaseServer, Environment } from '@guardian/common';
 import { TopicListener as ListenerCollection } from '../entity/index.js';
 import { TopicInfo, TopicMessage } from '../interface/index.js';
 import { ListenerService } from './listener-service.js';
@@ -15,7 +15,6 @@ export class Listener {
     private readonly channel: ListenerService;
 
     public static readonly REST_API_MAX_LIMIT: number = 100;
-    public static readonly MIRROR_NODE_URL: string = 'https://testnet.mirrornode.hedera.com/api/v1/';
 
     private _messages: Message[];
 
@@ -107,7 +106,7 @@ export class Listener {
 
     public async getMessages(topicId: string, lastNumber: number): Promise<TopicInfo | null> {
         try {
-            const url = Listener.MIRROR_NODE_URL + 'topics/' + topicId + '/messages';
+            const url = `${Environment.HEDERA_TOPIC_API}${topicId}/messages`;
             const option: any = {
                 params: {
                     limit: Listener.REST_API_MAX_LIMIT

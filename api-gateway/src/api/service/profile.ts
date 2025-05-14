@@ -1,8 +1,8 @@
 import { Permissions, TaskAction } from '@guardian/interfaces';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req, Response, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req, Response, Query, Delete } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO, InternalServerErrorDTO, ProfileDTO, TaskDTO, pageHeader } from '#middlewares';
+import { CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO, Examples, InternalServerErrorDTO, ProfileDTO, TaskDTO, pageHeader } from '#middlewares';
 import { Auth, AuthUser } from '#auth';
 import { CacheService, getCacheKey, Guardians, InternalException, ServiceError, TaskManager, UseCache } from '#helpers';
 import { CACHE, PREFIXES } from '#constants';
@@ -508,6 +508,47 @@ export class ProfileApi {
         try {
             const guardians = new Guardians();
             return await guardians.generateKey(user, messageId, key);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Delete key
+     */
+    @Delete('/keys/:id')
+    @Auth(Permissions.PROFILES_USER_UPDATE)
+    @ApiOperation({
+        summary: 'Deletes the key.',
+        description: 'Deletes the key with the provided ID.',
+    })
+    @ApiParam({
+        name: 'id',
+        type: 'string',
+        required: true,
+        description: 'Key Identifier',
+        example: Examples.DB_ID,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Boolean
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async deleteKey(
+        @AuthUser() user: IAuthUser,
+        @Param('id') id: string
+    ): Promise<boolean> {
+        try {
+            if (!id) {
+                throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY)
+            }
+            const guardians = new Guardians();
+            return await guardians.deleteKey(user, id);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
