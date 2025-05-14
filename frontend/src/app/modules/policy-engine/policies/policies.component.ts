@@ -1530,4 +1530,12 @@ export class PoliciesComponent implements OnInit {
             }
         });
     }
+
+    public onCopyMessage(row: any): void {
+        this.handleCopyToClipboard(row.messageId)
+    }
+
+    private handleCopyToClipboard(text: string): void {
+        navigator.clipboard.writeText(text || '');
+    }
 }

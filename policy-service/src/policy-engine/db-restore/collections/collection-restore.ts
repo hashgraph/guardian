@@ -15,6 +15,10 @@ export abstract class CollectionRestore<T extends RestoreEntity> {
     public async restoreBackup(backup: ICollectionDiff<T>): Promise<ICollectionDiff<T>> {
         await this.clearCollection();
 
+        if (!backup) {
+            return null;
+        }
+
         let hash = '';
         const rows: T[] = [];
         for (const action of backup.actions) {

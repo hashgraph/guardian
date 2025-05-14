@@ -391,10 +391,13 @@
                                 </td>
                                 <td
                                     *ngIf="canDisplayColumn('publicLink')"
-                                    class="cell-210 text-truncate"
+                                    class="cell-225 text-truncate"
                                 >
                                     <span *ngIf="policy.availability === 'public'" class="text-truncate">
                                         {{ policy.messageId }}
+                                        <div class="btn-icon-small" (click)="onCopyMessage(policy)">
+                                            <i class="pi pi-copy"></i>
+                                        </div>
                                     </span>
                                     <span *ngIf="policy.availability !== 'public'" class="text-truncate">
                                         Private
