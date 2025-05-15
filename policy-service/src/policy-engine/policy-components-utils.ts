@@ -10,6 +10,7 @@ import {
 } from './interfaces/index.js';
 import { BlockType, GenerateUUIDv4, LocationType, ModuleStatus, PolicyEvents, PolicyHelper, PolicyStatus } from '@guardian/interfaces';
 import {
+    ActionType,
     AnyBlockType,
     IPolicyBlock,
     IPolicyContainerBlock,
@@ -1607,7 +1608,7 @@ export class PolicyComponentsUtils {
         data: any
     ): Promise<MessageResponse<any> | MessageError<any>> {
         if (block.actionType === LocationType.LOCAL) {
-            const result = await block.setData(user, data);
+            const result = await block.setData(user, data, ActionType.COMMON);
             return new MessageResponse(result);
         }
 
@@ -1623,8 +1624,17 @@ export class PolicyComponentsUtils {
             } else {
                 return new MessageError('Invalid policy controller', 500);
             }
+        } else if (block.locationType === LocationType.CUSTOM) {
+            const _data = await block.setData(user, data, ActionType.LOCAL);
+            const controller = PolicyComponentsUtils.ActionsControllers.get(block.policyId);
+            if (controller) {
+                const result = await controller.sendAction(block, user, _data);
+                return new MessageResponse(result);
+            } else {
+                return new MessageError('Invalid policy controller', 500);
+            }
         } else {
-            const result = await block.setData(user, data);
+            const result = await block.setData(user, data, ActionType.COMMON);
             return new MessageResponse(result);
         }
     }

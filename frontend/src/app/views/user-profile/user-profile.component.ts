@@ -367,6 +367,12 @@ export class UserProfileComponent implements OnInit {
             size: 'auto',
             tooltip: false
         }, {
+            id: 'policyName',
+            title: 'Policy Name',
+            type: 'text',
+            size: 'auto',
+            tooltip: false
+        }, {
             id: 'delete',
             title: '',
             type: 'text',

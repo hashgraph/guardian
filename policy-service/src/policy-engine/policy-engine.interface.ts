@@ -7,6 +7,15 @@ import { LocationType, PolicyAvailability, PolicyStatus } from '@guardian/interf
 /**
  * Policy roles interface
  */
+export enum ActionType {
+    COMMON = 'COMMON',
+    LOCAL = 'LOCAL',
+    REMOTE = 'REMOTE'
+}
+
+/**
+ * Policy roles interface
+ */
 export interface IPolicyRoles {
     [policyId: string]: string;
 }
@@ -449,7 +458,7 @@ export interface IPolicyInterfaceBlock extends IPolicyBlock {
      * @param user
      * @param data
      */
-    setData(user: PolicyUser | null, data: any): Promise<any>;
+    setData(user: PolicyUser | null, data: any, type?: ActionType): Promise<any>;
 
     /**
      * Get block data
@@ -599,7 +608,7 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
      * @param user
      * @param data
      */
-    setData(user: PolicyUser | null, data: any): Promise<any>;
+    setData(user: PolicyUser | null, data: any, type?: ActionType): Promise<any>;
 
     /**
      * Get block data

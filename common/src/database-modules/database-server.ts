@@ -2135,8 +2135,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * Get policy
      * @param filters
      */
-    public static async getPolicy(filters: FilterObject<Policy>): Promise<Policy | null> {
-        return await new DataBaseHelper(Policy).findOne(filters);
+    public static async getPolicy(filters: FilterObject<Policy>, options?: FindOptions<unknown>): Promise<Policy | null> {
+        return await new DataBaseHelper(Policy).findOne(filters, options);
     }
 
     /**

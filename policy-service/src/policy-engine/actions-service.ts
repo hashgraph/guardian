@@ -1,6 +1,6 @@
 import { DataBaseHelper, DatabaseServer, ITopicMessage, MessageAction, MessageServer, Policy, PolicyActionMessage, PolicyAction, TopicConfig, TopicListener } from '@guardian/common';
 import { AssignedEntityType, GenerateUUIDv4, Permissions, PolicyActionStatus, PolicyActionType, PolicyStatus, UserPermissions } from '@guardian/interfaces';
-import { IPolicyInterfaceBlock } from './policy-engine.interface.js';
+import { ActionType, IPolicyInterfaceBlock } from './policy-engine.interface.js';
 import { PolicyUser, UserCredentials } from './policy-user.js';
 import { PolicyUtils } from './helpers/utils.js';
 import { PolicyComponentsUtils } from './policy-components-utils.js';
@@ -475,7 +475,7 @@ export class PolicyActionsService {
             throw error;
         }
 
-        const result = await block.setData(policyUser, row.document);
+        const result = await block.setData(policyUser, row.document, ActionType.REMOTE);
         await this.sentCompleteMessage(row, policyUser, result, this.policyOwnerId);
     }
 

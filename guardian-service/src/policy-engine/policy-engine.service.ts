@@ -2407,7 +2407,8 @@ export class PolicyEngineService {
                         pageSize,
                     } = options;
                     const _filters: any = {
-                        accountId: user.hederaAccountId
+                        accountId: user.hederaAccountId,
+                        index: { $ne: null }
                     };
                     if (filters?.policyId) {
                         _filters.policyId = filters.policyId;
@@ -2423,17 +2424,16 @@ export class PolicyEngineService {
                     const _pageSize = parseInt(pageSize, 10);
                     const _pageIndex = parseInt(pageIndex, 10);
                     if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
-                        otherOptions.orderBy = { createDate: -1 };
+                        otherOptions.orderBy = { startMessageId: -1 };
                         otherOptions.limit = _pageSize;
                         otherOptions.offset = _pageIndex * _pageSize;
                     } else {
-                        otherOptions.orderBy = { createDate: -1 };
+                        otherOptions.orderBy = { startMessageId: -1 };
                         otherOptions.limit = 100;
                     }
 
                     const em = new DataBaseHelper(PolicyAction);
                     const total = await em.count(_filters, otherOptions);
-
                     const aggregate: any[] = [{
                         $project: {
                             _id: '$_id',
@@ -2451,7 +2451,10 @@ export class PolicyEngineService {
                     }, {
                         $match: {
                             accountId: user.hederaAccountId,
+                            index: { $ne: null }
                         }
+                    }, {
+                        $sort: { startMessageId: -1 }
                     }, {
                         $group: {
                             _id: '$startMessageId',
@@ -2461,6 +2464,7 @@ export class PolicyEngineService {
                             policyId: { $last: '$policyId' },
                             topicId: { $last: '$topicId' },
                             messageId: { $last: '$messageId' },
+                            startMessageId: { $last: '$startMessageId' },
                             blockTag: { $last: '$blockTag' },
                             document: { $last: '$document' },
                             documents: { $addToSet: '$document' },
@@ -2484,6 +2488,7 @@ export class PolicyEngineService {
                             createDate: '$createDate',
                             topicId: '$topicId',
                             messageId: '$messageId',
+                            startMessageId: '$startMessageId',
                             document: '$document',
                             documents: '$documents',
                             blockTag: '$blockTag',

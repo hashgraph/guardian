@@ -447,6 +447,11 @@ export function profileAPI(logger: PinoLogger) {
                     owner: user.did
                 };
                 const [items, count] = await DatabaseServer.getKeysAndCount(query, otherOptions);
+                for (const item of items) {
+                    const policy = await DatabaseServer.getPolicy({ messageId: item.messageId }, { fields: ['name'] } as any);
+                    (item as any).policyName = policy?.name;
+                    (item as any).policyVersion = policy?.version;
+                }
                 return new MessageResponse({ items, count });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
