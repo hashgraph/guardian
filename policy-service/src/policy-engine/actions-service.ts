@@ -630,4 +630,63 @@ export class PolicyActionsService {
         }
         return false;
     }
+
+    public async cancelAction(messageId: string, user: PolicyUser) {
+        const collection = new DataBaseHelper(PolicyAction);
+
+        const cred = await PolicyUtils.getUserCredentials(this.policyInstance, user.did, user.userId);
+        const row = await collection.findOne({
+            messageId,
+            accountId: cred.hederaAccountId,
+            type: PolicyActionType.ACTION
+        });
+
+        if (!row) {
+            throw new Error('Action not found');
+        }
+
+        const userCred = await PolicyUtils.getUserCredentials(this.policyInstance, user.did, user.userId);
+        const userHederaCred = await userCred.loadHederaCredentials(this.policyInstance, user.userId);
+        const userSignOptions = await userCred.loadSignOptions(this.policyInstance, user.userId);
+        const userMessageKey = await userCred.loadMessageKey(this.policyInstance, user.userId);
+        const messageServer = new MessageServer({
+            operatorId: userHederaCred.hederaAccountId,
+            operatorKey: userHederaCred.hederaAccountKey,
+            encryptKey: userMessageKey,
+            signOptions: userSignOptions
+        });
+
+        const newRow = collection.create({
+            status: PolicyActionStatus.CANCELED,
+            type: row.type,
+            uuid: row.uuid,
+            owner: row.owner,
+            creator: row.owner,
+            accountId: row.accountId,
+            blockTag: row.blockTag,
+            messageId: null,
+            sender: null,
+            startMessageId: row.messageId,
+            topicId: this.topicId,
+            index: null,
+            policyId: this.policyId,
+            document: null,
+            lastStatus: PolicyActionStatus.CANCELED
+        });
+
+        const message = new PolicyActionMessage(MessageAction.UpdatePolicyAction);
+        message.setDocument(newRow, newRow.document);
+
+        const messageResult = await messageServer
+            .setTopicObject(this.topic)
+            .sendMessage(message, true);
+        newRow.messageId = messageResult.getId();
+        newRow.sender = messageResult.payer;
+
+        await collection.insertOrUpdate([newRow], 'messageId');
+        await this.updateLastStatus(newRow);
+        await this.sentNotification(newRow);
+
+        return newRow;
+    }
 }

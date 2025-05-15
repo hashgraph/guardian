@@ -355,7 +355,7 @@ export class ExternalPoliciesApi {
     }
 
     /**
-     * Return a list of all policies V2 05.06.2024
+     * Returns the list of requests
      */
     @Get('/requests')
     @Auth(
@@ -443,7 +443,7 @@ export class ExternalPoliciesApi {
     }
 
     /**
-     * Update schema rule
+     * UApproves a request
      */
     @Put('/requests/:messageId/approve')
     @AuthAndLocation(
@@ -496,7 +496,7 @@ export class ExternalPoliciesApi {
     }
 
     /**
-     * Update schema rule
+     * Rejects a request
      */
     @Put('/requests/:messageId/reject')
     @AuthAndLocation(
@@ -543,6 +543,60 @@ export class ExternalPoliciesApi {
             }
             const engineService = new PolicyEngine();
             return await engineService.rejectRemoteRequest(messageId, user);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+
+    /**
+     * Cancels a request
+     */
+    @Put('/requests/:messageId/cancel')
+    @AuthAndLocation(
+        [LocationType.LOCAL],
+        [
+            Permissions.POLICIES_POLICY_READ,
+            Permissions.POLICIES_POLICY_EXECUTE,
+            Permissions.POLICIES_POLICY_MANAGE
+        ]
+    )
+    @ApiOperation({
+        summary: 'Cancels a request for an action from a remote Guardian',
+        description: 'Cancels a request for an action from a remote Guardian',
+    })
+    @ApiParam({
+        name: 'messageId',
+        type: 'string',
+        required: true,
+        description: 'Action Identifier',
+        example: Examples.MESSAGE_ID,
+    })
+    @ApiBody({
+        description: 'Object that contains a configuration.',
+        required: true,
+        type: PolicyDTO
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: PolicyDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async cancelRemoteRequest(
+        @AuthUser() user: IAuthUser,
+        @Param('messageId') messageId: string
+    ): Promise<PolicyDTO> {
+        try {
+            if (!messageId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const engineService = new PolicyEngine();
+            return await engineService.cancelRemoteRequest(messageId, user);
         } catch (error) {
             await InternalException(error, this.logger);
         }

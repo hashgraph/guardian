@@ -89,6 +89,10 @@ export class ExternalPoliciesService {
         return this.http.put<any>(`${this.url}/requests/${messageId}/reject`, null);
     }
 
+    public cancelAction(messageId: string): Observable<any> {
+        return this.http.put<any>(`${this.url}/requests/${messageId}/cancel`, null);
+    }
+
     public getActionRequestsCount(
         filters?: any
     ): Observable<HttpResponse<{

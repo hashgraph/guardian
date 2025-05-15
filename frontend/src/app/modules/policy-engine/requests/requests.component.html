@@ -144,6 +144,9 @@
                                             <button class="guardian-button approve-btn" (click)="onApprove(row)">Approve</button>
                                             <button class="guardian-button reject-btn" (click)="onReject(row)">Reject</button>
                                         </div>
+                                        <div *ngIf="row.type === 'ACTION' && row.status === 'NEW' && isLocalUser" class="option-btns">
+                                            <button class="guardian-button reject-btn" (click)="onCancel(row)">Cancel</button>
+                                        </div>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'operations'">
                                         <div class="operations-btns">

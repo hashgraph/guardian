@@ -312,6 +312,17 @@ export class PolicyRequestsComponent implements OnInit {
                 this.loading = false;
             });
     }
+    
+    public onCancel(item: any) {
+        this.loading = true;
+        this.externalPoliciesService
+            .cancelAction(item.messageId)
+            .subscribe((result) => {
+                this.loadData();
+            }, (e) => {
+                this.loading = false;
+            });
+    }
 
     getStatusName(row: any) {
         switch (row.status) {
@@ -323,6 +334,8 @@ export class PolicyRequestsComponent implements OnInit {
                 return 'Rejected';
             case PolicyActionStatus.ERROR:
                 return 'Error';
+                case PolicyActionStatus.CANCELED:
+                return 'Canceled';
             default:
                 return 'Incorrect status';
         }

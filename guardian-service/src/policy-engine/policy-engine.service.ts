@@ -2646,6 +2646,31 @@ export class PolicyEngineService {
                     return new MessageError(error);
                 }
             });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.CANCEL_REMOTE_ACTION,
+            async (msg: { user: IAuthUser, messageId: string }) => {
+                try {
+                    const { messageId, user } = msg;
+
+                    const request = await DatabaseServer.getRemoteRequestId(messageId);
+                    if (!request) {
+                        throw new Error(`Request is not found`);
+                    }
+                    if (request.accountId !== user.hederaAccountId) {
+                        throw new Error(`Request is not found`);
+                    }
+
+                    const model = await DatabaseServer.getPolicyById(request.policyId);
+                    if (!model) {
+                        throw new Error(`Policy is not found`);
+                    }
+                    const result = await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.CANCEL_REMOTE_ACTION, request.policyId, { messageId, user }) as any;
+                    return new MessageResponse(result);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
         //#endregion
     }
 }

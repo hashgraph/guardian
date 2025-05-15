@@ -1098,4 +1098,18 @@ export class PolicyEngine extends NatsService {
     ) {
         return await this.sendMessage(PolicyEngineEvents.REJECT_REMOTE_REQUEST, { messageId, user });
     }
+
+
+    /**
+     * Cancel remote request
+     * @param policyId
+     * @param messageId
+     * @param user
+     */
+    public async cancelRemoteRequest(
+        messageId: string,
+        user: IAuthUser
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.CANCEL_REMOTE_ACTION, { messageId, user });
+    }
 }

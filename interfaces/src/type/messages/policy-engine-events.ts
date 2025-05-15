@@ -76,6 +76,7 @@ export enum PolicyEngineEvents {
     GET_SAVEPOINT = 'policy-engine-event-get-savepoint',
     APPROVE_REMOTE_REQUEST = 'policy-engine-approve-remote-request',
     REJECT_REMOTE_REQUEST = 'policy-engine-reject-remote-request',
+    CANCEL_REMOTE_ACTION = 'policy-engine-cancel-remote-action',
     GET_REMOTE_REQUESTS = 'policy-engine-get-remote-requests',
     GET_REMOTE_REQUESTS_COUNT = 'policy-engine-get-remote-requests-count',
 }

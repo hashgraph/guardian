@@ -300,6 +300,18 @@ export class BlockTreeGenerator extends NatsService {
                 return new MessageError(error, 500);
             }
         });
+
+        this.getPolicyMessages(PolicyEvents.CANCEL_REMOTE_ACTION, policyId, async (msg: any) => {
+            const { messageId, user } = msg;
+            try {
+                const userFull = await this.getUser(policyInstance, user);
+                const controller = PolicyComponentsUtils.getActionsController(policyId);
+                const row = await controller.cancelAction(messageId, userFull);
+                return new MessageResponse(row);
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
     }
 
     /**
