@@ -136,6 +136,13 @@ export class PolicyApi {
         required: false,
         example: 'local'
     })
+    @ApiQuery({
+        name: 'status',
+        type: String,
+        description: 'Policy status',
+        required: false,
+        example: "PUBLISH"
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -154,7 +161,8 @@ export class PolicyApi {
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
-        @Query('type') type?: string
+        @Query('type') type?: string,
+        @Query('status') status?: string
     ): Promise<any> {
         if (!user.did && user.role !== UserRole.AUDITOR) {
             return res.header('X-Total-Count', 0).send([]);
@@ -163,6 +171,7 @@ export class PolicyApi {
             const options: any = {
                 fields: Object.values(POLICY_REQUIRED_PROPS),
                 filters: {},
+                status,
                 type,
                 pageIndex,
                 pageSize
