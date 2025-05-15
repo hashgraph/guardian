@@ -941,26 +941,26 @@
 .DRAFT-status,
 .DRAFT-dropdown ::ng-deep .p-dropdown {
     background: var(--guardian-secondary-background);
-    color: var(--guardian-dry-run-color);
-    border: 1px solid var(--guardian-dry-run-color);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
     // width: auto;
     width: 130px;
 
     .p-dropdown-trigger-icon {
-        color: var(--guardian-dry-run-color);
+        color: var(--color-primary);
     }
 }
 
 .DRY-RUN-status,
 .DRY-RUN-dropdown ::ng-deep .p-dropdown {
     background: var(--guardian-dry-run-background);
-    color: var(--guardian-dry-run-color);
-    border: 1px solid var(--guardian-dry-run-color);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
     // width: auto;
     width: 130px;
 
     .p-dropdown-trigger-icon {
-        color: var(--guardian-dry-run-color);
+        color: var(--color-primary);
     }
 }
 
