@@ -6,6 +6,11 @@ import { PolicyUtils } from './helpers/utils.js';
 import { PolicyComponentsUtils } from './policy-components-utils.js';
 import { PolicyActionsUtils } from './policy-actions/utils.js';
 
+interface IPromise {
+    resolve: Function,
+    reject: Function
+}
+
 export class PolicyActionsService {
     private readonly topicId: string;
     private readonly policyId: string;
@@ -18,6 +23,7 @@ export class PolicyActionsService {
     private topic: TopicConfig;
     private topicListener: TopicListener;
     private readonly callback: Map<string, Function>;
+    private readonly actions: Map<string, IPromise>;
 
     constructor(
         policyId: string,
@@ -33,6 +39,7 @@ export class PolicyActionsService {
         this.policyOwnerId = policyOwnerId;
         this.messageId = policy.messageId;
         this.callback = new Map<string, Function>();
+        this.actions = new Map<string, IPromise>();
     }
 
     public async init(): Promise<void> {
@@ -98,7 +105,10 @@ export class PolicyActionsService {
         await collection.insertOrUpdate([newRow], 'messageId');
         await this.updateLastStatus(row);
         await this.sentNotification(row);
-        return row;
+
+        return new Promise<any>((resolve, reject) => {
+            this.actions.set(row.startMessageId, { resolve, reject });
+        });
     }
 
     public async sendAction(
@@ -152,6 +162,8 @@ export class PolicyActionsService {
         await collection.insertOrUpdate([newRow], 'messageId');
         await this.updateLastStatus(row);
         await this.sentNotification(row);
+
+
         return row;
     }
 
@@ -309,12 +321,22 @@ export class PolicyActionsService {
                     if (!this.isLocal) {
                         await this.sentNotification(row);
                     }
+                    const promise = this.actions.get(row.startMessageId);
+                    if (promise) {
+                        this.actions.delete(row.startMessageId);
+                        promise.resolve(row.document);
+                    }
                     break;
                 }
                 case MessageAction.ErrorPolicyAction: {
                     const row = await this.savePolicyAction(message, PolicyActionType.ACTION, PolicyActionStatus.ERROR);
                     if (!this.isLocal) {
                         await this.sentNotification(row);
+                    }
+                    const promise = this.actions.get(row.startMessageId);
+                    if (promise) {
+                        this.actions.delete(row.startMessageId);
+                        promise.reject(row.document);
                     }
                     break;
                 }
@@ -517,7 +539,7 @@ export class PolicyActionsService {
                 topicId: this.topicId,
                 index: null,
                 policyId: this.policyId,
-                document: null,
+                document: result,
                 lastStatus: PolicyActionStatus.COMPLETED
             });
 
