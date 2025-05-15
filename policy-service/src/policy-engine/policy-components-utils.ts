@@ -1602,40 +1602,68 @@ export class PolicyComponentsUtils {
         return null;
     }
 
+
+    private static async _blockSetDataLocal(
+        block: IPolicyInterfaceBlock,
+        user: PolicyUser,
+        data: any
+    ): Promise<MessageResponse<any> | MessageError<any>> {
+        const result = await block.setData(user, data, ActionType.COMMON);
+        return new MessageResponse(result);
+    }
+    private static async _blockSetDataRemote(
+        block: IPolicyInterfaceBlock,
+        user: PolicyUser,
+        data: any
+    ): Promise<MessageResponse<any> | MessageError<any>> {
+        const controller = PolicyComponentsUtils.ActionsControllers.get(block.policyId);
+        if (controller) {
+            const result = await controller.sendAction(block, user, data);
+            return new MessageResponse(result);
+        } else {
+            return new MessageError('Invalid policy controller', 500);
+        }
+    }
+    private static async _blockSetDataCustom(
+        block: IPolicyInterfaceBlock,
+        user: PolicyUser,
+        data: any
+    ): Promise<MessageResponse<any> | MessageError<any>> {
+        const _data = await block.setData(user, data, ActionType.LOCAL);
+        const controller = PolicyComponentsUtils.ActionsControllers.get(block.policyId);
+        if (controller) {
+            const result = await controller.sendAction(block, user, _data);
+            return new MessageResponse(result);
+        } else {
+            return new MessageError('Invalid policy controller', 500);
+        }
+    }
+
     public static async blockSetData(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
         data: any
     ): Promise<MessageResponse<any> | MessageError<any>> {
         if (block.actionType === LocationType.LOCAL) {
-            const result = await block.setData(user, data, ActionType.COMMON);
-            return new MessageResponse(result);
-        }
-
-        if (user.location === LocationType.REMOTE) {
-            return new MessageError('Invalid action for remote user', 503);
-        }
-
-        if (block.locationType === LocationType.REMOTE) {
-            const controller = PolicyComponentsUtils.ActionsControllers.get(block.policyId);
-            if (controller) {
-                const result = await controller.sendAction(block, user, data);
-                return new MessageResponse(result);
-            } else {
-                return new MessageError('Invalid policy controller', 500);
-            }
-        } else if (block.locationType === LocationType.CUSTOM) {
-            const _data = await block.setData(user, data, ActionType.LOCAL);
-            const controller = PolicyComponentsUtils.ActionsControllers.get(block.policyId);
-            if (controller) {
-                const result = await controller.sendAction(block, user, _data);
-                return new MessageResponse(result);
-            } else {
-                return new MessageError('Invalid policy controller', 500);
-            }
+            //Action - local, policy - local|remote, user - local|remote
+            return await PolicyComponentsUtils._blockSetDataLocal(block, user, data);
         } else {
-            const result = await block.setData(user, data, ActionType.COMMON);
-            return new MessageResponse(result);
+            //Action - custom, policy - local|remote, user - remote
+            if (user.location === LocationType.REMOTE) {
+                return new MessageError('Invalid action for remote user', 503);
+            }
+            if (block.locationType === LocationType.REMOTE) {
+                if (block.actionType === LocationType.CUSTOM) {
+                    //Action - custom, policy - remote, user - local
+                    return await PolicyComponentsUtils._blockSetDataCustom(block, user, data);
+                } else {
+                    //Action - remote, policy - remote, user - local
+                    return await PolicyComponentsUtils._blockSetDataRemote(block, user, data);
+                }
+            } else {
+                //Action - custom | remote, policy - local, user - local
+                return await PolicyComponentsUtils._blockSetDataLocal(block, user, data);
+            }
         }
     }
 
