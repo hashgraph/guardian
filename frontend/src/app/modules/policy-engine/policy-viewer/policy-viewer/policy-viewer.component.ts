@@ -56,6 +56,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public permissions: UserPermissions;
     public newRequestsExist: boolean = false;
     public newActionsExist: boolean = false;
+    public timer: any;
 
     constructor(
         private profileService: ProfileService,
@@ -158,10 +159,15 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         );
 
         this.updateNavigationButtons();
+
+        this.timer = setInterval(() => {
+            this.updateRemotePolicyRequests();
+        }, 30 * 1000);
     }
 
     ngOnDestroy() {
         this.subscription.unsubscribe();
+        clearInterval(this.timer)
     }
 
     loadPolicy() {
