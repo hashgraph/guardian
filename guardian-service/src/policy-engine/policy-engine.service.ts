@@ -2407,6 +2407,7 @@ export class PolicyEngineService {
                         pageSize,
                     } = options;
                     const _filters: any = {
+                        status: PolicyActionStatus.NEW,
                         accountId: user.hederaAccountId,
                         index: { $ne: null }
                     };
@@ -2433,7 +2434,7 @@ export class PolicyEngineService {
                     }
 
                     const em = new DataBaseHelper(PolicyAction);
-                    const total = await em.count(_filters, otherOptions);
+                    const count = await em.count(_filters);
                     const aggregate: any[] = [{
                         $project: {
                             _id: '$_id',
@@ -2556,7 +2557,7 @@ export class PolicyEngineService {
                         }
                     }
 
-                    return new MessageResponse({ items, total });
+                    return new MessageResponse({ items, count });
                 } catch (error) {
                     return new MessageError(error);
                 }
