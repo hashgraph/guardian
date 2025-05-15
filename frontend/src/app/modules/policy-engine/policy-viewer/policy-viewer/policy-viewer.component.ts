@@ -235,7 +235,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.policyProgressService.updateData({ role: this.policyInfo.userRole });
 
                 this.policyProgressService.data$.pipe(audit(ev => interval(1000))).subscribe(() => {
-                    this.policyEngineService.getPolicyNavigation(policyId).subscribe((data: any) => {
+                    this.policyEngineService.getPolicyNavigation(this.policyId).subscribe((data: any) => {
                         this.updatePolicyProgress(data);
                         if (data && data.length > 0) {
                             this.policyProgressService.setHasNavigation(true);
