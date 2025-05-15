@@ -2447,6 +2447,7 @@ export class PolicyEngineService {
                             messageId: '$messageId',
                             document: '$document',
                             blockTag: '$blockTag',
+                            index: '$index',
                         }
                     }, {
                         $match: {
