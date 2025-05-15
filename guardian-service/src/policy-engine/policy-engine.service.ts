@@ -2473,6 +2473,7 @@ export class PolicyEngineService {
                                 $switch: {
                                     branches: [
                                         { case: { $in: ['ERROR', '$statuses'] }, then: 'ERROR' },
+                                        { case: { $in: ['CANCELED', '$statuses'] }, then: 'CANCELED' },
                                         { case: { $in: ['REJECTED', '$statuses'] }, then: 'REJECTED' },
                                         { case: { $in: ['COMPLETED', '$statuses'] }, then: 'COMPLETED' },
                                     ],
