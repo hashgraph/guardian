@@ -124,7 +124,6 @@ export class Wallet extends NatsService {
             }
         );
 
-
         if (!hasPermissions) {
             return null;
         }

@@ -6,7 +6,7 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyGetData } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
 import { BlockActionError } from '../errors/index.js';
-import { MessageAction, MessageServer, PolicyRoles, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcHelper, VPMessage, } from '@guardian/common';
+import { MessageAction, PolicyRoles, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcHelper, VPMessage, } from '@guardian/common';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { Inject } from '../../helpers/decorators/inject.js';
 import { DocumentCategoryType, LocationType } from '@guardian/interfaces';

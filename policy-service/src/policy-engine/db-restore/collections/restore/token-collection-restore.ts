@@ -34,7 +34,7 @@ export class TokenCollectionRestore extends CollectionRestore<Token> {
         data.view = true;
         return data;
     }
-    
+
     protected override async decryptRow(row: Token): Promise<Token> {
         return row;
     }

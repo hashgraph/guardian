@@ -33,7 +33,7 @@ export class ExternalCollectionRestore extends CollectionRestore<ExternalDocumen
     protected override createRow(data: ExternalDocument): ExternalDocument {
         return data;
     }
-    
+
     protected override async decryptRow(row: ExternalDocument): Promise<ExternalDocument> {
         return row;
     }

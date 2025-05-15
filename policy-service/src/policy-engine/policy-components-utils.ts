@@ -1602,7 +1602,6 @@ export class PolicyComponentsUtils {
         return null;
     }
 
-
     private static async _blockSetDataLocal(
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
@@ -1694,7 +1693,6 @@ export class PolicyComponentsUtils {
             return new MessageResponse(result);
         }
     }
-
 
     public static isAvailableReceiveData(block: IPolicyInterfaceBlock | IPolicyBlock | null, policyId: string): boolean {
         if (!block) {

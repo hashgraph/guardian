@@ -14,8 +14,6 @@ export class RolesGuard implements CanActivate {
         if (Array.isArray(permissions) && permissions.length) {
             const request = context.switchToHttp().getRequest();
             const user: IAuthUser = request.user;
-
-
             if (user && user.permissions) {
                 for (const permission of permissions) {
                     if (user.permissions.indexOf(permission) !== -1) {
@@ -41,7 +39,7 @@ export class RolesAndLocationGuard implements CanActivate {
         const locations: LocationType[] = this.reflector.get('locations', context.getHandler());
         const isPermissions = Array.isArray(permissions) && permissions.length;
         const isLocations = Array.isArray(locations) && locations.length;
-        
+
         if (isPermissions || isLocations) {
             const request = context.switchToHttp().getRequest();
             const user: IAuthUser = request.user;

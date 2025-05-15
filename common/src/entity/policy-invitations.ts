@@ -38,7 +38,6 @@ export class PolicyInvitations extends RestoreEntity {
     @Property({ nullable: true })
     role?: string;
 
-
     /**
      * Create document
      */

@@ -20,8 +20,8 @@ export class PolicyInvitationsCollectionBackup extends CollectionBackup<PolicyIn
 
     protected override findDeletedDocuments(): FindCursor<DeleteCache> {
         const collection = DataBaseHelper.orm.em.getCollection('DeleteCache');
-        const rows = collection.find<any>({ 
-            policyId: this.policyId, 
+        const rows = collection.find<any>({
+            policyId: this.policyId,
             collection: this.collectionName
         });
         return rows;

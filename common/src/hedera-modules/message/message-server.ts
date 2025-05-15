@@ -660,7 +660,8 @@ export class MessageServer {
             if (!options) {
                 return null;
             }
-            let { messageId, loadIPFS, type, userId, dryRun } = options;
+            const { loadIPFS, type, userId, dryRun } = options;
+            let { messageId } = options;
             if (messageId && typeof messageId === 'string') {
                 messageId = messageId.trim();
             }
@@ -692,7 +693,8 @@ export class MessageServer {
             if (!options) {
                 return null;
             }
-            let { messageId, loadIPFS, type, userId } = options;
+            const { loadIPFS, type, userId } = options;
+            let { messageId } = options;
             if (messageId && typeof messageId === 'string') {
                 messageId = messageId.trim();
             }
@@ -892,8 +894,8 @@ export class MessageServer {
      * @param timeStamp
      */
     public static async getTopicMessages<T extends Message>(options: LoadMessagesOptions): Promise<T[]> {
-        let { topicId, userId, type, action, timeStamp } = options;
-
+        const { topicId, userId, type, action } = options;
+        let { timeStamp } = options;
         if (!topicId) {
             throw new Error(`Invalid Topic Id`);
         }

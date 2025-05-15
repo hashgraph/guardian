@@ -1,4 +1,4 @@
-import { DataBaseHelper, EncryptVcHelper, KeyType, VcDocument, Wallet } from '@guardian/common';
+import { DataBaseHelper, EncryptVcHelper, VcDocument } from '@guardian/common';
 import { CollectionRestore, IDiffAction } from '../../index.js';
 import { UserCredentials } from './../../../policy-user.js';
 

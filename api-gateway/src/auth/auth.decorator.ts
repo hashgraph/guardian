@@ -17,7 +17,6 @@ export function Auth(...permissions: Permissions[]) {
     )
 }
 
-
 export function AuthAndLocation(locations: LocationType[], permissions: Permissions[] = []) {
     return applyDecorators(
         SetMetadata('permissions', permissions),

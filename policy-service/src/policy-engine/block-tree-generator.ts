@@ -210,7 +210,6 @@ export class BlockTreeGenerator extends NatsService {
             return await PolicyComponentsUtils.blockSetData(block, userFull, data);
         });
 
-
         this.getPolicyMessages(PolicyEvents.SELECT_POLICY_GROUP, policyId, async (msg: any) => {
             const { user, uuid } = msg;
             const userFull = await this.getUser(policyInstance, user);

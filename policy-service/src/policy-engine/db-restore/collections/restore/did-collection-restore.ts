@@ -33,7 +33,7 @@ export class DidCollectionRestore extends CollectionRestore<DidDocument> {
     protected override createRow(data: DidDocument): DidDocument {
         return data;
     }
-    
+
     protected override async decryptRow(row: DidDocument): Promise<DidDocument> {
         return row;
     }

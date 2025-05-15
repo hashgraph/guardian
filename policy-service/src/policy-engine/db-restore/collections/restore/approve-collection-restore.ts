@@ -37,7 +37,7 @@ export class ApproveCollectionRestore extends CollectionRestore<ApprovalDocument
         }
         return data;
     }
-    
+
     protected override async decryptRow(row: ApprovalDocument): Promise<ApprovalDocument> {
         return row;
     }

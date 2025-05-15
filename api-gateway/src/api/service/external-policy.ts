@@ -548,7 +548,6 @@ export class ExternalPoliciesApi {
         }
     }
 
-
     /**
      * Cancels a request
      */

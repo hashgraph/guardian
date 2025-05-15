@@ -35,7 +35,7 @@ export class PolicyUser {
     /**
      * User DID
      */
-    private _hederaAccountId: string;
+    private readonly _hederaAccountId: string;
     /**
      * User Role
      */
@@ -114,12 +114,12 @@ export class PolicyUser {
         return this._id;
     }
 
-    public get did(): string {
-        return this._did;
-    }
-
     public get hederaAccountId(): string {
         return this._hederaAccountId;
+    }
+
+    public get did(): string {
+        return this._did;
     }
 
     protected set did(did: string) {

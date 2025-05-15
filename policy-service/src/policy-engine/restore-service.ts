@@ -95,10 +95,7 @@ export class PolicyBackupService {
         this.policyOwnerId = policyOwnerId;
         this.messageId = policy.messageId;
         this.policyId = policyId;
-
         this.controller = new PolicyBackup(this.policyId, this.messageId);
-
-
         this.timer = new Timer(30 * 1000, 120 * 1000);
         this.timer.subscribe(this.task.bind(this));
     }

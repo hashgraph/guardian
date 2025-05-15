@@ -1099,7 +1099,6 @@ export class PolicyEngine extends NatsService {
         return await this.sendMessage(PolicyEngineEvents.REJECT_REMOTE_REQUEST, { messageId, user });
     }
 
-
     /**
      * Cancel remote request
      * @param policyId

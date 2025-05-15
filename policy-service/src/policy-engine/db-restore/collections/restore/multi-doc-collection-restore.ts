@@ -37,7 +37,7 @@ export class MultiDocCollectionRestore extends CollectionRestore<MultiDocuments>
         }
         return data;
     }
-    
+
     protected override async decryptRow(row: MultiDocuments): Promise<MultiDocuments> {
         return row;
     }

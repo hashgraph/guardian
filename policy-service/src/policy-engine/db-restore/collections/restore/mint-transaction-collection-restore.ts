@@ -34,7 +34,7 @@ export class MintTransactionCollectionRestore extends CollectionRestore<MintTran
         data.readonly = true;
         return data;
     }
-    
+
     protected override async decryptRow(row: MintTransaction): Promise<MintTransaction> {
         return row;
     }

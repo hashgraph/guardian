@@ -33,7 +33,7 @@ export class RoleCollectionRestore extends CollectionRestore<PolicyRoles> {
     protected override createRow(data: PolicyRoles): PolicyRoles {
         return data;
     }
-    
+
     protected override async decryptRow(row: PolicyRoles): Promise<PolicyRoles> {
         return row;
     }

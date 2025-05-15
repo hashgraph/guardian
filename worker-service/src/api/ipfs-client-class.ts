@@ -172,7 +172,6 @@ export class IpfsClientClass {
         return fileRes.data;
     }
 
-
     private parseCID(cid: string): string {
         try {
             return new CID(cid).toV1().toString('base32');
