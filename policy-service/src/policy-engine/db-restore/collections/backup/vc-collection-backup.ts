@@ -37,6 +37,7 @@ export class VcCollectionBackup extends CollectionBackup<VcDocument> {
     protected override createDiffData(newRow: VcDocument, oldRow?: VcDocument): any {
         const diff: any = this.compareData(newRow, oldRow);
         delete diff.documentFileId;
+        delete diff.encryptedDocumentFileId;
         return diff;
     }
 

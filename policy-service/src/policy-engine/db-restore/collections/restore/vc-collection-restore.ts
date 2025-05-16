@@ -46,7 +46,7 @@ export class VcCollectionRestore extends CollectionRestore<VcDocument> {
     protected override async decryptRow(row: VcDocument): Promise<VcDocument> {
         if (row.encryptedDocument) {
             const messageKey = await UserCredentials.loadMessageKey(this.messageId, row.owner, null);
-            const data = await EncryptVcHelper.encrypt(row.encryptedDocument, messageKey);
+            const data = await EncryptVcHelper.decrypt(row.encryptedDocument, messageKey);
             row.document = JSON.parse(data);
         }
         return row;
