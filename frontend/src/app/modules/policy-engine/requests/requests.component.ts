@@ -292,36 +292,96 @@ export class PolicyRequestsComponent implements OnInit {
     }
 
     public onApprove(item: any) {
-        this.loading = true;
-        this.externalPoliciesService
-            .approveAction(item.messageId)
-            .subscribe((result) => {
-                this.loadData();
-            }, (e) => {
-                this.loading = false;
-            });
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete key',
+                text: `Are you sure want to approve request?`,
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Approve',
+                    class: 'primary'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Approve') {
+                this.loading = true;
+                this.externalPoliciesService
+                    .approveAction(item.messageId)
+                    .subscribe((result) => {
+                        this.loadData();
+                    }, (e) => {
+                        this.loading = false;
+                    });
+            }
+        });
     }
 
     public onReject(item: any) {
-        this.loading = true;
-        this.externalPoliciesService
-            .rejectAction(item.messageId)
-            .subscribe((result) => {
-                this.loadData();
-            }, (e) => {
-                this.loading = false;
-            });
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete key',
+                text: `Are you sure want to reject request?`,
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Reject',
+                    class: 'delete'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Reject') {
+                this.loading = true;
+                this.externalPoliciesService
+                    .rejectAction(item.messageId)
+                    .subscribe((result) => {
+                        this.loadData();
+                    }, (e) => {
+                        this.loading = false;
+                    });
+            }
+        });
     }
-    
+
     public onCancel(item: any) {
-        this.loading = true;
-        this.externalPoliciesService
-            .cancelAction(item.messageId)
-            .subscribe((result) => {
-                this.loadData();
-            }, (e) => {
-                this.loading = false;
-            });
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete key',
+                text: `Are you sure want to cancel request?`,
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Cancel',
+                    class: 'delete'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Cancel') {
+                this.loading = true;
+                this.externalPoliciesService
+                    .cancelAction(item.messageId)
+                    .subscribe((result) => {
+                        this.loadData();
+                    }, (e) => {
+                        this.loading = false;
+                    });
+            }
+        });
     }
 
     getStatusName(row: any) {
@@ -334,7 +394,7 @@ export class PolicyRequestsComponent implements OnInit {
                 return 'Rejected';
             case PolicyActionStatus.ERROR:
                 return 'Error';
-                case PolicyActionStatus.CANCELED:
+            case PolicyActionStatus.CANCELED:
                 return 'Canceled';
             default:
                 return 'Incorrect status';
