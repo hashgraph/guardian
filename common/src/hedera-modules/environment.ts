@@ -7,11 +7,11 @@ export class Environment {
     /**
      * Mainnet message API
      */
-    public static readonly HEDERA_MAINNET_MESSAGE_API: string = 'https://mainnet-public.mirrornode.hedera.com/api/v1/topics/messages';
+    public static readonly HEDERA_MAINNET_MESSAGE_API: string = 'https://mainnet.mirrornode.hedera.com/api/v1/topics/messages';
     /**
      * Mainnet topic API
      */
-    public static readonly HEDERA_MAINNET_TOPIC_API: string = 'https://mainnet-public.mirrornode.hedera.com/api/v1/topics/';
+    public static readonly HEDERA_MAINNET_TOPIC_API: string = 'https://mainnet.mirrornode.hedera.com/api/v1/topics/';
     /**
      * Testnet message API
      */
@@ -23,19 +23,19 @@ export class Environment {
     /**
      * Previewnet message API
      */
-    public static readonly HEDERA_PREVIEW_MESSAGE_API: string = 'https://Previewnet.mirrornode.hedera.com/api/v1/topics/messages';
+    public static readonly HEDERA_PREVIEW_MESSAGE_API: string = 'https://previewnet.mirrornode.hedera.com/api/v1/topics/messages';
     /**
      * Previewnet topic API
      */
-    public static readonly HEDERA_PREVIEW_TOPIC_API: string = 'https://Previewnet.mirrornode.hedera.com/api/v1/topics/';
+    public static readonly HEDERA_PREVIEW_TOPIC_API: string = 'https://previewnet.mirrornode.hedera.com/api/v1/topics/';
     /**
      * Localnode message API
      */
-    public static HEDERA_LOCALNODE_MESSAGE_API: string = `https://localhost:5551/api/v1/topics/messages`;
+    public static HEDERA_LOCALNODE_MESSAGE_API: string = `http://localhost:5551/api/v1/topics/messages`;
     /**
      * Localnode topic API
      */
-    public static HEDERA_LOCALNODE_TOPIC_API: string = `https://localhost:5551/api/v1/topics/`;
+    public static HEDERA_LOCALNODE_TOPIC_API: string = `http://localhost:5551/api/v1/topics/`;
     /**
      * Localnode protocol
      */
