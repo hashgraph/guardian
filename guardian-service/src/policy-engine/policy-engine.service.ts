@@ -2408,8 +2408,7 @@ export class PolicyEngineService {
                     } = options;
                     const _filters: any = {
                         status: PolicyActionStatus.NEW,
-                        accountId: user.hederaAccountId,
-                        index: { $ne: null }
+                        accountId: user.hederaAccountId
                     };
                     if (filters?.policyId) {
                         _filters.policyId = filters.policyId;
@@ -2452,8 +2451,7 @@ export class PolicyEngineService {
                         }
                     }, {
                         $match: {
-                            accountId: user.hederaAccountId,
-                            index: { $ne: null }
+                            accountId: user.hederaAccountId
                         }
                     }, {
                         $sort: { startMessageId: -1 }
