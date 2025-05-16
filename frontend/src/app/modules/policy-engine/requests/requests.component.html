@@ -139,6 +139,9 @@
                                                 type="topics">{{ row.topicId }}</hedera-explorer>
                                         </span>
                                     </ng-container>
+                                    <ng-container *ngSwitchCase="'operationType'">
+                                        {{ getOperationName(row) }}
+                                    </ng-container>
                                     <ng-container *ngSwitchCase="'options'">
                                         <div *ngIf="row.type === 'REQUEST' && row.status === 'NEW' && isLocalUser" class="option-btns">
                                             <button class="guardian-button approve-btn" (click)="onApprove(row)">Approve</button>

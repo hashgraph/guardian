@@ -130,6 +130,13 @@ export class PolicyRequestsComponent implements OnInit {
                 tooltip: true
             },
             {
+                id: 'operationType',
+                title: 'Operation Type',
+                type: 'text',
+                size: '140',
+                tooltip: true,
+            },
+            {
                 id: 'options',
                 title: '',
                 type: 'text',
@@ -410,6 +417,32 @@ export class PolicyRequestsComponent implements OnInit {
             default:
                 return 'Incorrect type';
         }
+    }
+
+    getOperationName(row: any) {
+        if (row.type === PolicyActionType.REQUEST) {
+            switch (row.document?.type) {
+                case 'sign-and-send-role':
+                    return 'Select role';
+                case 'generate-did':
+                    return 'Generate DID Document';
+                case 'sign-vc':
+                    return 'Sign VC Document';
+                case 'send-message':
+                    return 'Send message';
+                case 'send-messages':
+                    return 'Send messages';
+                case 'create-topic':
+                    return 'Create topic';
+                case 'associate-token':
+                    return 'Associate token';
+                case 'dissociate-token':
+                    return 'Dissociate token';
+                default:
+                    return row.document?.type;
+            }
+        }
+        return '';
     }
 
     public openVCDocument(document: any) {
