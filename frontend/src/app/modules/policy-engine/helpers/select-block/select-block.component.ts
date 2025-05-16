@@ -1,6 +1,6 @@
 import {
     AfterViewInit,
-    ChangeDetectionStrategy,
+    ChangeDetectionStrategy, ChangeDetectorRef,
     Component,
     EventEmitter,
     Input,
@@ -40,16 +40,12 @@ export class SelectBlock implements AfterViewInit {
     }
 
     private sanitizeBlock(block: any): any {
-        if (!block || typeof block !== 'object') {
-            return block;
-        }
-
         return {
             id: block.id,
             tag: block.tag,
             blockType: block.blockType,
             localTag: block.localTag,
-            properties: structuredClone(block.properties ?? {})
+            properties: block.properties
         };
     }
 
@@ -111,9 +107,9 @@ export class SelectBlock implements AfterViewInit {
         }, 100)
     }
 
-    onChange() {
+    onChange(value?: any) {
         this.text = this.getFullText();
-        this.valueChange.emit(this.value);
+        this.valueChange.emit(value ?? this.value);
         this.change.emit();
     }
 
@@ -168,5 +164,21 @@ export class SelectBlock implements AfterViewInit {
                 }
             }
         }
+    }
+
+    get selectedOption(): any {
+        if (!this.data) {
+            return null;
+        }
+
+        if (this.type === 'object') {
+            return this.data.find(item => item.value?.id === (this.value as PolicyBlock)?.id)?.value || null;
+        } else {
+            return this.data.find(item => item.value === this.value)?.value || null;
+        }
+    }
+
+    set selectedOption(selected: any) {
+        this.onChange(selected);
     }
 }
