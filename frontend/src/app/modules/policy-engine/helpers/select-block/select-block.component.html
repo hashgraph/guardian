@@ -1,9 +1,8 @@
 <p-dropdown
     *ngIf="!multiple"
     dataKey="id"
-    [(ngModel)]="selectedId"
-    optionValue="id"
-    optionLabel="name"
+    [(ngModel)]="value"
+    optionValue="value"
     [options]="searchData"
     [disabled]="readonly"
     [filter]="false"
@@ -45,9 +44,8 @@
 <p-multiSelect
     *ngIf="multiple"
     dataKey="id"
-    [(ngModel)]="selectedId"
-    optionValue="id"
-    optionLabel="name"
+    [(ngModel)]="value"
+    optionValue="value"
     [options]="searchData"
     [disabled]="readonly"
     [filter]="false"

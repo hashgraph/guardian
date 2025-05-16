@@ -54,6 +54,8 @@ COPY --link --from=deps /usr/local/app/node_modules node_modules/
 COPY --link --from=deps /usr/local/app/package.json ./
 COPY --link --from=build /usr/local/app/dist dist/
 
+RUN mkdir -p /usr/local/app/dist/migrations
+
 # Change the user to node
 USER node
 

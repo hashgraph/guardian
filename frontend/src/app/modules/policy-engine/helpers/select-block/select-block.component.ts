@@ -39,7 +39,19 @@ export class SelectBlock implements AfterViewInit {
     constructor(private registeredService: RegisteredService) {
     }
 
-    selectedId: string | string[] | null = null;
+    private sanitizeBlock(block: any): any {
+        if (!block || typeof block !== 'object') {
+            return block;
+        }
+
+        return {
+            id: block.id,
+            tag: block.tag,
+            blockType: block.blockType,
+            localTag: block.localTag,
+            properties: structuredClone(block.properties ?? {})
+        };
+    }
 
     private getText(value: string | PolicyBlock | null | undefined): string {
         if (value && typeof value === 'object') {
@@ -100,39 +112,12 @@ export class SelectBlock implements AfterViewInit {
     }
 
     onChange() {
-        if (this.multiple) {
-            const result = [];
-
-            for (const id of this.selectedId ?? []) {
-                const foundItem = this.searchData?.find(item => item.id === id);
-
-                if (foundItem?.original) {
-                    result.push(foundItem.original);
-                }
-            }
-
-            this.value = result;
-        } else {
-            const selected = this.searchData?.find(item => item.id === this.selectedId);
-            this.value = selected?.original || null;
-        }
-
         this.text = this.getFullText();
         this.valueChange.emit(this.value);
         this.change.emit();
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (this.multiple) {
-            this.selectedId = Array.isArray(this.value)
-                ? (this.value as PolicyBlock[]).map(v => v?.id)
-                : [];
-        } else {
-            this.selectedId = this.value && typeof this.value === 'object'
-                ? (this.value as PolicyBlock).id
-                : (this.value as string || null);
-        }
-
         this.text = this.getFullText();
 
         setTimeout(() => {
@@ -145,7 +130,7 @@ export class SelectBlock implements AfterViewInit {
                     const icon = this.getIcon(block);
                     this.data.push({
                         name,
-                        value: this.type === 'object' ? block : block.tag,
+                        value: this.type === 'object' ? this.sanitizeBlock(block) : block.tag,
                         id: block.id,
                         original: block,
                         icon: icon.icon,
@@ -172,6 +157,16 @@ export class SelectBlock implements AfterViewInit {
             this.searchData = this.data?.filter(item => item.search.indexOf(search) !== -1);
         } else {
             this.searchData = this.data;
+        }
+
+        if (this.searchData) {
+            for (const item of this.searchData) {
+                if (typeof item.value === 'object') {
+                    item.id = item.value.id;
+                } else {
+                    item.id = item.value;
+                }
+            }
         }
     }
 }
