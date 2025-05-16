@@ -1,4 +1,4 @@
-import { DataBaseHelper, DatabaseServer, ITopicMessage, MessageAction, MessageServer, Policy, PolicyActionMessage, PolicyAction, TopicConfig, TopicListener } from '@guardian/common';
+import { DataBaseHelper, DatabaseServer, ITopicMessage, MessageAction, MessageServer, Policy, PolicyActionMessage, PolicyAction, TopicConfig, TopicListener, MessageType } from '@guardian/common';
 import { AssignedEntityType, GenerateUUIDv4, Permissions, PolicyActionStatus, PolicyActionType, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { ActionType, IPolicyInterfaceBlock } from './policy-engine.interface.js';
 import { PolicyUser, UserCredentials } from './policy-user.js';
@@ -89,7 +89,8 @@ export class PolicyActionsService {
             startMessageId: null,
             sender: null,
             document: data,
-            lastStatus: PolicyActionStatus.NEW
+            lastStatus: PolicyActionStatus.NEW,
+            loaded: true
         };
         const message = new PolicyActionMessage(MessageAction.CreatePolicyAction);
         message.setDocument(row, data);
@@ -146,7 +147,8 @@ export class PolicyActionsService {
             startMessageId: null,
             sender: null,
             document: data,
-            lastStatus: PolicyActionStatus.NEW
+            lastStatus: PolicyActionStatus.NEW,
+            loaded: true
         };
         const message = new PolicyActionMessage(MessageAction.CreatePolicyAction);
         message.setDocument(row, data);
@@ -198,7 +200,8 @@ export class PolicyActionsService {
             messageId: null,
             startMessageId: null,
             index: null,
-            lastStatus: PolicyActionStatus.NEW
+            lastStatus: PolicyActionStatus.NEW,
+            loaded: true
         });
 
         const message = new PolicyActionMessage(MessageAction.CreatePolicyRequest);
@@ -263,7 +266,8 @@ export class PolicyActionsService {
             index: null,
             policyId: this.policyId,
             document: data,
-            lastStatus: PolicyActionStatus.COMPLETED
+            lastStatus: PolicyActionStatus.COMPLETED,
+            loaded: true
         });
 
         const message = new PolicyActionMessage(MessageAction.UpdatePolicyRequest);
@@ -377,12 +381,15 @@ export class PolicyActionsService {
     private async savePolicyAction(message: PolicyActionMessage, type: PolicyActionType, status: PolicyActionStatus) {
         const collection = new DataBaseHelper(PolicyAction);
         let document: any;
+        let loaded: boolean = false;
         try {
             const userMessageKey = await UserCredentials.loadMessageKey(this.messageId, message.owner, null);
             await MessageServer.loadDocument(message, userMessageKey);
             document = message.getDocument();
+            loaded = true;
         } catch (error) {
             document = null;
+            loaded = false;
         }
         let lastStatus = PolicyActionStatus.NEW;
         switch (message.action) {
@@ -431,6 +438,7 @@ export class PolicyActionsService {
                 topicId: message.topicId?.toString(),
                 index: Number(message.index),
                 policyId: this.policyId,
+                loaded,
                 document,
                 lastStatus
             });
@@ -449,6 +457,7 @@ export class PolicyActionsService {
             row.startMessageId = message.parent || message.id;
             row.policyId = this.policyId;
             row.status = status;
+            row.loaded = loaded;
             row.document = document;
             row.lastStatus = lastStatus;
             await collection.insertOrUpdate([row], 'messageId');
@@ -541,6 +550,7 @@ export class PolicyActionsService {
                 index: null,
                 policyId: this.policyId,
                 document: result,
+                loaded: true,
                 lastStatus: PolicyActionStatus.COMPLETED
             });
 
@@ -599,6 +609,7 @@ export class PolicyActionsService {
                 topicId: this.topicId,
                 index: null,
                 policyId: this.policyId,
+                loaded: true,
                 document: typeof error === 'string' ? error : error.message,
                 lastStatus: PolicyActionStatus.ERROR
             });
@@ -701,6 +712,7 @@ export class PolicyActionsService {
             index: null,
             policyId: this.policyId,
             document: null,
+            loaded: true,
             lastStatus: PolicyActionStatus.CANCELED
         });
 
@@ -718,5 +730,29 @@ export class PolicyActionsService {
         await this.sentNotification(newRow);
 
         return newRow;
+    }
+
+    public async loadAction(messageId: string, user: PolicyUser) {
+        const collection = new DataBaseHelper(PolicyAction);
+        const row = await collection.findOne({
+            messageId,
+            accountId: user.hederaAccountId,
+            type: PolicyActionType.ACTION
+        });
+        if (!row) {
+            throw Error('Action not found');
+        }
+        const message = await MessageServer.getMessage<PolicyActionMessage>({
+            messageId,
+            loadIPFS: false,
+            type: MessageType.PolicyAction
+        })
+        if (message) {
+            const userMessageKey = await UserCredentials.loadMessageKey(this.messageId, message.owner, null);
+            await MessageServer.loadDocument(message, userMessageKey);
+            row.document = message.getDocument();
+            row.loaded = true;
+            await collection.insertOrUpdate([row], 'messageId');
+        }
     }
 }

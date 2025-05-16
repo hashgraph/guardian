@@ -124,6 +124,12 @@ export class PolicyAction extends BaseEntity {
     lastStatus?: PolicyActionStatus;
 
     /**
+     * Document loaded
+     */
+    @Property({ nullable: true })
+    loaded?: boolean;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()

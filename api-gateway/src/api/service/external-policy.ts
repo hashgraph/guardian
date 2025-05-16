@@ -602,6 +602,59 @@ export class ExternalPoliciesApi {
     }
 
     /**
+     * Reload a request
+     */
+    @Put('/requests/:messageId/reload')
+    @AuthAndLocation(
+        [LocationType.LOCAL],
+        [
+            Permissions.POLICIES_POLICY_READ,
+            Permissions.POLICIES_POLICY_EXECUTE,
+            Permissions.POLICIES_POLICY_MANAGE
+        ]
+    )
+    @ApiOperation({
+        summary: 'Reloads a request for an action from a remote Guardian',
+        description: 'Reloads a request for an action from a remote Guardian',
+    })
+    @ApiParam({
+        name: 'messageId',
+        type: 'string',
+        required: true,
+        description: 'Action Identifier',
+        example: Examples.MESSAGE_ID,
+    })
+    @ApiBody({
+        description: 'Object that contains a configuration.',
+        required: true,
+        type: PolicyDTO
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: PolicyDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async loadRemoteRequest(
+        @AuthUser() user: IAuthUser,
+        @Param('messageId') messageId: string
+    ): Promise<PolicyDTO> {
+        try {
+            if (!messageId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const engineService = new PolicyEngine();
+            return await engineService.loadRemoteRequest(messageId, user);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
      * Return a count of policy requests
      */
     @Get('/requests/count')

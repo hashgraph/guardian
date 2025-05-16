@@ -1111,4 +1111,17 @@ export class PolicyEngine extends NatsService {
     ) {
         return await this.sendMessage(PolicyEngineEvents.CANCEL_REMOTE_ACTION, { messageId, user });
     }
+
+    /**
+     * Cancel remote request
+     * @param policyId
+     * @param messageId
+     * @param user
+     */
+    public async loadRemoteRequest(
+        messageId: string,
+        user: IAuthUser
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.RELOAD_REMOTE_ACTION, { messageId, user });
+    }
 }

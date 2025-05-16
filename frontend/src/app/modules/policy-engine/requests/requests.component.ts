@@ -391,6 +391,17 @@ export class PolicyRequestsComponent implements OnInit {
         });
     }
 
+    public onReload(item: any) {
+        this.loading = true;
+        this.externalPoliciesService
+            .reloadAction(item.messageId)
+            .subscribe((result) => {
+                this.loadData();
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
     getStatusName(row: any) {
         switch (row.status) {
             case PolicyActionStatus.NEW:
