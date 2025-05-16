@@ -14566,6 +14566,47 @@ paths:
       summary: Cancels a request for an action from a remote Guardian
       tags:
         - external-policies
+  /external-policies/requests/{messageId}/reload:
+    put:
+      description: Reloads a request for an action from a remote Guardian
+      operationId: ExternalPoliciesApi_loadRemoteRequest
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Action Identifier
+          schema:
+            example: '0000000000.000000001'
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains a configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Reloads a request for an action from a remote Guardian
+      tags:
+        - external-policies
   /external-policies/requests/count:
     get:
       description: >-
