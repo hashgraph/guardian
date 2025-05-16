@@ -1075,7 +1075,6 @@ export class PolicyEngineService {
                     const result = await this.policyEngine.validateAndPublishPolicy(
                         options, policyId, owner, notifier, logger, owner?.id
                     );
-                    console.debug('------ 111')
                     notifier.result(result);
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);

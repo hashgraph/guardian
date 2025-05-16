@@ -40,7 +40,6 @@ export function profileAPI(logger: PinoLogger) {
         }) => {
             try {
                 const { username, user } = msg;
-                const wallet = new Wallet();
                 const users = new Users();
                 const workers = new Workers();
                 const target = await users.getUser(username, user.id);
@@ -53,12 +52,10 @@ export function profileAPI(logger: PinoLogger) {
                     return new MessageResponse(null);
                 }
 
-                const key = await wallet.getKey(target.walletToken, KeyType.KEY, target.did);
                 const balance = await workers.addNonRetryableTask({
-                    type: WorkerTaskType.GET_USER_BALANCE,
+                    type: WorkerTaskType.GET_USER_BALANCE_REST,
                     data: {
-                        hederaAccountId: target.hederaAccountId,
-                        hederaAccountKey: key
+                        hederaAccountId: target.hederaAccountId
                     }
                 }, 20, user.id);
                 return new MessageResponse({
@@ -84,7 +81,6 @@ export function profileAPI(logger: PinoLogger) {
             try {
                 const { username, user } = msg;
 
-                const wallet = new Wallet();
                 const users = new Users();
                 const workers = new Workers();
 
@@ -98,12 +94,10 @@ export function profileAPI(logger: PinoLogger) {
                     return new MessageResponse('Invalid Hedera Account Id');
                 }
 
-                const key = await wallet.getKey(target.walletToken, KeyType.KEY, target.did);
                 const balance = await workers.addNonRetryableTask({
-                    type: WorkerTaskType.GET_USER_BALANCE,
+                    type: WorkerTaskType.GET_USER_BALANCE_REST,
                     data: {
-                        hederaAccountId: target.hederaAccountId,
-                        hederaAccountKey: key
+                        hederaAccountId: target.hederaAccountId
                     }
                 }, 20, target.id.toString());
 
