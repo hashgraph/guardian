@@ -81,10 +81,11 @@ export class SendMessages {
         const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
         const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
         const userSignOptions = await userCred.loadSignOptions(ref, userId);
+        const userMessageKey = await userCred.loadMessageKey(ref, userId);
         const messageServer = new MessageServer({
             operatorId: userHederaCred.hederaAccountId,
             operatorKey: userHederaCred.hederaAccountKey,
-            encryptKey: userHederaCred.hederaAccountKey,
+            encryptKey: userMessageKey,
             signOptions: userSignOptions,
             dryRun: ref.dryRun
         });
