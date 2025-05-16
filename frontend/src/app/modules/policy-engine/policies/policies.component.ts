@@ -101,12 +101,7 @@ const columns = [{
 }, {
     id: 'publicLink',
     permissions: (user: UserPermissions, type: LocationType) => {
-        return (
-            user.POLICIES_POLICY_CREATE ||
-            user.POLICIES_POLICY_UPDATE ||
-            user.POLICIES_POLICY_REVIEW ||
-            user.POLICIES_POLICY_DELETE
-        )
+        return true;
     }
 }, {
     id: 'roles',

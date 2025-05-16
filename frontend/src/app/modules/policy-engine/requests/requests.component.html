@@ -143,25 +143,22 @@
                                         {{ getOperationName(row) }}
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'options'">
-
-                                        <ng-container *ngIf="isLocalUser">
-                                            <div class="option-btns">
-                                                <ng-container *ngIf="row.type === 'REQUEST'">
-                                                    <ng-container *ngIf="!row.loaded">
-                                                        <button class="guardian-button reload-btn" (click)="onReload(row)">Reload</button>
-                                                    </ng-container>
-                                                    <ng-container *ngIf="row.loaded && row.status === 'NEW'">
-                                                        <button class="guardian-button approve-btn" (click)="onApprove(row)">Approve</button>
-                                                        <button class="guardian-button reject-btn" (click)="onReject(row)">Reject</button>
-                                                    </ng-container>
+                                        <div *ngIf="isLocalUser" class="option-btns">
+                                            <ng-container *ngIf="row.type === 'REQUEST'">
+                                                <ng-container *ngIf="!row.loaded">
+                                                    <button class="guardian-button reload-btn" (click)="onReload(row)">Reload</button>
                                                 </ng-container>
-                                                <ng-container *ngIf="row.type === 'ACTION'">
-                                                    <ng-container *ngIf="row.status === 'NEW'">
-                                                        <button class="guardian-button reject-btn" (click)="onCancel(row)">Cancel</button>
-                                                    </ng-container>
+                                                <ng-container *ngIf="row.loaded && row.status === 'NEW'">
+                                                    <button class="guardian-button approve-btn" (click)="onApprove(row)">Approve</button>
+                                                    <button class="guardian-button reject-btn" (click)="onReject(row)">Reject</button>
                                                 </ng-container>
-                                            </div>
-                                        </ng-container>
+                                            </ng-container>
+                                            <ng-container *ngIf="row.type === 'ACTION'">
+                                                <ng-container *ngIf="row.status === 'NEW'">
+                                                    <button class="guardian-button reject-btn" (click)="onCancel(row)">Cancel</button>
+                                                </ng-container>
+                                            </ng-container>
+                                        </div>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'operations'">
                                         <div class="operations-btns">

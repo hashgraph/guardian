@@ -37,7 +37,7 @@ export class VcCollectionRestore extends CollectionRestore<VcDocument> {
             data.document = JSON.parse(document);
         }
         if (data.encryptedDocument) {
-            const document = Buffer.from((data as any).document, 'base64').toString();
+            const document = Buffer.from((data as any).encryptedDocument, 'base64').toString();
             data.encryptedDocument = document;
         }
         return data;
