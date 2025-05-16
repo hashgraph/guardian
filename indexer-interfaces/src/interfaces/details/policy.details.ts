@@ -99,6 +99,10 @@ export interface PolicyAnalytics {
      * Hash map
      */
     hashMap?: any;
+    /**
+     * Dynamic topics
+     */
+    dynamicTopics?: string[];
 }
 
 /**

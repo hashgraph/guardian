@@ -51,6 +51,7 @@ export class TopicHelper {
     /**
      * Create instance
      * @param config
+     * @param userId
      * @param keys
      */
     public async create(
@@ -96,6 +97,7 @@ export class TopicHelper {
              */
             targetUUID?: string,
         },
+        userId: string | null,
         keys?: {
             /**
              * Need admin key
@@ -115,7 +117,8 @@ export class TopicHelper {
                 hederaAccountKey: this.hederaAccountKey,
                 dryRun: this.dryRun,
                 topicMemo: TopicMemo.parseMemo(true, config.memo, config.memoObj) || TopicMemo.getTopicMemo(config),
-                keys
+                keys,
+                payload: { userId }
             }
         }, 10);
         let adminKey: any = null;
@@ -208,7 +211,7 @@ export class TopicHelper {
             });
             await messageServer
                 .setTopicObject(parent)
-                .sendMessage(message2);
+                .sendMessage(message2, true, null, userId);
         }
     }
 }

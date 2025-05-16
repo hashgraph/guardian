@@ -12,3 +12,4 @@ export * from './schema-tree.dto.js';
 export * from './internal-server-error.dto.js';
 export * from './search-policy.dto.js';
 export * from './message.dto.js';
+export * from './set-loading-priority.dto.js';

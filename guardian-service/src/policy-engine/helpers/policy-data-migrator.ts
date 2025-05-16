@@ -155,12 +155,14 @@ export class PolicyDataMigrator {
      * Migrate policy data
      * @param owner Owner
      * @param migrationConfig Migration config
+     * @param userId
      * @param notifier Notifier
      * @returns Migration errors
      */
     static async migrate(
         owner: string,
         migrationConfig: MigrationConfig,
+        userId: string | null,
         notifier?: INotifier
     ) {
         try {
@@ -291,7 +293,7 @@ export class PolicyDataMigrator {
                     throw new Error(`Can't find source policy`);
                 }
                 const srcModelDryRun = PolicyHelper.isDryRunMode(srcModel);
-                policyUsers = await users.getUsersBySrId(owner);
+                policyUsers = await users.getUsersBySrId(owner, userId);
                 policyRoles = await new RolesLoader(
                     srcModel.id,
                     srcModel.topicId,
@@ -415,7 +417,7 @@ export class PolicyDataMigrator {
             }
 
             const wallet = new Wallet();
-            const root = await users.getUserById(owner);
+            const root = await users.getUserById(owner, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -427,7 +429,7 @@ export class PolicyDataMigrator {
                 await new DatabaseServer(dstModelDryRun ? dstModel.id : undefined)
                     .getTopic({
                         topicId: dstModel.instanceTopicId,
-                    })
+                    }), false, userId
             );
 
             const policyDataMigrator = new PolicyDataMigrator(
@@ -471,6 +473,7 @@ export class PolicyDataMigrator {
                 srcRetirePools,
                 migrateState,
                 migrateRetirePools,
+                userId,
                 retireContractId
             );
 
@@ -495,7 +498,12 @@ export class PolicyDataMigrator {
      * @param aggregateVCs Aggregate VCs
      * @param splitDocuments Split documents
      * @param documentStates Document states
+     * @param dynamicTokens
+     * @param retirePools
      * @param migrateState Migrate state
+     * @param migrateRetirePools
+     * @param retireContractId
+     * @param userId
      * @returns Migration errors
      */
     private async _migrateData(
@@ -520,6 +528,7 @@ export class PolicyDataMigrator {
         retirePools: RetirePool[],
         migrateState = false,
         migrateRetirePools = false,
+        userId: string | null,
         retireContractId?: string
     ) {
         const errors = new Array<DocumentError>();
@@ -528,12 +537,13 @@ export class PolicyDataMigrator {
             if (this._dryRunId) {
                 await this._createVirtualUsers(users);
             }
-            await this._migratePolicyRoles(roles);
+            await this._migratePolicyRoles(roles, userId);
             await this._migrateDocument(
                 roleVcs,
                 this._migrateRoleVc.bind(this),
                 this._db.saveVC.bind(this._db),
-                errors
+                errors,
+                userId
             );
             await this._migratePolicyStates(states);
         } else {
@@ -543,22 +553,25 @@ export class PolicyDataMigrator {
         await this._migrateDocument(
             vcs,
             (vc: VcDocument) =>
-                this._migrateVcDocument(vc, vcs, roles, dynamicTokens, errors),
+                this._migrateVcDocument(vc, vcs, roles, dynamicTokens, errors, userId),
             this._db.saveVC.bind(this._db),
-            errors
+            errors,
+            userId
         );
         if (migrateState) {
             await this._migrateDocument(
                 multiSignDocuments,
                 this._migrateMultiSignDocument.bind(this),
                 this._db.setMultiSigDocument.bind(this._db),
-                errors
+                errors,
+                userId
             );
             await this._migrateDocument(
                 documentStates,
                 this._migrateDocumentState.bind(this),
                 this._db.saveDocumentState.bind(this._db),
-                errors
+                errors,
+                userId
             );
             await this._migrateDocument(
                 aggregateVCs,
@@ -569,7 +582,8 @@ export class PolicyDataMigrator {
                         doc.blockId
                     );
                 },
-                errors
+                errors,
+                userId
             );
             await this._migrateDocument(
                 splitDocuments,
@@ -577,7 +591,8 @@ export class PolicyDataMigrator {
                 async (doc) => {
                     await this._db.setResidue(doc as any);
                 },
-                errors
+                errors,
+                userId
             );
         }
         this._notifier?.completedAndStart(`Migrate ${vps.length} VP documents`);
@@ -585,12 +600,13 @@ export class PolicyDataMigrator {
             vps,
             this._migrateVpDocument.bind(this),
             this._db.saveVP.bind(this._db),
-            errors
+            errors,
+            userId
         );
         await this._migrateMintRequests(mintRequests, mintTransactions);
 
         if (migrateRetirePools && migrateState) {
-            await this.migrateTokenPools(retireContractId, retirePools, errors);
+            await this.migrateTokenPools(retireContractId, retirePools, errors, userId);
         }
         return errors;
     }
@@ -600,11 +616,13 @@ export class PolicyDataMigrator {
      * @param contractId Contract identifier
      * @param pools Pools
      * @param errors Errors
+     * @param userId
      */
     async migrateTokenPools(
         contractId: string,
         pools: RetirePool[],
-        errors: DocumentError[]
+        errors: DocumentError[],
+        userId: string | null
     ) {
         if (!contractId) {
             return;
@@ -617,7 +635,8 @@ export class PolicyDataMigrator {
                     this._root.hederaAccountId,
                     this._rootKey,
                     this.replacePoolTokens(pool.tokens),
-                    pool.immediately
+                    pool.immediately,
+                    userId
                 );
             } catch (error) {
                 errors.push({
@@ -652,10 +671,12 @@ export class PolicyDataMigrator {
      * Migrate tokens
      * @param dynamicTokens Dynamic tokens
      * @param tokenTemplates Token templates
+     * @param userId
      */
     async migrateTokenTemplates(
         dynamicTokens: Token[],
-        tokenTemplates: { [key: string]: string }
+        tokenTemplates: { [key: string]: string },
+        userId: string | null
     ) {
         const result: any = {};
 
@@ -687,14 +708,16 @@ export class PolicyDataMigrator {
             }
 
             tokenConfig.wipeContractId = await this.createWipeContract(
-                tokenConfig.wipeContractId
+                tokenConfig.wipeContractId,
+                userId
             );
 
             const tokenObject = await createHederaToken(
                 tokenConfig,
                 Object.assign(this._root, {
                     hederaAccountKey: this._rootKey,
-                }) as any
+                }) as any,
+                userId
             );
             tokenObject.policyId = this._policyId;
 
@@ -711,9 +734,10 @@ export class PolicyDataMigrator {
     /**
      * Create wipe contract
      * @param wipeContractId Wipe contract identifier
+     * @param userId
      * @returns Wipe contract identifier
      */
-    async createWipeContract(wipeContractId: string) {
+    async createWipeContract(wipeContractId: string, userId: string | null) {
         const dataBaseServer = new DatabaseServer();
 
         const existingWipeContract = await dataBaseServer.findOne(
@@ -747,6 +771,7 @@ export class PolicyDataMigrator {
                 policyId: null,
                 policyUUID: null,
             },
+            userId,
             {
                 admin: true,
                 submit: false,
@@ -762,7 +787,7 @@ export class PolicyDataMigrator {
             topic.topicId
         );
 
-        await topic.saveKeys();
+        await topic.saveKeys(userId);
         await DatabaseServer.saveTopic(topic.toObject());
 
         const version = await getContractVersion(
@@ -784,7 +809,7 @@ export class PolicyDataMigrator {
             MessageAction.CreateContract
         );
         contractMessage.setDocument(contract);
-        await this._ms.setTopicObject(topic).sendMessage(contractMessage);
+        await this._ms.setTopicObject(topic).sendMessage(contractMessage, true, null, userId);
 
         this._createdWipeContractId = contract.contractId;
         return this._createdWipeContractId;
@@ -807,9 +832,10 @@ export class PolicyDataMigrator {
     /**
      * Migrate split document
      * @param doc Split document
+     * @param userId
      * @returns Split document
      */
-    private async _migrateSplitDocument(doc: SplitDocuments) {
+    private async _migrateSplitDocument(doc: SplitDocuments, userId: string | null) {
         if (!this._blocks[doc.blockId]) {
             return null;
         }
@@ -818,7 +844,7 @@ export class PolicyDataMigrator {
         doc.policyId = this._policyId;
 
         const _vcHelper = new VcHelper();
-        const didDocument = await _vcHelper.loadDidDocument(this._owner);
+        const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
         const svc = await _vcHelper.issueVerifiableCredential(
             VcDocumentDefinition.fromJsonTree(doc.document),
             didDocument,
@@ -851,9 +877,10 @@ export class PolicyDataMigrator {
     /**
      * Migrate multi sign document
      * @param doc Multi document
+     * @param userId
      * @returns Multi document
      */
-    async _migrateMultiSignDocument(doc: MultiDocuments) {
+    async _migrateMultiSignDocument(doc: MultiDocuments, userId: string | null) {
         doc.userId = await this._replaceDidTopicId(doc.userId);
         doc.did = await this._replaceDidTopicId(doc.did);
 
@@ -865,7 +892,7 @@ export class PolicyDataMigrator {
         doc.documentId = vc.id;
 
         const _vcHelper = new VcHelper();
-        const didDocument = await _vcHelper.loadDidDocument(this._owner);
+        const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
         const svc = await _vcHelper.issueVerifiableCredential(
             VcDocumentDefinition.fromJsonTree(doc.document),
             didDocument,
@@ -901,17 +928,19 @@ export class PolicyDataMigrator {
      * @param migrateFn Migrate function
      * @param saveFn Save function
      * @param errors Errors
+     * @param userId
      */
     private async _migrateDocument<T extends BaseEntity>(
         documents: T[],
-        migrateFn: (document: T) => Promise<T>,
+        migrateFn: (document: T,  userId: string | null) => Promise<T>,
         saveFn: (document: Partial<T>) => Promise<T | void>,
-        errors: DocumentError[]
+        errors: DocumentError[],
+        userId: string | null
     ) {
         const notEmptyDocuments = (documents as any[]).filter((item) => !!item);
         for (const document of notEmptyDocuments) {
             try {
-                const newDocument = await migrateFn(document);
+                const newDocument = await migrateFn(document, userId);
                 if (!newDocument) {
                     continue;
                 }
@@ -961,9 +990,10 @@ export class PolicyDataMigrator {
     /**
      * Migrate role vc
      * @param doc VC
+     * @param userId
      * @returns VC
      */
-    private async _migrateRoleVc(doc: VcDocument) {
+    private async _migrateRoleVc(doc: VcDocument, userId: string | null) {
         if (!doc) {
             return doc;
         }
@@ -991,7 +1021,7 @@ export class PolicyDataMigrator {
         ) {
             this._notifier?.info(`Resigning VC ${doc.id}`);
             const _vcHelper = new VcHelper();
-            const didDocument = await _vcHelper.loadDidDocument(this._owner);
+            const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
             const credentialSubject = SchemaHelper.updateObjectContext(
                 new Schema(schema),
                 doc.document.credentialSubject[0]
@@ -1033,7 +1063,7 @@ export class PolicyDataMigrator {
             const message = vcMessage;
             const vcMessageResult = await this._ms
                 .setTopicObject(this._policyInstanceTopic)
-                .sendMessage(message, true);
+                .sendMessage(message, true, null, userId);
             doc.messageId = vcMessageResult.getId();
             doc.topicId = vcMessageResult.getTopicId();
             doc.messageHash = vcMessageResult.toHash();
@@ -1070,6 +1100,7 @@ export class PolicyDataMigrator {
             await this._db.saveBlockState(
                 this._policyId,
                 this._blocks[state.blockId],
+                null,
                 data
             );
         }
@@ -1078,8 +1109,9 @@ export class PolicyDataMigrator {
     /**
      * Migrate policy roles
      * @param roles Roles
+     * @param userId
      */
-    private async _migratePolicyRoles(roles: PolicyRoles[]) {
+    private async _migratePolicyRoles(roles: PolicyRoles[], userId: string | null) {
         for (const role of roles) {
             role.owner = await this._replaceDidTopicId(role.owner);
             role.did = await this._replaceDidTopicId(role.did);
@@ -1090,7 +1122,7 @@ export class PolicyDataMigrator {
                 role.groupName = this._groups[role.groupName];
             }
             if (role.username && !this._dryRunId) {
-                const newUser = await this._users.getUserById(role.did);
+                const newUser = await this._users.getUserById(role.did, userId);
                 if (newUser) {
                     role.username = newUser.username;
                 }
@@ -1131,9 +1163,10 @@ export class PolicyDataMigrator {
     /**
      * Migrate VP document
      * @param doc VP
+     * @param userId
      * @returns VP
      */
-    private async _migrateVpDocument(doc: VpDocument & { group: string }) {
+    private async _migrateVpDocument(doc: VpDocument & { group: string }, userId: string | null) {
         doc.owner = await this._replaceDidTopicId(doc.owner);
         if (doc.group) {
             const srcGroup = await this._db.getGroupByID(
@@ -1183,7 +1216,7 @@ export class PolicyDataMigrator {
         if (vpChanged || this._oldPolicyOwner !== this._owner) {
             this._notifier?.info(`Resigning VP ${doc.id}`);
             const _vcHelper = new VcHelper();
-            const didDocument = await _vcHelper.loadDidDocument(this._owner);
+            const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
             vp = await _vcHelper.createVerifiablePresentation(
                 vcs,
                 didDocument,
@@ -1205,7 +1238,7 @@ export class PolicyDataMigrator {
             vpMessage.setRelationships([...doc.relationships, doc.messageId]);
             const vpMessageResult = await this._ms
                 .setTopicObject(this._policyInstanceTopic)
-                .sendMessage(vpMessage);
+                .sendMessage(vpMessage, true, null, userId);
             const vpMessageId = vpMessageResult.getId();
             this.vpIds.set(doc.messageId, vpMessageId);
             doc.messageId = vpMessageId;
@@ -1257,7 +1290,9 @@ export class PolicyDataMigrator {
      * @param doc VC
      * @param vcs VCs
      * @param roles Roles
+     * @param tokens
      * @param errors Errors
+     * @param userId
      * @returns VC
      */
     private async _migrateVcDocument(
@@ -1265,7 +1300,8 @@ export class PolicyDataMigrator {
         vcs: VcDocument[],
         roles: PolicyRoles[],
         tokens: Token[],
-        errors: DocumentError[]
+        errors: DocumentError[],
+        userId: string | null
     ) {
         if (!doc) {
             return doc;
@@ -1285,7 +1321,8 @@ export class PolicyDataMigrator {
                         vcs,
                         roles,
                         tokens,
-                        errors
+                        errors,
+                        userId
                     );
                     doc.relationships[i] = republishedDocument.messageId;
                 } catch (error) {
@@ -1353,7 +1390,7 @@ export class PolicyDataMigrator {
             this._notifier?.info(`Resigning VC ${doc.id}`);
 
             const _vcHelper = new VcHelper();
-            const didDocument = await _vcHelper.loadDidDocument(this._owner);
+            const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
             const credentialSubject = SchemaHelper.updateObjectContext(
                 new Schema(schema),
                 this._editedVCs[doc.id] || doc.document.credentialSubject[0]
@@ -1393,7 +1430,7 @@ export class PolicyDataMigrator {
             const message = vcMessage;
             const vcMessageResult = await this._ms
                 .setTopicObject(this._policyInstanceTopic)
-                .sendMessage(message, true);
+                .sendMessage(message, true, null, userId);
             doc.messageId = vcMessageResult.getId();
             doc.topicId = vcMessageResult.getTopicId();
             doc.messageHash = vcMessageResult.toHash();
@@ -1403,7 +1440,7 @@ export class PolicyDataMigrator {
         this.vcIds.set(doc.id, doc);
 
         if (doc.tokens) {
-            doc.tokens = await this.migrateTokenTemplates(tokens, doc.tokens);
+            doc.tokens = await this.migrateTokenTemplates(tokens, doc.tokens, userId);
         }
 
         return doc;

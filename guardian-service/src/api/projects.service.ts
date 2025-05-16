@@ -84,7 +84,10 @@ export async function getProjectsData(documents: VcDocument[], allPolicies: Poli
  */
 export async function projectsAPI(logger: PinoLogger): Promise<void> {
     ApiResponse(MessageAPI.SEARCH_PROJECTS,
-        async (msg: { categoryIds: string[], policyIds: string[] }) => {
+        async (msg: {
+            categoryIds: string[],
+            policyIds: string[]
+        }) => {
             try {
                 const { categoryIds, policyIds } = msg;
 
@@ -136,7 +139,7 @@ export async function projectsAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse(projects);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], null);
                 return new MessageError(error);
             }
         });
@@ -146,7 +149,7 @@ export async function projectsAPI(logger: PinoLogger): Promise<void> {
             const policyCategories = await DatabaseServer.getPolicyCategories();
             return new MessageResponse(policyCategories);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], null);
             return new MessageError(error);
         }
     });
@@ -157,7 +160,7 @@ export async function projectsAPI(logger: PinoLogger): Promise<void> {
             return new MessageResponse(policyProperties);
         } catch (error) {
             console.log(error);
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], null);
             return new MessageError(error);
         }
     });

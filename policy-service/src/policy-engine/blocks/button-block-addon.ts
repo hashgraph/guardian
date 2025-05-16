@@ -2,6 +2,7 @@ import { EventBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import {
     IPolicyAddonBlock,
+    IPolicyGetData,
     IPolicySourceBlock,
 } from '../policy-engine.interface.js';
 import {
@@ -11,6 +12,7 @@ import {
 } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
 import { setOptions } from '../helpers/set-options.js';
+import { LocationType } from '@guardian/interfaces';
 
 /**
  * Button with UI
@@ -18,6 +20,7 @@ import { setOptions } from '../helpers/set-options.js';
 @EventBlock({
     blockType: 'buttonBlockAddon',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Button',
         title: `Add 'Button' Block`,
@@ -88,11 +91,16 @@ export class ButtonBlockAddon {
      * Get block data
      * @param user
      */
-    async getData(): Promise<any> {
+    async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const data: any = {
+        const data: IPolicyGetData = {
             id: ref.uuid,
             blockType: ref.blockType,
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            ),
             ...ref.options,
         };
         return data;
@@ -131,5 +139,6 @@ export class ButtonBlockAddon {
                 };
             }
         );
+        ref.backup();
     }
 }

@@ -109,7 +109,7 @@ export class ProfileDTO extends UserDTO {
     @ApiProperty({
         type: 'object',
         nullable: true,
-        required: false
+        additionalProperties: true
     })
     @IsOptional()
     @IsObject()
@@ -118,7 +118,7 @@ export class ProfileDTO extends UserDTO {
     @ApiProperty({
         type: 'object',
         nullable: true,
-        required: false
+        additionalProperties: true
     })
     @IsOptional()
     @IsObject()

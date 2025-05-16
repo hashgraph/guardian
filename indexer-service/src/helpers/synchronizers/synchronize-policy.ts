@@ -101,6 +101,7 @@ export class SynchronizationPolicy extends SynchronizationTask {
                 tokenMap,
                 fileMap
             );
+            row.analyticsUpdate = Date.now();
             em.persist(row);
         }
         console.log(`Sync Policies: flush`)
@@ -210,6 +211,8 @@ export class SynchronizationPolicy extends SynchronizationTask {
                 analytics.vpCount = analytics.vpCount + documents.vp;
             }
         }
+
+        analytics.dynamicTopics = Array.from(topics);
     }
 
     private findNFTs(

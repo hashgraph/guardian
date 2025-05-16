@@ -41,6 +41,7 @@
         "label_documents": "Label Documents (VPs)",
         "dids": "Decentralized Identifiers (DIDs)",
         "others": "Others",
+        "priority_queue": "Priority Update Queue",
         "search_placeholder": "Search by keyword",
         "statistics": "Statistics",
         "labels": "Labels",
@@ -50,6 +51,15 @@
     },
     "home": {
         "header": "Indexer"
+    },
+    "priority_queue": {
+        "open_priority_queue": "Open Priority Update Queue",
+        "search_placeholder": "Search by Topic ID",
+        "enter_topic_id": "Enter Topic ID",
+        "add_to_queue": "Add Topic ID to Priority Update Queue",
+        "already_in_queue": "Already in Priority Update Queue",
+        "add_to_queue_success": "Added to priority queue.",
+        "add_to_queue_error": "This topic ID not found or already in queue. Please try again."
     },
     "filter": {
         "placeholder": "placeholder",
@@ -92,6 +102,12 @@
         "date": "Date",
         "createdTimestamp": "Created Date",
         "modifiedTimestamp": "Modified Date",
+        "coordinates": "Coordinates",
+        "prioritize": "Prioritize",
+        "send_to_priority": "Send to Priority Update Queue",
+        "lastUpdate": "Last Update",
+        "entity_id": "Entity Id",
+        "entity_type": "Entity Type",
         "filter": {
             "policy": "Policy",
             "schema": "Schema",
@@ -123,6 +139,7 @@
         "raw_data": "Raw data",
         "labels": "Labels",
         "formulas": "Formulas",
+        "table": "Table",
         "tabs": {
             "activity": "Activity"
         },

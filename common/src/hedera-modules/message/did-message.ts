@@ -182,6 +182,18 @@ export class DIDMessage extends Message {
         return result;
     }
 
+    public static fromJson(json: any): DIDMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
+        const result = Message._fromJson(new DIDMessage(json.action), json);
+        result.did = json.did;
+        result.relationships = json.relationships;
+        result.document = json.document;
+        return result;
+    }
+
     /**
      * Get User DID
      */

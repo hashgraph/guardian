@@ -65,6 +65,17 @@ export class RoleMessage extends VCMessage {
         return result;
     }
 
+    public static fromJson(json: any): RoleMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
+        const result = VCMessage._fromJson(new RoleMessage(json.action), json);
+        result.role = json.role;
+        result.group = json.group;
+        return result;
+    }
+
     /**
      * To message object
      */

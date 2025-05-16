@@ -6,6 +6,7 @@ import { MessageType } from './message-type.js';
 import { VpMessageBody } from './message-body.interface.js';
 import { Hashing } from '../hashing.js';
 import { IPFS } from '../../helpers/index.js';
+import { ITopicMessage } from '../../topic-listener/topic-listener.js';
 
 /**
  * VP message
@@ -131,6 +132,27 @@ export class VPMessage extends Message {
      * From message
      * @param message
      */
+    public static from(data: ITopicMessage): VPMessage {
+        if (!data) {
+            throw new Error('Message Object is empty');
+        }
+        if (!data.message) {
+            throw new Error('Message Object is empty');
+        }
+
+        const json = JSON.parse(data.message);
+        const message = VPMessage.fromMessageObject(json);
+        message.setAccount(data.owner);
+        message.setIndex(data.sequenceNumber);
+        message.setId(data.consensusTimestamp);
+        message.setTopicId(data.topicId);
+        return message;
+    }
+
+    /**
+     * From message
+     * @param message
+     */
     public static fromMessage(message: string): VPMessage {
         if (!message) {
             throw new Error('Message Object is empty');
@@ -219,6 +241,18 @@ export class VPMessage extends Message {
         result.hash = this.hash;
         result.relationships = this.relationships;
         result.document = this.document;
+        return result;
+    }
+
+    public static fromJson(json: any): VPMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+        const result = Message._fromJson(new VPMessage(json.action), json);
+        result.issuer = json.issuer;
+        result.hash = json.hash;
+        result.relationships = json.relationships;
+        result.document = json.document;
         return result;
     }
 

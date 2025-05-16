@@ -1,6 +1,6 @@
 import { MessageAPI } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { Branding, DatabaseServer, MessageResponse } from '@guardian/common';
+import { Branding, DatabaseServer, IAuthUser, MessageResponse } from '@guardian/common';
 
 const termsAndConditions = `Lorem Ipsum Version Introduction
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
@@ -58,7 +58,11 @@ Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saep
      *
      * @returns {Branding} - new branding object
      */
-    ApiResponse(MessageAPI.STORE_BRANDING, async (config) => {
+    ApiResponse(MessageAPI.STORE_BRANDING, async (msg: {
+        user: IAuthUser,
+        config: string
+    }) => {
+        const { config } = msg;
         const branding: any = await dataBaseServer.save(Branding, config);
         return new MessageResponse(branding);
     });

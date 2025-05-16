@@ -3,7 +3,8 @@ import { ApiExtraModels, ApiTags, ApiOperation, ApiOkResponse, ApiInternalServer
 import { CACHE } from '../../constants/index.js';
 import { UseCache, Guardians } from '#helpers';
 import { InternalServerErrorDTO } from '#middlewares';
-import { Auth } from '#auth';
+import { Auth, AuthUser } from '#auth';
+import { IAuthUser } from '@guardian/common';
 
 @Controller('map')
 @ApiTags('map')
@@ -28,9 +29,11 @@ export class MapApi {
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     @UseCache({ ttl: CACHE.LONG_TTL })
-    async getKey(): Promise<string> {
+    async getKey(
+        @AuthUser() user: IAuthUser,
+    ): Promise<string> {
         const guardians = new Guardians();
-        return await guardians.getMapApiKey();
+        return await guardians.getMapApiKey(user);
     }
 
     /**
@@ -53,8 +56,10 @@ export class MapApi {
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     @UseCache({ ttl: CACHE.LONG_TTL })
-    async getSentinelKey(): Promise<string> {
+    async getSentinelKey(
+        @AuthUser() user: IAuthUser,
+    ): Promise<string> {
         const guardians = new Guardians();
-        return await guardians.getSentinelApiKey();
+        return await guardians.getSentinelApiKey(user);
     }
 }

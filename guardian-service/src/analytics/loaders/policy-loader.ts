@@ -100,8 +100,8 @@ export class PolicyLoader {
         }
 
         const users = new Users()
-        const root = await users.getHederaAccount(user.creator);
-        const userAccount = await users.getUser(user.username);
+        const root = await users.getHederaAccount(user.creator, user.id);
+        const userAccount = await users.getUser(user.username, user.id);
 
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
         const message = await messageServer.getMessage<PolicyMessage>(messageId, null, userAccount.id.toString());

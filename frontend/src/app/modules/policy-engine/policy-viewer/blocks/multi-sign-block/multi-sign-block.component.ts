@@ -1,8 +1,9 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {Component, Input, OnInit, ViewChild} from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import {OverlayPanel} from 'primeng/overlaypanel';
 
 /**
  * Component for display block of 'multiSignBlock' types.
@@ -16,6 +17,8 @@ export class MultiSignBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
+
+    @ViewChild('menu2') menu2!: OverlayPanel;
 
     isActive = false;
     loading: boolean = true;
@@ -34,6 +37,7 @@ export class MultiSignBlockComponent implements OnInit {
     signedCount: any;
     signedMax: any;
     declinedMax: any;
+    readonly: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -96,6 +100,7 @@ export class MultiSignBlockComponent implements OnInit {
 
     setData(data: any) {
         if (data) {
+            this.readonly = !!data.readonly;
             this.data = data.data;
             this.status = data.status || {};
             this.confirmationStatus = this.status.confirmationStatus;
@@ -144,7 +149,8 @@ export class MultiSignBlockComponent implements OnInit {
             );
     }
 
-    onDetails() {
+    onDetails(event: Event) {
+        this.menu2.toggle(event);
     }
 
     onClickMenu(event: any) {

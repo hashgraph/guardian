@@ -20,6 +20,7 @@ import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 
 interface IRequestDocumentAddonData {
+    readonly: boolean;
     schema: ISchema;
     active: boolean;
     data: any;
@@ -67,6 +68,7 @@ export class RequestDocumentBlockAddonComponent
     public restoreData: any;
     public rules: any;
     public hideFields: any;
+    public readonly: boolean = false;
 
     constructor(
         policyEngineService: PolicyEngineService,
@@ -96,6 +98,7 @@ export class RequestDocumentBlockAddonComponent
 
     override setData(data: IRequestDocumentAddonData) {
         if (data) {
+            this.readonly = !!data.readonly;
             const row = data.data;
             const schema = data.schema;
             const active = data.active;

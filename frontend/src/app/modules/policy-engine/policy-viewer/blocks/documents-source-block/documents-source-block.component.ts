@@ -1,13 +1,13 @@
-import {Component, Input, OnInit} from '@angular/core';
-import {PolicyEngineService} from 'src/app/services/policy-engine.service';
-import {PolicyHelper} from 'src/app/services/policy-helper.service';
-import {DialogBlock} from '../../dialog-block/dialog-block.component';
-import {animate, state, style, transition, trigger} from '@angular/animations';
-import {WebSocketService} from 'src/app/services/web-socket.service';
-import {VCViewerDialog} from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
-import {ViewerDialog} from '../../../dialogs/viewer-dialog/viewer-dialog.component';
-import {DialogService} from 'primeng/dynamicdialog';
-import {HttpErrorResponse} from '@angular/common/http';
+import { Component, Input, OnInit } from '@angular/core';
+import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { PolicyHelper } from 'src/app/services/policy-helper.service';
+import { DialogBlock } from '../../dialog-block/dialog-block.component';
+import { animate, state, style, transition, trigger } from '@angular/animations';
+import { WebSocketService } from 'src/app/services/web-socket.service';
+import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
+import { ViewerDialog } from '../../../dialogs/viewer-dialog/viewer-dialog.component';
+import { DialogService } from 'primeng/dynamicdialog';
+import { HttpErrorResponse } from '@angular/common/http';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -18,8 +18,8 @@ import {HttpErrorResponse} from '@angular/common/http';
     styleUrls: ['./documents-source-block.component.scss'],
     animations: [
         trigger('statusExpand', [
-            state('collapsed', style({height: '0px', minHeight: '0'})),
-            state('expanded', style({height: '*'})),
+            state('collapsed', style({ height: '0px', minHeight: '0' })),
+            state('expanded', style({ height: '*' })),
             transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
         ]),
     ]
@@ -50,6 +50,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
         direction: ''
     };
     enableSorting: boolean = false;
+    hasHistory: boolean = false;
+    readonly: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -118,6 +120,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
 
     async setData(data: any) {
         if (data) {
+            this.readonly = !!data.readonly;
             const fields: any[] = data.fields || [];
             const _fieldMap: any = {};
             const _fields: any[] = [];
@@ -162,6 +165,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             });
             this.fieldMap = _fieldMap;
             this.fields = _fields;
+            this.hasHistory = !!this.documents?.some(doc => doc.history && doc.history.length > 0);
         } else {
             this.fieldMap = {};
             this.fields = [];
@@ -171,6 +175,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             this.isActive = false;
             this.addons = [];
             this.paginationAddon = null;
+            this.hasHistory = false;
         }
     }
 
@@ -369,7 +374,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             config.data = row;
             return config;
         } else {
-            const config = {...block};
+            const config = { ...block };
             config.data = row;
             return config;
         }
@@ -449,9 +454,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
         const data = row;
         const value = this.getObjectValue(row, field.name);
         this.loading = true;
-        this.policyEngineService.getGetIdByName(field.bindBlock, this.policyId).subscribe(({id}: any) => {
+        this.policyEngineService.getGetIdByName(field.bindBlock, this.policyId).subscribe(({ id }: any) => {
             this.policyEngineService.getParents(id, this.policyId).subscribe((parents: any[]) => {
-                this.policyEngineService.setBlockData(id, this.policyId, {filterValue: value}).subscribe(() => {
+                this.policyEngineService.setBlockData(id, this.policyId, { filterValue: value }).subscribe(() => {
                     this.loading = false;
                     const filters: any = {};
                     for (let index = parents.length - 1; index > 0; index--) {
@@ -488,13 +493,16 @@ export class DocumentsSourceBlockComponent implements OnInit {
         return Array.isArray(value) ? value.join(', ') : value;
     }
 
-    hasHistory(): boolean {
-        return !!this.documents?.some(doc => doc.history && doc.history.length > 0);
-    }
-
     onRowClick(element: any) {
         if (element.history && element.history.length) {
             this.statusDetailed = this.statusDetailed === element ? null : element;
         }
+    }
+
+    getClass(type: string): string {
+        if(type === 'text') {
+            return 'text-container';
+        }
+        return ''
     }
 }

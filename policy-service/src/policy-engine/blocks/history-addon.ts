@@ -1,3 +1,4 @@
+import { LocationType } from '@guardian/interfaces';
 import { SourceAddon } from '../helpers/decorators/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 
@@ -6,6 +7,7 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
  */
 @SourceAddon({
     blockType: 'historyAddon',
+    actionType: LocationType.LOCAL,
     about: {
         label: 'History',
         title: `Add 'History' Addon`,

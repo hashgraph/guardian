@@ -45,6 +45,7 @@ import { SchemaRulesApi } from './api/service/schema-rules.js';
 import { loggerMongoProvider, pinoLoggerProvider } from './helpers/providers/index.js';
 import { PolicyLabelsApi } from './api/service/policy-labels.js';
 import { FormulasApi } from './api/service/formulas.js';
+import { ExternalPoliciesApi } from './api/service/external-policy.js';
 
 // const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 // const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -99,6 +100,7 @@ import { FormulasApi } from './api/service/formulas.js';
         PolicyStatisticsApi,
         SchemaRulesApi,
         FormulasApi,
+        ExternalPoliciesApi,
         PolicyLabelsApi,
         WorkerTasksController
     ],

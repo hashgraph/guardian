@@ -2,7 +2,7 @@ import { findOptions, getVCIssuer, VcDocument } from '@guardian/common';
 import { ReportItem } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyReportItemBlock } from '../policy-engine.interface.js';
-import { IReportItem } from '@guardian/interfaces';
+import { IReportItem, LocationType } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
@@ -13,6 +13,7 @@ import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.j
 @ReportItem({
     blockType: 'reportItemBlock',
     commonBlock: true,
+    actionType: LocationType.LOCAL,
     about: {
         label: 'Report Item',
         title: `Add 'Report Item' Block`,

@@ -15,6 +15,7 @@ import { interval, Subject } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 
 interface IRequestDocumentData {
+    readonly: boolean;
     schema: ISchema;
     active: boolean;
     presetSchema: any;
@@ -75,6 +76,7 @@ export class RequestDocumentBlockComponent
     public rules: DocumentValidators;
     public rulesResults: any;
     public destroy$: Subject<boolean> = new Subject<boolean>();
+    public readonly: boolean = false;
 
     constructor(
         policyEngineService: PolicyEngineService,
@@ -135,6 +137,7 @@ export class RequestDocumentBlockComponent
 
     override setData(data: IRequestDocumentData) {
         if (data) {
+            this.readonly = !!data.readonly;
             const uiMetaData = data.uiMetaData;
             const row = data.data;
             const schema = data.schema;

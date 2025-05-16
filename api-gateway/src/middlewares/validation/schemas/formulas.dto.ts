@@ -107,7 +107,7 @@ export class FormulaDTO {
     @ApiProperty({
         type: 'object',
         nullable: true,
-        required: false
+        additionalProperties: true,
     })
     @IsOptional()
     @IsObject()

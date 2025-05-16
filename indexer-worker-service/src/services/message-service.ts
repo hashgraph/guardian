@@ -3,8 +3,9 @@ import { RequiredEntityData } from '@mikro-orm/core';
 import { Parser } from '../utils/parser.js';
 import { IPFSService } from '../loaders/ipfs-service.js';
 import { LogService } from './log-service.js';
-import { DataBaseHelper, Job, MessageCache, Message } from '@indexer/common';
-import { MessageStatus } from '@indexer/interfaces';
+import { DataBaseHelper, Job, MessageCache, Message, IndexerMessageAPI } from '@indexer/common';
+import { MessageStatus, PriorityOptions, PriorityStatus } from '@indexer/interfaces';
+import { ChannelService } from 'api/channel.service.js';
 
 export interface IFile {
     id?: ObjectId;
@@ -14,6 +15,7 @@ export interface IFile {
 
 export class MessageService {
     public static CYCLE_TIME: number = 0;
+    public static CHANNEL: ChannelService | null;
 
     public static async updateMessage(job: Job) {
         try {
@@ -39,9 +41,20 @@ export class MessageService {
             } else {
                 row.status = MessageStatus.UNSUPPORTED;
             }
+            
+            row.priorityStatus = PriorityStatus.FINISHED;
             await em.flush();
+            MessageService.onMessageFinished(row);
         } catch (error) {
             await LogService.error(error, 'update message');
+        }
+    }
+    
+    public static onMessageFinished(row: MessageCache) {
+        if (MessageService.CHANNEL && row.priorityTimestamp) {
+            MessageService.CHANNEL.publicMessage(IndexerMessageAPI.ON_PRIORITY_DATA_LOADED, {
+                priorityTimestamp: row.priorityTimestamp
+            });
         }
     }
 
@@ -51,17 +64,31 @@ export class MessageService {
             {
                 type: 'Message',
                 $or: [
+                    { priorityDate: { $ne: null } },
                     { status: MessageStatus.LOADING, lastUpdate: { $lt: delay } },
                     { status: MessageStatus.COMPRESSED }
                 ]
             },
             {
+                orderBy: [
+                    { priorityDate: 'DESC' }
+                ],
                 limit: 50
                 // fields: ['id', 'data', 'topicId', 'consensusTimestamp'],
             }
         )
-        const index = Math.min(Math.floor(Math.random() * rows.length), rows.length - 1);
-        const row = rows[index];
+        
+        if (!rows || rows.length <= 0) {
+            return null;
+        }
+
+        let row: any;
+        if (rows[0].priorityDate) {
+            row = rows[0]
+        } else {
+            const index = Math.min(Math.floor(Math.random() * rows.length), rows.length - 1);
+            row = rows[index];
+        }
 
         if (!row) {
             return null;
@@ -70,12 +97,15 @@ export class MessageService {
         const count = await em.nativeUpdate(MessageCache, {
             _id: row._id,
             $or: [
+                { priorityDate: { $ne: null } },
                 { status: MessageStatus.LOADING, lastUpdate: { $lt: delay } },
                 { status: MessageStatus.COMPRESSED }
             ]
         }, {
             lastUpdate: Date.now(),
-            status: MessageStatus.LOADING
+            status: MessageStatus.LOADING,
+            priorityDate: null,
+            priorityStatus: PriorityStatus.RUNNING
         });
 
         if (count) {
@@ -99,7 +129,7 @@ export class MessageService {
         }
     }
 
-    public static async saveImmediately(rows: MessageCache[]): Promise<void> {
+    public static async saveImmediately(rows: MessageCache[], priorityOptions?: PriorityOptions): Promise<void> {
         const em = DataBaseHelper.getEntityManager();
         for (const message of rows) {
             try {
@@ -113,10 +143,18 @@ export class MessageService {
                         row.lastUpdate = Date.now();
                         em.persist(row);
                         ref.status = MessageStatus.LOADED;
+                        ref.priorityDate = null;
+                        ref.priorityStatus = PriorityStatus.FINISHED;
+                        ref.priorityStatusDate = priorityOptions.priorityStatusDate;
+                        ref.priorityTimestamp = priorityOptions.priorityTimestamp;
                         await em.flush();
                     }
                 } else {
                     ref.status = MessageStatus.UNSUPPORTED;
+                    ref.priorityDate = null;
+                    ref.priorityStatus = PriorityStatus.FINISHED;
+                    ref.priorityStatusDate = priorityOptions.priorityStatusDate;
+                    ref.priorityTimestamp = priorityOptions.priorityTimestamp;
                     await em.flush();
                 }
             } catch (error) {

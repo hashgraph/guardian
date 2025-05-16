@@ -1,6 +1,8 @@
 import { Topic } from '../entity/index.js';
 import { TopicType } from '@guardian/interfaces';
-import { KeyType, Wallet } from '../helpers/index.js';
+import { KeyType, Users, Wallet } from '../helpers/index.js';
+import { DatabaseServer } from '../database-modules/database-server.js';
+import { Wallet as WalletManager } from '../wallet/index.js'
 
 /**
  * Topic Config
@@ -110,8 +112,9 @@ export class TopicConfig {
      * Create topic config by json
      * @param topic
      * @param needKey
+     * @param userId
      */
-    public static async fromObject(topic: Topic, needKey: boolean = false): Promise<TopicConfig> {
+    public static async fromObject(topic: Topic, needKey: boolean, userId: string | null): Promise<TopicConfig> {
         if (!topic) {
             return null;
         }
@@ -120,12 +123,39 @@ export class TopicConfig {
             const submitKey = await wallet.getUserKey(
                 topic.owner,
                 KeyType.TOPIC_SUBMIT_KEY,
-                topic.topicId
+                topic.topicId,
+                userId
             );
             return new TopicConfig(topic, null, submitKey);
         } else {
             return new TopicConfig(topic, null, null);
         }
+    }
+
+    /**
+     * Create topic config by json
+     * @param topic
+     * @param needKey
+     */
+    public static async fromObjectV2(topic: Topic, userId: string | null): Promise<TopicConfig> {
+        if (!topic) {
+            return null;
+        }
+
+        const hasPermissions = await (new DatabaseServer()).count(Topic, {
+            owner: topic.owner,
+            topicId: topic.topicId
+        }) > 0
+
+        const user = new Users();
+        const { walletToken } = await user.getUserById(topic.owner, userId);
+
+        const wallet = new WalletManager();
+        const submitKey = hasPermissions
+            ? await wallet.getKey(walletToken, KeyType.TOPIC_SUBMIT_KEY, topic.topicId)
+            : null;
+
+        return new TopicConfig(topic, null, submitKey);
     }
 
     /**
@@ -149,7 +179,7 @@ export class TopicConfig {
     /**
      * Get topic object
      */
-    public async saveKeys(): Promise<void> {
+    public async saveKeys(userId: string | null): Promise<void> {
         if (this.owner) {
             const wallet = new Wallet();
             if (this.adminKey) {
@@ -157,7 +187,8 @@ export class TopicConfig {
                     this.owner,
                     KeyType.TOPIC_ADMIN_KEY,
                     this.topicId,
-                    this.adminKey
+                    this.adminKey,
+                    userId
                 );
             }
             if (this.submitKey) {
@@ -165,7 +196,8 @@ export class TopicConfig {
                     this.owner,
                     KeyType.TOPIC_SUBMIT_KEY,
                     this.topicId,
-                    this.submitKey
+                    this.submitKey,
+                    userId
                 );
             }
         }

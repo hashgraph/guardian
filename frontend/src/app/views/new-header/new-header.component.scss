@@ -273,6 +273,15 @@
     .item {
         width: 100%;
     }
+
+    .span-icon span {
+        max-width: 140px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+        vertical-align: middle;
+    }
 }
 
 .smooth-rotate {
@@ -337,4 +346,43 @@
             border-bottom: 3px solid rgba(0, 0, 0, 0);
         }
     }
+}
+
+.badge {
+    background-color: #ff432a;
+    width: min-content;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1px 8px;
+    border-radius: 16px;
+    cursor: pointer;
+
+    span {
+        color: #fff;
+        font-family: Inter, serif;
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 20px;
+    }
+
+    &:hover {
+        filter: brightness(1.2);
+    }
+}
+
+.notification-counter {
+    color: #FFF;
+    font-family: Inter, serif;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 20px;
+    pointer-events: none;
+}
+
+::ng-deep .one-line-tooltip {
+    white-space: nowrap !important;
+    max-width: none !important;
 }

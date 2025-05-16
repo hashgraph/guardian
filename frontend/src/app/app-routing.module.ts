@@ -59,6 +59,8 @@ import { PolicyLabelDocumentsComponent } from './modules/statistics/policy-label
 import { PolicyLabelDocumentViewComponent } from './modules/statistics/policy-labels/policy-label-document-view/policy-label-document-view.component';
 import { FormulasComponent } from './modules/formulas/formulas/formulas.component';
 import { FormulaConfigurationComponent } from './modules/formulas/formula-configuration/formula-configuration.component';
+import { ExternalPolicyComponent } from './modules/policy-engine/external-policies/external-policies.component';
+import { PolicyRequestsComponent } from './modules/policy-engine/requests/requests.component';
 
 
 @Injectable({
@@ -262,13 +264,26 @@ const routes: Routes = [
         children: [
             { path: 'status', component: ServiceStatusComponent },
             { path: 'settings', component: SettingsViewComponent },
-            { path: 'logs', component: LogsViewComponent },
             { path: 'about', component: AboutViewComponent }
         ],
         data: {
             roles: [UserRole.STANDARD_REGISTRY],
             permissions: [
                 Permissions.SETTINGS_SETTINGS_READ,
+                Permissions.LOG_LOG_READ
+            ]
+        }
+    },
+    {
+        path: 'admin', component: AdminHeaderComponent,
+        canActivate: [PermissionsGuard],
+        canActivateChild: [PermissionsGuard],
+        children: [
+            { path: 'logs', component: LogsViewComponent },
+        ],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.USER],
+            permissions: [
                 Permissions.LOG_LOG_READ
             ]
         }
@@ -702,6 +717,40 @@ const routes: Routes = [
             ]
         }
     },
+
+
+
+    {
+        path: 'external-policies',
+        component: ExternalPolicyComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.POLICIES_EXTERNAL_POLICY_READ
+            ]
+        }
+    },
+    {
+        path: 'policy-requests',
+        component: PolicyRequestsComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.POLICIES_POLICY_READ,
+                Permissions.POLICIES_POLICY_EXECUTE,
+                Permissions.POLICIES_POLICY_MANAGE,
+            ]
+        }
+    },
+
 
     { path: '', component: HomeComponent },
     { path: 'info', component: InfoComponent },

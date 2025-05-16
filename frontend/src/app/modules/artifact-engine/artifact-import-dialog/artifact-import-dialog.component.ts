@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, Validators } from '@angular/forms';
-import { PolicyType } from '@guardian/interfaces';
+import { PolicyStatus } from '@guardian/interfaces';
 import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 /**
@@ -23,7 +23,7 @@ export class ArtifactImportDialog {
         const data = this.config.data
 
         if (data) {
-            this.policies = data.policies?.filter((policy: any) => policy.status === PolicyType.DRAFT) || [];
+            this.policies = data.policies?.filter((policy: any) => policy.status === PolicyStatus.DRAFT) || [];
             const current = this.policies.find((policy: any) => policy.id === data.policyId);
             this.policyId.patchValue(current ? { label: current.name, value: current.id } : null);
         }

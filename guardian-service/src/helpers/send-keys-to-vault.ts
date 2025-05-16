@@ -8,7 +8,7 @@ import { MongoEntityManager } from '@mikro-orm/mongodb';
 export async function sendKeysToVault(em: MongoEntityManager, logger: PinoLogger): Promise<void> {
     const wallet = new Wallet();
     try {
-        logger.info('Start send keys to vault', ['GUARDIAN_SERVICE']);
+        logger.info('Start send keys to vault', ['GUARDIAN_SERVICE'], null);
 
         const tokenCollection = em.getCollection('Token');
         const tokens = tokenCollection.find();
@@ -94,7 +94,7 @@ export async function sendKeysToVault(em: MongoEntityManager, logger: PinoLogger
             );
             updatedTokens++;
         }
-        await logger.info(`Updated ${updatedTokens} tokens`, ['GUARDIAN_SERVICE']);
+        await logger.info(`Updated ${updatedTokens} tokens`, ['GUARDIAN_SERVICE'], null);
 
         const topicCollection = em.getCollection('Topic');
         const topics = topicCollection.find();
@@ -135,10 +135,8 @@ export async function sendKeysToVault(em: MongoEntityManager, logger: PinoLogger
             updatedTopics++;
         }
 
-        logger.info(`Updated ${updatedTopics} topics`, ['GUARDIAN_SERVICE']);
+        logger.info(`Updated ${updatedTopics} topics`, ['GUARDIAN_SERVICE'], null);
     } catch (e) {
-        logger.error(`Send keys to vault error: ${e.message}`, [
-            'GUARDIAN_SERVICE',
-        ]);
+        logger.error(`Send keys to vault error: ${e.message}`, ['GUARDIAN_SERVICE'], null);
     }
 }

@@ -1,5 +1,6 @@
 import { Entity, Property } from '@mikro-orm/core';
 import { BaseEntity } from '../models/index.js';
+import { MultiPolicyType } from '@guardian/interfaces';
 
 /**
  * MultiPolicy collection
@@ -40,7 +41,7 @@ export class MultiPolicy extends BaseEntity {
      * Policy Type
      */
     @Property({ nullable: true })
-    type?: string;
+    type?: MultiPolicyType;
 
     /**
      * User ID (Account ID)

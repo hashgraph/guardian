@@ -88,7 +88,7 @@ Promise.all([
         app.listen(PORT, async () => {
             const url = await app.getUrl();
             console.log(`URL: ${url}`);
-            logger.info(`Started on ${PORT}`, ['ANALYTICS_SERVICE']);
+            logger.info(`Started on ${PORT}`, ['ANALYTICS_SERVICE'], null);
         });
     } catch (error) {
         console.error(error.message);

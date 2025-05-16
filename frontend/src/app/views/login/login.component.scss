@@ -265,8 +265,17 @@ form {
 
     .current-user-name {
         font-size: 20px;
-        line-height: 0px;
+        line-height: 24px;
         display: inline-block;
+    }
+
+    .username-ellipsis {
+        max-width: 290px;
+        display: inline-block;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        vertical-align: middle;
     }
 
     .current-user-role {
@@ -336,4 +345,9 @@ form {
     color: var(--color-grey-black-1, #181818);
     font-size: 14px;
     font-weight: 500;
+}
+
+::ng-deep .one-line-tooltip {
+    white-space: nowrap !important;
+    max-width: none !important;
 }

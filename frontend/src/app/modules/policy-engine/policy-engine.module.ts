@@ -148,6 +148,9 @@ import { PolicyTestDialog } from './dialogs/policy-test-dialog/policy-test-dialo
 import { NewImportFileDialog } from './dialogs/new-import-file-dialog/new-import-file-dialog.component';
 import { RequestDocumentBlockDialog } from './policy-viewer/blocks/request-document-block/dialog/request-document-block-dialog.component';
 import { DataTransformationConfigComponent } from './policy-configuration/blocks/calculate/data-transformation-config/data-transformation-config.component';
+import { ExternalPolicyComponent } from './external-policies/external-policies.component';
+import { SearchExternalPolicyDialog } from './dialogs/search-external-policy-dialog/search-external-policy-dialog.component';
+import { PolicyRequestsComponent } from './requests/requests.component';
 
 @NgModule({
     declarations: [
@@ -254,7 +257,10 @@ import { DataTransformationConfigComponent } from './policy-configuration/blocks
         RequestAddonConfigComponent,
         RequestDocumentBlockAddonComponent,
         RequestDocumentBlockDialog,
-        DataTransformationConfigComponent
+        DataTransformationConfigComponent,
+        ExternalPolicyComponent,
+        PolicyRequestsComponent,
+        SearchExternalPolicyDialog
     ],
     imports: [
         CommonModule,

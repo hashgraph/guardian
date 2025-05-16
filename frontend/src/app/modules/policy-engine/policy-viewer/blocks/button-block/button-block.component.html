@@ -1,4 +1,4 @@
-<div class="content" *ngIf="commonVisible">
+<div class="content" *ngIf="commonVisible" [attr.readonly-block]="readonly">
     <ng-container *ngFor="let button of buttons" >
         <div *ngIf="button.type == 'selector' && button.visible && button.name">
             <div *ngIf="button.name" class="btn-option {{button.uiClass}}" (click)="onSelect(button)">

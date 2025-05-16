@@ -7,3 +7,5 @@ export * from './worker-events.js';
 export * from './workers.type.js';
 export * from './contract-api.type.js';
 export * from './queue-events.js';
+export * from './auth-events.js';
+export * from './topic-listener-events.js';

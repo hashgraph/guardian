@@ -1,4 +1,4 @@
-import { DatabaseServer, MintRequest, MintTransaction, NotificationHelper } from '@guardian/common';
+import { DatabaseServer, MintRequest, MintTransaction, NotificationHelper, Workers } from '@guardian/common';
 import { IHederaCredentials } from '../../policy-user.js';
 import { TokenConfig } from '../configs/token-config.js';
 import { MintService } from '../mint-service.js';
@@ -90,6 +90,7 @@ export abstract class TypedMint {
             tokenId: string;
             tokenType: TokenType;
             decimals: number;
+            policyId: string;
             metadata?: string;
         },
         root: IHederaCredentials,
@@ -129,7 +130,7 @@ export abstract class TypedMint {
     /**
      * Resolve pending transactions
      */
-    protected abstract resolvePendingTransactions(): Promise<void>;
+    protected abstract resolvePendingTransactions(userId: string | null): Promise<void>;
 
     /**
      * Resolve pending transactions check
@@ -223,14 +224,14 @@ export abstract class TypedMint {
         }
         return notification;
     }
-
+ь
     /**
      * Mint tokens
      * @param isProgressNeeded Is progress needed
      * @param userId
      * @returns Processed
      */
-    protected async mint(isProgressNeeded: boolean, userId?: string): Promise<boolean> {
+    protected async mint(isProgressNeeded: boolean, userId: string | null): Promise<boolean> {
         if (
             !this._mintRequest.isMintNeeded &&
             !this._mintRequest.isTransferNeeded
@@ -239,13 +240,13 @@ export abstract class TypedMint {
         }
 
         if (await this._resolvePendingTransactionsCheck()) {
-            await this.resolvePendingTransactions();
+            await this.resolvePendingTransactions(userId);
             await this._handleResolveResult();
         }
 
         let processed = false;
         if (this._mintRequest.isMintNeeded) {
-            MintService.log(`Mint (${this._token.tokenId}) started`, this._ref);
+            MintService.log(`Mint (${this._token.tokenId}) started`, this._ref, userId);
 
             let notifier;
             if (isProgressNeeded) {
@@ -284,7 +285,8 @@ export abstract class TypedMint {
 
             MintService.log(
                 `Mint (${this._token.tokenId}) completed`,
-                this._ref
+                this._ref,
+                userId
             );
             notifier?.finish();
 
@@ -301,10 +303,18 @@ export abstract class TypedMint {
             processed = true;
         }
 
+        const workers = new Workers();
+        try {
+            workers.sendExternalMintEvent(this._token);
+        } catch (e) {
+            console.error(e.message);
+        }
+
         if (this._mintRequest.isTransferNeeded) {
             MintService.log(
                 `Transfer (${this._token.tokenId}) started`,
-                this._ref
+                this._ref,
+                userId
             );
 
             let notifier;
@@ -318,7 +328,7 @@ export abstract class TypedMint {
             try {
                 this._mintRequest.processDate = new Date();
                 await this._db.saveMintRequest(this._mintRequest);
-                await this.transferTokens(notifier);
+                await this.transferTokens(notifier, userId);
             } catch (error) {
                 const errorMessage = PolicyUtils.getErrorMessage(error);
                 notifier?.stop();
@@ -344,7 +354,8 @@ export abstract class TypedMint {
 
             MintService.log(
                 `Transfer (${this._token.tokenId}) completed`,
-                this._ref
+                this._ref,
+                userId
             );
             notifier?.finish();
 
@@ -371,8 +382,9 @@ export abstract class TypedMint {
     /**
      * Log error
      * @param error Error
+     * @param userId
      */
-    protected error(error: any) {
-        MintService.error(PolicyUtils.getErrorMessage(error), this._ref);
+    protected error(error: any, userId: string | null) {
+        MintService.error(PolicyUtils.getErrorMessage(error), this._ref, userId);
     }
 }

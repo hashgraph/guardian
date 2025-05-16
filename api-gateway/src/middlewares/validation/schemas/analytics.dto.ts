@@ -2,7 +2,7 @@ import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { IsArray, IsString, Validate, IsOptional, IsObject, IsNumber } from 'class-validator';
 import { Examples } from '../examples.js';
 import { IsNumberOrString } from '../string-or-number.js';
-import { PolicyType } from '@guardian/interfaces';
+import { PolicyStatus } from '@guardian/interfaces';
 import { IsStringOrObject } from '../string-or-object.js';
 
 class Options {
@@ -451,7 +451,8 @@ export class FilterSearchBlocksDTO {
 
     @ApiProperty({
         type: 'object',
-        required: true
+        required: [],
+        additionalProperties: {}
     })
     @IsObject()
     config: any;
@@ -536,13 +537,13 @@ export class SearchPolicyDTO {
 
     @ApiProperty({
         type: 'string',
-        enum: PolicyType,
+        enum: PolicyStatus,
         required: false,
-        example: PolicyType.DRAFT
+        example: PolicyStatus.DRAFT
     })
     @IsOptional()
     @IsString()
-    status?: PolicyType;
+    status?: PolicyStatus;
 
     @ApiProperty({
         type: 'string',
@@ -554,10 +555,11 @@ export class SearchPolicyDTO {
     owner?: string;
 
     @ApiProperty({
-        type: 'object',
+        type: 'array',
         isArray: true,
         required: false,
-        example: 'Tag'
+        example: 'Tag',
+        additionalProperties: true
     })
     @IsOptional()
     @IsArray()
@@ -603,8 +605,7 @@ export class SearchPolicyDTO {
 @ApiExtraModels(SearchPolicyDTO)
 export class SearchPoliciesDTO {
     @ApiProperty({
-        type: 'object',
-        required: false
+        type: () => SearchPolicyDTO
     })
     @IsOptional()
     @IsObject()

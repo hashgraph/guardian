@@ -51,7 +51,11 @@ Promise.all([
         }
 
         if (process.env.IPFS_PROVIDER === 'local' && !process.env.IPFS_NODE_ADDRESS) {
-            await logger.error('IPFS_NODE_ADDRESS must be set if IPFS_PROVIDER is `local`', [channelName, 'WORKER']);
+            await logger.error(
+                'IPFS_NODE_ADDRESS must be set if IPFS_PROVIDER is `local`',
+                [channelName, 'WORKER'],
+                null
+            );
             return false
         }
 
@@ -100,14 +104,14 @@ Promise.all([
             new LargePayloadContainer().runServer();
         }
         await state.updateState(ApplicationStates.READY);
-        logger.info('Worker started', [channelName, 'WORKER']);
+        logger.info('Worker started', [channelName, 'WORKER'], null);
     });
 
     validator.setInvalidAction(async () => {
         timer = setInterval(async () => {
             await state.updateState(ApplicationStates.BAD_CONFIGURATION);
         }, 1000);
-        logger.error('Worker not configured', [channelName, 'WORKER']);
+        logger.error('Worker not configured', [channelName, 'WORKER'], null);
     })
 
     await validator.validate();

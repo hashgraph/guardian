@@ -1,4 +1,4 @@
-<div class="content" [hidden]="!isActive">
+<div class="content" [hidden]="!isActive" [attr.readonly-block]="readonly">
     <ng-container *ngIf="type != 'tabs'">
         <div *ngFor="let block of blocks" class="block-item">
             <render-block [block]="block" [dryRun]="dryRun" [policyId]="policyId"></render-block>

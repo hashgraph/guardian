@@ -1,5 +1,5 @@
 import { BeforeCreate, Entity, Enum, Property, Unique } from '@mikro-orm/core';
-import { IGroup, IUser, UserRole } from '@guardian/interfaces';
+import { IGroup, IUser, LocationType, UserRole } from '@guardian/interfaces';
 import { BaseEntity } from '@guardian/common';
 
 /**
@@ -85,7 +85,7 @@ export class User extends BaseEntity implements IUser {
      * Refresh token
      */
     @Property({ nullable: true })
-    refreshToken?: string;
+    refreshToken?: string[];
 
     /**
      * Use fireblocks signing
@@ -112,10 +112,17 @@ export class User extends BaseEntity implements IUser {
     template?: boolean;
 
     /**
+     * Location
+     */
+    @Property({ nullable: true })
+    location?: LocationType;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()
     setInitState() {
         this.role = this.role || UserRole.USER;
+        this.location = this.location || LocationType.LOCAL;
     }
 }

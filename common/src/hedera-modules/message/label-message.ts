@@ -193,6 +193,22 @@ export class LabelMessage extends Message {
         result.config = this.config;
     }
 
+    public static fromJson(json: any): LabelMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
+        const result = Message._fromJson(new LabelMessage(json.action), json);
+        result.name = json.name;
+        result.description = json.description;
+        result.owner = json.owner;
+        result.uuid = json.uuid;
+        result.policyTopicId = json.policyTopicId;
+        result.policyInstanceTopicId = json.policyInstanceTopicId;
+        result.config = json.config;
+        return result;
+    }
+
     /**
      * Get User DID
      */

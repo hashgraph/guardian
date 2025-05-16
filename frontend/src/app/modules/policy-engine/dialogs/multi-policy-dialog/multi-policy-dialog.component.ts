@@ -1,6 +1,7 @@
 import { AfterContentInit, Component, Inject, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { MultiPolicyType } from '@guardian/interfaces';
 
 /**
  * Export schema dialog.
@@ -15,7 +16,7 @@ export class MultiPolicyDialogComponent implements OnInit, AfterContentInit {
     initDialog = false;
     policyId!: string;
     exists: boolean = true;
-    policyType: string = '';
+    policyType: MultiPolicyType | null = null;
     mainPolicyTopicId1: any;
     synchronizationTopicId1: any;
     mainPolicyTopicId2: any;
@@ -51,7 +52,7 @@ export class MultiPolicyDialogComponent implements OnInit, AfterContentInit {
                     synchronizationTopicId: this.policyData.synchronizationTopicId,
                 }));
             } else {
-                this.policyType = 'Main';
+                this.policyType = MultiPolicyType.MAIN;
                 this.mainPolicyTopicId1 = this.policyData.mainPolicyTopicId;
                 this.synchronizationTopicId1 = this.policyData.synchronizationTopicId;
                 this.link1 = btoa(JSON.stringify({
@@ -59,7 +60,7 @@ export class MultiPolicyDialogComponent implements OnInit, AfterContentInit {
                     synchronizationTopicId: this.policyData.synchronizationTopicId,
                 }));
             }
-            if (this.policyType == 'Main') {
+            if (this.policyType == MultiPolicyType.MAIN) {
                 this.valid = !!this.synchronizationTopicId1;
             } else {
                 this.valid = !!this.synchronizationTopicId2;
@@ -96,7 +97,7 @@ export class MultiPolicyDialogComponent implements OnInit, AfterContentInit {
 
     onChange(event: any) {
         this.policyType = event.value;
-        if (this.policyType == 'Main') {
+        if (this.policyType == MultiPolicyType.MAIN) {
             this.valid = !!this.synchronizationTopicId1;
         } else {
             this.valid = !!this.synchronizationTopicId2;
@@ -119,7 +120,7 @@ export class MultiPolicyDialogComponent implements OnInit, AfterContentInit {
     }
 
     onCreate() {
-        const data = this.policyType == 'Main' ? {
+        const data = this.policyType == MultiPolicyType.MAIN ? {
             mainPolicyTopicId: this.mainPolicyTopicId1,
             synchronizationTopicId: this.synchronizationTopicId1,
         } : {

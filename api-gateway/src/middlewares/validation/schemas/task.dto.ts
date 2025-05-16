@@ -80,9 +80,9 @@ export class TaskStatusDTO {
     })
     statuses: StatusDTO[];
 
-    @ApiProperty({ type: 'object' })
+    @ApiProperty({ type: 'object', additionalProperties: true })
     result: any;
 
-    @ApiProperty({ type: 'object' })
+    @ApiProperty({ type: 'object', additionalProperties: true })
     error: any;
 }

@@ -4,7 +4,7 @@ import { AnyBlockType } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyUser, UserCredentials } from '../policy-user.js';
-import { Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
+import { LocationType, Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { VcDocumentDefinition as VcDocument, VcHelper } from '@guardian/common';
 import { BlockActionError } from '../errors/index.js';
 
@@ -14,6 +14,7 @@ import { BlockActionError } from '../errors/index.js';
 @TokenAddon({
     blockType: 'impactAddon',
     commonBlock: true,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Impact',
         title: `Add 'Impact'`,
@@ -87,12 +88,15 @@ export class TokenOperationAddon {
     /**
      * Run logic
      * @param documents
+     * @param root
      * @param user
+     * @param userId
      */
     public async run(
         documents: VcDocument[],
         root: UserCredentials,
-        user: PolicyUser
+        user: PolicyUser,
+        userId: string | null
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const policySchema = await this.getSchema();
@@ -113,7 +117,7 @@ export class TokenOperationAddon {
         if (ref.options.description) {
             vcSubject.description = ref.options.description;
         }
-        const didDocument = await root.loadDidDocument(ref);
+        const didDocument = await root.loadDidDocument(ref, userId);
         const uuid = await ref.components.generateUUID();
         const vc = await vcHelper.createVerifiableCredential(
             vcSubject,

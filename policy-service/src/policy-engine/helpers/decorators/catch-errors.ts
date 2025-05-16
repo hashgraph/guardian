@@ -13,12 +13,14 @@ export function CatchErrors() {
         descriptor.value = new Proxy(_target[propertyKey], {
             async apply(target: any, thisArg: any, argArray: any[]): Promise<any> {
                 const user = argArray[0].user;
+                const userId = argArray[0]?.userId;
+
                 const data = argArray[0].data;
                 const f = async () => {
                     try {
                         await target.apply(thisArg, argArray);
                     } catch (error) {
-                        await new PinoLogger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId]);
+                        await new PinoLogger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId], userId);
                         PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user);
                         thisArg.triggerEvents(PolicyOutputEventType.ErrorEvent, user, data);
                         switch (thisArg.options.onErrorAction) {

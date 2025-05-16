@@ -7,24 +7,10 @@ import { tokenAPI } from './api/token.service.js';
 import { trustChainAPI } from './api/trust-chain.service.js';
 import { PolicyEngineService } from './policy-engine/policy-engine.service.js';
 import {
-    AggregateVC,
     ApplicationState,
-    ApprovalDocument,
-    Artifact,
-    ArtifactChunk,
-    AssignEntity,
-    BlockCache,
-    BlockState,
-    Branding,
     COMMON_CONNECTION_CONFIG,
-    Contract,
     DatabaseServer,
-    DidDocument,
-    DocumentState,
-    DryRun,
-    DryRunFiles,
     Environment,
-    ExternalDocument,
     ExternalEventChannel,
     GenerateTLSOptionsNats,
     IPFS,
@@ -32,56 +18,22 @@ import {
     MessageBrokerChannel,
     MessageServer,
     Migration,
-    MintRequest,
-    MintTransaction,
     mongoForLoggingInitialization,
-    MultiDocuments,
-    MultiPolicy,
-    MultiPolicyTransaction,
     OldSecretManager,
     PinoLogger,
     pinoLoggerInitialization,
     Policy,
-    PolicyCache,
-    PolicyCacheData,
-    PolicyCategory,
-    PolicyInvitations,
-    PolicyModule,
-    PolicyProperty,
-    PolicyRoles,
-    PolicyStatistic,
-    PolicyStatisticDocument,
-    SchemaRule,
-    PolicyLabel,
-    PolicyTest,
-    PolicyTool,
-    Record,
-    RetirePool,
-    RetireRequest,
-    Schema,
     SecretManager,
-    Settings,
-    SplitDocuments,
-    SuggestionsConfig,
-    Tag,
-    TagCache,
-    Theme,
-    Token,
-    Topic,
     TopicMemo,
     TransactionLogger,
     TransactionLogLvl,
     Users,
     ValidateConfiguration,
-    VcDocument,
-    VpDocument,
     Wallet,
-    WiperRequest,
     Workers,
-    PolicyLabelDocument,
-    Formula
+    entities
 } from '@guardian/common';
-import { ApplicationStates, PolicyEvents, PolicyType, WorkerTaskType } from '@guardian/interfaces';
+import { ApplicationStates, PolicyEvents, PolicyStatus, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
 import { ipfsAPI } from './api/ipfs.service.js';
 import { artifactAPI } from './api/artifact.service.js';
@@ -117,61 +69,9 @@ import { setDefaultSchema } from './api/helpers/default-schemas.js';
 import { policyLabelsAPI } from './api/policy-labels.service.js';
 import { initMathjs } from './utils/formula.js';
 import { formulasAPI } from './api/formulas.service.js';
+import { externalPoliciesAPI } from './api/external-policies.service.js';
 
 export const obj = {};
-
-const necessaryEntity = [
-    AggregateVC,
-    ApprovalDocument,
-    ArtifactChunk,
-    Artifact,
-    BlockCache,
-    BlockState,
-    Branding,
-    Contract,
-    DidDocument,
-    DocumentState,
-    DryRun,
-    ExternalDocument,
-    PolicyModule,
-    MultiDocuments,
-    MultiPolicyTransaction,
-    MultiPolicy,
-    PolicyInvitations,
-    PolicyRoles,
-    Policy,
-    RetirePool,
-    RetireRequest,
-    Schema,
-    Settings,
-    SplitDocuments,
-    SuggestionsConfig,
-    TagCache,
-    Tag,
-    Theme,
-    Token,
-    PolicyTool,
-    Topic,
-    VcDocument,
-    VpDocument,
-    WiperRequest,
-    Record,
-    PolicyCategory,
-    PolicyProperty,
-    MintRequest,
-    MintTransaction,
-    DryRunFiles,
-    PolicyCacheData,
-    PolicyCache,
-    AssignEntity,
-    PolicyTest,
-    PolicyStatistic,
-    PolicyStatisticDocument,
-    SchemaRule,
-    PolicyLabel,
-    PolicyLabelDocument,
-    Formula
-]
 
 Promise.all([
     Migration({
@@ -181,7 +81,7 @@ Promise.all([
             transactional: false
         },
         ensureIndexes: true,
-        entities: necessaryEntity
+        entities
     }, [
         'v2-4-0',
         'v2-7-0',
@@ -250,7 +150,7 @@ Promise.all([
     const dataBaseServer = new DatabaseServer();
 
     try {
-        await configAPI(dataBaseServer, logger);
+        await configAPI(logger);
         await schemaAPI(logger);
         await tokenAPI(dataBaseServer, logger);
         await loaderAPI(dataBaseServer, logger);
@@ -277,6 +177,7 @@ Promise.all([
         await schemaRulesAPI(logger);
         await policyLabelsAPI(logger);
         await formulasAPI(logger);
+        await externalPoliciesAPI(logger);
     } catch (error) {
         console.error(error.message);
         process.exit(0);
@@ -292,7 +193,8 @@ Promise.all([
         } catch (error) {
             await logger.warn(
                 'HEDERA_CUSTOM_NODES field in settings: ' + error.message,
-                ['GUARDIAN_SERVICE']
+                ['GUARDIAN_SERVICE'],
+                null
             );
             console.warn(error);
         }
@@ -305,9 +207,9 @@ Promise.all([
             Environment.setMirrorNodes(mirrorNodes);
         } catch (error) {
             await logger.warn(
-                'HEDERA_CUSTOM_MIRROR_NODES field in settings: ' +
-                error.message,
-                ['GUARDIAN_SERVICE']
+                'HEDERA_CUSTOM_MIRROR_NODES field in settings: ' + error.message,
+                ['GUARDIAN_SERVICE'],
+                null
             );
             console.warn(error);
         }
@@ -335,14 +237,14 @@ Promise.all([
             }
             AccountId.fromString(OPERATOR_ID);
         } catch (error) {
-            await logger.error('OPERATOR_ID field in settings: ' + error.message, ['GUARDIAN_SERVICE']);
+            await logger.error('OPERATOR_ID field in settings: ' + error.message, ['GUARDIAN_SERVICE'], null);
             return false;
             // process.exit(0);
         }
         try {
             PrivateKey.fromString(OPERATOR_KEY);
         } catch (error) {
-            await logger.error('OPERATOR_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
+            await logger.error('OPERATOR_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE'], null);
             return false;
         }
         try {
@@ -353,7 +255,7 @@ Promise.all([
                 TopicId.fromString(process.env.INITIALIZATION_TOPIC_ID);
             }
         } catch (error) {
-            await logger.error('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
+            await logger.error('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message, ['GUARDIAN_SERVICE'], null);
             return false;
             // process.exit(0);
         }
@@ -362,7 +264,7 @@ Promise.all([
                 PrivateKey.fromString(process.env.INITIALIZATION_TOPIC_KEY);
             }
         } catch (error) {
-            await logger.error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
+            await logger.error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE'], null);
             return false;
             // process.exit(0);
         }
@@ -378,7 +280,8 @@ Promise.all([
                     hederaAccountId: OPERATOR_ID,
                     hederaAccountKey: OPERATOR_KEY,
                     dryRun: false,
-                    topicMemo: TopicMemo.getGlobalTopicMemo()
+                    topicMemo: TopicMemo.getGlobalTopicMemo(),
+                    payload: { userId: null }
                 }
             }, 10);
         }
@@ -415,7 +318,7 @@ Promise.all([
             new LargePayloadContainer().runServer();
         }
 
-        await logger.info('guardian service started', ['GUARDIAN_SERVICE']);
+        await logger.info('guardian service started', ['GUARDIAN_SERVICE'], null);
 
         await state.updateState(ApplicationStates.READY);
 
@@ -468,10 +371,10 @@ Promise.all([
             const date = new Date();
             const policiesToDiscontunie = await dataBaseServer.find(Policy, {
                 discontinuedDate: { $lte: date },
-                status: PolicyType.PUBLISH
+                status: PolicyStatus.PUBLISH
             });
             await dataBaseServer.update(Policy, null, policiesToDiscontunie.map(policy => {
-                policy.status = PolicyType.DISCONTINUED;
+                policy.status = PolicyStatus.DISCONTINUED;
                 return policy;
             }));
             await Promise.all(policiesToDiscontunie.map(policy =>
