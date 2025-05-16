@@ -1,7 +1,7 @@
 import { PolicyBlockMap, PolicyTagMap } from './index.js';
 import { IPolicyBlock, } from '../policy-engine.interface.js';
 
-import { UserRole } from '@guardian/interfaces';
+import { LocationType, UserRole } from '@guardian/interfaces';
 import { BlockAbout } from './block-about.js';
 
 /**
@@ -16,6 +16,10 @@ export interface PolicyBlockDecoratorOptions {
      * Is common block
      */
     commonBlock?: boolean;
+    /**
+     * Action location
+     */
+    actionType?: LocationType;
     /**
      * Block about
      */

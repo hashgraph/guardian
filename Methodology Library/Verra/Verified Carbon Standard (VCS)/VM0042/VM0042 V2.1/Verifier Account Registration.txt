@@ -1,0 +1,26 @@
+var _pp = {
+  "G6": [
+    "Verified Carbon Standard"
+  ],
+  "G8": "EcoVerify International, LLC",
+  "G9": "980 Mission Ridge Road",
+  "G10": "Building B, Suite 210",
+  "G11": "United States",
+  "G12": "Oregon",
+  "G13": "97401",
+  "G14": "+1 (541) 555-7710",
+  "G15": "+1 (541) 555-7711",
+  "G16": "contact@ecoverifyintl.com",
+  "G17": "https://www.ecoverifyintl.com",
+  "G19": "Lead Environmental Auditor",
+  "G20": "Daniel Rivera",
+  "G21": "980 Mission Ridge Road",
+  "G22": "Building B, Suite 210",
+  "G23": "Eugene",
+  "G24": "United States",
+  "G25": "Oregon",
+  "G26": "97401",
+  "G27": "+1 (541) 555-7720",
+  "G28": "drivera@ecoverifyintl.com"
+}
+Object.values(__request).forEach(r=>r.preset(_pp));

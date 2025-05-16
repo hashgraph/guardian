@@ -1,7 +1,7 @@
 import { HttpResponse } from '@angular/common/http';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IUser, PolicyType, UserPermissions } from '@guardian/interfaces';
+import { IUser, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
 import { forkJoin, interval, Subscription } from 'rxjs';
 import { audit } from 'rxjs/operators';
@@ -12,6 +12,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 import { RecordControllerComponent } from '../../record/record-controller/record-controller.component';
 import { PolicyProgressService } from '../../services/policy-progress.service';
 import { IStep } from '../../structures';
+import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
 
 /**
  * Component for choosing a policy and
@@ -53,6 +54,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public prevButtonDisabled = false;
     public nextButtonDisabled = false;
     public permissions: UserPermissions;
+    public newRequestsExist: boolean = false;
+    public newActionsExist: boolean = false;
 
     constructor(
         private profileService: ProfileService,
@@ -61,6 +64,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private dialogService: DialogService,
         private policyProgressService: PolicyProgressService,
+        private externalPoliciesService: ExternalPoliciesService,
         private changeDetector: ChangeDetectorRef,
         private router: Router
     ) {
@@ -74,8 +78,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         return (
             this.policyInfo &&
             (
-                this.policyInfo.status === PolicyType.DRY_RUN ||
-                this.policyInfo.status === PolicyType.DEMO
+                this.policyInfo.status === PolicyStatus.DRY_RUN ||
+                this.policyInfo.status === PolicyStatus.DEMO
             )
         );
     }
@@ -137,6 +141,21 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.groups = userGroups;
             })
         );
+        this.subscription.add(
+            this.wsService.requestSubscribe((message) => {
+                if (message?.data?.policyId === this.policyId && this.isConfirmed) {
+                    this.updateRemotePolicyRequests();
+                }
+            })
+        );
+
+        this.subscription.add(
+            this.wsService.restoreSubscribe((message) => {
+                if (message?.data?.policyId === this.policyId && this.isConfirmed) {
+                    this.loadPolicy();
+                }
+            })
+        );
 
         this.updateNavigationButtons();
     }
@@ -188,12 +207,14 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         forkJoin([
             this.policyEngineService.policy(policyId),
             this.policyEngineService.policyBlock(policyId),
-            this.policyEngineService.getGroups(policyId)
+            this.policyEngineService.getGroups(policyId),
+            this.externalPoliciesService.getActionRequestsCount({ policyId })
         ]).subscribe(
             (value) => {
                 this.policyInfo = value[0];
                 this.policy = value[1];
                 this.groups = value[2] || [];
+                const count: any = value[3]?.body || {};
 
                 this.virtualUsers = [];
                 this.isMultipleGroups = !!(this.policyInfo?.policyGroups && this.groups?.length);
@@ -201,8 +222,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.userRole = this.policyInfo.userRole;
                 this.userGroup = this.policyInfo.userGroup?.groupLabel || this.policyInfo.userGroup?.uuid;
 
-                if (this.policyInfo?.status === PolicyType.DRY_RUN
-                    || this.policyInfo?.status === PolicyType.DEMO
+                if (this.policyInfo?.status === PolicyStatus.DRY_RUN
+                    || this.policyInfo?.status === PolicyStatus.DEMO
                 ) {
                     this.loadDryRunOptions();
                 } else {
@@ -224,6 +245,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     })
                 })
                 this.getSavepointState();
+
+                this.newRequestsExist = count.requestsCount > 0;
+                this.newActionsExist = count.actionsCount > 0;
             }, (e) => {
                 this.loading = false;
             });
@@ -523,5 +547,20 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     public onBack() {
         this.router.navigate(['/policy-viewer']);
+    }
+
+    public onPolicyRequests() {
+        this.router.navigate([`/policy-requests`], { queryParams: { policyId: this.policyId } });
+    }
+
+    private updateRemotePolicyRequests() {
+        this.externalPoliciesService
+            .getActionRequestsCount({ policyId: this.policyId })
+            .subscribe((response) => {
+                if (response?.body) {
+                    this.newRequestsExist = response.body.requestsCount > 0;
+                    this.newActionsExist = response.body.actionsCount > 0;
+                }
+            })
     }
 }

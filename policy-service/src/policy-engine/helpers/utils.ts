@@ -439,12 +439,14 @@ export class PolicyUtils {
      * @param ref Block Ref
      * @param hederaAccountId Hedera Account Identifier
      * @param user Client User
+     * @param userId
      * @returns Token's map
      */
     public static async getHederaAccountInfo(
         ref: AnyBlockType,
         hederaAccountId: string,
-        user: IHederaCredentials
+        user: IHederaCredentials,
+        userId: string | null
     ): Promise<any> {
         if (ref.dryRun) {
             return await ref.databaseServer.getVirtualHederaAccountInfo(hederaAccountId);
@@ -455,7 +457,8 @@ export class PolicyUtils {
                 data: {
                     userID: user.hederaAccountId,
                     userKey: user.hederaAccountKey,
-                    hederaAccountId
+                    hederaAccountId,
+                    payload: { userId }
                 }
             }, 20);
         }
@@ -466,11 +469,13 @@ export class PolicyUtils {
      * @param ref
      * @param token
      * @param user
+     * @param userId
      */
     public static async associate(
         ref: AnyBlockType,
         token: Token,
-        user: IHederaCredentials
+        user: IHederaCredentials,
+        userId: string | null
     ): Promise<boolean> {
         if (ref.dryRun) {
             return await ref.databaseServer.virtualAssociate(user.hederaAccountId, token);
@@ -483,12 +488,11 @@ export class PolicyUtils {
                     userID: user.hederaAccountId,
                     userKey: user.hederaAccountKey,
                     associate: true,
-                    dryRun: ref.dryRun
+                    dryRun: ref.dryRun,
+                    payload: { userId }
                 }
             }, 20);
-            const userProfile = await new Users().getUserByAccount(
-                user.hederaAccountId
-            );
+            const userProfile = await new Users().getUserByAccount(user.hederaAccountId, userId);
             await NotificationHelper.info(
                 `Associate token`,
                 `${token.tokenName} associated`,
@@ -503,11 +507,13 @@ export class PolicyUtils {
      * @param ref
      * @param token
      * @param user
+     * @param userId
      */
     public static async dissociate(
         ref: AnyBlockType,
         token: Token,
-        user: IHederaCredentials
+        user: IHederaCredentials,
+        userId: string | null
     ): Promise<boolean> {
         if (ref.dryRun) {
             return await ref.databaseServer.virtualDissociate(user.hederaAccountId, token.tokenId);
@@ -520,12 +526,11 @@ export class PolicyUtils {
                     userID: user.hederaAccountId,
                     userKey: user.hederaAccountKey,
                     associate: false,
-                    dryRun: ref.dryRun
+                    dryRun: ref.dryRun,
+                    payload: { userId }
                 }
             }, 20);
-            const userProfile = await new Users().getUserByAccount(
-                user.hederaAccountId
-            );
+            const userProfile = await new Users().getUserByAccount(user.hederaAccountId, userId);
             await NotificationHelper.info(
                 `Dissociate token`,
                 `${token.tokenName} dissociated`,
@@ -537,21 +542,24 @@ export class PolicyUtils {
 
     /**
      * freeze
+     * @param ref
      * @param token
      * @param user
      * @param root
+     * @param userId
      */
     public static async freeze(
         ref: AnyBlockType,
         token: Token,
         user: IHederaCredentials,
-        root: IHederaCredentials
+        root: IHederaCredentials,
+        userId: string | null
     ): Promise<boolean> {
         if (ref.dryRun) {
             return await ref.databaseServer.virtualFreeze(user.hederaAccountId, token.tokenId);
         } else {
             const workers = new Workers();
-            const freezeKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_FREEZE_KEY, token.tokenId);
+            const freezeKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_FREEZE_KEY, token.tokenId, userId);
             return await workers.addNonRetryableTask({
                 type: WorkerTaskType.FREEZE_TOKEN,
                 data: {
@@ -560,7 +568,8 @@ export class PolicyUtils {
                     freezeKey,
                     token,
                     freeze: true,
-                    dryRun: ref.dryRun
+                    dryRun: ref.dryRun,
+                    payload: { userId }
                 }
             }, 20);
         }
@@ -568,21 +577,24 @@ export class PolicyUtils {
 
     /**
      * unfreeze
+     * @param ref
      * @param token
      * @param user
      * @param root
+     * @param userId
      */
     public static async unfreeze(
         ref: AnyBlockType,
         token: Token,
         user: IHederaCredentials,
-        root: IHederaCredentials
+        root: IHederaCredentials,
+        userId: string | null
     ): Promise<boolean> {
         if (ref.dryRun) {
             return await ref.databaseServer.virtualUnfreeze(user.hederaAccountId, token.tokenId);
         } else {
             const workers = new Workers();
-            const freezeKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_FREEZE_KEY, token.tokenId);
+            const freezeKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_FREEZE_KEY, token.tokenId, userId);
             return await workers.addRetryableTask({
                 type: WorkerTaskType.FREEZE_TOKEN,
                 data: {
@@ -591,7 +603,8 @@ export class PolicyUtils {
                     freezeKey,
                     token,
                     freeze: false,
-                    dryRun: ref.dryRun
+                    dryRun: ref.dryRun,
+                    payload: { userId }
                 }
             }, 20);
         }
@@ -599,21 +612,24 @@ export class PolicyUtils {
 
     /**
      * grantKyc
+     * @param ref
      * @param token
      * @param user
      * @param root
+     * @param userId
      */
     public static async grantKyc(
         ref: AnyBlockType,
         token: Token,
         user: IHederaCredentials,
-        root: IHederaCredentials
+        root: IHederaCredentials,
+        userId: string | null
     ): Promise<boolean> {
         if (ref.dryRun) {
             return await ref.databaseServer.virtualGrantKyc(user.hederaAccountId, token.tokenId);
         } else {
             const workers = new Workers();
-            const kycKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_KYC_KEY, token.tokenId);
+            const kycKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_KYC_KEY, token.tokenId, userId);
             return await workers.addRetryableTask({
                 type: WorkerTaskType.GRANT_KYC_TOKEN,
                 data: {
@@ -623,7 +639,8 @@ export class PolicyUtils {
                     token,
                     kycKey,
                     grant: true,
-                    dryRun: ref.dryRun
+                    dryRun: ref.dryRun,
+                    payload: { userId }
                 }
             }, 20);
         }
@@ -631,21 +648,24 @@ export class PolicyUtils {
 
     /**
      * revokeKyc
+     * @param ref
      * @param token
      * @param user
      * @param root
+     * @param userId
      */
     public static async revokeKyc(
         ref: AnyBlockType,
         token: Token,
         user: IHederaCredentials,
-        root: IHederaCredentials
+        root: IHederaCredentials,
+        userId: string | null
     ): Promise<boolean> {
         if (ref.dryRun) {
             return await ref.databaseServer.virtualRevokeKyc(user.hederaAccountId, token.tokenId);
         } else {
             const workers = new Workers();
-            const kycKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_KYC_KEY, token.tokenId);
+            const kycKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_KYC_KEY, token.tokenId, userId);
             return await workers.addRetryableTask({
                 type: WorkerTaskType.GRANT_KYC_TOKEN,
                 data: {
@@ -655,7 +675,8 @@ export class PolicyUtils {
                     token,
                     kycKey,
                     grant: false,
-                    dryRun: ref.dryRun
+                    dryRun: ref.dryRun,
+                    payload: { userId }
                 }
             }, 20);
         }
@@ -666,12 +687,14 @@ export class PolicyUtils {
      * @param ref
      * @param tokenTemplate
      * @param user
+     * @param userId
      * @returns
      */
     public static async createTokenByTemplate(
         ref: AnyBlockType,
         tokenTemplate: any,
-        user: UserCredentials
+        user: UserCredentials,
+        userId: string | null
     ): Promise<Token> {
         let tokenId;
         const owner = user.did;
@@ -679,12 +702,14 @@ export class PolicyUtils {
         const adminId = user.hederaAccountId;
         if (!ref.dryRun) {
             const workers = new Workers();
-            const hederaAccountKey = await user.loadHederaKey(ref);
+            const hederaAccountKey = await user.loadHederaKey(ref, userId);
+
             const createdToken = await workers.addRetryableTask({
                 type: WorkerTaskType.CREATE_TOKEN,
                 data: {
                     operatorId: user.hederaAccountId,
                     operatorKey: hederaAccountKey,
+                    payload: { userId },
                     ...tokenTemplate
                 }
             }, 20);
@@ -696,37 +721,43 @@ export class PolicyUtils {
                     user.did,
                     KeyType.TOKEN_TREASURY_KEY,
                     createdToken.tokenId,
-                    createdToken.adminKey
+                    createdToken.adminKey,
+                    userId
                 ),
                 wallet.setUserKey(
                     user.did,
                     KeyType.TOKEN_ADMIN_KEY,
                     createdToken.tokenId,
-                    createdToken.adminKey
+                    createdToken.adminKey,
+                    userId
                 ),
                 wallet.setUserKey(
                     user.did,
                     KeyType.TOKEN_FREEZE_KEY,
                     createdToken.tokenId,
-                    createdToken.freezeKey
+                    createdToken.freezeKey,
+                    userId
                 ),
                 wallet.setUserKey(
                     user.did,
                     KeyType.TOKEN_KYC_KEY,
                     createdToken.tokenId,
-                    createdToken.kycKey
+                    createdToken.kycKey,
+                    userId
                 ),
                 wallet.setUserKey(
                     user.did,
                     KeyType.TOKEN_SUPPLY_KEY,
                     createdToken.tokenId,
-                    createdToken.supplyKey
+                    createdToken.supplyKey,
+                    userId
                 ),
                 wallet.setUserKey(
                     user.did,
                     KeyType.TOKEN_WIPE_KEY,
                     createdToken.tokenId,
-                    createdToken.wipeKey
+                    createdToken.wipeKey,
+                    userId
                 ),
             ]);
         } else {
@@ -745,13 +776,15 @@ export class PolicyUtils {
     /**
      * revokeKyc
      * @param account
+     * @param userId
      */
-    public static async checkAccountId(account: IHederaCredentials): Promise<void> {
+    public static async checkAccountId(hederaAccountId: string, userId: string | null): Promise<void> {
         const workers = new Workers();
         return await workers.addNonRetryableTask({
             type: WorkerTaskType.CHECK_ACCOUNT,
             data: {
-                hederaAccountId: account.hederaAccountId,
+                hederaAccountId,
+                payload: { userId }
             }
         }, 20);
     }
@@ -762,19 +795,21 @@ export class PolicyUtils {
      * @param topicName
      * @param root
      * @param user
+     * @param userId
      */
     public static async getOrCreateTopic(
         ref: AnyBlockType,
         topicName: string,
         root: UserCredentials,
         user: UserCredentials,
+        userId: string | null,
         memoObj?: any
     ): Promise<TopicConfig> {
         const rootTopic = await TopicConfig.fromObject(
             await ref.databaseServer.getTopic({
                 policyId: ref.policyId,
                 type: TopicType.InstancePolicyTopic
-            }), !ref.dryRun);
+            }), !ref.dryRun, userId);
 
         if (!topicName) {
             return rootTopic;
@@ -799,16 +834,16 @@ export class PolicyUtils {
                 type: TopicType.DynamicTopic,
                 name: topicName,
                 owner: topicOwner
-            }), !ref.dryRun);
+            }), !ref.dryRun, userId);
 
         if (!topic) {
             const hederaCred = config.static
-                ? (await root.loadHederaCredentials(ref))
-                : (await user.loadHederaCredentials(ref));
+                ? (await root.loadHederaCredentials(ref, userId))
+                : (await user.loadHederaCredentials(ref, userId));
 
             const signOptions = config.static
-                ? (await root.loadSignOptions(ref))
-                : (await user.loadSignOptions(ref));
+                ? (await root.loadSignOptions(ref, userId))
+                : (await user.loadSignOptions(ref, userId));
             const topicHelper = new TopicHelper(
                 hederaCred.hederaAccountId, hederaCred.hederaAccountKey, signOptions, ref.dryRun,
             );
@@ -823,11 +858,11 @@ export class PolicyUtils {
                 memoObj: config.memoObj === 'doc'
                     ? memoObj
                     : config
-            });
+            }, userId, null);
             if (!ref.dryRun) {
-                await topic.saveKeys();
+                await topic.saveKeys(userId);
             }
-            await topicHelper.twoWayLink(topic, rootTopic, null);
+            await topicHelper.twoWayLink(topic, rootTopic, null, userId);
             await ref.databaseServer.saveTopic(topic.toObject());
         }
 
@@ -838,8 +873,9 @@ export class PolicyUtils {
      * Get topic
      * @param ref
      * @param topicId
+     * @param userId
      */
-    public static async getPolicyTopic(ref: AnyBlockType, topicId: string | TopicId): Promise<TopicConfig> {
+    public static async getPolicyTopic(ref: AnyBlockType, topicId: string | TopicId, userId: string | null): Promise<TopicConfig> {
         let topic: Topic;
         if (topicId) {
             topic = await ref.databaseServer.getTopic({ policyId: ref.policyId, topicId: topicId.toString() });
@@ -850,31 +886,34 @@ export class PolicyUtils {
         if (!topic) {
             throw new Error(`Topic does not exist`);
         }
-        return await TopicConfig.fromObject(topic, !ref.dryRun);
+        return await TopicConfig.fromObject(topic, !ref.dryRun, userId);
     }
 
     /**
      * Get topic
      * @param ref
+     * @param userId
      */
-    public static async getInstancePolicyTopic(ref: AnyBlockType): Promise<TopicConfig> {
+    public static async getInstancePolicyTopic(ref: AnyBlockType, userId: string | null): Promise<TopicConfig> {
         const topic = await ref.databaseServer.getTopic({ policyId: ref.policyId, type: TopicType.InstancePolicyTopic });
         if (!topic) {
             throw new Error(`Topic does not exist`);
         }
-        return await TopicConfig.fromObject(topic, !ref.dryRun);
+        return await TopicConfig.fromObject(topic, !ref.dryRun, userId);
     }
 
     /**
      * Get Policy User
      * @param ref
      * @param did
+     * @param uuid
+     * @param userId
      */
-    public static async getPolicyUser(ref: AnyBlockType, did: string, uuid: string): Promise<PolicyUser> {
+    public static async getPolicyUser(ref: AnyBlockType, did: string, uuid: string, userId: string | null): Promise<PolicyUser> {
         if (uuid) {
-            return await PolicyComponentsUtils.GetPolicyUserByDID(did, uuid, ref);
+            return await PolicyComponentsUtils.GetPolicyUserByDID(did, uuid, ref, userId);
         } else {
-            return await PolicyComponentsUtils.GetPolicyUserByDID(did, null, ref);
+            return await PolicyComponentsUtils.GetPolicyUserByDID(did, null, ref, userId);
         }
     }
 
@@ -885,10 +924,10 @@ export class PolicyUtils {
      */
     public static async getPolicyUserById(ref: AnyBlockType, userId: string): Promise<PolicyUser> {
         if (userId.startsWith('did:')) {
-            return await PolicyComponentsUtils.GetPolicyUserByDID(userId, null, ref);
+            return await PolicyComponentsUtils.GetPolicyUserByDID(userId, null, ref, userId);
         } else {
             const [uuid, did] = userId.split(/:(.*)/s, 2);
-            return await PolicyComponentsUtils.GetPolicyUserByDID(did, uuid, ref);
+            return await PolicyComponentsUtils.GetPolicyUserByDID(did, uuid, ref, userId);
         }
     }
 
@@ -896,19 +935,21 @@ export class PolicyUtils {
      * Get Policy User
      * @param ref
      * @param document
+     * @param userId
      */
-    public static async getDocumentOwner(ref: AnyBlockType, document: IPolicyDocument): Promise<PolicyUser> {
-        return await PolicyComponentsUtils.GetPolicyUserByDID(document.owner, document.group, ref);
+    public static async getDocumentOwner(ref: AnyBlockType, document: IPolicyDocument, userId: string | null): Promise<PolicyUser> {
+        return await PolicyComponentsUtils.GetPolicyUserByDID(document.owner, document.group, ref, userId);
     }
 
     /**
      * Get Policy User
      * @param ref
      * @param document
+     * @param userId
      */
-    public static async getUserByIssuer(ref: AnyBlockType, document: IPolicyDocument): Promise<PolicyUser> {
+    public static async getUserByIssuer(ref: AnyBlockType, document: IPolicyDocument, userId: string | null): Promise<PolicyUser> {
         const did = PolicyUtils.getDocumentIssuer(document.document) || document.owner;
-        return await PolicyComponentsUtils.GetPolicyUserByDID(did, document.group, ref);
+        return await PolicyComponentsUtils.GetPolicyUserByDID(did, document.group, ref, userId);
     }
 
     /**
@@ -927,12 +968,13 @@ export class PolicyUtils {
      * Get User
      * @param ref
      * @param did
+     * @param userId
      */
-    public static async getUser(ref: AnyBlockType, did: string): Promise<IAuthUser> {
+    public static async getUser(ref: AnyBlockType, did: string, userId: string | null): Promise<IAuthUser> {
         if (ref.dryRun) {
             return await ref.databaseServer.getVirtualUser(did);
         } else {
-            return await PolicyUtils.users.getUserById(did);
+            return await PolicyUtils.users.getUserById(did, userId);
         }
     }
 
@@ -940,13 +982,14 @@ export class PolicyUtils {
      * Get Hedera Account Id
      * @param ref
      * @param did
+     * @param userId
      */
-    public static async getHederaAccountId(ref: AnyBlockType, did: string): Promise<string> {
+    public static async getHederaAccountId(ref: AnyBlockType, did: string, userId: string | null): Promise<string> {
         if (ref.dryRun) {
             const userFull = await ref.databaseServer.getVirtualUser(did);
             return userFull.hederaAccountId;
         } else {
-            const userFull = await PolicyUtils.users.getUserById(did);
+            const userFull = await PolicyUtils.users.getUserById(did, userId);
             if (!userFull) {
                 throw new Error('User not found');
             }
@@ -959,8 +1002,29 @@ export class PolicyUtils {
      * @param ref
      * @param did
      */
-    public static async getUserCredentials(ref: AnyBlockType, did: string): Promise<UserCredentials> {
-        return await UserCredentials.create(ref, did);
+    public static async getUserCredentials(ref: AnyBlockType, did: string, userId: string | null): Promise<UserCredentials> {
+        return await UserCredentials.create(ref, did, userId);
+    }
+
+    /**
+     * Get Hedera Account and Private Key
+     * @param ref
+     * @param did
+     */
+    public static async getUserCredentialsByAccount(ref: AnyBlockType, accountId: string, userId: string | null): Promise<UserCredentials> {
+        return await UserCredentials.createByAccount(ref, accountId, userId);
+    }
+
+    /**
+     * Get Hedera Account and Private Key
+     * @param hederaAccountId
+     * @param hederaAccountKey
+     */
+    public static createHederaCredentials(
+        hederaAccountId: string,
+        hederaAccountKey: string = null
+    ): IHederaCredentials {
+        return { hederaAccountId, hederaAccountKey }
     }
 
     /**
@@ -969,8 +1033,9 @@ export class PolicyUtils {
      * @param userDid
      * @param type
      * @param keyName
+     * @param userId
      */
-    public static async getAccountKey(ref: AnyBlockType, userDid: string, type: KeyType, keyName: string): Promise<string> {
+    public static async getAccountKey(ref: AnyBlockType, userDid: string, type: KeyType, keyName: string, userId: string | null): Promise<string> {
         if (ref.dryRun) {
             const userFull = await ref.databaseServer.getVirtualUser(userDid);
             if (!userFull) {
@@ -978,7 +1043,7 @@ export class PolicyUtils {
             }
             return await ref.databaseServer.getVirtualKey(userDid, keyName);
         } else {
-            const userFull = await PolicyUtils.users.getUserById(userDid);
+            const userFull = await PolicyUtils.users.getUserById(userDid, userId);
             if (!userFull) {
                 throw new Error('User not found');
             }
@@ -992,12 +1057,14 @@ export class PolicyUtils {
      * @param userDid
      * @param type
      * @param keyName
+     * @param key
+     * @param userId
      */
-    public static async setAccountKey(ref: AnyBlockType, userDid: string, type: KeyType, keyName: string, key: string): Promise<void> {
+    public static async setAccountKey(ref: AnyBlockType, userDid: string, type: KeyType, keyName: string, key: string, userId: string | null): Promise<void> {
         if (ref.dryRun) {
             await ref.databaseServer.setVirtualKey(userDid, keyName, key);
         } else {
-            const userFull = await PolicyUtils.users.getUserById(userDid);
+            const userFull = await PolicyUtils.users.getUserById(userDid, userId);
             if (!userFull) {
                 throw new Error('User not found');
             }
@@ -1008,14 +1075,14 @@ export class PolicyUtils {
     /**
      * Get all standard registry accounts
      */
-    public static async getAllStandardRegistryAccounts(ref: AnyBlockType, countResult: boolean): Promise<any[] | number> {
+    public static async getAllStandardRegistryAccounts(ref: AnyBlockType, countResult: boolean, userId: string | null): Promise<any[] | number> {
         if (ref.dryRun) {
             return (countResult) ? 0 : [];
         } else {
             if (countResult) {
-                return (await PolicyUtils.users.getAllStandardRegistryAccounts()).length;
+                return (await PolicyUtils.users.getAllStandardRegistryAccounts(userId)).length;
             }
-            return await PolicyUtils.users.getAllStandardRegistryAccounts() as any;
+            return await PolicyUtils.users.getAllStandardRegistryAccounts(userId) as any;
         }
     }
 

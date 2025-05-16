@@ -106,11 +106,12 @@ export class RoleService extends NatsService {
          *
          * @returns {any[]} permissions
          */
-        this.getMessages(AuthEvents.GET_PERMISSIONS, async (_: any) => {
+        this.getMessages(AuthEvents.GET_PERMISSIONS, async (msg: {userId: string | null }) => {
+            const { userId } = msg;
             try {
                 return new MessageResponse(permissionList);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -129,8 +130,10 @@ export class RoleService extends NatsService {
                 user: string,
                 onlyOwn: boolean,
                 pageIndex: string,
-                pageSize: string
+                pageSize: string,
+                userId: string | null
             }) => {
+                const userId = msg?.userId;
                 try {
                     if (!msg) {
                         return new MessageError('Invalid load roles parameter');
@@ -179,7 +182,7 @@ export class RoleService extends NatsService {
 
                     return new MessageResponse({ items, count });
                 } catch (error) {
-                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -192,7 +195,8 @@ export class RoleService extends NatsService {
          * @returns {any} new role
          */
         this.getMessages(AuthEvents.CREATE_ROLE,
-            async (msg: { role: DynamicRole, owner: IOwner, restore: boolean }) => {
+            async (msg: { role: DynamicRole, owner: IOwner, restore: boolean, userId: string | null }) => {
+                const userId = msg?.userId;
                 try {
                     if (!msg) {
                         throw new Error('Invalid create role parameters');
@@ -215,7 +219,7 @@ export class RoleService extends NatsService {
                     item = await entityRepository.save(DynamicRole, item);
                     return new MessageResponse(item);
                 } catch (error) {
-                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -228,7 +232,8 @@ export class RoleService extends NatsService {
          * @returns {any} role
          */
         this.getMessages(AuthEvents.UPDATE_ROLE,
-            async (msg: { id: string, role: any, owner: IOwner }) => {
+            async (msg: { id: string, role: any, owner: IOwner, userId: string | null }) => {
+                const userId = msg?.userId;
                 try {
                     if (!msg) {
                         return new MessageError('Invalid update role parameters');
@@ -252,7 +257,7 @@ export class RoleService extends NatsService {
                     const result = await entityRepository.update(DynamicRole, null, item);
                     return new MessageResponse(result);
                 } catch (error) {
-                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -265,7 +270,8 @@ export class RoleService extends NatsService {
          * @returns {any} role
          */
         this.getMessages(AuthEvents.GET_ROLE,
-            async (msg: { id: string }) => {
+            async (msg: { id: string, userId: string | null }) => {
+                const userId = msg?.userId;
                 try {
                     if (!msg) {
                         return new MessageError('Invalid get role parameters');
@@ -274,7 +280,7 @@ export class RoleService extends NatsService {
                     const item = await new DatabaseServer().findOne(DynamicRole, { id });
                     return new MessageResponse(item);
                 } catch (error) {
-                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -287,7 +293,8 @@ export class RoleService extends NatsService {
          * @returns {boolean} - Operation success
          */
         this.getMessages(AuthEvents.DELETE_ROLE,
-            async (msg: { id: string, owner: IOwner }) => {
+            async (msg: { id: string, owner: IOwner, userId: string | null }) => {
+                const userId = msg?.userId;
                 try {
                     const entityRepository = new DatabaseServer();
 
@@ -305,7 +312,7 @@ export class RoleService extends NatsService {
                     await entityRepository.remove(DynamicRole, item);
                     return new MessageResponse(item);
                 } catch (error) {
-                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -318,7 +325,8 @@ export class RoleService extends NatsService {
          * @returns {boolean} - Operation success
          */
         this.getMessages(AuthEvents.SET_DEFAULT_ROLE,
-            async (msg: { id: string, owner: string }) => {
+            async (msg: { id: string, owner: string, userId: string | null }) => {
+                const userId = msg?.userId;
                 try {
                     const entityRepository = new DatabaseServer();
 
@@ -334,7 +342,7 @@ export class RoleService extends NatsService {
                     const result = items.find((role) => role.default);
                     return new MessageResponse(result);
                 } catch (error) {
-                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -347,7 +355,8 @@ export class RoleService extends NatsService {
          * @returns {boolean} - Operation success
          */
         this.getMessages(AuthEvents.SET_DEFAULT_USER_ROLE,
-            async (msg: { username: string, owner: string }) => {
+            async (msg: { username: string, owner: string, userId: string | null }) => {
+                const userId = msg?.userId;
                 try {
                     const entityRepository = new DatabaseServer();
 
@@ -385,7 +394,7 @@ export class RoleService extends NatsService {
                     const result = await entityRepository.update(User, null, target);
                     return new MessageResponse(UserUtils.updateUserFields(result, UserProp.REQUIRED));
                 } catch (error) {
-                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -398,7 +407,8 @@ export class RoleService extends NatsService {
          * @returns {any} user role
          */
         this.getMessages(AuthEvents.UPDATE_USER_ROLE,
-            async (msg: { username: string, userRoles: string[], owner: IOwner }) => {
+            async (msg: { username: string, userRoles: string[], owner: IOwner, userId: string | null }) => {
+                const userId = msg?.userId;
                 try {
                     const entityRepository = new DatabaseServer();
 
@@ -450,7 +460,7 @@ export class RoleService extends NatsService {
                     const result = await entityRepository.update(User, null, target);
                     return new MessageResponse(UserUtils.updateUserFields(result, UserProp.REQUIRED));
                 } catch (error) {
-                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -463,7 +473,8 @@ export class RoleService extends NatsService {
          * @returns {any} users
          */
         this.getMessages(AuthEvents.REFRESH_USER_PERMISSIONS,
-            async (msg: { id: string, owner: string }) => {
+            async (msg: { id: string, owner: string, userId: string | null }) => {
+                const userId = msg?.userId;
                 try {
                     const entityRepository = new DatabaseServer();
 
@@ -495,7 +506,7 @@ export class RoleService extends NatsService {
                     }
                     return new MessageResponse(UserUtils.updateUsersFields(users, UserProp.REQUIRED));
                 } catch (error) {
-                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -508,7 +519,8 @@ export class RoleService extends NatsService {
          * @returns {any} user role
          */
         this.getMessages(AuthEvents.DELEGATE_USER_ROLE,
-            async (msg: { username: string, userRoles: string[], owner: IOwner }) => {
+            async (msg: { username: string, userRoles: string[], owner: IOwner, userId: string | null }) => {
+                const userId = msg?.userId;
                 try {
                     const entityRepository = new DatabaseServer();
 
@@ -570,7 +582,7 @@ export class RoleService extends NatsService {
                     await entityRepository.update(User, null, target);
                     return new MessageResponse(UserUtils.updateUserFields(target, UserProp.REQUIRED));
                 } catch (error) {
-                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -580,12 +592,12 @@ export class RoleService extends NatsService {
          * @param username - username
          */
         this.getMessages(AuthEvents.GET_USER_PERMISSIONS, async (msg: any) => {
-            const { username } = msg;
+            const { username, userId } = msg;
             try {
                 const user = await UserUtils.getUser({ username }, UserProp.REQUIRED)
                 return new MessageResponse(user);
             } catch (error) {
-                await logger.error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE'], userId);
                 return new MessageError(error);
             }
         });

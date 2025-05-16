@@ -1,6 +1,5 @@
 import { Singleton } from '../helpers/decorators/singleton.js';
 import {
-    ApplicationStates,
     AssignedEntityType,
     CommonSettings,
     ContractAPI,
@@ -9,7 +8,6 @@ import {
     IArtifact,
     IChainItem,
     IContract,
-    IDidObject,
     IOwner,
     IRetirementMessage,
     IRetirePool,
@@ -53,7 +51,10 @@ import {
     SchemaRuleOptionsDTO,
     FormulasOptionsDTO,
     FormulasDataDTO,
-    FormulaRelationshipsDTO
+    FormulaRelationshipsDTO,
+    ExternalPolicyDTO,
+    PolicyPreviewDTO,
+    ProfileDTO
 } from '#middlewares';
 
 /**
@@ -95,35 +96,23 @@ export class Guardians extends NatsService {
      * Update settings
      *
      */
-    public async updateSettings(settings: CommonSettings): Promise<void> {
-        await this.sendMessage(MessageAPI.UPDATE_SETTINGS, settings);
+    public async updateSettings(user: IAuthUser, settings: CommonSettings): Promise<void> {
+        await this.sendMessage(MessageAPI.UPDATE_SETTINGS, { user, settings });
     }
 
     /**
      * Get settings
      *
      */
-    public async getSettings(): Promise<CommonSettings> {
-        return await this.sendMessage<CommonSettings>(MessageAPI.GET_SETTINGS);
+    public async getSettings(user: IAuthUser): Promise<CommonSettings> {
+        return await this.sendMessage<CommonSettings>(MessageAPI.GET_SETTINGS, { user });
     }
 
     /**
      * Get environment name
      */
-    public async getEnvironment(): Promise<string> {
-        return await this.sendMessage(MessageAPI.GET_ENVIRONMENT);
-    }
-
-    /**
-     * Return DID Documents
-     *
-     * @param {Object} params - filters
-     * @param {string} params.did - DID
-     *
-     * @returns {IDidObject[]} - DID Documents
-     */
-    public async getDidDocuments(params: IFilter): Promise<IDidObject[]> {
-        return await this.sendMessage(MessageAPI.GET_DID_DOCUMENTS, params);
+    public async getEnvironment(user: IAuthUser): Promise<string> {
+        return await this.sendMessage(MessageAPI.GET_ENVIRONMENT, { user });
     }
 
     /**
@@ -135,8 +124,8 @@ export class Guardians extends NatsService {
      *
      * @returns {IVCDocument[]} - VC Documents
      */
-    public async getVcDocuments(params: IFilter): Promise<IVCDocument[]> {
-        return await this.sendMessage(MessageAPI.GET_VC_DOCUMENTS, params);
+    public async getVcDocuments(user: IAuthUser, params: IFilter): Promise<IVCDocument[]> {
+        return await this.sendMessage(MessageAPI.GET_VC_DOCUMENTS, { user, params });
     }
 
     /**
@@ -146,8 +135,8 @@ export class Guardians extends NatsService {
      *
      * @returns {ResponseAndCount<IVPDocument>} - VP Documents
      */
-    public async getVpDocuments(params?: IFilter): Promise<ResponseAndCount<IVPDocument>> {
-        return await this.sendMessage(MessageAPI.GET_VP_DOCUMENTS, params);
+    public async getVpDocuments(user: IAuthUser, params?: IFilter): Promise<ResponseAndCount<IVPDocument>> {
+        return await this.sendMessage(MessageAPI.GET_VP_DOCUMENTS, { user, params });
     }
 
     /**
@@ -217,8 +206,8 @@ export class Guardians extends NatsService {
      *
      * @returns {IChainItem[]} - trust chain
      */
-    public async getChain(id: string): Promise<IChainItem[]> {
-        return await this.sendMessage(MessageAPI.GET_CHAIN, { id });
+    public async getChain(user: IAuthUser, id: string): Promise<IChainItem[]> {
+        return await this.sendMessage(MessageAPI.GET_CHAIN, { user, id });
     }
 
     /**
@@ -473,8 +462,8 @@ export class Guardians extends NatsService {
      * @param did DID
      * @returns Serials
      */
-    public async getTokenSerials(tokenId: string, did: string): Promise<number[]> {
-        return await this.sendMessage(MessageAPI.GET_SERIALS, { tokenId, did });
+    public async getTokenSerials(owner: IOwner, tokenId: string, did: string): Promise<number[]> {
+        return await this.sendMessage(MessageAPI.GET_SERIALS, { owner, tokenId, did });
     }
 
     /**
@@ -484,11 +473,12 @@ export class Guardians extends NatsService {
      * @param pageSize
      */
     public async getAssociatedTokens(
+        owner: IOwner,
         did: string,
         pageIndex: number,
         pageSize: number
     ): Promise<ResponseAndCount<ITokenInfo>> {
-        return await this.sendMessage(MessageAPI.GET_ASSOCIATED_TOKENS, { did, pageIndex, pageSize });
+        return await this.sendMessage(MessageAPI.GET_ASSOCIATED_TOKENS, { owner, did, pageIndex, pageSize });
     }
 
     /**
@@ -496,8 +486,8 @@ export class Guardians extends NatsService {
      * @param username
      * @param profile
      */
-    public async createUserProfileCommon(username: string, profile: IUser): Promise<string> {
-        return await this.sendMessage(MessageAPI.CREATE_USER_PROFILE_COMMON, { username, profile });
+    public async createUserProfileCommon(user: IAuthUser, username: string, profile: IUser): Promise<string> {
+        return await this.sendMessage(MessageAPI.CREATE_USER_PROFILE_COMMON, { user, username, profile });
     }
 
     /**
@@ -506,8 +496,13 @@ export class Guardians extends NatsService {
      * @param profile
      * @param task
      */
-    public async createUserProfileCommonAsync(username: string, profile: IUser, task: NewTask): Promise<NewTask> {
-        return await this.sendMessage(MessageAPI.CREATE_USER_PROFILE_COMMON_ASYNC, { username, profile, task });
+    public async createUserProfileCommonAsync(
+        user: IAuthUser,
+        username: string,
+        profile: IUser,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.CREATE_USER_PROFILE_COMMON_ASYNC, { user, username, profile, task });
     }
 
     /**
@@ -516,8 +511,8 @@ export class Guardians extends NatsService {
      * @param profile
      * @param task
      */
-    public async restoreUserProfileCommonAsync(username: string, profile: IUser, task: NewTask): Promise<NewTask> {
-        return await this.sendMessage(MessageAPI.RESTORE_USER_PROFILE_COMMON_ASYNC, { username, profile, task });
+    public async restoreUserProfileCommonAsync(user: IAuthUser, username: string, profile: IUser, task: NewTask): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.RESTORE_USER_PROFILE_COMMON_ASYNC, { user, username, profile, task });
     }
 
     /**
@@ -526,24 +521,24 @@ export class Guardians extends NatsService {
      * @param profile
      * @param task
      */
-    public async getAllUserTopicsAsync(username: string, profile: IUser, task: NewTask): Promise<NewTask> {
-        return await this.sendMessage(MessageAPI.GET_ALL_USER_TOPICS_ASYNC, { username, profile, task });
+    public async getAllUserTopicsAsync(user: IAuthUser, username: string, profile: IUser, task: NewTask): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.GET_ALL_USER_TOPICS_ASYNC, { user, username, profile, task });
     }
 
     /**
      * Get user balance
      * @param username
      */
-    public async getUserBalance(username: string): Promise<string> {
-        return await this.sendMessage(MessageAPI.GET_USER_BALANCE, { username });
+    public async getUserBalance(user: IAuthUser, username: string): Promise<string> {
+        return await this.sendMessage(MessageAPI.GET_USER_BALANCE, { user, username });
     }
 
     /**
      * Get balance
      * @param username
      */
-    public async getBalance(username: string): Promise<any> {
-        return await this.sendMessage(MessageAPI.GET_BALANCE, { username });
+    public async getBalance(user: IAuthUser, username: string): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_BALANCE, { user, username });
     }
 
     /**
@@ -592,8 +587,8 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema[]} - all schemas
      */
-    public async getSchemasByUUID(uuid: string): Promise<ISchema[]> {
-        return await this.sendMessage(MessageAPI.GET_SCHEMAS_BY_UUID, { uuid });
+    public async getSchemasByUUID(owner: IOwner, uuid: string): Promise<ISchema[]> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMAS_BY_UUID, { owner, uuid });
     }
 
     /**
@@ -604,11 +599,11 @@ export class Guardians extends NatsService {
      * @param owner
      * @returns {ISchema} - schema
      */
-    public async getSchemaByType(type: string, owner?: string): Promise<ISchema> {
+    public async getSchemaByType(user: IAuthUser, type: string, owner?: string): Promise<ISchema> {
         if (owner) {
-            return await this.sendMessage(MessageAPI.GET_SCHEMA, { type, owner });
+            return await this.sendMessage(MessageAPI.GET_SCHEMA, { user, type, owner });
         } else {
-            return await this.sendMessage(MessageAPI.GET_SCHEMA, { type });
+            return await this.sendMessage(MessageAPI.GET_SCHEMA, { user, type });
         }
     }
 
@@ -619,8 +614,8 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema} - schema
      */
-    public async getSchemaById(id: string): Promise<ISchema> {
-        return await this.sendMessage(MessageAPI.GET_SCHEMA, { id });
+    public async getSchemaById(user: IAuthUser, id: string): Promise<ISchema> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA, { user, id });
     }
 
     /**
@@ -704,7 +699,7 @@ export class Guardians extends NatsService {
         files: any,
         owner: IOwner,
         topicId: string,
-        task: NewTask,
+        task: NewTask
     ): Promise<NewTask> {
         return await this.sendMessage(MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, { files, owner, topicId, task });
     }
@@ -716,8 +711,8 @@ export class Guardians extends NatsService {
      *
      * @returns {any} Schema preview
      */
-    public async previewSchemasByMessages(messageIds: string[]): Promise<ISchema[]> {
-        return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA, { messageIds });
+    public async previewSchemasByMessages(owner: IOwner, messageIds: string[]): Promise<ISchema[]> {
+        return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA, { owner, messageIds });
     }
 
     /**
@@ -726,8 +721,8 @@ export class Guardians extends NatsService {
      * @param {string} messageIds Message identifier
      * @param {NewTask} task Task
      */
-    public async previewSchemasByMessagesAsync(messageIds: string[], task: NewTask): Promise<any> {
-        return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_ASYNC, { messageIds, task });
+    public async previewSchemasByMessagesAsync(owner: IOwner, messageIds: string[], task: NewTask): Promise<any> {
+        return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_ASYNC, { owner, messageIds, task });
     }
 
     /**
@@ -783,7 +778,7 @@ export class Guardians extends NatsService {
      * Create or update schema
      *
      * @param {ISchema} item - schema
-     *
+     * @param owner
      * @returns {ISchema[]} - all schemas
      */
     public async updateSchema(
@@ -843,28 +838,6 @@ export class Guardians extends NatsService {
     }
 
     /**
-     * Get topic
-     * @param filter
-     */
-    public async getTopic(filter: any): Promise<any> {
-        return await this.sendMessage(MessageAPI.GET_TOPIC, filter);
-    }
-
-    /**
-     * Get service status
-     *
-     * @returns {ApplicationStates} Service state
-     */
-    public async getStatus(): Promise<ApplicationStates> {
-        try {
-            return await this.sendMessage(MessageAPI.GET_STATUS);
-        }
-        catch {
-            return ApplicationStates.STOPPED;
-        }
-    }
-
-    /**
      * Get user roles in policy
      *
      * @param {string} did - User did
@@ -882,8 +855,8 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema[]} - all schemas
      */
-    public async createSystemSchema(item: ISchema | any): Promise<ISchema> {
-        return await this.sendMessage(MessageAPI.CREATE_SYSTEM_SCHEMA, { item });
+    public async createSystemSchema(item: ISchema | any, owner: IOwner): Promise<ISchema> {
+        return await this.sendMessage(MessageAPI.CREATE_SYSTEM_SCHEMA, { item, owner });
     }
 
     /**
@@ -895,10 +868,12 @@ export class Guardians extends NatsService {
      * @returns {ISchema[]} - all schemas
      */
     public async getSystemSchemas(
+        user: IAuthUser,
         pageIndex?: any,
         pageSize?: any
     ): Promise<ResponseAndCount<ISchema>> {
         return await this.sendMessage(MessageAPI.GET_SYSTEM_SCHEMAS, {
+            user,
             pageIndex,
             pageSize
         });
@@ -913,11 +888,13 @@ export class Guardians extends NatsService {
      * @returns {ISchema[]} - all schemas
      */
     public async getSystemSchemasV2(
+        user: IAuthUser,
         fields: string[],
         pageIndex?: any,
         pageSize?: any
     ): Promise<ResponseAndCount<ISchema>> {
         return await this.sendMessage(MessageAPI.GET_SYSTEM_SCHEMAS_V2, {
+            user,
             fields,
             pageIndex,
             pageSize
@@ -931,8 +908,8 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema} - message
      */
-    public async activeSchema(id: string): Promise<ISchema> {
-        return await this.sendMessage(MessageAPI.ACTIVE_SCHEMA, { id });
+    public async activeSchema(id: string, owner: IOwner): Promise<ISchema> {
+        return await this.sendMessage(MessageAPI.ACTIVE_SCHEMA, { id, owner });
     }
 
     /**
@@ -942,8 +919,8 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema} - schema
      */
-    public async getSchemaByEntity(entity: string): Promise<ISchema> {
-        return await this.sendMessage(MessageAPI.GET_SYSTEM_SCHEMA, { entity });
+    public async getSchemaByEntity(user: IAuthUser, entity: string): Promise<ISchema> {
+        return await this.sendMessage(MessageAPI.GET_SYSTEM_SCHEMA, { user, entity });
     }
 
     /**
@@ -998,8 +975,8 @@ export class Guardians extends NatsService {
      *
      * @returns - Artifact
      */
-    public async getArtifacts(options: any): Promise<any> {
-        return await this.sendMessage(MessageAPI.GET_ARTIFACTS, options);
+    public async getArtifacts(user: IAuthUser, options: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_ARTIFACTS, { user, options });
     }
 
     /**
@@ -1009,8 +986,8 @@ export class Guardians extends NatsService {
      *
      * @returns - Artifact
      */
-    public async getArtifactsV2(options: any): Promise<any> {
-        return await this.sendMessage(MessageAPI.GET_ARTIFACTS_V2, options);
+    public async getArtifactsV2(user: IAuthUser, options: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_ARTIFACTS_V2, { user, options });
     }
 
     /**
@@ -1031,7 +1008,7 @@ export class Guardians extends NatsService {
      * @param buffer File
      * @returns CID, URL
      */
-    public async addFileIpfs(buffer: any): Promise<{
+    public async addFileIpfs(user: IAuthUser, buffer: ArrayBuffer | string): Promise<{
         /**
          * CID
          */
@@ -1041,7 +1018,7 @@ export class Guardians extends NatsService {
          */
         url: string
     }> {
-        return await this.sendMessage(MessageAPI.IPFS_ADD_FILE, buffer);
+        return await this.sendMessage(MessageAPI.IPFS_ADD_FILE, { user, buffer });
     }
 
     /**
@@ -1049,7 +1026,7 @@ export class Guardians extends NatsService {
      * @param buffer File
      * @returns CID, URL
      */
-    public async addFileToDryRunStorage(buffer: any, policyId: string): Promise<{
+    public async addFileToDryRunStorage(user: IAuthUser, buffer: any, policyId: string): Promise<{
         /**
          * CID
          */
@@ -1059,7 +1036,7 @@ export class Guardians extends NatsService {
          */
         url: string
     }> {
-        return await this.sendMessage(MessageAPI.ADD_FILE_DRY_RUN_STORAGE, { buffer, policyId });
+        return await this.sendMessage(MessageAPI.ADD_FILE_DRY_RUN_STORAGE, { user, buffer, policyId });
     }
 
     /**
@@ -1068,10 +1045,12 @@ export class Guardians extends NatsService {
      * @param responseType Response type
      * @returns File
      */
-    public async getFileIpfs(cid: string, responseType: any, userId?: string): Promise<any> {
-        return await this.sendMessage(MessageAPI.IPFS_GET_FILE, {
-            cid, responseType, userId
-        });
+    public async getFileIpfs(
+        user: IAuthUser,
+        cid: string,
+        responseType: 'json' | 'raw' | 'str'
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.IPFS_GET_FILE, { user, cid, responseType });
     }
 
     /**
@@ -1080,10 +1059,8 @@ export class Guardians extends NatsService {
      * @param responseType Response type
      * @returns File
      */
-    public async getFileFromDryRunStorage(cid: string, responseType: any): Promise<any> {
-        return await this.sendMessage(MessageAPI.GET_FILE_DRY_RUN_STORAGE, {
-            cid, responseType
-        });
+    public async getFileFromDryRunStorage(user: IAuthUser, cid: string, responseType: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_FILE_DRY_RUN_STORAGE, { user, cid, responseType });
     }
 
     /**
@@ -1483,7 +1460,7 @@ export class Guardians extends NatsService {
     public async clearWipeRequests(
         owner: IOwner,
         id: string,
-        hederaId?: string,
+        hederaId?: string
     ): Promise<boolean> {
         return await this.sendMessage(ContractAPI.CLEAR_WIPE_REQUESTS, {
             owner,
@@ -1579,7 +1556,7 @@ export class Guardians extends NatsService {
         owner: IOwner,
         id: string,
         hederaId: string,
-        tokenId?: string,
+        tokenId?: string
     ): Promise<boolean> {
         return await this.sendMessage(ContractAPI.ADD_WIPE_WIPER, {
             owner,
@@ -1600,7 +1577,7 @@ export class Guardians extends NatsService {
         owner: IOwner,
         id: string,
         hederaId: string,
-        tokenId?: string,
+        tokenId?: string
     ): Promise<boolean> {
         return await this.sendMessage(ContractAPI.REMOVE_WIPE_WIPER, {
             owner,
@@ -2219,15 +2196,15 @@ export class Guardians extends NatsService {
     /**
      * Get map api key
      */
-    public async getMapApiKey(): Promise<string> {
-        return await this.sendMessage<string>(MessageAPI.GET_MAP_API_KEY);
+    public async getMapApiKey(user: IAuthUser): Promise<string> {
+        return await this.sendMessage<string>(MessageAPI.GET_MAP_API_KEY, { user });
     }
 
     /**
      * Get sentinel api key
      */
-    public async getSentinelApiKey(): Promise<string> {
-        return await this.sendMessage<string>(MessageAPI.GET_SENTINEL_API_KEY);
+    public async getSentinelApiKey(user: IAuthUser): Promise<string> {
+        return await this.sendMessage<string>(MessageAPI.GET_SENTINEL_API_KEY, { user });
     }
 
     /**
@@ -2246,8 +2223,8 @@ export class Guardians extends NatsService {
      * @param targets
      * @returns {any[]}
      */
-    public async getTags(entity: string, targets: string[]): Promise<any[]> {
-        return await this.sendMessage<any>(MessageAPI.GET_TAGS, { entity, targets });
+    public async getTags(owner: IOwner, entity: string, targets: string[]): Promise<any[]> {
+        return await this.sendMessage<any>(MessageAPI.GET_TAGS, { owner, entity, targets });
     }
 
     /**
@@ -2266,8 +2243,8 @@ export class Guardians extends NatsService {
      * @param targets
      * @returns {any[]}
      */
-    public async exportTags(entity: string, targets: string[]): Promise<any[]> {
-        return await this.sendMessage<any>(MessageAPI.EXPORT_TAGS, { entity, targets });
+    public async exportTags(owner: IOwner, entity: string, targets: string[]): Promise<any[]> {
+        return await this.sendMessage<any>(MessageAPI.EXPORT_TAGS, { owner, entity, targets });
     }
 
     /**
@@ -2276,8 +2253,8 @@ export class Guardians extends NatsService {
      * @param targets
      * @returns {any[]}
      */
-    public async getTagCache(entity: string, targets: string[]): Promise<any[]> {
-        return await this.sendMessage<any>(MessageAPI.GET_TAG_CACHE, { entity, targets });
+    public async getTagCache(owner: IOwner, entity: string, targets: string[]): Promise<any[]> {
+        return await this.sendMessage<any>(MessageAPI.GET_TAG_CACHE, { owner, entity, targets });
     }
 
     /**
@@ -2286,8 +2263,8 @@ export class Guardians extends NatsService {
      * @param targets
      * @returns {any[]}
      */
-    public async synchronizationTags(entity: string, target: string): Promise<any[]> {
-        return await this.sendMessage<any>(MessageAPI.GET_SYNCHRONIZATION_TAGS, { entity, target });
+    public async synchronizationTags(owner: IOwner, entity: string, target: string): Promise<any[]> {
+        return await this.sendMessage<any>(MessageAPI.GET_SYNCHRONIZATION_TAGS, { owner, entity, target });
     }
 
     /**
@@ -2320,8 +2297,8 @@ export class Guardians extends NatsService {
      * @returns {ISchema[]} - all schemas
      */
     public async getTagSchemasV2(
-        fields: string[],
         owner: IOwner,
+        fields: string[],
         pageIndex?: any,
         pageSize?: any
     ): Promise<ResponseAndCount<ISchema>> {
@@ -2362,8 +2339,8 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema[]} - schemas
      */
-    public async getPublishedTagSchemas(): Promise<ISchema[]> {
-        return await this.sendMessage(MessageAPI.GET_PUBLISHED_TAG_SCHEMAS);
+    public async getPublishedTagSchemas(user: IAuthUser): Promise<ISchema[]> {
+        return await this.sendMessage(MessageAPI.GET_PUBLISHED_TAG_SCHEMAS, { user });
     }
 
     /**
@@ -2403,6 +2380,7 @@ export class Guardians extends NatsService {
     /**
      * Get theme by id
      * @param themeId
+     * @param owner
      * @returns theme
      */
     public async getThemeById(themeId: string, owner: IOwner): Promise<any> {
@@ -2502,8 +2480,8 @@ export class Guardians extends NatsService {
      * @param config Branding JSON string
      * @returns Branding JSON string
      */
-    public async setBranding(config: string): Promise<any> {
-        return await this.sendMessage(MessageAPI.STORE_BRANDING, { config });
+    public async setBranding(user: IAuthUser, config: string): Promise<any> {
+        return await this.sendMessage(MessageAPI.STORE_BRANDING, { user, config });
     }
 
     /**
@@ -2519,6 +2497,7 @@ export class Guardians extends NatsService {
     /**
      * Policy suggestions
      * @param suggestionsInput
+     * @param user
      */
     public async policySuggestions(
         suggestionsInput: any,
@@ -2733,16 +2712,16 @@ export class Guardians extends NatsService {
      * Get template file by name
      * @param filename
      */
-    public async getFileTemplate(filename: string): Promise<string> {
-        return await this.sendMessage(MessageAPI.GET_TEMPLATE, { filename });
+    public async getFileTemplate(owner: IOwner, filename: string): Promise<string> {
+        return await this.sendMessage(MessageAPI.GET_TEMPLATE, { owner, filename });
     }
 
     /**
      * Validate DID document
      * @param document
      */
-    public async validateDidDocument(document: any): Promise<any> {
-        return await this.sendMessage(MessageAPI.VALIDATE_DID_DOCUMENT, { document });
+    public async validateDidDocument(user: IAuthUser, document: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.VALIDATE_DID_DOCUMENT, { user, document });
     }
 
     /**
@@ -2750,8 +2729,8 @@ export class Guardians extends NatsService {
      * @param document
      * @param keys
      */
-    public async validateDidKeys(document: any, keys: any): Promise<any> {
-        return await this.sendMessage(MessageAPI.VALIDATE_DID_KEY, { document, keys });
+    public async validateDidKeys(user: IAuthUser, document: any, keys: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.VALIDATE_DID_KEY, { user, document, keys });
     }
 
     /**
@@ -2762,13 +2741,14 @@ export class Guardians extends NatsService {
      * @param did
      */
     public async assignEntity(
+        user: IAuthUser,
         type: AssignedEntityType,
         entityIds: string[],
         assign: boolean,
         did: string,
         owner: string
     ): Promise<any> {
-        return await this.sendMessage(MessageAPI.ASSIGN_ENTITY, { type, entityIds, assign, did, owner });
+        return await this.sendMessage(MessageAPI.ASSIGN_ENTITY, { user, type, entityIds, assign, did, owner });
     }
 
     /**
@@ -2779,13 +2759,14 @@ export class Guardians extends NatsService {
      * @param did
      */
     public async delegateEntity(
+        user: IAuthUser,
         type: AssignedEntityType,
         entityIds: string[],
         assign: boolean,
         did: string,
         owner: string
     ): Promise<any> {
-        return await this.sendMessage(MessageAPI.DELEGATE_ENTITY, { type, entityIds, assign, did, owner });
+        return await this.sendMessage(MessageAPI.DELEGATE_ENTITY, { user, type, entityIds, assign, did, owner });
     }
 
     /**
@@ -2796,12 +2777,13 @@ export class Guardians extends NatsService {
      * @param did
      */
     public async checkEntity(
+        user: IAuthUser,
         type: AssignedEntityType,
         entityId: string,
         checkAssign: boolean,
         did: string
     ): Promise<boolean> {
-        return await this.sendMessage(MessageAPI.CHECK_ENTITY, { type, entityId, checkAssign, did });
+        return await this.sendMessage(MessageAPI.CHECK_ENTITY, { user, type, entityId, checkAssign, did });
     }
 
     /**
@@ -2810,18 +2792,19 @@ export class Guardians extends NatsService {
      * @param did
      */
     public async assignedEntities(
+        user: IAuthUser,
         did: string,
         type?: AssignedEntityType
     ): Promise<any[]> {
-        return await this.sendMessage(MessageAPI.ASSIGNED_ENTITIES, { type, did });
+        return await this.sendMessage(MessageAPI.ASSIGNED_ENTITIES, { user, type, did });
     }
 
     /**
      * Get policy
      * @param filters
      */
-    public async getAssignedPolicies(options: any): Promise<any> {
-        return await this.sendMessage(MessageAPI.GET_ASSIGNED_POLICIES, options);
+    public async getAssignedPolicies(user: IAuthUser, options: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_ASSIGNED_POLICIES, { user, options });
     }
 
     /**
@@ -2864,7 +2847,7 @@ export class Guardians extends NatsService {
      * @param pageSize
      */
     public async getAllWorkerTasks(user: IAuthUser, pageIndex: number, pageSize: number): Promise<any> {
-        return this.sendMessage(QueueEvents.GET_TASKS_BY_USER, { userId: user.id.toString(), pageIndex, pageSize });
+        return this.sendMessage(QueueEvents.GET_TASKS_BY_USER, { user, pageIndex, pageSize });
     }
 
     /**
@@ -3229,8 +3212,8 @@ export class Guardians extends NatsService {
     /**
      * Get Indexer availability
      */
-    public async getIndexerAvailability(): Promise<boolean> {
-        return await this.sendMessage(MessageAPI.GET_INDEXER_AVAILABILITY, {});
+    public async getIndexerAvailability(user: IAuthUser): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.GET_INDEXER_AVAILABILITY, { user });
     }
 
     /**
@@ -3610,5 +3593,127 @@ export class Guardians extends NatsService {
      */
     public async publishFormula(formulaId: string, owner: IOwner): Promise<FormulaDTO> {
         return await this.sendMessage(MessageAPI.PUBLISH_FORMULA, { formulaId, owner });
+    }
+
+    /**
+     * Get external policy
+     *
+     * @param id
+     * @param owner
+     * @returns {ExternalPolicyDTO}
+     */
+    public async getExternalPolicyRequest(filters: any, owner: IOwner): Promise<ExternalPolicyDTO> {
+        return await this.sendMessage(MessageAPI.GET_EXTERNAL_POLICY_REQUEST, { filters, owner });
+    }
+
+    /**
+     * Return external policies
+     *
+     * @param filters
+     * @param owner
+     *
+     * @returns {ResponseAndCount<PolicyLabelDTO>}
+     */
+    public async getExternalPolicyRequests(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<PolicyLabelDTO>> {
+        return await this.sendMessage(MessageAPI.GET_EXTERNAL_POLICY_REQUESTS, { filters, owner });
+    }
+
+    /**
+     * Return external policy
+     *
+     * @param messageId
+     * @param owner
+     *
+     * @returns {PolicyPreviewDTO}
+     */
+    public async previewExternalPolicy(messageId: string, owner: IOwner): Promise<PolicyPreviewDTO> {
+        return await this.sendMessage(MessageAPI.PREVIEW_EXTERNAL_POLICY, { messageId, owner });
+    }
+
+    /**
+     * Return external policy
+     *
+     * @param messageId
+     * @param owner
+     *
+     * @returns {ExternalPolicyDTO}
+     */
+    public async importExternalPolicy(messageId: string, owner: IOwner): Promise<ExternalPolicyDTO> {
+        return await this.sendMessage(MessageAPI.IMPORT_EXTERNAL_POLICY, { messageId, owner });
+    }
+
+    /**
+     * Async approve external policy
+     * @param messageId
+     * @param owner
+     * @param task
+     */
+    public async approveExternalPolicyAsync(
+        messageId: string,
+        owner: IOwner,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.APPROVE_EXTERNAL_POLICY_ASYNC, { messageId, owner, task });
+    }
+
+    /**
+     * Async reject external policy
+     * @param messageId
+     * @param owner
+     * @param task
+     */
+    public async rejectExternalPolicyAsync(
+        messageId: string,
+        owner: IOwner,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.REJECT_EXTERNAL_POLICY_ASYNC, { messageId, owner, task });
+    }
+
+    /**
+     * Async approve external policy
+     * @param messageId
+     * @param owner
+     */
+    public async approveExternalPolicy(
+        messageId: string,
+        owner: IOwner
+    ): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.APPROVE_EXTERNAL_POLICY, { messageId, owner });
+    }
+
+    /**
+     * Async reject external policy
+     * @param messageId
+     * @param owner
+     */
+    public async rejectExternalPolicy(
+        messageId: string,
+        owner: IOwner
+    ): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.REJECT_EXTERNAL_POLICY, { messageId, owner });
+    }
+
+    /**
+     * Return external policies
+     *
+     * @param filters
+     * @param owner
+     *
+     * @returns {ResponseAndCount<PolicyLabelDTO>}
+     */
+    public async groupExternalPolicyRequests(filters: { full: boolean, pageIndex: any, pageSize: any }, owner: IOwner): Promise<ResponseAndCount<PolicyLabelDTO>> {
+        return await this.sendMessage(MessageAPI.GROUP_EXTERNAL_POLICY_REQUESTS, { filters, owner });
+    }
+
+    /**
+     * Return User Profile
+     *
+     * @param {IAuthUser} user - user
+     *
+     * @returns {ProfileDTO} - Profile
+     */
+    public async getProfile(user: IAuthUser): Promise<ProfileDTO> {
+        return await this.sendMessage(MessageAPI.GET_USER_PROFILE, { user });
     }
 }

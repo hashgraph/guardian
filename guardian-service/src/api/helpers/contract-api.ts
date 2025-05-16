@@ -39,7 +39,8 @@ export async function customContractCall(
     contractId: string,
     hederaAccountId: string,
     hederaAccountKey: string,
-    parameters
+    parameters: any,
+    userId: string | null
 ) {
     return await _contractCall(
         event,
@@ -51,6 +52,7 @@ export async function customContractCall(
                 hederaAccountId,
                 hederaAccountKey,
                 parameters,
+                payload: { userId }
             },
         },
         20

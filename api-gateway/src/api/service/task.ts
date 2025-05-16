@@ -45,7 +45,7 @@ export class TaskApi {
             const taskManager = new TaskManager();
             return taskManager.getState(user.id, taskId);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

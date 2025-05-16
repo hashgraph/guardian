@@ -66,6 +66,7 @@ export class FormulaAnalyticsDTO implements FormulaAnalytics {
     @ApiProperty({
         description: 'Formula Config',
         type: 'object',
+        additionalProperties: true,
     })
     config?: any;
 }

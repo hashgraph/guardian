@@ -112,7 +112,7 @@ p-tabview {
 
     p-tabpanel:has(.p-tabview-panel:not([hidden])) {
         overflow: hidden;
-        flex: 1;
+        // flex: 1;
     }
 }
 

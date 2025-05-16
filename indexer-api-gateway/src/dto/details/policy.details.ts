@@ -111,6 +111,7 @@ export class PolicyAnalyticsDTO implements PolicyAnalytics {
     @ApiProperty({
         description: 'Hash map',
         type: 'object',
+        additionalProperties: true,
     })
     hashMap: any;
     @ApiProperty({

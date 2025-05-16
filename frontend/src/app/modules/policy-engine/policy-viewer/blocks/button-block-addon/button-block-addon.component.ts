@@ -24,7 +24,7 @@ export class ButtonBlockAddonComponent implements OnInit {
     visible: boolean = true;
     socket: any;
     data: any;
-
+    readonly: boolean = false;
     name!: string;
     uiClass?: string;
     dialog!: boolean;
@@ -94,6 +94,7 @@ export class ButtonBlockAddonComponent implements OnInit {
 
     setData(data: any) {
         if (data) {
+            this.readonly = !!data.readonly;
             this.data = data.data;
             this.name = data.name;
             this.uiClass = data.uiClass;

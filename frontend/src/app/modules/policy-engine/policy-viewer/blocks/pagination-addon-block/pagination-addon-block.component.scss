@@ -35,3 +35,8 @@
     display: inline-block;
     width: 190px;
 }
+
+*[readonly-block="true"] {
+    pointer-events: none !important;
+    filter: grayscale(1);
+}

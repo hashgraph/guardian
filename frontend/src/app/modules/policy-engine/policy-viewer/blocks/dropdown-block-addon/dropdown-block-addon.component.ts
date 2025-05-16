@@ -22,6 +22,7 @@ export class DropdownBlockAddonComponent implements OnInit {
     data: any;
     currentValue: any;
     documents!: { name: any; value: any; optionValue: any }[];
+    readonly: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -99,6 +100,7 @@ export class DropdownBlockAddonComponent implements OnInit {
 
     setData(data: any) {
         if (data) {
+            this.readonly = !!data.readonly;
             this.data = data.data;
             this.documents = data.documents;
             const currentValue = this.getObjectValue(this.data, data.field);

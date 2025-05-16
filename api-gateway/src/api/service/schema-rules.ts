@@ -47,7 +47,7 @@ export class SchemaRulesApi {
             const guardian = new Guardians();
             return await guardian.createSchemaRule(rule, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -106,7 +106,7 @@ export class SchemaRulesApi {
             const { items, count } = await guardians.getSchemaRules({ policyInstanceTopicId, pageIndex, pageSize }, owner);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -148,7 +148,7 @@ export class SchemaRulesApi {
             const guardian = new Guardians();
             return await guardian.getSchemaRuleById(ruleId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -200,7 +200,7 @@ export class SchemaRulesApi {
             }
             return await guardians.updateSchemaRule(ruleId, item, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -242,7 +242,7 @@ export class SchemaRulesApi {
             const guardians = new Guardians();
             return await guardians.deleteSchemaRule(ruleId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -288,7 +288,7 @@ export class SchemaRulesApi {
             }
             return await guardians.activateSchemaRule(ruleId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -334,7 +334,7 @@ export class SchemaRulesApi {
             }
             return await guardians.inactivateSchemaRule(ruleId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -376,7 +376,7 @@ export class SchemaRulesApi {
             const guardian = new Guardians();
             return await guardian.getSchemaRuleRelationships(ruleId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -421,7 +421,7 @@ export class SchemaRulesApi {
                 return await guardian.getSchemaRuleData(options, owner);
             }
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -465,7 +465,7 @@ export class SchemaRulesApi {
             const owner = new EntityOwner(user);
             return await guardian.importSchemaRule(zip, policyId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -507,7 +507,7 @@ export class SchemaRulesApi {
             res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -542,7 +542,7 @@ export class SchemaRulesApi {
             const guardian = new Guardians();
             return await guardian.previewSchemaRule(body, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

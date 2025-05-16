@@ -38,10 +38,12 @@ export class MintService {
      * Get token keys
      * @param ref
      * @param token
+     * @param userId
      */
     private static async getTokenConfig(
         ref: AnyBlockType,
-        token: Token
+        token: Token,
+        userId: string | null
     ): Promise<TokenConfig> {
         const tokenConfig: TokenConfig = {
             treasuryId: token.draftToken ? '0.0.0' : token.adminId,
@@ -59,12 +61,14 @@ export class MintService {
                 MintService.wallet.getUserKey(
                     token.owner,
                     KeyType.TOKEN_TREASURY_KEY,
-                    token.tokenId
+                    token.tokenId,
+                    userId
                 ),
                 MintService.wallet.getUserKey(
                     token.owner,
                     KeyType.TOKEN_SUPPLY_KEY,
-                    token.tokenId
+                    token.tokenId,
+                    userId
                 ),
             ]);
             tokenConfig.supplyKey = supplyKey;
@@ -85,6 +89,7 @@ export class MintService {
      * @param transactionMemo
      * @param documents
      * @param signOptions
+     * @param userId
      */
     public static async mint(
         ref: AnyBlockType,
@@ -96,15 +101,16 @@ export class MintService {
         vpMessageId: string,
         transactionMemo: string,
         documents: VcDocument[],
-        signOptions: ISignOptions
+        signOptions: ISignOptions,
+        userId: string | null
     ): Promise<void> {
         const multipleConfig = await MintService.getMultipleConfig(
             ref,
             documentOwner
         );
         const users = new Users();
-        const documentOwnerUser = await users.getUserById(documentOwner.did);
-        const policyOwner = await users.getUserById(ref.policyOwner);
+        const documentOwnerUser = await users.getUserById(documentOwner.did, userId);
+        const policyOwner = await users.getUserById(ref.policyOwner, userId);
         const notifier = NotificationHelper.init([
             documentOwnerUser?.id,
             policyOwner?.id,
@@ -126,11 +132,12 @@ export class MintService {
                 amount: tokenValue,
                 memo: transactionMemo,
                 target: targetAccount,
-            }, signOptions);
+            }, signOptions, policyOwner?.id);
             if (multipleConfig.type === 'Main') {
                 const user = await PolicyUtils.getUserCredentials(
                     ref,
-                    documentOwner.did
+                    documentOwner.did,
+                    userId
                 );
                 await DatabaseServer.createMultiPolicyTransaction({
                     uuid: GenerateUUIDv4(),
@@ -154,7 +161,7 @@ export class MintService {
                 ref.policyId
             );
         } else {
-            const tokenConfig = await MintService.getTokenConfig(ref, token);
+            const tokenConfig = await MintService.getTokenConfig(ref, token, userId);
             if (token.tokenType === 'non-fungible') {
                 const mintNFT = await MintNFT.create(
                     {
@@ -166,6 +173,7 @@ export class MintService {
                         tokenType: token.tokenType,
                         decimals: token.decimals,
                         memo: transactionMemo,
+                        policyId: ref.policyId
                     },
                     root,
                     tokenConfig,
@@ -174,9 +182,9 @@ export class MintService {
                 );
                 MintService.activeMintProcesses.add(mintNFT.mintRequestId);
                 mintNFT
-                    .mint()
+                    .mint(null, policyOwner?.id)
                     .catch((error) =>
-                        MintService.error(PolicyUtils.getErrorMessage(error))
+                        MintService.error(PolicyUtils.getErrorMessage(error), null, policyOwner?.id)
                     )
                     .finally(() => {
                         MintService.activeMintProcesses.delete(
@@ -193,6 +201,7 @@ export class MintService {
                         tokenType: token.tokenType,
                         decimals: token.decimals,
                         memo: transactionMemo,
+                        policyId: ref.policyId
                     },
                     root,
                     tokenConfig,
@@ -201,9 +210,9 @@ export class MintService {
                 );
                 MintService.activeMintProcesses.add(mintFT.mintRequestId);
                 mintFT
-                    .mint()
+                    .mint(null, policyOwner?.id)
                     .catch((error) =>
-                        MintService.error(PolicyUtils.getErrorMessage(error))
+                        MintService.error(PolicyUtils.getErrorMessage(error), null, policyOwner?.id)
                     )
                     .finally(() => {
                         MintService.activeMintProcesses.delete(
@@ -229,12 +238,14 @@ export class MintService {
      * @param userDId User did
      * @param rootDid Root did
      * @param ref Block ref
+     * @param userId
      */
     public static async retry(
         vpMessageId: string,
         userDId: string,
         rootDid: string,
-        ref?: any
+        ref: any,
+        userId: string | null
     ) {
         const db = new DatabaseServer(ref?.dryRun);
         const requests = await db.getMintRequests({
@@ -251,11 +262,11 @@ export class MintService {
             messageId: vpMessageId,
         });
         const users = new Users();
-        const documentOwnerUser = await users.getUserById(vp.owner);
-        const user = await users.getUserById(userDId);
+        const documentOwnerUser = await users.getUserById(vp.owner, userId);
+        const user = await users.getUserById(userDId, userId);
         let processed = false;
-        const root = await users.getHederaAccount(rootDid);
-        const rootUser = await users.getUserById(rootDid);
+        const root = await users.getHederaAccount(rootDid, userId);
+        const rootUser = await users.getUserById(rootDid, userId);
         for (const request of requests) {
             processed ||= await MintService.retryRequest(
                 request,
@@ -311,17 +322,16 @@ export class MintService {
         if (
             request.processDate &&
             Date.now() - request.processDate.getTime() <
-                MintService.RETRY_MINT_INTERVAL * (60 * 1000)
+            MintService.RETRY_MINT_INTERVAL * (60 * 1000)
         ) {
             NotificationHelper.warn(
                 `Retry mint`,
-                `Mint process for ${
-                    request.vpMessageId
+                `Mint process for ${request.vpMessageId
                 } can't be retried. Try after ${Math.ceil(
                     (request.processDate.getTime() +
                         MintService.RETRY_MINT_INTERVAL * (60 * 1000) -
                         Date.now()) /
-                        (60 * 1000)
+                    (60 * 1000)
                 )} minutes`,
                 userId
             );
@@ -339,7 +349,8 @@ export class MintService {
             }
             const tokenConfig: TokenConfig = await MintService.getTokenConfig(
                 ref,
-                token
+                token,
+                userId
             );
             let processed = false;
 
@@ -354,7 +365,7 @@ export class MintService {
                             NotificationHelper.init([rootId, userId, ownerId]),
                             _userId
                         )
-                    ).mint();
+                    ).mint(null, userId);
                     break;
                 case TokenType.NON_FUNGIBLE:
                     processed = await (
@@ -366,7 +377,7 @@ export class MintService {
                             NotificationHelper.init([rootId, userId, ownerId]),
                             _userId
                         )
-                    ).mint();
+                    ).mint(null, userId);
                     break;
                 default:
                     throw new Error('Unknown token type');
@@ -387,13 +398,15 @@ export class MintService {
      * @param root
      * @param data
      * @param signOptions
+     * @param userId
      */
     private static async sendMessage(
         ref: AnyBlockType,
         multipleConfig: MultiPolicy,
         root: IHederaCredentials,
         data: any,
-        signOptions: ISignOptions
+        signOptions: ISignOptions,
+        userId?: string | null
     ) {
         const message = new SynchronizationMessage(MessageAction.Mint);
         message.setDocument(multipleConfig, data);
@@ -408,18 +421,20 @@ export class MintService {
             null,
             null
         );
-        await messageServer.setTopicObject(topic).sendMessage(message);
+        await messageServer.setTopicObject(topic).sendMessage(message, null, null, userId);
     }
 
     /**
      * Mint
-     * @param ref
+     * @param root
      * @param token
      * @param tokenValue
-     * @param documentOwner
-     * @param root
      * @param targetAccount
-     * @param uuid
+     * @param ids
+     * @param vpMessageId
+     * @param policyId
+     * @param userId
+     * @param notifier
      */
     public static async multiMint(
         root: IHederaCredentials,
@@ -428,6 +443,8 @@ export class MintService {
         targetAccount: string,
         ids: string[],
         vpMessageId: string,
+        policyId: string,
+        userId: string | null,
         notifier?: NotificationHelper
     ): Promise<void> {
         const messageIds = ids.join(',');
@@ -443,12 +460,14 @@ export class MintService {
             MintService.wallet.getUserKey(
                 token.owner,
                 KeyType.TOKEN_TREASURY_KEY,
-                token.tokenId
+                token.tokenId,
+                userId
             ),
             MintService.wallet.getUserKey(
                 token.owner,
                 KeyType.TOKEN_SUPPLY_KEY,
-                token.tokenId
+                token.tokenId,
+                userId
             ),
         ]);
         tokenConfig.supplyKey = supplyKey;
@@ -466,6 +485,7 @@ export class MintService {
                     tokenId: token.tokenId,
                     tokenType: token.tokenType,
                     decimals: token.decimals,
+                    policyId
                 },
                 root,
                 tokenConfig,
@@ -474,9 +494,9 @@ export class MintService {
             );
             MintService.activeMintProcesses.add(mintNFT.mintRequestId);
             mintNFT
-                .mint()
+                .mint(null, userId)
                 .catch((error) =>
-                    MintService.error(PolicyUtils.getErrorMessage(error))
+                    MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
                 )
                 .finally(() => {
                     MintService.activeMintProcesses.delete(
@@ -494,6 +514,7 @@ export class MintService {
                     tokenId: token.tokenId,
                     tokenType: token.tokenType,
                     decimals: token.decimals,
+                    policyId
                 },
                 root,
                 tokenConfig,
@@ -501,9 +522,9 @@ export class MintService {
             );
             MintService.activeMintProcesses.add(mintFT.mintRequestId);
             mintFT
-                .mint()
+                .mint(null, userId)
                 .catch((error) =>
-                    MintService.error(PolicyUtils.getErrorMessage(error))
+                    MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
                 )
                 .finally(() => {
                     MintService.activeMintProcesses.delete(
@@ -524,11 +545,13 @@ export class MintService {
 
     /**
      * Wipe
+     * @param ref
      * @param token
      * @param tokenValue
      * @param root
      * @param targetAccount
      * @param uuid
+     * @param userId
      */
     public static async wipe(
         ref: AnyBlockType,
@@ -536,7 +559,8 @@ export class MintService {
         tokenValue: number,
         root: IHederaCredentials,
         targetAccount: string,
-        uuid: string
+        uuid: string,
+        userId: string | null
     ): Promise<void> {
         const workers = new Workers();
         if (token.wipeContractId) {
@@ -567,6 +591,7 @@ export class MintService {
                                 value: tokenValue,
                             },
                         ],
+                        payload: { userId }
                     },
                 },
                 20
@@ -575,7 +600,8 @@ export class MintService {
             const wipeKey = await MintService.wallet.getUserKey(
                 token.owner,
                 KeyType.TOKEN_WIPE_KEY,
-                token.tokenId
+                token.tokenId,
+                userId
             );
             await workers.addRetryableTask(
                 {
@@ -589,6 +615,7 @@ export class MintService {
                         targetAccount,
                         tokenValue,
                         uuid,
+                        payload: { userId }
                     },
                 },
                 10
@@ -614,8 +641,10 @@ export class MintService {
     /**
      * Write log message
      * @param message
+     * @param ref
+     * @param userId
      */
-    public static log(message: string, ref?: AnyBlockType) {
+    public static log(message: string, ref: AnyBlockType, userId: string | null) {
         if (ref) {
             MintService.logger.info(message, [
                 'POLICY_SERVICE',
@@ -623,17 +652,19 @@ export class MintService {
                 ref.blockType,
                 ref.tag,
                 ref.policyId,
-            ]);
+            ], userId);
         } else {
-            MintService.logger.info(message, ['POLICY_SERVICE']);
+            MintService.logger.info(message, ['POLICY_SERVICE'], userId);
         }
     }
 
     /**
      * Write error message
      * @param message
+     * @param ref
+     * @param userId
      */
-    public static error(message: string, ref?: AnyBlockType) {
+    public static error(message: string, ref: AnyBlockType, userId: string | null) {
         if (ref) {
             MintService.logger.error(message, [
                 'POLICY_SERVICE',
@@ -641,17 +672,19 @@ export class MintService {
                 ref.blockType,
                 ref.tag,
                 ref.policyId,
-            ]);
+            ], userId);
         } else {
-            MintService.logger.error(message, ['POLICY_SERVICE']);
+            MintService.logger.error(message, ['POLICY_SERVICE'], userId);
         }
     }
 
     /**
      * Write warn message
      * @param message
+     * @param ref
+     * @param userId
      */
-    public static warn(message: string, ref?: AnyBlockType) {
+    public static warn(message: string, ref: AnyBlockType, userId: string | null) {
         if (ref) {
             MintService.logger.warn(message, [
                 'POLICY_SERVICE',
@@ -659,9 +692,9 @@ export class MintService {
                 ref.blockType,
                 ref.tag,
                 ref.policyId,
-            ]);
+            ], userId);
         } else {
-            MintService.logger.warn(message, ['POLICY_SERVICE']);
+            MintService.logger.warn(message, ['POLICY_SERVICE'], userId);
         }
     }
 }

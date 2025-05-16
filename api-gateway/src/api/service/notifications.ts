@@ -59,7 +59,7 @@ export class NotificationsApi {
             );
             return res.header('X-Total-Count', count).send(notifications);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -92,7 +92,7 @@ export class NotificationsApi {
             }
             return await this.notifier.getNewNotifications(user.id);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -125,7 +125,7 @@ export class NotificationsApi {
             }
             return await this.notifier.getProgresses(user.id);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -158,7 +158,7 @@ export class NotificationsApi {
             }
             return await this.notifier.readAll(user.id);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -195,7 +195,7 @@ export class NotificationsApi {
         try {
             return await this.notifier.deleteUpTo(user.id, notificationId);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

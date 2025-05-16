@@ -41,7 +41,9 @@ type StaticLoaders =
     | typeof MultiSignDocumentLoader
     | typeof MintRequestLoader
     | typeof MintTransactionLoader
-    | typeof DocumentStateLoader;
+    | typeof DocumentStateLoader
+    | typeof TokensLoader
+    | typeof RetirePoolLoader;
 /**
  * Policy data import export
  */
@@ -104,7 +106,7 @@ export class PolicyDataImportExport {
      * Export data
      * @returns Data
      */
-    async exportData() {
+    async exportData(userId: string | null) {
         const zip = new JSZip();
         zip.file('policy.json', JSON.stringify(this._policy));
 
@@ -205,7 +207,7 @@ export class PolicyDataImportExport {
 
         const users = this._isDryRun
             ? await DatabaseServer.getVirtualUsers(this._policy.id)
-            : await new Users().getUsersBySrId(this._policy.owner);
+            : await new Users().getUsersBySrId(this._policy.owner, userId);
         zip.file(
             'users.json',
             JSON.stringify(

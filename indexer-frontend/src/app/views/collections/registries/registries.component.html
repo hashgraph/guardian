@@ -23,4 +23,7 @@
         </div>
     </div>
 
+    <div *ngIf="priorityChecked && priorityChecked.length > 0" class="priority-footer">
+        <button class="p-button" (click)="setPriorityDataLoading()">{{ 'grid.send_to_priority' | transloco }}</button>
+    </div>
 </div>

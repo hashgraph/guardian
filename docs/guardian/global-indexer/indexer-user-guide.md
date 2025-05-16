@@ -145,6 +145,10 @@ VC details has the following tabs:
 
 ![](<../../.gitbook/assets/8 (16).png>)
 
+<figure><img src="../../.gitbook/assets/image (801).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../.gitbook/assets/image (802).png" alt=""><figcaption></figcaption></figure>
+
 * History - document history since it was created.
 * Relationships - document relationships with links to policy, roles, schemas, standard registry, other documents.
 
@@ -182,13 +186,27 @@ Synchronization of all entity data starts one time per hour, but it can be chang
 
 For documents (VC, VP, DID, Schema) with local CIDs (i.e. Such documents were uploaded onto local IPFS nodes) Guardian attempts to automatically download the file when user attempts to open in in the Indexer UI. This may not be possible if the local node is ‘closed’ for outside requests. For such cases there is also an option for the user to manually attempt to download from the local IPFS node. This can be retried unlimited number of times, for situations when local node administrators open access to the node\[s] at a later date.
 
-<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Note:** This functionality requires the correct setting for the IPFS\_GATEWAY configuration option in the `indexer-service .env` file:
 
 **For example:** `IPFS_GATEWAY="https://ipfs.io/ipfs/${cid}"`
 {% endhint %}
+
+### 1.2 Priority Loading Data Queue:
+
+As Hedera network have lots of data available, it would take some time to load it completely in indexer, hence, now we would now be able to prioritize the documents/topics/policies/tokens.
+
+<figure><img src="../../.gitbook/assets/image (829).png" alt=""><figcaption></figcaption></figure>
+
+We would be able to add it to the priority queue by clicking on the checkbox and adding it to the queue as shown below:
+
+<figure><img src="../../.gitbook/assets/image (830).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../.gitbook/assets/image (831).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../.gitbook/assets/image (832).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Demo Video
 

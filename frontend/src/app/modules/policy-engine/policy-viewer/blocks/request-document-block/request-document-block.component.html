@@ -1,4 +1,4 @@
-<div [hidden]="!isExist" class="content-{{ type }}">
+<div [hidden]="!isExist" class="content-{{ type }}" [attr.readonly-block]="readonly">
     <ng-container *ngIf="type == 'dialog'">
         <div class="create-button-container">
             <p-button (click)="onDialog()" class="btn-block-{{ buttonClass }}">
@@ -42,7 +42,7 @@
                         src="/assets/images/icons/info.svg"
                         svgClass="icon-color-primary">
                     </svg-icon>
-                    <b>There is dry run mode. You can fill document with test data:</b>
+                    <b>Dry run mode. You can fill this document with test data:</b>
                     <button
                         (click)="onDryRun()"
                         class="guardian-button guardian-button-primary"

@@ -46,7 +46,7 @@ export async function authorizationHelper(req: AuthenticatedRequest, res: Respon
             next();
             return;
         } catch (error) {
-            await logger.warn(error.message, ['API_GATEWAY']);
+            await logger.warn(error.message, ['API_GATEWAY'], null);
         }
     }
     throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)

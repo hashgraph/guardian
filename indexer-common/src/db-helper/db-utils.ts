@@ -8,6 +8,7 @@ export class DataBaseUtils {
         orderDir: string
     ): {
         orderBy: { [x: string]: string },
+        aggregateOrderBy?: { [x: string]: string },
         limit: number,
         offset: number
     } {
@@ -15,6 +16,8 @@ export class DataBaseUtils {
         if (orderField && orderDir) {
             otherOptions.orderBy = {};
             otherOptions.orderBy[orderField] = orderDir;
+            otherOptions.aggregateOrderBy = {};
+            otherOptions.aggregateOrderBy[orderField] = orderDir === 'ASC' ? 1 : -1;
         }
         let _pageSize: number;
         let _pageIndex: number;

@@ -8,6 +8,7 @@ import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/polic
 import ObjGet from 'lodash.get';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { LocationType } from '@guardian/interfaces';
 
 /**
  * Aggregate block
@@ -15,6 +16,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 @BasicBlock({
     blockType: 'aggregateDocumentBlock',
     commonBlock: true,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Aggregate Data',
         title: `Add 'Aggregate' Block`,
@@ -91,6 +93,7 @@ export class AggregateBlock {
         } else {
             await this.popDocuments(ref, docs);
         }
+        ref.backup();
     }
 
     /**
@@ -164,6 +167,7 @@ export class AggregateBlock {
                 documents
             );
         }
+        ref.backup();
     }
     /**
      * Send cron documents
@@ -235,12 +239,13 @@ export class AggregateBlock {
      * Tick aggregate
      * @param ref
      * @param document
+     * @param userId
      * @private
      */
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    private async tickAggregate(ref: AnyBlockType, document: any) {
+    private async tickAggregate(ref: AnyBlockType, document: any, userId: string | null) {
         const { expressions, condition, disableUserGrouping, groupByFields } = ref.options;
         const groupByUser = !disableUserGrouping;
 
@@ -275,7 +280,7 @@ export class AggregateBlock {
         }
 
         if (result === true) {
-            const user = await PolicyUtils.getDocumentOwner(ref, document);
+            const user = await PolicyUtils.getDocumentOwner(ref, document, userId);
             rawEntities = await this.removeDocuments(ref, rawEntities);
             const state: IPolicyEventState = { data: rawEntities };
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
@@ -284,6 +289,7 @@ export class AggregateBlock {
                 documents: ExternalDocuments(rawEntities)
             }));
         }
+        ref.backup();
     }
 
     /**
@@ -338,13 +344,13 @@ export class AggregateBlock {
             for (const doc of docs) {
                 await this.saveDocuments(ref, doc);
                 if (aggregateType === 'cumulative') {
-                    await this.tickAggregate(ref, doc);
+                    await this.tickAggregate(ref, doc, event?.user?.userId);
                 }
             }
         } else {
             await this.saveDocuments(ref, docs);
             if (aggregateType === 'cumulative') {
-                await this.tickAggregate(ref, docs);
+                await this.tickAggregate(ref, docs, event?.user?.userId);
             }
         }
 

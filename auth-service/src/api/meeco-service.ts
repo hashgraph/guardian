@@ -97,7 +97,7 @@ export class MeecoAuthService extends NatsService {
                 return new MessageResponse({ redirectUri, cid: msg.cid });
             } catch (ex) {
                 // return the error to client
-                await logger.error(ex.message, ex.stack);
+                await logger.error(ex.message, ex.stack, null);
                 return new MessageResponse({ error: ex.message, cid: msg.cid });
             }
         });
@@ -176,7 +176,7 @@ export class MeecoAuthService extends NatsService {
                     clearInterval(interval);
                 }
             } catch (ex) {
-                await logger.error(ex);
+                await logger.error(ex, null, null);
                 clearInterval(interval);
                 this.sendMessage(
                     AuthEvents.MEECO_VERIFY_VP_FAILED,

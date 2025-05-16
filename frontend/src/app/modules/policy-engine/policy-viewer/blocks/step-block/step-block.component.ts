@@ -32,6 +32,7 @@ export class StepBlockComponent implements OnInit {
     blocks: any;
     activeBlockId: any;
     isActive = false;
+    readonly: boolean = false;
     private index: number = 0;
 
     constructor(
@@ -86,6 +87,7 @@ export class StepBlockComponent implements OnInit {
 
     setData(data: any) {
         if (data) {
+            this.readonly = !!data.readonly;
             this.isActive = true;
             this.blocks = data.blocks || [];
             this.index = data.index;

@@ -1,13 +1,11 @@
-import { Controller, HttpCode, HttpStatus, Body, Post, Get } from '@nestjs/common';
+import { Controller, HttpCode, HttpStatus, Get } from '@nestjs/common';
 import {
-    ApiBody,
     ApiInternalServerErrorResponse,
     ApiOkResponse,
     ApiOperation,
     ApiTags,
-    ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { IndexerMessageAPI, Message } from '@indexer/common';
+import { IndexerMessageAPI } from '@indexer/common';
 import { ApiClient } from '../api-client.js';
 import {
     InternalServerErrorDTO,
@@ -34,7 +32,7 @@ export class SettingsApi extends ApiClient {
     async getNetworkEnvironment(): Promise<string> {
         return await this.send(IndexerMessageAPI.GET_NETWORK, {});
     }
-    
+
     @Get('/networkExplorer')
     @ApiOperation({
         summary: 'Get Hedera network explorer settings',

@@ -95,3 +95,8 @@
 .content {
     display: flex;
 }
+
+*[readonly-block="true"] {
+    pointer-events: none !important;
+    filter: grayscale(1);
+}

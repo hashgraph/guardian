@@ -5,9 +5,13 @@ on:
         inputs:
             tags:
                 type: string
-                description: Tags for run(smoke, accounts, firstPool and etc.)
+                description: Tags for run API tests(smoke, accounts, firstPool and etc.)
                 default: 'all'
-        description: 'Manual run'
+            ui_flag:
+                type: boolean
+                description: True to run UI tests
+                default: false
+
 jobs:
     buildAndTest:
         name: Build and Test (Manual)
@@ -23,7 +27,7 @@ jobs:
                 mongodb-version: [ 7.0.5 ]
         steps:
             - name: Harden Runner
-              uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7618a84e # v2.10.4
+              uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
               with:
                   egress-policy: audit
 
@@ -65,6 +69,9 @@ jobs:
                   pushd queue-service
                   yarn run build
                   popd
+                  pushd topic-listener-service
+                  yarn run build
+                  popd
                   pushd guardian-service
                   yarn run build
                   popd
@@ -83,7 +90,7 @@ jobs:
                   port: '4222'
 
             - name: Start MongoDB
-              uses: step-security/mongodb-github-action@ff3d5a3dec0957be7ef99d3d1c9ca4499e8a4cb8 # v1.11.0
+              uses: step-security/mongodb-github-action@0b5e704ee1061d729c20e0df4204e69ba6ac6cee # v1.11.1
               with:
                   mongodb-version: ${{ matrix.mongodb-version }}
 
@@ -113,6 +120,10 @@ jobs:
                   npm start &
                   sleep 20
                   popd
+                  pushd topic-listener-service
+                  npm start &
+                  sleep 20
+                  popd
                   pushd worker-service
                   npm start &
                   npm start &
@@ -125,9 +136,15 @@ jobs:
                   npm start &
                   sleep 20
                   popd
+                  pushd frontend
+                  npm install
+                  ./node_modules/.bin/ng  serve --proxy-config ./proxy.conf.json &
+                  sleep 120
+                  popd
                   sleep 60
               env:
                   CI: true
+                  NODE_OPTIONS: --openssl-legacy-provider
                   OPERATOR_ID: ${{ secrets.CI_HEDERA_ACCOUNT }}
                   OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
                   JWT_PRIVATE_KEY: ${{ secrets.CI_JWT_PRIVATE_KEY }}
@@ -140,13 +157,23 @@ jobs:
                   ACCESS_TOKEN_UPDATE_INTERVAL: 600000
 
             - name: Run tests with Cypress
+              if: ${{ !inputs.ui_flag }}
               run: |
                   pushd e2e-tests
                   npm install
-                  npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=${{ inputs.tags }},grepFilterSpecs=true" --spec "cypress/e2e/api-tests/**/*.cy.js" --browser chrome         
+                  npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=${{ inputs.tags }},grepFilterSpecs=true" --spec "cypress/e2e/api-tests/**/*.cy.js" --browser chrome
                   popd
+
+            - name: Run tests with Cypress UI
+              if: ${{ inputs.ui_flag }}
+              run: |
+                  pushd e2e-tests
+                  npm install
+                  npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=ui,grepFilterSpecs=true" --spec "cypress/e2e/ui-tests/**/*.cy.js" --browser chrome
+                  popd
+
             - name: Publish API Test Results
-              uses: EnricoMi/publish-unit-test-result-action@170bf24d20d201b842d7a52403b73ed297e6645b # v2.18.0
+              uses: EnricoMi/publish-unit-test-result-action@170bf24d20d201b842d7a52403b73ed297e6645b
               if: always()
               with:
                   files: e2e-tests/cypress/test_results/**/*.xml

@@ -40,5 +40,41 @@ context("Trustchains", { tags: ['trustchains', 'thirdPool', 'all'] }, () => {
             })
         })
     })
+
+    it("Get all VP documents and hash without auth token - Negative", () => {
+        cy.request({
+            method: METHOD.GET,
+            url: API.ApiServer + API.Policies + policyId + "/" + API.TrustChainBlock,
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Get all VP documents and hash with invalid auth token - Negative", () => {
+        cy.request({
+            method: METHOD.GET,
+            url: API.ApiServer + API.Policies + policyId + "/" + API.TrustChainBlock,
+            headers: {
+                authorization: "Bearer wqe",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Get all VP documents and hash with empty auth token - Negative", () => {
+        cy.request({
+            method: METHOD.GET,
+            url: API.ApiServer + API.Policies + policyId + "/" + API.TrustChainBlock,
+            headers: {
+                authorization: "",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
 });
 

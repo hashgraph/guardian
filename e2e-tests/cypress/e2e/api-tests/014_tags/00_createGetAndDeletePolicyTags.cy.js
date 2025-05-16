@@ -18,10 +18,64 @@ context("Tags", { tags: ['tags', 'thirdPool', 'all'] }, () => {
                     authorization,
                 }
             }).then((response) => {
-                policyId = response.body.at(0).id;    
+                policyId = response.body.at(0).id;
             })
         })
     })
+
+    it("Create new tag(policy) without auth token - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Tags,
+            body: {
+                name: tagName,
+                description: tagName,
+                entity: "Policy",
+                target: policyId,
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Create new tag(policy) with invalid auth token - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Tags,
+            body: {
+                name: tagName,
+                description: tagName,
+                entity: "Policy",
+                target: policyId,
+            },
+            headers: {
+                authorization: "Bearer wqe",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Create new tag(policy) with empty auth token - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Tags,
+            body: {
+                name: tagName,
+                description: tagName,
+                entity: "Policy",
+                target: policyId,
+            },
+            headers: {
+                authorization: "",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
 
     it("Create new tag(policy)", { tags: ['smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -49,12 +103,12 @@ context("Tags", { tags: ['tags', 'thirdPool', 'all'] }, () => {
             cy.request({
                 method: METHOD.POST,
                 url: API.ApiServer + API.Tags + "search",
-                headers: {
-                    authorization,
-                },
                 body: {
                     entity: "Policy",
                     targets: [policyId]
+                },
+                headers: {
+                    authorization,
                 },
                 timeout: 200000
             }).then((response) => {
@@ -63,6 +117,90 @@ context("Tags", { tags: ['tags', 'thirdPool', 'all'] }, () => {
             });
         })
     })
+
+    it("Get policy tag without auth token - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Tags + "search",
+            body: {
+                entity: "Policy",
+                targets: [policyId]
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Get policy tag with invalid auth token - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Tags + "search",
+            body: {
+                entity: "Policy",
+                targets: [policyId]
+            },
+            headers: {
+                authorization: "Bearer wqe",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Get policy tag with empty auth token - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.Tags + "search",
+            body: {
+                entity: "Policy",
+                targets: [policyId]
+            },
+            headers: {
+                authorization: "",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Delete policy tag without auth token - Negative", () => {
+        cy.request({
+            method: 'DELETE',
+            url: API.ApiServer + API.Tags + tagId,
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Delete policy tag with invalid auth token - Negative", () => {
+        cy.request({
+            method: 'DELETE',
+            url: API.ApiServer + API.Tags + tagId,
+            headers: {
+                authorization: "Bearer wqe",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Delete policy tag with empty auth token - Negative", () => {
+        cy.request({
+            method: 'DELETE',
+            url: API.ApiServer + API.Tags + tagId,
+            headers: {
+                authorization: "",
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
 
     it("Delete policy tag", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
