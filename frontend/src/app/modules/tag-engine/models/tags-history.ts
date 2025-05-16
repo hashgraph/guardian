@@ -1,3 +1,4 @@
+import { LocationType } from '@guardian/interfaces';
 import { TagItem } from './tag-item';
 import { TagMapItem } from './tag-map-item';
 import { TagOperation } from './tag-operation';
@@ -8,6 +9,7 @@ export class TagsHistory {
     public readonly entity: string;
     public readonly target: string;
     public readonly owner: string;
+    public readonly location: LocationType;
 
     private _data: TagItem[] | undefined;
     private _items: TagMapItem[];
@@ -15,10 +17,16 @@ export class TagsHistory {
     private _top: TagMapItem | undefined;
     private _time: string | undefined;
 
-    constructor(entity: string, target: string, owner: string) {
+    constructor(
+        entity: string,
+        target: string,
+        owner: string,
+        location: LocationType
+    ) {
         this.entity = entity;
         this.target = target;
         this.owner = owner;
+        this.location = location;
         this._items = [];
         this._history = [];
     }
