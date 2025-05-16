@@ -3,7 +3,7 @@ import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
-import { PolicyUser } from '../policy-user.js';
+import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { PolicyActionType } from './policy-action.type.js';
 
 export class SendMessage {
@@ -112,20 +112,22 @@ export class SendMessage {
             const data = response.document;
             const { updateIpfs, messageId } = data;
 
+            if (!(request && response && request.accountId === response.accountId)) {
+                return false;
+            }
+
+            const userMessageKey = await UserCredentials.loadMessageKey(response.policyMessageId, response.owner, userId);
             const message = await MessageServer
                 .getMessage({
                     messageId,
                     loadIPFS: updateIpfs,
+                    encryptKey: userMessageKey,
                     userId
                 });
 
             data.message = message;
 
-            if (request && response && request.accountId === response.accountId) {
-                return true;
-            }
-
-            return false;
+            return true;
         } catch (error) {
             return false;
         }

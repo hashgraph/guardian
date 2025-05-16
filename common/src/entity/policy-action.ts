@@ -130,6 +130,12 @@ export class PolicyAction extends BaseEntity {
     loaded?: boolean;
 
     /**
+     * Policy message id
+     */
+    @Property({ nullable: true })
+    policyMessageId?: string;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()

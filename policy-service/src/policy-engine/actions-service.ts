@@ -82,6 +82,7 @@ export class PolicyActionsService {
             creator: user.did,
             topicId: this.topicId,
             policyId: this.policyId,
+            policyMessageId: this.messageId,
             status: PolicyActionStatus.NEW,
             accountId: userHederaCred.hederaAccountId,
             blockTag: 'Groups',
@@ -140,6 +141,7 @@ export class PolicyActionsService {
             creator: user.did,
             topicId: this.topicId,
             policyId: this.policyId,
+            policyMessageId: this.messageId,
             status: PolicyActionStatus.NEW,
             accountId: userHederaCred.hederaAccountId,
             blockTag: block.tag,
@@ -196,6 +198,7 @@ export class PolicyActionsService {
             blockTag: data.blockTag,
             topicId: data.topicId,
             policyId: this.policyId,
+            policyMessageId: this.messageId,
             document: data.document,
             messageId: null,
             startMessageId: null,
@@ -265,6 +268,7 @@ export class PolicyActionsService {
             topicId: this.topicId,
             index: null,
             policyId: this.policyId,
+            policyMessageId: this.messageId,
             document: data,
             lastStatus: PolicyActionStatus.COMPLETED,
             loaded: true
@@ -438,6 +442,7 @@ export class PolicyActionsService {
                 topicId: message.topicId?.toString(),
                 index: Number(message.index),
                 policyId: this.policyId,
+                policyMessageId: this.messageId,
                 loaded,
                 document,
                 lastStatus
@@ -456,6 +461,7 @@ export class PolicyActionsService {
             row.index = Number(message.index);
             row.startMessageId = message.parent || message.id;
             row.policyId = this.policyId;
+            row.policyMessageId = this.messageId;
             row.status = status;
             row.loaded = loaded;
             row.document = document;
@@ -549,6 +555,7 @@ export class PolicyActionsService {
                 topicId: this.topicId,
                 index: null,
                 policyId: this.policyId,
+                policyMessageId: this.messageId,
                 document: result,
                 loaded: true,
                 lastStatus: PolicyActionStatus.COMPLETED
@@ -609,6 +616,7 @@ export class PolicyActionsService {
                 topicId: this.topicId,
                 index: null,
                 policyId: this.policyId,
+                policyMessageId: this.messageId,
                 loaded: true,
                 document: typeof error === 'string' ? error : error.message,
                 lastStatus: PolicyActionStatus.ERROR
@@ -711,6 +719,7 @@ export class PolicyActionsService {
             topicId: this.topicId,
             index: null,
             policyId: this.policyId,
+            policyMessageId: this.messageId,
             document: null,
             loaded: true,
             lastStatus: PolicyActionStatus.CANCELED

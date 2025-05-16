@@ -36,6 +36,7 @@ interface LoadMessageOptions {
     type?: MessageType | null,
     userId?: string | null,
     dryRun?: string,
+    encryptKey?: string,
 }
 
 interface LoadMessagesOptions {
@@ -673,7 +674,7 @@ export class MessageServer {
             } else {
                 let message = await MessageServer.getTopicMessage<T>(messageId, type, userId);
                 if (loadIPFS) {
-                    message = await MessageServer.loadIPFS(message, null);
+                    message = await MessageServer.loadIPFS(message, options.encryptKey);
                 }
                 return message;
             }
