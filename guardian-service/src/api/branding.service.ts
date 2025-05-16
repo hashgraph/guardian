@@ -33,9 +33,14 @@ Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saep
      * @returns {Branding} - branding object
      */
     ApiResponse(MessageAPI.GET_BRANDING, async () => {
-        const brandingJSON: Branding[] = await dataBaseServer.findAll(Branding);
-        let newBrandingJSON: Branding[];
-        if (!brandingJSON.length) {
+        const brandingJSON: Branding = await dataBaseServer.findOne(Branding, {
+            config: { $exists: true }
+        }, {
+            orderBy: { updateDate: -1 }
+        });
+        if (brandingJSON) {
+            return new MessageResponse(brandingJSON);
+        } else {
             const initialBranding = JSON.stringify({
                 'headerColor': '#000000',
                 'primaryColor': '#4169E2',
@@ -45,10 +50,9 @@ Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saep
                 'faviconUrl': 'favicon.ico',
                 termsAndConditions
             });
-            await dataBaseServer.save(Branding, { config: initialBranding });
-            newBrandingJSON = await dataBaseServer.findAll(Branding);
+            const newBrandingJSON: Branding = await dataBaseServer.save(Branding, { config: initialBranding });
+            return new MessageResponse(newBrandingJSON);
         }
-        return new MessageResponse(brandingJSON.length ? brandingJSON[brandingJSON.length - 1] : newBrandingJSON[newBrandingJSON.length - 1]);
     });
 
     /**
@@ -63,7 +67,7 @@ Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saep
         config: string
     }) => {
         const { config } = msg;
-        const branding: any = await dataBaseServer.save(Branding, config);
+        const branding: any = await dataBaseServer.save(Branding, { config });
         return new MessageResponse(branding);
     });
 }
