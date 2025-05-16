@@ -111,7 +111,7 @@ export class PoliciesPage {
             if ($body.find(`span:contains(${CommonElements.policiesTab})`).length == 0)
                 cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).click();
         })
-        cy.get(CommonElements.navBar).contains(CommonElements.policiesTab).click();
+        cy.get(CommonElements.navBar).contains(CommonElements.policiesTab).realClick();
         Checks.waitForLoading();
     }
 
@@ -239,24 +239,32 @@ export class PoliciesPage {
         this.approve(waitFor);
     }
 
-    openVVBTab(){
+    openVVBTab() {
         Checks.waitForLoading();
-        cy.get("p:contains('VVBs')").click();
+        cy.get("p:contains('VVBs')").should('exist');
+        cy.get('.preloader-image').should('not.exist');
+        cy.get("p:contains('VVBs')").realClick();
     }
 
-    openPPTab(){
+    openPPTab() {
         Checks.waitForLoading();
+        cy.get("p:contains('Project Participants')").should('exist');
+        cy.get('.preloader-image').should('not.exist');
         cy.get("p:contains('Project Participants')").click();
     }
 
     approveDeviceInPolicy(waitFor = "revoke") {
         Checks.waitForLoading();
+        cy.contains(PoliciesPageLocators.deviceTab).should('exist');
+        cy.get('.preloader-image').should('not.exist');
         cy.contains(PoliciesPageLocators.deviceTab).click();
         this.approve(waitFor);
     }
 
     approveIssueRequestInPolicy(waitFor = "revoke") {
         Checks.waitForLoading();
+        cy.contains(PoliciesPageLocators.issueRequestsTab).should('exist');
+        cy.get('.preloader-image').should('not.exist');
         cy.contains(PoliciesPageLocators.issueRequestsTab).click();
         this.approve(waitFor);
     }
@@ -428,7 +436,7 @@ export class PoliciesPage {
         }
         else {
             cy.contains('Users').click();
-            cy.contains(`Virtual User ${user}`).realClick();
+            cy.contains(`Virtual User ${user}`).click();
             Checks.waitForLoading();
         }
     }
@@ -591,7 +599,9 @@ export class PoliciesPage {
         cy.get('button:contains("Submit ")').should('be.enabled');
     }
 
-    approveProject(){
+    approveProject() {
+        cy.contains("Projects").should('exist');
+        cy.get('.preloader-image').should('not.exist');
         cy.contains("Projects").click();
         this.approve();
     }
