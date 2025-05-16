@@ -32,6 +32,8 @@ export class VcCollectionRestore extends CollectionRestore<VcDocument> {
     }
 
     protected override createRow(data: VcDocument): VcDocument {
+        delete data.documentFileId;
+        delete data.encryptedDocumentFileId;
         if (data.document) {
             const document = Buffer.from((data as any).document, 'base64').toString();
             data.document = JSON.parse(document);

@@ -31,6 +31,7 @@ export class ApproveCollectionRestore extends CollectionRestore<ApprovalDocument
     }
 
     protected override createRow(data: ApprovalDocument): ApprovalDocument {
+        delete data.documentFileId;
         if (data.document) {
             const document = Buffer.from((data as any).document, 'base64').toString();
             data.document = JSON.parse(document);

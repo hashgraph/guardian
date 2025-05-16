@@ -31,6 +31,7 @@ export class VpCollectionRestore extends CollectionRestore<VpDocument> {
     }
 
     protected override createRow(data: VpDocument): VpDocument {
+        delete data.documentFileId;
         if (data.document) {
             const document = Buffer.from((data as any).document, 'base64').toString();
             data.document = JSON.parse(document);
