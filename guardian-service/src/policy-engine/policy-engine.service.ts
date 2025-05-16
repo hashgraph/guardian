@@ -2448,6 +2448,7 @@ export class PolicyEngineService {
                             document: '$document',
                             blockTag: '$blockTag',
                             index: '$index',
+                            loaded: '$loaded',
                         }
                     }, {
                         $match: {
@@ -2468,6 +2469,7 @@ export class PolicyEngineService {
                             blockTag: { $last: '$blockTag' },
                             document: { $last: '$document' },
                             documents: { $addToSet: '$document' },
+                            loaded: { $last: '$loaded' },
                         }
                     }, {
                         $project: {
@@ -2492,6 +2494,7 @@ export class PolicyEngineService {
                             document: '$document',
                             documents: '$documents',
                             blockTag: '$blockTag',
+                            loaded: '$loaded'
                         }
                     }];
 

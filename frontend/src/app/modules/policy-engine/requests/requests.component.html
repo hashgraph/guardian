@@ -143,10 +143,10 @@
                                         {{ getOperationName(row) }}
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'options'">
-                                        <ng-container *ngIf="!isLocalUser">
+                                        <ng-container *ngIf="isLocalUser">
                                             <ng-container *ngIf="row.type === 'REQUEST'">
                                                 <ng-container *ngIf="!row.loaded">
-                                                    <button class="guardian-button" (click)="onReload(row)">Reload</button>
+                                                    <button class="guardian-button reload-btn" (click)="onReload(row)">Reload</button>
                                                 </ng-container>
                                                 <ng-container *ngIf="row.loaded && row.status === 'NEW'">
                                                     <button class="guardian-button approve-btn" (click)="onApprove(row)">Approve</button>
