@@ -2,11 +2,6 @@ name: Guardian CI UI Tests(Manual)
 run-name: Guardian CI UI Tests(Manual)
 on:
   workflow_dispatch:
-    inputs:
-      ui_flag:
-        type: boolean
-        description: True to run UI tests
-        default: false
 
 jobs:
   buildAndTest:
