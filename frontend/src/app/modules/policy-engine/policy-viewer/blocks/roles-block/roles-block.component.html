@@ -1,4 +1,4 @@
-<div class="content" [hidden]="!isActive">
+<div class="content" [hidden]="!isActive" [attr.readonly-block]="readonly">
     <div>
         <h2>{{ title }}</h2>
         <h3>{{ description }}</h3>
@@ -104,7 +104,7 @@
     </div>
 </div>
 
-<div class="progress-footer" id="block-progress-footer">
+<div class="progress-footer" id="block-progress-footer" [attr.readonly-block]="readonly">
     <div>
         <!-- <button pButton type="button" class="button" label="Previous" [disabled]="true"></button> -->
     </div>

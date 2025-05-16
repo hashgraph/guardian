@@ -27,6 +27,7 @@ export class TokenConfirmationBlockComponent implements OnInit {
     accountId: string | null = null;
     tokenName: string | null = null;
     tokenId: string | null = null;
+    readonly: boolean = false;
 
     dataForm: UntypedFormGroup;
 
@@ -102,6 +103,7 @@ export class TokenConfirmationBlockComponent implements OnInit {
 
     setData(data: any) {
         if (data) {
+            this.readonly = !!data.readonly;
             const uiMetaData = data.uiMetaData || {};
             this.disabled = data.active === false;
             this.action = data.action;

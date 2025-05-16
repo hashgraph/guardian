@@ -1,6 +1,6 @@
-import { IDidObject, IVCDocument, MessageAPI, PolicyType, } from '@guardian/interfaces';
+import { IVCDocument, MessageAPI, PolicyStatus, } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DatabaseServer, DidDocument, MessageError, MessageResponse, Policy, VcDocument, VpDocument } from '@guardian/common';
+import { DatabaseServer, IAuthUser, MessageError, MessageResponse, Policy, VcDocument, VpDocument } from '@guardian/common';
 import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
 
 /**
@@ -12,20 +12,6 @@ export async function documentsAPI(
     dataBaseServer: DatabaseServer,
 ): Promise<void> {
     /**
-     * Return DID Documents by DID
-     *
-     * @param {Object} payload - filters
-     * @param {string} payload.did - DID
-     *
-     * @returns {IDidDocument[]} - DID Documents
-     */
-    ApiResponse(MessageAPI.GET_DID_DOCUMENTS, async (msg: any) => {
-        const reqObj = { did: { $eq: msg.did } };
-        const didDocuments: IDidObject[] = await dataBaseServer.find(DidDocument, reqObj);
-        return new MessageResponse(didDocuments);
-    });
-
-    /**
      * Return VC Documents
      *
      * @param {Object} [payload] - filters
@@ -34,11 +20,15 @@ export async function documentsAPI(
      *
      * @returns {IVCDocument[]} - VC Documents
      */
-    ApiResponse(MessageAPI.GET_VC_DOCUMENTS, async (msg: any) => {
+    ApiResponse(MessageAPI.GET_VC_DOCUMENTS, async (msg: {
+        user: IAuthUser,
+        params: any
+    }) => {
         try {
             if (msg) {
+                const { params } = msg;
                 const reqObj: any = {};
-                const { owner, type, ...otherArgs } = msg;
+                const { owner, type, ...otherArgs } = params;
                 if (owner) {
                     reqObj.owner = { $eq: owner }
                 }
@@ -65,9 +55,13 @@ export async function documentsAPI(
      *
      * @returns {IVPDocument[]} - VP Documents
      */
-    ApiResponse(MessageAPI.GET_VP_DOCUMENTS, async (msg: any) => {
+    ApiResponse(MessageAPI.GET_VP_DOCUMENTS, async (msg: {
+        user: IAuthUser,
+        params: any
+    }) => {
         if (msg) {
-            const { filters, pageIndex, pageSize } = msg;
+            const { params } = msg;
+            const { filters, pageIndex, pageSize } = params;
             const otherOptions: any = {};
             const _pageSize = parseInt(pageSize, 10);
             const _pageIndex = parseInt(pageIndex, 10);
@@ -79,7 +73,7 @@ export async function documentsAPI(
             if (filters?.policyOwner) {
                 const policies = await dataBaseServer.find(Policy, {
                     owner: filters.policyOwner,
-                    status: PolicyType.PUBLISH
+                    status: PolicyStatus.PUBLISH
                 }, {
                     fields: ['id', 'owner']
                 });

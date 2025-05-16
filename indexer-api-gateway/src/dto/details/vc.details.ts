@@ -139,6 +139,50 @@ export class VCDetailsDTO
     @ApiProperty({
         description: 'VC Schema',
         type: 'object',
+        properties: {
+            '@context': {
+                oneOf: [
+                    { type: 'string' },
+                    {
+                        type: 'array',
+                        items: { type: 'string' },
+                    },
+                ],
+                readOnly: true,
+            },
+            type: {
+                oneOf: [
+                    { type: 'string' },
+                    {
+                        type: 'array',
+                        items: { type: 'string' },
+                    },
+                ],
+                readOnly: true,
+            },
+            id: {
+                type: 'string',
+                readOnly: true,
+            },
+            geography: {
+                type: 'string',
+                readOnly: false,
+            },
+            law: {
+                type: 'string',
+                readOnly: false,
+            },
+            tags: {
+                type: 'string',
+                readOnly: false,
+            },
+            ISIC: {
+                type: 'string',
+                readOnly: false,
+            },
+        },
+        required: ['geography', 'law', 'tags'],
+        additionalProperties: false,
         example: {
             $id: '#StandardRegistry',
             $comment:

@@ -40,6 +40,7 @@ export class RolesBlockComponent implements OnInit {
     policyName: string = '';
     groupName: string = '';
     groupLabel: string = '';
+    readonly: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -113,6 +114,7 @@ export class RolesBlockComponent implements OnInit {
 
     setData(data: any) {
         if (data) {
+            this.readonly = !!data.readonly;
             const uiMetaData = data.uiMetaData || {};
             const active = data.active;
 

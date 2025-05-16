@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { MessagePattern } from '@nestjs/microservices';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import {
     IndexerMessageAPI,
     MessageResponse,
@@ -10,12 +10,20 @@ import {
     Message,
     MessageCache,
     MessageError,
+    TopicCache,
+    TokenCache,
 } from '@indexer/common';
 import {
     DataLoadingProgress,
+    DataPriorityLoadingProgress,
     LandingAnalytics as IAnalytics,
     ProjectCoordinates as IProjectCoordinates,
+    MessageType,
+    Page,
+    PageFilters,
+    PriorityStatus,
 } from '@indexer/interfaces';
+import { parsePageParams } from '../utils/parse-page-params.js';
 
 @Controller()
 export class LandingService {
@@ -52,30 +60,5 @@ export class LandingService {
             {}
         )) as any;
         return new MessageResponse<IProjectCoordinates[]>(coordinates);
-    }
-
-    @MessagePattern(IndexerMessageAPI.GET_DATA_LOADING_PROGRESS)
-    async getDataLoadingProgress(): Promise<AnyResponse<DataLoadingProgress>> {
-        try {
-            const em = DataBaseHelper.getEntityManager();
-
-            const loadedCount = (await em.count(
-                Message,
-                {
-                    loaded: true,
-                } as any
-            )) as any;
-
-            const total = (await em.count(
-                MessageCache,
-                {
-                    type: 'Message',
-                } as any
-            )) as any;
-
-            return new MessageResponse<DataLoadingProgress>({ loadedCount, total });
-        } catch (error) {
-            return new MessageError(error);
-        }
     }
 }

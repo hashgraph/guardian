@@ -17,6 +17,7 @@ export class SearchPolicyBlocksDTO implements SearchPolicyBlocks {
     @ApiProperty({
         description: 'Hash map',
         type: 'object',
+        additionalProperties: true,
     })
     @IsObject()
     hashMap: any;

@@ -66,3 +66,8 @@
         margin-left: 0;
     }
 }
+
+*[readonly-block="true"] {
+    pointer-events: none !important;
+    filter: grayscale(1);
+}

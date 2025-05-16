@@ -1,4 +1,4 @@
-import { BlockType, GenerateUUIDv4, ModuleStatus, PolicyType, Schema, Token } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, ModuleStatus, PolicyStatus, Schema, Token } from '@guardian/interfaces';
 import { IBlockConfig } from '../interfaces/block-config.interface';
 import { IModuleVariables } from '../interfaces/module-variables.interface';
 import { PolicyBlock } from '../block/block.model';
@@ -51,9 +51,9 @@ export class ToolTemplate {
         this._config.setDescriptionSilently(template.description);
         this._config.setLocalTagSilently(this._config.localTag || 'Tool');
 
-        this.isDraft = (this.status === PolicyType.DRAFT) || (this.status === ModuleStatus.DRAFT);
-        this.isPublished = (this.status === PolicyType.PUBLISH) || (this.status === ModuleStatus.PUBLISHED);
-        this.isPublishError = this.status === PolicyType.PUBLISH_ERROR;
+        this.isDraft = (this.status === PolicyStatus.DRAFT) || (this.status === ModuleStatus.DRAFT);
+        this.isPublished = (this.status === PolicyStatus.PUBLISH) || (this.status === ModuleStatus.PUBLISHED);
+        this.isPublishError = this.status === PolicyStatus.PUBLISH_ERROR;
         this.readonly = this.isPublished || this.isPublishError;
     }
 

@@ -49,3 +49,8 @@ export * from './schema-rule.js';
 export * from './policy-label.js';
 export * from './policy-label-document.js';
 export * from './formula.js';
+export * from './policy-diff.js';
+export * from './delete-cache.js';
+export * from './dynamic-role.js';
+export * from './external-policy.js';
+export * from './policy-action.js';

@@ -14,6 +14,16 @@
         font-size: 12px;
         font-weight: 400;
         color: var(--color-grey-white, #FFFFFF);
+
+        a {
+            margin-left: 12px;
+            font-weight: 400;
+            font-size: 12px;
+            line-height: 30px;
+            text-decoration: underline;
+            text-decoration-style: solid;
+            color: var(--color-grey-white, #FFFFFF);
+        }
     }
 
     .progress-title {

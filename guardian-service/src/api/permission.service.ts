@@ -20,8 +20,8 @@ import {
     Token, DatabaseServer,
 } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, MessageAPI, Schema, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
-import { publishSystemSchema } from './helpers/index.js';
 import { emptyNotifier } from '../helpers/notifier.js';
+import { publishSystemSchema } from '../helpers/import-helpers/index.js';
 
 async function getSchema(
     entity: SchemaEntity,
@@ -82,7 +82,7 @@ async function createVc(
             role.owner = role.owner || '';
         }
     }
-    const didDocument = await vcHelper.loadDidDocument(owner.creator);
+    const didDocument = await vcHelper.loadDidDocument(owner.creator, owner.id);
     return await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
 }
 
@@ -91,9 +91,9 @@ async function createMessageServer(owner: IOwner): Promise<MessageServer> {
         owner: owner.owner,
         type: TopicType.UserTopic
     });
-    const topicConfig = await TopicConfig.fromObject(row, true);
+    const topicConfig = await TopicConfig.fromObject(row, true, owner.id);
     const users = new Users();
-    const root = await users.getHederaAccount(owner.creator);
+    const root = await users.getHederaAccount(owner.creator, owner.id);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
     messageServer.setTopicObject(topicConfig);
     return messageServer;
@@ -120,7 +120,7 @@ export async function serDefaultRole(user: IAuthUser, owner: IOwner): Promise<an
     const message = new UserPermissionsMessage(MessageAction.SetRole);
     message.setRole(data);
     message.setDocument(document);
-    await messageServer.sendMessage(message);
+    await messageServer.sendMessage(message, true, null, owner.id);
 
     const result = await new DatabaseServer().save(VcDocumentCollection, {
         hash: message.hash,
@@ -144,7 +144,8 @@ export async function serDefaultRole(user: IAuthUser, owner: IOwner): Promise<an
  */
 export async function permissionAPI(logger: PinoLogger): Promise<void> {
     ApiResponse(MessageAPI.CREATE_ROLE,
-        async (msg: { role: any, owner: IOwner }) => {
+        async (msg: { role: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { role, owner } = msg;
                 const data = {
@@ -159,7 +160,7 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 const message = new GuardianRoleMessage(MessageAction.CreateRole);
                 message.setRole(data);
                 message.setDocument(document);
-                await messageServer.sendMessage(message);
+                await messageServer.sendMessage(message, true, null, userId);
                 const result = await new DatabaseServer().save(VcDocumentCollection, {
                     hash: message.hash,
                     owner: owner.owner,
@@ -174,13 +175,14 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 });
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.UPDATE_ROLE,
-        async (msg: { role: any, owner: IOwner }) => {
+        async (msg: { role: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { role, owner } = msg;
                 const data = {
@@ -195,7 +197,7 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 const message = new GuardianRoleMessage(MessageAction.UpdateRole);
                 message.setRole(data);
                 message.setDocument(document);
-                await messageServer.sendMessage(message);
+                await messageServer.sendMessage(message, true, null, userId);
                 const result = await new DatabaseServer().save(VcDocumentCollection, {
                     hash: message.hash,
                     owner: owner.owner,
@@ -210,13 +212,14 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 });
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.DELETE_ROLE,
-        async (msg: { role: any, owner: IOwner }) => {
+        async (msg: { role: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { role, owner } = msg;
                 const data = {
@@ -231,7 +234,7 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 const message = new GuardianRoleMessage(MessageAction.DeleteRole);
                 message.setRole(data);
                 message.setDocument(document);
-                await messageServer.sendMessage(message);
+                await messageServer.sendMessage(message, true, null, userId);
                 const result = await new DatabaseServer().save(VcDocumentCollection, {
                     hash: message.hash,
                     owner: owner.owner,
@@ -246,25 +249,27 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 });
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.SET_ROLE,
-        async (msg: { user: IAuthUser, owner: IOwner }) => {
+        async (msg: { user: IAuthUser, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { user, owner } = msg;
                 const result = await serDefaultRole(user, owner);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.CHECK_KEY_PERMISSIONS,
-        async (msg: { did: string, keyType: KeyType, entityId: string }) => {
+        async (msg: { did: string, keyType: KeyType, entityId: string, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { did, keyType, entityId } = msg;
 
@@ -300,7 +305,7 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                         return new MessageResponse(false);
                 }
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });

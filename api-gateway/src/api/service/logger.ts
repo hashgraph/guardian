@@ -2,11 +2,11 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Injectable, Post, 
 import { ApiTags, ApiBody, ApiOperation, ApiOkResponse, ApiInternalServerErrorResponse, ApiQuery, ApiExtraModels } from '@nestjs/swagger';
 import { IPageParameters, MessageAPI, Permissions } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
-import { Auth } from '#auth';
+import {Auth, AuthUser} from '#auth';
 import { InternalServerErrorDTO, LogFilterDTO, LogResultDTO } from '#middlewares';
-import { UseCache, InternalException } from '#helpers';
+import {UseCache, InternalException, UsersService} from '#helpers';
 import axios from 'axios';
-import { PinoLogger } from '@guardian/common';
+import {IAuthUser, PinoLogger} from '@guardian/common';
 import process from 'process';
 
 @Injectable()
@@ -21,9 +21,9 @@ export class LoggerService {
         return logs.body;
     }
 
-    async getAttributes(name?: string, existingAttributes: string[] = []): Promise<any> {
+    async getAttributes(userId: string, filters: any, name?: string, existingAttributes: string[] = []): Promise<any> {
         const logs = await this.client.send(MessageAPI.GET_ATTRIBUTES, {
-            name, existingAttributes
+            userId, filters, name, existingAttributes
         }).toPromise();
         return logs.body;
     }
@@ -32,7 +32,48 @@ export class LoggerService {
 @Controller('logs')
 @ApiTags('logs')
 export class LoggerApi {
-    constructor(private readonly loggerService: LoggerService, private readonly logger: PinoLogger) {
+    constructor(private readonly loggerService: LoggerService,
+                private readonly logger: PinoLogger,
+                private readonly usersService: UsersService
+    ) {
+    }
+
+    private async getFiltersByUserPermissions(user: IAuthUser): Promise<any> {
+        const userId = user?.id;
+        const userDid = user.did;
+        const parentDid = user.parent;
+        const permissions = user.permissions || [];
+        const userIds: (string | null)[] = [userId];
+
+        const filters: any = {};
+
+        const hasSystemAccess = permissions.includes(Permissions.LOG_SYSTEM_READ);
+        const hasUsersAccess = permissions.includes(Permissions.LOG_USERS_READ);
+
+        if (hasSystemAccess && userDid) {
+            userIds.push(null)
+
+            if (parentDid) {
+                const parentUser = await this.usersService.getUserById(user.parent, userId);
+
+                if (parentUser?.id) {
+                    userIds.push(parentUser.id);
+                }
+            }
+        }
+
+        if (hasUsersAccess && parentDid) {
+            const usersByParentDid = await this.usersService.getUsersByParentDid(parentDid, userId);
+
+            for (const u of usersByParentDid) {
+                userIds.push(u.id);
+            }
+
+        }
+
+        filters.$or = userIds.map(id => ({ userId: id }))
+
+        return filters;
     }
 
     /**
@@ -63,10 +104,13 @@ export class LoggerApi {
     @ApiExtraModels(LogFilterDTO, LogResultDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getLogs(
+        @AuthUser() user: IAuthUser,
         @Body() body: LogFilterDTO
     ): Promise<LogResultDTO> {
+        const userId = user?.id;
         try {
-            const filters: any = {};
+            const filters = await this.getFiltersByUserPermissions(user);
+
             const pageParameters: IPageParameters = {};
             if (!body) {
                 body = {};
@@ -76,9 +120,7 @@ export class LoggerApi {
             }
             if (body.startDate && body.endDate) {
                 const sDate = new Date(body.startDate);
-                sDate.setHours(0, 0, 0, 0);
                 const eDate = new Date(body.endDate);
-                eDate.setHours(23, 59, 59, 999);
                 filters.datetime = {
                     $gte: sDate,
                     $lt: eDate
@@ -105,7 +147,7 @@ export class LoggerApi {
                 logs: logs.data
             };
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, userId);
         }
     }
 
@@ -147,9 +189,11 @@ export class LoggerApi {
     @UseCache()
     @HttpCode(HttpStatus.OK)
     async getAttributes(
+        @AuthUser() user: IAuthUser,
         @Query('name') name: string,
         @Query('existingAttributes') existingAttributes: string | string[],
     ): Promise<any> {
+        const userId = user?.id;
         try {
             let attributes: string[];
             if (existingAttributes) {
@@ -159,9 +203,12 @@ export class LoggerApi {
                     attributes = existingAttributes
                 }
             }
-            return await this.loggerService.getAttributes(escapeRegExp(name), attributes);
+
+            const filters = await this.getFiltersByUserPermissions(user);
+
+            return await this.loggerService.getAttributes(userId, filters, escapeRegExp(name), attributes);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, userId);
         }
     }
 

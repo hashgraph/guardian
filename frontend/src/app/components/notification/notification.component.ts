@@ -1,10 +1,10 @@
-import {Component, Input, OnInit, ViewChild} from '@angular/core';
-import {Router} from '@angular/router';
-import {NotificationType, NotifyAPI,} from '@guardian/interfaces';
-import {ToastrService} from 'ngx-toastr';
-import {forkJoin, Subscription} from 'rxjs';
-import {NotificationService} from 'src/app/services/notify.service';
-import {WebSocketService} from 'src/app/services/web-socket.service';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
+import { NotificationType, NotifyAPI, } from '@guardian/interfaces';
+import { ToastrService } from 'ngx-toastr';
+import { forkJoin, Subscription } from 'rxjs';
+import { NotificationService } from 'src/app/services/notify.service';
+import { WebSocketService } from 'src/app/services/web-socket.service';
 
 @Component({
     selector: 'app-notification',
@@ -40,7 +40,7 @@ export class NotificationComponent implements OnInit {
             this.notificationService.new(),
             this.notificationService.progresses(),
         ]).subscribe((value) => {
-            this.notifications = value[0];
+            this.notifications = value[0] || [];
             this.progressNotifications = value[1] || [];
             this.countUnreadNotification();
             this.subscription.add(
@@ -207,7 +207,7 @@ export class NotificationComponent implements OnInit {
         event.stopPropagation();
         this.notificationService.readAll().subscribe((result) => {
             this.unreadNotifications = 0;
-            this.notifications = result;
+            this.notifications = result || [];
         });
     }
 

@@ -45,3 +45,46 @@
         border-color: #E1E7EF;
     }
 }
+
+.guardian-header-tabs {
+    .p-tabview {
+        height: 41px;
+    }
+
+    .p-tabview-nav {
+        background: transparent;
+        border: 1px solid #E1E7EF;
+        border-width: 0 0 1px 0;
+    }
+
+    .p-tabview-nav-link {
+        background: transparent;
+        padding: 12px 16px;
+        font-family: Inter;
+        font-weight: 600;
+        font-size: 14px;
+        line-height: 16px;
+        text-align: center;
+        vertical-align: middle;
+        height: 42px;
+        margin: 0 0 -1px 0;
+        box-shadow: none !important;
+        border: solid #E1E7EF;
+        border-width: 0 0 1px 0;
+        color: #848FA9;
+    }
+
+    .p-tabview-nav li:first-child .p-tabview-nav-link  {
+        padding-left: 2px;
+    }
+
+    .p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+        border-color: var(--guardian-primary-color, #4169E2);
+        color: var(--guardian-primary-color, #4169E2);
+        border-width: 0 0 2px 0;
+    }
+
+    .p-tabview-panels {
+        display: none;
+    }
+}

@@ -1,10 +1,10 @@
 import { CronJob } from 'cron';
 import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
-import { IVC, Schema, SchemaField, SchemaHelper, TopicType } from '@guardian/interfaces';
+import { IVC, LocationType, Schema, SchemaField, SchemaHelper, TopicType } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
-import { AnyBlockType, IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '../policy-engine.interface.js';
+import { AnyBlockType, IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyGetData, IPolicyValidatorBlock } from '../policy-engine.interface.js';
 import { BlockActionError } from '../errors/index.js';
 import { IHederaCredentials, PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
@@ -87,6 +87,7 @@ enum SchemaStatus {
 @EventBlock({
     blockType: 'externalTopicBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'External Topic',
         title: `Add 'External Topic' Block`,
@@ -133,7 +134,7 @@ export class ExternalTopicBlock {
     protected afterInit() {
         const cronMask = process.env.EXTERNAL_DOCUMENTS_SCHEDULER || '0 0 * * *';
         this.job = new CronJob(cronMask, () => {
-            this.run().then();
+            this.run(null).then();
         }, null, false, 'UTC');
         this.job.start();
     }
@@ -193,7 +194,7 @@ export class ExternalTopicBlock {
      * @private
      */
     private updateStatus(ref: AnyBlockType, item: ExternalDocument, user: PolicyUser) {
-        ref.updateBlock({ status: item.status }, user);
+        ref.updateBlock({ status: item.status }, user, ref.tag, user.userId);
     }
 
     /**
@@ -362,10 +363,18 @@ export class ExternalTopicBlock {
      * Search Policy Topic
      * @param topicId
      * @param topicTree
+     * @param userId
      * @private
      */
-    private async searchTopic(topicId: string, topicTree: TopicResult = {}): Promise<TopicResult> {
+    private async searchTopic(
+        topicId: string,
+        topicTree: TopicResult,
+        userId: string | null
+    ): Promise<TopicResult> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        if (!topicTree) {
+            topicTree = {};
+        }
         if (topicTree.count) {
             topicTree.count++;
         } else {
@@ -374,7 +383,7 @@ export class ExternalTopicBlock {
         if (topicTree.count > 20) {
             throw new BlockActionError('Max attempts of 20 was reached for request: Get topic info', ref.blockType, ref.uuid);
         }
-        const topicMessage = await MessageServer.getTopic(topicId);
+        const topicMessage = await MessageServer.getTopic(topicId, userId);
         if (!topicTree.root) {
             if (topicMessage && (
                 topicMessage.messageType === TopicType.InstancePolicyTopic ||
@@ -391,7 +400,7 @@ export class ExternalTopicBlock {
                     throw new BlockActionError('Invalid topic', ref.blockType, ref.uuid);
                 }
                 topicTree.policyTopic = topicMessage;
-                const messages: any[] = await MessageServer.getMessages(topicId);
+                const messages: any[] = await MessageServer.getTopicMessages(topicId, userId);
                 topicTree.schemas = messages.filter((m: SchemaMessage) =>
                     m.action === MessageAction.PublishSchema);
                 topicTree.instance = messages.find((m: PolicyMessage) =>
@@ -400,9 +409,9 @@ export class ExternalTopicBlock {
                 return topicTree;
             } else if (topicMessage.messageType === TopicType.InstancePolicyTopic) {
                 topicTree.instanceTopic = topicMessage;
-                return await this.searchTopic(topicMessage.parentId, topicTree);
+                return await this.searchTopic(topicMessage.parentId, topicTree, userId);
             } else if (topicMessage.messageType === TopicType.DynamicTopic) {
-                return await this.searchTopic(topicMessage.parentId, topicTree);
+                return await this.searchTopic(topicMessage.parentId, topicTree, userId);
             }
         }
         throw new BlockActionError('Invalid topic', ref.blockType, ref.uuid);
@@ -418,11 +427,12 @@ export class ExternalTopicBlock {
     private async addTopic(
         item: ExternalDocument,
         topicId: string,
-        user: PolicyUser
+        user: PolicyUser,
+        userId: string | null
     ): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         try {
-            const topicTree = await this.searchTopic(topicId);
+            const topicTree = await this.searchTopic(topicId, null, userId);
             const topic = topicTree.root;
             const policy = topicTree.policyTopic;
             const instance = topicTree.instance;
@@ -634,20 +644,27 @@ export class ExternalTopicBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             documents: ExternalDocuments(result)
         }));
+        ref.backup();
     }
 
     /**
      * Load messages by user
      * @param item
      * @param user
+     * @param userId
      * @private
      */
-    private async receiveData(item: ExternalDocument, user: PolicyUser): Promise<void> {
+    private async receiveData(
+        item: ExternalDocument,
+        user: PolicyUser,
+        userId: string | null
+    ): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const documentOwnerCred = await PolicyUtils.getUserCredentials(ref, item.owner);
-        const hederaCred = await documentOwnerCred.loadHederaCredentials(ref);
-        const messages: VCMessage[] = await MessageServer.getMessages(
+        const documentOwnerCred = await PolicyUtils.getUserCredentials(ref, item.owner, userId);
+        const hederaCred = await documentOwnerCred.loadHederaCredentials(ref, userId);
+        const messages: VCMessage[] = await MessageServer.getTopicMessages(
             item.documentTopicId,
+            user.id,
             null,
             null,
             item.lastMessage
@@ -664,16 +681,16 @@ export class ExternalTopicBlock {
      * @param item
      * @private
      */
-    private async runByUser(item: ExternalDocument): Promise<void> {
+    private async runByUser(item: ExternalDocument, userId: string | null): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
         item.status = TaskStatus.Processing;
         await ref.databaseServer.updateExternalTopic(item);
 
-        const user = await PolicyComponentsUtils.GetPolicyUserByDID(item.owner, null, ref);
+        const user = await PolicyComponentsUtils.GetPolicyUserByDID(item.owner, null, ref, userId);
         this.updateStatus(ref, item, user);
         try {
-            await this.receiveData(item, user);
+            await this.receiveData(item, user, userId);
             item.status = TaskStatus.Free;
             item.lastUpdate = (new Date()).toISOString();
             await ref.databaseServer.updateExternalTopic(item);
@@ -710,12 +727,12 @@ export class ExternalTopicBlock {
     /**
      * Tick cron
      */
-    public async run() {
+    public async run(userId: string | null) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const items = await ref.databaseServer.getActiveExternalTopics(ref.policyId, ref.uuid);
         for (const item of items) {
             if (item.status === TaskStatus.Free) {
-                await this.runByUser(item);
+                await this.runByUser(item, userId);
             }
         }
     }
@@ -762,7 +779,7 @@ export class ExternalTopicBlock {
                     item.status = TaskStatus.Search;
                     await ref.databaseServer.updateExternalTopic(item);
 
-                    this.addTopic(item, value, user);
+                    this.addTopic(item, value, user, user.userId);
                     break;
                 }
                 case 'VerificationSchema': {
@@ -848,7 +865,7 @@ export class ExternalTopicBlock {
                     item.status = TaskStatus.Processing;
                     await ref.databaseServer.updateExternalTopic(item);
 
-                    this.runByUser(item).then(null, (error) => {
+                    this.runByUser(item, user.userId).then(null, (error) => {
                         item.status = TaskStatus.Error;
                         ref.databaseServer.updateExternalTopic(item);
                         ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
@@ -885,6 +902,7 @@ export class ExternalTopicBlock {
                     throw new BlockActionError('Invalid operation', ref.blockType, ref.uuid);
                 }
             }
+            ref.backup();
         } catch (error) {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
@@ -895,11 +913,18 @@ export class ExternalTopicBlock {
      * Get block data
      * @param user
      */
-    public async getData(user: PolicyUser): Promise<any> {
+    public async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const item = await ref.databaseServer.getExternalTopic(ref.policyId, ref.uuid, user.did);
         if (item) {
             return {
+                id: ref.uuid,
+                blockType: ref.blockType,
+                actionType: ref.actionType,
+                readonly: (
+                    ref.actionType === LocationType.REMOTE &&
+                    user.location === LocationType.REMOTE
+                ),
                 documentTopicId: item.documentTopicId,
                 policyTopicId: item.policyTopicId,
                 instanceTopicId: item.instanceTopicId,
@@ -912,7 +937,7 @@ export class ExternalTopicBlock {
                 status: item.status
             };
         } else {
-            return {};
+            return {} as any;
         }
     }
 }

@@ -21,6 +21,7 @@ export async function loaderAPI(
      * @returns {any} - DID Document
      */
     ApiResponse(MessageAPI.LOAD_DID_DOCUMENT, async (msg) => {
+        const userId = msg?.userId
         try {
             const iri = msg.did;
             const did = DidURL.getController(iri);
@@ -31,7 +32,7 @@ export async function loaderAPI(
             }
             return new MessageError('Document not found');
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -43,6 +44,7 @@ export async function loaderAPI(
      * @returns Schema document
      */
     ApiResponse(MessageAPI.LOAD_SCHEMA_DOCUMENT, async (msg) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Document not found');
@@ -57,7 +59,7 @@ export async function loaderAPI(
             }
         }
         catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -69,6 +71,7 @@ export async function loaderAPI(
      * @returns Schema context
      */
     ApiResponse(MessageAPI.LOAD_SCHEMA_CONTEXT, async (msg) => {
+        const userId = msg?.userId
         try {
             if (!msg) {
                 return new MessageError('Document not found');
@@ -82,7 +85,7 @@ export async function loaderAPI(
             }
         }
         catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });

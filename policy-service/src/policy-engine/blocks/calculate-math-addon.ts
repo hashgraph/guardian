@@ -4,6 +4,7 @@ import { IPolicyCalculateAddon } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { LocationType } from '@guardian/interfaces';
 
 /**
  * Calculate math addon
@@ -11,6 +12,7 @@ import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.j
 @CalculateAddon({
     blockType: 'calculateMathAddon',
     commonBlock: true,
+    actionType: LocationType.LOCAL,
     about: {
         label: 'Math Addon',
         title: `Add 'Math' Addon`,

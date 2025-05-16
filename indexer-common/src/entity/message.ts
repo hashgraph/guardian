@@ -78,7 +78,11 @@ export class Message implements IMessage {
         tokenId?: string,
         labels?: string[];
         labelName?: string;
+        dynamicTopics?: string[];
     };
+
+    @Property({ nullable: true })
+    analyticsUpdate?: number;
 
     @Property({ nullable: true })
     files: string[];

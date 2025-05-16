@@ -70,13 +70,13 @@ export class AccountService extends NatsService {
          * @param did - DID
          */
         this.getMessages<IGetUserByIdMessage, IUser>(AuthEvents.GET_USER_BY_ID,
-            async (msg: { did: string }) => {
-                const { did } = msg;
+            async (msg: { did: string, userId: string | null }) => {
+                const { did, userId } = msg;
                 try {
                     const user = await UserUtils.getUser({ did }, UserProp.WITH_KEYS);
                     return new MessageResponse(user);
                 } catch (error) {
-                    await logger.error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -86,13 +86,16 @@ export class AccountService extends NatsService {
          * @param username - username
          */
         this.getMessages<IGetUserMessage, User>(AuthEvents.GET_USER,
-            async (msg: { username: string }) => {
-                const { username } = msg;
+            async (msg: {
+                username: string,
+                userId: string | null
+            }) => {
+                const { username, userId } = msg;
                 try {
                     const user = await UserUtils.getUser({ username }, UserProp.WITH_KEYS);
                     return new MessageResponse(user);
                 } catch (error) {
-                    await logger.error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -102,13 +105,13 @@ export class AccountService extends NatsService {
          * @param account - Hedera Account ID
          */
         this.getMessages<IGetUsersByAccountMessage, IUser>(AuthEvents.GET_USER_BY_ACCOUNT,
-            async (msg: { account: string }) => {
-                const { account } = msg;
+            async (msg: { account: string, userId: string | null }) => {
+                const { account, userId } = msg;
                 try {
                     const user = await UserUtils.getUser({ hederaAccountId: account }, UserProp.WITH_KEYS);
                     return new MessageResponse(user);
                 } catch (error) {
-                    await logger.error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -119,13 +122,13 @@ export class AccountService extends NatsService {
          * @param providerId - Provider ID
          */
         this.getMessages<IGetUserMessage, User>(AuthEvents.GET_USER_BY_PROVIDER_USER_DATA,
-            async (msg: { providerId: string, provider: string }) => {
-                const { providerId, provider } = msg;
+            async (msg: { providerId: string, provider: string, userId: string | null }) => {
+                const { providerId, provider, userId } = msg;
                 try {
                     const user = await UserUtils.getUser({ providerId, provider }, UserProp.WITH_KEYS);
                     return new MessageResponse(user);
                 } catch (error) {
-                    await logger.error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -135,13 +138,13 @@ export class AccountService extends NatsService {
          * @param did - Parent DID
          */
         this.getMessages<any, IGetAllUserResponse[]>(AuthEvents.GET_USERS_BY_SR_ID,
-            async (msg: { did: string }) => {
+            async (msg: { did: string, userId: string | null }) => {
+                const { did, userId } = msg;
                 try {
-                    const { did } = msg;
                     const users = await UserUtils.getUsers({ parent: did }, UserProp.WITH_KEYS);
                     return new MessageResponse(users);
                 } catch (error) {
-                    await logger.error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -151,13 +154,13 @@ export class AccountService extends NatsService {
          * @param dids - DIDs
          */
         this.getMessages<IGetUsersByIdMessage, IUser[]>(AuthEvents.GET_USERS_BY_ID,
-            async (msg: { dids: string[] }) => {
-                const { dids } = msg;
+            async (msg: { dids: string[], userId: string | null }) => {
+                const { dids, userId } = msg;
                 try {
                     const users = await UserUtils.getUsers({ did: { $in: dids } }, UserProp.WITH_KEYS);
                     return new MessageResponse(users);
                 } catch (error) {
-                    await logger.error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -167,13 +170,13 @@ export class AccountService extends NatsService {
          * @param role - Role (Category)
          */
         this.getMessages<IGetUsersByIRoleMessage, IUser[]>(AuthEvents.GET_USERS_BY_ROLE,
-            async (msg: { role: UserRole }) => {
-                const { role } = msg;
+            async (msg: { role: UserRole, userId: string | null }) => {
+                const { role, userId } = msg;
                 try {
                     const users = await UserUtils.getUsers({ role }, UserProp.WITH_KEYS);
                     return new MessageResponse(users);
                 } catch (error) {
-                    await logger.error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -182,21 +185,22 @@ export class AccountService extends NatsService {
          * Get All 'User'
          */
         this.getMessages<any, IGetAllUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS,
-            async (_: any) => {
+            async (msg: { userId: string | null }) => {
+                const userId = msg?.userId;
                 try {
                     const userRepository = new DatabaseServer()
 
                     const users = await userRepository.find(User, { role: UserRole.USER })
 
                     const userAccounts = users.map((e) => ({
-                            username: e.username,
-                            parent: e.parent,
-                            did: e.did
-                        }));
+                        username: e.username,
+                        parent: e.parent,
+                        did: e.did
+                    }));
 
                     return new MessageResponse(userAccounts);
                 } catch (error) {
-                    await logger.error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -205,7 +209,8 @@ export class AccountService extends NatsService {
          * Get All 'Standard Registry'
          */
         this.getMessages<any, IStandardRegistryUserResponse[]>(AuthEvents.GET_ALL_STANDARD_REGISTRY_ACCOUNTS,
-            async (_: any) => {
+            async (msg: { userId: string | null }) => {
+                const userId = msg?.userId;
                 try {
                     const userRepository = new DatabaseServer()
 
@@ -218,7 +223,7 @@ export class AccountService extends NatsService {
 
                     return new MessageResponse(userAccounts);
                 } catch (error) {
-                    await logger.error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -227,7 +232,8 @@ export class AccountService extends NatsService {
          * Get All
          */
         this.getMessages<any, IGetDemoUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO,
-            async (_: any) => {
+            async (msg: { userId: string | null }) => {
+                const userId = msg?.userId;
                 try {
                     const userRepository = new DatabaseServer()
 
@@ -242,7 +248,7 @@ export class AccountService extends NatsService {
 
                     return new MessageResponse(userAccounts);
                 } catch (error) {
-                    await logger.error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -270,7 +276,7 @@ export class AccountService extends NatsService {
 
                     return new MessageResponse(user);
                 } catch (error) {
-                    await logger.error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE'], null);
                     return new MessageError(error)
                 }
             });
@@ -282,7 +288,7 @@ export class AccountService extends NatsService {
                     const user = await UserUtils.createUserTemplate(role, parent, did);
                     return new MessageResponse(user);
                 } catch (error) {
-                    await logger.error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE'], null);
                     return new MessageError(error)
                 }
             });
@@ -311,7 +317,7 @@ export class AccountService extends NatsService {
                         accessToken
                     })
                 } catch (error) {
-                    await logger.error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE'], null);
                     return new MessageError(error)
                 }
             });
@@ -326,7 +332,10 @@ export class AccountService extends NatsService {
                             if (await UserPassword.verifyPasswordV2(user, password)) {
                                 const userAccessTokenService = await UserAccessTokenService.New();
                                 const token = userAccessTokenService.generateRefreshToken(user);
-                                user.refreshToken = token.id;
+                                if (!Array.isArray(user.refreshToken)) {
+                                    user.refreshToken = [];
+                                }
+                                user.refreshToken.push(token.id);
 
                                 await new DatabaseServer().save(User, user);
                                 return new MessageResponse({
@@ -344,15 +353,15 @@ export class AccountService extends NatsService {
                     }
                     return new MessageError('Unauthorized request', 401);
                 } catch (error) {
-                    await logger.error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE'], null);
                     return new MessageError(error);
                 }
             });
 
         this.getMessages(AuthEvents.CHANGE_USER_PASSWORD,
-            async (msg: { username: string, oldPassword: string, newPassword: string }) => {
+            async (msg: { username: string, oldPassword: string, newPassword: string, userId: string | null }) => {
+                const { username, oldPassword, newPassword, userId } = msg;
                 try {
-                    const { username, oldPassword, newPassword } = msg;
                     const user = await UserUtils.getUser({ username, template: { $ne: true } }, UserProp.RAW);
                     if (!(await UserPassword.verifyPassword(user, oldPassword))) {
                         return new MessageError('Unauthorized request', 401);
@@ -365,7 +374,10 @@ export class AccountService extends NatsService {
                     user.password = passwordDigest.password;
                     user.salt = passwordDigest.salt;
                     user.passwordVersion = passwordDigest.passwordVersion;
-                    user.refreshToken = token.id;
+                    if (!Array.isArray(user.refreshToken)) {
+                        user.refreshToken = [];
+                    }
+                    user.refreshToken.push(token.id);
 
                     await new DatabaseServer().save(User, user);
 
@@ -376,7 +388,7 @@ export class AccountService extends NatsService {
                         refreshToken: token.token
                     })
                 } catch (error) {
-                    await logger.error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -406,8 +418,8 @@ export class AccountService extends NatsService {
             });
 
         this.getMessages<IUpdateUserMessage, any>(AuthEvents.UPDATE_USER,
-            async (msg: { username: string, item: any }) => {
-                const { username, item } = msg;
+            async (msg: { username: string, item: any, userId: string | null }) => {
+                const { username, item, userId } = msg;
                 try {
                     const usersRepository = new DatabaseServer();
 
@@ -418,7 +430,7 @@ export class AccountService extends NatsService {
                     }
 
                     Object.assign(user, item);
-                    const template = await usersRepository.findOne(User,{ did: item.did, template: true });
+                    const template = await usersRepository.findOne(User, { did: item.did, template: true });
                     if (template) {
                         user.permissions = template.permissions;
                         user.permissionsGroup = template.permissionsGroup;
@@ -428,7 +440,7 @@ export class AccountService extends NatsService {
 
                     return new MessageResponse(UserUtils.updateUserFields(result, UserProp.REQUIRED));
                 } catch (error) {
-                    await logger.error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });
@@ -438,8 +450,10 @@ export class AccountService extends NatsService {
                 filters?: any,
                 parent?: string,
                 pageIndex?: any,
-                pageSize?: any
+                pageSize?: any,
+                userId: string | null
             }) => {
+                const userId = msg?.userId
                 try {
                     if (!msg) {
                         return new MessageError('Invalid load users parameter');
@@ -482,7 +496,7 @@ export class AccountService extends NatsService {
                     const [items, count] = await new DatabaseServer().findAndCount(User, options, otherOptions);
                     return new MessageResponse({ items, count });
                 } catch (error) {
-                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                     return new MessageError(error);
                 }
             });

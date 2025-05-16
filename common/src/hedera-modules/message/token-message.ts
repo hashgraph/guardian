@@ -190,6 +190,21 @@ export class TokenMessage extends Message {
         return result;
     }
 
+    public static fromJson(json: any): TokenMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
+        const result = Message._fromJson(new TokenMessage(json.action), json);
+        result.tokenId = json.tokenId;
+        result.tokenName = json.tokenName;
+        result.tokenSymbol = json.tokenSymbol;
+        result.tokenType = json.tokenType;
+        result.decimals = json.decimals;
+        result.owner = json.owner;
+        return result;
+    }
+
     /**
      * Get User DID
      */

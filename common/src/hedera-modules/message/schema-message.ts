@@ -244,6 +244,24 @@ export class SchemaMessage extends Message {
         return result;
     }
 
+    public static fromJson(json: any): SchemaMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
+        const result = Message._fromJson(new SchemaMessage(json.action), json);
+        result.name = json.name;
+        result.description = json.description;
+        result.entity = json.entity;
+        result.owner = json.owner;
+        result.uuid = json.uuid;
+        result.version = json.version;
+        result.codeVersion = json.codeVersion;
+        result.relationships = json.relationships;
+        result.documents = [json.document, json.context];
+        return result;
+    }
+
     /**
      * Get User DID
      */

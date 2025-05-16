@@ -1,7 +1,5 @@
 import { Component, ElementRef, EventEmitter, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormControl } from '@angular/forms';
-// import { MatLegacyAutocompleteSelectedEvent as MatAutocompleteSelectedEvent, MatLegacyAutocompleteTrigger as MatAutocompleteTrigger } from '@angular/material/legacy-autocomplete';
-// import { MatLegacyChipInputEvent as MatChipInputEvent } from '@angular/material/legacy-chips';
 import { saveAs } from 'file-saver';
 import { ILog } from '@guardian/interfaces';
 import moment from 'moment';
@@ -47,7 +45,7 @@ export class LogsViewComponent implements OnInit, OnDestroy {
     filters: any = {};
     attributes?: any;
 
-    dateRangeForm: UntypedFormControl = new UntypedFormControl('');
+    dateRangeForm = new UntypedFormControl([]);
 
     types: any = [
         { id: '', label: 'All' },
@@ -56,7 +54,6 @@ export class LogsViewComponent implements OnInit, OnDestroy {
         { id: 'INFO', label: 'Info' },
     ];
 
-    // @ViewChild(MatAutocompleteTrigger) autocomplete: MatAutocompleteTrigger;
     onSearch: EventEmitter<any> = new EventEmitter();
     pageSize: number = 10;
     pageIndex: number = 0;
@@ -192,28 +189,6 @@ export class LogsViewComponent implements OnInit, OnDestroy {
         this.onApply();
     }
 
-    // add(event: MatChipInputEvent, auto: any): void {
-    //     const value = (event.value || '').trim();
-    //     const attributes = this.searchForm.get('attributes')!.value;
-    //
-    //     if (value) {
-    //         const attrList = this.logService.getAttributes(value, this.searchForm?.get('attributes')?.value).subscribe(attrs => {
-    //             const firstAttr = attrs[0];
-    //             if (firstAttr) {
-    //                 attributes.push(firstAttr);
-    //             }
-    //             event.chipInput!.clear();
-    //             this.autocomplete.closePanel();
-    //             this.autoCompleteControl.patchValue('');
-    //             this.onApply();
-    //             attrList.unsubscribe();
-    //         })
-    //     } else {
-    //         event.chipInput!.clear();
-    //         this.onApply();
-    //     }
-    // }
-
     onApply() {
         const value = this.searchForm.value;
         this.searchForm.markAsPristine();
@@ -264,7 +239,6 @@ export class LogsViewComponent implements OnInit, OnDestroy {
     }
 
     selected(event: any): void {
-        // MatAutocompleteSelectedEvent
         const value = (event.option.viewValue || '').trim();
         const attributes = this.searchForm.get('attributes')!.value;
 
@@ -296,10 +270,6 @@ export class LogsViewComponent implements OnInit, OnDestroy {
         }).onClose.subscribe(() => {
             return;
         })
-    }
-
-    changeTypeEvent(event: any) {
-        this.searchForm.controls.type.setValue(event.id);
     }
 
     public onPage(event: any): void {

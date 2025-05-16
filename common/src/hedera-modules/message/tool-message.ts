@@ -205,6 +205,23 @@ export class ToolMessage extends Message {
         return result;
     }
 
+    public static fromJson(json: any): ToolMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
+        const result = Message._fromJson(new ToolMessage(json.type, json.action), json);
+        result.uuid = json.uuid;
+        result.name = json.name;
+        result.description = json.description;
+        result.owner = json.owner;
+        result.hash = json.hash;
+        result.document = json.document;
+        result.toolTopicId = json.toolTopicId;
+        result.tagsTopicId = json.tagsTopicId;
+        return result;
+    }
+
     /**
      * Get User DID
      */

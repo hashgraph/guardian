@@ -207,6 +207,14 @@ export class TopicDetailsComponent extends BaseDetailsComponent {
         });
     }
 
+    public override onOpenTokens() {
+        this.router.navigate(['/tokens'], {
+            queryParams: {
+                'topicId': this.id,
+            },
+        });
+    }
+
     public override onOpenRoles() {
         this.router.navigate(['/roles'], {
             queryParams: {

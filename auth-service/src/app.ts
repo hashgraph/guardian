@@ -118,11 +118,11 @@ Promise.all([
             if (Number.isInteger(maxPayload)) {
                 new LargePayloadContainer().runServer();
             }
-            await logger.info('auth service started', ['AUTH_SERVICE']);
+            await logger.info('auth service started', ['AUTH_SERVICE'], null);
         })
         validator.setInvalidAction(async () => {
             await state.updateState(ApplicationStates.BAD_CONFIGURATION);
-            await logger.error('Auth service not configured', ['AUTH_SERVICE']);
+            await logger.error('Auth service not configured', ['AUTH_SERVICE'], null);
         })
         await validator.validate();
     } catch (error) {
