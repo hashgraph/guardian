@@ -7,7 +7,7 @@ export class Environment {
     /**
      * Mainnet API
      */
-    public static readonly HEDERA_MAINNET_API: string = 'https://mainnet-public.mirrornode.hedera.com/api/v1';
+    public static readonly HEDERA_MAINNET_API: string = 'https://mainnet.mirrornode.hedera.com/api/v1';
     /**
      * Mainnet message API
      */
@@ -106,7 +106,7 @@ export class Environment {
     /**
      * Localnode API
      */
-    public static HEDERA_LOCALNODE_API: string = `https://localhost:5551/api/v1`;
+    public static HEDERA_LOCALNODE_API: string = `http://localhost:5551/api/v1`;
     /**
      * Localnode message API
      */
