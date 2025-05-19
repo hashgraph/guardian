@@ -492,4 +492,25 @@ export class UserCredentials {
         const wallet = new Wallet();
         return await wallet.getUserKey(userFull.did, KeyType.MESSAGE_KEY, `${userFull.did}#${messageId}`, userId);
     }
+
+    public static async loadMessageKeyOrPrivateKey(
+        ref: AnyBlockType,
+        did: string,
+        userId: string | null
+    ): Promise<string | null> {
+        const wallet = new Wallet();
+        const messageKey = await wallet.getUserKey(did, KeyType.MESSAGE_KEY, `${did}#${ref.messageId}`, userId);
+
+        if (messageKey) {
+            return messageKey;
+        }
+
+        const user = await UserCredentials.create(ref, did, userId);
+        if (user.location === LocationType.LOCAL) {
+            const hederaKey = await user.loadHederaKey(ref, userId);
+            return hederaKey;
+        }
+
+        return null;
+    }
 }

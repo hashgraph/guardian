@@ -1313,7 +1313,7 @@ export class PolicyUtils {
         userId: string | null
     ): Promise<IPolicyDocument> {
         if (PolicyUtils.needEncryptVC(document)) {
-            const messageKey = await UserCredentials.loadMessageKey(ref.messageId, document.owner, userId);
+            const messageKey = await UserCredentials.loadMessageKeyOrPrivateKey(ref, document.owner, userId);
             const data = JSON.stringify(document.document);
             document.encryptedDocument = await EncryptVcHelper.encrypt(data, messageKey);
         }
