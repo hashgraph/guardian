@@ -93,9 +93,18 @@ export class LogsViewComponent implements OnInit, OnDestroy {
         this.subscriptions.add(this.autoCompleteControl.valueChanges.pipe(debounceTime(500)).subscribe(searchValue => {
             this.logService.getAttributes(
                 searchValue,
-                this.searchForm?.get('attributes')?.value).subscribe(attrs => {
-                this.searchInput._filteredOptions = attrs;
-                this.attributes = attrs;
+                this.searchForm?.get('attributes')?.value
+            ).subscribe((attrsRaw) => {
+                const attrs = attrsRaw ?? [];
+                const selected = this.searchForm?.get('attributes')?.value ?? [];
+
+                const safeAttrs = [
+                    ...attrs,
+                    ...selected.filter((x: any) => !attrs.includes(x))
+                ];
+
+                this.searchInput._filteredOptions = safeAttrs;
+                this.attributes = safeAttrs;
             });
         }));
 
