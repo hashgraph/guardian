@@ -26,7 +26,7 @@
         "mathjs": "^13.1.1",
         "mathlive": "^0.103.0",
         "moment": "^2.29.2",
-        "ngx-colors": "3.1.4",
+        "ngx-colors": "3.6.0",
         "ngx-drag-drop": "^18.0.2",
         "ngx-file-drop": "^16.0.0",
         "ngx-mask": "^18.0.4",
