@@ -68,11 +68,15 @@ export class Listener {
     }
 
     public async search(): Promise<void> {
-        const data = await this.getMessages(this.topicId, this._searchIndex);
-        if (data && data.messages.length) {
-            await this.saveMessages(data.messages);
+        try {
+            const data = await this.getMessages(this.topicId, this._searchIndex);
+            if (data && data.messages.length) {
+                await this.saveMessages(data.messages);
+            }
+            this.push();
+        } catch (error) {
+            console.error(error);
         }
-        this.push();
     }
 
     public async saveMessages(messages: TopicMessage[]): Promise<void> {
