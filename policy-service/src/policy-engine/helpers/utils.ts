@@ -1294,7 +1294,7 @@ export class PolicyUtils {
     ): Promise<IPolicyDocument> {
         const state = { ...document };
         if (state.encryptedDocument) {
-            delete state.encryptedDocument;
+            delete state.document;
         }
         return await ref.databaseServer.saveDocumentState({
             documentId: document.id,
