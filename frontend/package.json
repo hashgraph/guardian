@@ -19,7 +19,7 @@
         "angular-svg-icon": "^18.0.2",
         "angularx-qrcode": "^18.0.2",
         "codemirror": "^5.65.0",
-        "cronstrue": "^2.4.0",
+        "cronstrue": "^2.59.0",
         "file-saver": "^2.0.5",
         "js-yaml": "^4.1.0",
         "leader-line": "^1.0.7",
