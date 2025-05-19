@@ -101,12 +101,7 @@ const columns = [{
 }, {
     id: 'publicLink',
     permissions: (user: UserPermissions, type: LocationType) => {
-        return (
-            user.POLICIES_POLICY_CREATE ||
-            user.POLICIES_POLICY_UPDATE ||
-            user.POLICIES_POLICY_REVIEW ||
-            user.POLICIES_POLICY_DELETE
-        )
+        return true;
     }
 }, {
     id: 'roles',
@@ -306,10 +301,7 @@ export class PoliciesComponent implements OnInit {
     public showInstance(policy: any): string | null {
         switch (policy.status) {
             case PolicyStatus.VIEW: {
-                if (
-                    this.user.POLICIES_POLICY_MANAGE ||
-                    this.user.POLICIES_POLICY_EXECUTE
-                ) {
+                if (this.user.POLICIES_POLICY_EXECUTE) {
                     return 'Register';
                 } else {
                     return null;
@@ -1532,5 +1524,13 @@ export class PoliciesComponent implements OnInit {
                 this.router.navigate(['/external-policies']);
             }
         });
+    }
+
+    public onCopyMessage(row: any): void {
+        this.handleCopyToClipboard(row.messageId)
+    }
+
+    private handleCopyToClipboard(text: string): void {
+        navigator.clipboard.writeText(text || '');
     }
 }

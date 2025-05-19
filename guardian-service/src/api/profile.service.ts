@@ -40,7 +40,6 @@ export function profileAPI(logger: PinoLogger) {
         }) => {
             try {
                 const { username, user } = msg;
-                const wallet = new Wallet();
                 const users = new Users();
                 const workers = new Workers();
                 const target = await users.getUser(username, user.id);
@@ -53,12 +52,10 @@ export function profileAPI(logger: PinoLogger) {
                     return new MessageResponse(null);
                 }
 
-                const key = await wallet.getKey(target.walletToken, KeyType.KEY, target.did);
                 const balance = await workers.addNonRetryableTask({
-                    type: WorkerTaskType.GET_USER_BALANCE,
+                    type: WorkerTaskType.GET_USER_BALANCE_REST,
                     data: {
-                        hederaAccountId: target.hederaAccountId,
-                        hederaAccountKey: key
+                        hederaAccountId: target.hederaAccountId
                     }
                 }, 20, user.id);
                 return new MessageResponse({
@@ -84,7 +81,6 @@ export function profileAPI(logger: PinoLogger) {
             try {
                 const { username, user } = msg;
 
-                const wallet = new Wallet();
                 const users = new Users();
                 const workers = new Workers();
 
@@ -98,12 +94,10 @@ export function profileAPI(logger: PinoLogger) {
                     return new MessageResponse('Invalid Hedera Account Id');
                 }
 
-                const key = await wallet.getKey(target.walletToken, KeyType.KEY, target.did);
                 const balance = await workers.addNonRetryableTask({
-                    type: WorkerTaskType.GET_USER_BALANCE,
+                    type: WorkerTaskType.GET_USER_BALANCE_REST,
                     data: {
-                        hederaAccountId: target.hederaAccountId,
-                        hederaAccountKey: key
+                        hederaAccountId: target.hederaAccountId
                     }
                 }, 20, target.id.toString());
 
@@ -374,6 +368,7 @@ export function profileAPI(logger: PinoLogger) {
                     did: user.did,
                     parent: user.parent,
                     hederaAccountId: user.hederaAccountId,
+                    location: user.location,
                     confirmed: false,
                     failed: false,
                     topicId: undefined,
@@ -406,6 +401,122 @@ export function profileAPI(logger: PinoLogger) {
                     result.parentTopicId = topic?.parent;
                 }
                 return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Get keys
+     *
+     * @param {any} msg - filters
+     *
+     * @returns {any} - keys
+     */
+    ApiResponse(MessageAPI.GET_USER_KEYS,
+        async (msg: {
+            filters: any,
+            user: IAuthUser
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { filters, user } = msg;
+                const { pageIndex, pageSize } = filters;
+
+                const otherOptions: any = {};
+                const _pageSize = parseInt(pageSize, 10);
+                const _pageIndex = parseInt(pageIndex, 10);
+                if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = _pageSize;
+                    otherOptions.offset = _pageIndex * _pageSize;
+                } else {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = 100;
+                }
+                const query: any = {
+                    owner: user.did
+                };
+                const [items, count] = await DatabaseServer.getKeysAndCount(query, otherOptions);
+                for (const item of items) {
+                    const policy = await DatabaseServer.getPolicy({ messageId: item.messageId }, { fields: ['name'] } as any);
+                    (item as any).policyName = policy?.name;
+                    (item as any).policyVersion = policy?.version;
+                }
+                return new MessageResponse({ items, count });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Generate keys
+     *
+     * @param {any} msg
+     *
+     * @returns {any} - key
+     */
+    ApiResponse(MessageAPI.GENERATE_USER_KEYS,
+        async (msg: {
+            user: IAuthUser,
+            messageId: string,
+            key: string
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { messageId, user } = msg;
+                let { key } = msg;
+                const item = await DatabaseServer.saveKey({
+                    messageId,
+                    owner: user.did
+                });
+                if (!key) {
+                    key = PrivateKey.generate().toString();
+                }
+                const wallet = new Wallet();
+                await wallet.setUserKey(
+                    user.did,
+                    KeyType.MESSAGE_KEY,
+                    `${user.did}#${item.messageId}`,
+                    key,
+                    msg?.user?.id
+                );
+                return new MessageResponse({ ...item, key });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Delete key
+     *
+     * @param {any} msg
+     *
+     * @returns {boolean}
+     */
+    ApiResponse(MessageAPI.DELETE_USER_KEYS,
+        async (msg: {
+            user: IAuthUser,
+            id: string
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { user, id } = msg;
+                const item = await DatabaseServer.getKeyById(id);
+                if (!item || item.owner !== user.did) {
+                    throw new Error('Invalid key');
+                }
+                await DatabaseServer.deleteKey(item);
+                return new MessageResponse(true);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 return new MessageError(error);

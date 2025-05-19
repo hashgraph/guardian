@@ -3,10 +3,11 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 context("Artifacts", { tags: ['artifacts', 'secondPool', 'all'] }, () => {
+
     const SRUsername = Cypress.env('SRUser');
 
-    let policyId
-    
+    let policyId;
+
     it("Upload artifact", { tags: ['smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({

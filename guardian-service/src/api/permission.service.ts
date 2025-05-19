@@ -94,7 +94,11 @@ async function createMessageServer(owner: IOwner): Promise<MessageServer> {
     const topicConfig = await TopicConfig.fromObject(row, true, owner.id);
     const users = new Users();
     const root = await users.getHederaAccount(owner.creator, owner.id);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
+    const messageServer = new MessageServer({
+        operatorId: root.hederaAccountId,
+        operatorKey: root.hederaAccountKey,
+        signOptions: root.signOptions
+    });
     messageServer.setTopicObject(topicConfig);
     return messageServer;
 }
@@ -283,6 +287,8 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 switch (entity) {
                     case KeyEntity.KEY:
                         return new MessageResponse(did === entityId);
+                    case KeyEntity.MESSAGE:
+                        return new MessageResponse(true);
                     case KeyEntity.DID:
                         return new MessageResponse(
                             did === entityId?.split('#')[0]

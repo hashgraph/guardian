@@ -219,6 +219,7 @@ export class PolicyActionsUtils {
      * request-vc-document-block
      * reassigning.block
      * tag-manager
+     * multi-sign-block
      */
     public static async signVC(
         ref: AnyBlockType,
@@ -250,6 +251,7 @@ export class PolicyActionsUtils {
     /**
      * send-to-guardian-block
      * tag-manager
+     * multi-sign-block
      */
     public static async sendMessage(
         ref: AnyBlockType,
@@ -480,9 +482,5 @@ export class PolicyActionsUtils {
 
     /**
      * group-manager
-     */
-
-    /**
-     * multi-sign-block
      */
 }

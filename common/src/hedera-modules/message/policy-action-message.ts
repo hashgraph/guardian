@@ -6,6 +6,14 @@ import { PolicyActionMessageBody } from './message-body.interface.js';
 import { IPFS } from '../../helpers/index.js';
 import { ITopicMessage } from '../../topic-listener/topic-listener.js';
 import { PolicyAction } from '../../entity/index.js';
+import {
+    bytesToUtf8,
+    CipherStrategy,
+    decryptWithKeyDerivedFromString,
+    encryptWithKeyDerivedFromString,
+    utf8ToBytes,
+} from '@meeco/cryppo';
+import { SerializationFormat } from '@meeco/cryppo/dist/src/serialization-versions.js';
 
 /**
  * Policy action message
@@ -90,9 +98,16 @@ export class PolicyActionMessage extends Message {
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
+    public async toDocuments(key: string): Promise<ArrayBuffer[]> {
         const json = JSON.stringify(this.document);
-        const buffer = Buffer.from(json);
+        const encryptedDocument = await encryptWithKeyDerivedFromString({
+            passphrase: key,
+            data: utf8ToBytes(json),
+            strategy: CipherStrategy.AES_GCM,
+            serializationVersion: SerializationFormat.latest_version,
+        });
+        const data = encryptedDocument.serialized;
+        const buffer = Buffer.from(data);
         return [buffer];
     }
 
@@ -100,8 +115,13 @@ export class PolicyActionMessage extends Message {
      * Load documents
      * @param documents
      */
-    public loadDocuments(documents: string[]): any {
-        this.document = JSON.parse(documents[0]);
+    public async loadDocuments(documents: string[], key: string): Promise<PolicyActionMessage> {
+        const decrypted = await decryptWithKeyDerivedFromString({
+            serialized: documents[0],
+            passphrase: key,
+        });
+        const json = bytesToUtf8(decrypted);
+        this.document = JSON.parse(json);
         return this;
     }
 

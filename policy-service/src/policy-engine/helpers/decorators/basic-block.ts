@@ -98,6 +98,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             public policyId: string;
             /**
+             * Policy message id
+             */
+            public messageId: string;
+            /**
              * Policy owner
              */
             public policyOwner: string;
@@ -496,6 +500,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public setPolicyInstance(policyId: string, policy: Policy) {
                 this.policyInstance = policy;
                 this.policyId = policyId;
+                this.messageId = policy?.messageId;
                 if (PolicyHelper.isDryRunMode(this.policyInstance)) {
                     this._dryRun = this.policyId;
                 } else {

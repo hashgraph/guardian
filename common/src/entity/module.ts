@@ -131,7 +131,10 @@ export class PolicyModule extends BaseEntity {
             if (this.configFileId) {
                 DataBaseHelper.gridFS
                     .delete(this.configFileId)
-                    .catch(console.error);
+                    .catch((reason) => {
+                        console.error(`BeforeUpdate: PolicyModule, ${this._id}, documentFileId`)
+                        console.error(reason)
+                    });
             }
             await this.createConfig();
         }
@@ -163,7 +166,10 @@ export class PolicyModule extends BaseEntity {
         if (this.configFileId) {
             DataBaseHelper.gridFS
                 .delete(this.configFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`AfterDelete: PolicyModule, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
         }
     }
 }

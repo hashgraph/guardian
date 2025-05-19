@@ -1,10 +1,10 @@
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
-import { Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
+import { LocationType, Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, pageHeader, TaskDTO, ExternalPolicyDTO, ImportMessageDTO, PolicyPreviewDTO, PolicyDTO } from '#middlewares';
+import { Examples, InternalServerErrorDTO, pageHeader, TaskDTO, ExternalPolicyDTO, ImportMessageDTO, PolicyPreviewDTO, PolicyRequestDTO, PolicyRequestCountDTO } from '#middlewares';
 import { Guardians, InternalException, EntityOwner, TaskManager, ServiceError, PolicyEngine } from '#helpers';
-import { AuthUser, Auth } from '#auth';
+import { AuthUser, Auth, AuthAndLocation } from '#auth';
 
 @Controller('external-policies')
 @ApiTags('external-policies')
@@ -355,7 +355,7 @@ export class ExternalPoliciesApi {
     }
 
     /**
-     * Return a list of all policies V2 05.06.2024
+     * Returns the list of requests
      */
     @Get('/requests')
     @Auth(
@@ -388,17 +388,31 @@ export class ExternalPoliciesApi {
         required: false,
         example: '001'
     })
+    @ApiQuery({
+        name: 'status',
+        type: String,
+        description: 'Status',
+        required: false,
+        example: 'NEW'
+    })
+    @ApiQuery({
+        name: 'type',
+        type: String,
+        description: 'Type',
+        required: false,
+        example: 'ACTION'
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: PolicyDTO,
+        type: PolicyRequestDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @ApiExtraModels(PolicyRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getRemoteRequests(
         @AuthUser() user: IAuthUser,
@@ -406,13 +420,18 @@ export class ExternalPoliciesApi {
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
         @Query('policyId') policyId?: string,
-    ): Promise<any> {
+        @Query('status') status?: string,
+        @Query('type') type?: string,
+    ): Promise<PolicyRequestDTO[]> {
         try {
             const options: any = {
-                filters: {},
+                filters: {
+                    policyId,
+                    status,
+                    type
+                },
                 pageIndex,
-                pageSize,
-                policyId
+                pageSize
             };
             const engineService = new PolicyEngine();
             const { items, count } = await engineService.getRemoteRequests(options, user);
@@ -424,13 +443,16 @@ export class ExternalPoliciesApi {
     }
 
     /**
-     * Update schema rule
+     * UApproves a request
      */
     @Put('/requests/:messageId/approve')
-    @Auth(
-        Permissions.POLICIES_POLICY_READ,
-        Permissions.POLICIES_POLICY_EXECUTE,
-        Permissions.POLICIES_POLICY_MANAGE,
+    @AuthAndLocation(
+        [LocationType.LOCAL],
+        [
+            Permissions.POLICIES_POLICY_READ,
+            Permissions.POLICIES_POLICY_EXECUTE,
+            Permissions.POLICIES_POLICY_MANAGE
+        ]
     )
     @ApiOperation({
         summary: 'Approves a request for an action from a remote Guardian.',
@@ -446,22 +468,22 @@ export class ExternalPoliciesApi {
     @ApiBody({
         description: 'Object that contains a configuration.',
         required: true,
-        type: PolicyDTO
+        type: PolicyRequestDTO
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyDTO
+        type: PolicyRequestDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
-    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @ApiExtraModels(PolicyRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async approveRemoteRequest(
         @AuthUser() user: IAuthUser,
         @Param('messageId') messageId: string
-    ): Promise<PolicyDTO> {
+    ): Promise<PolicyRequestDTO> {
         try {
             if (!messageId) {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -474,13 +496,16 @@ export class ExternalPoliciesApi {
     }
 
     /**
-     * Update schema rule
+     * Rejects a request
      */
     @Put('/requests/:messageId/reject')
-    @Auth(
-        Permissions.POLICIES_POLICY_READ,
-        Permissions.POLICIES_POLICY_EXECUTE,
-        Permissions.POLICIES_POLICY_MANAGE,
+    @AuthAndLocation(
+        [LocationType.LOCAL],
+        [
+            Permissions.POLICIES_POLICY_READ,
+            Permissions.POLICIES_POLICY_EXECUTE,
+            Permissions.POLICIES_POLICY_MANAGE
+        ]
     )
     @ApiOperation({
         summary: 'Rejects a request for an action from a remote Guardian',
@@ -496,28 +521,134 @@ export class ExternalPoliciesApi {
     @ApiBody({
         description: 'Object that contains a configuration.',
         required: true,
-        type: PolicyDTO
+        type: PolicyRequestDTO
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyDTO
+        type: PolicyRequestDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
-    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @ApiExtraModels(PolicyRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async rejectRemoteRequest(
         @AuthUser() user: IAuthUser,
         @Param('messageId') messageId: string
-    ): Promise<PolicyDTO> {
+    ): Promise<PolicyRequestDTO> {
         try {
             if (!messageId) {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const engineService = new PolicyEngine();
             return await engineService.rejectRemoteRequest(messageId, user);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Cancels a request
+     */
+    @Put('/requests/:messageId/cancel')
+    @AuthAndLocation(
+        [LocationType.LOCAL],
+        [
+            Permissions.POLICIES_POLICY_READ,
+            Permissions.POLICIES_POLICY_EXECUTE,
+            Permissions.POLICIES_POLICY_MANAGE
+        ]
+    )
+    @ApiOperation({
+        summary: 'Cancels a request for an action from a remote Guardian',
+        description: 'Cancels a request for an action from a remote Guardian',
+    })
+    @ApiParam({
+        name: 'messageId',
+        type: 'string',
+        required: true,
+        description: 'Action Identifier',
+        example: Examples.MESSAGE_ID,
+    })
+    @ApiBody({
+        description: 'Object that contains a configuration.',
+        required: true,
+        type: PolicyRequestDTO
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: PolicyRequestDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(PolicyRequestDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async cancelRemoteRequest(
+        @AuthUser() user: IAuthUser,
+        @Param('messageId') messageId: string
+    ): Promise<PolicyRequestDTO> {
+        try {
+            if (!messageId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const engineService = new PolicyEngine();
+            return await engineService.cancelRemoteRequest(messageId, user);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Reload a request
+     */
+    @Put('/requests/:messageId/reload')
+    @AuthAndLocation(
+        [LocationType.LOCAL],
+        [
+            Permissions.POLICIES_POLICY_READ,
+            Permissions.POLICIES_POLICY_EXECUTE,
+            Permissions.POLICIES_POLICY_MANAGE
+        ]
+    )
+    @ApiOperation({
+        summary: 'Reloads a request for an action from a remote Guardian',
+        description: 'Reloads a request for an action from a remote Guardian',
+    })
+    @ApiParam({
+        name: 'messageId',
+        type: 'string',
+        required: true,
+        description: 'Action Identifier',
+        example: Examples.MESSAGE_ID,
+    })
+    @ApiBody({
+        description: 'Object that contains a configuration.',
+        required: true,
+        type: PolicyRequestDTO
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: PolicyRequestDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(PolicyRequestDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async loadRemoteRequest(
+        @AuthUser() user: IAuthUser,
+        @Param('messageId') messageId: string
+    ): Promise<PolicyRequestDTO> {
+        try {
+            if (!messageId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const engineService = new PolicyEngine();
+            return await engineService.loadRemoteRequest(messageId, user);
         } catch (error) {
             await InternalException(error, this.logger);
         }
@@ -545,7 +676,7 @@ export class ExternalPoliciesApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Number,
+        type: PolicyRequestCountDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -557,15 +688,15 @@ export class ExternalPoliciesApi {
         @AuthUser() user: IAuthUser,
         @Response() res: any,
         @Query('policyId') policyId?: string,
-    ): Promise<any> {
+    ): Promise<PolicyRequestCountDTO> {
         try {
             const options: any = {
                 filters: {},
                 policyId
             };
             const engineService = new PolicyEngine();
-            const { requestsCount, actionsCount, total } = await engineService.getRemoteRequestsCount(options, user);
-            return res.send({ requestsCount, actionsCount, total });
+            const result = await engineService.getRemoteRequestsCount(options, user);
+            return res.send(result);
         } catch (error) {
             await InternalException(error, this.logger);
         }

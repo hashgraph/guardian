@@ -1192,7 +1192,10 @@ async function saveRetireVC(
         type: TopicType.RetireTopic,
     } as any, false, userId);
 
-    const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
+    const messageServer = new MessageServer({
+        operatorId: hederaAccountId,
+        operatorKey: hederaAccountKey
+    });
     messageServer.setTopicObject(topicConfig);
 
     const userTopic = await TopicConfig.fromObject(
@@ -1395,11 +1398,11 @@ export async function contractAPI(
                 MessageAction.CreateContract
             );
             contractMessage.setDocument(contract);
-            const messageServer = new MessageServer(
-                root.hederaAccountId,
-                rootKey,
+            const messageServer = new MessageServer({
+                operatorId: root.hederaAccountId,
+                operatorKey: rootKey,
                 signOptions
-            );
+            });
             const contractMessageResult = await messageServer
                 .setTopicObject(topic)
                 .sendMessage(contractMessage, true, null, userId);

@@ -28,7 +28,7 @@ jobs:
                   ref: 'develop'
 
             - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af #v4.1.0
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 #v4.4.0
               with:
                   node-version: ${{ matrix.node-version }}
 
@@ -84,7 +84,7 @@ jobs:
                   port: '4222'
 
             - name: Start MongoDB
-              uses: step-security/mongodb-github-action@0b5e704ee1061d729c20e0df4204e69ba6ac6cee # v1.11.1
+              uses: step-security/mongodb-github-action@3160045518552049fae7e4ab834ad6f04836da49 # v1.12.0
               with:
                   mongodb-version: ${{ matrix.mongodb-version }}
 

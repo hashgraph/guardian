@@ -2,6 +2,7 @@ import {
     ApplicationState,
     COMMON_CONNECTION_CONFIG,
     DatabaseServer,
+    Environment,
     GenerateTLSOptionsNats,
     LargePayloadContainer,
     MessageBrokerChannel,
@@ -56,6 +57,10 @@ Promise.all([
     app.listen();
 
     DatabaseServer.connectBD(db);
+
+    Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
+    Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
+    Environment.setNetwork(process.env.HEDERA_NET);
 
     const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
 

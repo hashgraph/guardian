@@ -1688,7 +1688,7 @@ export class PolicyConfigurationComponent implements OnInit {
         const dialogRef = this.dialogService.open(NewModuleDialog, {
             width: '650px',
             styleClass: 'custom-dialog',
-            header: 'New Module',
+            header: 'New Tool',
             closable: true,
             data: {
                 type: 'tool'

@@ -10,7 +10,7 @@ const ConfigPageLocators = {
 	hederaIDUserInput: '[ng-reflect-name="id"]',
 	hederaKeyUserInput: '[ng-reflect-name="key"]',
 	did: 'did:hedera:testnet',
-	submitButton: 'Submit',
+	confirmButton: '[ng-reflect-label="Confirm"]',
 	userNameInMenu: "span[ng-reflect-content='Open Profile']",
 	organizationNameLabel: " OrganizationName ",
 	websiteLabel: " Website ",
@@ -70,7 +70,7 @@ export class ConfigPage {
 			cy.get(ConfigPageLocators.hederaKeyUserInput).type(hederaKey);
 		}
 		cy.contains(ConfigPageLocators.nextButton).click();
-		cy.contains(ConfigPageLocators.submitButton).click();
+		cy.get(ConfigPageLocators.confirmButton).click();
 		Checks.waitForElement(ConfigPageLocators.PasswordChangeButton, 75, 5000);
 		cy.contains(ConfigPageLocators.did).should('not.be.null');
 	}

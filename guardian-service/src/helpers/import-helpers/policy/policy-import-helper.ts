@@ -246,12 +246,13 @@ export class PolicyImportExportHelper {
         userId: string | null
     ): Promise<IPolicyComponents> {
         notifier.start('Load from IPFS');
-        const messageServer = new MessageServer(
-            hederaAccount.hederaAccountId,
-            hederaAccount.hederaAccountKey,
-            hederaAccount.signOptions
-        );
-        const message = await messageServer.getMessage<PolicyMessage>(messageId);
+        const messageServer = new MessageServer({
+            operatorId: hederaAccount.hederaAccountId,
+            operatorKey: hederaAccount.hederaAccountKey,
+            signOptions: hederaAccount.signOptions
+        });
+        const message = await messageServer
+            .getMessage<PolicyMessage>({ messageId, loadIPFS: true, userId });
         if (message.type !== MessageType.InstancePolicy) {
             throw new Error('Invalid Message Type');
         }

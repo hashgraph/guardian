@@ -193,7 +193,10 @@ export class ApprovalDocument extends RestoreEntity implements IApprovalDocument
         if (this.document && this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`BeforeUpdate: ApprovalDocument, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
         }
         await this.createDocument();
     }
@@ -226,7 +229,10 @@ export class ApprovalDocument extends RestoreEntity implements IApprovalDocument
         if (this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`AfterDelete: ApprovalDocument, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
         }
     }
 

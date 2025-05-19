@@ -125,18 +125,6 @@ export class BlockTreeGenerator extends NatsService {
             return new MessageResponse(groups);
         });
 
-        this.getPolicyMessages(PolicyEvents.SELECT_POLICY_GROUP, policyId, async (msg: any) => {
-            const { user, uuid } = msg;
-            const userFull = await this.getUser(policyInstance, user);
-
-            // <-- Record
-            await RecordUtils.RecordSelectGroup(policyId, userFull, uuid);
-            // Record -->
-
-            const result = policyInstance.components.selectGroup(userFull, uuid) as any;
-            return new MessageResponse(result);
-        });
-
         this.getPolicyMessages(PolicyEvents.GET_ROOT_BLOCK_DATA, policyId, async (msg: any) => {
             const { user } = msg;
 
@@ -222,6 +210,17 @@ export class BlockTreeGenerator extends NatsService {
             return await PolicyComponentsUtils.blockSetData(block, userFull, data);
         });
 
+        this.getPolicyMessages(PolicyEvents.SELECT_POLICY_GROUP, policyId, async (msg: any) => {
+            const { user, uuid } = msg;
+            const userFull = await this.getUser(policyInstance, user);
+
+            // <-- Record
+            await RecordUtils.RecordSelectGroup(policyId, userFull, uuid);
+            // Record -->
+
+            return await PolicyComponentsUtils.selectGroup(policyInstance, userFull, uuid);
+        });
+
         this.getPolicyMessages(PolicyEvents.MRV_DATA, policyId, async (msg: any) => {
             const { data } = msg;
 
@@ -295,6 +294,30 @@ export class BlockTreeGenerator extends NatsService {
                 const userFull = await this.getUser(policyInstance, user);
                 const controller = PolicyComponentsUtils.getActionsController(policyId);
                 const row = await controller.rejectRequest(messageId, userFull);
+                return new MessageResponse(row);
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
+
+        this.getPolicyMessages(PolicyEvents.CANCEL_REMOTE_ACTION, policyId, async (msg: any) => {
+            const { messageId, user } = msg;
+            try {
+                const userFull = await this.getUser(policyInstance, user);
+                const controller = PolicyComponentsUtils.getActionsController(policyId);
+                const row = await controller.cancelAction(messageId, userFull);
+                return new MessageResponse(row);
+            } catch (error) {
+                return new MessageError(error, 500);
+            }
+        });
+
+        this.getPolicyMessages(PolicyEvents.RELOAD_REMOTE_ACTION, policyId, async (msg: any) => {
+            const { messageId, user } = msg;
+            try {
+                const userFull = await this.getUser(policyInstance, user);
+                const controller = PolicyComponentsUtils.getActionsController(policyId);
+                const row = await controller.loadAction(messageId, userFull);
                 return new MessageResponse(row);
             } catch (error) {
                 return new MessageError(error, 500);

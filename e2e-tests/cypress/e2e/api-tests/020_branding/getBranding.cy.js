@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Get branding", { tags: ['accounts', 'firstPool', 'all'] }, () => {
+context("Get branding", { tags: ['branding', 'firstPool', 'all'] }, () => {
 
     it("Get branding", () => {
         cy.request({

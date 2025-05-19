@@ -72,11 +72,18 @@
         color: #FFF;
         margin-right: 8px;
     }
-    
+
     .reject-btn {
         width: 100px;
         height: 28px;
         background: #FF432A;
+        color: #FFF;
+    }
+
+    .reload-btn {
+        width: 100px;
+        height: 28px;
+        background: var(--color-primary);
         color: #FFF;
     }
 }
@@ -110,6 +117,21 @@
         color: #FF432A;
         background: #FFEAEA;
     }
+
+    &.CANCELED-status {
+        color: #FF432A;
+        background: #FFEAEA;
+    }
+
+    &.ACTION-status {
+        color: #9c27b0;
+        background: #edd8f0;
+    }
+
+    &.REQUEST-status {
+        color: #4169E2;
+        background: #e1e7fa;
+    }
 }
 
 :host ::ng-deep .operations-btns {
@@ -117,4 +139,8 @@
         height: 28px;
         border-radius: 6px;
     }
+}
+
+.guardian-user-page-filters p-dropdown {
+    margin-right: 18px;
 }

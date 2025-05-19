@@ -124,3 +124,84 @@ export class ProfileDTO extends UserDTO {
     @IsObject()
     vcDocument?: any;
 }
+
+export class PolicyKeyDTO {
+    @ApiProperty({
+        type: 'string',
+        description: 'Key ID',
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    id?: string;
+
+    @ApiProperty({
+        type: 'string',
+        example: Examples.DATE
+    })
+    @IsOptional()
+    @IsString()
+    createDate?: string;
+
+    @ApiProperty({
+        type: 'string',
+        example: Examples.DATE
+    })
+    @IsOptional()
+    @IsString()
+    updateDate?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Policy Message ID',
+        example: Examples.MESSAGE_ID
+    })
+    @IsOptional()
+    @IsString()
+    messageId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Key owner',
+        example: Examples.DID
+    })
+    @IsOptional()
+    @IsString()
+    owner?: string;
+
+    @ApiProperty({
+        type: 'string',
+        example: 'Policy name'
+    })
+    @IsOptional()
+    @IsString()
+    policyName?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'New key',
+        example: 'Key'
+    })
+    @IsOptional()
+    @IsString()
+    key?: string;
+}
+
+export class PolicyKeyConfigDTO {
+    @ApiProperty({
+        type: 'string',
+        description: 'Policy Message ID',
+        example: Examples.MESSAGE_ID
+    })
+    @IsString()
+    messageId: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'New key',
+        example: 'Key'
+    })
+    @IsOptional()
+    @IsString()
+    key?: string;
+}

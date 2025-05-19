@@ -158,6 +158,7 @@
             <div *ngIf="policyInfo" class="policy-info-container">
                 <div class="policy-name-container">
                     <span *ngIf="policyInfo && policyInfo.name">{{ policyInfo.name }}</span>
+                    <span *ngIf="policyInfo && policyInfo.status === 'VIEW'" class="policy-status">Remote</span>
                 </div>
 
                 <div class="policy-additional-info-container">

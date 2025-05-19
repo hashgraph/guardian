@@ -93,7 +93,10 @@ export class SplitDocuments extends BaseEntity {
             if (this.documentFileId) {
                 DataBaseHelper.gridFS
                     .delete(this.documentFileId)
-                    .catch(console.error);
+                    .catch((reason) => {
+                        console.error(`BeforeUpdate: SplitDocuments, ${this._id}, documentFileId`)
+                        console.error(reason)
+                    });
             }
             await this.createDocument();
         }
@@ -125,7 +128,10 @@ export class SplitDocuments extends BaseEntity {
         if (this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`AfterDelete: SplitDocuments, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
         }
     }
 }

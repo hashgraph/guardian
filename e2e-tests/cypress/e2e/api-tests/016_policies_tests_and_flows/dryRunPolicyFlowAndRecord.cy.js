@@ -4,6 +4,7 @@ import * as Authorization from "../../../support/authorization";
 
 context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
+
     let policyId, registrantDid, adminDid, approverDid, applicationDocumentId, deviceDocumentId, issueDocumentId;
 
     before('Import policy and dry-run it', () => {
@@ -490,6 +491,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
             cy.request({
                 method: METHOD.POST,
                 url: API.ApiServer + API.Record + policyId + "/" + API.RecordStop,
+                encoding: null,
                 headers: {
                     authorization
                 },
@@ -497,12 +499,9 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 expect(response.body).to.not.be.oneOf([null, ""]);
-                let record = Cypress.Blob.arrayBufferToBinaryString(
-                    response.body
-                );
                 cy.writeFile(
                     "cypress/fixtures/recordedDryRunFlow.record",
-                    record,
+                    Cypress.Blob.arrayBufferToBinaryString(response.body),
                     "binary"
                 );
             })
