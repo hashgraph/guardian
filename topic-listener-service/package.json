@@ -3,11 +3,11 @@
     "dependencies": {
         "@guardian/common": "^3.2.0-rc",
         "@guardian/interfaces": "^3.2.0-rc",
-        "@hashgraph/sdk": "2.52.0",
+        "@hashgraph/sdk": "2.63.0",
         "@nestjs/common": "^11.0.11",
         "@nestjs/core": "^11.0.11",
         "@nestjs/microservices": "^11.0.11",
-        "axios": "^1.3.6",
+        "axios": "^1.8.3",
         "axios-retry": "^3.2.4",
         "cross-blob": "^2.0.1",
         "dotenv": "^16.0.0",
@@ -39,12 +39,12 @@
     "files": [
         "dist"
     ],
-    "license": "Apache-2.0",
-    "main": "dist/index.js",
-    "name": "topic-listener-service",
     "imports": {
         "#constants": "./dist/constants/index.js"
     },
+    "license": "Apache-2.0",
+    "main": "dist/index.js",
+    "name": "topic-listener-service",
     "scripts": {
         "build": "tsc && tsc-alias",
         "build:prod": "tsc --project tsconfig.production.json && tsc-alias",

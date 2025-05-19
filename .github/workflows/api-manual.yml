@@ -30,10 +30,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af #v4.1.0
-        with:
-          node-version: ${{ matrix.node-version }}
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 #v4.4.0
+              with:
+                  node-version: ${{ matrix.node-version }}
 
       - name: Setup Yarn
         uses: Borales/actions-yarn@3766bb1335b98fb13c60eaf358fe20811b730a88 # v5.0.0
@@ -85,10 +85,10 @@ jobs:
         with:
           port: "4222"
 
-      - name: Start MongoDB
-        uses: step-security/mongodb-github-action@0b5e704ee1061d729c20e0df4204e69ba6ac6cee # v1.11.1
-        with:
-          mongodb-version: ${{ matrix.mongodb-version }}
+            - name: Start MongoDB
+              uses: step-security/mongodb-github-action@3160045518552049fae7e4ab834ad6f04836da49 # v1.12.0
+              with:
+                  mongodb-version: ${{ matrix.mongodb-version }}
 
       - name: Run Guardian
         run: |
@@ -152,8 +152,8 @@ jobs:
           npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=preparing ${{ inputs.tags }},grepFilterSpecs=true" --spec "cypress/e2e/api-tests/**/*.cy.js" --browser chrome
           popd
 
-      - name: Publish API Test Results
-        uses: EnricoMi/publish-unit-test-result-action@170bf24d20d201b842d7a52403b73ed297e6645b
-        if: always()
-        with:
-          files: e2e-tests/cypress/test_results/**/*.xml
+            - name: Publish API Test Results
+              uses: step-security/publish-unit-test-result-action@cc82caac074385ae176d39d2d143ad05e1130b2d # v2.18.0
+              if: always()
+              with:
+                  files: e2e-tests/cypress/test_results/**/*.xml

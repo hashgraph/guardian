@@ -6,10 +6,11 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyGetData } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
 import { BlockActionError } from '../errors/index.js';
-import { MessageAction, MessageServer, PolicyRoles, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcHelper, VPMessage, } from '@guardian/common';
+import { MessageAction, PolicyRoles, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcHelper, VPMessage, } from '@guardian/common';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { Inject } from '../../helpers/decorators/inject.js';
 import { DocumentCategoryType, LocationType } from '@guardian/interfaces';
+import { PolicyActionsUtils } from '../policy-actions/utils.js';
 
 /**
  * Sign Status
@@ -155,19 +156,13 @@ export class MultiSignBlock {
             throw new BlockActionError('The document has already been signed', ref.blockType, ref.uuid);
         }
 
-        const userCred = await PolicyUtils.getUserCredentials(ref, user.did,user.userId);
-        const didDocument = await userCred.loadDidDocument(ref, user.userId);
-
         const groupContext = await PolicyUtils.getGroupContext(ref, user);
         const vcDocument = sourceDoc.document;
         const credentialSubject = vcDocument.credentialSubject[0];
         const uuid = await ref.components.generateUUID();
-        const newVC = await this.vcHelper.createVerifiableCredential(
-            credentialSubject,
-            didDocument,
-            null,
-            { uuid, group: groupContext }
-        );
+
+        const newVC = await PolicyActionsUtils
+            .signVC(ref, credentialSubject, user.did, { uuid, group: groupContext }, user.userId);
 
         await ref.databaseServer.setMultiSigDocument(
             ref.uuid,
@@ -222,9 +217,7 @@ export class MultiSignBlock {
 
         if (signed >= signedThreshold) {
             const docOwner = await PolicyUtils.getDocumentOwner(ref, sourceDoc, userId);
-            const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner,userId);
-            const documentOwnerCred = await PolicyUtils.getUserCredentials(ref, docOwner.did,userId);
-
+            const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
             const policyOwnerDocument = await policyOwnerCred.loadDidDocument(ref, userId);
 
             const vcs = data.map(e => VcDocument.fromJsonTree(e.document));
@@ -236,23 +229,14 @@ export class MultiSignBlock {
                 { uuid }
             );
 
-            const documentOwnerHederaCred = await documentOwnerCred.loadHederaCredentials(ref, userId);
-            const signOptions = await documentOwnerCred.loadSignOptions(ref, userId);
             const vpMessage = new VPMessage(MessageAction.CreateVP);
             vpMessage.setDocument(vp);
             vpMessage.setRelationships(sourceDoc.messageId ? [sourceDoc.messageId] : []);
             vpMessage.setUser(null);
             const topic = await PolicyUtils.getPolicyTopic(ref, sourceDoc.topicId, userId);
-            const messageServer = new MessageServer(
-                documentOwnerHederaCred.hederaAccountId,
-                documentOwnerHederaCred.hederaAccountKey,
-                signOptions,
-                ref.dryRun
-            );
+            const vpMessageResult = await PolicyActionsUtils
+                .sendMessage(ref, topic, vpMessage, docOwner.did, true, docOwner.userId);
 
-            const vpMessageResult = await messageServer
-                .setTopicObject(topic)
-                .sendMessage(vpMessage, true, null, userId);
             const vpMessageId = vpMessageResult.getId();
             const vpDocument = PolicyUtils.createVP(ref, docOwner, vp);
             vpDocument.type = DocumentCategoryType.MULTI_SIGN;

@@ -33,4 +33,8 @@ export class TagCollectionRestore extends CollectionRestore<Tag> {
     protected override createRow(data: Tag): Tag {
         return data;
     }
+
+    protected override async decryptRow(row: Tag): Promise<Tag> {
+        return row;
+    }
 }

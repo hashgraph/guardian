@@ -78,11 +78,11 @@ export class SchemaImport {
             this.root.hederaAccountKey,
             this.root.signOptions
         );
-        this.messageServer = new MessageServer(
-            this.root.hederaAccountId,
-            this.root.hederaAccountKey,
-            this.root.signOptions
-        );
+        this.messageServer = new MessageServer({
+            operatorId: this.root.hederaAccountId,
+            operatorKey: this.root.hederaAccountKey,
+            signOptions: this.root.signOptions
+        });
         this.owner = user;
         return this.root;
     }
@@ -352,7 +352,7 @@ export class SchemaImport {
     private async importTags(topics: Set<string>, userId: string | null): Promise<void> {
         this.notifier.start('Load tags');
         const tags: any[] = [];
-        const messageServer = new MessageServer(null, null);
+        const messageServer = new MessageServer(null);
         for (const id of topics) {
             const tagMessages = await messageServer.getMessages<TagMessage>(
                 id,

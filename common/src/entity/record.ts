@@ -100,7 +100,10 @@ export class Record extends BaseEntity {
             if (this.documentFileId) {
                 DataBaseHelper.gridFS
                     .delete(this.documentFileId)
-                    .catch(console.error);
+                    .catch((reason) => {
+                        console.error(`BeforeUpdate: Record, ${this._id}, documentFileId`)
+                        console.error(reason)
+                    });
             }
             await this.createDocument();
         }
@@ -130,7 +133,10 @@ export class Record extends BaseEntity {
         if (this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`AfterDelete: Record, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
         }
     }
 }

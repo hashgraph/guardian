@@ -20,7 +20,10 @@ export class Database implements IVault {
      * @param key
      */
     async getKey(token: string, type: string, key: string): Promise<string> {
-        const item = await new DatabaseServer().findOne(WalletAccount, { token, type: type + '|' + key });
+        const item = await new DatabaseServer().findOne(WalletAccount, {
+            token,
+            type: type + '|' + key
+        }, { orderBy: { createDate: -1 } });
         return item?.key
     }
 
@@ -45,7 +48,7 @@ export class Database implements IVault {
      * @param type
      */
     async getGlobalApplicationKey(type: string): Promise<string> {
-        const item = await new DatabaseServer().findOne(WalletAccount,{ type });
+        const item = await new DatabaseServer().findOne(WalletAccount, { type });
         return item?.key;
     }
 
@@ -55,7 +58,7 @@ export class Database implements IVault {
      * @param key
      */
     async setGlobalApplicationKey(type: string, key: string): Promise<void> {
-        let setting: WalletAccount = await new DatabaseServer().findOne(WalletAccount,{ type });
+        let setting: WalletAccount = await new DatabaseServer().findOne(WalletAccount, { type });
         if (!setting) {
             setting = new DatabaseServer().create(WalletAccount, { type, key });
         }

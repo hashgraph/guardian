@@ -10,13 +10,13 @@ import { ObjectId } from '@mikro-orm/mongodb';
 @Entity()
 export class PolicyAction extends BaseEntity {
     /**
-     * ID
+     * Action UUID
      */
     @Property({ nullable: true })
     uuid?: string;
 
     /**
-     * ID
+     * Action type
      */
     @Property({ nullable: true })
     type?: PolicyActionType;
@@ -88,7 +88,7 @@ export class PolicyAction extends BaseEntity {
     sender?: string;
 
     /**
-     * Hedera account id
+     * Block Tag
      */
     @Property({
         nullable: true,
@@ -97,7 +97,7 @@ export class PolicyAction extends BaseEntity {
     blockTag?: string;
 
     /**
-     * Hedera account id
+     * Message index
      */
     @Property({
         nullable: true,
@@ -106,7 +106,7 @@ export class PolicyAction extends BaseEntity {
     index?: number;
 
     /**
-     * Document instance
+     * Document
      */
     @Property({ nullable: true, type: 'unknown' })
     document?: any;
@@ -122,6 +122,18 @@ export class PolicyAction extends BaseEntity {
      */
     @Property({ nullable: true })
     lastStatus?: PolicyActionStatus;
+
+    /**
+     * Document loaded
+     */
+    @Property({ nullable: true })
+    loaded?: boolean;
+
+    /**
+     * Policy message id
+     */
+    @Property({ nullable: true })
+    policyMessageId?: string;
 
     /**
      * Set defaults
@@ -163,7 +175,10 @@ export class PolicyAction extends BaseEntity {
             if (this.documentFileId) {
                 DataBaseHelper.gridFS
                     .delete(this.documentFileId)
-                    .catch(console.error);
+                    .catch((reason) => {
+                        console.error(`BeforeUpdate: PolicyAction, ${this._id}, documentFileId`)
+                        console.error(reason)
+                    });
             }
             await this.createDocument();
         }
@@ -192,7 +207,10 @@ export class PolicyAction extends BaseEntity {
         if (this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`AfterDelete: PolicyAction, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
         }
     }
 }

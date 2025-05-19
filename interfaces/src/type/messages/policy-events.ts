@@ -44,6 +44,8 @@ export enum PolicyEvents {
     GET_TAG_BLOCK_MAP = 'policy-event-get-tag-block-map',
     APPROVE_REMOTE_REQUEST = 'approve-remote-request',
     REJECT_REMOTE_REQUEST = 'reject-remote-request',
+    CANCEL_REMOTE_ACTION = 'cancel-remote-action',
+    RELOAD_REMOTE_ACTION = 'reload-remote-action',
     REQUEST_UPDATE_BROADCAST = 'policy-event-request-update-broadcast',
     RESTORE_UPDATE_BROADCAST = 'policy-event-restore-update-broadcast',
 }

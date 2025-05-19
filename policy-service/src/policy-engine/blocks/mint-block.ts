@@ -285,7 +285,7 @@ export class MintBlock {
         }
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
 
-        const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner,userId);
+        const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
         const policyOwnerDid = await policyOwnerCred.loadDidDocument(ref, userId);
 
         const mintVC = await this.createMintVC(policyOwnerDid, token, tokenAmount, ref);
@@ -302,13 +302,14 @@ export class MintBlock {
         ref.log(`Topic Id: ${topicId}`);
 
         const policyOwnerHederaCred = await policyOwnerCred.loadHederaCredentials(ref, userId);
-        const signOptions = await policyOwnerCred.loadSignOptions(ref, userId);
-        const messageServer = new MessageServer(
-            policyOwnerHederaCred.hederaAccountId,
-            policyOwnerHederaCred.hederaAccountKey,
-            signOptions,
-            ref.dryRun
-        );
+        const policyOwnerSignOptions = await policyOwnerCred.loadSignOptions(ref, userId);
+        const messageServer = new MessageServer({
+            operatorId: policyOwnerHederaCred.hederaAccountId,
+            operatorKey: policyOwnerHederaCred.hederaAccountKey,
+            encryptKey: policyOwnerHederaCred.hederaAccountKey,
+            signOptions: policyOwnerSignOptions,
+            dryRun: ref.dryRun
+        });
 
         // #region Save Mint VC
         const topic = await PolicyUtils.getPolicyTopic(ref, topicId, userId);
@@ -365,7 +366,7 @@ export class MintBlock {
             vpMessageId,
             transactionMemo,
             documents,
-            signOptions,
+            policyOwnerSignOptions,
             userId
         );
         return [savedVp, tokenValue];

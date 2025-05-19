@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, ExternalPolicyStatus, LocationType, PolicyActionStatus, PolicyStatus, UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, ExternalPolicyStatus, LocationType, PolicyActionStatus, PolicyActionType, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { filter, forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -31,6 +31,7 @@ export class PolicyRequestsComponent implements OnInit {
 
     public loading: boolean = true;
     public isConfirmed: boolean = false;
+    public isLocalUser: boolean = false;
     public user: UserPermissions = new UserPermissions();
     public owner: string;
     public page: any[];
@@ -43,6 +44,36 @@ export class PolicyRequestsComponent implements OnInit {
     public allPolicies: any[] = [];
     public currentPolicy: any = null;
     public currentPolicyId: string;
+    public currentType: any = null;
+    public currentStatus: any = null;
+
+    public types = [{
+        name: 'All',
+        value: ''
+    }, {
+        name: 'Actions',
+        value: 'ACTION'
+    }, {
+        name: 'Requests',
+        value: 'REQUEST'
+    }];
+
+    public statuses = [{
+        name: 'All',
+        value: ''
+    }, {
+        name: 'New',
+        value: 'NEW'
+    }, {
+        name: 'Completed',
+        value: 'COMPLETED'
+    }, {
+        name: 'Rejected',
+        value: 'REJECTED'
+    }, {
+        name: 'Error',
+        value: 'ERROR'
+    }];
 
     private subscription = new Subscription();
 
@@ -64,6 +95,13 @@ export class PolicyRequestsComponent implements OnInit {
                 tooltip: true
             },
             {
+                id: 'type',
+                title: 'Type',
+                type: 'text',
+                size: '140',
+                tooltip: true,
+            },
+            {
                 id: 'status',
                 title: 'Status',
                 type: 'text',
@@ -78,13 +116,6 @@ export class PolicyRequestsComponent implements OnInit {
                 tooltip: true
             },
             {
-                id: 'documentType',
-                title: 'Document Type',
-                type: 'text',
-                size: '140',
-                tooltip: true,
-            },
-            {
                 id: 'messageId',
                 title: 'Message',
                 type: 'text',
@@ -97,6 +128,13 @@ export class PolicyRequestsComponent implements OnInit {
                 type: 'text',
                 size: '150',
                 tooltip: true
+            },
+            {
+                id: 'operationType',
+                title: 'Operation Type',
+                type: 'text',
+                size: '140',
+                tooltip: true,
             },
             {
                 id: 'options',
@@ -127,6 +165,14 @@ export class PolicyRequestsComponent implements OnInit {
                 if (queryParams.policyId) {
                     this.currentPolicyId = queryParams.policyId;
                 }
+                if (queryParams.type) {
+                    this.currentStatus = queryParams.type;
+                }
+                if (queryParams.status) {
+                    this.currentType = queryParams.status;
+                }
+                this.currentStatus = this.statuses.find((p: any) => p.id === this.currentStatus) || this.statuses[0].value;
+                this.currentType = this.statuses.find((p: any) => p.id === this.currentType) || this.types[0].value;
                 this.loadProfile();
             })
         );
@@ -149,6 +195,7 @@ export class PolicyRequestsComponent implements OnInit {
             this.policyEngineService.all(LocationType.REMOTE),
         ]).subscribe(([profile, remotePolicies]) => {
             this.isConfirmed = !!(profile && profile.confirmed);
+            this.isLocalUser = profile.location === LocationType.LOCAL;
             this.user = new UserPermissions(profile);
             this.owner = this.user.did;
 
@@ -165,6 +212,9 @@ export class PolicyRequestsComponent implements OnInit {
                     this.currentPolicy = policy;
                 }
             }
+
+            this.currentStatus = this.statuses.find((p: any) => p.id === this.currentStatus) || this.statuses[0].value;
+            this.currentType = this.statuses.find((p: any) => p.id === this.currentType) || this.types[0].value;
 
             if (this.user.POLICIES_EXTERNAL_POLICY_UPDATE) {
                 this.columns = [...this._defaultColumns, {
@@ -196,6 +246,13 @@ export class PolicyRequestsComponent implements OnInit {
 
         if (this.currentPolicy) {
             filters.policyId = this.currentPolicy.id;
+        }
+        if (this.currentStatus) {
+            filters.status = this.currentStatus;
+        }
+
+        if (this.currentType) {
+            filters.type = this.currentType;
         }
 
         this.externalPoliciesService
@@ -241,25 +298,103 @@ export class PolicyRequestsComponent implements OnInit {
         this.loadData();
     }
 
-    public onEdit(item: any) {
-        this.router.navigate(['/policy-labels', item.id]);
-    }
-
     public onApprove(item: any) {
-        this.loading = true;
-        this.externalPoliciesService
-            .approveAction(item.messageId)
-            .subscribe((result) => {
-                this.loadData();
-            }, (e) => {
-                this.loading = false;
-            });
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete key',
+                text: `Are you sure want to approve request?`,
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Approve',
+                    class: 'primary'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Approve') {
+                this.loading = true;
+                this.externalPoliciesService
+                    .approveAction(item.messageId)
+                    .subscribe((result) => {
+                        this.loadData();
+                    }, (e) => {
+                        this.loading = false;
+                    });
+            }
+        });
     }
 
     public onReject(item: any) {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete key',
+                text: `Are you sure want to reject request?`,
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Reject',
+                    class: 'delete'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Reject') {
+                this.loading = true;
+                this.externalPoliciesService
+                    .rejectAction(item.messageId)
+                    .subscribe((result) => {
+                        this.loadData();
+                    }, (e) => {
+                        this.loading = false;
+                    });
+            }
+        });
+    }
+
+    public onCancel(item: any) {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete key',
+                text: `Are you sure want to cancel request?`,
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Cancel',
+                    class: 'delete'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Cancel') {
+                this.loading = true;
+                this.externalPoliciesService
+                    .cancelAction(item.messageId)
+                    .subscribe((result) => {
+                        this.loadData();
+                    }, (e) => {
+                        this.loading = false;
+                    });
+            }
+        });
+    }
+
+    public onReload(item: any) {
         this.loading = true;
         this.externalPoliciesService
-            .rejectAction(item.messageId)
+            .reloadAction(item.messageId)
             .subscribe((result) => {
                 this.loadData();
             }, (e) => {
@@ -277,9 +412,48 @@ export class PolicyRequestsComponent implements OnInit {
                 return 'Rejected';
             case PolicyActionStatus.ERROR:
                 return 'Error';
+            case PolicyActionStatus.CANCELED:
+                return 'Canceled';
             default:
                 return 'Incorrect status';
         }
+    }
+
+    getTypeName(row: any) {
+        switch (row.type) {
+            case PolicyActionType.ACTION:
+                return 'Action';
+            case PolicyActionType.REQUEST:
+                return 'Request';
+            default:
+                return 'Incorrect type';
+        }
+    }
+
+    getOperationName(row: any) {
+        if (row.type === PolicyActionType.REQUEST) {
+            switch (row.document?.type) {
+                case 'sign-and-send-role':
+                    return 'Select role';
+                case 'generate-did':
+                    return 'Generate DID Document';
+                case 'sign-vc':
+                    return 'Sign VC Document';
+                case 'send-message':
+                    return 'Send message';
+                case 'send-messages':
+                    return 'Send messages';
+                case 'create-topic':
+                    return 'Create topic';
+                case 'associate-token':
+                    return 'Associate token';
+                case 'dissociate-token':
+                    return 'Dissociate token';
+                default:
+                    return row.document?.type;
+            }
+        }
+        return '';
     }
 
     public openVCDocument(document: any) {

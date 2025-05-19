@@ -16,46 +16,52 @@ import {
     ExternalCollectionBackup,
     ApproveCollectionBackup,
     MintRequestCollectionBackup,
-    MintTransactionCollectionBackup
+    MintTransactionCollectionBackup,
+    PolicyInvitationsCollectionBackup
 } from './collections/index.js';
 
 export class PolicyBackup {
     private readonly policyId: string;
-    private readonly vcBackup: VcCollectionBackup;
-    private readonly vpBackup: VpCollectionBackup;
-    private readonly didBackup: DidCollectionBackup;
-    private readonly stateBackup: StateCollectionBackup;
-    private readonly roleBackup: RoleCollectionBackup;
-    private readonly multiDocBackup: MultiDocCollectionBackup;
-    private readonly tokenBackup: TokenCollectionBackup;
-    private readonly tagBackup: TagCollectionBackup;
-    private readonly docStateBackup: DocStateCollectionBackup;
-    private readonly topicBackup: TopicCollectionBackup;
-    private readonly externalDocBackup: ExternalCollectionBackup;
-    private readonly approveBackup: ApproveCollectionBackup;
-    private readonly mintRequestBackup: MintRequestCollectionBackup;
-    private readonly mintTransactionBackup: MintTransactionCollectionBackup;
+    private readonly messageId: string;
+
+    private readonly vcCollectionBackup: VcCollectionBackup;
+    private readonly vpCollectionBackup: VpCollectionBackup;
+    private readonly didCollectionBackup: DidCollectionBackup;
+    private readonly stateCollectionBackup: StateCollectionBackup;
+    private readonly roleCollectionBackup: RoleCollectionBackup;
+    private readonly multiDocCollectionBackup: MultiDocCollectionBackup;
+    private readonly tokenCollectionBackup: TokenCollectionBackup;
+    private readonly tagCollectionBackup: TagCollectionBackup;
+    private readonly docStateCollectionBackup: DocStateCollectionBackup;
+    private readonly topicCollectionBackup: TopicCollectionBackup;
+    private readonly externalCollectionBackup: ExternalCollectionBackup;
+    private readonly approveCollectionBackup: ApproveCollectionBackup;
+    private readonly mintRequestCollectionBackup: MintRequestCollectionBackup;
+    private readonly mintTransactionCollectionBackup: MintTransactionCollectionBackup;
+    private readonly policyInvitationsCollectionBackup: PolicyInvitationsCollectionBackup;
 
     private lastDiff: PolicyDiff | null;
 
-    constructor(policyId: string) {
+    constructor(policyId: string, messageId: string) {
         this.policyId = policyId;
+        this.messageId = messageId;
         this.lastDiff = null;
 
-        this.vcBackup = new VcCollectionBackup(this.policyId);
-        this.vpBackup = new VpCollectionBackup(this.policyId);
-        this.didBackup = new DidCollectionBackup(this.policyId);
-        this.stateBackup = new StateCollectionBackup(this.policyId);
-        this.roleBackup = new RoleCollectionBackup(this.policyId);
-        this.multiDocBackup = new MultiDocCollectionBackup(this.policyId);
-        this.tokenBackup = new TokenCollectionBackup(this.policyId);
-        this.tagBackup = new TagCollectionBackup(this.policyId);
-        this.docStateBackup = new DocStateCollectionBackup(this.policyId);
-        this.topicBackup = new TopicCollectionBackup(this.policyId);
-        this.externalDocBackup = new ExternalCollectionBackup(this.policyId);
-        this.approveBackup = new ApproveCollectionBackup(this.policyId);
-        this.mintRequestBackup = new MintRequestCollectionBackup(this.policyId);
-        this.mintTransactionBackup = new MintTransactionCollectionBackup(this.policyId);
+        this.vcCollectionBackup = new VcCollectionBackup(this.policyId, this.messageId);
+        this.vpCollectionBackup = new VpCollectionBackup(this.policyId, this.messageId);
+        this.didCollectionBackup = new DidCollectionBackup(this.policyId, this.messageId);
+        this.stateCollectionBackup = new StateCollectionBackup(this.policyId, this.messageId);
+        this.roleCollectionBackup = new RoleCollectionBackup(this.policyId, this.messageId);
+        this.multiDocCollectionBackup = new MultiDocCollectionBackup(this.policyId, this.messageId);
+        this.tokenCollectionBackup = new TokenCollectionBackup(this.policyId, this.messageId);
+        this.tagCollectionBackup = new TagCollectionBackup(this.policyId, this.messageId);
+        this.docStateCollectionBackup = new DocStateCollectionBackup(this.policyId, this.messageId);
+        this.topicCollectionBackup = new TopicCollectionBackup(this.policyId, this.messageId);
+        this.externalCollectionBackup = new ExternalCollectionBackup(this.policyId, this.messageId);
+        this.approveCollectionBackup = new ApproveCollectionBackup(this.policyId, this.messageId);
+        this.mintRequestCollectionBackup = new MintRequestCollectionBackup(this.policyId, this.messageId);
+        this.mintTransactionCollectionBackup = new MintTransactionCollectionBackup(this.policyId, this.messageId);
+        this.policyInvitationsCollectionBackup = new PolicyInvitationsCollectionBackup(this.policyId, this.messageId);
     }
 
     public async init(): Promise<void> {
@@ -92,20 +98,21 @@ export class PolicyBackup {
 
     private async _createFullBackup(): Promise<{ backup: IPolicyDiff, diff: IPolicyDiff }> {
         const lastUpdate = new Date();
-        const vcResult = await this.vcBackup.createCollectionBackup();
-        const vpResult = await this.vpBackup.createCollectionBackup();
-        const didResult = await this.didBackup.createCollectionBackup();
-        const stateResult = await this.stateBackup.createCollectionBackup();
-        const roleResult = await this.roleBackup.createCollectionBackup();
-        const multiDocResult = await this.multiDocBackup.createCollectionBackup();
-        const tokenResult = await this.tokenBackup.createCollectionBackup();
-        const tagResult = await this.tagBackup.createCollectionBackup();
-        const docStateResult = await this.docStateBackup.createCollectionBackup();
-        const topicResult = await this.topicBackup.createCollectionBackup();
-        const externalDocResult = await this.externalDocBackup.createCollectionBackup();
-        const approveResult = await this.approveBackup.createCollectionBackup();
-        const mintRequestCollection = await this.mintRequestBackup.createCollectionBackup();
-        const mintTransactionCollection = await this.mintTransactionBackup.createCollectionBackup();
+        const vcResult = await this.vcCollectionBackup.createCollectionBackup();
+        const vpResult = await this.vpCollectionBackup.createCollectionBackup();
+        const didResult = await this.didCollectionBackup.createCollectionBackup();
+        const stateResult = await this.stateCollectionBackup.createCollectionBackup();
+        const roleResult = await this.roleCollectionBackup.createCollectionBackup();
+        const multiDocResult = await this.multiDocCollectionBackup.createCollectionBackup();
+        const tokenResult = await this.tokenCollectionBackup.createCollectionBackup();
+        const tagResult = await this.tagCollectionBackup.createCollectionBackup();
+        const docStateResult = await this.docStateCollectionBackup.createCollectionBackup();
+        const topicResult = await this.topicCollectionBackup.createCollectionBackup();
+        const externalDocResult = await this.externalCollectionBackup.createCollectionBackup();
+        const approveResult = await this.approveCollectionBackup.createCollectionBackup();
+        const mintRequestCollection = await this.mintRequestCollectionBackup.createCollectionBackup();
+        const mintTransactionCollection = await this.mintTransactionCollectionBackup.createCollectionBackup();
+        const policyInvitationsCollection = await this.policyInvitationsCollectionBackup.createCollectionBackup();
 
         const uuid = GenerateUUIDv4();
         const backup: IPolicyDiff = {
@@ -127,6 +134,7 @@ export class PolicyBackup {
             approveCollection: approveResult.backup,
             mintRequestCollection: mintRequestCollection.backup,
             mintTransactionCollection: mintTransactionCollection.backup,
+            policyInvitationsCollection: policyInvitationsCollection.backup,
         }
         const diff: IPolicyDiff = {
             uuid,
@@ -147,26 +155,28 @@ export class PolicyBackup {
             approveCollection: approveResult.diff,
             mintRequestCollection: mintRequestCollection.diff,
             mintTransactionCollection: mintTransactionCollection.diff,
+            policyInvitationsCollection: policyInvitationsCollection.diff,
         }
         return { backup, diff };
     }
 
     private async _createDiff(oldDiff: IPolicyDiff): Promise<{ backup: IPolicyDiff, diff: IPolicyDiff }> {
         const lastUpdate = new Date();
-        const vcResult = await this.vcBackup.createCollectionDiff(oldDiff.vcCollection, lastUpdate);
-        const vpResult = await this.vpBackup.createCollectionDiff(oldDiff.vpCollection, lastUpdate);
-        const didResult = await this.didBackup.createCollectionDiff(oldDiff.didCollection, lastUpdate);
-        const stateResult = await this.stateBackup.createCollectionDiff(oldDiff.stateCollection, lastUpdate);
-        const roleResult = await this.roleBackup.createCollectionDiff(oldDiff.roleCollection, lastUpdate);
-        const multiDocResult = await this.multiDocBackup.createCollectionDiff(oldDiff.multiDocCollection, lastUpdate);
-        const tokenResult = await this.tokenBackup.createCollectionDiff(oldDiff.tokenCollection, lastUpdate);
-        const tagResult = await this.tagBackup.createCollectionDiff(oldDiff.tagCollection, lastUpdate);
-        const docStateResult = await this.docStateBackup.createCollectionDiff(oldDiff.docStateCollection, lastUpdate);
-        const topicResult = await this.topicBackup.createCollectionDiff(oldDiff.topicCollection, lastUpdate);
-        const externalDocResult = await this.externalDocBackup.createCollectionDiff(oldDiff.externalDocCollection, lastUpdate);
-        const approveResult = await this.approveBackup.createCollectionDiff(oldDiff.approveCollection, lastUpdate);
-        const mintRequestCollection = await this.mintRequestBackup.createCollectionDiff(oldDiff.mintRequestCollection, lastUpdate);
-        const mintTransactionCollection = await this.mintTransactionBackup.createCollectionDiff(oldDiff.mintTransactionCollection, lastUpdate);
+        const vcResult = await this.vcCollectionBackup.createCollectionDiff(oldDiff.vcCollection, lastUpdate);
+        const vpResult = await this.vpCollectionBackup.createCollectionDiff(oldDiff.vpCollection, lastUpdate);
+        const didResult = await this.didCollectionBackup.createCollectionDiff(oldDiff.didCollection, lastUpdate);
+        const stateResult = await this.stateCollectionBackup.createCollectionDiff(oldDiff.stateCollection, lastUpdate);
+        const roleResult = await this.roleCollectionBackup.createCollectionDiff(oldDiff.roleCollection, lastUpdate);
+        const multiDocResult = await this.multiDocCollectionBackup.createCollectionDiff(oldDiff.multiDocCollection, lastUpdate);
+        const tokenResult = await this.tokenCollectionBackup.createCollectionDiff(oldDiff.tokenCollection, lastUpdate);
+        const tagResult = await this.tagCollectionBackup.createCollectionDiff(oldDiff.tagCollection, lastUpdate);
+        const docStateResult = await this.docStateCollectionBackup.createCollectionDiff(oldDiff.docStateCollection, lastUpdate);
+        const topicResult = await this.topicCollectionBackup.createCollectionDiff(oldDiff.topicCollection, lastUpdate);
+        const externalDocResult = await this.externalCollectionBackup.createCollectionDiff(oldDiff.externalDocCollection, lastUpdate);
+        const approveResult = await this.approveCollectionBackup.createCollectionDiff(oldDiff.approveCollection, lastUpdate);
+        const mintRequestCollection = await this.mintRequestCollectionBackup.createCollectionDiff(oldDiff.mintRequestCollection, lastUpdate);
+        const mintTransactionCollection = await this.mintTransactionCollectionBackup.createCollectionDiff(oldDiff.mintTransactionCollection, lastUpdate);
+        const policyInvitationsCollection = await this.policyInvitationsCollectionBackup.createCollectionDiff(oldDiff.policyInvitationsCollection, lastUpdate);
 
         const uuid = GenerateUUIDv4();
         const backup: IPolicyDiff = {
@@ -188,6 +198,7 @@ export class PolicyBackup {
             approveCollection: approveResult.backup,
             mintRequestCollection: mintRequestCollection.backup,
             mintTransactionCollection: mintTransactionCollection.backup,
+            policyInvitationsCollection: policyInvitationsCollection.backup,
         }
         const diff: IPolicyDiff = {
             uuid,
@@ -208,6 +219,7 @@ export class PolicyBackup {
             approveCollection: approveResult.diff,
             mintRequestCollection: mintRequestCollection.diff,
             mintTransactionCollection: mintTransactionCollection.diff,
+            policyInvitationsCollection: policyInvitationsCollection.diff,
         }
         return { backup, diff };
     }

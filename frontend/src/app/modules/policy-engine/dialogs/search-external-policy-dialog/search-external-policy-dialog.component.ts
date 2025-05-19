@@ -38,7 +38,7 @@ export class SearchExternalPolicyDialog {
     public onSubmit(): void {
         this.loading = true;
         this.externalPoliciesService
-            .import(this.timestamp)
+            .import(this.timestamp?.trim())
             .subscribe((response) => {
                 this.ref.close(response);
             }, (e) => {
@@ -51,7 +51,7 @@ export class SearchExternalPolicyDialog {
     public onSearch(): void {
         this.loading = true;
         this.externalPoliciesService
-            .preview(this.timestamp)
+            .preview(this.timestamp?.trim())
             .subscribe((response) => {
                 this.policy = response;
                 if (this.policy) {

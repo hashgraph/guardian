@@ -61,7 +61,7 @@
     font-size: 18px;
     color: var(--color-grey-5);
     background-color: #ffffffa9;
-    z-index: 300;
+    z-index: 3000;
 
     p {
         max-width: 500px;
@@ -670,6 +670,18 @@ a.go-back-link svg {
     font-style: normal;
     font-weight: 600;
     line-height: normal;
+    position: relative;
+
+    .policy-status {
+        padding: 6px 12px;
+        background: #E1E7EF;
+        margin: 4px 16px;
+        border-radius: 6px;
+        color: #6f7279;
+        font-size: 14px;
+        position: absolute;
+        top: 5px;
+    }
 }
 
 .policy-additional-info-container {

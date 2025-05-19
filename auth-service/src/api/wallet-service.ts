@@ -96,11 +96,11 @@ export class WalletService extends NatsService {
         });
 
         this.getMessages<IGetGlobalApplicationKey, IGetKeyResponse>(WalletEvents.GET_GLOBAL_APPLICATION_KEY, async (msg) => {
-            const {type, userId} = msg;
+            const { type, userId } = msg;
 
             try {
                 const key = await this.vault.getGlobalApplicationKey(type);
-                return new MessageResponse({key});
+                return new MessageResponse({ key });
             } catch (error) {
                 await logger.error(error, ['AUTH_SERVICE'], userId);
                 return new MessageError(error);
@@ -108,7 +108,7 @@ export class WalletService extends NatsService {
         });
 
         this.getMessages<ISetGlobalApplicationKey, null>(WalletEvents.SET_GLOBAL_APPLICATION_KEY, async (msg) => {
-            const {type, key, userId} = msg;
+            const { type, key, userId } = msg;
 
             try {
                 await this.vault.setGlobalApplicationKey(type, key);

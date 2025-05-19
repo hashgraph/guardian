@@ -14,7 +14,12 @@ import { TOKEN_REQUIRED_PROPS } from '#constants';
  * @param policyId
  * @param notEmpty
  */
-function setTokensPolicies<T>(tokens: any[], map: any[], policyId?: string, notEmpty?: boolean): T[] {
+function setTokensPolicies<T>(
+    tokens: any[],
+    map: any[],
+    policyId?: string,
+    notEmpty?: boolean
+): T[] {
     if (!tokens) {
         return [];
     }
@@ -151,7 +156,7 @@ export class TokensApi {
                 if (UserPermissions.has(user, Permissions.TOKENS_TOKEN_EXECUTE) && status !== 'All') {
                     tokensAndCount = await guardians.getAssociatedTokens(owner, user.did, parseInteger(pageIndex), parseInteger(pageSize));
                     const map = await engineService.getTokensMap(owner, [PolicyStatus.PUBLISH, PolicyStatus.VIEW]);
-                    tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
+                    // tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
                     tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, true);
                 } else {
                     tokensAndCount = await guardians.getTokensPage(owner, parseInteger(pageIndex), parseInteger(pageSize));
@@ -244,7 +249,7 @@ export class TokensApi {
                 if (UserPermissions.has(user, Permissions.TOKENS_TOKEN_EXECUTE) && status !== 'All') {
                     tokensAndCount = await guardians.getAssociatedTokens(owner, user.did, parseInteger(pageIndex), parseInteger(pageSize));
                     const map = await engineService.getTokensMap(owner, [PolicyStatus.PUBLISH, PolicyStatus.VIEW]);
-                    tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
+                    // tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
                     tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, true);
                 } else {
                     const fields: string[] = Object.values(TOKEN_REQUIRED_PROPS)
