@@ -1,4 +1,4 @@
-import { ExportMessageDTO, PoliciesValidationDTO, PolicyDTO, PolicyPreviewDTO, PolicyValidationDTO, PolicyVersionDTO } from '#middlewares';
+import { ExportMessageDTO, PoliciesValidationDTO, PolicyDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO } from '#middlewares';
 import { IAuthUser, NatsService } from '@guardian/common';
 import { DocumentType, GenerateUUIDv4, IOwner, MigrationConfig, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
 import { Singleton } from '../helpers/decorators/singleton.js';
@@ -1056,21 +1056,8 @@ export class PolicyEngine extends NatsService {
      * @param filters
      * @param owner
      */
-    public async getRemoteRequestsCount<T extends {
-        /**
-         * Count with NEW status
-         */
-        requestsCount: number,
-        /**
-         * Count with NEW status
-         */
-        actionsCount: number,
-        /**
-         * Total count
-         */
-        total: number
-    }>(options: any, user: IAuthUser): Promise<T> {
-        return await this.sendMessage<T>(PolicyEngineEvents.GET_REMOTE_REQUESTS_COUNT, { options, user });
+    public async getRemoteRequestsCount(options: any, user: IAuthUser): Promise<PolicyRequestCountDTO> {
+        return await this.sendMessage(PolicyEngineEvents.GET_REMOTE_REQUESTS_COUNT, { options, user });
     }
 
     /**

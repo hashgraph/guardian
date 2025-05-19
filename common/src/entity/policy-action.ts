@@ -10,13 +10,13 @@ import { ObjectId } from '@mikro-orm/mongodb';
 @Entity()
 export class PolicyAction extends BaseEntity {
     /**
-     * ID
+     * Action UUID
      */
     @Property({ nullable: true })
     uuid?: string;
 
     /**
-     * ID
+     * Action type
      */
     @Property({ nullable: true })
     type?: PolicyActionType;
@@ -88,7 +88,7 @@ export class PolicyAction extends BaseEntity {
     sender?: string;
 
     /**
-     * Hedera account id
+     * Block Tag
      */
     @Property({
         nullable: true,
@@ -97,7 +97,7 @@ export class PolicyAction extends BaseEntity {
     blockTag?: string;
 
     /**
-     * Hedera account id
+     * Message index
      */
     @Property({
         nullable: true,
@@ -106,7 +106,7 @@ export class PolicyAction extends BaseEntity {
     index?: number;
 
     /**
-     * Document instance
+     * Document
      */
     @Property({ nullable: true, type: 'unknown' })
     document?: any;

@@ -2,7 +2,7 @@ import { Permissions, TaskAction } from '@guardian/interfaces';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req, Response, Query, Delete } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO, Examples, InternalServerErrorDTO, ProfileDTO, TaskDTO, pageHeader } from '#middlewares';
+import { CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO, Examples, InternalServerErrorDTO, PolicyKeyConfigDTO, PolicyKeyDTO, ProfileDTO, TaskDTO, pageHeader } from '#middlewares';
 import { Auth, AuthUser } from '#auth';
 import { CacheService, getCacheKey, Guardians, InternalException, ServiceError, TaskManager, UseCache } from '#helpers';
 import { CACHE, PREFIXES } from '#constants';
@@ -426,8 +426,8 @@ export class ProfileApi {
     @Get('/keys')
     @Auth(Permissions.PROFILES_USER_UPDATE)
     @ApiOperation({
-        summary: 'Return a list of keys.',
-        description: 'Returns all keys.',
+        summary: 'Returns the list of existing keys.',
+        description: 'Returns the list of existing keys.',
     })
     @ApiQuery({
         name: 'pageIndex',
@@ -447,20 +447,20 @@ export class ProfileApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: String
+        type: PolicyKeyDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(PolicyKeyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getPolicyLabels(
         @AuthUser() user: IAuthUser,
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
-    ): Promise<any[]> {
+    ): Promise<PolicyKeyDTO[]> {
         try {
             const guardians = new Guardians();
             const { items, count } = await guardians.getKeys(user, { pageIndex, pageSize });
@@ -476,28 +476,28 @@ export class ProfileApi {
     @Post('/keys')
     @Auth(Permissions.PROFILES_USER_UPDATE)
     @ApiOperation({
-        summary: 'Create policy key.',
-        description: 'Create policy key.',
+        summary: 'Creates a new key.',
+        description: 'Creates a new key.',
     })
     @ApiBody({
-        description: 'DID Document and keys.',
+        description: 'Config.',
         required: true,
-        type: String
+        type: PolicyKeyConfigDTO
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: String,
+        type: PolicyKeyDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
-    @ApiExtraModels(DidKeyStatusDTO, DidDocumentWithKeyDTO, InternalServerErrorDTO)
+    @ApiExtraModels(PolicyKeyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async generateKey(
         @AuthUser() user: IAuthUser,
-        @Body() body: any
-    ): Promise<string> {
+        @Body() body: PolicyKeyConfigDTO
+    ): Promise<PolicyKeyDTO> {
         if (!body) {
             throw new HttpException('Body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
         }
@@ -520,7 +520,7 @@ export class ProfileApi {
     @Auth(Permissions.PROFILES_USER_UPDATE)
     @ApiOperation({
         summary: 'Deletes the key.',
-        description: 'Deletes the key with the provided ID.',
+        description: 'Deletes the key with the specified ID.',
     })
     @ApiParam({
         name: 'id',

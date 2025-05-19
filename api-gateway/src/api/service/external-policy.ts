@@ -2,7 +2,7 @@ import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { LocationType, Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, pageHeader, TaskDTO, ExternalPolicyDTO, ImportMessageDTO, PolicyPreviewDTO, PolicyDTO } from '#middlewares';
+import { Examples, InternalServerErrorDTO, pageHeader, TaskDTO, ExternalPolicyDTO, ImportMessageDTO, PolicyPreviewDTO, PolicyRequestDTO, PolicyRequestCountDTO } from '#middlewares';
 import { Guardians, InternalException, EntityOwner, TaskManager, ServiceError, PolicyEngine } from '#helpers';
 import { AuthUser, Auth, AuthAndLocation } from '#auth';
 
@@ -406,13 +406,13 @@ export class ExternalPoliciesApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: PolicyDTO,
+        type: PolicyRequestDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @ApiExtraModels(PolicyRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getRemoteRequests(
         @AuthUser() user: IAuthUser,
@@ -422,7 +422,7 @@ export class ExternalPoliciesApi {
         @Query('policyId') policyId?: string,
         @Query('status') status?: string,
         @Query('type') type?: string,
-    ): Promise<any> {
+    ): Promise<PolicyRequestDTO[]> {
         try {
             const options: any = {
                 filters: {
@@ -468,22 +468,22 @@ export class ExternalPoliciesApi {
     @ApiBody({
         description: 'Object that contains a configuration.',
         required: true,
-        type: PolicyDTO
+        type: PolicyRequestDTO
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyDTO
+        type: PolicyRequestDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
-    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @ApiExtraModels(PolicyRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async approveRemoteRequest(
         @AuthUser() user: IAuthUser,
         @Param('messageId') messageId: string
-    ): Promise<PolicyDTO> {
+    ): Promise<PolicyRequestDTO> {
         try {
             if (!messageId) {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -521,22 +521,22 @@ export class ExternalPoliciesApi {
     @ApiBody({
         description: 'Object that contains a configuration.',
         required: true,
-        type: PolicyDTO
+        type: PolicyRequestDTO
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyDTO
+        type: PolicyRequestDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
-    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @ApiExtraModels(PolicyRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async rejectRemoteRequest(
         @AuthUser() user: IAuthUser,
         @Param('messageId') messageId: string
-    ): Promise<PolicyDTO> {
+    ): Promise<PolicyRequestDTO> {
         try {
             if (!messageId) {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -574,22 +574,22 @@ export class ExternalPoliciesApi {
     @ApiBody({
         description: 'Object that contains a configuration.',
         required: true,
-        type: PolicyDTO
+        type: PolicyRequestDTO
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyDTO
+        type: PolicyRequestDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
-    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @ApiExtraModels(PolicyRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async cancelRemoteRequest(
         @AuthUser() user: IAuthUser,
         @Param('messageId') messageId: string
-    ): Promise<PolicyDTO> {
+    ): Promise<PolicyRequestDTO> {
         try {
             if (!messageId) {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -627,22 +627,22 @@ export class ExternalPoliciesApi {
     @ApiBody({
         description: 'Object that contains a configuration.',
         required: true,
-        type: PolicyDTO
+        type: PolicyRequestDTO
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyDTO
+        type: PolicyRequestDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
-    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @ApiExtraModels(PolicyRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async loadRemoteRequest(
         @AuthUser() user: IAuthUser,
         @Param('messageId') messageId: string
-    ): Promise<PolicyDTO> {
+    ): Promise<PolicyRequestDTO> {
         try {
             if (!messageId) {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -676,7 +676,7 @@ export class ExternalPoliciesApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Number,
+        type: PolicyRequestCountDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -688,7 +688,7 @@ export class ExternalPoliciesApi {
         @AuthUser() user: IAuthUser,
         @Response() res: any,
         @Query('policyId') policyId?: string,
-    ): Promise<any> {
+    ): Promise<PolicyRequestCountDTO> {
         try {
             const options: any = {
                 filters: {},

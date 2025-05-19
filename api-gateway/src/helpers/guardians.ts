@@ -54,7 +54,8 @@ import {
     FormulaRelationshipsDTO,
     ExternalPolicyDTO,
     PolicyPreviewDTO,
-    ProfileDTO
+    ProfileDTO,
+    PolicyKeyDTO
 } from '#middlewares';
 
 /**
@@ -3737,7 +3738,7 @@ export class Guardians extends NatsService {
      *
      * @returns {string} - key
      */
-    public async generateKey(user: IAuthUser, messageId: string, key?: string): Promise<string> {
+    public async generateKey(user: IAuthUser, messageId: string, key?: string): Promise<PolicyKeyDTO> {
         return await this.sendMessage(MessageAPI.GENERATE_USER_KEYS, { user, messageId, key });
     }
 
