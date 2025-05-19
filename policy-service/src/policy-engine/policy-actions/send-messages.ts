@@ -3,7 +3,7 @@ import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
-import { PolicyUser } from '../policy-user.js';
+import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { PolicyActionType } from './policy-action.type.js';
 
 export class SendMessages {
@@ -17,12 +17,13 @@ export class SendMessages {
         const userCred = await PolicyUtils.getUserCredentials(ref, owner, userId);
         const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
         const userSignOptions = await userCred.loadSignOptions(ref, userId);
-        const messageServer = new MessageServer(
-            userHederaCred.hederaAccountId,
-            userHederaCred.hederaAccountKey,
-            userSignOptions,
-            ref.dryRun
-        );
+        const messageServer = new MessageServer({
+            operatorId: userHederaCred.hederaAccountId,
+            operatorKey: userHederaCred.hederaAccountKey,
+            encryptKey: userHederaCred.hederaAccountKey,
+            signOptions: userSignOptions,
+            dryRun: ref.dryRun
+        });
 
         const results: Message[] = [];
         for (const message of messages) {
@@ -80,12 +81,14 @@ export class SendMessages {
         const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
         const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
         const userSignOptions = await userCred.loadSignOptions(ref, userId);
-        const messageServer = new MessageServer(
-            userHederaCred.hederaAccountId,
-            userHederaCred.hederaAccountKey,
-            userSignOptions,
-            ref.dryRun
-        );
+        const userMessageKey = await userCred.loadMessageKey(ref, userId);
+        const messageServer = new MessageServer({
+            operatorId: userHederaCred.hederaAccountId,
+            operatorKey: userHederaCred.hederaAccountKey,
+            encryptKey: userMessageKey,
+            signOptions: userSignOptions,
+            dryRun: ref.dryRun
+        });
 
         const messageIds: string[] = [];
         for (let i = 0; i < documents.length; i++) {
@@ -126,22 +129,27 @@ export class SendMessages {
             const data = response.document;
             const { updateIpfs, messageIds } = data;
 
+            if (!(request && response && request.accountId === response.accountId)) {
+                return false;
+            }
+
+            const userMessageKey = await UserCredentials.loadMessageKey(response.policyMessageId, response.owner, userId);
+
             const messages: Message[] = [];
             for (const messageId of messageIds) {
-                const message = await MessageServer.getMessage(messageId, userId);
-                if (updateIpfs) {
-                    await MessageServer.loadDocument(message);
-                }
+                const message = await MessageServer
+                    .getMessage({
+                        messageId,
+                        loadIPFS: updateIpfs,
+                        encryptKey: userMessageKey,
+                        userId
+                    });
                 messages.push(message);
             }
 
             data.messages = messages;
 
-            if (request && response && request.accountId === response.accountId) {
-                return true;
-            }
-
-            return false;
+            return true;
         } catch (error) {
             console.error(error);
             return false;

@@ -179,11 +179,11 @@ export async function sendSchemaMessage(
     action: MessageAction,
     schema: SchemaCollection,
 ) {
-    const messageServer = new MessageServer(
-        root.hederaAccountId,
-        root.hederaAccountKey,
-        root.signOptions
-    );
+    const messageServer = new MessageServer({
+        operatorId: root.hederaAccountId,
+        operatorKey: root.hederaAccountKey,
+        signOptions: root.signOptions
+    });
     const message = new SchemaMessage(action);
     message.setDocument(schema);
     await messageServer
@@ -494,7 +494,7 @@ export async function prepareSchemaPreview(
     }
 
     notifier.completedAndStart('Parse schema');
-    const messageServer = new MessageServer(null, null);
+    const messageServer = new MessageServer(null);
     const uniqueTopics = schemas.map(res => res.topicId).filter(onlyUnique);
     const anotherSchemas: SchemaMessage[] = [];
     for (const topicId of uniqueTopics) {

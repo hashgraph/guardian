@@ -1,4 +1,4 @@
-import { ExportMessageDTO, PoliciesValidationDTO, PolicyDTO, PolicyPreviewDTO, PolicyValidationDTO, PolicyVersionDTO } from '#middlewares';
+import { ExportMessageDTO, PoliciesValidationDTO, PolicyDTO, PolicyPreviewDTO, PolicyRequestCountDTO, PolicyValidationDTO, PolicyVersionDTO } from '#middlewares';
 import { IAuthUser, NatsService } from '@guardian/common';
 import { DocumentType, GenerateUUIDv4, IOwner, MigrationConfig, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
 import { Singleton } from '../helpers/decorators/singleton.js';
@@ -1056,21 +1056,8 @@ export class PolicyEngine extends NatsService {
      * @param filters
      * @param owner
      */
-    public async getRemoteRequestsCount<T extends {
-        /**
-         * Count with NEW status
-         */
-        requestsCount: number,
-        /**
-         * Count with NEW status
-         */
-        actionsCount: number,
-        /**
-         * Total count
-         */
-        total: number
-    }>(options: any, user: IAuthUser): Promise<T> {
-        return await this.sendMessage<T>(PolicyEngineEvents.GET_REMOTE_REQUESTS_COUNT, { options, user });
+    public async getRemoteRequestsCount(options: any, user: IAuthUser): Promise<PolicyRequestCountDTO> {
+        return await this.sendMessage(PolicyEngineEvents.GET_REMOTE_REQUESTS_COUNT, { options, user });
     }
 
     /**
@@ -1097,5 +1084,31 @@ export class PolicyEngine extends NatsService {
         user: IAuthUser
     ) {
         return await this.sendMessage(PolicyEngineEvents.REJECT_REMOTE_REQUEST, { messageId, user });
+    }
+
+    /**
+     * Cancel remote request
+     * @param policyId
+     * @param messageId
+     * @param user
+     */
+    public async cancelRemoteRequest(
+        messageId: string,
+        user: IAuthUser
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.CANCEL_REMOTE_ACTION, { messageId, user });
+    }
+
+    /**
+     * Cancel remote request
+     * @param policyId
+     * @param messageId
+     * @param user
+     */
+    public async loadRemoteRequest(
+        messageId: string,
+        user: IAuthUser
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.RELOAD_REMOTE_ACTION, { messageId, user });
     }
 }

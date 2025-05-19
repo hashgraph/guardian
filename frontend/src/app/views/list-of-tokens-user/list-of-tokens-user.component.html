@@ -29,11 +29,8 @@
                                     <div class="chip chip-color-{{getColor(token.associated)}}">
                                         {{ token.associated }}
                                     </div>
-                                    <div (click)="associate(token)" class="associated-btn">
-                                        <img
-                                                alt=""
-                                                src="assets/images/icons/link.svg"
-                                        />
+                                    <div *ngIf="isLocalUser" (click)="associate(token)" class="associated-btn">
+                                        <img alt="" src="assets/images/icons/link.svg" />
                                     </div>
                                 </div>
                             </td>

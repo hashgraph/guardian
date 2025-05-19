@@ -33,7 +33,6 @@ export class ExternalPoliciesService {
         return params;
     }
 
-
     public parsePage(response: HttpResponse<any[]>) {
         const page = response.body || [];
         const count = Number(response.headers.get('X-Total-Count')) || page.length;
@@ -90,11 +89,20 @@ export class ExternalPoliciesService {
         return this.http.put<any>(`${this.url}/requests/${messageId}/reject`, null);
     }
 
+    public cancelAction(messageId: string): Observable<any> {
+        return this.http.put<any>(`${this.url}/requests/${messageId}/cancel`, null);
+    }
+
+    public reloadAction(messageId: string): Observable<any> {
+        return this.http.put<any>(`${this.url}/requests/${messageId}/reload`, null);
+    }
+
     public getActionRequestsCount(
         filters?: any
     ): Observable<HttpResponse<{
         requestsCount: number,
         actionsCount: number,
+        delayCount: number,
         total: number
     }>> {
         const params = ExternalPoliciesService.getOptions(filters);

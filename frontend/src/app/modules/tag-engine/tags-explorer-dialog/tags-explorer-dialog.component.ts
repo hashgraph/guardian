@@ -7,7 +7,7 @@ import { TagItem } from '../models/tag-item';
 import moment from 'moment';
 import { VCViewerDialog } from '../../schema-engine/vc-dialog/vc-dialog.component';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { UserPermissions } from '@guardian/interfaces';
+import { LocationType, UserPermissions } from '@guardian/interfaces';
 
 /**
  * Dialog for creating tokens.
@@ -36,7 +36,11 @@ export class TagsExplorerDialog {
 
     public get canCreate(): boolean {
         if (this.user) {
-            return this.user.TAGS_TAG_CREATE;
+            return (
+                this.user.TAGS_TAG_CREATE &&
+                this.user.location !== LocationType.REMOTE &&
+                this.history.location !== LocationType.REMOTE
+            );
         } else {
             return true;
         }

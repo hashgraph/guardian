@@ -94,7 +94,10 @@ export class BlockCache extends BaseEntity {
         if (this.fileId) {
             DataBaseHelper.gridFS
                 .delete(this.fileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`BeforeUpdate: BlockCache, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
             this.fileId = null;
         }
         if (this.isLongValue && this.value) {
@@ -126,7 +129,10 @@ export class BlockCache extends BaseEntity {
         if (this.fileId) {
             DataBaseHelper.gridFS
                 .delete(this.fileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`AfterDelete: BlockCache, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
             this.fileId = null;
         }
     }

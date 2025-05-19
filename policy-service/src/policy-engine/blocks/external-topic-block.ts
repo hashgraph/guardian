@@ -400,7 +400,7 @@ export class ExternalTopicBlock {
                     throw new BlockActionError('Invalid topic', ref.blockType, ref.uuid);
                 }
                 topicTree.policyTopic = topicMessage;
-                const messages: any[] = await MessageServer.getTopicMessages(topicId, userId);
+                const messages: any[] = await MessageServer.getTopicMessages({ topicId, userId });
                 topicTree.schemas = messages.filter((m: SchemaMessage) =>
                     m.action === MessageAction.PublishSchema);
                 topicTree.instance = messages.find((m: PolicyMessage) =>
@@ -662,13 +662,11 @@ export class ExternalTopicBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const documentOwnerCred = await PolicyUtils.getUserCredentials(ref, item.owner, userId);
         const hederaCred = await documentOwnerCred.loadHederaCredentials(ref, userId);
-        const messages: VCMessage[] = await MessageServer.getTopicMessages(
-            item.documentTopicId,
-            user.id,
-            null,
-            null,
-            item.lastMessage
-        );
+        const messages: VCMessage[] = await MessageServer.getTopicMessages({
+            topicId: item.documentTopicId,
+            userId: user.id,
+            timeStamp: item.lastMessage
+        });
         for (const message of messages) {
             await this.checkMessage(ref, item, hederaCred, user, message);
             item.lastMessage = message.id;

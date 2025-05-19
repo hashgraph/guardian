@@ -69,6 +69,26 @@
                     </div>
                 </ng-template>
             </p-dropdown>
+            <p-dropdown
+                (onChange)="onFilter($event)"
+                [options]="types"
+                [(ngModel)]="currentType"
+                optionLabel="name"
+                optionValue="value"
+                appendTo="body"
+                class="guardian-dropdown"
+                placeholder="Types"
+            ></p-dropdown>
+            <p-dropdown
+                (onChange)="onFilter($event)"
+                [options]="statuses"
+                [(ngModel)]="currentStatus"
+                optionLabel="name"
+                optionValue="value"
+                appendTo="body"
+                class="guardian-dropdown"
+                placeholder="Statuses"
+            ></p-dropdown>
         </div>
     </div>
 
@@ -107,8 +127,10 @@
                                             {{ getStatusName(row) }}
                                         </div>
                                     </ng-container>
-                                    <ng-container *ngSwitchCase="'documentType'">
-                                        <span class="text-truncate">{{row.document?.type}}</span>
+                                    <ng-container *ngSwitchCase="'type'">
+                                        <div class="policy-status {{row.type}}-status">
+                                            {{ getTypeName(row) }}
+                                        </div>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'topicId'">
                                         <span class="text-truncate">
@@ -117,10 +139,25 @@
                                                 type="topics">{{ row.topicId }}</hedera-explorer>
                                         </span>
                                     </ng-container>
+                                    <ng-container *ngSwitchCase="'operationType'">
+                                        {{ getOperationName(row) }}
+                                    </ng-container>
                                     <ng-container *ngSwitchCase="'options'">
-                                        <div *ngIf="row.status === 'NEW'" class="option-btns">
-                                            <button class="guardian-button approve-btn" (click)="onApprove(row)">Approve</button>
-                                            <button class="guardian-button reject-btn" (click)="onReject(row)">Reject</button>
+                                        <div *ngIf="isLocalUser" class="option-btns">
+                                            <ng-container *ngIf="row.type === 'REQUEST'">
+                                                <ng-container *ngIf="!row.loaded">
+                                                    <button class="guardian-button reload-btn" (click)="onReload(row)">Reload</button>
+                                                </ng-container>
+                                                <ng-container *ngIf="row.loaded && row.status === 'NEW'">
+                                                    <button class="guardian-button approve-btn" (click)="onApprove(row)">Approve</button>
+                                                    <button class="guardian-button reject-btn" (click)="onReject(row)">Reject</button>
+                                                </ng-container>
+                                            </ng-container>
+                                            <ng-container *ngIf="row.type === 'ACTION'">
+                                                <ng-container *ngIf="row.status === 'NEW'">
+                                                    <button class="guardian-button reject-btn" (click)="onCancel(row)">Cancel</button>
+                                                </ng-container>
+                                            </ng-container>
                                         </div>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'operations'">
@@ -158,8 +195,7 @@
                     class="svg-icon-32"
                     src="/assets/images/icons/32/list.svg"
                     svgClass="icon-color-disabled"></svg-icon>
-                <span class="guardian-user-not-data__text-strong">There are no policies imported yet</span>
-                <span class="guardian-user-not-data__text">Please import a new policy to see the data</span>
+                <span class="guardian-user-not-data__text-strong">There are no actions</span>
             </div>
         </ng-template>
     </div>

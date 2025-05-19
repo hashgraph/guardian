@@ -74,7 +74,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         });
     });
 
-    it("Deletes the policy with the provided ID", { tags: ['smoke'] }, () => {
+    it("Deletes the policy with the provided ID", { tags: ['notifications', 'smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 url: API.ApiServer + API.Policies + API.Async + policyId,

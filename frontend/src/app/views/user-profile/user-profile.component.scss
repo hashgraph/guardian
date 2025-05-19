@@ -711,7 +711,8 @@ a[disabled="true"] {
     height: 56px;
     padding: 8px 24px;
 
-    i, svg {
+    i,
+    svg {
         padding: 4px;
         margin-right: 8px;
         width: 24px;
@@ -738,7 +739,8 @@ a[disabled="true"] {
 .step-item.active {
     background: rgba(6, 129, 238, 0.08);
 
-    i, svg {
+    i,
+    svg {
         padding: 4px;
         margin-right: 8px;
         width: 24px;
@@ -995,7 +997,8 @@ a[disabled="true"] {
         margin-bottom: 16px;
     }
 
-    input, textarea {
+    input,
+    textarea {
         border-radius: 8px;
     }
 }
@@ -1033,8 +1036,8 @@ mat-radio-button {
 }
 
 .example-full-width textarea {
-   width: 100%;
-   border-radius: 8px;
+    width: 100%;
+    border-radius: 8px;
 
     &:focus {
         border: none
@@ -1042,8 +1045,8 @@ mat-radio-button {
 }
 
 .example-full-width label {
-   width: 100%;
-   border-radius: 8px;
+    width: 100%;
+    border-radius: 8px;
 
     &:focus {
         border: none
@@ -1062,4 +1065,65 @@ mat-radio-button {
 
 .remote-user-setup {
     flex-direction: column;
+}
+
+.tabs-nav {
+    margin: 24px 0px;
+}
+
+.guardian-button {
+    height: 40px;
+    margin-left: 18px;
+    min-width: 140px;
+}
+
+.guardian-user-page-toolbar {
+    display: flex;
+    height: 40px;
+    justify-content: flex-end;
+    margin-bottom: 18px;
+}
+
+.guardian-user-not-data {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--color-grey-black-2);
+    font-family: var(--font-family-inter);
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    row-gap: 8px;
+    justify-content: center;
+
+    &__text {
+        color: var(--color-grey-5, #848fa9);
+        text-align: center;
+        font-family: var(--font-family-inter);
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: normal;
+    }
+
+    &__text-strong {
+        color: var(--color-grey-5, #848fa9);
+        text-align: center;
+        font-family: var(--font-family-inter);
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: normal;
+    }
+}
+
+.guardian-user-page-grid {
+    min-height: calc(100vh - 500px);
+    width: 100%;
+    position: relative;
 }

@@ -451,6 +451,12 @@ export class Worker extends NatsService {
                     break;
                 }
 
+                case WorkerTaskType.GET_ACCOUNT_INFO_REST: {
+                    const { hederaAccountId } = task.data;
+                    result.data = await HederaSDKHelper.accountInfo(hederaAccountId);
+                    break;
+                }
+
                 case WorkerTaskType.CREATE_TOKEN: {
                     const {
                         operatorId,
@@ -938,13 +944,9 @@ export class Worker extends NatsService {
                 }
 
                 case WorkerTaskType.GET_USER_NFTS_SERIALS: {
-                    const {
-                        operatorId,
-                        operatorKey,
-                        tokenId,
-                    } = task.data;
-                    client = new HederaSDKHelper(operatorId, operatorKey, null, networkOptions);
-                    const nfts = (await client.getSerialsNFT(tokenId)) || [];
+                    const { hederaAccountId, tokenId } = task.data;
+
+                    const nfts = (await HederaSDKHelper.getSerialsNFT(hederaAccountId, tokenId)) || [];
                     const serials = {};
                     nfts.forEach(item => {
                         if (serials[item.token_id]) {

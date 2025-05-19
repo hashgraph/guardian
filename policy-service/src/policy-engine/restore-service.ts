@@ -80,15 +80,22 @@ export class PolicyBackupService {
     private readonly policyTopicId: string;
     private readonly instanceTopicId: string;
     private readonly policyOwnerId: string;
+    private readonly messageId: string;
+    private readonly policyId: string;
 
-    constructor(policyId: string, policy: Policy, policyOwnerId: string | null) {
-        this.controller = new PolicyBackup(policyId);
+    constructor(
+        policyId: string,
+        policy: Policy,
+        policyOwnerId: string | null
+    ) {
         this.topicId = policy.restoreTopicId;
         this.owner = policy.owner;
         this.policyTopicId = policy.topicId;
         this.instanceTopicId = policy.instanceTopicId;
         this.policyOwnerId = policyOwnerId;
-
+        this.messageId = policy.messageId;
+        this.policyId = policyId;
+        this.controller = new PolicyBackup(this.policyId, this.messageId);
         this.timer = new Timer(30 * 1000, 120 * 1000);
         this.timer.subscribe(this.task.bind(this));
     }
@@ -108,11 +115,11 @@ export class PolicyBackupService {
         }
         this.userId = root.id;
 
-        this.messageServer = new MessageServer(
-            root.hederaAccountId,
-            root.hederaAccountKey,
-            root.signOptions
-        ).setTopicObject(topic);
+        this.messageServer = new MessageServer({
+            operatorId: root.hederaAccountId,
+            operatorKey: root.hederaAccountKey,
+            signOptions: root.signOptions
+        }).setTopicObject(topic);
 
         this.backup();
     }
@@ -156,17 +163,19 @@ export class PolicyRestoreService {
     private readonly topicId: string;
     // private readonly owner: string;
     private readonly controller: PolicyRestore;
+    private readonly messageId: string;
     private readonly policyId: string;
     // private messageServer: MessageServer;
     // private readonly policyOwnerId: string;
     private topicListener: TopicListener;
 
     constructor(policyId: string, policy: Policy, policyOwnerId: string | null) {
-        this.controller = new PolicyRestore(policyId);
+        this.messageId = policy.messageId;
         this.policyId = policyId;
         this.topicId = policy.restoreTopicId;
         // this.owner = policy.owner;
         // this.policyOwnerId = policy.policyOwnerId;
+        this.controller = new PolicyRestore(this.policyId, this.messageId);
     }
 
     public async init(): Promise<void> {
@@ -184,7 +193,7 @@ export class PolicyRestoreService {
             const file = await FileHelper.unZipFile(message.document);
             await this.controller.restore(file);
             await PolicyComponentsUtils.restoreState(this.policyId);
-            PolicyComponentsUtils.sentRestoreNotification(this.policyId);
+            PolicyComponentsUtils.sentRestoreNotification(this.policyId).then();
         } catch (error) {
             console.log(error);
         }
