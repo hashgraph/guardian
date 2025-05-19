@@ -37,6 +37,7 @@ export class DocStateCollectionBackup extends CollectionBackup<DocumentState> {
     protected override createDiffData(newRow: DocumentState, oldRow?: DocumentState): any {
         const diff: any = this.compareData(newRow, oldRow);
         delete diff.documentFileId;
+        delete diff.encryptedDocumentFileId;
         return diff;
     }
 

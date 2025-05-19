@@ -784,9 +784,9 @@ export class PolicyCacheData extends BaseEntity {
                             if (
                                 (typeof fieldValue === 'string' &&
                                     fieldValue.length <
-                                        (+process.env
-                                            .DOCUMENT_CACHE_FIELD_LIMIT ||
-                                            100)) ||
+                                    (+process.env
+                                        .DOCUMENT_CACHE_FIELD_LIMIT ||
+                                        100)) ||
                                 typeof fieldValue === 'number'
                             ) {
                                 ObjSet(newDocument, field, fieldValue);
@@ -815,7 +815,10 @@ export class PolicyCacheData extends BaseEntity {
             if (this.documentFileId) {
                 DataBaseHelper.gridFS
                     .delete(this.documentFileId)
-                    .catch(console.error);
+                    .catch((reason) => {
+                        console.error(`BeforeUpdate: PolicyCacheData, ${this._id}, documentFileId`)
+                        console.error(reason)
+                    });
             }
             await this.createDocument();
         }
@@ -849,7 +852,10 @@ export class PolicyCacheData extends BaseEntity {
         if (this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`AfterDelete: PolicyCacheData, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
         }
     }
 
@@ -885,7 +891,10 @@ export class PolicyCacheData extends BaseEntity {
             if (this.contextFileId) {
                 DataBaseHelper.gridFS
                     .delete(this.contextFileId)
-                    .catch(console.error);
+                    .catch((reason) => {
+                        console.error(`BeforeUpdate: PolicyCacheData, ${this._id}, contextFileId`)
+                        console.error(reason)
+                    });
             }
             await this.createContext();
         }
@@ -917,7 +926,10 @@ export class PolicyCacheData extends BaseEntity {
         if (this.contextFileId) {
             DataBaseHelper.gridFS
                 .delete(this.contextFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`AfterDelete: PolicyCacheData, ${this._id}, contextFileId`)
+                    console.error(reason)
+                });
         }
     }
 
@@ -953,7 +965,10 @@ export class PolicyCacheData extends BaseEntity {
             if (this.configFileId) {
                 DataBaseHelper.gridFS
                     .delete(this.configFileId)
-                    .catch(console.error);
+                    .catch((reason) => {
+                        console.error(`BeforeUpdate: PolicyCacheData, ${this._id}, configFileId`)
+                        console.error(reason)
+                    });
             }
             await this.createConfig();
         }
@@ -985,7 +1000,10 @@ export class PolicyCacheData extends BaseEntity {
         if (this.configFileId) {
             DataBaseHelper.gridFS
                 .delete(this.configFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`AfterDelete: PolicyCacheData, ${this._id}, configFileId`)
+                    console.error(reason)
+                });
         }
     }
 

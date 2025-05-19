@@ -105,7 +105,10 @@ export class PolicyTest extends BaseEntity {
         if (this.file) {
             DataBaseHelper.gridFS
                 .delete(this.file)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`AfterDelete: PolicyTest, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
         }
     }
 }

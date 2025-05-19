@@ -229,7 +229,10 @@ export class VpDocument extends RestoreEntity implements IVPDocument {
         if (this.document && this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`BeforeUpdate: VpDocument, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
         }
         await this.createDocument();
     }
@@ -262,7 +265,10 @@ export class VpDocument extends RestoreEntity implements IVPDocument {
         if (this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`AfterDelete: VpDocument, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
         }
     }
 

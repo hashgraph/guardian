@@ -317,12 +317,18 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
         if (this.document && this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`BeforeUpdate: VcDocument, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
         }
         if (this.encryptedDocument && this.encryptedDocumentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.encryptedDocumentFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`BeforeUpdate: VcDocument, ${this._id}, encryptedDocumentFileId`)
+                    console.error(reason)
+                });
         }
         await this.createDocument();
     }
@@ -352,12 +358,18 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
         if (this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`AfterDelete: VcDocument, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
         }
         if (this.encryptedDocumentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.encryptedDocumentFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`AfterDelete: VcDocument, ${this._id}, encryptedDocumentFileId`)
+                    console.error(reason)
+                });
         }
     }
 

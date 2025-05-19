@@ -175,7 +175,10 @@ export class PolicyAction extends BaseEntity {
             if (this.documentFileId) {
                 DataBaseHelper.gridFS
                     .delete(this.documentFileId)
-                    .catch(console.error);
+                    .catch((reason) => {
+                        console.error(`BeforeUpdate: PolicyAction, ${this._id}, documentFileId`)
+                        console.error(reason)
+                    });
             }
             await this.createDocument();
         }
@@ -204,7 +207,10 @@ export class PolicyAction extends BaseEntity {
         if (this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`AfterDelete: PolicyAction, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
         }
     }
 }
