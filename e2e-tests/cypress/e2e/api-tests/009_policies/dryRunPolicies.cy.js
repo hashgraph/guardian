@@ -25,7 +25,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
         })
     });
 
-    it("Run policy without making any persistent changes or executing transaction", { tags: ['smoke'] }, () => {
+    it("Run policy without making any persistent changes or executing transaction", { tags: ['analytics', 'schema', 'tokens', 'smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.PUT,

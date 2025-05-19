@@ -3,7 +3,7 @@ import API from "../../../support/ApiUrls";
 import * as Checks from "../../../support/checkingMethods";
 import * as Authorization from "../../../support/authorization";
 
-context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
+context("Contracts", { tags: ['policy_labels', 'formulas', 'trustchains', 'contracts', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 
