@@ -49,7 +49,7 @@ jobs:
           git checkout "${GITHUB_REF:11}"
 
       - name: Start MongoDB
-        uses: step-security/mongodb-github-action@0b5e704ee1061d729c20e0df4204e69ba6ac6cee # v1.11.1
+        uses: step-security/mongodb-github-action@3160045518552049fae7e4ab834ad6f04836da49 # v1.12.0
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
 
