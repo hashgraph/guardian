@@ -171,11 +171,11 @@ export class UserPoliciesPage {
             cy.get(UserPoliciesPageLocators.signButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.signedStatus);
         }
-        if (waitFor == "validationLabel")  {
+        if (waitFor == "validationLabel") {
             cy.get(UserPoliciesPageLocators.approveButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.validated);
         }
-        if (waitFor == "Report")  {
+        if (waitFor == "Report") {
             cy.get(UserPoliciesPageLocators.approveButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.verified);
         }
@@ -211,28 +211,24 @@ export class UserPoliciesPage {
         cy.get("p:contains('Projects')").click();
         cy.get(UserPoliciesPageLocators.createReportButton).click();
         cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
-            cy.log(els.length);
             [...els].forEach((el) => {
                 cy.wrap(el).click();
                 cy.get(CommonElements.dropdownOption).first().click();
             });
         });
         cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
-            cy.log(els.length);
             [...els].forEach((el) => {
                 cy.wrap(el).click();
                 cy.get(CommonElements.dropdownOption).first().click();
             });
         });
         cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
-            cy.log(els.length);
             [...els].forEach((el) => {
                 cy.wrap(el).click();
                 cy.get(CommonElements.dropdownOption).first().click();
             });
         });
         cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
-            cy.log(els.length);
             [...els].forEach((el) => {
                 cy.wrap(el).click();
                 cy.get(CommonElements.dropdownOption).first().click();
@@ -252,12 +248,13 @@ export class UserPoliciesPage {
             );
         });
         cy.get(UserPoliciesPageLocators.createButton).click();
+        cy.get('.preloader-image').should('not.exist');
         cy.get(UserPoliciesPageLocators.monitoringReports).click();
         Checks.waitForElement(UserPoliciesPageLocators.waitingForVerification);
     }
 
     createReportVerra() {
-        cy.get(UserPoliciesPageLocators.createReportButton).click(); 
+        cy.get(UserPoliciesPageLocators.createReportButton).click();
         cy.get(UserPoliciesPageLocators.enterTextInput).then((els) => {
             [...els].forEach((el) =>
                 cy.wrap(el).type("Test text", { force: true })
@@ -293,17 +290,21 @@ export class UserPoliciesPage {
             });
         });
         cy.get(UserPoliciesPageLocators.createButton).click();
+        cy.get(CommonElements.Loading).should('not.exist');
+        cy.get('.preloader-image').should('not.exist');
         cy.get(UserPoliciesPageLocators.monitoringReports).click();
         Checks.waitForElement(UserPoliciesPageLocators.waitingForValidation);
     }
 
-    assignReport(){
+    assignReport() {
         cy.get('p-dropdown[placeholder="Select"]').click();
         cy.get(CommonElements.dropdownOption).click();
         Checks.waitForElement(UserPoliciesPageLocators.waitingForVerification);
     }
 
     verifyReport() {
+        cy.get(CommonElements.Loading).should('not.exist');
+        cy.get('.preloader-image').should('not.exist');
         cy.get(UserPoliciesPageLocators.monitoringReports).click();
         this.approve("Report");
     }

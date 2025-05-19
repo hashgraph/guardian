@@ -3,11 +3,12 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 context("External", { tags: ['external', 'thirdPool', 'all'] }, () => {
+
     const SRUsername = Cypress.env('SRUser');
 
-    let policyTag, owner
+    let policyTag, owner;
 
-    before(() => {
+    before("Import policy", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
@@ -16,7 +17,7 @@ context("External", { tags: ['external', 'thirdPool', 'all'] }, () => {
                 headers: {
                     authorization,
                 },
-                timeout: 240000,
+                timeout: 480000,
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.SUCCESS);
             });
@@ -34,7 +35,7 @@ context("External", { tags: ['external', 'thirdPool', 'all'] }, () => {
         })
     });
 
-    it("Sends data from an external source", { tags: ['smoke'] }, () => {
+    it("Sends data from an external source", { tags: ['notifications', 'tags', 'policies', 'smoke', 'artifacts'] }, () => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.External,

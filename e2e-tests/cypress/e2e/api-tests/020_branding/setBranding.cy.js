@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("Set branding", { tags: ['accounts', 'firstPool', 'all'] }, () => {
+context("Set branding", { tags: ['branding', 'firstPool', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
 
