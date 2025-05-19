@@ -498,11 +498,13 @@ export class UserCredentials {
         did: string,
         userId: string | null
     ): Promise<string | null> {
-        const wallet = new Wallet();
-        const messageKey = await wallet.getUserKey(did, KeyType.MESSAGE_KEY, `${did}#${ref.messageId}`, userId);
+        if (!ref.dryRun) {
+            const wallet = new Wallet();
+            const messageKey = await wallet.getUserKey(did, KeyType.MESSAGE_KEY, `${did}#${ref.messageId}`, userId);
 
-        if (messageKey) {
-            return messageKey;
+            if (messageKey) {
+                return messageKey;
+            }
         }
 
         const user = await UserCredentials.create(ref, did, userId);
