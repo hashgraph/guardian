@@ -155,8 +155,18 @@ export class TopicHelper {
      * @param userId
      */
     // tslint:disable-next-line:completed-docs
-    public async oneWayLink(topic: TopicConfig, parent: TopicConfig, rationale: string, userId: string = null) {
-        const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey, this.signOptions, this.dryRun);
+    public async oneWayLink(
+        topic: TopicConfig,
+        parent: TopicConfig,
+        rationale: string,
+        userId: string = null
+    ) {
+        const messageServer = new MessageServer({
+            operatorId: this.hederaAccountId,
+            operatorKey: this.hederaAccountKey,
+            signOptions: this.signOptions,
+            dryRun: this.dryRun
+        });
 
         const message1 = new TopicMessage(MessageAction.CreateTopic);
         message1.setDocument({
@@ -181,8 +191,18 @@ export class TopicHelper {
      * @param rationale
      * @param userId
      */
-    public async twoWayLink(topic: TopicConfig, parent: TopicConfig, rationale: string, userId?: string) {
-        const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey, this.signOptions, this.dryRun);
+    public async twoWayLink(
+        topic: TopicConfig,
+        parent: TopicConfig,
+        rationale: string,
+        userId?: string
+    ) {
+        const messageServer = new MessageServer({
+            operatorId: this.hederaAccountId,
+            operatorKey: this.hederaAccountKey,
+            signOptions: this.signOptions,
+            dryRun: this.dryRun
+        });
 
         const message1 = new TopicMessage(MessageAction.CreateTopic);
         message1.setDocument({

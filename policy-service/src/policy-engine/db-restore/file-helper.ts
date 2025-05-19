@@ -183,6 +183,11 @@ export class FileHelper {
         const mintTransactionCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
         const mintTransactionCollection = FileHelper._decryptCollection<MintTransaction>(lines, cursor, mintTransactionCollectionSize);
 
+        //MintTransaction
+        FileHelper._readString(FileHeaders.COLLECTION, lines, cursor);
+        const policyInvitationsCollectionSize = FileHelper._readNumber(FileHeaders.SIZE, lines, cursor);
+        const policyInvitationsCollection = FileHelper._decryptCollection<MintTransaction>(lines, cursor, policyInvitationsCollectionSize);
+
         const diff: IPolicyDiff = {
             uuid,
             index,
@@ -202,6 +207,7 @@ export class FileHelper {
             approveCollection,
             mintRequestCollection,
             mintTransactionCollection,
+            policyInvitationsCollection
         }
 
         return diff
@@ -287,7 +293,7 @@ export class FileHelper {
         result += FileHelper._writeCollection('ApprovalDocument', diff.approveCollection);
         result += FileHelper._writeCollection('MintRequest', diff.mintRequestCollection);
         result += FileHelper._writeCollection('MintTransaction', diff.mintTransactionCollection);
-
+        result += FileHelper._writeCollection('PolicyInvitations', diff.policyInvitationsCollection);
         return result;
     }
 

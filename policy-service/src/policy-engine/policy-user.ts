@@ -33,6 +33,10 @@ export class PolicyUser {
      */
     private _username: string;
     /**
+     * User DID
+     */
+    private readonly _hederaAccountId: string;
+    /**
      * User Role
      */
     private _role: PolicyRole | null;
@@ -88,12 +92,14 @@ export class PolicyUser {
             this.permissions = [];
             this.location = LocationType.LOCAL;
             this._userId = null;
+            this._hederaAccountId = null;
         } else {
             this.did = arg.did;
             this.username = arg.username;
             this.permissions = arg.permissions || [];
             this.location = arg.location || LocationType.LOCAL;
             this._userId = arg.id;
+            this._hederaAccountId = arg.hederaAccountId;
         }
         this.role = null;
         this.group = null;
@@ -106,6 +112,10 @@ export class PolicyUser {
 
     public get id(): string {
         return this._id;
+    }
+
+    public get hederaAccountId(): string {
+        return this._hederaAccountId;
     }
 
     public get did(): string {
@@ -317,7 +327,7 @@ export class UserCredentials {
         return this;
     }
 
-    public async loadHederaKey(ref: AnyBlockType, userId: string | null): Promise<any> {
+    public async loadHederaKey(ref: AnyBlockType, userId: string | null): Promise<string | null> {
         if (this._dryRun) {
             return await ref.databaseServer.getVirtualKey(this._did, this._did);
         } else {
@@ -344,6 +354,15 @@ export class UserCredentials {
         return {
             hederaAccountId: this._hederaAccountId,
             hederaAccountKey: hederaKey
+        }
+    }
+
+    public async loadMessageKey(ref: AnyBlockType, userId: string | null): Promise<string | null> {
+        if (this._dryRun) {
+            return await ref.databaseServer.getVirtualKey(this._did, ref.messageId);
+        } else {
+            const wallet = new Wallet();
+            return await wallet.getUserKey(this._did, KeyType.MESSAGE_KEY, `${this._did}#${ref.messageId}`, userId);
         }
     }
 
@@ -452,5 +471,46 @@ export class UserCredentials {
 
     public static async createByAccount(ref: AnyBlockType, accountId: string, userId: string | null): Promise<UserCredentials> {
         return await (new UserCredentials(ref, null)).loadByAccount(ref, accountId, userId);
+    }
+
+    public static async loadMessageKey(
+        messageId: string,
+        did: string,
+        userId: string | null
+    ): Promise<string | null> {
+        const wallet = new Wallet();
+        return await wallet.getUserKey(did, KeyType.MESSAGE_KEY, `${did}#${messageId}`, userId);
+    }
+
+    public static async loadMessageKeyByAccount(
+        messageId: string,
+        accountId: string,
+        userId: string | null
+    ): Promise<string | null> {
+        const users = new Users();
+        const userFull = await users.getUserByAccount(accountId, userId);
+        const wallet = new Wallet();
+        return await wallet.getUserKey(userFull.did, KeyType.MESSAGE_KEY, `${userFull.did}#${messageId}`, userId);
+    }
+
+    public static async loadMessageKeyOrPrivateKey(
+        ref: AnyBlockType,
+        did: string,
+        userId: string | null
+    ): Promise<string | null> {
+        const wallet = new Wallet();
+        const messageKey = await wallet.getUserKey(did, KeyType.MESSAGE_KEY, `${did}#${ref.messageId}`, userId);
+
+        if (messageKey) {
+            return messageKey;
+        }
+
+        const user = await UserCredentials.create(ref, did, userId);
+        if (user.location === LocationType.LOCAL) {
+            const hederaKey = await user.loadHederaKey(ref, userId);
+            return hederaKey;
+        }
+
+        return null;
     }
 }

@@ -96,12 +96,12 @@ export class MintService {
         token: Token,
         tokenValue: number,
         documentOwner: PolicyUser,
-        root: IHederaCredentials,
+        policyOwnerHederaCred: IHederaCredentials,
         targetAccount: string,
         vpMessageId: string,
         transactionMemo: string,
         documents: VcDocument[],
-        signOptions: ISignOptions,
+        policyOwnerSignOptions: ISignOptions,
         userId: string | null
     ): Promise<void> {
         const multipleConfig = await MintService.getMultipleConfig(
@@ -111,10 +111,7 @@ export class MintService {
         const users = new Users();
         const documentOwnerUser = await users.getUserById(documentOwner.did, userId);
         const policyOwner = await users.getUserById(ref.policyOwner, userId);
-        const notifier = NotificationHelper.init([
-            documentOwnerUser?.id,
-            policyOwner?.id,
-        ]);
+        const notifier = NotificationHelper.init([documentOwnerUser?.id, policyOwner?.id]);
         if (multipleConfig) {
             const hash = VcDocument.toCredentialHash(
                 documents,
@@ -125,14 +122,14 @@ export class MintService {
                     return value;
                 }
             );
-            await MintService.sendMessage(ref, multipleConfig, root, {
+            await MintService.sendMessage(ref, multipleConfig, policyOwnerHederaCred, {
                 hash,
                 messageId: vpMessageId,
                 tokenId: token.tokenId,
                 amount: tokenValue,
                 memo: transactionMemo,
                 target: targetAccount,
-            }, signOptions, policyOwner?.id);
+            }, policyOwnerSignOptions, userId);
             if (multipleConfig.type === 'Main') {
                 const user = await PolicyUtils.getUserCredentials(
                     ref,
@@ -175,16 +172,16 @@ export class MintService {
                         memo: transactionMemo,
                         policyId: ref.policyId
                     },
-                    root,
+                    policyOwnerHederaCred,
                     tokenConfig,
                     ref,
                     notifier
                 );
                 MintService.activeMintProcesses.add(mintNFT.mintRequestId);
                 mintNFT
-                    .mint(null, policyOwner?.id)
+                    .mint(null, userId)
                     .catch((error) =>
-                        MintService.error(PolicyUtils.getErrorMessage(error), null, policyOwner?.id)
+                        MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
                     )
                     .finally(() => {
                         MintService.activeMintProcesses.delete(
@@ -203,16 +200,16 @@ export class MintService {
                         memo: transactionMemo,
                         policyId: ref.policyId
                     },
-                    root,
+                    policyOwnerHederaCred,
                     tokenConfig,
                     ref,
                     notifier
                 );
                 MintService.activeMintProcesses.add(mintFT.mintRequestId);
                 mintFT
-                    .mint(null, policyOwner?.id)
+                    .mint(null, userId)
                     .catch((error) =>
-                        MintService.error(PolicyUtils.getErrorMessage(error), null, policyOwner?.id)
+                        MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
                     )
                     .finally(() => {
                         MintService.activeMintProcesses.delete(
@@ -262,20 +259,21 @@ export class MintService {
             messageId: vpMessageId,
         });
         const users = new Users();
-        const documentOwnerUser = await users.getUserById(vp.owner, userId);
-        const user = await users.getUserById(userDId, userId);
+        const documentOwner = await users.getUserById(vp.owner, userId);
+        const actor = await users.getUserById(userDId, userId);
+        const policyOwner = await users.getUserById(rootDid, userId);
+        const policyOwnerCred = await users.getHederaAccount(rootDid, userId);
+
         let processed = false;
-        const root = await users.getHederaAccount(rootDid, userId);
-        const rootUser = await users.getUserById(rootDid, userId);
         for (const request of requests) {
             processed ||= await MintService.retryRequest(
                 request,
-                user?.id,
-                rootUser?.id,
-                root,
-                documentOwnerUser?.id,
+                actor?.id,
+                policyOwner?.id,
+                policyOwnerCred,
+                documentOwner?.id,
                 ref,
-                user.id.toString()
+                userId
             );
         }
 
@@ -283,7 +281,7 @@ export class MintService {
             NotificationHelper.success(
                 `All tokens for ${vpMessageId} are minted and transferred`,
                 `Retry is not needed`,
-                ref?.dryRun ? rootUser?.id : user?.id
+                ref?.dryRun ? policyOwner?.id : actor?.id
             );
         }
     }
@@ -291,22 +289,21 @@ export class MintService {
     /**
      * Retry mint request
      * @param request Mint request
-     * @param userId User identifier
-     * @param rootId
+     * @param actorId User identifier
+     * @param policyOwnerId
      * @param root Root
      * @param ownerId Owner identifier
      * @param ref Block ref
-     * @param _userId
      * @returns Mint or transfer is processed
      */
     public static async retryRequest(
         request: MintRequest,
-        userId: string,
-        rootId: string,
-        root: IRootConfig,
-        ownerId: string,
-        ref?: any,
-        _userId?: string
+        actorId: string,
+        policyOwnerId: string,
+        policyOwnerCred: IRootConfig,
+        documentOwnerId: string,
+        ref: any,
+        userId: string | null
     ) {
         if (!request) {
             throw new Error('There is no mint request');
@@ -315,7 +312,7 @@ export class MintService {
             NotificationHelper.warn(
                 'Retry mint',
                 `Mint process for ${request.vpMessageId} is already in progress`,
-                userId
+                actorId
             );
             return true;
         }
@@ -333,7 +330,7 @@ export class MintService {
                         Date.now()) /
                     (60 * 1000)
                 )} minutes`,
-                userId
+                actorId
             );
             return true;
         }
@@ -359,11 +356,11 @@ export class MintService {
                     processed = await (
                         await MintFT.init(
                             request,
-                            root,
+                            policyOwnerCred,
                             tokenConfig,
                             ref,
-                            NotificationHelper.init([rootId, userId, ownerId]),
-                            _userId
+                            NotificationHelper.init([policyOwnerId, actorId, documentOwnerId]),
+                            actorId
                         )
                     ).mint(null, userId);
                     break;
@@ -371,11 +368,11 @@ export class MintService {
                     processed = await (
                         await MintNFT.init(
                             request,
-                            root,
+                            policyOwnerCred,
                             tokenConfig,
                             ref,
-                            NotificationHelper.init([rootId, userId, ownerId]),
-                            _userId
+                            NotificationHelper.init([policyOwnerId, actorId, documentOwnerId]),
+                            actorId
                         )
                     ).mint(null, userId);
                     break;
@@ -403,19 +400,20 @@ export class MintService {
     private static async sendMessage(
         ref: AnyBlockType,
         multipleConfig: MultiPolicy,
-        root: IHederaCredentials,
+        policyOwnerHederaCred: IHederaCredentials,
         data: any,
-        signOptions: ISignOptions,
+        policyOwnerSignOptions: ISignOptions,
         userId?: string | null
     ) {
         const message = new SynchronizationMessage(MessageAction.Mint);
         message.setDocument(multipleConfig, data);
-        const messageServer = new MessageServer(
-            root.hederaAccountId,
-            root.hederaAccountKey,
-            signOptions,
-            ref.dryRun
-        );
+        const messageServer = new MessageServer({
+            operatorId: policyOwnerHederaCred.hederaAccountId,
+            operatorKey: policyOwnerHederaCred.hederaAccountKey,
+            encryptKey: policyOwnerHederaCred.hederaAccountKey,
+            signOptions: policyOwnerSignOptions,
+            dryRun: ref.dryRun
+        });
         const topic = new TopicConfig(
             { topicId: multipleConfig.synchronizationTopicId },
             null,

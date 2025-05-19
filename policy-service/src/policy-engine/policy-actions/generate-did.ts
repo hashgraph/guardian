@@ -17,12 +17,13 @@ export class GenerateDID {
         const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
         const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
         const userSignOptions = await userCred.loadSignOptions(ref, userId);
-        const client = new MessageServer(
-            userHederaCred.hederaAccountId,
-            userHederaCred.hederaAccountKey,
-            userSignOptions,
-            ref.dryRun
-        );
+        const client = new MessageServer({
+            operatorId: userHederaCred.hederaAccountId,
+            operatorKey: userHederaCred.hederaAccountKey,
+            encryptKey: userHederaCred.hederaAccountKey,
+            signOptions: userSignOptions,
+            dryRun: ref.dryRun
+        });
 
         const didObject = await ref.components.generateDID(topic.topicId);
         const message = new DIDMessage(MessageAction.CreateDID);
@@ -104,12 +105,13 @@ export class GenerateDID {
         const rootCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
         const rootHederaCred = await rootCred.loadHederaCredentials(ref, userId);
         const rootSignOptions = await rootCred.loadSignOptions(ref, userId);
-        const messageServer = new MessageServer(
-            rootHederaCred.hederaAccountId,
-            rootHederaCred.hederaAccountKey,
-            rootSignOptions,
-            ref.dryRun
-        );
+        const messageServer = new MessageServer({
+            operatorId: rootHederaCred.hederaAccountId,
+            operatorKey: rootHederaCred.hederaAccountKey,
+            encryptKey: rootHederaCred.hederaAccountKey,
+            signOptions: rootSignOptions,
+            dryRun: ref.dryRun
+        });
         const messageResult = await messageServer
             .setTopicObject(topic)
             .sendMessage(message, true, null, userId);

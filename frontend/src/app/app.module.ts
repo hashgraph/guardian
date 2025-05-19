@@ -130,6 +130,7 @@ import { OnlyForDemoDirective } from './directives/onlyfordemo.directive';
 import { UseWithServiceDirective } from './directives/use-with-service.directive';
 import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
 import { ExternalPoliciesService } from './services/external-policy.service';
+import { UserKeysDialog } from './components/user-keys-dialog/user-keys-dialog.component';
 
 @NgModule({
     declarations: [
@@ -174,7 +175,8 @@ import { ExternalPoliciesService } from './services/external-policy.service';
         RolesViewComponent,
         UsersManagementComponent,
         UsersManagementDetailComponent,
-        WorkerTasksComponent
+        WorkerTasksComponent,
+        UserKeysDialog
     ],
     exports: [],
     bootstrap: [AppComponent],

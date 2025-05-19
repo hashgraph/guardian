@@ -159,7 +159,7 @@ export class CreateTokenBlock {
             );
         }
 
-        const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner,userId);
+        const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
 
         if (!docs) {
             throw new BlockActionError(
@@ -180,15 +180,16 @@ export class CreateTokenBlock {
         // #endregion
 
         // #region Send new token to hedera
-        const hederaCred = await policyOwnerCred.loadHederaCredentials(ref, userId);
-        const signOptions = await policyOwnerCred.loadSignOptions(ref, userId);
+        const policyOwnerHederaCred = await policyOwnerCred.loadHederaCredentials(ref, userId);
+        const policyOwnerSignOptions = await policyOwnerCred.loadSignOptions(ref, userId);
         const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref, userId);
-        const messageServer = new MessageServer(
-            hederaCred.hederaAccountId,
-            hederaCred.hederaAccountKey,
-            signOptions,
-            ref.dryRun
-        ).setTopicObject(rootTopic);
+        const messageServer = new MessageServer({
+            operatorId: policyOwnerHederaCred.hederaAccountId,
+            operatorKey: policyOwnerHederaCred.hederaAccountKey,
+            encryptKey: policyOwnerHederaCred.hederaAccountKey,
+            signOptions: policyOwnerSignOptions,
+            dryRun: ref.dryRun,
+        }).setTopicObject(rootTopic);
         const tokenMessage = new TokenMessage(MessageAction.CreateToken);
         tokenMessage.setDocument(createdToken);
         await messageServer.sendMessage(tokenMessage, true, null, userId);

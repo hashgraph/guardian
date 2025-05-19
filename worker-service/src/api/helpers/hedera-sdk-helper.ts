@@ -1699,6 +1699,27 @@ export class HederaSDKHelper {
     }
 
     /**
+     * Get NFT serials
+     * @param tokenId Token identifier
+     * @returns Serials Info
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get serials request timeout exceeded')
+    public static async getSerialsNFT(hederaAccountId: string, tokenId?: string): Promise<any[]> {
+        const params = {
+            limit: HederaSDKHelper.REST_API_MAX_LIMIT,
+        }
+        if (tokenId) {
+            params['token.id'] = tokenId;
+        }
+        const p: any = {
+            params,
+            responseType: 'json',
+        };
+        const url = `${Environment.HEDERA_ACCOUNT_API}${hederaAccountId}/nfts`;
+        return await HederaSDKHelper.hederaRestApi(url, p, 'nfts');
+    }
+
+    /**
      * Get NFT token serials
      * @param tokenId Token identifier
      * @param accountId Account identifier
@@ -1709,7 +1730,14 @@ export class HederaSDKHelper {
      * @returns Serials
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get token serials request timeout exceeded')
-    public static async getNFTTokenSerials(tokenId: string, accountId?: string, serialnumber?: string, order = 'asc', filter?: any, limit?: number): Promise<any[]> {
+    public static async getNFTTokenSerials(
+        tokenId: string,
+        accountId?: string,
+        serialnumber?: string,
+        order = 'asc',
+        filter?: any,
+        limit?: number
+    ): Promise<any[]> {
         const params: any = {
             limit: HederaSDKHelper.REST_API_MAX_LIMIT,
             order,
@@ -1850,6 +1878,35 @@ export class HederaSDKHelper {
         const balances = res.data.balances[0];
         const hbars = new Hbar(balances.balance, HbarUnit.Tinybar);
         return hbars.toString();
+    }
+
+    /**
+     * Get balance account (Rest API)
+     *
+     * @param {string} accountId - Account Id
+     *
+     * @returns {string} - balance
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get balance request timeout exceeded')
+    public static async accountInfo(accountId: string): Promise<any> {
+        const res = await axios.get(
+            `${Environment.HEDERA_ACCOUNT_API}/${accountId}/tokens`,
+            { responseType: 'json' }
+        );
+        if (!res || !res.data) {
+            throw new Error(`Invalid account '${accountId}'`);
+        }
+        const tokens: any[] = res.data.tokens;
+        const result: { [tokenId: string]: any } = {};
+        for (const token of tokens) {
+            result[token.token_id] = {
+                tokenId: token.token_id,
+                balance: token.balance?.toString(),
+                frozen: token.freeze_status === 'FROZEN',
+                kyc: token.kyc_status === 'GRANTED',
+            }
+        }
+        return result;
     }
 
     /**

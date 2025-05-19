@@ -149,7 +149,10 @@ export class PolicyStatisticDocument extends BaseEntity implements IStatistic {
             if (this.documentFileId) {
                 DataBaseHelper.gridFS
                     .delete(this.documentFileId)
-                    .catch(console.error);
+                    .catch((reason) => {
+                        console.error(`BeforeUpdate: PolicyStatisticDocument, ${this._id}, documentFileId`)
+                        console.error(reason)
+                    });
             }
             await this.createDocument();
         }
@@ -183,7 +186,10 @@ export class PolicyStatisticDocument extends BaseEntity implements IStatistic {
         if (this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`AfterDelete: PolicyStatisticDocument, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
         }
     }
 }

@@ -286,7 +286,11 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
 
                 const topic = await getOrCreateTopic(item, userId);
                 const user = await (new Users()).getHederaAccount(owner.creator, userId);
-                const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
+                const messageServer = new MessageServer({
+                    operatorId: user.hederaAccountId,
+                    operatorKey: user.hederaAccountKey,
+                    signOptions: user.signOptions
+                });
                 const statMessageResult = await messageServer
                     .setTopicObject(topic)
                     .sendMessage(statMessage, true, null, userId);
@@ -444,7 +448,11 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
 
                 const topic = await getOrCreateTopic(item, userId);
                 const user = await (new Users()).getHederaAccount(owner.creator, userId);
-                const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
+                const messageServer = new MessageServer({
+                    operatorId: user.hederaAccountId,
+                    operatorKey: user.hederaAccountKey,
+                    signOptions: user.signOptions
+                });
 
                 const vcMessage = new StatisticAssessmentMessage(MessageAction.CreateStatisticAssessment);
                 vcMessage.setDefinition(item);

@@ -3,5 +3,6 @@
  */
 export enum LocationType {
     LOCAL = 'local',
-    REMOTE = 'remote'
+    REMOTE = 'remote',
+    CUSTOM = 'custom',
 }

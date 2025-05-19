@@ -204,8 +204,11 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                         tag.status = 'Published';
                         const topic = await DatabaseServer.getTopicById(target.topicId);
                         const topicConfig = await TopicConfig.fromObject(topic, true, owner?.id);
-                        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
-                            .setTopicObject(topicConfig);
+                        const messageServer = new MessageServer({
+                            operatorId: root.hederaAccountId,
+                            operatorKey: root.hederaAccountKey,
+                            signOptions: root.signOptions
+                        }).setTopicObject(topicConfig);
                         await publishTag(tag, messageServer, owner);
                     } else {
                         tag.target = null;
@@ -287,7 +290,7 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 const targetObject = await getTarget(entity, localTarget);
                 if (targetObject) {
                     if (targetObject.topicId) {
-                        const messageServer = new MessageServer(null, null);
+                        const messageServer = new MessageServer(null);
                         const messages = await messageServer.getMessages<TagMessage>(targetObject.topicId, owner.id, MessageType.Tag);
                         const items = await DatabaseServer.getTags({ localTarget, entity, status: 'Published' });
                         const map = new Map<string, any>();
@@ -382,8 +385,11 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                     const root = await users.getHederaAccount(owner.creator, owner?.id);
                     const topic = await DatabaseServer.getTopicById(item.topicId);
                     const topicConfig = await TopicConfig.fromObject(topic, true, owner?.id);
-                    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
-                        .setTopicObject(topicConfig);
+                    const messageServer = new MessageServer({
+                        operatorId: root.hederaAccountId,
+                        operatorKey: root.hederaAccountKey,
+                        signOptions: root.signOptions
+                    }).setTopicObject(topicConfig);
                     await deleteTag(item, messageServer, owner);
                 }
 

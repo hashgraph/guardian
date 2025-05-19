@@ -1463,7 +1463,9 @@ export const DefaultRoles: Permissions[] = [
     Permissions.STATISTICS_LABEL_READ,
     Permissions.STATISTICS_LABEL_CREATE,
     Permissions.SCHEMAS_RULE_EXECUTE,
-    Permissions.LOG_LOG_READ
+    Permissions.LOG_LOG_READ,
+    Permissions.POLICIES_EXTERNAL_POLICY_READ,
+    Permissions.POLICIES_EXTERNAL_POLICY_CREATE,
 ];
 
 export const OldRoles: Permissions[] = [
