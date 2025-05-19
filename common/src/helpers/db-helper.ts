@@ -62,6 +62,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
      */
     private static readonly _systemFileFields: string[] = [
         'documentFileId',
+        'encryptedDocumentFileId',
         'contextFileId',
         'configFileId',
     ];
