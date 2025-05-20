@@ -195,7 +195,7 @@ export class PriorityQueueComponent extends BaseGridComponent {
                     this.messageService.add({
                         severity: 'error',
                         summary: 'Error',
-                        detail: this.translocoService.translate('priority_queue.add_to_queue_error'),
+                        detail: this.translocoService.translate('priority_queue.not_exist_queue_error'),
                         life: 3000
                     });
                 }
