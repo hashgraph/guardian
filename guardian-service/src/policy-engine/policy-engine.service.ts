@@ -1117,10 +1117,8 @@ export class PolicyEngineService {
                     const errors = await this.policyEngine.validateModel(policyId);
                     const isValid = !errors.blocks.some(block => !block.isValid);
                     if (isValid) {
-                        await Promise.all([
-                            this.policyEngine.dryRunPolicy(model, owner, 'Dry Run', false, logger),
-                            this.policyEngine.generateModel(model.id.toString())
-                        ]);
+                        await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run', false, logger);
+                        await this.policyEngine.generateModel(model.id.toString());
                     }
 
                     return new MessageResponse({
