@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { ISchema, UserPermissions } from '@guardian/interfaces';
-import { forkJoin, Subscription } from 'rxjs';
+import { forkJoin, of, Subscription } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -149,7 +149,9 @@ export class ProjectDataExportComponent implements OnInit {
 
     private loadFiltersData() {
         forkJoin([
-            this.schemaService.getSchemasByPolicy(this.currentPolicy.id),
+            this.user.SCHEMAS_RULE_READ
+                ? this.schemaService.getSchemasByPolicy(this.currentPolicy.id)
+                : of([]),
             this.policyEngineService.getPolicyDocumentOwners(this.currentPolicy.id),
             this.policyEngineService.getPolicyTokens(this.currentPolicy.id),
         ]).subscribe((value) => {
@@ -246,6 +248,13 @@ export class ProjectDataExportComponent implements OnInit {
                 control.disable();
             }
             options.owners = [this.user.did];
+        }
+
+        if (!this.user.SCHEMAS_RULE_READ) {
+            const control = this.filtersForm.get('schemas');
+            if (control) {
+                control.disable();
+            }
         }
 
         this.loading = true;
