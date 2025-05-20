@@ -48,6 +48,9 @@ jobs:
                   pushd common
                   yarn run build
                   popd
+                  pushd frontend
+                  npm install
+                  popd
                   pushd notification-service
                   yarn run build
                   popd
@@ -97,15 +100,15 @@ jobs:
                   popd
                   pushd auth-service
                   npm start &
-                  sleep 20
+                  sleep 30
                   popd
                   pushd guardian-service
                   npm start &
-                  sleep 20
+                  sleep 40
                   popd
                   pushd policy-service
                   npm start &
-                  sleep 20
+                  sleep 30
                   popd
                   pushd queue-service
                   npm start &
@@ -125,11 +128,15 @@ jobs:
                   popd
                   pushd api-gateway
                   npm start &
-                  sleep 20
+                  sleep 30
                   popd
-                  sleep 60
+                  pushd frontend
+                  ./node_modules/.bin/ng  serve --proxy-config ./proxy.conf.json &
+                  sleep 120
+                  popd
               env:
                   CI: true
+                  NODE_OPTIONS: --openssl-legacy-provider
                   OPERATOR_ID: ${{ secrets.CI_HEDERA_ACCOUNT }}
                   OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
                   JWT_PRIVATE_KEY: ${{ secrets.CI_JWT_PRIVATE_KEY }}
@@ -145,7 +152,7 @@ jobs:
               run: |
                   pushd e2e-tests
                   npm install
-                  npx cypress run --headed --env "operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=ui,grepFilterSpecs=true" --spec "cypress/e2e/ui-tests/**/*.cy.js" --browser chrome
+                  npx cypress run --env "operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=preparing ui,grepFilterSpecs=true" --spec cypress/e2e/ --browser chrome
                   popd
             - name: Publish API Test Results
               uses: step-security/publish-unit-test-result-action@cc82caac074385ae176d39d2d143ad05e1130b2d # v2.18.0

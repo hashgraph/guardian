@@ -7,10 +7,6 @@ on:
                 type: string
                 description: Tags for run API tests(smoke, accounts, firstPool and etc.)
                 default: 'all'
-            ui_flag:
-                type: boolean
-                description: True to run UI tests
-                default: false
 
 jobs:
     buildAndTest:
@@ -136,15 +132,8 @@ jobs:
                   npm start &
                   sleep 20
                   popd
-                  pushd frontend
-                  npm install
-                  ./node_modules/.bin/ng  serve --proxy-config ./proxy.conf.json &
-                  sleep 120
-                  popd
-                  sleep 60
               env:
                   CI: true
-                  NODE_OPTIONS: --openssl-legacy-provider
                   OPERATOR_ID: ${{ secrets.CI_HEDERA_ACCOUNT }}
                   OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
                   JWT_PRIVATE_KEY: ${{ secrets.CI_JWT_PRIVATE_KEY }}
@@ -157,20 +146,11 @@ jobs:
                   ACCESS_TOKEN_UPDATE_INTERVAL: 600000
 
             - name: Run tests with Cypress
-              if: ${{ !inputs.ui_flag }}
               run: |
                   pushd e2e-tests
                   npm install
                   npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=preparing ${{ inputs.tags }},grepFilterSpecs=true" --spec "cypress/e2e/api-tests/**/*.cy.js" --browser chrome
                   popd
-
-            - name: Run tests with Cypress UI
-              if: ${{ inputs.ui_flag }}
-              run: |
-                  pushd e2e-tests
-                  npm install
-                  npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=ui,grepFilterSpecs=true" --spec "cypress/e2e/ui-tests/**/*.cy.js" --browser chrome
-                  popd  
 
             - name: Publish API Test Results
               uses: step-security/publish-unit-test-result-action@cc82caac074385ae176d39d2d143ad05e1130b2d # v2.18.0
