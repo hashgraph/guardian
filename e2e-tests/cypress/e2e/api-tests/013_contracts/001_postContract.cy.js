@@ -9,7 +9,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
     const contractNameW = "FirstAPIContractW";
     const contractNameNeg = "FirstAPIContractNeg";
 
-    it("Create retire contract", { tags: ['smoke'] }, () => {
+    it("Create retire contract", { tags: ['policy_labels', 'formulas', 'trustchains', 'tags', 'smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
@@ -100,7 +100,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Create wipe contract", { tags: ['smoke'] }, () => {
+    it("Create wipe contract", { tags: ['policy_labels', 'formulas', 'trustchains', 'smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,

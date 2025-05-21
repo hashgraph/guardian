@@ -87,7 +87,12 @@ export class GuardiansService extends NatsService {
      * @param data
      * @param awaitInterval
      */
-    public sendBlockMessage<T>(subject: string, policyId: string, data: unknown, awaitInterval: number = 100000): Promise<T> {
+    public sendBlockMessage<T>(
+        subject: string,
+        policyId: string,
+        data: unknown,
+        awaitInterval: number = 5 * 60 * 1000
+    ): Promise<T> {
         const messageId = GenerateUUIDv4();
         const head = headers();
         head.append('messageId', messageId);

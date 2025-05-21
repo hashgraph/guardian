@@ -33,4 +33,8 @@ export class DocStateCollectionRestore extends CollectionRestore<DocumentState> 
     protected override createRow(data: DocumentState): DocumentState {
         return data;
     }
+
+    protected override async decryptRow(row: DocumentState): Promise<DocumentState> {
+        return row;
+    }
 }

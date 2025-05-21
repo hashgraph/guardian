@@ -1,5 +1,5 @@
-import { HederaDidDocument, IAuthUser, KeyType, NotificationHelper, Schema as SchemaCollection, Token, Topic, TopicConfig, TopicHelper, Users, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcDocumentDefinition as HVcDocument, VcSubject, VpDocumentDefinition as VpDocument, Wallet, Workers } from '@guardian/common';
-import { DidDocumentStatus, DocumentSignature, DocumentStatus, Schema, SchemaEntity, TopicType, WorkerTaskType } from '@guardian/interfaces';
+import { HederaDidDocument, IAuthUser, KeyType, NotificationHelper, Schema as SchemaCollection, Token, Topic, TopicConfig, TopicHelper, Users, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcDocumentDefinition as HVcDocument, VcSubject, VpDocumentDefinition as VpDocument, Wallet, Workers, EncryptVcHelper } from '@guardian/common';
+import { DidDocumentStatus, DocumentSignature, DocumentStatus, Schema, SchemaEntity, SignatureType, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { TokenId, TopicId } from '@hashgraph/sdk';
 import { FilterQuery } from '@mikro-orm/core';
 import * as mathjs from 'mathjs';
@@ -937,7 +937,11 @@ export class PolicyUtils {
      * @param document
      * @param userId
      */
-    public static async getDocumentOwner(ref: AnyBlockType, document: IPolicyDocument, userId: string | null): Promise<PolicyUser> {
+    public static async getDocumentOwner(
+        ref: AnyBlockType,
+        document: IPolicyDocument,
+        userId: string | null
+    ): Promise<PolicyUser> {
         return await PolicyComponentsUtils.GetPolicyUserByDID(document.owner, document.group, ref, userId);
     }
 
@@ -1234,7 +1238,11 @@ export class PolicyUtils {
      * @param owner
      * @param document
      */
-    public static createVC(ref: AnyBlockType, owner: PolicyUser, document: VcDocument): IPolicyDocument {
+    public static createVC(
+        ref: AnyBlockType,
+        owner: PolicyUser,
+        document: VcDocument
+    ): IPolicyDocument {
         return {
             policyId: ref.policyId,
             tag: ref.tag,
@@ -1245,6 +1253,71 @@ export class PolicyUtils {
             hederaStatus: DocumentStatus.NEW,
             signature: DocumentSignature.NEW
         };
+    }
+
+    /**
+     * Create VC Document
+     * @param ref
+     * @param document
+     */
+    public static async saveVC(
+        ref: AnyBlockType,
+        document: IPolicyDocument,
+        userId: string | null
+    ): Promise<IPolicyDocument> {
+        await PolicyUtils.encryptVC(ref, document, userId);
+        return await ref.databaseServer.saveVC(document);
+    }
+
+    /**
+     * Create VC Document
+     * @param ref
+     * @param document
+     */
+    public static async updateVC(
+        ref: AnyBlockType,
+        document: VcDocumentCollection,
+        userId: string | null
+    ): Promise<IPolicyDocument> {
+        await PolicyUtils.encryptVC(ref, document, userId);
+        return await ref.databaseServer.updateVC(document);
+    }
+
+    /**
+     * Create VC Document
+     * @param ref
+     * @param document
+     */
+    public static async saveDocumentState(
+        ref: AnyBlockType,
+        document: IPolicyDocument
+    ): Promise<IPolicyDocument> {
+        const state = { ...document };
+        if (state.encryptedDocument) {
+            delete state.document;
+        }
+        return await ref.databaseServer.saveDocumentState({
+            documentId: document.id,
+            document: state,
+            policyId: ref.policyId
+        });
+    }
+
+    public static needEncryptVC(document: IPolicyDocument): boolean {
+        return document?.document?.proof?.type === SignatureType.BbsBlsSignature2020;
+    }
+
+    public static async encryptVC(
+        ref: AnyBlockType,
+        document: IPolicyDocument,
+        userId: string | null
+    ): Promise<IPolicyDocument> {
+        if (PolicyUtils.needEncryptVC(document)) {
+            const messageKey = await UserCredentials.loadMessageKeyOrPrivateKey(ref, document.owner, userId);
+            const data = JSON.stringify(document.document);
+            document.encryptedDocument = await EncryptVcHelper.encrypt(data, messageKey);
+        }
+        return document;
     }
 
     /**

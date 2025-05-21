@@ -5,7 +5,7 @@ import * as Authorization from "../../../support/authorization";
 context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
-    it('Imports new policy and all associated artifacts from IPFS', () => {
+    it('Imports new policy and all associated artifacts from IPFS', { tags: ['analytics'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.fixture("exportedPolicy.policy", "binary")
                 .then((binary) => Cypress.Blob.binaryStringToBlob(binary))

@@ -483,3 +483,8 @@ body {
 ::ng-deep p-dropdown .p-dropdown-label-empty {
     min-height: 36px;
 }
+
+::ng-deep .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}

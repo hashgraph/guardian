@@ -191,7 +191,11 @@ export async function createUserProfile(
             }
         }
     }
-    const messageServer = new MessageServer(hederaAccountId, hederaAccountKey, signOptions);
+    const messageServer = new MessageServer({
+        operatorId: hederaAccountId,
+        operatorKey: hederaAccountKey,
+        signOptions
+    });
 
     // ------------------------
     // <-- Check hedera key

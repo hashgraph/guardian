@@ -56,11 +56,11 @@ export class PolicyImport {
             this.root.hederaAccountKey,
             this.root.signOptions
         );
-        this.messageServer = new MessageServer(
-            this.root.hederaAccountId,
-            this.root.hederaAccountKey,
-            this.root.signOptions
-        );
+        this.messageServer = new MessageServer({
+            operatorId: this.root.hederaAccountId,
+            operatorKey: this.root.hederaAccountKey,
+            signOptions: this.root.signOptions
+        });
         this.owner = user;
         return this.root;
     }
@@ -99,7 +99,7 @@ export class PolicyImport {
             policy.description = additionalPolicyConfig?.description || policy.description;
             policy.policyTag = additionalPolicyConfig?.policyTag || policy.policyTag;
             policy.status = PolicyStatus.VIEW;
-            policy.messageId = additionalPolicyConfig?.messageId || policy.messageId;
+            policy.messageId = (additionalPolicyConfig?.messageId || policy.messageId || '').trim();
             policy.locationType = LocationType.REMOTE;
         } else {
             delete policy._id;

@@ -140,6 +140,8 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
                     this.balance = `${b.toFixed(2)} ${balance.unit}`;
                 } else if (b > 9) {
                     this.balance = `${b.toFixed(3)} ${balance.unit}`;
+                } else {
+                    this.balance = `${b.toFixed(4)} ${balance.unit}`;
                 }
                 if (b > 100) {
                     this.balanceType = 'normal';

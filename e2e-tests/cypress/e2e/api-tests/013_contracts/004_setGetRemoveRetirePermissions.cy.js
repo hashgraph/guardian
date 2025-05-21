@@ -248,7 +248,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         Authorization.getAccessToken(SR2Username).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.ListOfContracts + idW2 + "/" + API.ContractPermissions,
+                url: API.ApiServer + API.ListOfContracts + idW2 + "/" + API.Permissions,
                 headers: {
                     authorization
                 },
@@ -263,7 +263,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         Authorization.getAccessToken(SR2Username).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.ListOfContracts + idR2 + "/" + API.ContractPermissions,
+                url: API.ApiServer + API.ListOfContracts + idR2 + "/" + API.Permissions,
                 headers: {
                     authorization
                 },
@@ -436,7 +436,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
     //     Authorization.getAccessToken(SR2Username).then((authorization) => {
     //         cy.request({
     //             method: METHOD.GET,
-    //             url: API.ApiServer + API.ListOfContracts + idW2 + "/" + API.ContractPermissions,
+    //             url: API.ApiServer + API.ListOfContracts + idW2 + "/" + API.Permissions,
     //             headers: {
     //                 authorization
     //             },
@@ -451,7 +451,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
     //     Authorization.getAccessToken(SR2Username).then((authorization) => {
     //         cy.request({
     //             method: METHOD.GET,
-    //             url: API.ApiServer + API.ListOfContracts + idR2 + "/" + API.ContractPermissions,
+    //             url: API.ApiServer + API.ListOfContracts + idR2 + "/" + API.Permissions,
     //             headers: {
     //                 authorization
     //             },
@@ -459,7 +459,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
     //             expect(response.status).eql(STATUS_CODE.OK);
     //             cy.request({
     //                 method: METHOD.GET,
-    //                 url: API.ApiServer + API.ListOfContracts + idR2 + "/" + API.ContractPermissions,
+    //                 url: API.ApiServer + API.ListOfContracts + idR2 + "/" + API.Permissions,
     //                 headers: {
     //                     authorization
     //                 },

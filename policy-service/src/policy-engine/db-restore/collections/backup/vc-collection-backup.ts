@@ -1,4 +1,4 @@
-import { DataBaseHelper, VcDocument } from '@guardian/common';
+import { DataBaseHelper, DeleteCache, VcDocument } from '@guardian/common';
 import { FindCursor } from 'mongodb';
 import { CollectionBackup } from '../collection-backup.js';
 import { IDiffAction } from '../../interfaces/action.interface.js';
@@ -18,10 +18,13 @@ export class VcCollectionBackup extends CollectionBackup<VcDocument> {
         return vcRows;
     }
 
-    protected override findDeletedDocuments(): FindCursor<VcDocument> {
-        const vcCollection = DataBaseHelper.orm.em.getCollection(this.collectionName);
-        const vcRows = vcCollection.find<any>({ policyId: this.policyId, t: 1 });
-        return vcRows;
+    protected override findDeletedDocuments(): FindCursor<DeleteCache> {
+        const collection = DataBaseHelper.orm.em.getCollection('DeleteCache');
+        const rows = collection.find<any>({
+            policyId: this.policyId,
+            collection: this.collectionName
+        });
+        return rows;
     }
 
     protected override createBackupData(row: VcDocument): any {
@@ -34,6 +37,7 @@ export class VcCollectionBackup extends CollectionBackup<VcDocument> {
     protected override createDiffData(newRow: VcDocument, oldRow?: VcDocument): any {
         const diff: any = this.compareData(newRow, oldRow);
         delete diff.documentFileId;
+        delete diff.encryptedDocumentFileId;
         return diff;
     }
 
@@ -52,7 +56,13 @@ export class VcCollectionBackup extends CollectionBackup<VcDocument> {
                 return row;
             }
             delete row.document;
-            if (row.documentFileId) {
+            delete row.encryptedDocument;
+            if (row.encryptedDocumentFileId) {
+                const buffer = await DataBaseHelper.loadFile(row.encryptedDocumentFileId);
+                if (buffer) {
+                    (row as any).encryptedDocument = buffer.toString('base64');
+                }
+            } else if (row.documentFileId) {
                 const buffer = await DataBaseHelper.loadFile(row.documentFileId);
                 if (buffer) {
                     (row as any).document = buffer.toString('base64');

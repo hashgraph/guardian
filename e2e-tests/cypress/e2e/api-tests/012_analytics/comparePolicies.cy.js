@@ -3,9 +3,11 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
+
     const SRUsername = Cypress.env('SRUser');
 
-    let policyId1, policyId2
+    let policyId1, policyId2, lastPolicy, prelastPolicy;
+
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
@@ -18,6 +20,8 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
                 expect(response.status).to.eq(STATUS_CODE.OK)
                 policyId1 = response.body.at(0).id;
                 policyId2 = response.body.at(1).id;
+                lastPolicy = response.body.at(-1).id;
+                prelastPolicy = response.body.at(-2).id;
             })
         })
     })
@@ -43,6 +47,32 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
                 expect(response.body.left.id).to.eq(policyId1);
                 expect(response.body.right.id).to.eq(policyId2);
                 expect(response.body.total).not.null;
+            })
+        })
+    });
+
+    it("Compare equal policies", { tags: ['smoke'] }, () => {
+        Authorization.getAccessTokenByRefreshToken().then((authorization) => {
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.PolicyCompare,
+                body: {
+                    policyId1: lastPolicy,
+                    policyId2: prelastPolicy,
+                    eventsLvl: 1,
+                    propLvl: 2,
+                    childrenLvl: 2,
+                    idLvl: 0
+                },
+                headers: {
+                    authorization,
+                }
+            }).then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.OK);
+                expect(response.body.left.id).to.eq(lastPolicy);
+                expect(response.body.right.id).to.eq(prelastPolicy);
+                expect(response.body.blocks.report.at(0).type).eq("FULL");
+                expect(response.body.total).eq(100);
             })
         })
     });

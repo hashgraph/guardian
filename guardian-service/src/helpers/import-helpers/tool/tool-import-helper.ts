@@ -76,16 +76,17 @@ export async function importToolByMessage(
 ): Promise<ImportToolResult> {
     notifier.completedAndStart('Load tool file');
 
-    const messageServer = new MessageServer(
-        hederaAccount.hederaAccountId,
-        hederaAccount.hederaAccountKey,
-        hederaAccount.signOptions
-    );
+    const messageServer = new MessageServer({
+        operatorId: hederaAccount.hederaAccountId,
+        operatorKey: hederaAccount.hederaAccountKey,
+        signOptions: hederaAccount.signOptions
+    });
     if (!messageId || typeof messageId !== 'string') {
         throw new Error('Invalid Message Id');
     }
     messageId = messageId.trim();
-    const message = await messageServer.getMessage<ToolMessage>(messageId);
+    const message = await messageServer
+        .getMessage<ToolMessage>({ messageId, loadIPFS: true, userId });
     if (!message) {
         throw new Error('Invalid Message');
     }
@@ -330,7 +331,11 @@ export async function importToolByFile(
     await topic.saveKeys(userId);
 
     notifier.completedAndStart('Create tool in Hedera');
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
+    const messageServer = new MessageServer({
+        operatorId: root.hederaAccountId,
+        operatorKey: root.hederaAccountKey,
+        signOptions: root.signOptions
+    });
     const message = new ToolMessage(MessageType.Tool, MessageAction.CreateTool);
     message.setDocument(tool);
     const messageStatus = await messageServer
@@ -498,7 +503,9 @@ export async function previewToolByMessage(messageId: string, userId: string | n
     }
 
     messageId = messageId.trim();
-    const message = await MessageServer.getMessage<ToolMessage>(messageId, userId);
+    const message = await MessageServer
+        .getMessage<ToolMessage>({ messageId, loadIPFS: true, userId });
+
     if (!message) {
         throw new Error('Invalid Message');
     }

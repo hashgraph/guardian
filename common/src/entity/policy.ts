@@ -302,7 +302,10 @@ export class Policy extends BaseEntity {
             if (this.configFileId) {
                 DataBaseHelper.gridFS
                     .delete(this.configFileId)
-                    .catch(console.error);
+                    .catch((reason) => {
+                        console.error(`BeforeUpdate: Policy, ${this._id}, configFileId`)
+                        console.error(reason)
+                    });
             }
             await this.createConfig();
         }
@@ -334,7 +337,10 @@ export class Policy extends BaseEntity {
         if (this.configFileId) {
             DataBaseHelper.gridFS
                 .delete(this.configFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`BeforeUpdate: Policy, ${this._id}, configFileId`)
+                    console.error(reason)
+                });
         }
     }
 
@@ -370,7 +376,10 @@ export class Policy extends BaseEntity {
             if (this.hashMapFileId) {
                 DataBaseHelper.gridFS
                     .delete(this.hashMapFileId)
-                    .catch(console.error);
+                    .catch((reason) => {
+                        console.error(`BeforeUpdate: Policy, ${this._id}, hasMapFileId`)
+                        console.error(reason)
+                    });
             }
             await this.createHashMap();
         }
@@ -402,7 +411,10 @@ export class Policy extends BaseEntity {
         if (this.hashMapFileId) {
             DataBaseHelper.gridFS
                 .delete(this.hashMapFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`AfterDelete: Policy, ${this._id}, hasMapFileId`)
+                    console.error(reason)
+                });
         }
     }
 }

@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("Create Policy by Wizard", { tags: ['notifications', 'firstPool', 'all'] }, () => {
+context("Create Policy by Wizard", { tags: ['wizard', 'firstPool', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const policyName = "wizardPolicy";

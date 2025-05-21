@@ -3,6 +3,7 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 context("Demo", { tags: ['demo', 'secondPool', 'all'] }, () => {
+
     const SRUsername = Cypress.env('SRUser');
 
     it("Generates a new Hedera account with a random private key", () => {
@@ -17,7 +18,7 @@ context("Demo", { tags: ['demo', 'secondPool', 'all'] }, () => {
                 expect(response.body).to.have.property("key");
             });
         })
-    });
+    })
 
     it("Generates a new Hedera account with a random private key without auth token - Negative", () => {
         cy.request({
@@ -27,7 +28,7 @@ context("Demo", { tags: ['demo', 'secondPool', 'all'] }, () => {
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
-    });
+    })
 
     it("Generates a new Hedera account with a random private key with invalid auth token - Negative", () => {
         cy.request({
@@ -40,7 +41,7 @@ context("Demo", { tags: ['demo', 'secondPool', 'all'] }, () => {
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
-    });
+    })
 
     it("Generates a new Hedera account with a random private key with empty auth token - Negative", () => {
         cy.request({
@@ -53,5 +54,5 @@ context("Demo", { tags: ['demo', 'secondPool', 'all'] }, () => {
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
-    });
-});
+    })
+})

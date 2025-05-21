@@ -2,7 +2,7 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../in
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { ActionCallback, EventBlock, StateField } from '../helpers/decorators/index.js';
-import { IPolicyBlock, IPolicyEventState, IPolicyGetData } from '../policy-engine.interface.js';
+import { ActionType, IPolicyBlock, IPolicyEventState, IPolicyGetData } from '../policy-engine.interface.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { Token as TokenCollection } from '@guardian/common';
@@ -17,7 +17,7 @@ import { LocationType } from '@guardian/interfaces';
 @EventBlock({
     blockType: 'tokenConfirmationBlock',
     commonBlock: false,
-    actionType: LocationType.REMOTE,
+    actionType: LocationType.CUSTOM,
     about: {
         label: 'Token Confirmation',
         title: `Add 'Token Confirmation' Block`,
@@ -112,15 +112,13 @@ export class TokenConfirmationBlock {
         return block;
     }
 
-    /**
-     * Set block data
-     * @param user
-     * @param data
-     */
-    async setData(user: PolicyUser, data: any) {
+    async localSetData(user: PolicyUser, data: {
+        action: 'confirm' | 'skip',
+        hederaAccountKey: string
+    }): Promise<{
+        action: 'confirm' | 'skip'
+    }> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-        ref.log(`setData`);
-
         if (!data) {
             throw new BlockActionError(`Data is unknown`, ref.blockType, ref.uuid)
         }
@@ -135,7 +133,27 @@ export class TokenConfirmationBlock {
         }
 
         if (data.action === 'confirm') {
-            await this.confirm(ref, data, blockState, user.userId, data.action === 'skip');
+            await this.confirm(ref, data, blockState, user.userId);
+        }
+
+        return {
+            action: data.action
+        };
+    }
+
+    async remoteSetData(user: PolicyUser, data: {
+        action: 'confirm' | 'skip'
+    }) {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
+        ref.log(`setData`);
+
+        if (!data) {
+            throw new BlockActionError(`Data is unknown`, ref.blockType, ref.uuid)
+        }
+
+        const blockState = this.state[user?.id];
+        if (!blockState) {
+            throw new BlockActionError(`Document not found`, ref.blockType, ref.uuid)
         }
 
         ref.triggerEvents(PolicyOutputEventType.Confirm, blockState.user, blockState.data);
@@ -147,13 +165,46 @@ export class TokenConfirmationBlock {
     }
 
     /**
+     * Set block data
+     * @param user
+     * @param data
+     */
+    async setData(
+        user: PolicyUser,
+        data: {
+            action: 'confirm' | 'skip',
+            hederaAccountKey: string
+        },
+        type?: ActionType
+    ) {
+        if (type === ActionType.REMOTE) {
+            await this.remoteSetData(user, data);
+            return true;
+        } else if (type === ActionType.LOCAL) {
+            const _data = await this.localSetData(user, data);
+            return _data;
+        } else {
+            const _data = await this.localSetData(user, data);
+            await this.remoteSetData(user, _data);
+            return true;
+        }
+    }
+
+    /**
      * Confirm action
      * @param {IPolicyBlock} ref
      * @param {any} data
      * @param {any} state
      * @param userId
      */
-    private async confirm(ref: IPolicyBlock, data: any, state: any, userId: string | null, skip: boolean = false) {
+    private async confirm(
+        ref: IPolicyBlock,
+        data: {
+            action: 'confirm' | 'skip',
+            hederaAccountKey: string
+        },
+        state: any,
+        userId: string | null) {
         const account = {
             hederaAccountId: state.accountId,
             hederaAccountKey: data.hederaAccountKey

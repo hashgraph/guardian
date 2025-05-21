@@ -4,8 +4,6 @@ icon: computer
 
 # Remote Policy UI
 
-## **Remote Policy**
-
 ### **1. Creation**
 
 To create a policy suitable for operating by users via multiple (different) instances of Guardian, at the publishing stage ‘Public’ availability type must be selected.
@@ -45,7 +43,30 @@ Profile files can be used to create corresponding Remote Users, which can partic
 
 ![](<../../../.gitbook/assets/7 (24).png>)
 
-### **4. Policy execution**
+### **4. Encryption**
+
+To protect private information all data exchanges between Guardians are encrypted with the addressee public key. Each policy can be configured with a unique key:
+
+1\. Generate the key on the ‘home’ Guardian user account\
+
+
+<figure><img src="../../../.gitbook/assets/image (835).png" alt=""><figcaption></figcaption></figure>
+
+2\. Input the message ID of the Policy for which the key is being prepared
+
+<figure><img src="https://docs.guardianservice.io/~gitbook/image?url=https%3A%2F%2F3006114282-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FXVOaWpJKxLZf1Tee9eCO%252Fuploads%252F6wZWB9tV3G5WRjwRP7K7%252Fimage.png%3Falt%3Dmedia%26token%3Df57c6465-588b-4075-934b-60102a0b0458&#x26;width=768&#x26;dpr=4&#x26;quality=100&#x26;sign=1ba6e22a&#x26;sv=2" alt=""><figcaption></figcaption></figure>
+
+3\. Copy the generated key
+
+Note: The key is not retrievable after the initial creation. If lost a new one would need to be generated.
+
+<figure><img src="https://docs.guardianservice.io/~gitbook/image?url=https%3A%2F%2F3006114282-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FXVOaWpJKxLZf1Tee9eCO%252Fuploads%252FOY5Nf15OrGzaF3ByL71c%252Fimage.png%3Falt%3Dmedia%26token%3D063f4f63-f439-453b-b7e4-a41ba45bf1b8&#x26;width=768&#x26;dpr=4&#x26;quality=100&#x26;sign=6f02d011&#x26;sv=2" alt=""><figcaption></figcaption></figure>
+
+1. Import the key into the ‘remote’ Guardian via the user account page
+
+<figure><img src="https://docs.guardianservice.io/~gitbook/image?url=https%3A%2F%2F3006114282-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FXVOaWpJKxLZf1Tee9eCO%252Fuploads%252FsPAnJNzNAYKNkuMg7Y9m%252Fimage.png%3Falt%3Dmedia%26token%3Dbdef75b0-c3e9-4924-91bc-3286d024c551&#x26;width=768&#x26;dpr=4&#x26;quality=100&#x26;sign=e3fece38&#x26;sv=2" alt=""><figcaption></figcaption></figure>
+
+### **5. Policy execution**
 
 Remote policies are used in the same way as those running locally with few differences:\
 

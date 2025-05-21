@@ -52,9 +52,15 @@ export async function loadSchema(messageId: string, log: PinoLogger, userId: str
     try {
         let schemaToImport = SchemaCache.getSchema(messageId);
         if (!schemaToImport) {
-            const messageServer = new MessageServer(null, null);
+            const messageServer = new MessageServer(null);
             log.info(`loadSchema: ${messageId}`, ['GUARDIAN_SERVICE'], userId);
-            const message = await messageServer.getMessage<SchemaMessage>(messageId, MessageType.Schema);
+            const message = await messageServer
+                .getMessage<SchemaMessage>({
+                    messageId,
+                    loadIPFS: true,
+                    type: MessageType.Schema,
+                    userId
+                });
             log.info(`loadedSchema: ${messageId}`, ['GUARDIAN_SERVICE'], userId);
             schemaToImport = {
                 iri: null,
