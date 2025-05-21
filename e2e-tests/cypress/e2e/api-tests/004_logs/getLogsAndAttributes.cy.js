@@ -79,6 +79,8 @@ context("Logs", { tags: ['logs', 'thirdPool', 'all'] }, () => {
                 response.body.forEach(element => {
                     cy.task('log', element);
                 });
+                cy.task('log', response.body.length);
+                cy.task('log', response.body);
                 workersNumber = response.body.length - 1;
             });
         })
