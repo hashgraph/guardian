@@ -19,6 +19,7 @@ import { doubleClick, pointerMove } from 'ol/events/condition.js';
 import { LineString, MultiLineString, MultiPoint, MultiPolygon, Polygon } from 'ol/geom';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer.js';
 import Select from 'ol/interaction/Select.js';
+import Feature from 'ol/Feature';
 
 
 
@@ -257,6 +258,7 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
     @Input() geoShapes?: any[] = [];
 
     public map!: Map | null;
+    public mapCreated: boolean = false;;
     private vectorSource: VectorSource = new VectorSource();
     private geoShapesSource: VectorSource = new VectorSource();
     private center!: Coordinate;
@@ -268,6 +270,10 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
     }
 
     private setupMap() {
+        // this.markers = [];
+        // this.polygons = [];
+        // this.lines = [];
+
         if (this.geoShapes && this.geoShapes.length > 0) {
             const shapeFeatures: any[] = [];
 
@@ -308,7 +314,8 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
             this.geoShapesSource?.addFeatures(features);
         }
 
-        if (!this.map) { // ?
+        if (!this.map && !this.mapCreated) { // ?
+            this.mapCreated = true;
             setTimeout(() => {
                 this.initMap();
 
@@ -320,6 +327,124 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                     });
                 }
             }, 0)
+        }
+    }
+
+    private updateMap() {
+        // this.markers = [];
+        // this.polygons = [];
+        // this.lines = [];
+
+        const parsedCoordinates = JSON.parse(this.coordinates);
+        console.log(this.type);
+        console.log(parsedCoordinates);
+
+        const shapeFeatures: any[] = [];
+
+        shapeFeatures.push({
+            type: 'Feature',
+            geometry: {
+                type: this.type,
+                coordinates: parsedCoordinates,
+            },
+            properties: {
+                // projectId: location.projectId,
+            },
+        });
+
+        shapeFeatures.push({
+            type: 'Feature',
+            geometry: new LineString([[1,1], [4,4]]),
+            properties: {
+                // projectId: location.projectId,
+            },
+        });
+
+        // var feature = new Feature({
+        //     geometry: new LineString([
+        //     [1, 1],
+        //     [4, 4]
+        // ])});
+
+        // shapeFeatures.push(feature);
+        
+        // [
+        //     [
+        //         [
+        //             [1, 1],
+        //             [1, 4],
+        //             [4, 1],
+        //             [4, 4]
+        //         ]
+        //     ],
+        //     [
+        //         [
+        //             [5, 5],
+        //             [5, 9],
+        //             [9, 5],
+        //             [9, 9]
+        //         ]
+        //     ]
+        // ]
+        
+
+        const features = new GeoJSON({
+            featureProjection: 'EPSG:3857',
+        }).readFeatures({
+            type: 'FeatureCollection',
+            features: shapeFeatures,
+        });
+
+        // this.vectorSource?.clear(true);
+        // this.vectorSource?.addFeatures(features);
+
+        this.geoShapesSource?.clear(true);
+        this.geoShapesSource?.addFeatures(features);
+
+
+
+
+
+
+
+        if (this.geoShapes && this.geoShapes.length > 0) {
+            const shapeFeatures: any[] = [];
+
+            this.geoShapes.forEach((shape) => {
+                if (Array.isArray(shape)) {
+                    for (const item of shape) {
+                        var feature = {
+                            type: 'Feature',
+                            geometry: item,
+                        }
+                        
+                        shapeFeatures.push(feature);
+                        this.center = transform(this.getFeatureCenter(item), 'EPSG:4326', 'EPSG:3857');
+                    }
+                }
+                else {
+                    var feature = {
+                        type: 'Feature',
+                        geometry: shape,
+                    }
+                    
+                    shapeFeatures.push(feature);
+                    this.center = transform(this.getFeatureCenter(shape), 'EPSG:4326', 'EPSG:3857');
+                }
+            });
+
+            const features = new GeoJSON({
+                featureProjection: 'EPSG:3857',
+            }).readFeatures({
+                type: 'FeatureCollection',
+                features: shapeFeatures,
+            });
+
+            this.vectorSource?.clear(true);
+            this.vectorSource?.addFeatures(features);
+
+            this.geoShapesSource?.clear(true);
+            this.geoShapesSource?.addFeatures(features);
         }
     }
     
@@ -376,7 +501,7 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
 
         this.map.addInteraction(selectHover);
         this.map.addInteraction(selectClick);
-
+        
         if (this.geoShapes && this.geoShapes.length > 0) {
             this.map.getView().on('change:resolution', () => {
                 const zoom = this.map?.getView().getZoom();
@@ -468,10 +593,13 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
         this.control?.updateValueAndValidity();
         this.updateCoordinates.subscribe(this.onCoordinatesUpdate.bind(this));
         this.onViewTypeChange(this.presetDocument, false);
+
+        // this.map = null;
         this.setupMap();
     }
 
     onCoordinatesUpdate(value: any) {
+        
         if (!value) {
             this.coordinates = '';
             this.setControlValue({});
@@ -772,6 +900,7 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
         if (this.isJSON || this.isDisabled) {
             this.jsonInput = JSON.stringify(value, null, 4);
             this.map = null;
+            this.mapCreated = false;
         }
 
         if (!this.isJSON || this.isDisabled) {
@@ -880,6 +1009,8 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                 default:
                     break;
             }
+            
+            this.updateMap();
         } catch {
             this.setControlValue({});
         }
