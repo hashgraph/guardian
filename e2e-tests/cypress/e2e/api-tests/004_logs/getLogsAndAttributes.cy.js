@@ -98,7 +98,10 @@ context("Logs", { tags: ['logs', 'thirdPool', 'all'] }, () => {
                 }
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                expect(workersNumber).eql(response.body.length - 1);
+                response.body.forEach(element => {
+                    cy.task('log', element);
+                });
+                expect(workersNumber).eql(response.body.length);
             });
         })
     });
