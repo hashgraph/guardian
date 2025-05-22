@@ -26,7 +26,7 @@
     }
 
     .view-dialog-content {
-        max-height: calc(90vh - 280px);
+        max-height: calc(100vh - 410px);
         overflow-y: auto;
         padding-right: 8px;
 
@@ -41,7 +41,7 @@
             border: 1px solid #eee;
             border-radius: 4px;
             padding: 10px;
-            max-height: calc(90vh - 280px);
+            max-height: calc(100vh - 410px);
             box-sizing: border-box;
         }
     }
