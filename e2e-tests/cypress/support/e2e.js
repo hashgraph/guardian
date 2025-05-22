@@ -31,7 +31,7 @@ registerCypressGrep()
 require('cy-verify-downloads').addCustomCommand();
 
 beforeEach('Time logging', () => {
-    cy.task('log', "Test started on:")
+    cy.task('log', Cypress.currentTest.title + " started on:")
     cy.task('log', new Date(Date.now()))
 })
 

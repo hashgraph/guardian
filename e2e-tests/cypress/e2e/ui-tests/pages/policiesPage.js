@@ -109,9 +109,9 @@ export class PoliciesPage {
         cy.get(CommonElements.navBar).should('exist')
         cy.get("body").then(($body) => {
             if ($body.find(`span:contains(${CommonElements.policiesTab})`).length == 0)
-                cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).click();
+                cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).should('exist').click();
         })
-        cy.get(CommonElements.navBar).contains(CommonElements.policiesTab).realClick();
+        cy.get(CommonElements.navBar).contains(CommonElements.policiesTab).should('exist').click();
         Checks.waitForLoading();
     }
 
