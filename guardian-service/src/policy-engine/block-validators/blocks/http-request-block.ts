@@ -108,6 +108,34 @@ export class HttpRequestBlock {
     }
 
     /**
+     * Validate headers: excluded headers must not contain a value
+     * @param headers
+     */
+    private static validateHeadersIncluded(headers: any): void {
+        if (!Array.isArray(headers)) {
+            return;
+        }
+
+        for (const header of headers) {
+            const name = header?.name?.toString()?.trim();
+            const value = header?.value?.toString()?.trim();
+            const included = header?.included;
+
+            if (!name?.length) {
+                throw new Error(
+                    `All headers must have a name. Please enter a name or delete the header.`
+                );
+            }
+
+            if (!included && value.length) {
+                throw new Error(
+                    `Header "${name}" is not included in export, but has a value. Please enable "Include" or clear the value.`
+                );
+            }
+        }
+    }
+
+    /**
      * Validate block options
      * @param validator
      * @param config
@@ -136,6 +164,11 @@ export class HttpRequestBlock {
                 validator.addError(error.message);
             }
 
+            try {
+                HttpRequestBlock.validateHeadersIncluded(ref.options.headers);
+            } catch (error) {
+                validator.addError(error.message);
+            }
         } catch (error) {
             validator.addError(
                 `Unhandled exception ${validator.getErrorMessage(error)}`
