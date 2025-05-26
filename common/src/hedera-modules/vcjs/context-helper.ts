@@ -1,4 +1,24 @@
 export class ContextHelper {
+    private static readonly types: string[] = [
+        'Polygon',
+        'Point',
+        'MultiPolygon',
+        'MultiPoint',
+        'MultiLineString',
+        'LineString',
+        'GeometryCollection',
+        'GeoJSON',
+        '#GeoJSON',
+        'FeatureCollection',
+        'Feature',
+        'Geometry',
+        'number',
+        'string',
+        'object',
+        'geometry',
+        'array',
+    ];
+
     private static addContext(context: any, contexts: Set<string>) {
         if (typeof context === 'string') {
             contexts.add(context);
@@ -16,7 +36,9 @@ export class ContextHelper {
                     ContextHelper._clearContext(i, contexts);
                 }
             } else {
-                delete item['type'];
+                if (!ContextHelper.types.includes(item['type'])) {
+                    delete item['type'];
+                }
                 if (item['@context']) {
                     ContextHelper.addContext(item['@context'], contexts);
                     delete item['@context'];
