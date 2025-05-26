@@ -9,13 +9,14 @@ export class ContextHelper {
         }
     }
 
-    private static _clearContext = (item: any, contexts: Set<string>) => {
+    private static _clearContext(item: any, contexts: Set<string>) {
         if (typeof item === 'object') {
             if (Array.isArray(item)) {
                 for (const i of item) {
                     ContextHelper._clearContext(i, contexts);
                 }
             } else {
+                delete item['type'];
                 if (item['@context']) {
                     ContextHelper.addContext(item['@context'], contexts);
                     delete item['@context'];
@@ -30,10 +31,35 @@ export class ContextHelper {
         }
     }
 
-    public static clearContext = (vc: any) => {
-        const contexts = new Set<string>();
-        ContextHelper._clearContext(vc, contexts);
-        vc['@context'] = Array.from(contexts);
+    public static clearContext(vc: any) {
+        if (vc.credentialSubject) {
+            if (Array.isArray(vc.credentialSubject)) {
+                for (let i = 0; i < vc.credentialSubject.length; i++) {
+                    const contexts = new Set<string>();
+                    const type = vc.credentialSubject[i].type;
+                    ContextHelper._clearContext(vc.credentialSubject[i], contexts);
+                    const context = Array.from(contexts);
+                    if (context && context.length) {
+                        vc.credentialSubject[i]['@context'] = context;
+                    }
+                    if (type) {
+                        vc.credentialSubject[i].type = type;
+                    }
+
+                }
+            } else {
+                const contexts = new Set<string>();
+                const type = vc.credentialSubject.type;
+                ContextHelper._clearContext(vc.credentialSubject, contexts);
+                const context = Array.from(contexts);
+                if (context && context.length) {
+                    vc.credentialSubject['@context'] = context;
+                }
+                if (type) {
+                    vc.credentialSubject.type = type;
+                }
+            }
+        }
         return vc;
     }
 }
