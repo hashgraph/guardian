@@ -262,6 +262,7 @@
         * [Policy Workflow Step 24](guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/policy-workflow-step-24.md)
         * [Policy Workflow Step 25](guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/policy-workflow-step-24-1.md)
         * [Policy Workflow Wrap Up](guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/policy-workflow-wrap-up.md)
+      * [Creating Policy Navigation (Stepper)](guardian/standard-registry/policies/policy-creation/creating-policy-navigation-stepper.md)
       * [⚙️ Creating a Policy using APIs](guardian/standard-registry/policies/policy-creation/creating-a-policy-using-apis/README.md)
         * [Prerequesite Steps](guardian/standard-registry/policies/policy-creation/creating-a-policy-using-apis/prerequesite-steps.md)
         * [Creation of a Policy](guardian/standard-registry/policies/policy-creation/creating-a-policy-using-apis/creation-of-a-policy.md)
