@@ -1114,7 +1114,7 @@ export class PolicyEngineService {
                         throw new Error(`Policy imported in view mode`);
                     }
 
-                    const errors = await this.policyEngine.validateModel(policyId);
+                    const errors = await this.policyEngine.validateModel(policyId, true);
                     const isValid = !errors.blocks.some(block => !block.isValid);
                     if (isValid) {
                         await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run', false, logger);

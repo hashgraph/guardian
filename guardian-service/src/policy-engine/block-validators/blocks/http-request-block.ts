@@ -165,7 +165,9 @@ export class HttpRequestBlock {
             }
 
             try {
-                HttpRequestBlock.validateHeadersIncluded(ref.options.headers);
+                if(!validator.isDryRun) {
+                    HttpRequestBlock.validateHeadersIncluded(ref.options.headers);
+                }
             } catch (error) {
                 validator.addError(error.message);
             }

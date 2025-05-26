@@ -175,6 +175,13 @@ export class BlockValidator {
     }
 
     /**
+     * Is Dry Run
+     */
+    public get isDryRun(): boolean {
+        return (this.validator instanceof PolicyValidator) && this.validator.isDryRun;
+    }
+
+    /**
      * Add child block
      */
     public addChild(item: BlockValidator): void {
