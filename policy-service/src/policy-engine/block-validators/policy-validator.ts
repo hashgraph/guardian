@@ -93,7 +93,6 @@ export class PolicyValidator {
         return this.isDryRunMode;
     }
 
-
     /**
      * Register components
      * @param policy
