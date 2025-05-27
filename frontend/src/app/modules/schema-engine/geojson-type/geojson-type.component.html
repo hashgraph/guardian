@@ -1,10 +1,10 @@
 <div class="switch-btn">
     <switch-button [on-label]="'JSON'" [off-label]="'Form'" [(value)]="isJSON"
-                   (valueChange)="onViewTypeChange(!isDisabled && this.control?.value)"></switch-button>
+                   (valueChange)="onViewTypeChange(!isDisabled && this.control?.value || this.presetDocument)"></switch-button>
 </div>
 <ng-container *ngIf="isJSON; else form">
     <div class="form-group type-selector">
-        <label for="geoJsonInput" class="form-label">GeoJSON</label>
+        <label for="geoJsonInput" class="form-label coordinates-input">GeoJSON</label>
         <textarea
             pInputTextarea
             id="geoJsonInput"
@@ -19,7 +19,7 @@
 </ng-container>
 <ng-template #form>
     <div class="form-group type-selector">
-        <label for="typeDropdown" class="form-label">Type</label>
+        <!-- <label for="typeDropdown" class="form-label">Type</label> -->
         <p-dropdown
             id="typeDropdown"
             [(ngModel)]="type"
@@ -60,7 +60,7 @@
         </google-map> -->
     </div>
     <div class="form-group type-selector">
-        <label for="coordinatesInput" class="form-label">Coordinates2:</label>
+        <label for="coordinatesInput" class="form-label coordinates-input">Coordinates:</label>
         <textarea
             pInputTextarea
             id="coordinatesInput"

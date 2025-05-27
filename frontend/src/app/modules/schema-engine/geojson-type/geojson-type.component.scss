@@ -46,6 +46,10 @@
     left: 14px;
 }
 
+.coordinates-input {
+    z-index: 10;
+}
+
 ::ng-deep p-dropdown {
     width: 100%;
     & > div {

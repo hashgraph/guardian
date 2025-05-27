@@ -336,8 +336,6 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
         // this.lines = [];
 
         const parsedCoordinates = JSON.parse(this.coordinates);
-        console.log(this.type);
-        console.log(parsedCoordinates);
 
         const shapeFeatures: any[] = [];
 
@@ -352,13 +350,13 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
             },
         });
 
-        shapeFeatures.push({
-            type: 'Feature',
-            geometry: new LineString([[1,1], [4,4]]),
-            properties: {
-                // projectId: location.projectId,
-            },
-        });
+        // shapeFeatures.push({
+        //     type: 'Feature',
+        //     geometry: new LineString([[1,1], [4,4]]),
+        //     properties: {
+        //         // projectId: location.projectId,
+        //     },
+        // });
 
         // var feature = new Feature({
         //     geometry: new LineString([
@@ -463,7 +461,6 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
             source: this.geoShapesSource,
             style: styleFunction,
         });
-        
         this.map = new Map({
             layers: [
                 new TileLayer({
@@ -899,8 +896,6 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
 
         if (this.isJSON || this.isDisabled) {
             this.jsonInput = JSON.stringify(value, null, 4);
-            this.map = null;
-            this.mapCreated = false;
         }
 
         if (!this.isJSON || this.isDisabled) {
@@ -909,6 +904,11 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
             this.coordinates = JSON.stringify(value?.coordinates, null, 4);
             this.coordinatesChanged(dirty);
         
+        }
+
+        if (!this.isJSON) {
+            this.map = null;
+            this.mapCreated = false;
             this.setupMap();
         }
     }
