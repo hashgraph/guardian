@@ -135,7 +135,10 @@ export class PolicyTool extends BaseEntity {
             if (this.configFileId) {
                 DataBaseHelper.gridFS
                     .delete(this.configFileId)
-                    .catch(console.error);
+                    .catch((reason) => {
+                        console.error(`BeforeUpdate: PolicyTool, ${this._id}, configFileId`)
+                        console.error(reason)
+                    });
             }
             await this.createConfig();
         }
@@ -167,7 +170,10 @@ export class PolicyTool extends BaseEntity {
         if (this.configFileId) {
             DataBaseHelper.gridFS
                 .delete(this.configFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`AfterDelete: PolicyTool, ${this._id}, configFileId`)
+                    console.error(reason)
+                });
         }
     }
 }

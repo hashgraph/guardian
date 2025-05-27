@@ -32,12 +32,13 @@ export class SignAndSendRole {
 
         const userHederaCred = await userCred.loadHederaCredentials(ref, userId);
         const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref, userId);
-        const messageServer = new MessageServer(
-            userHederaCred.hederaAccountId,
-            userHederaCred.hederaAccountKey,
-            userSignOptions,
-            ref.dryRun
-        );
+        const messageServer = new MessageServer({
+            operatorId: userHederaCred.hederaAccountId,
+            operatorKey: userHederaCred.hederaAccountKey,
+            encryptKey: userHederaCred.hederaAccountKey,
+            signOptions: userSignOptions,
+            dryRun: ref.dryRun
+        });
         const vcMessage = new RoleMessage(MessageAction.CreateVC);
         vcMessage.setDocument(userVC);
         vcMessage.setRole(group);
@@ -133,12 +134,13 @@ export class SignAndSendRole {
         const rootHederaCred = await rootCred.loadHederaCredentials(ref, userId);
         const rootSignOptions = await rootCred.loadSignOptions(ref, userId);
         const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref, userId);
-        const messageServer = new MessageServer(
-            rootHederaCred.hederaAccountId,
-            rootHederaCred.hederaAccountKey,
-            rootSignOptions,
-            ref.dryRun
-        );
+        const messageServer = new MessageServer({
+            operatorId: rootHederaCred.hederaAccountId,
+            operatorKey: rootHederaCred.hederaAccountKey,
+            encryptKey: rootHederaCred.hederaAccountKey,
+            signOptions: rootSignOptions,
+            dryRun: ref.dryRun
+        });
         const vcMessage = new RoleMessage(MessageAction.CreateVC);
         vcMessage.setDocument(userVC);
         vcMessage.setRole(group);

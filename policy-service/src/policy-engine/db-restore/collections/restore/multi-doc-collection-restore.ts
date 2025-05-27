@@ -31,10 +31,15 @@ export class MultiDocCollectionRestore extends CollectionRestore<MultiDocuments>
     }
 
     protected override createRow(data: MultiDocuments): MultiDocuments {
+        delete data.documentFileId;
         if (data.document) {
             const document = Buffer.from((data as any).document, 'base64').toString();
             data.document = JSON.parse(document);
         }
         return data;
+    }
+
+    protected override async decryptRow(row: MultiDocuments): Promise<MultiDocuments> {
+        return row;
     }
 }

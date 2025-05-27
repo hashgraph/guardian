@@ -50,7 +50,8 @@ import {
     VpDocument,
     VpDocument as VpDocumentCollection,
     ExternalPolicy,
-    PolicyAction
+    PolicyAction,
+    PolicyKey
 } from '../entity/index.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { Theme } from '../entity/theme.js';
@@ -2134,8 +2135,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * Get policy
      * @param filters
      */
-    public static async getPolicy(filters: FilterObject<Policy>): Promise<Policy | null> {
-        return await new DataBaseHelper(Policy).findOne(filters);
+    public static async getPolicy(filters: FilterObject<Policy>, options?: FindOptions<unknown>): Promise<Policy | null> {
+        return await new DataBaseHelper(Policy).findOne(filters, options);
     }
 
     /**
@@ -4427,5 +4428,50 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getRemoteRequestsCount(filters?: FilterObject<PolicyAction>, options?: FindOptions<unknown>): Promise<number> {
         return await new DataBaseHelper(PolicyAction).count(filters, options);
+    }
+
+    /**
+     * Save PolicyKey
+     * @param row
+     *
+     * @virtual
+     */
+    public static async saveKey(row: Partial<PolicyKey>): Promise<PolicyKey> {
+        const item = new DataBaseHelper(PolicyKey).create(row);
+        return await new DataBaseHelper(PolicyKey).save(item);
+    }
+
+    /**
+     * Get PolicyKeys
+     * @param filters
+     * @param options
+     */
+    public static async getKeys(filters?: FilterQuery<PolicyKey>, options?: unknown): Promise<PolicyKey[]> {
+        return await new DataBaseHelper(PolicyKey).find(filters, options);
+    }
+
+    /**
+     * Get PolicyKeys
+     * @param filters
+     * @param options
+     */
+    public static async getKeysAndCount(filters?: FilterObject<PolicyKey>, options?: FindOptions<unknown>): Promise<[PolicyKey[], number]> {
+        return await new DataBaseHelper(PolicyKey).findAndCount(filters, options);
+    }
+
+    /**
+     * Get key By ID
+     * @param id
+     */
+    public static async getKeyById(id: string): Promise<PolicyKey | null> {
+        return await new DataBaseHelper(PolicyKey).findOne(id);
+    }
+
+    /**
+     * Delete key
+     * @param key
+     */
+    public static async deleteKey(key: PolicyKey): Promise<void> {
+        return await new DataBaseHelper(PolicyKey).remove(key);
     }
 }

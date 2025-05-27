@@ -901,14 +901,10 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
             pageSize: number
         }) => {
             try {
-                const wallet = new Wallet();
-                const users = new Users();
                 const { owner, did } = msg;
 
+                const users = new Users();
                 const user = await users.getUserById(did, owner?.id);
-                const userID = user.hederaAccountId;
-                const userDID = user.did;
-                const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
 
                 if (!user) {
                     throw new Error('User not found');
@@ -918,43 +914,36 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                     return new ArrayMessageResponse([], 0);
                 }
 
-                const workers = new Workers();
-                const info = await workers.addNonRetryableTask({
-                    type: WorkerTaskType.GET_ACCOUNT_INFO,
-                    data: {
-                        userID,
-                        userKey,
-                        hederaAccountId: user.hederaAccountId,
-                        payload: { userId: owner?.id }
-                    }
-                }, 20);
-
-                const [tokens, count] = await dataBaseServer.findAndCount(Token, user.parent
-                    ? {
+                const [tokens, count] = await dataBaseServer.findAndCount(Token,
+                    user.parent ? {
                         $or: [
                             { owner: { $eq: user.parent } },
                             { owner: { $exists: false } }
                         ]
-                    } as FilterObject<Token>
-                    : {}
+                    } as FilterObject<Token> : {}
                 );
 
-                const serials =
-                    (await workers.addNonRetryableTask(
-                        {
-                            type: WorkerTaskType.GET_USER_NFTS_SERIALS,
-                            data: {
-                                operatorId: userID,
-                                operatorKey: userKey,
-                                payload: { userId: owner?.id }
-                            },
+                const workers = new Workers();
+                const [info, serials] = await Promise.all([
+                    workers.addNonRetryableTask({
+                        type: WorkerTaskType.GET_ACCOUNT_INFO_REST,
+                        data: {
+                            hederaAccountId: user.hederaAccountId,
+                            payload: { userId: owner?.id }
+                        }
+                    }, 20),
+                    workers.addNonRetryableTask({
+                        type: WorkerTaskType.GET_USER_NFTS_SERIALS,
+                        data: {
+                            hederaAccountId: user.hederaAccountId,
+                            payload: { userId: owner?.id }
                         },
-                        20
-                    )) || {};
+                    }, 20)
+                ])
 
                 const result: any[] = [];
                 for (const token of tokens) {
-                    result.push(getTokenInfo(info, token, serials[token.tokenId]));
+                    result.push(getTokenInfo(info, token, serials?.[token.tokenId]));
                 }
 
                 return new ArrayMessageResponse(result, count);
@@ -1116,7 +1105,6 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
             did: string
         }) => {
             try {
-                const wallet = new Wallet();
                 const users = new Users();
                 const { owner, did, tokenId } = msg;
                 if (!did) {
@@ -1126,21 +1114,13 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                     throw new Error('Token identifier is required');
                 }
                 const user = await users.getUserById(did, owner?.id);
-                const userID = user.hederaAccountId;
-                const userDID = user.did;
-                const userKey = await wallet.getKey(
-                    user.walletToken,
-                    KeyType.KEY,
-                    userDID
-                );
                 const workers = new Workers();
                 const serials =
                     (await workers.addNonRetryableTask(
                         {
                             type: WorkerTaskType.GET_USER_NFTS_SERIALS,
                             data: {
-                                operatorId: userID,
-                                operatorKey: userKey,
+                                hederaAccountId: user.hederaAccountId,
                                 tokenId,
                                 payload: { userId: owner?.id }
                             },

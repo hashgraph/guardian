@@ -102,7 +102,7 @@ export class SynchronizationService {
      */
     private async taskByPolicy(policy: Policy, policyOwnerId: string | null) {
         try {
-            const root = await this.users.getHederaAccount(policy.owner, policyOwnerId);
+            const policyOwnerHederaCred = await this.users.getHederaAccount(policy.owner, policyOwnerId);
             const count = await DatabaseServer.countMultiPolicyTransactions(policy.id);
 
             if (!count) {
@@ -110,7 +110,12 @@ export class SynchronizationService {
             }
 
             const topic = new TopicConfig({ topicId: policy.synchronizationTopicId }, null, null);
-            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions).setTopicObject(topic);
+            const messageServer = new MessageServer({
+                operatorId: policyOwnerHederaCred.hederaAccountId,
+                operatorKey: policyOwnerHederaCred.hederaAccountKey,
+                encryptKey: policyOwnerHederaCred.hederaAccountKey,
+                signOptions: policyOwnerHederaCred.signOptions
+            }).setTopicObject(topic);
 
             const workers = new Workers();
             const messages = await workers.addRetryableTask({
@@ -161,7 +166,15 @@ export class SynchronizationService {
                 const chunk = users.slice(i, i + chunkSize);
                 const tasks: any[] = [];
                 for (const user of chunk) {
-                    tasks.push(this.taskByUser(messageServer, root, policy, user, policyMap[user], vpMap[user], policyOwnerId));
+                    tasks.push(this.taskByUser(
+                        messageServer,
+                        policyOwnerHederaCred,
+                        policy,
+                        user,
+                        policyMap[user],
+                        vpMap[user],
+                        policyOwnerId
+                    ));
                 }
                 await Promise.all<any[][]>(tasks);
             }

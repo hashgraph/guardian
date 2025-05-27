@@ -106,25 +106,31 @@ export class RetirementBlock {
         documents: VcDocument[],
         relationships: string[],
         topicId: string,
-        root: UserCredentials,
+        policyOwner: UserCredentials,
         user: PolicyUser,
         targetAccountId: string,
         userId: string | null
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
-        const didDocument = await root.loadDidDocument(ref, userId);
-        const hederaCred = await root.loadHederaCredentials(ref, userId);
-        const signOptions = await root.loadSignOptions(ref, userId);
+        const policyOwnerDidDocument = await policyOwner.loadDidDocument(ref, userId);
+        const policyOwnerHederaCred = await policyOwner.loadHederaCredentials(ref, userId);
+        const policyOwnerSignOptions = await policyOwner.loadSignOptions(ref, userId);
 
         const uuid: string = await ref.components.generateUUID();
         const amount = PolicyUtils.aggregate(ref.options.rule, documents);
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
-        const wipeVC = await this.createWipeVC(didDocument, token, tokenAmount, ref);
+        const wipeVC = await this.createWipeVC(policyOwnerDidDocument, token, tokenAmount, ref);
         const vcs = [].concat(documents, wipeVC);
-        const vp = await this.createVP(didDocument, uuid, vcs);
+        const vp = await this.createVP(policyOwnerDidDocument, uuid, vcs);
 
-        const messageServer = new MessageServer(hederaCred.hederaAccountId, hederaCred.hederaAccountKey, signOptions, ref.dryRun);
+        const messageServer = new MessageServer({
+            operatorId: policyOwnerHederaCred.hederaAccountId,
+            operatorKey: policyOwnerHederaCred.hederaAccountKey,
+            encryptKey: policyOwnerHederaCred.hederaAccountKey,
+            signOptions: policyOwnerSignOptions,
+            dryRun: ref.dryRun
+        });
         ref.log(`Topic Id: ${topicId}`);
         const topic = await PolicyUtils.getPolicyTopic(ref, topicId, userId);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
@@ -161,7 +167,7 @@ export class RetirementBlock {
         vpDocument.relationships = relationships;
         await ref.databaseServer.saveVP(vpDocument);
 
-        await MintService.wipe(ref, token, tokenValue, hederaCred, targetAccountId, vpMessageResult.getId(), userId);
+        await MintService.wipe(ref, token, tokenValue, policyOwnerHederaCred, targetAccountId, vpMessageResult.getId(), userId);
 
         return [vpDocument, tokenValue];
     }
@@ -236,14 +242,14 @@ export class RetirementBlock {
             throw new BlockActionError('Token recipient is not set', ref.blockType, ref.uuid);
         }
 
-        const root = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, event?.user?.userId);
+        const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, event?.user?.userId);
 
         const [vp, tokenValue] = await this.retirementProcessing(
             token,
             vcs,
             vsMessages,
             topicId,
-            root,
+            policyOwner,
             docOwner,
             targetAccountId,
             event?.user?.userId

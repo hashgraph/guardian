@@ -164,23 +164,20 @@ export class SendToGuardianBlock {
     private async updateVCRecord(
         document: IPolicyDocument,
         operation: Operation,
-        ref: AnyBlockType
+        ref: AnyBlockType,
+        userId: string | null
     ): Promise<IPolicyDocument> {
         let old = await this.getVCRecord(document, operation, ref);
         if (old) {
             old = this.mapDocument(old, document);
-            old = await ref.databaseServer.updateVC(old);
+            old = await PolicyUtils.updateVC(ref, old, userId);
         } else {
             delete document.id;
             delete document._id;
-            old = await ref.databaseServer.saveVC(document);
+            old = await PolicyUtils.saveVC(ref, document, userId);
         }
         if (!ref.options.skipSaveState) {
-            await ref.databaseServer.saveDocumentState({
-                documentId: old.id,
-                document: old,
-                policyId: ref.policyId
-            });
+            await PolicyUtils.saveDocumentState(ref, old);
         }
         return old;
     }
@@ -234,7 +231,11 @@ export class SendToGuardianBlock {
      * @param document
      * @param ref
      */
-    private async updateVCMessage(document: IPolicyDocument, ref: AnyBlockType): Promise<IPolicyDocument> {
+    private async updateVCMessage(
+        document: IPolicyDocument,
+        ref: AnyBlockType,
+        userId: string | null
+    ): Promise<IPolicyDocument> {
         const old = await this.getVCRecord(document, Operation.auto, ref);
         if (old) {
             old.hederaStatus = document.hederaStatus;
@@ -246,7 +247,7 @@ export class SendToGuardianBlock {
             } else {
                 old.messageIds = [document.messageId];
             }
-            await ref.databaseServer.updateVC(old);
+            await PolicyUtils.updateVC(ref, old, userId);
             return document;
         } else {
             if (Array.isArray(document.messageIds)) {
@@ -327,12 +328,13 @@ export class SendToGuardianBlock {
     private async updateMessage(
         document: IPolicyDocument,
         type: DocumentType,
-        ref: AnyBlockType
+        ref: AnyBlockType,
+        userId: string | null
     ): Promise<IPolicyDocument> {
         if (type === DocumentType.DID) {
             return await this.updateDIDMessage(document, ref);
         } else if (type === DocumentType.VerifiableCredential) {
-            return await this.updateVCMessage(document, ref);
+            return await this.updateVCMessage(document, ref, userId);
         } else if (type === DocumentType.VerifiablePresentation) {
             return await this.updateVPMessage(document, ref);
         }
@@ -346,14 +348,15 @@ export class SendToGuardianBlock {
      */
     private async sendByType(
         document: IPolicyDocument,
-        ref: AnyBlockType
+        ref: AnyBlockType,
+        userId: string | null
     ): Promise<IPolicyDocument> {
         document.documentFields = Array.from(
             PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
         );
         switch (ref.options.dataType) {
             case 'vc-documents': {
-                return await this.updateVCRecord(document, Operation.auto, ref);
+                return await this.updateVCRecord(document, Operation.auto, ref, userId);
             }
             case 'did-documents': {
                 return await this.updateDIDRecord(document, Operation.auto, ref);
@@ -375,7 +378,8 @@ export class SendToGuardianBlock {
     private async sendToDatabase(
         document: IPolicyDocument,
         type: DocumentType,
-        ref: AnyBlockType
+        ref: AnyBlockType,
+        userId: string | null
     ): Promise<IPolicyDocument> {
         const operation: Operation = Operation.auto;
         document.documentFields = Array.from(
@@ -384,7 +388,7 @@ export class SendToGuardianBlock {
         if (type === DocumentType.DID) {
             return await this.updateDIDRecord(document, operation, ref);
         } else if (type === DocumentType.VerifiableCredential) {
-            return await this.updateVCRecord(document, operation, ref);
+            return await this.updateVCRecord(document, operation, ref, userId);
         } else if (type === DocumentType.VerifiablePresentation) {
             return await this.updateVPRecord(document, operation, ref);
         }
@@ -451,7 +455,10 @@ export class SendToGuardianBlock {
      * @param document
      * @param userId
      */
-    private async documentSender(document: IPolicyDocument, userId: string | null): Promise<IPolicyDocument> {
+    private async documentSender(
+        document: IPolicyDocument,
+        userId: string | null
+    ): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const type = PolicyUtils.getDocumentType(document);
 
@@ -513,10 +520,10 @@ export class SendToGuardianBlock {
             if (ref.options.dataType === 'hedera') {
                 document = await this.sendToHedera(document, message, ref, userId);
                 document.messageHash = messageHash;
-                document = await this.updateMessage(document, type, ref);
+                document = await this.updateMessage(document, type, ref, userId);
             } else {
                 document.hash = hash;
-                document = await this.sendByType(document, ref);
+                document = await this.sendByType(document, ref, userId);
             }
         } else if (ref.options.dataSource === 'auto' || !ref.options.dataSource) {
             if (document.messageHash !== messageHash) {
@@ -524,14 +531,14 @@ export class SendToGuardianBlock {
                 document.messageHash = messageHash;
             }
             document.hash = hash;
-            document = await this.sendToDatabase(document, type, ref);
+            document = await this.sendToDatabase(document, type, ref, userId);
         } else if (ref.options.dataSource === 'database') {
             document.hash = hash;
-            document = await this.sendToDatabase(document, type, ref);
+            document = await this.sendToDatabase(document, type, ref, userId);
         } else if (ref.options.dataSource === 'hedera') {
             document = await this.sendToHedera(document, message, ref, userId);
             document.messageHash = messageHash;
-            document = await this.updateMessage(document, type, ref);
+            document = await this.updateMessage(document, type, ref, userId);
         } else {
             throw new BlockActionError(`dataSource "${ref.options.dataSource}" is unknown`, ref.blockType, ref.uuid);
         }

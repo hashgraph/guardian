@@ -213,6 +213,25 @@
     min-width: 30px;
 }
 
+.btn-icon-small {
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    margin-left: 6px;
+    border-radius: 2px;
+    color: #3f51b5;
+    display: inline-block;
+    padding: 1px;
+
+    &:hover {
+        background: #e1e7fa;
+        box-shadow: 0px 0px 0px 2px #e1e7fa;
+    }
+}
+
 .btn-icon-edit,
 .btn-icon-menu,
 .btn-icon-delete,
@@ -922,26 +941,26 @@
 .DRAFT-status,
 .DRAFT-dropdown ::ng-deep .p-dropdown {
     background: var(--guardian-secondary-background);
-    color: var(--guardian-dry-run-color);
-    border: 1px solid var(--guardian-dry-run-color);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
     // width: auto;
     width: 130px;
 
     .p-dropdown-trigger-icon {
-        color: var(--guardian-dry-run-color);
+        color: var(--color-primary);
     }
 }
 
 .DRY-RUN-status,
 .DRY-RUN-dropdown ::ng-deep .p-dropdown {
     background: var(--guardian-dry-run-background);
-    color: var(--guardian-dry-run-color);
-    border: 1px solid var(--guardian-dry-run-color);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
     // width: auto;
     width: 130px;
 
     .p-dropdown-trigger-icon {
-        color: var(--guardian-dry-run-color);
+        color: var(--color-primary);
     }
 }
 

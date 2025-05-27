@@ -46,8 +46,17 @@ export async function preparePreviewMessage(
 
     const users = new Users();
     const root = await users.getHederaAccount(user.creator, user.id);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
-    const message = await messageServer.getMessage<ToolMessage>(messageId);
+    const messageServer = new MessageServer({
+        operatorId: root.hederaAccountId,
+        operatorKey: root.hederaAccountKey,
+        signOptions: root.signOptions
+    });
+    const message = await messageServer
+        .getMessage<ToolMessage>({
+            messageId,
+            loadIPFS: true,
+            userId: user.id
+        });
     if (message.type !== MessageType.Tool) {
         throw new Error('Invalid Message Type');
     }
@@ -135,8 +144,11 @@ export async function publishTool(
 
         notifier.completedAndStart('Find topic');
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(tool.topicId), true, user.id);
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
-            .setTopicObject(topic);
+        const messageServer = new MessageServer({
+            operatorId: root.hederaAccountId,
+            operatorKey: root.hederaAccountKey,
+            signOptions: root.signOptions
+        }).setTopicObject(topic);
 
         notifier.completedAndStart('Publish schemas');
         tool = await publishSchemas(tool, user, root, notifier);
@@ -311,7 +323,11 @@ export async function createTool(
             await topic.saveKeys(user.id);
 
             notifier.completedAndStart('Create tool in Hedera');
-            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
+            const messageServer = new MessageServer({
+                operatorId: root.hederaAccountId,
+                operatorKey: root.hederaAccountKey,
+                signOptions: root.signOptions
+            });
             const message = new ToolMessage(MessageType.Tool, MessageAction.CreateTool);
             message.setDocument(tool);
             const messageStatus = await messageServer
@@ -742,7 +758,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('file in body is empty');
                 }
                 const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
-                const { tool, errors } = await importToolByFile(owner, preview, emptyNotifier(),  metadata, owner.id);
+                const { tool, errors } = await importToolByFile(owner, preview, emptyNotifier(), metadata, owner.id);
                 if (errors?.length) {
                     const message = importToolErrors(errors);
                     await logger.warn(message, ['GUARDIAN_SERVICE'], owner?.id);

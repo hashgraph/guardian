@@ -342,7 +342,9 @@ export class TagsManagerBlock {
     ): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
-        const messageServer = new MessageServer(null, null, null, ref.dryRun);
+        const messageServer = new MessageServer({
+            dryRun: ref.dryRun
+        });
         const messages = await messageServer.getMessages<TagMessage>(topicId, userId, MessageType.Tag);
         const map = new Map<string, any>();
         for (const message of messages) {

@@ -12,7 +12,8 @@ import {
     VcDocument,
     VpDocument,
     MintRequest,
-    MintTransaction
+    MintTransaction,
+    PolicyInvitations
 } from '@guardian/common';
 import { ICollectionDiff } from './../index.js';
 
@@ -36,4 +37,5 @@ export interface IPolicyDiff {
     approveCollection?: ICollectionDiff<ApprovalDocument>;
     mintRequestCollection?: ICollectionDiff<MintRequest>;
     mintTransactionCollection?: ICollectionDiff<MintTransaction>;
+    policyInvitationsCollection?: ICollectionDiff<PolicyInvitations>;
 }

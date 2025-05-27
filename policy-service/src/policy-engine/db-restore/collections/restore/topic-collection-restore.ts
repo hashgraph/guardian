@@ -33,4 +33,8 @@ export class TopicCollectionRestore extends CollectionRestore<Topic> {
     protected override createRow(data: Topic): Topic {
         return data;
     }
+
+    protected override async decryptRow(row: Topic): Promise<Topic> {
+        return row;
+    }
 }

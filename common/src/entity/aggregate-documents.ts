@@ -208,9 +208,9 @@ export class AggregateVC extends BaseEntity {
                             if (
                                 (typeof fieldValue === 'string' &&
                                     fieldValue.length <
-                                        (+process.env
-                                            .DOCUMENT_CACHE_FIELD_LIMIT ||
-                                            100)) ||
+                                    (+process.env
+                                        .DOCUMENT_CACHE_FIELD_LIMIT ||
+                                        100)) ||
                                 typeof fieldValue === 'number'
                             ) {
                                 ObjSet(newDocument, field, fieldValue);
@@ -239,7 +239,10 @@ export class AggregateVC extends BaseEntity {
             if (this.documentFileId) {
                 DataBaseHelper.gridFS
                     .delete(this.documentFileId)
-                    .catch(console.error);
+                    .catch((reason) => {
+                        console.error(`BeforeUpdate: AggregateVC, ${this._id}, documentFileId`)
+                        console.error(reason)
+                    });
             }
             await this.createDocument();
         }
@@ -273,7 +276,10 @@ export class AggregateVC extends BaseEntity {
         if (this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`AfterDelete: AggregateVC, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
         }
     }
 }

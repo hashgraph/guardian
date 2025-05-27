@@ -34,7 +34,11 @@ async function publishPolicyLabel(
     notifier.start('Create topic');
     const topic = await getOrCreateTopic(item, owner.id);
     const user = await (new Users()).getHederaAccount(owner.creator, owner.id);
-    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
+    const messageServer = new MessageServer({
+        operatorId: user.hederaAccountId,
+        operatorKey: user.hederaAccountKey,
+        signOptions: user.signOptions
+    });
     messageServer.setTopicObject(topic);
 
     notifier.completedAndStart('Generate schemas');
@@ -741,7 +745,11 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
 
                 const topic = await getOrCreateTopic(item, userId);
                 const user = await (new Users()).getHederaAccount(owner.creator, userId);
-                const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
+                const messageServer = new MessageServer({
+                    operatorId: user.hederaAccountId,
+                    operatorKey: user.hederaAccountKey,
+                    signOptions: user.signOptions
+                });
 
                 const vpMessage = new LabelDocumentMessage(MessageAction.CreateLabelDocument);
                 vpMessage.setDefinition(item);

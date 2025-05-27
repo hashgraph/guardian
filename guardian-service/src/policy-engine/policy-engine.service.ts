@@ -1117,10 +1117,8 @@ export class PolicyEngineService {
                     const errors = await this.policyEngine.validateModel(policyId);
                     const isValid = !errors.blocks.some(block => !block.isValid);
                     if (isValid) {
-                        await Promise.all([
-                            this.policyEngine.dryRunPolicy(model, owner, 'Dry Run', false, logger),
-                            this.policyEngine.generateModel(model.id.toString())
-                        ]);
+                        await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run', false, logger);
+                        await this.policyEngine.generateModel(model.id.toString());
                     }
 
                     return new MessageResponse({
@@ -1146,7 +1144,11 @@ export class PolicyEngineService {
                     }
 
                     const root = await this.users.getHederaAccount(owner.creator, owner?.id);
-                    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
+                    const messageServer = new MessageServer({
+                        operatorId: root.hederaAccountId,
+                        operatorKey: root.hederaAccountKey,
+                        signOptions: root.signOptions
+                    });
                     let message: PolicyMessage;
                     if (date) {
                         const _date = new Date(date);
@@ -2384,120 +2386,154 @@ export class PolicyEngineService {
 
         //#region Requests
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_REMOTE_REQUESTS,
-            async (msg: { options: any, user: IAuthUser }) => {
+            async (msg: {
+                options: {
+                    filters: {
+                        policyId?: string,
+                        status?: string,
+                        type?: string
+                    },
+                    pageIndex: string,
+                    pageSize: string
+                }, user: IAuthUser
+            }) => {
                 try {
                     const { options, user } = msg;
-                    const { filters, pageIndex, pageSize, policyId } = options;
-                    const _filters: any = { ...filters };
-
-                    _filters.accountId = user.hederaAccountId;
-                    _filters.type = PolicyActionType.REQUEST;
+                    const {
+                        filters,
+                        pageIndex,
+                        pageSize,
+                    } = options;
+                    const _filters: any = {
+                        status: PolicyActionStatus.NEW,
+                        accountId: user.hederaAccountId
+                    };
+                    if (filters?.policyId) {
+                        _filters.policyId = filters.policyId;
+                    }
+                    if (filters?.status) {
+                        _filters.lastStatus = filters.status;
+                    }
+                    if (filters?.type) {
+                        _filters.type = filters.type;
+                    }
 
                     const otherOptions: any = {};
                     const _pageSize = parseInt(pageSize, 10);
                     const _pageIndex = parseInt(pageIndex, 10);
                     if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
-                        otherOptions.orderBy = { createDate: -1 };
+                        otherOptions.orderBy = { startMessageId: -1 };
                         otherOptions.limit = _pageSize;
                         otherOptions.offset = _pageIndex * _pageSize;
                     } else {
-                        otherOptions.orderBy = { createDate: -1 };
+                        otherOptions.orderBy = { startMessageId: -1 };
                         otherOptions.limit = 100;
                     }
 
                     const em = new DataBaseHelper(PolicyAction);
-                    const total = await em.count(_filters, otherOptions);
-
-                    const aggregate: any[] = [
-                        {
-                            $project: {
-                                _id: '$_id',
-                                createDate: '$createDate',
-                                accountId: '$accountId',
-                                type: '$type',
-                                startMessageId: '$startMessageId',
-                                policyId: '$policyId',
-
-                                status: '$status',
-                                topicId: '$topicId',
-                                messageId: '$messageId',
-                                document: '$document',
-                                blockTag: '$blockTag',
-                            }
-                        },
-                        {
-                            $match:
-                            {
-                                accountId: user.hederaAccountId,
-                                type: PolicyActionType.REQUEST,
-                            }
-                        },
-                        {
-                            $group:
-                            {
-                                _id: '$startMessageId',
-                                statuses: { $addToSet: '$status' },
-                                createDate: { $last: '$createDate' },
-                                policyId: { $last: '$policyId' },
-                                topicId: { $last: '$topicId' },
-                                messageId: { $last: '$messageId' },
-                                blockTag: { $last: '$blockTag' },
-                                document: { $first: '$document' },
-                            }
-                        },
-                        {
-                            $project: {
-                                statuses: '$statuses',
-                                status: {
-                                    $switch: {
-                                        branches: [
-                                            { case: { $in: ['ERROR', '$statuses'] }, then: 'ERROR' },
-                                            { case: { $in: ['REJECTED', '$statuses'] }, then: 'REJECTED' },
-                                            { case: { $in: ['COMPLETED', '$statuses'] }, then: 'COMPLETED' },
-                                        ],
-                                        default: 'NEW'
-                                    }
-                                },
-                                policyId: '$policyId',
-                                createDate: '$createDate',
-                                topicId: '$topicId',
-                                messageId: '$messageId',
-                                document: '$document',
-                                blockTag: '$blockTag',
-                            }
+                    const count = await em.count(_filters);
+                    const aggregate: any[] = [{
+                        $project: {
+                            _id: '$_id',
+                            createDate: '$createDate',
+                            accountId: '$accountId',
+                            type: '$type',
+                            startMessageId: '$startMessageId',
+                            policyId: '$policyId',
+                            status: '$status',
+                            topicId: '$topicId',
+                            messageId: '$messageId',
+                            document: '$document',
+                            blockTag: '$blockTag',
+                            index: '$index',
+                            loaded: '$loaded',
                         }
-                    ];
+                    }, {
+                        $match: {
+                            accountId: user.hederaAccountId
+                        }
+                    }, {
+                        $sort: { startMessageId: -1 }
+                    }, {
+                        $group: {
+                            _id: '$startMessageId',
+                            type: { $last: '$type' },
+                            statuses: { $addToSet: '$status' },
+                            createDate: { $last: '$createDate' },
+                            policyId: { $last: '$policyId' },
+                            topicId: { $last: '$topicId' },
+                            messageId: { $last: '$messageId' },
+                            startMessageId: { $last: '$startMessageId' },
+                            blockTag: { $last: '$blockTag' },
+                            document: { $last: '$document' },
+                            documents: { $addToSet: '$document' },
+                            loaded: { $last: '$loaded' },
+                        }
+                    }, {
+                        $project: {
+                            statuses: '$statuses',
+                            type: '$type',
+                            status: {
+                                $switch: {
+                                    branches: [
+                                        { case: { $in: ['ERROR', '$statuses'] }, then: 'ERROR' },
+                                        { case: { $in: ['CANCELED', '$statuses'] }, then: 'CANCELED' },
+                                        { case: { $in: ['REJECTED', '$statuses'] }, then: 'REJECTED' },
+                                        { case: { $in: ['COMPLETED', '$statuses'] }, then: 'COMPLETED' },
+                                    ],
+                                    default: 'NEW'
+                                }
+                            },
+                            policyId: '$policyId',
+                            createDate: '$createDate',
+                            topicId: '$topicId',
+                            messageId: '$messageId',
+                            startMessageId: '$startMessageId',
+                            document: '$document',
+                            documents: '$documents',
+                            blockTag: '$blockTag',
+                            loaded: '$loaded'
+                        }
+                    }];
 
-                    if (policyId) {
+                    if (filters?.policyId) {
                         aggregate.push({
                             $match: {
-                                policyId,
+                                policyId: filters.policyId,
+                            }
+                        })
+                    }
+                    if (filters?.status) {
+                        aggregate.push({
+                            $match: {
+                                status: filters.status,
+                            }
+                        })
+                    }
+                    if (filters?.type) {
+                        aggregate.push({
+                            $match: {
+                                type: filters.type,
                             }
                         })
                     }
 
                     if (otherOptions.orderBy) {
-                        aggregate.push(
-                            {
-                                $sort: otherOptions.orderBy
-                            }
-                        )
+                        aggregate.push({
+                            $sort: otherOptions.orderBy
+                        })
                     }
 
                     if (otherOptions.offset) {
-                        aggregate.push(
-                            {
-                                $skip: otherOptions.offset
-                            }
-                        )
+                        aggregate.push({
+                            $skip: otherOptions.offset
+                        })
                     }
 
                     if (otherOptions.limit) {
-                        aggregate.push(
-                            {
-                                $limit: otherOptions.limit
-                            }
-                        )
+                        aggregate.push({
+                            $limit: otherOptions.limit
+                        })
                     }
 
                     const items = await em.aggregate(aggregate);
@@ -2520,7 +2556,7 @@ export class PolicyEngineService {
                         }
                     }
 
-                    return new MessageResponse({ items, total });
+                    return new MessageResponse({ items, count });
                 } catch (error) {
                     return new MessageError(error);
                 }
@@ -2548,12 +2584,18 @@ export class PolicyEngineService {
                         lastStatus: PolicyActionStatus.NEW,
                         type: PolicyActionType.ACTION
                     }, {});
+                    const delayCount = await DatabaseServer.getRemoteRequestsCount({
+                        ..._filters,
+                        lastStatus: PolicyActionStatus.COMPLETED,
+                        updateDate: { $gt: new Date(Date.now() - 60 * 1000) }
+                    }, {});
                     const total = await DatabaseServer.getRemoteRequestsCount({
                         ..._filters
                     }, {});
                     return new MessageResponse({
                         requestsCount,
                         actionsCount,
+                        delayCount,
                         total
                     });
                 } catch (error) {
@@ -2606,6 +2648,56 @@ export class PolicyEngineService {
                     }
                     const result = await new GuardiansService()
                         .sendPolicyMessage(PolicyEvents.REJECT_REMOTE_REQUEST, request.policyId, { messageId, user }) as any;
+                    return new MessageResponse(result);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.CANCEL_REMOTE_ACTION,
+            async (msg: { user: IAuthUser, messageId: string }) => {
+                try {
+                    const { messageId, user } = msg;
+
+                    const request = await DatabaseServer.getRemoteRequestId(messageId);
+                    if (!request) {
+                        throw new Error(`Request is not found`);
+                    }
+                    if (request.accountId !== user.hederaAccountId) {
+                        throw new Error(`Request is not found`);
+                    }
+
+                    const model = await DatabaseServer.getPolicyById(request.policyId);
+                    if (!model) {
+                        throw new Error(`Policy is not found`);
+                    }
+                    const result = await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.CANCEL_REMOTE_ACTION, request.policyId, { messageId, user }) as any;
+                    return new MessageResponse(result);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.RELOAD_REMOTE_ACTION,
+            async (msg: { user: IAuthUser, messageId: string }) => {
+                try {
+                    const { messageId, user } = msg;
+
+                    const request = await DatabaseServer.getRemoteRequestId(messageId);
+                    if (!request) {
+                        throw new Error(`Request is not found`);
+                    }
+                    if (request.accountId !== user.hederaAccountId) {
+                        throw new Error(`Request is not found`);
+                    }
+
+                    const model = await DatabaseServer.getPolicyById(request.policyId);
+                    if (!model) {
+                        throw new Error(`Policy is not found`);
+                    }
+                    const result = await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.RELOAD_REMOTE_ACTION, request.policyId, { messageId, user }) as any;
                     return new MessageResponse(result);
                 } catch (error) {
                     return new MessageError(error);

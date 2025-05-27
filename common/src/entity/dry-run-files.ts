@@ -5,24 +5,24 @@ import { DataBaseHelper } from '../helpers/index.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 @Entity()
-export class DryRunFiles extends BaseEntity{
+export class DryRunFiles extends BaseEntity {
 
     /**
      * Policy ID
      */
-    @Property({nullable: false})
+    @Property({ nullable: false })
     policyId: string
 
     /**
      * File
      */
-    @Property({nullable: true})
+    @Property({ nullable: true })
     file: Buffer;
 
     /**
      * File ID
      */
-    @Property({nullable: true})
+    @Property({ nullable: true })
     fileId: ObjectId
 
     @BeforeCreate()
@@ -71,7 +71,10 @@ export class DryRunFiles extends BaseEntity{
         if (this.fileId) {
             DataBaseHelper.gridFS
                 .delete(this.fileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`AfterDelete: DryRunFiles, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
         }
     }
 }

@@ -1,4 +1,4 @@
-import {ApiProperty, getSchemaPath} from '@nestjs/swagger';
+import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 
 export class SubjectDTO {
     @ApiProperty({ type: 'string', isArray: true, nullable: true })
@@ -71,13 +71,15 @@ export class DidDocumentStatusDTO {
     @ApiProperty({ type: 'string', nullable: true, required: true })
     error: string;
 
-    @ApiProperty({ type: 'object',
+    @ApiProperty({
+        type: 'object',
         nullable: false,
         required: [],
         additionalProperties: {
             type: 'array',
             items: { $ref: getSchemaPath(DidKeyDTO) }
-        } })
+        }
+    })
     didDocument: { [methodType: string]: DidKeyDTO[] };
 }
 
