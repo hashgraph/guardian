@@ -15,7 +15,7 @@ on:
 jobs:
     buildAndTest:
         name: Build and Test (Manual)
-        runs-on: ubuntu-latest
+        runs-on: guardian-linux-medium
         services:
             cache:
                 image: registry.redict.io/redict

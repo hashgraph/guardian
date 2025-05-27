@@ -6,7 +6,7 @@ on:
 jobs:
     buildAndTest:
         name: Build and Test
-        runs-on: ubuntu-latest
+        runs-on: guardian-linux-medium
         services:
             cache:
                 image: registry.redict.io/redict
