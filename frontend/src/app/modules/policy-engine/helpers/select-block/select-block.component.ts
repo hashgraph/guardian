@@ -1,6 +1,14 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
-import { RegisteredService } from '../../services/registered.service';
-import { PolicyBlock, PolicyFolder } from '../../structures';
+import {
+    AfterViewInit,
+    ChangeDetectionStrategy,
+    Component,
+    EventEmitter,
+    Input,
+    Output,
+    SimpleChanges
+} from '@angular/core';
+import {RegisteredService} from '../../services/registered.service';
+import {PolicyBlock, PolicyFolder} from '../../structures';
 
 type ValueType = string | PolicyBlock | null | undefined;
 
@@ -31,6 +39,16 @@ export class SelectBlock implements AfterViewInit {
     constructor(private registeredService: RegisteredService) {
     }
 
+    private sanitizeBlock(block: any): any {
+        return {
+            id: block.id,
+            tag: block.tag,
+            blockType: block.blockType,
+            localTag: block.localTag,
+            properties: block.properties
+        };
+    }
+
     private getText(value: string | PolicyBlock | null | undefined): string {
         if (value && typeof value === 'object') {
             if (value === this.root) {
@@ -44,7 +62,8 @@ export class SelectBlock implements AfterViewInit {
             } else {
                 return value.localTag;
             }
-        } if (value) {
+        }
+        if (value) {
             return value;
         } else {
             return '';
@@ -54,11 +73,11 @@ export class SelectBlock implements AfterViewInit {
     private getIcon(value: PolicyBlock) {
         if (value === this.root) {
             if (this.root.isModule) {
-                return { icon: 'policy-module', svg: true };
+                return {icon: 'policy-module', svg: true};
             } else if (this.root.isTool) {
-                return { icon: 'handyman', svg: false };
+                return {icon: 'handyman', svg: false};
             } else {
-                return { icon: 'article', svg: false };
+                return {icon: 'article', svg: false};
             }
         } else {
             return {
@@ -88,14 +107,15 @@ export class SelectBlock implements AfterViewInit {
         }, 100)
     }
 
-    onChange() {
+    onChange(value?: any) {
         this.text = this.getFullText();
-        this.valueChange.emit(this.value);
+        this.valueChange.emit(value ?? this.value);
         this.change.emit();
     }
 
     ngOnChanges(changes: SimpleChanges) {
         this.text = this.getFullText();
+
         setTimeout(() => {
             this.data = [];
             if (this.blocks) {
@@ -106,7 +126,9 @@ export class SelectBlock implements AfterViewInit {
                     const icon = this.getIcon(block);
                     this.data.push({
                         name,
-                        value: this.type === 'object' ? block : block.tag,
+                        value: this.type === 'object' ? this.sanitizeBlock(block) : block.tag,
+                        id: block.id,
+                        original: block,
                         icon: icon.icon,
                         svg: icon.svg,
                         root,
@@ -132,6 +154,7 @@ export class SelectBlock implements AfterViewInit {
         } else {
             this.searchData = this.data;
         }
+
         if (this.searchData) {
             for (const item of this.searchData) {
                 if (typeof item.value === 'object') {
@@ -141,5 +164,21 @@ export class SelectBlock implements AfterViewInit {
                 }
             }
         }
+    }
+
+    get selectedOption(): any {
+        if (!this.data) {
+            return null;
+        }
+
+        if (this.type === 'object') {
+            return this.data.find(item => item.value?.id === (this.value as PolicyBlock)?.id)?.value || null;
+        } else {
+            return this.data.find(item => item.value === this.value)?.value || null;
+        }
+    }
+
+    set selectedOption(selected: any) {
+        this.onChange(selected);
     }
 }

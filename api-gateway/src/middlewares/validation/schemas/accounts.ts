@@ -119,7 +119,7 @@ export class CredentialSubjectDTO {
     type: string;
 }
 
-class UserDTO {
+class UserAccountDTO {
     @ApiProperty()
     username: string;
 
@@ -135,7 +135,7 @@ export class BalanceResponseDTO {
     unit: string;
 
     @ApiProperty()
-    user: UserDTO;
+    user: UserAccountDTO;
 }
 
 export const registerSchema = () => {

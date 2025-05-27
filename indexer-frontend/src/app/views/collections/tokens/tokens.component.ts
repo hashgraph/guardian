@@ -160,6 +160,11 @@ export class TokensComponent extends BaseGridComponent {
         }))
         this.filters.push(new Filter({
             type: 'input',
+            field: 'topicId',
+            label: 'grid.topic_id'
+        }))
+        this.filters.push(new Filter({
+            type: 'input',
             field: 'treasury',
             label: 'grid.treasury'
         }))

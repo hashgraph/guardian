@@ -32,7 +32,6 @@ const API = {
     //Contracts
     ListOfContracts: "contracts/",
     ImportContracts: "contracts/import/",
-    ContractPermissions: "permissions/",
     ListOfPairs: "contracts/pairs/",
     RetireRequests: "contracts/retire/requests/",
     WipeRequests: "contracts/wipe/requests/",
@@ -168,6 +167,11 @@ const API = {
     Test: "test/",
     Start: "start/",
     Config: "config/",
+    Roles: "roles/",
+    Permissions: "permissions/",
+    Default: "default/",
+    Relationships: "relationships/",
+    Documents: "documents/",
 
     //Indexer
     IndexerRegistries: "entities/registries/",
@@ -213,5 +217,12 @@ const API = {
     WizardPolicy: "wizard/policy/",
     WizardPolicyAsync: "wizard/push/policy/",
     Wizard: "wizard/",
+
+    //Formulas
+    Formulas: "formulas/",
+    Data: "data/",
+
+    //Policy Labels
+    PolicyLabels: "policy-labels/",
 };
 export default API;

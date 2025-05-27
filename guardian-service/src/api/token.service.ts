@@ -2,28 +2,36 @@ import { ApiResponse } from '../api/helpers/api-response.js';
 import { ArrayMessageResponse, DatabaseServer, KeyType, MessageError, MessageResponse, PinoLogger, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, OrderDirection, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
-import { publishTokenTags } from './tag.service.js';
 import { FilterObject } from '@mikro-orm/core';
+import { publishTokenTags } from '../helpers/import-helpers/index.js'
 
 /**
  * Create token in Hedera network
  * @param token
  * @param user
+ * @param userId
  */
-export async function createHederaToken(token: any, user: IRootConfig) {
+export async function createHederaToken(
+    token: any,
+    user: IRootConfig,
+    userId: string | null
+) {
     const topicHelper = new TopicHelper(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
-    const topic = await topicHelper.create({
-        type: TopicType.TokenTopic,
-        name: TopicType.TokenTopic,
-        description: TopicType.TokenTopic,
-        owner: user.did,
-        policyId: null,
-        policyUUID: null
-    }, {
-        admin: true,
-        submit: false
-    });
-    await topic.saveKeys();
+    const topic = await topicHelper.create(
+        {
+            type: TopicType.TokenTopic,
+            name: TopicType.TokenTopic,
+            description: TopicType.TokenTopic,
+            owner: user.did,
+            policyId: null,
+            policyUUID: null
+        },
+        userId,
+        {
+            admin: true,
+            submit: false
+        });
+    await topic.saveKeys(userId);
     await DatabaseServer.saveTopic(topic.toObject());
 
     const workers = new Workers();
@@ -33,6 +41,7 @@ export async function createHederaToken(token: any, user: IRootConfig) {
             operatorId: user.hederaAccountId,
             operatorKey: user.hederaAccountKey,
             memo: topic.topicId,
+            payload: { userId },
             ...token
         }
     }, 20);
@@ -43,37 +52,43 @@ export async function createHederaToken(token: any, user: IRootConfig) {
             user.did,
             KeyType.TOKEN_TREASURY_KEY,
             tokenData.tokenId,
-            tokenData.treasuryKey
+            tokenData.treasuryKey,
+            userId
         ),
         wallet.setUserKey(
             user.did,
             KeyType.TOKEN_ADMIN_KEY,
             tokenData.tokenId,
-            tokenData.adminKey
+            tokenData.adminKey,
+            userId
         ),
         wallet.setUserKey(
             user.did,
             KeyType.TOKEN_FREEZE_KEY,
             tokenData.tokenId,
-            tokenData.freezeKey
+            tokenData.freezeKey,
+            userId
         ),
         wallet.setUserKey(
             user.did,
             KeyType.TOKEN_KYC_KEY,
             tokenData.tokenId,
-            tokenData.kycKey
+            tokenData.kycKey,
+            userId
         ),
         wallet.setUserKey(
             user.did,
             KeyType.TOKEN_SUPPLY_KEY,
             tokenData.tokenId,
-            tokenData.supplyKey
+            tokenData.supplyKey,
+            userId
         ),
         wallet.setUserKey(
             user.did,
             KeyType.TOKEN_WIPE_KEY,
             tokenData.tokenId,
-            tokenData.wipeKey
+            tokenData.wipeKey,
+            userId
         )
     ]);
 
@@ -149,7 +164,8 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
  * @param owner
  * @param dataBaseServer
  * @param notifier
- */async function createToken(
+ */
+async function createToken(
     token: Token,
     user: IOwner,
     dataBaseServer: DatabaseServer,
@@ -165,7 +181,7 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
 
     notifier.start('Resolve Hedera account');
     const users = new Users();
-    const root = await users.getHederaAccount(user.creator);
+    const root = await users.getHederaAccount(user.creator, user.id);
 
     notifier.completedAndStart('Create token');
 
@@ -179,7 +195,7 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
     };
 
     if (!token.draftToken) {
-        rawTokenObject = await createHederaToken(rawTokenObject, root);
+        rawTokenObject = await createHederaToken(rawTokenObject, root, user.id);
     }
 
     notifier.completedAndStart('Create and save token in DB');
@@ -198,13 +214,15 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
  * @param dataBaseServer
  * @param notifier
  * @param log
- */async function updateToken(
+ */
+async function updateToken(
     oldToken: Token,
     newToken: Token,
     user: IOwner,
     dataBaseServer: DatabaseServer,
     notifier: INotifier,
-    log: PinoLogger
+    log: PinoLogger,
+    userId: string
 ): Promise<Token> {
     if (oldToken.draftToken && newToken.draftToken) {
         notifier.start('Update token');
@@ -216,20 +234,20 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
     } else if (oldToken.draftToken && !newToken.draftToken) {
         notifier.start('Resolve Hedera account');
         const users = new Users();
-        const root = await users.getHederaAccount(user.creator);
+        const root = await users.getHederaAccount(user.creator, user.id);
 
         notifier.completedAndStart('Create and save token in DB');
 
-        const newTokenObject = await createHederaToken(newToken, root);
+        const newTokenObject = await createHederaToken(newToken, root, user.id);
         const tokenObject = Object.assign(oldToken, newTokenObject);
 
         const result = await dataBaseServer.update(Token, oldToken?.id, tokenObject);
 
         notifier.completedAndStart('Publish tags');
         try {
-            await publishTokenTags(result, user, root);
+            await publishTokenTags(result, user, root, userId);
         } catch (error) {
-            log.error(error, ['GUARDIAN_SERVICE, TAGS']);
+            log.error(error, ['GUARDIAN_SERVICE, TAGS'], userId);
         }
 
         notifier.completed();
@@ -262,11 +280,12 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
         const wallet = new Wallet();
         const workers = new Workers();
 
-        const root = await users.getHederaAccount(user.creator);
+        const root = await users.getHederaAccount(user.creator, user.id);
         const adminKey = await wallet.getUserKey(
             user.owner,
             KeyType.TOKEN_ADMIN_KEY,
-            oldToken.tokenId
+            oldToken.tokenId,
+            user.id
         );
 
         notifier.completedAndStart('Update token');
@@ -278,7 +297,8 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
                 operatorId: root.hederaAccountId,
                 operatorKey: root.hederaAccountKey,
                 adminKey,
-                changes
+                changes,
+                payload: { userId: user.id }
             }
         }, 20);
 
@@ -295,7 +315,8 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
                 user.owner,
                 KeyType.TOKEN_FREEZE_KEY,
                 tokenData.tokenId,
-                tokenData.freezeKey
+                tokenData.freezeKey,
+                user.id
             ));
         }
         if (changes.enableKYC) {
@@ -303,7 +324,8 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
                 user.owner,
                 KeyType.TOKEN_KYC_KEY,
                 tokenData.tokenId,
-                tokenData.kycKey
+                tokenData.kycKey,
+                user.id
             ));
         }
         if (changes.enableWipe) {
@@ -311,7 +333,8 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
                 user.owner,
                 KeyType.TOKEN_WIPE_KEY,
                 tokenData.tokenId,
-                tokenData.wipeKey
+                tokenData.wipeKey,
+                user.id
             ));
         }
         await Promise.all(saveKeys);
@@ -339,11 +362,12 @@ async function deleteToken(
         const wallet = new Wallet();
         const workers = new Workers();
 
-        const root = await users.getHederaAccount(user.creator);
+        const root = await users.getHederaAccount(user.creator, user.id);
         const adminKey = await wallet.getUserKey(
             user.owner,
             KeyType.TOKEN_ADMIN_KEY,
-            token.tokenId
+            token.tokenId,
+            user.id
         );
 
         notifier.completedAndStart('Delete token');
@@ -354,7 +378,8 @@ async function deleteToken(
                 tokenId: token.tokenId,
                 operatorId: root.hederaAccountId,
                 operatorKey: root.hederaAccountKey,
-                adminKey
+                adminKey,
+                payload: { userId: user.id }
             }
         }, 20);
         notifier.completedAndStart('Save token in DB');
@@ -396,7 +421,7 @@ async function associateToken(
     const wallet = new Wallet();
     const users = new Users();
     notifier.completedAndStart('Resolve Hedera account');
-    const user = await users.getUserById(target.creator);
+    const user = await users.getUserById(target.creator, target.id);
     const userID = user.hederaAccountId;
     const userDID = user.did;
     const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
@@ -417,7 +442,8 @@ async function associateToken(
             tokenId,
             userID,
             userKey,
-            associate
+            associate,
+            payload: { userId: user.id }
         }
     }, 20);
 
@@ -450,7 +476,7 @@ async function grantKycToken(
 
     notifier.completedAndStart('Resolve Hedera account');
     const users = new Users();
-    const user = await users.getUser(username);
+    const user = await users.getUser(username, owner.id);
     if (!user) {
         throw new Error('User not found');
     }
@@ -458,14 +484,15 @@ async function grantKycToken(
         throw new Error('User is not linked to an Hedera Account');
     }
 
-    const root = await users.getHederaAccount(owner.creator);
+    const root = await users.getHederaAccount(owner.creator, owner.id);
 
     notifier.completedAndStart(grant ? 'Grant KYC' : 'Revoke KYC');
     const workers = new Workers();
     const kycKey = await new Wallet().getUserKey(
         owner.owner,
         KeyType.TOKEN_KYC_KEY,
-        token.tokenId
+        token.tokenId,
+        owner.id
     );
     await workers.addNonRetryableTask({
         type: WorkerTaskType.GRANT_KYC_TOKEN,
@@ -475,7 +502,8 @@ async function grantKycToken(
             userHederaAccountId: user.hederaAccountId,
             token,
             kycKey,
-            grant
+            grant,
+            payload: { userId: user.id }
         }
     }, 20, user.id.toString());
 
@@ -487,6 +515,7 @@ async function grantKycToken(
             userID: root.hederaAccountId,
             userKey: root.hederaAccountKey,
             hederaAccountId: user.hederaAccountId,
+            payload: { userId: user.id }
         }
     }, 20, user.id.toString());
 
@@ -520,7 +549,7 @@ async function freezeToken(
 
     notifier.completedAndStart('Resolve Hedera account');
     const users = new Users();
-    const user = await users.getUser(username);
+    const user = await users.getUser(username, owner.id);
     if (!user) {
         throw new Error('User not found');
     }
@@ -528,14 +557,15 @@ async function freezeToken(
         throw new Error('User is not linked to an Hedera Account');
     }
 
-    const root = await users.getHederaAccount(owner.creator);
+    const root = await users.getHederaAccount(owner.creator, owner.id);
 
     notifier.completedAndStart(freeze ? 'Freeze Token' : 'Unfreeze Token');
     const workers = new Workers();
     const freezeKey = await new Wallet().getUserKey(
         owner.owner,
         KeyType.TOKEN_FREEZE_KEY,
-        token.tokenId
+        token.tokenId,
+        owner.id
     );
     await workers.addNonRetryableTask({
         type: WorkerTaskType.FREEZE_TOKEN,
@@ -545,7 +575,8 @@ async function freezeToken(
             userHederaAccountId: user.hederaAccountId,
             freezeKey,
             token,
-            freeze
+            freeze,
+            payload: { userId: user.id }
         }
     }, 20, user.id.toString());
 
@@ -557,6 +588,7 @@ async function freezeToken(
             userID: root.hederaAccountId,
             userKey: root.hederaAccountKey,
             hederaAccountId: user.hederaAccountId,
+            payload: { userId: user.id }
         }
     }, 20, user.id.toString());
 
@@ -580,7 +612,11 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
      * @returns all tokens
      */
     ApiResponse(MessageAPI.SET_TOKEN,
-        async (msg: { item: Token, owner: IOwner }) => {
+        async (msg: {
+            item: Token,
+            owner: IOwner,
+            userId: string | null
+        }) => {
             try {
                 if (!msg) {
                     throw new Error('Invalid Params');
@@ -593,13 +629,17 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 const tokens = await dataBaseServer.findAll(Token);
                 return new MessageResponse(tokens);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.SET_TOKEN_ASYNC,
-        async (msg: { token: Token, owner: IOwner, task: any }) => {
+        async (msg: {
+            token: Token,
+            owner: IOwner,
+            task: any
+        }) => {
             const { token, owner, task } = msg;
             const notifier = await initNotifier(task);
 
@@ -610,7 +650,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 const result = await createToken(token, owner, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 notifier.error(error);
             });
 
@@ -618,7 +658,10 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         });
 
     ApiResponse(MessageAPI.UPDATE_TOKEN,
-        async (msg: { token: Token, owner: IOwner }) => {
+        async (msg: {
+            token: Token,
+            owner: IOwner
+        }) => {
             try {
                 const { token, owner } = msg;
                 if (!msg) {
@@ -629,15 +672,21 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                     throw new Error('Token not found');
                 }
 
-                return new MessageResponse(await updateToken(item, token, owner, dataBaseServer, emptyNotifier(), logger));
+                return new MessageResponse(
+                    await updateToken(item, token, owner, dataBaseServer, emptyNotifier(), logger, owner?.id)
+                );
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.UPDATE_TOKEN_ASYNC,
-        async (msg: { token: Token, owner: IOwner, task: any }) => {
+        async (msg: {
+            token: Token,
+            owner: IOwner,
+            task: any
+        }) => {
             const { token, owner, task } = msg;
             const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
@@ -649,10 +698,10 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                     throw new Error('Token not found');
                 }
 
-                const result = await updateToken(item, token, owner, dataBaseServer, notifier, logger);
+                const result = await updateToken(item, token, owner, dataBaseServer, notifier, logger, owner?.id);
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 notifier.error(error);
             });
 
@@ -660,7 +709,11 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         });
 
     ApiResponse(MessageAPI.DELETE_TOKEN_ASYNC,
-        async (msg: { tokenId: string, owner: IOwner, task: any }) => {
+        async (msg: {
+            tokenId: string,
+            owner: IOwner,
+            task: any
+        }) => {
             const { tokenId, owner, task } = msg;
             const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
@@ -674,26 +727,37 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 const result = await deleteToken(item, owner, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 notifier.error(error);
             });
             return new MessageResponse(task);
         });
 
     ApiResponse(MessageAPI.FREEZE_TOKEN,
-        async (msg: { tokenId: string, username: string, owner: IOwner, freeze: boolean }) => {
+        async (msg: {
+            tokenId: string,
+            username: string,
+            owner: IOwner,
+            freeze: boolean
+        }) => {
             try {
                 const { tokenId, username, owner, freeze } = msg;
                 const result = await freezeToken(tokenId, username, owner, freeze, dataBaseServer, emptyNotifier());
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error, 400);
             }
         });
 
     ApiResponse(MessageAPI.FREEZE_TOKEN_ASYNC,
-        async (msg: { tokenId: string, username: string, owner: IOwner, freeze: boolean, task: any }) => {
+        async (msg: {
+            tokenId: string,
+            username: string,
+            owner: IOwner,
+            freeze: boolean,
+            task: any
+        }) => {
             const { tokenId, username, owner, freeze, task } = msg;
             const notifier = await initNotifier(task);
 
@@ -701,7 +765,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 const result = await freezeToken(tokenId, username, owner, freeze, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 notifier.error(error);
             });
 
@@ -709,19 +773,30 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         });
 
     ApiResponse(MessageAPI.KYC_TOKEN,
-        async (msg: { tokenId: string, username: string, owner: IOwner, grant: boolean }) => {
+        async (msg: {
+            tokenId: string,
+            username: string,
+            owner: IOwner,
+            grant: boolean
+        }) => {
             try {
                 const { tokenId, username, owner, grant } = msg;
                 const result = await grantKycToken(tokenId, username, owner, grant, dataBaseServer, emptyNotifier());
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error, 400);
             }
         });
 
     ApiResponse(MessageAPI.KYC_TOKEN_ASYNC,
-        async (msg: { tokenId: string, username: string, owner: IOwner, grant: boolean, task: any }) => {
+        async (msg: {
+            tokenId: string,
+            username: string,
+            owner: IOwner,
+            grant: boolean,
+            task: any
+        }) => {
             const { tokenId, username, owner, grant, task } = msg;
             const notifier = await initNotifier(task);
 
@@ -729,7 +804,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 const result = await grantKycToken(tokenId, username, owner, grant, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 notifier.error(error);
             });
 
@@ -737,19 +812,28 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         });
 
     ApiResponse(MessageAPI.ASSOCIATE_TOKEN,
-        async (msg: { tokenId: string, owner: IOwner, associate: boolean }) => {
+        async (msg: {
+            tokenId: string,
+            owner: IOwner,
+            associate: boolean
+        }) => {
             try {
                 const { tokenId, owner, associate } = msg;
                 const result = await associateToken(tokenId, owner, associate, dataBaseServer, emptyNotifier());
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error, 400);
             }
         })
 
     ApiResponse(MessageAPI.ASSOCIATE_TOKEN_ASYNC,
-        async (msg: { tokenId: string, owner: IOwner, associate: boolean, task: any }) => {
+        async (msg: {
+            tokenId: string,
+            owner: IOwner,
+            associate: boolean,
+            task: any
+        }) => {
             const { tokenId, owner, associate, task } = msg;
             const notifier = await initNotifier(task);
 
@@ -757,7 +841,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 const result = await associateToken(tokenId, owner, associate, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
                 notifier.error(error);
             });
 
@@ -765,12 +849,16 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         })
 
     ApiResponse(MessageAPI.GET_INFO_TOKEN,
-        async (msg: { tokenId: string, username: string, owner: IOwner }) => {
+        async (msg: {
+            tokenId: string,
+            username: string,
+            owner: IOwner
+        }) => {
             try {
                 const { tokenId, username, owner } = msg;
 
                 const users = new Users();
-                const user = await users.getUser(username);
+                const user = await users.getUser(username, owner?.id);
                 if (!user) {
                     throw new Error('User not found');
                 }
@@ -784,14 +872,15 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                     return new MessageResponse(getTokenInfo(null, token));
                 }
 
-                const root = await users.getHederaAccount(owner.creator);
+                const root = await users.getHederaAccount(owner.creator, owner?.id);
                 const workers = new Workers();
                 const info = await workers.addNonRetryableTask({
                     type: WorkerTaskType.GET_ACCOUNT_INFO,
                     data: {
                         userID: root.hederaAccountId,
                         userKey: root.hederaAccountKey,
-                        hederaAccountId: user.hederaAccountId
+                        hederaAccountId: user.hederaAccountId,
+                        payload: { userId: owner?.id }
                     }
                 }, 20);
 
@@ -799,22 +888,23 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
 
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error, 400);
             }
         })
 
     ApiResponse(MessageAPI.GET_ASSOCIATED_TOKENS,
-        async (msg: { did: string, pageIndex: number, pageSize: number }) => {
+        async (msg: {
+            owner: IOwner,
+            did: string,
+            pageIndex: number,
+            pageSize: number
+        }) => {
             try {
-                const wallet = new Wallet();
-                const users = new Users();
-                const { did } = msg;
+                const { owner, did } = msg;
 
-                const user = await users.getUserById(did);
-                const userID = user.hederaAccountId;
-                const userDID = user.did;
-                const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
+                const users = new Users();
+                const user = await users.getUserById(did, owner?.id);
 
                 if (!user) {
                     throw new Error('User not found');
@@ -824,46 +914,41 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                     return new ArrayMessageResponse([], 0);
                 }
 
-                const workers = new Workers();
-                const info = await workers.addNonRetryableTask({
-                    type: WorkerTaskType.GET_ACCOUNT_INFO,
-                    data: {
-                        userID,
-                        userKey,
-                        hederaAccountId: user.hederaAccountId
-                    }
-                }, 20);
-
-                const [tokens, count] = await dataBaseServer.findAndCount(Token,user.parent
-                    ? {
-                         $or: [
-                             { owner: { $eq: user.parent } },
-                             { owner: { $exists: false } }
-                         ]
-                    } as FilterObject<Token>
-                    : {}
+                const [tokens, count] = await dataBaseServer.findAndCount(Token,
+                    user.parent ? {
+                        $or: [
+                            { owner: { $eq: user.parent } },
+                            { owner: { $exists: false } }
+                        ]
+                    } as FilterObject<Token> : {}
                 );
 
-                const serials =
-                    (await workers.addNonRetryableTask(
-                        {
-                            type: WorkerTaskType.GET_USER_NFTS_SERIALS,
-                            data: {
-                                operatorId: userID,
-                                operatorKey: userKey,
-                            },
+                const workers = new Workers();
+                const [info, serials] = await Promise.all([
+                    workers.addNonRetryableTask({
+                        type: WorkerTaskType.GET_ACCOUNT_INFO_REST,
+                        data: {
+                            hederaAccountId: user.hederaAccountId,
+                            payload: { userId: owner?.id }
+                        }
+                    }, 20),
+                    workers.addNonRetryableTask({
+                        type: WorkerTaskType.GET_USER_NFTS_SERIALS,
+                        data: {
+                            hederaAccountId: user.hederaAccountId,
+                            payload: { userId: owner?.id }
                         },
-                        20
-                    )) || {};
+                    }, 20)
+                ])
 
                 const result: any[] = [];
                 for (const token of tokens) {
-                    result.push(getTokenInfo(info, token, serials[token.tokenId]));
+                    result.push(getTokenInfo(info, token, serials?.[token.tokenId]));
                 }
 
                 return new ArrayMessageResponse(result, count);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error, 400);
             }
         })
@@ -878,7 +963,10 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
      * @returns tokens
      */
     ApiResponse(MessageAPI.GET_TOKENS,
-        async (msg: { filters: any, owner: IOwner }) => {
+        async (msg: {
+            filters: any,
+            owner: IOwner
+        }) => {
             const { filters, owner } = msg;
             const option: any = {
                 $or: [
@@ -906,7 +994,11 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
      * @returns {any[], number} - tokens and count
      */
     ApiResponse(MessageAPI.GET_TOKENS_PAGE,
-        async (msg: { owner: IOwner, pageIndex: any, pageSize: any }): Promise<any> => {
+        async (msg: {
+            owner: IOwner,
+            pageIndex: any,
+            pageSize: any
+        }): Promise<any> => {
             const { owner, pageIndex, pageSize } = msg;
 
             const options =
@@ -946,7 +1038,12 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
      * @returns {any[], number} - tokens and count
      */
     ApiResponse(MessageAPI.GET_TOKENS_PAGE_V2,
-        async (msg: {fields: string[], owner: IOwner, pageIndex: any, pageSize: any }): Promise<any> => {
+        async (msg: {
+            fields: string[],
+            owner: IOwner,
+            pageIndex: any,
+            pageSize: any
+        }): Promise<any> => {
             const { fields, owner, pageIndex, pageSize } = msg;
 
             const options =
@@ -1002,41 +1099,37 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
      * Get token serials
      */
     ApiResponse(MessageAPI.GET_SERIALS,
-        async (msg: { tokenId: string, did: string }) => {
+        async (msg: {
+            owner: IOwner,
+            tokenId: string,
+            did: string
+        }) => {
             try {
-                const wallet = new Wallet();
                 const users = new Users();
-                const { did, tokenId } = msg;
+                const { owner, did, tokenId } = msg;
                 if (!did) {
                     throw new Error('DID is required');
                 }
                 if (!tokenId) {
                     throw new Error('Token identifier is required');
                 }
-                const user = await users.getUserById(did);
-                const userID = user.hederaAccountId;
-                const userDID = user.did;
-                const userKey = await wallet.getKey(
-                    user.walletToken,
-                    KeyType.KEY,
-                    userDID
-                );
+                const user = await users.getUserById(did, owner?.id);
                 const workers = new Workers();
                 const serials =
                     (await workers.addNonRetryableTask(
                         {
                             type: WorkerTaskType.GET_USER_NFTS_SERIALS,
                             data: {
-                                operatorId: userID,
-                                operatorKey: userKey,
-                                tokenId
+                                hederaAccountId: user.hederaAccountId,
+                                tokenId,
+                                payload: { userId: owner?.id }
                             },
                         },
                         20
                     ));
                 return new MessageResponse(serials[tokenId] || []);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error, 400);
             }
         });

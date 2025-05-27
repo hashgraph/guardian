@@ -1,4 +1,4 @@
-<div class="content">
+<div class="content" [attr.readonly-block]="readonly">
     <div *ngIf="confirmationStatus">
         <div class="status status-{{confirmationStatus}}" (click)="menu1.toggle($event)">
             {{ confirmationStatus }}

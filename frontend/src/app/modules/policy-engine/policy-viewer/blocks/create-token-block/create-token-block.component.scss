@@ -116,3 +116,8 @@
 ::ng-deep .raised-button:hover {
     background-color: var(--blue-700);
 }
+
+*[readonly-block="true"] {
+    pointer-events: none !important;
+    filter: grayscale(1);
+}

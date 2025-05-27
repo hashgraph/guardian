@@ -41,6 +41,7 @@ export class ExternalTopicBlockComponent implements OnInit {
     public stepIndex: number = 0;
     public completed: boolean[] = [];
     public editable: boolean[] = [];
+    public readonly: boolean = false;
 
     public topicForm = this.fb.group({
         topicId: ['', [Validators.required, this.minLengthValidator(3)]]
@@ -129,6 +130,7 @@ export class ExternalTopicBlockComponent implements OnInit {
 
     setData(data: any) {
         if (data) {
+            this.readonly = !!data.readonly;
             this.status = data.status || 'NEED_TOPIC';
             this.documentTopicId = data.documentTopicId;
             this.instanceTopicId = data.instanceTopicId;

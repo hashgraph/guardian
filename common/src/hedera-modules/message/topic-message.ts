@@ -191,6 +191,22 @@ export class TopicMessage extends Message {
         return result;
     }
 
+    public static fromJson(json: any): TopicMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
+        const result = Message._fromJson(new TopicMessage(json.action), json);
+        result.name = json.name;
+        result.description = json.description;
+        result.owner = json.owner;
+        result.messageType = json.messageType;
+        result.childId = json.childId;
+        result.parentId = json.parentId;
+        result.rationale = json.rationale;
+        return result;
+    }
+
     /**
      * Get User DID
      */

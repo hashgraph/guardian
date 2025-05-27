@@ -1,10 +1,12 @@
 import { ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
     ContractType,
     IUser,
+    LocationType,
+    PolicyAvailability,
     PolicyHelper,
-    PolicyType,
+    PolicyStatus,
     Schema,
     SchemaHelper,
     TagType,
@@ -28,11 +30,8 @@ import { WizardMode, WizardService } from 'src/app/modules/policy-engine/service
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { SearchPolicyDialog } from '../../analytics/search-policy-dialog/search-policy-dialog.component';
-import { mobileDialog } from 'src/app/utils/mobile-utils';
 import { DialogService } from 'primeng/dynamicdialog';
-import {
-    SuggestionsConfigurationComponent
-} from '../../../views/suggestions-configuration/suggestions-configuration.component';
+import { SuggestionsConfigurationComponent } from '../../../views/suggestions-configuration/suggestions-configuration.component';
 import { DeletePolicyDialogComponent } from '../dialogs/delete-policy-dialog/delete-policy-dialog.component';
 import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
 import { DiscontinuePolicy } from '../dialogs/discontinue-policy/discontinue-policy.component';
@@ -47,6 +46,7 @@ import {
     ImportEntityDialog,
     ImportEntityType
 } from '../../common/import-entity-dialog/import-entity-dialog.component';
+import { SearchExternalPolicyDialog } from '../dialogs/search-external-policy-dialog/search-external-policy-dialog.component';
 
 class MenuButton {
     public readonly visible: boolean;
@@ -80,17 +80,17 @@ class MenuButton {
 
 const columns = [{
     id: 'name',
-    permissions: (user: UserPermissions) => {
+    permissions: (user: UserPermissions, type: LocationType) => {
         return true;
     }
 }, {
     id: 'description',
-    permissions: (user: UserPermissions) => {
+    permissions: (user: UserPermissions, type: LocationType) => {
         return true;
     }
 }, {
     id: 'topic',
-    permissions: (user: UserPermissions) => {
+    permissions: (user: UserPermissions, type: LocationType) => {
         return (
             user.POLICIES_POLICY_CREATE ||
             user.POLICIES_POLICY_UPDATE ||
@@ -99,8 +99,13 @@ const columns = [{
         )
     }
 }, {
+    id: 'publicLink',
+    permissions: (user: UserPermissions, type: LocationType) => {
+        return true;
+    }
+}, {
     id: 'roles',
-    permissions: (user: UserPermissions) => {
+    permissions: (user: UserPermissions, type: LocationType) => {
         return !(
             user.POLICIES_POLICY_CREATE ||
             user.POLICIES_POLICY_UPDATE ||
@@ -110,58 +115,70 @@ const columns = [{
     }
 }, {
     id: 'version',
-    permissions: (user: UserPermissions) => {
+    permissions: (user: UserPermissions, type: LocationType) => {
         return true;
     }
 }, {
     id: 'tests',
-    permissions: (user: UserPermissions) => {
-        return (
-            user.POLICIES_POLICY_CREATE ||
-            user.POLICIES_POLICY_UPDATE ||
-            user.POLICIES_POLICY_REVIEW ||
-            user.POLICIES_POLICY_DELETE
-        )
+    permissions: (user: UserPermissions, type: LocationType) => {
+        if (type === LocationType.LOCAL) {
+            return (
+                user.POLICIES_POLICY_CREATE ||
+                user.POLICIES_POLICY_UPDATE ||
+                user.POLICIES_POLICY_REVIEW ||
+                user.POLICIES_POLICY_DELETE
+            )
+        } else {
+            return false;
+        }
     }
 }, {
     id: 'tags',
-    permissions: (user: UserPermissions) => {
+    permissions: (user: UserPermissions, type: LocationType) => {
         return true;
     }
 }, {
     id: 'tokens',
-    permissions: (user: UserPermissions) => {
+    permissions: (user: UserPermissions, type: LocationType) => {
         return user.TOKENS_TOKEN_READ;
     }
 }, {
     id: 'schemas',
-    permissions: (user: UserPermissions) => {
+    permissions: (user: UserPermissions, type: LocationType) => {
         return user.SCHEMAS_SCHEMA_READ;
     }
 }, {
     id: 'status',
-    permissions: (user: UserPermissions) => {
+    permissions: (user: UserPermissions, type: LocationType) => {
         return true;
     }
 }, {
     id: 'instance',
-    permissions: (user: UserPermissions) => {
+    permissions: (user: UserPermissions, type: LocationType) => {
         return true;
     }
 }, {
     id: 'operations',
-    permissions: (user: UserPermissions) => {
-        return (
-            user.POLICIES_POLICY_CREATE ||
-            user.POLICIES_POLICY_UPDATE ||
-            user.POLICIES_POLICY_REVIEW ||
-            user.POLICIES_POLICY_DELETE
-        )
+    permissions: (user: UserPermissions, type: LocationType) => {
+        if (type === LocationType.LOCAL) {
+            return (
+                user.POLICIES_POLICY_CREATE ||
+                user.POLICIES_POLICY_UPDATE ||
+                user.POLICIES_POLICY_REVIEW ||
+                user.POLICIES_POLICY_DELETE
+            )
+        } else {
+            return false;
+        }
     }
 }, {
     id: 'multi-instance',
-    permissions: (user: UserPermissions) => {
-        return user.POLICIES_POLICY_EXECUTE && !user.POLICIES_POLICY_MANAGE;
+    permissions: (user: UserPermissions, type: LocationType) => {
+        if (type === LocationType.LOCAL) {
+            return user.POLICIES_POLICY_EXECUTE && !user.POLICIES_POLICY_MANAGE;
+        } else {
+            return false;
+        }
     }
 }];
 
@@ -234,6 +251,7 @@ export class PoliciesComponent implements OnInit {
             color: 'red',
         },
     ];
+    public tab: LocationType = LocationType.LOCAL;
 
     private filteredPolicies: any[] = [];
     public filtersForm = new UntypedFormGroup({
@@ -273,17 +291,24 @@ export class PoliciesComponent implements OnInit {
 
     public checkMigrationStatus(status: string): boolean {
         return (
-            status === PolicyType.PUBLISH ||
-            status === PolicyType.DRY_RUN ||
-            status === PolicyType.DEMO ||
-            status === PolicyType.DISCONTINUED
+            status === PolicyStatus.PUBLISH ||
+            status === PolicyStatus.DRY_RUN ||
+            status === PolicyStatus.DEMO ||
+            status === PolicyStatus.DISCONTINUED
         )
     }
 
     public showInstance(policy: any): string | null {
         switch (policy.status) {
-            case PolicyType.PUBLISH:
-            case PolicyType.DISCONTINUED: {
+            case PolicyStatus.VIEW: {
+                if (this.user.POLICIES_POLICY_EXECUTE) {
+                    return 'Register';
+                } else {
+                    return null;
+                }
+            }
+            case PolicyStatus.PUBLISH:
+            case PolicyStatus.DISCONTINUED: {
                 if (this.user.POLICIES_POLICY_MANAGE) {
                     return 'Open';
                 } else if (this.user.POLICIES_POLICY_EXECUTE) {
@@ -292,14 +317,14 @@ export class PoliciesComponent implements OnInit {
                     return null;
                 }
             }
-            case PolicyType.DRY_RUN: {
+            case PolicyStatus.DRY_RUN: {
                 if (this.user.POLICIES_POLICY_UPDATE) {
                     return 'Dry run';
                 } else {
                     return null;
                 }
             }
-            case PolicyType.DEMO: {
+            case PolicyStatus.DEMO: {
                 if (this.user.POLICIES_POLICY_UPDATE) {
                     return 'Demo';
                 } else {
@@ -314,17 +339,17 @@ export class PoliciesComponent implements OnInit {
 
     public checkMultiPolicyStatus(status: string): boolean {
         return (
-            status === PolicyType.PUBLISH ||
-            status === PolicyType.DISCONTINUED
+            status === PolicyStatus.PUBLISH ||
+            status === PolicyStatus.DISCONTINUED
         )
     }
 
     public showStatus(policy: any): boolean {
         return (
-            policy.status === PolicyType.DRAFT ||
-            policy.status === PolicyType.DRY_RUN ||
-            policy.status === PolicyType.PUBLISH_ERROR ||
-            policy.status === PolicyType.PUBLISH
+            policy.status === PolicyStatus.DRAFT ||
+            policy.status === PolicyStatus.DRY_RUN ||
+            policy.status === PolicyStatus.PUBLISH_ERROR ||
+            policy.status === PolicyStatus.PUBLISH
         )
     }
 
@@ -334,14 +359,15 @@ export class PoliciesComponent implements OnInit {
 
     public getColor(status: string, expired: boolean = false) {
         switch (status) {
-            case PolicyType.DRAFT:
+            case PolicyStatus.DRAFT:
                 return 'grey';
-            case PolicyType.DRY_RUN:
+            case PolicyStatus.DRY_RUN:
                 return 'grey';
-            case PolicyType.DISCONTINUED:
-            case PolicyType.PUBLISH_ERROR:
+            case PolicyStatus.DISCONTINUED:
+            case PolicyStatus.PUBLISH_ERROR:
                 return 'red';
-            case PolicyType.PUBLISH:
+            case PolicyStatus.VIEW:
+            case PolicyStatus.PUBLISH:
                 return expired ? 'yellow' : 'green';
             default:
                 return 'grey';
@@ -350,51 +376,56 @@ export class PoliciesComponent implements OnInit {
 
     public getLabelStatus(status: string, expired: boolean = false) {
         switch (status) {
-            case PolicyType.DRAFT:
+            case PolicyStatus.DRAFT:
                 return 'Draft';
-            case PolicyType.DRY_RUN:
+            case PolicyStatus.DRY_RUN:
                 return 'Dry Run';
-            case PolicyType.PUBLISH_ERROR:
+            case PolicyStatus.PUBLISH_ERROR:
                 return 'Publish Error';
-            case PolicyType.PUBLISH:
+            case PolicyStatus.PUBLISH:
                 return `Published${expired ? '*' : ''}`;
-            case PolicyType.DISCONTINUED:
+            case PolicyStatus.DISCONTINUED:
                 return `Discontinued`;
+            case PolicyStatus.VIEW:
+                return `View`;
             default:
                 return 'Incorrect status';
         }
     }
 
     public getStatusName(policy: any): string {
-        if (policy.status === PolicyType.DRAFT) {
+        if (policy.status === PolicyStatus.DRAFT) {
             return 'Draft';
         }
-        if (policy.status === PolicyType.DRY_RUN) {
+        if (policy.status === PolicyStatus.DRY_RUN) {
             return 'In Dry Run';
         }
-        if (policy.status === PolicyType.PUBLISH) {
+        if (policy.status === PolicyStatus.PUBLISH) {
             return `Published${!!policy.discontinuedDate ? '*' : ''}`;
         }
-        if (policy.status === PolicyType.DISCONTINUED) {
+        if (policy.status === PolicyStatus.DISCONTINUED) {
             return 'Discontinued';
         }
-        if (policy.status === PolicyType.PUBLISH_ERROR) {
+        if (policy.status === PolicyStatus.PUBLISH_ERROR) {
             return 'Not published';
         }
-        if (policy.status === PolicyType.DEMO) {
+        if (policy.status === PolicyStatus.DEMO) {
             return 'Demo';
+        }
+        if (policy.status === PolicyStatus.VIEW) {
+            return 'View';
         }
         return 'Not published';
     }
 
     public getStatusOptions(policy: any) {
-        if (policy.status === PolicyType.DRAFT) {
+        if (policy.status === PolicyStatus.DRAFT) {
             return this.publishMenuOption;
         }
-        if (policy.status === PolicyType.DRY_RUN) {
+        if (policy.status === PolicyStatus.DRY_RUN) {
             return this.draftMenuOption;
         }
-        if (policy.status === PolicyType.PUBLISH) {
+        if (policy.status === PolicyStatus.PUBLISH) {
             return this.publishedMenuOption;
         } else {
             return this.publishErrorMenuOption;
@@ -435,9 +466,9 @@ export class PoliciesComponent implements OnInit {
                     new MenuButton({
                         visible: true,
                         disabled: !(
-                            policy.status === PolicyType.DRAFT ||
-                            policy.status === PolicyType.DRY_RUN ||
-                            policy.status === PolicyType.DEMO
+                            policy.status === PolicyStatus.DRAFT ||
+                            policy.status === PolicyStatus.DRY_RUN ||
+                            policy.status === PolicyStatus.DEMO
                         ),
                         tooltip: 'Attach test file',
                         icon: 'add-test',
@@ -472,7 +503,7 @@ export class PoliciesComponent implements OnInit {
                     }),
                     new MenuButton({
                         visible: this.user.POLICIES_POLICY_UPDATE && this.user.SCHEMAS_SCHEMA_UPDATE,
-                        disabled: policy.status !== PolicyType.DRAFT,
+                        disabled: policy.status !== PolicyStatus.DRAFT,
                         tooltip: 'Import schemas from Excel',
                         icon: 'import-xls',
                         click: () => this.importFromExcel(policy)
@@ -521,8 +552,8 @@ export class PoliciesComponent implements OnInit {
                     new MenuButton({
                         visible: this.user.POLICIES_POLICY_DELETE,
                         disabled: !(
-                            policy.status === PolicyType.DRAFT ||
-                            policy.status === PolicyType.DEMO
+                            policy.status === PolicyStatus.DRAFT ||
+                            policy.status === PolicyStatus.DEMO
                         ),
                         tooltip: 'Delete Policy',
                         icon: 'delete',
@@ -556,6 +587,7 @@ export class PoliciesComponent implements OnInit {
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
         private router: Router,
+        private route: ActivatedRoute,
         private dialogService: DialogService,
         private taskService: TasksService,
         private informService: InformService,
@@ -579,6 +611,12 @@ export class PoliciesComponent implements OnInit {
             this.wsService.testSubscribe(((test) => {
                 this.updatePolicyTest(test);
             }))
+        );
+        this.tab = this.route.snapshot.queryParams['tab'] || LocationType.LOCAL;
+        this.subscription.add(
+            this.route.queryParams.subscribe((queryParams) => {
+                this.tab = this.route.snapshot.queryParams['tab'] || LocationType.LOCAL;
+            })
         );
         this.loading = true;
         this.loadPolicy();
@@ -604,10 +642,6 @@ export class PoliciesComponent implements OnInit {
             this.owner = this.user.did;
             this.tagSchemas = SchemaHelper.map(tagSchemas);
 
-            this.columns = columns
-                .filter((c) => c.permissions(this.user))
-                .map((c) => c.id);
-
             if (this.isConfirmed) {
                 this.loadAllPolicy();
             } else {
@@ -625,8 +659,12 @@ export class PoliciesComponent implements OnInit {
     private loadAllPolicy() {
         this.loading = true;
         this.tagOptions = [];
-        this.policyEngineService.page(this.pageIndex, this.pageSize)
+        this.policyEngineService
+            .page(this.pageIndex, this.pageSize, this.tab)
             .subscribe((policiesResponse) => {
+                this.columns = columns
+                    .filter((c) => c.permissions(this.user, this.tab))
+                    .map((c) => c.id);
                 this.policies = policiesResponse.body?.map(policy => {
                     if (policy.discontinuedDate) {
                         policy.discontinuedDate = new Date(policy.discontinuedDate);
@@ -750,16 +788,19 @@ export class PoliciesComponent implements OnInit {
                 policy: item
             }
         });
-        dialogRef.onClose.subscribe(async (version) => {
-            if (version) {
-                this.publish(element, version);
+        dialogRef.onClose.subscribe(async (options) => {
+            if (options) {
+                this.publish(element, options);
             }
         });
     }
 
-    private publish(element: any, version: string) {
+    private publish(
+        element: any,
+        options: { policyVersion: string, policyAvailability: PolicyAvailability }
+    ) {
         this.loading = true;
-        this.policyEngineService.pushPublish(element.id, version).subscribe(
+        this.policyEngineService.pushPublish(element.id, options).subscribe(
             (result) => {
                 const { taskId, expectation } = result;
                 this.router.navigate(['task', taskId], {
@@ -1370,13 +1411,13 @@ export class PoliciesComponent implements OnInit {
 
     public onChangeStatus(event: any, policy: any): void {
         switch (policy.status) {
-            case PolicyType.DRAFT:
+            case PolicyStatus.DRAFT:
                 this.onPublishAction(event, policy);
                 break;
-            case PolicyType.DRY_RUN:
+            case PolicyStatus.DRY_RUN:
                 this.onDryRunAction(event, policy);
                 break;
-            case PolicyType.PUBLISH:
+            case PolicyStatus.PUBLISH:
                 this.onPublishedAction(event, policy);
                 break;
             default:
@@ -1455,5 +1496,41 @@ export class PoliciesComponent implements OnInit {
         test.date = event.date;
         test.progress = event.progress;
         test.status = event.status;
+    }
+
+    public onChangeTab(tab: any) {
+        this.loading = true;
+        this.tab = tab.index === 0 ? LocationType.LOCAL : LocationType.REMOTE;
+        this.pageIndex = 0;
+        this.router.navigate([], {
+            queryParams: { tab: this.tab }
+        });
+        this.loadAllPolicy();
+    }
+
+    // public importExternalPolicy() {
+    //     this.router.navigate(['/external-policies']);
+    // }
+
+    public importExternalPolicy() {
+        const dialogRef = this.dialogService.open(SearchExternalPolicyDialog, {
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
+        });
+        dialogRef.onClose.subscribe(async (result: any | null) => {
+            if (result) {
+                // this.loadAllPolicy();
+                this.router.navigate(['/external-policies']);
+            }
+        });
+    }
+
+    public onCopyMessage(row: any): void {
+        this.handleCopyToClipboard(row.messageId)
+    }
+
+    private handleCopyToClipboard(text: string): void {
+        navigator.clipboard.writeText(text || '');
     }
 }

@@ -140,6 +140,18 @@ export class RegistrationMessage extends Message {
         return result;
     }
 
+    public static fromJson(json: any): RegistrationMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
+        const result = Message._fromJson(new RegistrationMessage(json.action), json);
+        result.did = json.did;
+        result.registrantTopicId = json.registrantTopicId;
+        result.attributes = json.attributes;
+        return result;
+    }
+
     /**
      * Get User DID
      */

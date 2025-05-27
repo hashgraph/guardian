@@ -1,0 +1,289 @@
+var _pp = {
+  "G5": "BRA-3C-VR-2025",
+  "G6": "Brazilian Regenerative Agriculture for Cerrado’s Carbon Credit (BRA-3C)",
+  "G7": "5043",
+  "G8": "2024-2028",
+  "G9": "2024-01-01",
+  "G10": "2024-01-01",
+  "G11": "1.0",
+  "G12": "VCS v4.3",
+  "G13": "Cerrado Regenerative Farming Cooperative (CRFC)",
+  "G14": "EcoVerify International, LLC",
+  "G15": "EcoVerify International, LLC",
+  "G16": "EcoVerify International, LLC",
+  "G18": "A description of the verification of the project: The verification process involved an independent assessment of the project's compliance with the VCS Program requirements, including a review of monitoring reports, project documentation, and relevant supporting materials. This process also included site visits, interviews with key personnel, and cross-checking the data provided by the project proponent to ensure the accuracy and completeness of reported emissions reductions.  The purpose and scope of verification: The primary purpose of the verification was to determine whether the project meets the necessary standards set out by the VCS Program for carbon credit issuance. The scope of the verification included an evaluation of the project’s emissions reductions, adherence to the approved methodology, and overall project documentation. The verification also assessed the accuracy of data inputs, monitoring systems, and the project's alignment with the emissions reduction goals.  The monitoring period: The monitoring period for this verification spanned from January 1, 2024, to December 31, 2024. During this period, the project implemented its emissions reduction activities, and the verification covered all relevant data for this time frame.  The method and criteria used for verification: The verification followed a risk-based approach, using a combination of document reviews, on-site inspections, and interviews to verify the project’s compliance. The criteria for verification included the VCS Program standards, the approved methodology for the project type, and any additional requirements specified in the project’s PDD (Project Design Document). Evidence was gathered through both desk reviews and direct assessments during the site visit.  The number of findings raised during verification: During the verification process, a total of four findings were raised. These included two corrective action requests, one clarification request, and one forward action request. Each finding was addressed in a timely manner by the project proponent, and all necessary corrections were made.  Any uncertainties associated with the verification: There were minor uncertainties identified related to the estimation of leakage emissions, particularly regarding the potential for unforeseen indirect emissions linked to the project’s implementation. However, the project proponent has taken steps to address these uncertainties by updating their leakage management plan and providing additional data on relevant emission factors.  Summary of the verification conclusion: The verification concluded that the project is in conformance with all applicable VCS Program requirements. The project has demonstrated the ability to accurately quantify and report emissions reductions, and the monitoring system is robust and reliable. The findings raised during verification have been addressed appropriately, and the project is eligible for credit issuance based on the verified reductions.\",   \"G21\": \"The objective of this verification is to assess the project's adherence to the VCS Program and confirm the accuracy of its reported emissions reductions and removals. This verification aims to ensure that the project is eligible for the issuance of Verified Carbon Units (VCUs).\",   \"G23\": \"The scope of this verification encompasses all aspects of the project, including the emissions reduction quantification, monitoring activities, and compliance with the approved methodology. The verification criteria include the VCS Program requirements, the project's approved monitoring plan, and any relevant methodological guidelines.",
+  "G21": "The assumptions made in the project’s monitoring report and methodology are reasonable, with appropriate justification provided for all key decisions. While some uncertainty remains regarding leakage emissions, the adjustments made by the project proponent are based on sound reasoning and additional evidence, improving the overall robustness of the project",
+  "G23": "The scope of this verification encompasses all aspects of the project, including the emissions reduction quantification, monitoring activities, and compliance with the approved methodology. The verification criteria include the VCS Program requirements, the project's approved monitoring plan, and any relevant methodological guidelines.",
+  "G25": "he assumptions made in the project’s monitoring report and methodology are reasonable, with appropriate justification provided for all key decisions. While some uncertainty remains regarding leakage emissions, the adjustments made by the project proponent are based on sound reasoning and additional evidence, improving the overall robustness of the project.",
+  "G27": "The project involves ALM activities, aiming to reduce carbon emissions through improved management.",
+  "G30": "The verification method combined document reviews, site visits, and interviews to gather evidence. The evidence-gathering plan included a thorough review of project documentation, including monitoring reports, baseline and monitoring methodologies, and emission reduction calculations. Assumptions regarding emission factors and baseline scenarios were carefully assessed to ensure they align with VCS guidelines. The verification schedule included a kick-off meeting, desk review, and site visit.",
+  "G32": "The project’s monitoring report and supporting documents were reviewed for compliance with the VCS Program requirements. Key documents such as the project description, monitoring reports, and emission reduction calculations were cross-checked against the VCS rules to ensure completeness and accuracy.",
+  "G34": "Interviews were conducted with key project personnel, including the project manager and technical staff, to obtain clarification on specific aspects of the project. Information gathered through these interviews was cross-referenced with the data provided in the project documentation.",
+  "G36": "A site visit was conducted to verify the actual implementation of the project and to assess the accuracy of the reported data. The visit included a review of the installed technologies and a discussion with operational staff regarding the monitoring and maintenance procedures. The site visit confirmed that the project is operating as described in the project documentation.",
+  "G38": "The verification raised four findings. These included two corrective action requests (regarding leakage emission factors and baseline data), one clarification request (on the monitoring system), and one forward action request (on the future verification of updated emission factors). The project proponent has provided responses and made adjustments to resolve these findings.",
+  "G40": "During the verification process, several forward action requests were raised to support future audits and enhance the monitoring process. These requests primarily involved clarifications and additional evidence for certain data points that were not fully substantiated during the current verification period. Specific action requests were made regarding the need for more detailed documentation in relation to stakeholder consultation records and further analysis on baseline emission assumptions. These actions will be tracked for resolution and incorporated into future verification cycles to ensure continuous improvement of the project’s documentation and verification processes.",
+  "G42": "The validation/verification body undertaking the current verification activities holds the necessary qualifications as required by the VCS Program. While it does not have specific accreditation for validation activities within the relevant sectoral scope, it meets all the eligibility requirements set out in the VCS Program Guide. This is evidenced by the body’s extensive experience in validating projects within the approved GHG programs. The following five registered projects validated under the VCS Program are provided as a reference for the body’s experience and compliance:  Project Name – VCS Project ID  Project Name – VCS Project ID  Project Name – VCS Project ID  Project Name – VCS Project ID  Project Name – VCS Project ID",
+  "G46": "\"During the verification period, one methodology deviation was identified. This deviation related to the treatment of specific GHG sources that were not previously accounted for in the baseline scenario. The steps taken to validate this deviation included reviewing the methodology's specifications and the adjustments made to incorporate these sources into the emission reductions calculations. The deviation met the criteria for permissible methodology deviations and did not negatively impact the conservativeness of GHG quantification. The deviation was found to be valid and was appropriately documented in the project’s monitoring report. No previously validated deviations were found to affect the current verification.",
+  "G48": "A project description deviation was noted where certain operational parameters were adjusted to reflect changes in the project's geographic location. This deviation was assessed for its impact on the applicability of the methodology, the additionality of the project, and the baseline scenario. The deviation did not affect the eligibility criteria or the fundamental aspects of the project’s implementation. The project description was updated to include these changes, and the deviation was determined to be justified. The project remains in conformance with the VCS rules. The overall conclusion is that the deviation is valid and well-supported by the project’s evidence.\",   \"G49\": \"he project is not excluded under Table 2.1 of the VCS Standard, meets pipeline listing deadlines, and complies with validation requirements. The applied methodology is eligible and does not exceed capacity limits. The project is not a fragmented part of a larger initiative.\",   \"G50\": \"During this verification period, five new project activity instances were added to the grouped project. The validation process included a thorough review of supporting documents, evidence gathering activities, and an assessment of conformance with the VCS Program eligibility criteria. All new activities were found to be in compliance with the project description and were properly documented. The evidence provided was of high quality, and the new activities are consistent with the objectives of the original project. The inclusion of these activities into the project is valid and aligns with the VCS Program requirements.",
+  "G50": "During this verification period, five new project activity instances were added to the grouped project. The validation process included a thorough review of supporting documents, evidence gathering activities, and an assessment of conformance with the VCS Program eligibility criteria. All new activities were found to be in compliance with the project description and were properly documented. The evidence provided was of high quality, and the new activities are consistent with the objectives of the original project. The inclusion of these activities into the project is valid and aligns with the VCS Program requirements.",
+  "G52": "No",
+  "G57": "Evidence Gathering Activities: Reviewed the project’s historical audit records and verification reports. Cross-referenced these with the project's compliance with the VCS Standard and the eligibility criteria for the current monitoring period.  Evidence Checked: Previous audit reports, project implementation documents, records of previous claims for credits, and relevant VCS correspondence.  Conclusion: The project has maintained accurate audit history, ensuring that it meets all verification requirements. No issues were identified regarding past audits or compliance with the VCS Program standards.",
+  "G58": "Evidence Gathering Activities: Verified that the project is not double-counting its emission reductions. Cross-checked with the list of other GHG programs where the project has either received credits or is seeking credits.  Evidence Checked: Documentation of credits received or pending issuance under other programs, project registration status, and any records related to rejection from other GHG programs.  Conclusion: There is no evidence of double issuance of credits under any other GHG program. The project has provided all necessary information regarding its registration and activity status in other programs, fully complying with the VCS Program’s requirements.",
+  "G60": "Evidence Gathering Activities: Assessed the project’s documentation regarding its involvement in emissions trading programs or binding emission limits to confirm there is no double claiming.  Evidence Checked: Records of the project’s participation in emissions trading programs, relevant agreements, and compliance statements.  Conclusion: The project is not participating in any emissions trading programs or under any binding emission limits that would result in double claiming. All supporting evidence has been reviewed and is in line with VCS Standard requirements.",
+  "G62": "Evidence Gathering Activities: Verified the project's credit history to ensure no overlap with other environmental credit systems.  Evidence Checked: Documentation of credits received or planned from other environmental credit systems.  Conclusion: There is no double claiming with other environmental credit systems. All information provided by the project confirms that credits have not been issued for the same reductions elsewhere.",
+  "G64": "Evidence Gathering Activities: Reviewed whether the project proponent or authorized representative is involved in buying or selling products whose emissions footprint is altered by the project.  Evidence Checked: Project proponent’s website, public statements regarding emission reductions, and any agreements with third-party entities regarding carbon offsets or credits.  Conclusion: No double claiming of Scope 3 emissions was identified. The project proponent has posted the required public statements on their website in compliance with VCS Program requirements.",
+  "G66": "Evidence Gathering Activities: Assessed whether the project has implemented the sustainable development activities described in the monitoring report and confirmed the outcomes.  Evidence Checked: Monitoring reports, project progress documentation, and field visits.  Conclusion: The project has successfully implemented the sustainable development contributions outlined in the monitoring report. No discrepancies were identified.",
+  "G68": "Evidence Gathering Activities: Reviewed the leakage management plan, as well as risk mitigation measures related to the project. Also assessed any excluded commercially sensitive information in project documentation.  Evidence Checked: Leakage management plan, risk mitigation documentation, and public project documents.  Conclusion: The leakage management plan is appropriate, and all risk mitigation measures are properly implemented. Exclusions of commercially sensitive information were in accordance with VCS Program guidelines, and no issues were found.",
+  "G72": "Evidence Gathering Activities: Reviewed the stakeholder identification process, including the legal or customary tenure/access rights of stakeholders, diversity, and changes over time.  Evidence Checked: Stakeholder identification documents, interviews with stakeholders, and relevant mapping documents.  Conclusion: The stakeholder identification process is comprehensive, taking into account legal and customary access rights. There is adequate diversity in the stakeholder representation, and the project has appropriately addressed expected changes in well-being due to the project activities.",
+  "G73": "\"Evidence Gathering Activities: Assessed legal or customary tenure and access rights in the project area, particularly focusing on whether stakeholders have recognized rights to land, resources, or the environment in which the project operates.  Evidence Checked: Land rights documentation, government records, community agreements, and stakeholder interviews.  Conclusion: The project has ensured that all legal or customary access rights are respected. There are no disputes or unaddressed tenure issues, which ensures compliance with the VCS Program.",
+  "G74": "Evidence Gathering Activities: Investigated the diversity of stakeholders, considering factors such as socio-economic status, gender, age, and cultural groups. Assessed changes in stakeholders over time.  Evidence Checked: Stakeholder diversity reports, monitoring reports, records of any new stakeholders identified, and changes to the stakeholder base.  Conclusion: The project has effectively recognized and incorporated the diversity of stakeholders. It also appropriately acknowledges any changes in the stakeholder base over time, fulfilling the VCS Program's diversity requirements.",
+  "G75": "Evidence Gathering Activities: Analyzed the expected positive or negative impacts on the well-being of stakeholders as a result of the project.  Evidence Checked: Social impact assessments, well-being surveys, and project reports detailing anticipated impacts.  Conclusion: The project has assessed and documented the expected changes in stakeholders' well-being. All significant changes have been addressed in line with VCS Program requirements.",
+  "G76": "Evidence Gathering Activities: Verified the geographical location of stakeholders in relation to the project area.  Evidence Checked: Maps, GPS data, and stakeholder engagement records.  Conclusion: The locations of stakeholders have been accurately identified and mapped. This is in accordance with the VCS Program's requirements for effective stakeholder engagement.",
+  "G77": "Evidence Gathering Activities: Verified the location of natural or environmental resources that are being utilized or impacted by the project.  Evidence Checked: Resource use documentation, mapping, and environmental assessments.  Conclusion: The project has accurately documented the location of all relevant resources, ensuring that stakeholders’ rights and interests are protected in accordance with the VCS Program.",
+  "G80": "Evidence Gathering Activities: Reviewed the process and frequency of ongoing stakeholder consultations during the project lifecycle.  Evidence Checked: Meeting notes, consultation schedules, and communications.  Conclusion: The project has conducted ongoing consultations at regular intervals and ensured continuous stakeholder engagement. The consultation process aligns with the VCS Program's requirements.",
+  "G81": "Evidence Gathering Activities: Verified the dates and records of stakeholder consultations.  Evidence Checked: Meeting agendas, attendance sheets, and consultation records.  Conclusion: All consultations were held within the appropriate timelines and were well-documented in compliance with VCS requirements.\",   \"G82\": \"Evidence Gathering Activities: Assessed whether the project has communicated the monitored results to stakeholders as per VCS guidelines.  Evidence Checked: Monitoring reports, communications to stakeholders, newsletters, or public updates.  Conclusion: The project has effectively communicated monitoring results to stakeholders, ensuring transparency and compliance with VCS requirements.",
+  "G82": "Evidence Gathering Activities: Reviewed records of all consultations held during the project’s implementation.  Evidence Checked: Stakeholder consultation logs, minutes of meetings, and summaries of discussions.  Conclusion: Consultation records are complete and accurate, supporting the project's ongoing stakeholder engagement and compliance with the VCS Program.",
+  "G83": "Evidence Gathering Activities: Examined how stakeholder feedback has been considered in the project.  Evidence Checked: Consultation feedback forms, reports, and action logs showing how feedback was incorporated.  Conclusion: Stakeholder input has been actively considered in the project’s design and implementation, and appropriate responses were made to their concerns.",
+  "G84": "Evidence Gathering Activities: Assessed the FPIC process, verifying that stakeholders were fully informed and consented to the project.  Evidence Checked: FPIC consent forms, discussion notes, and any records showing informed decisions.  Conclusion: The project has obtained valid and informed consent from all affected stakeholders in line with FPIC requirements under the VCS Program.",
+  "G87": "Evidence Gathering Activities: Analyzed the outcomes of the FPIC discussions, ensuring that all concerns were addressed and consent was granted.  Evidence Checked: Records of FPIC discussions, summaries of outcomes, and final consent agreements.  Conclusion: The FPIC discussions have been thoroughly documented and resulted in the necessary consent. The project fully complies with FPIC guidelines as per VCS requirements.",
+  "G88": "Evidence Gathering Activities: Analyzed the outcomes of the FPIC discussions, ensuring that all concerns were addressed and consent was granted.  Evidence Checked: Records of FPIC discussions, summaries of outcomes, and final consent agreements.  Conclusion: The FPIC discussions have been thoroughly documented and resulted in the necessary consent. The project fully complies with FPIC guidelines as per VCS requirements.",
+  "G91": "Evidence Gathering Activities: Reviewed the grievance records, including any complaints submitted and how they were addressed.  Evidence Checked: Grievance logs, records of actions taken to resolve grievances, and outcomes of those actions.  Conclusion: The project has handled grievances effectively and in a timely manner, with clear resolutions in accordance with the VCS Program’s grievance redress procedures.",
+  "G92": "Evidence Gathering Activities: Reviewed the grievance records, including any complaints submitted and how they were addressed.  Evidence Checked: Grievance logs, records of actions taken to resolve grievances, and outcomes of those actions.  Conclusion: The project has handled grievances effectively and in a timely manner, with clear resolutions in accordance with the VCS Program’s grievance redress procedures.",
+  "G95": [
+    {
+      "G5": "During the public comment period, concerns were raised regarding the project’s potential impact on water resources.",
+      "G6": "In response, the project proponent conducted an additional environmental assessment and implemented measures to mitigate potential water use conflicts.",
+      "G7": "The validation body found that the project proponent had adequately addressed public concerns and incorporated appropriate measures into the project design."
+    }
+  ],
+  "G101": "The management team has extensive experience in implementing similar environmental projects, including partnerships with organizations specializing in sustainable development and environmental protection. The project proponent also has a recruitment strategy to address any identified gaps in expertise, ensuring the team has the necessary skills and resources to manage the project effectively. The project team is well-qualified, and their experience supports the successful delivery of the project.",
+  "G104": "Potential risks include extreme weather events affecting project infrastructure. Mitigation measures, such as emergency response plans, are in place.",
+  "G105": "Risks identified: Air pollution due to emissions from machinery and project activities.  Evidence gathering activities, evidence checked, and assessment conclusion for the risk identified: Interviews with local stakeholders and environmental assessments, including air quality tests. Results from air quality monitoring in the project area indicate a potential increase in particulate matter. Mitigation measures, such as the installation of air filtration systems, have been proposed to reduce these emissions. No significant risk to stakeholders' wellbeing is anticipated if mitigation measures are followed.",
+  "G106": "Risks identified: Low participation from marginalized groups in community consultations.  Evidence gathering activities, evidence checked, and assessment conclusion for the risk identified: Review of consultation records and feedback from community engagement sessions. Historical participation data and interviews with local leaders suggest that marginalized groups have limited representation. The project proponent has committed to inclusive consultation practices to improve participation rates. No ongoing risk to participation is identified if these measures are implemented.",
+  "G107": "Risks identified: Risk of inadequate working conditions and labor rights violations.  Evidence gathering activities, evidence checked, and assessment conclusion for the risk identified: Worker safety audits, labor rights assessments, and consultations with local unions. No evidence of significant violations was found. The project adheres to local labor laws and international standards for worker welfare. No risk to working conditions is identified.",
+  "G108": "Risks identified: Risk of gender-based violence or harassment at the project site.  Evidence gathering activities, evidence checked, and assessment conclusion for the risk identified: Gender-focused safety audits, consultations with women’s groups, and review of workplace harassment policies. The project has implemented gender-specific safety protocols, including dedicated support services and gender-sensitivity training for staff. No significant risk is identified for women and girls’ safety, provided policies are followed.",
+  "G109": "Risks identified: Potential risks of exclusion and marginalization of vulnerable groups.  Evidence gathering activities, evidence checked, and assessment conclusion for the risk identified: Consultations with local minority groups and NGOs, community-based surveys. The project has instituted policies for the protection of marginalized groups, including child safety measures and anti-discrimination policies. No significant risk is identified, provided these measures are maintained.",
+  "G110": [],
+  "G116": "Evidence was gathered through worker interviews, policy reviews, and third-party audits. Employment records and grievance mechanisms were checked to verify compliance with non-discrimination policies. No discrimination cases were identified, and policies are in place to ensure equal opportunity.",
+  "G117": "Risks identified: Risk of unequal treatment in the workplace.  Evidence gathering activities, evidence checked, and assessment conclusion for the risk identified: Employee feedback surveys, review of non-discrimination policies, and records of past incidents. The project implements anti-discrimination policies and training. No significant risk is identified.",
+  "G118": "Risks identified: Risk of sexual harassment in the workplace.  Evidence gathering activities, evidence checked, and assessment conclusion for the risk identified: Employee surveys, grievance records, and workplace safety audits. The project has a clear anti-sexual harassment policy, including reporting mechanisms. No risk is identified if these policies are followed.",
+  "G119": "Risks identified: Pay disparity between men and women for similar work.  Evidence gathering activities, evidence checked, and assessment conclusion for the risk identified: Payroll audits, gender pay gap analysis. The project adheres to equal pay for equal work principles, and no pay disparities have been found.",
+  "G120": "Risks identified: Risk of forced labor exploitation.  Evidence gathering activities, evidence checked, and assessment conclusion for the risk identified: Interviews with workers, background checks on labor contractors. The project ensures compliance with international labor standards. No forced labor risk is identified.",
+  "G121": "Risks identified: Risk of child labor in the supply chain.  Evidence gathering activities, evidence checked, and assessment conclusion for the risk identified: Site inspections and child welfare organization reports. The project adheres to child labor laws and has implemented safeguards to prevent child labor. No risk is identified.",
+  "G122": "The project operates in regions with known human trafficking concerns, particularly in labor-intensive industries. Human trafficking risk exists in the project's supply chain, particularly with sub-contractors who may be hiring workers under forced or coerced conditions.  Evidence Gathering Activities: Field Inspections and Audits:  Field inspections were carried out at all sites involved in the project to identify potential risks related to human trafficking, especially in labor practices.  Independent third-party audits were conducted on recruitment agencies and local labor suppliers to ensure compliance with ethical labor standards.  Local authorities and non-governmental organizations (NGOs) specializing in human rights were consulted to identify areas with higher risks of human trafficking.  Documentary Review:  Reviewed contracts and agreements with subcontractors, particularly labor agreements, to ensure they were in compliance with international labor laws and standards such as ILO conventions.  Analyzed the company’s human trafficking risk mitigation policy and employee handbooks to assess the comprehensiveness of measures in place to prevent trafficking.  Cross-referenced reports from local law enforcement agencies regarding known human trafficking activities in the areas where the project operates.  Interviews and Testimonies:  Interviews with workers from the project area, especially those in vulnerable sectors, to gauge awareness of trafficking risks and identify any indications of forced labor or exploitation.  Testimonies from community leaders and advocacy organizations to provide insights into the local human trafficking situation and how it might affect the project.",
+  "G125": [
+    {
+      "G5": "human rights",
+      "G6": "The project assessed the rights of Indigenous Peoples (IPs) and Local Communities (LCs) by reviewing national laws, international human rights frameworks, and conducting stakeholder interviews. No direct human rights violations were identified. However, to prevent risks, the project ensures that FPIC (Free, Prior, and Informed Consent) is obtained before major decisions. Compliance with UNDRIP and ILO 169 is maintained."
+    }
+  ],
+  "G130": [
+    {
+      "G5": "Risk of violation of rights for local communities.",
+      "G6": "Consultation with local human rights groups and review of historical conflicts in the region. The project has committed to respecting local communities’ rights and has implemented mitigation measures, such as conflict resolution mechanisms. No risk is identified."
+    }
+  ],
+  "G135": [
+    {
+      "G5": "Indigenous Peoples and Cultural Heritage",
+      "G6": "Site visits and consultations with Indigenous leaders were conducted to assess potential cultural heritage impacts. No sacred sites were found within the project boundary. Measures such as a grievance mechanism and engagement protocols are in place to prevent future conflicts."
+    }
+  ],
+  "G140": "Review of the benefit-sharing framework, consultation records with local communities. The project has established a clear and approved benefit-sharing plan, including dissemination to stakeholders. No risk identified.",
+  "G141": "Monitoring and reporting on benefit sharing as per plan. The project has committed to transparent reporting on benefit distribution throughout the monitoring period. No risk identified.",
+  "G144": "Risks identified: Potential negative impacts on local biodiversity.  Evidence gathering activities, evidence checked, and assessment conclusion for the risk identified: Biodiversity studies and environmental impact assessments. The project has developed mitigation measures, such as habitat restoration and biodiversity monitoring, to address the identified risks. No significant risk is identified.",
+  "G145": "isks identified: Potential soil degradation from project activities.  Evidence gathering activities, evidence checked, and assessment conclusion for the risk identified: Soil assessments and monitoring data. Erosion control measures, such as reforestation and soil stabilization, are in place. No significant risk identified.",
+  "G146": "\"Risks identified: High water usage leading to local water stress.  Evidence gathering activities, evidence checked, and assessment conclusion for the risk identified: Water usage assessments and local water availability data. Water conservation measures are being implemented, including the use of recycled water. No significant risk identified.",
+  "G147": [],
+  "G152": "Risks identified: Potential impact on endangered species' habitats.  Evidence gathering activities, evidence checked, and assessment conclusion for the risk identified: Species surveys and habitat assessments. The project area does not intersect with critical habitats, and mitigation measures such as habitat preservation and restoration are in place. No risk identified.",
+  "G153": "n/a",
+  "G154": [],
+  "G158": "Risks identified: Potential disruption to connectivity between habitats.  Evidence gathering activities, evidence checked, and assessment conclusion for the risk identified: Habitat connectivity assessments and species movement data. Mitigation measures, such as wildlife corridors and habitat restoration, have been introduced to ensure minimal impact. No risk identified.",
+  "G159": "n/a",
+  "G160": [],
+  "G165": [
+    {
+      "G5": "One invasive plant species was found, and a removal plan is in place.",
+      "G6": "The project complies with biodiversity standards, ensuring no risk from species introduction."
+    }
+  ],
+  "G169": [
+    {
+      "G5": "Native species only. No invasives were introduced.",
+      "G6": "The project complies with biodiversity standards, ensuring no risk from species introduction."
+    }
+  ],
+  "G173": [
+    {
+      "G5": "One invasive plant species was found, and a removal plan is in place.",
+      "G6": "The project complies with biodiversity standards, ensuring no risk from species introduction."
+    }
+  ],
+  "G178": [
+    {
+      "G5": "No ecosystem conversion was identified. Land use remains unchanged, and conservation efforts support habitat preservation.",
+      "G6": "No ecosystem conversion was identified. Land use remains unchanged, and conservation efforts support habitat preservation."
+    }
+  ],
+  "G182": "Data and Parameters Used:  Data on baseline emissions, project emissions, and leakage emissions were sourced from continuous monitoring records and pre-project environmental studies.  Accuracy of Reductions and Removals:  Accuracy of Spreadsheet Formulae, Conversions, and Aggregations: The spreadsheet formulas were cross-checked for consistency and correctness. Conversion factors used for carbon sequestration calculations were verified against established standards, including IPCC guidelines.  Methods and Formulae in Project Description: The methods outlined in the project description were followed rigorously, including baseline and project emissions calculations. The leakage emissions were calculated using the prescribed methodology.  Default Values Appropriateness: Default values used in the monitoring report were in full conformance with the VCS Program rules and have been checked against recognized standards.  Steps Taken to Assess Transposition Errors:  Manual checks were performed on data transposition between the various data sets and final reports. This included comparing raw data inputs with final calculations to ensure no manual transposition errors.  Conclusion:  The reductions and removals reported in the project’s GHG statement have been quantified correctly, following the monitoring plan and applicable methodology. All calculations are consistent with the prescribed guidelines, and no significant errors in data handling were identified.",
+  "G184": "Evidence Used:  The evidence used includes direct emission measurements, remote sensing data for land-use changes, and periodic reports on project implementation and monitoring.  Assessing the Sufficiency and Appropriateness of Evidence:  Reliability of Evidence: The majority of evidence used is derived from reliable sources, including government reports, third-party audits, and established scientific studies.  Data Flow and Aggregation: The data generation and aggregation process was tracked to ensure accurate reporting. Data from remote sensors was validated by cross-checking with on-site measurements. All data were subjected to quality control procedures to avoid errors in final transposition into the monitoring report.  Calibration Frequency of Monitoring Equipment: The monitoring equipment was calibrated annually, in line with industry standards, and calibration certificates were reviewed.  Conclusion:  The quantity and quality of the evidence used to determine the GHG emission reductions and removals are both sufficient and appropriate. Cross-checks of data accuracy and consistency with the project’s monitoring plan show that the reported reductions and removals are credible.",
+  "G186": "Risk Factor Assessment Risk Factor Identification:  The project has identified key non-permanence risks, including environmental, financial, and regulatory risks that could potentially impact the long-term viability of carbon reductions and removals.  Risks include potential changes in land use, legal or policy changes, natural disasters (e.g., fires, floods), and ongoing maintenance and monitoring challenges.  Assessment of Rationale, Assumptions, and Justifications Rationale and Assumptions:  The project’s non-permanence risk score was determined based on historical data and expert assessments, taking into account past performance of similar projects in the region and the local environmental conditions.  Assumptions included the expected effectiveness of mitigation measures, such as fire prevention protocols and ecosystem restoration efforts, and the stability of land tenure and legal protections for the project area.  Justifications:  The risk score is justified based on the thorough monitoring plan in place to mitigate risks like invasive species and ecosystem degradation. The risk of reforestation failure was considered low, given the species' proven adaptability to local conditions.  Quality of Documentation and Data Documentation and Data Assessment:  All data used to support the non-permanence risk rating were sourced from credible and verifiable studies, including baseline environmental assessments, land use history, and expert opinions.  Documentation on mitigation measures, including insurance and legal agreements related to land tenure, was provided and verified.  Data Quality and Sources:  The quality of the data was assessed, ensuring it was current, sourced from reputable institutions, and aligned with best practices for risk analysis.  Environmental monitoring data, historical climate patterns, and land use changes were integrated into the risk rating analysis.  Conclusion on Risk Rating Appropriateness Conclusion:  The non-permanence risk rating assigned by the project proponent is appropriate based on the comprehensive analysis of risks and the quality of supporting documentation. The mitigation strategies in place significantly reduce risks such as ecosystem degradation, policy changes, or natural disasters.  The overall risk rating was determined to be moderate, with the acknowledgment that unforeseen events (e.g., extreme weather) could still pose a risk, but the project’s management practices mitigate such risks effectively.",
+  "G189": "The GHG statement for this project is the responsibility of the project proponent. The verification process confirms that the project conforms with the verification criteria for GHG emission reductions or carbon dioxide removals as set out in VCS Version 4, with no qualifications or modifications unless explicitly stated below.  Conformance with Verification Criteria:  The project has been verified to conform with the verification criteria for projects as defined in VCS Version 4, including any variations made since initial validation. The project proponent has followed all necessary procedures, and the GHG emission reductions and removals have been accurately quantified.  Qualifications or Modifications:  No significant qualifications or modifications have been placed on the verification statement, except for minor clarifications on some baseline assumptions that were updated in the project monitoring plan.  Validation and Verification Standards:  The audit included activities to confirm that the project conforms with the validation criteria for projects as set out in VCS Version 4. The validation was conducted in accordance with ISO 14064-3: 2019, as required.  The verification was performed by an accredited validation/verification body approved by the International Accreditation Forum (IAF).",
+  "G191": "5.2 Verification Conclusion Assurance on GHG Reductions and Removals:  The verification process confirms a high level of assurance regarding the quantity of GHG emission reductions and carbon dioxide removals achieved during the verification period. The total reductions and removals for the verification period are stated in tCO2 equivalents and are consistent with the project’s GHG statement. Vintage period: 2024–2028  Estimated baseline emissions (tCO2e): 50,000 tCO2e  Estimated project emissions (tCO2e): 10,000 tCO2e  Estimated leakage emissions (tCO2e): 5,000 tCO2e  Estimated reduction VCUs (tCO2e): 35,000 tCO2e  Estimated removal VCUs (tCO2e): 5,000 tCO2e  Estimated total VCUs (tCO2e): 40,000 tCO2e  Total Estimated Baseline Emissions (tCO2e): 50,000 tCO2e  Total Estimated Project Emissions (tCO2e): 10,000 tCO2e  Total Estimated Leakage Emissions (tCO2e): 5,000 tCO2e  Total Estimated Reduction VCUs (tCO2e): 35,000 tCO2e  Total Estimated Removal VCUs (tCO2e): 5,000 tCO2e  Total Estimated VCUs (tCO2e): 40,000 tCO2e\"",
+  "G192": "2024-2028",
+  "G193": "Vintage period: 2024–2028  Estimated baseline emissions (tCO2e): 50,000 tCO2e  Estimated project emissions (tCO2e): 10,000 tCO2e  Estimated leakage emissions (tCO2e): 5,000 tCO2e  Estimated reduction VCUs (tCO2e): 35,000 tCO2e  Estimated removal VCUs (tCO2e): 5,000 tCO2e  Estimated total VCUs (tCO2e): 40,000 tCO2e  Total Estimated Baseline Emissions (tCO2e): 50,000 tCO2e  Total Estimated Project Emissions (tCO2e): 10,000 tCO2e  Total Estimated Leakage Emissions (tCO2e): 5,000 tCO2e  Total Estimated Reduction VCUs (tCO2e): 35,000 tCO2e  Total Estimated Removal VCUs (tCO2e): 5,000 tCO2e  Total Estimated VCUs (tCO2e): 40,000 tCO2e",
+  "G195": [
+    {
+      "G5": "2024",
+      "G6": 10000,
+      "G7": 2000,
+      "G8": 1000,
+      "G9": 7000,
+      "G10": 1000,
+      "G11": 8000
+    },
+    {
+      "G5": "2025",
+      "G6": 10000,
+      "G7": 2000,
+      "G8": 1000,
+      "G9": 7000,
+      "G10": 1000,
+      "G11": 8000
+    },
+    {
+      "G5": "2026",
+      "G6": 10000,
+      "G7": 2000,
+      "G8": 1000,
+      "G9": 7000,
+      "G10": 1000,
+      "G11": 8000
+    },
+    {
+      "G5": "2027",
+      "G6": 10000,
+      "G7": 2000,
+      "G8": 1000,
+      "G9": 7000,
+      "G10": 1000,
+      "G11": 8000
+    },
+    {
+      "G5": "2028",
+      "G6": 10000,
+      "G7": 2000,
+      "G8": 1000,
+      "G9": 7000,
+      "G10": 1000,
+      "G11": 8000
+    }
+  ],
+  "G203": 50000,
+  "G204": 10000,
+  "G205": 5000,
+  "G206": 35000,
+  "G207": 5000,
+  "G208": 40000,
+  "G211": "5%",
+  "G212": "95%",
+  "G213": "n/a",
+  "G215": [
+    {
+      "G5": "2024",
+      "G6": 10000,
+      "G7": 2000,
+      "G8": 1000,
+      "G9": 7000,
+      "G10": 1000,
+      "G11": 8000
+    },
+    {
+      "G5": "2025",
+      "G6": 10000,
+      "G7": 2000,
+      "G8": 1000,
+      "G9": 7000,
+      "G10": 1000,
+      "G11": 8000
+    },
+    {
+      "G5": "2026",
+      "G6": 10000,
+      "G7": 2000,
+      "G8": 1000,
+      "G9": 7000,
+      "G10": 1000,
+      "G11": 8000
+    },
+    {
+      "G5": "2027",
+      "G6": 10000,
+      "G7": 2000,
+      "G8": 1000,
+      "G9": 7000,
+      "G10": 1000,
+      "G11": 8000
+    },
+    {
+      "G5": "2028",
+      "G6": 10000,
+      "G7": 2000,
+      "G8": 1000,
+      "G9": 7000,
+      "G10": 1000,
+      "G11": 8000
+    }
+  ],
+  "G223": 50000,
+  "G224": 10000,
+  "G225": 5000,
+  "G226": 35000,
+  "G227": 5000,
+  "G228": 40000,
+  "G231": [
+    {
+      "G5": "2024",
+      "G6": 40000,
+      "G7": 40000,
+      "G8": "0",
+      "G9": "no difference"
+    },
+    {
+      "G5": "2025",
+      "G6": 40000,
+      "G7": 40000,
+      "G8": "0",
+      "G9": "no difference"
+    },
+    {
+      "G5": "2026",
+      "G6": 40000,
+      "G7": 40000,
+      "G8": "0",
+      "G9": "no difference"
+    },
+    {
+      "G5": "2026",
+      "G6": 40000,
+      "G7": 40000,
+      "G8": "0",
+      "G9": "no difference"
+    },
+    {
+      "G5": "2027",
+      "G6": 40000,
+      "G7": 40000,
+      "G8": "0",
+      "G9": "no difference"
+    },
+    {
+      "G5": "2028",
+      "G6": 40000,
+      "G7": 40000,
+      "G8": "0",
+      "G9": "no difference"
+    }
+  ]
+}
+Object.values(__request).forEach(r=>r.preset(_pp));

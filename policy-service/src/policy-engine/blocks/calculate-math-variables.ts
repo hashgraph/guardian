@@ -6,6 +6,7 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { BlockActionError } from '../errors/index.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { LocationType } from '@guardian/interfaces';
 
 /**
  * Calculate math Variables
@@ -13,6 +14,7 @@ import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.j
 @CalculateAddon({
     blockType: 'calculateMathVariables',
     commonBlock: true,
+    actionType: LocationType.LOCAL,
     about: {
         label: 'Math Variables',
         title: `Add 'Math' Variables`,

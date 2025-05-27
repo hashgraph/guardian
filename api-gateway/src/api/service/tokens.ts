@@ -1,5 +1,5 @@
 import { Guardians, PolicyEngine, TaskManager, ServiceError, InternalException, ONLY_SR, parseInteger, EntityOwner, getCacheKey, CacheService } from '#helpers';
-import { IOwner, IToken, Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
+import { IOwner, IToken, Permissions, PolicyStatus, TaskAction, UserPermissions } from '@guardian/interfaces';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { AuthUser, Auth } from '#auth';
@@ -14,7 +14,12 @@ import { TOKEN_REQUIRED_PROPS } from '#constants';
  * @param policyId
  * @param notEmpty
  */
-function setTokensPolicies<T>(tokens: any[], map: any[], policyId?: string, notEmpty?: boolean): T[] {
+function setTokensPolicies<T>(
+    tokens: any[],
+    map: any[],
+    policyId?: string,
+    notEmpty?: boolean
+): T[] {
     if (!tokens) {
         return [];
     }
@@ -149,9 +154,9 @@ export class TokensApi {
             const owner = new EntityOwner(user);
             if (owner) {
                 if (UserPermissions.has(user, Permissions.TOKENS_TOKEN_EXECUTE) && status !== 'All') {
-                    tokensAndCount = await guardians.getAssociatedTokens(user.did, parseInteger(pageIndex), parseInteger(pageSize));
-                    const map = await engineService.getTokensMap(owner, 'PUBLISH');
-                    tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
+                    tokensAndCount = await guardians.getAssociatedTokens(owner, user.did, parseInteger(pageIndex), parseInteger(pageSize));
+                    const map = await engineService.getTokensMap(owner, [PolicyStatus.PUBLISH, PolicyStatus.VIEW]);
+                    // tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
                     tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, true);
                 } else {
                     tokensAndCount = await guardians.getTokensPage(owner, parseInteger(pageIndex), parseInteger(pageSize));
@@ -164,7 +169,7 @@ export class TokensApi {
                 .header('X-Total-Count', tokensAndCount.count)
                 .send(tokensAndCount.items);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -242,9 +247,9 @@ export class TokensApi {
             const owner = new EntityOwner(user);
             if (owner) {
                 if (UserPermissions.has(user, Permissions.TOKENS_TOKEN_EXECUTE) && status !== 'All') {
-                    tokensAndCount = await guardians.getAssociatedTokens(user.did, parseInteger(pageIndex), parseInteger(pageSize));
-                    const map = await engineService.getTokensMap(owner, 'PUBLISH');
-                    tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
+                    tokensAndCount = await guardians.getAssociatedTokens(owner, user.did, parseInteger(pageIndex), parseInteger(pageSize));
+                    const map = await engineService.getTokensMap(owner, [PolicyStatus.PUBLISH, PolicyStatus.VIEW]);
+                    // tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
                     tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, true);
                 } else {
                     const fields: string[] = Object.values(TOKEN_REQUIRED_PROPS)
@@ -259,7 +264,7 @@ export class TokensApi {
                 .header('X-Total-Count', tokensAndCount.count)
                 .send(tokensAndCount.items);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -302,7 +307,7 @@ export class TokensApi {
 
             return tokenByIdWithPolicies;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -353,7 +358,7 @@ export class TokensApi {
 
             return tokens;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -398,7 +403,7 @@ export class TokensApi {
             const guardians = new Guardians();
             await guardians.setTokenAsync(token, owner, task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
 
@@ -462,7 +467,7 @@ export class TokensApi {
 
             return await guardians.updateToken(token, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -523,13 +528,13 @@ export class TokensApi {
             RunFunctionAsync<ServiceError>(async () => {
                 await guardians.updateTokenAsync(token, owner, task);
             }, async (error) => {
-                await this.logger.error(error, ['API_GATEWAY']);
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
                 taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
             });
 
             return task;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -592,13 +597,13 @@ export class TokensApi {
             RunFunctionAsync<ServiceError>(async () => {
                 await guardians.deleteTokenAsync(tokenId, owner, task);
             }, async (error) => {
-                await this.logger.error(error, ['API_GATEWAY']);
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
                 taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
             });
 
             return task;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -643,7 +648,7 @@ export class TokensApi {
             const guardians = new Guardians();
             return await guardians.associateToken(tokenId, owner);
         } catch (error) {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             if (error?.message?.toLowerCase().includes('user not found')) {
                 throw new HttpException('User not found.', HttpStatus.NOT_FOUND)
             }
@@ -698,7 +703,7 @@ export class TokensApi {
             const guardians = new Guardians();
             await guardians.associateTokenAsync(tokenId, owner, task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
 
@@ -746,7 +751,7 @@ export class TokensApi {
             const guardians = new Guardians();
             return await guardians.dissociateToken(tokenId, owner);
         } catch (error) {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             if (error?.message?.toLowerCase().includes('user not found')) {
                 throw new HttpException('User not found.', HttpStatus.NOT_FOUND)
             }
@@ -800,7 +805,7 @@ export class TokensApi {
             const guardians = new Guardians();
             await guardians.dissociateTokenAsync(tokenId, owner, task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
         return task;
@@ -855,7 +860,7 @@ export class TokensApi {
             const guardians = new Guardians();
             return await guardians.grantKycToken(tokenId, username, owner);
         } catch (error) {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             if (error?.message?.toLowerCase().includes('user not found')) {
                 throw new HttpException('User not found.', HttpStatus.NOT_FOUND)
             }
@@ -917,7 +922,7 @@ export class TokensApi {
             const guardians = new Guardians();
             await guardians.grantKycTokenAsync(tokenId, username, owner, task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
         return task;
@@ -972,7 +977,7 @@ export class TokensApi {
             const owner = new EntityOwner(user);
             return await guardians.revokeKycToken(tokenId, username, owner);
         } catch (error) {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             if (error?.message?.toLowerCase().includes('user not found')) {
                 throw new HttpException('User not found.', HttpStatus.NOT_FOUND)
             }
@@ -1034,7 +1039,7 @@ export class TokensApi {
             const guardians = new Guardians();
             await guardians.revokeKycTokenAsync(tokenId, username, owner, task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
         return task;
@@ -1089,7 +1094,7 @@ export class TokensApi {
             const guardians = new Guardians();
             return await guardians.freezeToken(tokenId, username, owner);
         } catch (error) {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             if (error?.message?.toLowerCase().includes('user not found')) {
                 throw new HttpException('User not registered.', HttpStatus.NOT_FOUND);
             }
@@ -1149,7 +1154,7 @@ export class TokensApi {
             const guardians = new Guardians();
             return await guardians.unfreezeToken(tokenId, username, owner);
         } catch (error) {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             if (error?.message?.toLowerCase().includes('user not found')) {
                 throw new HttpException('User not registered.', HttpStatus.NOT_FOUND);
             }
@@ -1211,7 +1216,7 @@ export class TokensApi {
             const guardians = new Guardians();
             await guardians.freezeTokenAsync(tokenId, username, owner, task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
         return task;
@@ -1268,7 +1273,7 @@ export class TokensApi {
             const guardians = new Guardians();
             await guardians.unfreezeTokenAsync(tokenId, username, owner, task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
         return task;
@@ -1323,7 +1328,7 @@ export class TokensApi {
             const guardians = new Guardians();
             return await guardians.getInfoToken(tokenId, username, owner);
         } catch (error) {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             if (error?.message?.toLowerCase().includes('user not found')) {
                 throw new HttpException('User not registered.', HttpStatus.NOT_FOUND);
             }
@@ -1371,9 +1376,10 @@ export class TokensApi {
     ): Promise<number[]> {
         try {
             const guardians = new Guardians();
-            return await guardians.getTokenSerials(tokenId, user.did);
+            const owner = new EntityOwner(user);
+            return await guardians.getTokenSerials(owner, tokenId, user.did);
         } catch (error) {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             if (error?.message?.toLowerCase().includes('user not found')) {
                 throw new HttpException('User not registered.', HttpStatus.NOT_FOUND);
             }
@@ -1416,13 +1422,13 @@ export class TokensApi {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
             const engineService = new PolicyEngine();
-            const map = await engineService.getTokensMap(owner, 'PUBLISH');
+            const map = await engineService.getTokensMap(owner, [PolicyStatus.PUBLISH, PolicyStatus.VIEW]);
             let items = await guardians.getTokens({}, owner);
             items = await setDynamicTokenPolicy(items, owner);
             items = setTokensPolicies(items, map, null, false);
             return items;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

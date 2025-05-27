@@ -17,3 +17,8 @@
     width: 80%;
     height: 80%;
 }
+
+*[readonly-block="true"] {
+    pointer-events: none !important;
+    filter: grayscale(1);
+}

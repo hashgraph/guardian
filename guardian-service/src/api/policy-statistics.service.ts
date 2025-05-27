@@ -1,8 +1,9 @@
 import { ApiResponse } from './helpers/api-response.js';
 import { BinaryMessageResponse, DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyStatistic, PolicyStatisticImportExport, StatisticAssessmentMessage, StatisticMessage, Users } from '@guardian/common';
-import { EntityStatus, IOwner, MessageAPI, PolicyType, Schema, SchemaEntity } from '@guardian/interfaces';
-import { publishSchema } from './helpers/index.js';
+import { EntityStatus, IOwner, MessageAPI, PolicyStatus, Schema, SchemaEntity } from '@guardian/interfaces';
+
 import { findRelationships, generateSchema, generateVcDocument, getOrCreateTopic, publishConfig, uniqueDocuments } from './helpers/policy-statistics-helpers.js';
+import { publishSchema } from '../helpers/import-helpers/index.js';
 
 /**
  * Connect to the message broker methods of working with statistics.
@@ -16,7 +17,8 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} new statistic definition
      */
     ApiResponse(MessageAPI.CREATE_STATISTIC_DEFINITION,
-        async (msg: { definition: PolicyStatistic, owner: IOwner }) => {
+        async (msg: { definition: PolicyStatistic, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -29,7 +31,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
 
                 const policyId = definition.policyId;
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                if (!policy || policy.status !== PolicyStatus.PUBLISH) {
                     return new MessageError('Item does not exist.');
                 }
 
@@ -47,7 +49,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 const row = await DatabaseServer.createStatistic(definition);
                 return new MessageResponse(row);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -60,7 +62,8 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - statistic definitions
      */
     ApiResponse(MessageAPI.GET_STATISTIC_DEFINITIONS,
-        async (msg: { filters: any, owner: IOwner }) => {
+        async (msg: { filters: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -109,7 +112,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 }
                 return new MessageResponse({ items, count });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -122,7 +125,8 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - statistic definition
      */
     ApiResponse(MessageAPI.GET_STATISTIC_DEFINITION,
-        async (msg: { definitionId: string, owner: IOwner }) => {
+        async (msg: { definitionId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -134,7 +138,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 }
                 return new MessageResponse(item);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -147,7 +151,8 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - relationships
      */
     ApiResponse(MessageAPI.GET_STATISTIC_RELATIONSHIPS,
-        async (msg: { definitionId: string, owner: IOwner }) => {
+        async (msg: { definitionId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -160,7 +165,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
 
                 const policyId = item.policyId;
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                if (!policy || !policy.topicId || policy.status !== PolicyType.PUBLISH) {
+                if (!policy || !policy.topicId || policy.status !== PolicyStatus.PUBLISH) {
                     return new MessageError('Item does not exist.');
                 }
 
@@ -173,7 +178,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageResponse({ policy, schemas });
                 }
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -189,8 +194,10 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             definitionId: string,
             definition: PolicyStatistic,
-            owner: IOwner
+            owner: IOwner,
+            userId: string | null
         }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -212,7 +219,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 const result = await DatabaseServer.updateStatistic(item);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -225,7 +232,8 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
      * @returns {boolean} - Operation success
      */
     ApiResponse(MessageAPI.DELETE_STATISTIC_DEFINITION,
-        async (msg: { definitionId: string, owner: IOwner }) => {
+        async (msg: { definitionId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -241,7 +249,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 await DatabaseServer.removeStatistic(item);
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -254,7 +262,8 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - statistic definition
      */
     ApiResponse(MessageAPI.PUBLISH_STATISTIC_DEFINITION,
-        async (msg: { definitionId: string, owner: IOwner }) => {
+        async (msg: { definitionId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -275,12 +284,16 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 const statMessage = new StatisticMessage(MessageAction.PublishPolicyStatistic);
                 statMessage.setDocument(item);
 
-                const topic = await getOrCreateTopic(item);
-                const user = await (new Users()).getHederaAccount(owner.creator);
-                const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
+                const topic = await getOrCreateTopic(item, userId);
+                const user = await (new Users()).getHederaAccount(owner.creator, userId);
+                const messageServer = new MessageServer({
+                    operatorId: user.hederaAccountId,
+                    operatorKey: user.hederaAccountKey,
+                    signOptions: user.signOptions
+                });
                 const statMessageResult = await messageServer
                     .setTopicObject(topic)
-                    .sendMessage(statMessage);
+                    .sendMessage(statMessage, true, null, userId);
 
                 item.topicId = topic.topicId;
                 item.messageId = statMessageResult.getId();
@@ -293,7 +306,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 return new MessageResponse(result);
 
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -310,10 +323,11 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
             definitionId: string,
             owner: IOwner,
             pageIndex?: string,
-            pageSize?: string
+            pageSize?: string,
+            userId: string | null
         }) => {
+            const userId = msg?.userId
             try {
-
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
                 }
@@ -387,7 +401,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     count: items.length
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -407,8 +421,10 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 target: string,
                 relationships: string[]
             },
-            owner: IOwner
+            owner: IOwner,
+            userId: string | null
         }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters');
@@ -430,9 +446,13 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 const schemaObject = new Schema(schema);
                 const vcObject = await generateVcDocument(assessment.document, schemaObject, owner);
 
-                const topic = await getOrCreateTopic(item);
-                const user = await (new Users()).getHederaAccount(owner.creator);
-                const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
+                const topic = await getOrCreateTopic(item, userId);
+                const user = await (new Users()).getHederaAccount(owner.creator, userId);
+                const messageServer = new MessageServer({
+                    operatorId: user.hederaAccountId,
+                    operatorKey: user.hederaAccountKey,
+                    signOptions: user.signOptions
+                });
 
                 const vcMessage = new StatisticAssessmentMessage(MessageAction.CreateStatisticAssessment);
                 vcMessage.setDefinition(item);
@@ -441,7 +461,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 vcMessage.setRelationships(assessment.relationships);
                 const vcMessageResult = await messageServer
                     .setTopicObject(topic)
-                    .sendMessage(vcMessage);
+                    .sendMessage(vcMessage, true, null, userId);
 
                 const row = await DatabaseServer.createStatisticAssessment({
                     definitionId: item.id,
@@ -458,7 +478,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 });
                 return new MessageResponse(row);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -474,8 +494,10 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             definitionId: string,
             filters: any,
-            owner: IOwner
+            owner: IOwner,
+            userId: string | null
         }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -523,7 +545,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 );
                 return new MessageResponse({ items, count });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -539,8 +561,10 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             definitionId: string,
             assessmentId: string,
-            owner: IOwner
+            owner: IOwner,
+            userId: string | null
         }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -557,7 +581,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse(document);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -573,8 +597,10 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
         async (msg: {
             definitionId: string,
             assessmentId: string,
-            owner: IOwner
+            owner: IOwner,
+            userId: string | null
         }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
@@ -602,7 +628,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     relationships
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -615,7 +641,8 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - zip file
      */
     ApiResponse(MessageAPI.EXPORT_STATISTIC_DEFINITION_FILE,
-        async (msg: { definitionId: string, owner: IOwner }) => {
+        async (msg: { definitionId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid export theme parameters');
@@ -638,7 +665,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
 
                 return new BinaryMessageResponse(file);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -651,7 +678,8 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} new statistic definition
      */
     ApiResponse(MessageAPI.IMPORT_STATISTIC_DEFINITION_FILE,
-        async (msg: { zip: any, policyId: string, owner: IOwner }) => {
+        async (msg: { zip: any, policyId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { zip, policyId, owner } = msg;
                 if (!zip) {
@@ -659,7 +687,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                if (!policy || policy.status !== PolicyStatus.PUBLISH) {
                     return new MessageError('Item does not exist.');
                 }
 
@@ -685,7 +713,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 const row = await DatabaseServer.createStatistic(definition);
                 return new MessageResponse(row);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -698,7 +726,8 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} Preview
      */
     ApiResponse(MessageAPI.PREVIEW_STATISTIC_DEFINITION_FILE,
-        async (msg: { zip: any, owner: IOwner }) => {
+        async (msg: { zip: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { zip } = msg;
                 if (!zip) {
@@ -708,7 +737,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 const { definition } = preview;
                 return new MessageResponse(definition);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });

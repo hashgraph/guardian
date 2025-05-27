@@ -29,8 +29,9 @@ import { ContractAPI, ContractParamType, ContractType, EntityOwner, IOwner, Reti
 import { AccountId, TokenId } from '@hashgraph/sdk';
 import { proto } from '@hashgraph/proto';
 import * as ethers from 'ethers';
-import { contractCall, contractQuery, createContract, customContractCall, publishSystemSchema } from './helpers/index.js';
+import { contractCall, contractQuery, createContract, customContractCall } from './helpers/index.js';
 import { emptyNotifier } from '../helpers/notifier.js';
+import { publishSystemSchema } from '../helpers/import-helpers/index.js';
 
 const retireAbi = new ethers.Interface([
     'function approveRetire(address, tuple(address, int64, int64[])[])',
@@ -96,13 +97,15 @@ const retireEventsAbi = new ethers.Interface([
 
 async function getContractMessage(
     workers,
-    contractId
+    contractId,
+    userId: string | null
 ): Promise<[ContractMessage, string]> {
     const { memo } = await workers.addNonRetryableTask(
         {
             type: WorkerTaskType.GET_CONTRACT_INFO,
             data: {
                 contractId,
+                payload: { userId }
             },
         },
         20,
@@ -115,6 +118,7 @@ async function getContractMessage(
             data: {
                 topic: memo,
                 index: 1,
+                payload: { userId }
             },
         },
         10
@@ -129,7 +133,8 @@ async function checkContractsCompatibility(
     workers: Workers,
     databaseServer: DatabaseServer,
     retireContract: { version: string },
-    tokens: { token: string }[]
+    tokens: { token: string }[],
+    userId: string | null
 ) {
     if (retireContract.version === '1.0.0') {
         const tokenInfo = await DatabaseServer.getTokens({
@@ -148,7 +153,8 @@ async function checkContractsCompatibility(
             if (!wipeContract) {
                 [wipeContract] = await getContractMessage(
                     workers,
-                    token.wipeContractId
+                    token.wipeContractId,
+                    userId
                 ) as unknown as [{ version: string }];
             }
             if (wipeContract.version !== '1.0.0') {
@@ -179,7 +185,8 @@ async function setPool(
     workers: Workers,
     dataBaseServer: DatabaseServer,
     contractId: string,
-    options: { tokens: RetireTokenPool[]; immediately: boolean }
+    options: { tokens: RetireTokenPool[]; immediately: boolean },
+    userId: string | null
 ) {
     const pool = JSON.parse(JSON.stringify(options));
     pool.contractId = contractId;
@@ -188,7 +195,7 @@ async function setPool(
             const tokenInfo = await workers.addRetryableTask(
                 {
                     type: WorkerTaskType.GET_TOKEN_INFO,
-                    data: { tokenId: item.token },
+                    data: { tokenId: item.token, payload: { userId } },
                 },
                 10
             );
@@ -197,11 +204,12 @@ async function setPool(
             let isWiper = false;
             let contractMessage;
             try {
-                [contractMessage] = await getContractMessage(workers, wipeContractId);
+                [contractMessage] = await getContractMessage(workers, wipeContractId, userId);
                 isWiper = await isContractWiper(
                     workers,
                     contractMessage,
                     contractId,
+                    userId,
                     item.token
                 );
                 // tslint:disable-next-line:no-empty
@@ -230,9 +238,9 @@ async function setPool(
         })
     );
 
-    const contract = await dataBaseServer.findOne(Contract,{
+    const contract = await dataBaseServer.findOne(Contract, {
         contractId,
-    }) as Contract & {wipeTokenIds: string[]};
+    }) as Contract & { wipeTokenIds: string[] };
 
     pool.enabled =
         pool.tokens.findIndex(
@@ -272,7 +280,7 @@ async function setContractWiperPermissions(
 ) {
     const contracts = await dataBaseServer.find(Contract, {
         contractId,
-    })  as (Contract & {wipeTokenIds: string[]})[];
+    }) as (Contract & { wipeTokenIds: string[] })[];
     if (contracts.length === 0) {
         return;
     }
@@ -315,7 +323,7 @@ async function setContractWiperPermissions(
             pools.map(async (pool) => {
                 const contract = await dataBaseServer.findOne(Contract, {
                     contractId,
-                }) as Contract & {wipeTokenIds: string[]};
+                }) as Contract & { wipeTokenIds: string[] };
 
                 pool.enabled =
                     pool.tokens.findIndex(
@@ -334,7 +342,8 @@ export async function setPoolContract(
     hederaAccountId: string,
     hederaAccountKey: string,
     tokens: RetireTokenPool[],
-    immediately: boolean = false
+    immediately: boolean = false,
+    userId: string | null
 ) {
     return await customContractCall(
         ContractAPI.SET_RETIRE_POOLS,
@@ -348,7 +357,8 @@ export async function setPoolContract(
                 token.count,
             ]),
             immediately,
-        ])
+        ]),
+        userId
     );
 }
 
@@ -357,14 +367,15 @@ async function setRetireRequest(
     dataBaseServer: DatabaseServer,
     contractId: string,
     user: string,
-    tokens: RetireTokenRequest[]
+    tokens: RetireTokenRequest[],
+    userId: string | null
 ) {
     const newTokens = await Promise.all(
         tokens.map(async (token) => {
             const fullTokenInfo = await workers.addRetryableTask(
                 {
                     type: WorkerTaskType.GET_TOKEN_INFO,
-                    data: { tokenId: token.token },
+                    data: { tokenId: token.token, payload: { userId } },
                 },
                 10
             );
@@ -426,7 +437,7 @@ export async function syncWipeContracts(
         {
             fields: ['contractId', 'lastSyncEventTimeStamp', 'version'],
         }
-    ) as (Contract & {version: string})[];
+    ) as (Contract & { version: string })[];
 
     const contractVersions = new Map<string, string>();
     const maxTimestamps = new Map<string, string>();
@@ -471,7 +482,8 @@ export async function syncWipeContract(
     users: Users,
     contract: { contractId: string, version: string },
     timestamp?: string,
-    sendNotifications: boolean = true
+    sendNotifications: boolean = true,
+    userId: string | null = null
 ) {
     const { contractId, version } = contract;
     const isFirstVersion = version === '1.0.0';
@@ -487,6 +499,7 @@ export async function syncWipeContract(
                 data: {
                     contractId,
                     timestamp: timestamp ? `gt:${timestamp}` : null,
+                    payload: { userId }
                 },
             },
             20,
@@ -513,7 +526,7 @@ export async function syncWipeContract(
             const contractOwnerDids = contracts.map(
                 (contractOwnerDid) => contractOwnerDid.owner
             );
-            const contractOwners = await users.getUsersByIds(contractOwnerDids);
+            const contractOwners = await users.getUsersByIds(contractOwnerDids, userId);
             const contractOwnerIds = contractOwners.map(
                 (contractOwner) => contractOwner.id
             );
@@ -748,7 +761,8 @@ export async function syncRetireContract(
     users: Users,
     contractId: string,
     timestamp?: string,
-    sendNotifications: boolean = true
+    sendNotifications: boolean = true,
+    userId?: string | null
 ) {
     const timestamps = [timestamp];
     let lastTimeStamp;
@@ -761,6 +775,7 @@ export async function syncRetireContract(
                 data: {
                     contractId,
                     timestamp: timestamp ? `gt:${timestamp}` : null,
+                    payload: { userId }
                 },
             },
             20,
@@ -788,14 +803,14 @@ export async function syncRetireContract(
             const contractOwnerDids = contracts.map(
                 (contract) => contract.owner
             );
-            const contractOwners = await users.getUsersByIds(contractOwnerDids);
+            const contractOwners = await users.getUsersByIds(contractOwnerDids, userId);
             const contractOwnerIds = contractOwners.map(
                 (contractOwner) => contractOwner.id
             );
             const allOwnersUsers = await Promise.all(
                 contractOwnerDids.map(
                     async (contractOwnerDid) =>
-                        await users.getUsersBySrId(contractOwnerDid)
+                        await users.getUsersBySrId(contractOwnerDid, userId)
                 )
             );
             const allOwnersUsersIds = []
@@ -810,7 +825,7 @@ export async function syncRetireContract(
                     const tokens = data[1].map((item) =>
                         TokenId.fromSolidityAddress(item[0]).toString()
                     );
-                    const user = await users.getUserByAccount(retireUser);
+                    const user = await users.getUserByAccount(retireUser, userId);
                     if (!sendNotifications || !user?.id) {
                         break;
                     }
@@ -826,6 +841,7 @@ export async function syncRetireContract(
                         token: TokenId.fromSolidityAddress(item[0]).toString(),
                         count: Number(item[1]),
                     }));
+
                     await setPool(
                         workers,
                         dataBaseServer,
@@ -833,7 +849,8 @@ export async function syncRetireContract(
                         {
                             tokens,
                             immediately: data[1],
-                        }
+                        },
+                        userId
                     );
                     if (!sendNotifications) {
                         break;
@@ -921,7 +938,8 @@ export async function syncRetireContract(
                             ).toString(),
                             count: Number(item[1]),
                             serials: item[2].map((serial) => Number(serial)),
-                        }))
+                        })),
+                        userId
                     );
                     if (!sendNotifications) {
                         break;
@@ -1034,6 +1052,7 @@ async function isContractWiper(
     workers: Workers,
     contract: { contractId: string, version: string },
     retireContractId: string,
+    userId: string | null,
     token?: string
 ): Promise<boolean> {
     if (!contract.contractId || !retireContractId) {
@@ -1051,6 +1070,7 @@ async function isContractWiper(
                     contractId: contract.contractId,
                     timestamp: timestamp ? `lt:${timestamp}` : null,
                     order: 'desc',
+                    payload: { userId }
                 },
             },
             20,
@@ -1077,8 +1097,8 @@ async function isContractWiper(
                     } else {
                         if (
                             (AccountId.fromSolidityAddress(data[0]).toString() ===
-                            retireContractId) && (TokenId.fromSolidityAddress(data[1]).toString() ===
-                            token)
+                                retireContractId) && (TokenId.fromSolidityAddress(data[1]).toString() ===
+                                    token)
                         ) {
                             return true;
                         }
@@ -1096,8 +1116,8 @@ async function isContractWiper(
                     } else {
                         if (
                             (AccountId.fromSolidityAddress(data[0]).toString() ===
-                            retireContractId) && (TokenId.fromSolidityAddress(data[1]).toString() ===
-                            token)
+                                retireContractId) && (TokenId.fromSolidityAddress(data[1]).toString() ===
+                                    token)
                         ) {
                             return false;
                         }
@@ -1159,7 +1179,8 @@ async function saveRetireVC(
     hederaAccountId: string,
     hederaAccountKey: string,
     userHederaAccountId: string,
-    tokens: (RetireTokenRequest & { decimals: number })[]
+    tokens: (RetireTokenRequest & { decimals: number })[],
+    userId: string | null
 ) {
     const contract = await dataBaseServer.findOne(Contract, {
         contractId,
@@ -1169,9 +1190,12 @@ async function saveRetireVC(
     const topicConfig = await TopicConfig.fromObject({
         topicId: contract.topicId,
         type: TopicType.RetireTopic,
-    } as any);
+    } as any, false, userId);
 
-    const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
+    const messageServer = new MessageServer({
+        operatorId: hederaAccountId,
+        operatorKey: hederaAccountKey
+    });
     messageServer.setTopicObject(topicConfig);
 
     const userTopic = await TopicConfig.fromObject(
@@ -1179,7 +1203,7 @@ async function saveRetireVC(
             owner: owner.creator,
             type: TopicType.UserTopic,
         }),
-        true
+        true, userId
     );
 
     let schema = await dataBaseServer.findOne(SchemaCollection, {
@@ -1228,12 +1252,12 @@ async function saveRetireVC(
         );
     }
 
-    const didDocument = await vcHelper.loadDidDocument(owner.creator);
+    const didDocument = await vcHelper.loadDidDocument(owner.creator, userId);
     const vcObject = await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
 
     const vcMessage = new VCMessage(MessageAction.CreateVC);
     vcMessage.setDocument(vcObject);
-    await messageServer.sendMessage(vcMessage);
+    await messageServer.sendMessage(vcMessage, true, null, userId);
 
     await dataBaseServer.save(VcDocumentCollection, {
         hash: vcMessage.hash,
@@ -1257,6 +1281,7 @@ export async function contractAPI(
         pageIndex?: any,
         pageSize?: any
     }) => {
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1294,7 +1319,7 @@ export async function contractAPI(
                 )
             );
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -1304,6 +1329,7 @@ export async function contractAPI(
         description: string,
         type: ContractType
     }) => {
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1314,7 +1340,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -1332,6 +1358,7 @@ export async function contractAPI(
                     policyId: null,
                     policyUUID: null,
                 },
+                userId,
                 {
                     admin: true,
                     submit: false,
@@ -1347,7 +1374,7 @@ export async function contractAPI(
                 topic.topicId
             );
 
-            await topic.saveKeys();
+            await topic.saveKeys(userId);
             await DatabaseServer.saveTopic(topic.toObject());
 
             const version = await getContractVersion(
@@ -1371,22 +1398,22 @@ export async function contractAPI(
                 MessageAction.CreateContract
             );
             contractMessage.setDocument(contract);
-            const messageServer = new MessageServer(
-                root.hederaAccountId,
-                rootKey,
+            const messageServer = new MessageServer({
+                operatorId: root.hederaAccountId,
+                operatorKey: rootKey,
                 signOptions
-            );
+            });
             const contractMessageResult = await messageServer
                 .setTopicObject(topic)
-                .sendMessage(contractMessage);
+                .sendMessage(contractMessage, true, null, userId);
             const userTopic = await TopicConfig.fromObject(
                 await DatabaseServer.getTopicByType(owner.owner, TopicType.UserTopic),
-                true
+                true, userId
             );
-            await topicHelper.twoWayLink(topic, userTopic, contractMessageResult.getId());
+            await topicHelper.twoWayLink(topic, userTopic, contractMessageResult.getId(), userId);
             return new MessageResponse(contract);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -1396,6 +1423,7 @@ export async function contractAPI(
         contractId: string,
         description: string
     }) => {
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid contract identifier');
@@ -1412,7 +1440,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -1426,7 +1454,7 @@ export async function contractAPI(
                 rootKey
             );
 
-            const [contractMessage, memo] = await getContractMessage(workers, contractId) as [ContractMessage & {version: string}, string];
+            const [contractMessage, memo] = await getContractMessage(workers, contractId, userId) as [ContractMessage & { version: string }, string];
 
             const existingContract = await dataBaseServer.findOne(Contract, {
                 contractId,
@@ -1467,7 +1495,8 @@ export async function contractAPI(
                     users,
                     contractId,
                     existingContract?.lastSyncEventTimeStamp,
-                    false
+                    false,
+                    userId
                 );
             } else if (
                 !existingContract &&
@@ -1479,13 +1508,14 @@ export async function contractAPI(
                     users,
                     contract,
                     existingContract?.lastSyncEventTimeStamp,
-                    false
+                    false,
+                    userId
                 );
             }
 
             return new MessageResponse(contract);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -1494,6 +1524,7 @@ export async function contractAPI(
         owner: IOwner,
         id: string
     }) => {
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1505,7 +1536,7 @@ export async function contractAPI(
                 throw new Error('Invalid contract identifier');
             }
 
-            const contract = await  dataBaseServer.findOne(Contract, id, {
+            const contract = await dataBaseServer.findOne(Contract, id, {
                 fields: ['contractId'],
             });
             if (!contract) {
@@ -1516,7 +1547,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -1542,13 +1573,17 @@ export async function contractAPI(
             );
             return new MessageResponse(permissions);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
 
     ApiResponse(ContractAPI.REMOVE_CONTRACT,
-        async (msg: { owner: IOwner, id: string }) => {
+        async (msg: {
+            owner: IOwner,
+            id: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -1589,7 +1624,7 @@ export async function contractAPI(
                 }
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -1600,6 +1635,7 @@ export async function contractAPI(
         pageIndex?: any,
         pageSize?: any
     }) => {
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1643,13 +1679,17 @@ export async function contractAPI(
                 )
             );
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
 
     ApiResponse(ContractAPI.ENABLE_WIPE_REQUESTS,
-        async (msg: { owner: IOwner, id: string }) => {
+        async (msg: {
+            owner: IOwner,
+            id: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -1675,7 +1715,7 @@ export async function contractAPI(
                 const users = new Users();
                 const wallet = new Wallet();
                 const workers = new Workers();
-                const root = await users.getUserById(owner.creator);
+                const root = await users.getUserById(owner.creator, userId);
                 const rootKey = await wallet.getKey(
                     root.walletToken,
                     KeyType.KEY,
@@ -1693,13 +1733,17 @@ export async function contractAPI(
 
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(ContractAPI.DISABLE_WIPE_REQUESTS,
-        async (msg: { owner: IOwner, id: string }) => {
+        async (msg: {
+            owner: IOwner,
+            id: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -1725,7 +1769,7 @@ export async function contractAPI(
                 const users = new Users();
                 const wallet = new Wallet();
                 const workers = new Workers();
-                const root = await users.getUserById(owner.creator);
+                const root = await users.getUserById(owner.creator, userId);
                 const rootKey = await wallet.getKey(
                     root.walletToken,
                     KeyType.KEY,
@@ -1743,13 +1787,17 @@ export async function contractAPI(
 
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(ContractAPI.APPROVE_WIPE_REQUEST,
-        async (msg: { owner: IOwner, requestId: string }) => {
+        async (msg: {
+            owner: IOwner,
+            requestId: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -1766,7 +1814,7 @@ export async function contractAPI(
 
                 const request = await dataBaseServer.findOne(WiperRequest, {
                     id: requestId,
-                }) as WiperRequest & {token: string};
+                }) as WiperRequest & { token: string };
                 if (!request) {
                     throw new Error('Request is not found');
                 }
@@ -1774,7 +1822,7 @@ export async function contractAPI(
                 const users = new Users();
                 const wallet = new Wallet();
                 const workers = new Workers();
-                const root = await users.getUserById(owner.creator);
+                const root = await users.getUserById(owner.creator, userId);
                 const rootKey = await wallet.getKey(
                     root.walletToken,
                     KeyType.KEY,
@@ -1823,7 +1871,7 @@ export async function contractAPI(
 
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -1833,6 +1881,7 @@ export async function contractAPI(
         requestId: string,
         ban: boolean
     }) => {
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1849,7 +1898,7 @@ export async function contractAPI(
 
             const request = await dataBaseServer.findOne(WiperRequest, {
                 id: requestId,
-            }) as WiperRequest & {token: string};
+            }) as WiperRequest & { token: string };
             if (!request) {
                 throw new Error('Request is not found');
             }
@@ -1857,7 +1906,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -1903,13 +1952,18 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
 
     ApiResponse(ContractAPI.CLEAR_WIPE_REQUESTS,
-        async (msg: { owner: IOwner, id: string, hederaId?: string }) => {
+        async (msg: {
+            owner: IOwner,
+            id: string,
+            hederaId?: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -1935,7 +1989,7 @@ export async function contractAPI(
                 const users = new Users();
                 const wallet = new Wallet();
                 const workers = new Workers();
-                const root = await users.getUserById(owner.creator);
+                const root = await users.getUserById(owner.creator, userId);
                 const rootKey = await wallet.getKey(
                     root.walletToken,
                     KeyType.KEY,
@@ -1966,7 +2020,7 @@ export async function contractAPI(
 
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -1976,6 +2030,7 @@ export async function contractAPI(
         id: string,
         hederaId: string
     }) => {
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2004,7 +2059,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -2030,7 +2085,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -2040,6 +2095,7 @@ export async function contractAPI(
         id: string,
         hederaId: string
     }) => {
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2068,7 +2124,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -2094,7 +2150,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -2104,6 +2160,7 @@ export async function contractAPI(
         id: string,
         hederaId: string
     }) => {
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2132,7 +2189,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -2158,7 +2215,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -2168,6 +2225,7 @@ export async function contractAPI(
         id: string,
         hederaId: string
     }) => {
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2196,7 +2254,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -2222,7 +2280,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -2233,6 +2291,7 @@ export async function contractAPI(
         hederaId: string
         tokenId?: string
     }) => {
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2262,7 +2321,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -2298,7 +2357,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -2309,6 +2368,7 @@ export async function contractAPI(
         hederaId: string
         tokenId?: string
     }) => {
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2337,7 +2397,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -2373,13 +2433,17 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
 
     ApiResponse(ContractAPI.SYNC_RETIRE_POOLS,
-        async (msg: { owner: IOwner, id: string }) => {
+        async (msg: {
+            owner: IOwner,
+            id: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -2419,7 +2483,7 @@ export async function contractAPI(
                         const tokenInfo = await workers.addRetryableTask(
                             {
                                 type: WorkerTaskType.GET_TOKEN_INFO,
-                                data: { tokenId: token.token },
+                                data: { tokenId: token.token, payload: { userId } },
                             },
                             10
                         );
@@ -2431,15 +2495,16 @@ export async function contractAPI(
                         let contractMessage;
                         let isWiper = false;
                         try {
-                            [contractMessage] = await getContractMessage(workers, token.contract);
+                            [contractMessage] = await getContractMessage(workers, token.contract, userId);
                             isWiper = await isContractWiper(
                                 workers,
                                 contractMessage,
                                 contractId,
-                                token.token,
+                                userId,
+                                token.token
                             );
-                        // tslint:disable-next-line:no-empty
-                        } catch {}
+                            // tslint:disable-next-line:no-empty
+                        } catch { }
                         await setContractWiperPermissions(
                             dataBaseServer,
                             contractId,
@@ -2480,7 +2545,7 @@ export async function contractAPI(
 
                 return new MessageResponse(syncDate);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -2491,6 +2556,7 @@ export async function contractAPI(
         pageIndex?: any,
         pageSize?: any
     }) => {
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2515,7 +2581,7 @@ export async function contractAPI(
             }
 
             const users = new Users();
-            const user = await users.getUserById(owner.creator);
+            const user = await users.getUserById(owner.creator, userId);
 
             const filters: any = {};
             if (contractId) {
@@ -2539,7 +2605,7 @@ export async function contractAPI(
             }
             return new MessageResponse(result);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -2551,6 +2617,7 @@ export async function contractAPI(
         pageIndex?: any,
         pageSize?: any
     }) => {
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2575,7 +2642,7 @@ export async function contractAPI(
             }
 
             const users = new Users();
-            const user = await users.getUserById(owner.creator);
+            const user = await users.getUserById(owner.creator, userId);
 
             const filters: any = {
                 $and: [],
@@ -2610,13 +2677,17 @@ export async function contractAPI(
                 await dataBaseServer.findAndCount(RetirePool, filters, otherOptions)
             );
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
 
     ApiResponse(ContractAPI.CLEAR_RETIRE_REQUESTS,
-        async (msg: { owner: IOwner, id: string }) => {
+        async (msg: {
+            owner: IOwner,
+            id: string,
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -2642,7 +2713,7 @@ export async function contractAPI(
                 const users = new Users();
                 const wallet = new Wallet();
                 const workers = new Workers();
-                const root = await users.getUserById(owner.creator);
+                const root = await users.getUserById(owner.creator, userId);
                 const rootKey = await wallet.getKey(
                     root.walletToken,
                     KeyType.KEY,
@@ -2684,13 +2755,17 @@ export async function contractAPI(
 
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(ContractAPI.CLEAR_RETIRE_POOLS,
-        async (msg: { owner: IOwner, id: string }) => {
+        async (msg: {
+            owner: IOwner,
+            id: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
@@ -2716,7 +2791,7 @@ export async function contractAPI(
                 const users = new Users();
                 const wallet = new Wallet();
                 const workers = new Workers();
-                const root = await users.getUserById(owner.creator);
+                const root = await users.getUserById(owner.creator, userId);
                 const rootKey = await wallet.getKey(
                     root.walletToken,
                     KeyType.KEY,
@@ -2758,7 +2833,7 @@ export async function contractAPI(
 
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -2768,6 +2843,7 @@ export async function contractAPI(
         id: string,
         options: { tokens: RetireTokenPool[]; immediately: boolean }
     }) => {
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid add contract pair parameters');
@@ -2796,14 +2872,14 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
                 owner.creator
             );
 
-            const error = await checkContractsCompatibility(workers, dataBaseServer, contract, options.tokens);
+            const error = await checkContractsCompatibility(workers, dataBaseServer, contract, options.tokens, userId);
             if (error) {
                 throw new Error(error);
             }
@@ -2814,7 +2890,8 @@ export async function contractAPI(
                 root.hederaAccountId,
                 rootKey,
                 options.tokens,
-                options.immediately
+                options.immediately,
+                userId
             );
 
             return new MessageResponse(
@@ -2824,17 +2901,22 @@ export async function contractAPI(
                     // retirePoolRepository,
                     dataBaseServer,
                     contractId,
-                    options
+                    options,
+                    userId
                 )
             );
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
 
     ApiResponse(ContractAPI.UNSET_RETIRE_POOLS,
-        async (msg: { owner: IOwner, poolId: string }) => {
+        async (msg: {
+            owner: IOwner,
+            poolId: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid add contract pair parameters');
@@ -2860,7 +2942,7 @@ export async function contractAPI(
                 const users = new Users();
                 const wallet = new Wallet();
                 const workers = new Workers();
-                const root = await users.getUserById(owner.creator);
+                const root = await users.getUserById(owner.creator, userId);
                 const rootKey = await wallet.getKey(
                     root.walletToken,
                     KeyType.KEY,
@@ -2888,13 +2970,17 @@ export async function contractAPI(
 
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(ContractAPI.UNSET_RETIRE_REQUEST,
-        async (msg: { owner: IOwner, requestId: string }) => {
+        async (msg: {
+            owner: IOwner,
+            requestId: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid add contract pair parameters');
@@ -2920,7 +3006,7 @@ export async function contractAPI(
                 const users = new Users();
                 const wallet = new Wallet();
                 const workers = new Workers();
-                const root = await users.getUserById(owner.creator);
+                const root = await users.getUserById(owner.creator, userId);
                 const rootKey = await wallet.getKey(
                     root.walletToken,
                     KeyType.KEY,
@@ -2953,7 +3039,7 @@ export async function contractAPI(
 
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -2963,6 +3049,7 @@ export async function contractAPI(
         poolId: string,
         tokens: RetireTokenRequest[]
     }) => {
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid add contract pair parameters');
@@ -3003,18 +3090,18 @@ export async function contractAPI(
                 contractId: pool.contractId
             }) as Contract & { version: string }
 
-            const error = await checkContractsCompatibility(workers, dataBaseServer, contract, tokens);
+            const error = await checkContractsCompatibility(workers, dataBaseServer, contract, tokens, userId);
             if (error) {
                 throw new Error(error);
             }
 
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
                 owner.creator
             );
-            const sr = await users.getUserById(root.parent || root.did);
+            const sr = await users.getUserById(root.parent || root.did, userId);
             const srKey = await wallet.getKey(
                 sr.walletToken,
                 KeyType.KEY,
@@ -3032,7 +3119,8 @@ export async function contractAPI(
                         token.count,
                         token.serials,
                     ]),
-                ])
+                ]),
+                userId
             );
 
             const srUser = EntityOwner.sr(sr.id, sr.did);
@@ -3055,19 +3143,24 @@ export async function contractAPI(
                         );
                         newToken.decimals = poolToken.decimals;
                         return newToken;
-                    })
+                    }),
+                    userId
                 );
             }
 
             return new MessageResponse(pool.immediately);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
 
     ApiResponse(ContractAPI.APPROVE_RETIRE,
-        async (msg: { owner: IOwner, requestId: string }) => {
+        async (msg: {
+            owner: IOwner,
+            requestId: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid add contract pair parameters');
@@ -3093,7 +3186,7 @@ export async function contractAPI(
                 const users = new Users();
                 const wallet = new Wallet();
                 const workers = new Workers();
-                const root = await users.getUserById(owner.creator);
+                const root = await users.getUserById(owner.creator, userId);
                 const rootKey = await wallet.getKey(
                     root.walletToken,
                     KeyType.KEY,
@@ -3104,7 +3197,7 @@ export async function contractAPI(
                     contractId: request.contractId
                 }, { field: ['version'] }) as Contract & { version: string };
 
-                const error = await checkContractsCompatibility(workers, dataBaseServer, contract, request.tokens);
+                const error = await checkContractsCompatibility(workers, dataBaseServer, contract, request.tokens, userId);
                 if (error) {
                     throw new Error(error);
                 }
@@ -3149,7 +3242,8 @@ export async function contractAPI(
                                 token.count,
                                 token.serials,
                             ])
-                        ])
+                        ]),
+                        userId
                     );
                 }
 
@@ -3160,20 +3254,25 @@ export async function contractAPI(
                     root.hederaAccountId,
                     rootKey,
                     request.user,
-                    request.tokens
+                    request.tokens,
+                    userId
                 );
 
                 await dataBaseServer.remove(RetireRequest, request);
 
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(ContractAPI.CANCEL_RETIRE,
-        async (msg: { owner: IOwner, requestId: string }) => {
+        async (msg: {
+            owner: IOwner,
+            requestId: string
+        }) => {
+            const userId = msg?.owner?.id;
             try {
                 if (!msg) {
                     return new MessageError('Invalid add contract pair parameters');
@@ -3199,7 +3298,7 @@ export async function contractAPI(
                 const users = new Users();
                 const wallet = new Wallet();
                 const workers = new Workers();
-                const root = await users.getUserById(owner.creator);
+                const root = await users.getUserById(owner.creator, userId);
                 const rootKey = await wallet.getKey(
                     root.walletToken,
                     KeyType.KEY,
@@ -3227,7 +3326,7 @@ export async function contractAPI(
 
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -3237,6 +3336,7 @@ export async function contractAPI(
         id: string,
         hederaId: string
     }) => {
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -3265,7 +3365,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -3291,7 +3391,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -3301,6 +3401,7 @@ export async function contractAPI(
         id: string,
         hederaId: string
     }) => {
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -3329,7 +3430,7 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner.creator);
+            const root = await users.getUserById(owner.creator, userId);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
@@ -3355,7 +3456,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -3365,6 +3466,7 @@ export async function contractAPI(
         pageIndex?: any,
         pageSize?: any
     }) => {
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -3389,7 +3491,7 @@ export async function contractAPI(
             }
 
             const users = new Users();
-            const user = await users.getUserById(owner.creator);
+            const user = await users.getUserById(owner.creator, userId);
 
             const filters: any = {
                 owner: owner.owner,
@@ -3404,7 +3506,7 @@ export async function contractAPI(
                 await dataBaseServer.findAndCount(VcDocument, filters, otherOptions)
             );
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });
@@ -3413,6 +3515,7 @@ export async function contractAPI(
         owner: IOwner,
         contractTopicId: string
     }) => {
+        const userId = msg?.owner?.id;
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -3427,13 +3530,13 @@ export async function contractAPI(
             const messages = await new Workers().addNonRetryableTask({
                 type: WorkerTaskType.ANALYTICS_GET_RETIRE_DOCUMENTS,
                 data: {
-                    payload: { options: { topicId: contractTopicId } }
+                    payload: { options: { topicId: contractTopicId }, userId }
                 }
             }, 2);
 
             return new MessageResponse([messages, messages.length]);
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
             return new MessageError(error);
         }
     });

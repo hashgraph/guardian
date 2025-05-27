@@ -207,6 +207,23 @@ export class TagMessage extends Message {
         return result;
     }
 
+    public static fromJson(json: any): TagMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
+        const result = Message._fromJson(new TagMessage(json.action), json);
+        result.uuid = json.uuid;
+        result.name = json.name;
+        result.description = json.description;
+        result.owner = json.owner;
+        result.target = json.target;
+        result.operation = json.operation;
+        result.entity = json.entity;
+        result.date = json.date;
+        return result;
+    }
+
     /**
      * Get User DID
      */

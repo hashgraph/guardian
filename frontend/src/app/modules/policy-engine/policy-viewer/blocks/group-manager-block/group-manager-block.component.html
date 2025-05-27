@@ -1,4 +1,4 @@
-<div class="content" [hidden]="!isActive">
+<div class="content" [hidden]="!isActive" [attr.readonly-block]="readonly">
     <div *ngIf="!selected">
         <div *ngIf="groups" class="table-container">
             <p-table [value]="groups" class="table">

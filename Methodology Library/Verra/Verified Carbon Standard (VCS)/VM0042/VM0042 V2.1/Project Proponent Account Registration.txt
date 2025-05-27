@@ -1,0 +1,24 @@
+var _pp = {
+  "G6": "Yes",
+  "G8": "GreenEarth Carbon Solutions Inc.",
+  "G9": "1425 Redwood Trail",
+  "G10": "Suite 305, Forestview Business Center",
+  "G11": "United States",
+  "G12": "California",
+  "G13": "95667",
+  "G14": "+1 (530) 555-3289",
+  "G15": "+1 (530) 555-3290",
+  "G16": "info@greenearthcarbon.com",
+  "G17": "https://www.greenearthcarbon.com",
+  "G19": "Senior Carbon Projects Manager",
+  "G20": "Alexandra Mitchell",
+  "G21": "1425 Redwood Trail",
+  "G22": "Suite 305, Forestview Business Center",
+  "G23": "Placerville",
+  "G24": "United States",
+  "G25": "California",
+  "G26": "95667",
+  "G27": "+1 (530) 555-3292",
+  "G28": "amitchell@greenearthcarbon.com"
+}
+Object.values(__request).forEach(r=>r.preset(_pp));

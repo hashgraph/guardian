@@ -88,3 +88,8 @@
     width: 146px;
     height: 36px !important;
 }
+
+*[readonly-block="true"] {
+    pointer-events: none !important;
+    filter: grayscale(1);
+}

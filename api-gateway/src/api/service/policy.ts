@@ -1,7 +1,7 @@
 import { Auth, AuthUser } from '#auth';
 import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache } from '#helpers';
-import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyTestDTO, PolicyValidationDTO, RunningDetailsDTO, ServiceUnavailableErrorDTO, TaskDTO } from '#middlewares';
+import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyTestDTO, PolicyValidationDTO, PolicyVersionDTO, RunningDetailsDTO, ServiceUnavailableErrorDTO, TaskDTO } from '#middlewares';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyHelper, TaskAction, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
@@ -53,6 +53,13 @@ export class PolicyApi {
         required: false,
         example: 20
     })
+    @ApiQuery({
+        name: 'type',
+        type: String,
+        description: 'Policy type',
+        required: false,
+        example: 'local'
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -69,7 +76,8 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
-        @Query('pageSize') pageSize?: number
+        @Query('pageSize') pageSize?: number,
+        @Query('type') type?: string
     ): Promise<any> {
         if (!user.did && user.role !== UserRole.AUDITOR) {
             return res.header('X-Total-Count', 0).send([]);
@@ -78,14 +86,15 @@ export class PolicyApi {
             const options: any = {
                 filters: {},
                 pageIndex,
-                pageSize
+                pageSize,
+                type
             };
             const engineService = new PolicyEngine();
             const owner = new EntityOwner(user);
             const { policies, count } = await engineService.getPolicies(options, owner);
             return res.header('X-Total-Count', count).send(policies);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -120,6 +129,13 @@ export class PolicyApi {
         required: false,
         example: 20
     })
+    @ApiQuery({
+        name: 'type',
+        type: String,
+        description: 'Policy type',
+        required: false,
+        example: 'local'
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -137,7 +153,8 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
-        @Query('pageSize') pageSize?: number
+        @Query('pageSize') pageSize?: number,
+        @Query('type') type?: string
     ): Promise<any> {
         if (!user.did && user.role !== UserRole.AUDITOR) {
             return res.header('X-Total-Count', 0).send([]);
@@ -146,6 +163,7 @@ export class PolicyApi {
             const options: any = {
                 fields: Object.values(POLICY_REQUIRED_PROPS),
                 filters: {},
+                type,
                 pageIndex,
                 pageSize
             };
@@ -154,7 +172,7 @@ export class PolicyApi {
             const { policies, count } = await engineService.getPoliciesV2(options, owner);
             return res.header('X-Total-Count', count).send(policies);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -199,7 +217,7 @@ export class PolicyApi {
 
             return await getOldResult(user);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -250,7 +268,7 @@ export class PolicyApi {
         try {
             return await engineService.migrateData(new EntityOwner(user), body as any);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -290,7 +308,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             await engineService.migrateDataAsync(new EntityOwner(user), body as any, task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
         return task;
@@ -333,7 +351,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             await engineService.createPolicyAsync(body, new EntityOwner(user), task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
 
@@ -388,7 +406,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             await engineService.clonePolicyAsync(policyId, body, new EntityOwner(user), task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
 
@@ -438,7 +456,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             await engineService.deletePolicyAsync(policyId, new EntityOwner(user), task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
 
@@ -493,7 +511,7 @@ export class PolicyApi {
                 userDid: user.did,
             }, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -561,7 +579,7 @@ export class PolicyApi {
 
             return await engineService.savePolicy(model, new EntityOwner(user), policyId);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -588,6 +606,10 @@ export class PolicyApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiBody({
+        description: 'Options.',
+        type: PolicyVersionDTO,
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PoliciesValidationDTO
@@ -601,7 +623,7 @@ export class PolicyApi {
     async publishPolicy(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: PolicyDTO,
+        @Body() body: PolicyVersionDTO,
         @Req() req
     ): Promise<PoliciesValidationDTO> {
         try {
@@ -614,7 +636,7 @@ export class PolicyApi {
 
             return result;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -638,8 +660,8 @@ export class PolicyApi {
         example: Examples.DB_ID
     })
     @ApiBody({
-        description: 'Policy configuration.',
-        type: PolicyDTO,
+        description: 'Options.',
+        type: PolicyVersionDTO,
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -654,7 +676,7 @@ export class PolicyApi {
     async publishPolicyAsync(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: PolicyDTO,
+        @Body() body: PolicyVersionDTO,
         @Req() req
     ): Promise<TaskDTO> {
         const taskManager = new TaskManager();
@@ -663,7 +685,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             await engineService.publishPolicyAsync(body, new EntityOwner(user), policyId, task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message || error });
         });
 
@@ -717,7 +739,7 @@ export class PolicyApi {
 
             return result;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -777,7 +799,7 @@ export class PolicyApi {
 
             return await getOldResult(user);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -825,7 +847,7 @@ export class PolicyApi {
 
             return await getOldResult(user);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -869,7 +891,7 @@ export class PolicyApi {
 
             return await engineService.validatePolicy(body, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -919,7 +941,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getNavigation(user, policyId);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -965,7 +987,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getGroups(user, policyId);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1055,7 +1077,7 @@ export class PolicyApi {
             );
             return res.header('X-Total-Count', count).send(documents);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1450,7 +1472,7 @@ export class PolicyApi {
             res.header('Content-Type', 'application/policy-data');
             return res.send(downloadResult);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1498,7 +1520,7 @@ export class PolicyApi {
 
             return await engineService.uploadPolicyData(new EntityOwner(user), body);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1551,7 +1573,7 @@ export class PolicyApi {
             res.header('Content-Type', 'application/virtual-keys');
             return res.send(downloadResult);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1604,7 +1626,7 @@ export class PolicyApi {
 
             return await engineService.uploadVirtualKeys(new EntityOwner(user), body, policyId);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1651,7 +1673,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getTagBlockMap(policyId, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1704,7 +1726,7 @@ export class PolicyApi {
 
             return await engineService.selectGroup(user, policyId, body?.uuid);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1751,7 +1773,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getPolicyBlocks(user, policyId);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1808,7 +1830,7 @@ export class PolicyApi {
             return await engineService.getBlockData(user, policyId, uuid, query);
         } catch (error) {
             error.code = HttpStatus.UNPROCESSABLE_ENTITY;
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1874,7 +1896,7 @@ export class PolicyApi {
             return await engineService.setBlockData(user, policyId, uuid, body);
         } catch (error) {
             error.code = HttpStatus.UNPROCESSABLE_ENTITY;
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1940,7 +1962,7 @@ export class PolicyApi {
             return await engineService.setBlockDataByTag(user, policyId, tagName, body);
         } catch (error) {
             error.code = HttpStatus.UNPROCESSABLE_ENTITY;
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -1992,7 +2014,7 @@ export class PolicyApi {
             return await engineService.getBlockByTagName(user, policyId, tagName);
         } catch (error) {
             error.code = HttpStatus.UNPROCESSABLE_ENTITY;
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2048,7 +2070,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getBlockDataByTag(user, policyId, tagName, query);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2100,7 +2122,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getBlockParents(user, policyId, uuid);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2128,12 +2150,14 @@ export class PolicyApi {
     @ApiExtraModels(InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.LONG_TTL })
     @HttpCode(HttpStatus.OK)
-    async getBlockAbout() {
+    async getBlockAbout(
+        @AuthUser() user: IAuthUser,
+    ) {
         try {
             const engineService = new PolicyEngine();
-            return await engineService.blockAbout();
+            return await engineService.blockAbout(user);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2187,7 +2211,7 @@ export class PolicyApi {
             res.header('Content-type', 'application/zip');
             return res.send(policyFile);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2228,7 +2252,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.exportMessage(policyId, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2278,7 +2302,7 @@ export class PolicyApi {
             res.header('Content-type', 'application/zip');
             return res.send(policyFile);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2348,7 +2372,7 @@ export class PolicyApi {
             );
             return await getOldResult(user);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2417,7 +2441,7 @@ export class PolicyApi {
                 );
             },
             async (error) => {
-                await this.logger.error(error, ['API_GATEWAY']);
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
                 taskManager.addError(task.taskId, {
                     code: 500,
                     message: 'Unknown error: ' + error.message,
@@ -2465,7 +2489,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.importMessagePreview(messageId, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2509,7 +2533,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             await engineService.importMessagePreviewAsync(messageId, new EntityOwner(user), task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
         return task;
@@ -2573,7 +2597,7 @@ export class PolicyApi {
 
             return await getOldResult(user);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2656,7 +2680,7 @@ export class PolicyApi {
             );
             return await getOldResult(user)
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2713,7 +2737,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             await engineService.importFileAsync(file, new EntityOwner(user), task, versionOfTopicId, null, demo);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
         return task;
@@ -2801,7 +2825,7 @@ export class PolicyApi {
                 );
             },
             async (error) => {
-                await this.logger.error(error, ['API_GATEWAY']);
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
                 taskManager.addError(task.taskId, {
                     code: 500,
                     message: 'Unknown error: ' + error.message,
@@ -2849,7 +2873,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.importFilePreview(file, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2906,7 +2930,7 @@ export class PolicyApi {
 
             return await engineService.importXlsx(file, new EntityOwner(user), policyId);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -2959,7 +2983,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             await engineService.importXlsxAsync(file, new EntityOwner(user), policyId, task);
         }, async (error) => {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
 
@@ -3009,7 +3033,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.importXlsxPreview(file, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -3051,7 +3075,7 @@ export class PolicyApi {
         try {
             return await engineService.getVirtualUsers(policyId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -3098,7 +3122,7 @@ export class PolicyApi {
         try {
             return await engineService.createVirtualUser(policyId, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -3150,7 +3174,7 @@ export class PolicyApi {
 
             return await engineService.loginVirtualUser(policyId, body.did, owner);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -3163,26 +3187,26 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-                      summary: 'Create dry-run savepoint.',
-                      description: 'Create dry-run savepoint.' + ONLY_SR
-                  })
+        summary: 'Create dry-run savepoint.',
+        description: 'Create dry-run savepoint.' + ONLY_SR
+    })
     @ApiParam({
-                  name: 'policyId',
-                  type: String,
-                  description: 'Policy Id',
-                  required: true,
-                  example: Examples.DB_ID
-              })
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
     @ApiBody({
-                 description: '.'
-             })
+        description: '.'
+    })
     @ApiOkResponse({
-                       description: '.'
-                   })
+        description: '.'
+    })
     @ApiInternalServerErrorResponse({
-                                        description: 'Internal server error.',
-                                        type: InternalServerErrorDTO
-                                    })
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async createSavepoint(
@@ -3206,7 +3230,7 @@ export class PolicyApi {
         try {
             return await engineService.createSavepoint(body, owner, policyId);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -3219,26 +3243,26 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-                      summary: 'Delete dry-run savepoint.',
-                      description: 'Delete dry-run savepoint.' + ONLY_SR
-                  })
+        summary: 'Delete dry-run savepoint.',
+        description: 'Delete dry-run savepoint.' + ONLY_SR
+    })
     @ApiParam({
-                  name: 'policyId',
-                  type: String,
-                  description: 'Policy Id',
-                  required: true,
-                  example: Examples.DB_ID
-              })
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
     @ApiBody({
-                 description: '.'
-             })
+        description: '.'
+    })
     @ApiOkResponse({
-                       description: '.'
-                   })
+        description: '.'
+    })
     @ApiInternalServerErrorResponse({
-                                        description: 'Internal server error.',
-                                        type: InternalServerErrorDTO
-                                    })
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async deleteSavepoint(
@@ -3262,7 +3286,7 @@ export class PolicyApi {
         try {
             return await engineService.deleteSavepoint(body, owner, policyId);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -3275,26 +3299,26 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-                      summary: 'Get savepoint state.',
-                      description: 'Get savepoint state.' + ONLY_SR
-                  })
+        summary: 'Get savepoint state.',
+        description: 'Get savepoint state.' + ONLY_SR
+    })
     @ApiParam({
-                  name: 'policyId',
-                  type: String,
-                  description: 'Policy Id',
-                  required: true,
-                  example: Examples.DB_ID
-              })
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
     @ApiBody({
-                 description: '.'
-             })
+        description: '.'
+    })
     @ApiOkResponse({
-                       description: '.'
-                   })
+        description: '.'
+    })
     @ApiInternalServerErrorResponse({
-                                        description: 'Internal server error.',
-                                        type: InternalServerErrorDTO
-                                    })
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getSavepointState(
@@ -3315,7 +3339,7 @@ export class PolicyApi {
         try {
             return await engineService.getSavepointState(owner, policyId);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -3328,26 +3352,26 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-                      summary: 'Restore dry-run savepoint.',
-                      description: 'Restore dry-run savepoint.' + ONLY_SR
-                  })
+        summary: 'Restore dry-run savepoint.',
+        description: 'Restore dry-run savepoint.' + ONLY_SR
+    })
     @ApiParam({
-                  name: 'policyId',
-                  type: String,
-                  description: 'Policy Id',
-                  required: true,
-                  example: Examples.DB_ID
-              })
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
     @ApiBody({
-                 description: '.'
-             })
+        description: '.'
+    })
     @ApiOkResponse({
-                       description: '.'
-                   })
+        description: '.'
+    })
     @ApiInternalServerErrorResponse({
-                                        description: 'Internal server error.',
-                                        type: InternalServerErrorDTO
-                                    })
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async restoreSavepoint(
@@ -3369,7 +3393,7 @@ export class PolicyApi {
         try {
             return await engineService.restoreSavepoint(body, owner, policyId);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -3423,7 +3447,7 @@ export class PolicyApi {
         try {
             return await engineService.restartDryRun(body, owner, policyId);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -3486,7 +3510,7 @@ export class PolicyApi {
             const [data, count] = await engineService.getVirtualDocuments(policyId, 'transactions', owner, pageIndex, pageSize)
             return res.header('X-Total-Count', count).send(data);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -3549,7 +3573,7 @@ export class PolicyApi {
             const [data, count] = await engineService.getVirtualDocuments(policyId, 'artifacts', owner, pageIndex, pageSize);
             return res.header('X-Total-Count', count).send(data);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -3612,7 +3636,7 @@ export class PolicyApi {
             const [data, count] = await engineService.getVirtualDocuments(policyId, 'ipfs', owner, pageIndex, pageSize)
             return res.header('X-Total-Count', count).send(data);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -3659,7 +3683,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getMultiPolicy(new EntityOwner(user), policyId);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -3712,7 +3736,7 @@ export class PolicyApi {
 
             return await engineService.setMultiPolicy(new EntityOwner(user), policyId, body);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -3784,7 +3808,7 @@ export class PolicyApi {
             }
             return uploadedTests;
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -3830,7 +3854,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getPolicyTest(policyId, testId, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -3876,7 +3900,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.startPolicyTest(policyId, testId, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -3922,7 +3946,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.stopPolicyTest(policyId, testId, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -3968,7 +3992,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.deletePolicyTest(policyId, testId, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -4014,7 +4038,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getTestDetails(policyId, testId, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -4047,7 +4071,7 @@ export class PolicyApi {
             const projectService = new ProjectService();
             return await projectService.getPolicyCategories();
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, null);
         }
     }
 
@@ -4089,7 +4113,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return engineService.getPoliciesByCategoriesAndText(body.categoryIds, body.text);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, null);
         }
     }
 

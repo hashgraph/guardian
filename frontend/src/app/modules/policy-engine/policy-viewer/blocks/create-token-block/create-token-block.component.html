@@ -1,4 +1,4 @@
-<div class="content-page" [hidden]="!isExist">
+<div class="content-page" [hidden]="!isExist" [attr.readonly-block]="readonly">
     <ng-container *ngIf="dataForm">
         <form [formGroup]="dataForm" (ngSubmit)="onSubmit()" class="form-page">
             <h1 *ngIf="title" class="dialog-title">{{title}}</h1>

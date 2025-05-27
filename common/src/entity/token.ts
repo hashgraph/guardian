@@ -1,13 +1,15 @@
 import { IToken, TokenType } from '@guardian/interfaces';
-import { Entity, Property, Unique } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { Entity, Property, Unique, BeforeCreate, BeforeUpdate, AfterDelete } from '@mikro-orm/core';
+import { RestoreEntity } from '../models/index.js';
+import { DataBaseHelper } from '../helpers/db-helper.js';
+import { DeleteCache } from './delete-cache.js';
 
 /**
  * Tokens collection
  */
 @Entity()
 @Unique({ properties: ['tokenId'], options: { partialFilterExpression: { tokenId: { $type: 'string' } } } })
-export class Token extends BaseEntity implements IToken {
+export class Token extends RestoreEntity implements IToken {
     /**
      * Token id
      */
@@ -115,4 +117,55 @@ export class Token extends BaseEntity implements IToken {
      */
     @Property({ nullable: true })
     wipeContractId?: string;
+
+    /**
+     * Is token view
+     */
+    @Property({ nullable: true })
+    view?: boolean;
+
+    /**
+     * Create document
+     */
+    @BeforeCreate()
+    @BeforeUpdate()
+    async createDocument() {
+        const prop: any = {};
+        prop.tokenId = this.tokenId;
+        prop.tokenName = this.tokenName;
+        prop.tokenSymbol = this.tokenSymbol;
+        prop.tokenType = this.tokenType;
+        prop.decimals = this.decimals;
+        prop.initialSupply = this.initialSupply;
+        prop.adminId = this.adminId;
+        prop.changeSupply = this.changeSupply;
+        prop.enableAdmin = this.enableAdmin;
+        prop.enableKYC = this.enableKYC;
+        prop.enableFreeze = this.enableFreeze;
+        prop.enableWipe = this.enableWipe;
+        prop.owner = this.owner;
+        prop.creator = this.creator;
+        prop.policyId = this.policyId;
+        prop.draftToken = this.draftToken;
+        prop.topicId = this.topicId;
+        prop.wipeContractId = this.wipeContractId;
+        this._updatePropHash(prop);
+        this._updateDocHash('');
+    }
+
+    /**
+     * Save delete cache
+     */
+    @AfterDelete()
+    override async deleteCache() {
+        try {
+            new DataBaseHelper(DeleteCache).insert({
+                rowId: this._id?.toString(),
+                policyId: this.policyId,
+                collection: 'Token',
+            })
+        } catch (error) {
+            console.error(error);
+        }
+    }
 }

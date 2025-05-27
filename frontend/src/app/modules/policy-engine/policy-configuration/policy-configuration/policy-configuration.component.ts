@@ -1,7 +1,7 @@
 import { CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ChangeDetectorRef, Component, HostListener, Inject, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ContractType, IContract, PolicyCategoryType, Schema, SchemaHelper, Token, UserPermissions } from '@guardian/interfaces';
+import { ContractType, IContract, PolicyAvailability, PolicyCategoryType, Schema, SchemaHelper, Token, UserPermissions } from '@guardian/interfaces';
 import * as yaml from 'js-yaml';
 import { DialogService } from 'primeng/dynamicdialog';
 import { forkJoin, Observable } from 'rxjs';
@@ -281,7 +281,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.modulesService.menuList(),
                 this.toolsService.menuList(),
                 this.policyEngineService.getPolicyCategories(),
-                this.contractService.getContracts({type: ContractType.WIPE}),
+                this.contractService.getContracts({ type: ContractType.WIPE }),
             ]).subscribe((data) => {
                 const tokens = data[0] || [];
                 const blockInformation = data[1] || {};
@@ -333,11 +333,11 @@ export class PolicyConfigurationComponent implements OnInit {
                         }
                     })
                 }
-            }, ({message}) => {
+            }, ({ message }) => {
                 this.loading = false;
                 console.error(message);
             });
-        }, ({message}) => {
+        }, ({ message }) => {
             this.loading = false;
             console.error(message);
         });
@@ -384,11 +384,11 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.moduleTemplate.setSchemas(this.schemas);
                 this.moduleTemplate.setTools(this.tools.items);
                 this.finishedLoad(this.moduleTemplate);
-            }, ({message}) => {
+            }, ({ message }) => {
                 this.loading = false;
                 console.error(message);
             });
-        }, ({message}) => {
+        }, ({ message }) => {
             this.loading = false;
             console.error(message);
         });
@@ -440,11 +440,11 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.toolTemplate.setTools(this.tools.items);
 
                 this.finishedLoad(this.toolTemplate);
-            }, ({message}) => {
+            }, ({ message }) => {
                 this.loading = false;
                 console.error(message);
             });
-        }, ({message}) => {
+        }, ({ message }) => {
             this.loading = false;
             console.error(message);
         });
@@ -525,7 +525,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     if (this.currentBlock !== currentBlock) {
                         return;
                     }
-                    const {next, nested} = result;
+                    const { next, nested } = result;
                     if (
                         next &&
                         this.currentBlock?.parent?.children &&
@@ -533,7 +533,7 @@ export class PolicyConfigurationComponent implements OnInit {
                         this.currentBlock.parent.children.indexOf(
                             this.currentBlock
                         ) + 1
-                            ]
+                        ]
                     ) {
                         this.nextBlock = {
                             icon: this.registeredService.getIcon(next),
@@ -541,7 +541,7 @@ export class PolicyConfigurationComponent implements OnInit {
                             node: {
                                 blockType: next,
                                 permissionsNumber:
-                                this.currentBlock?.permissionsNumber,
+                                    this.currentBlock?.permissionsNumber,
                             },
                             name: this.registeredService.getName(next),
                         };
@@ -558,7 +558,7 @@ export class PolicyConfigurationComponent implements OnInit {
                             node: {
                                 blockType: nested,
                                 permissionsNumber:
-                                this.currentBlock?.permissionsNumber,
+                                    this.currentBlock?.permissionsNumber,
                             },
                             name: this.registeredService.getName(nested),
                         };
@@ -845,12 +845,12 @@ export class PolicyConfigurationComponent implements OnInit {
         const style = document.createElement('style');
         style.type = 'text/css';
         style.innerHTML = `${this.theme.syntaxGroups
-                                 .map(
-                                     (item) => `.cm-${item.id} {
+            .map(
+                (item) => `.cm-${item.id} {
             color: ${item.color}
         }`
-                                 )
-                                 .join('')}`;
+            )
+            .join('')}`;
         this.currentCMStyles = style;
         document.getElementsByTagName('head')[0].appendChild(style);
     }
@@ -874,10 +874,10 @@ export class PolicyConfigurationComponent implements OnInit {
         return this.errors.length === 0;
     }
 
-    private publishPolicy(version: string) {
+    private publishPolicy(options: { policyVersion: string, policyAvailability: PolicyAvailability }) {
         this.loading = true;
-        this.policyEngineService.pushPublish(this.policyId, version).subscribe((result) => {
-            const {taskId, expectation} = result;
+        this.policyEngineService.pushPublish(this.policyId, options).subscribe((result) => {
+            const { taskId, expectation } = result;
             this.router.navigate(['task', taskId], {
                 queryParams: {
                     last: btoa(location.href)
@@ -892,7 +892,7 @@ export class PolicyConfigurationComponent implements OnInit {
     private dryRunPolicy() {
         this.loading = true;
         this.policyEngineService.dryRun(this.policyId).subscribe((data: any) => {
-            const {policies, isValid, errors} = data;
+            const { policies, isValid, errors } = data;
             if (isValid) {
                 this.clearState();
                 this.loadData();
@@ -987,8 +987,8 @@ export class PolicyConfigurationComponent implements OnInit {
                 break;
             } else {
                 conf.children.push({
-                                       blockType: child.blockType
-                                   });
+                    blockType: child.blockType
+                });
             }
         }
         return [result, childConfig];
@@ -1007,7 +1007,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.themes = this.themeService.getThemes();
             this.theme = this.themeService.getCurrent();
             this.updateCodeMirrorStyles();
-        }, ({message}) => {
+        }, ({ message }) => {
             console.error(message);
         });
     }
@@ -1392,7 +1392,7 @@ export class PolicyConfigurationComponent implements OnInit {
                         topicDescription: policy.topicDescription,
                         description: policy.description
                     }).subscribe((result) => {
-                        const {taskId, expectation} = result;
+                        const { taskId, expectation } = result;
                         this.router.navigate(['task', taskId], {
                             queryParams: {
                                 last: btoa(location.href)
@@ -1409,7 +1409,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     delete policy.version;
                     policy.previousVersion = json.version;
                     this.policyEngineService.pushCreate(policy).subscribe((result) => {
-                        const {taskId, expectation} = result;
+                        const { taskId, expectation } = result;
                         this.router.navigate(['task', taskId], {
                             queryParams: {
                                 last: btoa(location.href)
@@ -1436,7 +1436,7 @@ export class PolicyConfigurationComponent implements OnInit {
             config: json?.config
         }
         this.policyEngineService.validate(object).subscribe((data: any) => {
-            const {policy, results} = data;
+            const { policy, results } = data;
             const config = policy.config;
             this.policyTemplate.rebuild(config);
             this.setErrors(results, 'policy');
@@ -1457,9 +1457,9 @@ export class PolicyConfigurationComponent implements OnInit {
                 policy: this.policyTemplate
             }
         });
-        dialogRef.onClose.subscribe(async (version) => {
-            if (version) {
-                this.publishPolicy(version);
+        dialogRef.onClose.subscribe(async (options) => {
+            if (options) {
+                this.publishPolicy(options);
             }
         });
     }
@@ -1467,7 +1467,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public draftPolicy() {
         this.loading = true;
         this.policyEngineService.draft(this.policyId).subscribe((data: any) => {
-            const {policies, isValid, errors} = data;
+            const { policies, isValid, errors } = data;
             this.clearState();
             this.loadData();
         }, (e) => {
@@ -1593,7 +1593,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.loading = true;
             this.modulesService.create(module).subscribe((result) => {
                 this.router.navigate(['/module-configuration'], {
-                    queryParams: {moduleId: result.uuid}
+                    queryParams: { moduleId: result.uuid }
                 });
             }, (e) => {
                 this.loading = false;
@@ -1670,7 +1670,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.loading = true;
         const module = this.moduleTemplate.getJSON();
         this.modulesService.validate(module).subscribe((data: any) => {
-            const {module, results} = data;
+            const { module, results } = data;
             this.moduleTemplate.rebuild(module);
             this.setErrors(results, 'module');
             this.onOpenRoot(this.moduleTemplate);
@@ -1688,7 +1688,7 @@ export class PolicyConfigurationComponent implements OnInit {
         const dialogRef = this.dialogService.open(NewModuleDialog, {
             width: '650px',
             styleClass: 'custom-dialog',
-            header: 'New Module',
+            header: 'New Tool',
             closable: true,
             data: {
                 type: 'tool'
@@ -1704,7 +1704,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.loading = true;
             this.toolsService.create(tool).subscribe((result) => {
                 this.router.navigate(['/tool-configuration'], {
-                    queryParams: {toolId: result.id}
+                    queryParams: { toolId: result.id }
                 });
             }, (e) => {
                 this.loading = false;
@@ -1728,7 +1728,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public tryPublishTool() {
         this.loading = true;
         this.toolsService.pushPublish(this.toolId).subscribe((result) => {
-            const {taskId, expectation} = result;
+            const { taskId, expectation } = result;
             this.router.navigate(['task', taskId], {
                 queryParams: {
                     last: btoa(location.href)
@@ -1744,7 +1744,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.loading = true;
         const tool = this.toolTemplate.getJSON();
         this.toolsService.validate(tool).subscribe((data: any) => {
-            const {tool, results} = data;
+            const { tool, results } = data;
             this.toolTemplate.rebuild(tool);
             this.setErrors(results, 'tool');
             this.onOpenRoot(this.toolTemplate);
@@ -1774,7 +1774,7 @@ export class PolicyConfigurationComponent implements OnInit {
         }
         this.loading = true;
         this.analyticsService.searchBlocks(option).subscribe((data: any) => {
-            this.blockSearchData = {source: block, data};
+            this.blockSearchData = { source: block, data };
             this.loading = false;
         }, (e) => {
             this.blockSearchData = null;

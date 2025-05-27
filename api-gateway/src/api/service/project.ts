@@ -53,7 +53,7 @@ export class ProjectsAPI {
             const projectService = new ProjectService();
             return await projectService.search(categoryIds, policyIds);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, null);
         }
     }
 
@@ -117,7 +117,7 @@ export class ProjectsAPI {
         const user = null;
 
         let samePolicy: boolean = true;
-        const _data = await guardians.getVcDocuments({ id: ids });
+        const _data = await guardians.getVcDocuments(null, { id: ids });
         for (let index = 1; index < _data.length; index++) {
             if (_data[index - 1].policyId !== _data[index].policyId) {
                 samePolicy = false;
@@ -140,7 +140,7 @@ export class ProjectsAPI {
                 refLvl
             );
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, null);
         }
     }
 
@@ -198,7 +198,7 @@ export class ProjectsAPI {
             throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
-        const rowDocuments = await guardians.getVcDocuments({ id: ids });
+        const rowDocuments = await guardians.getVcDocuments(null, { id: ids });
         let samePolicy: boolean = true;
         const policyIds: string[] = [];
         for (const id of ids) {
@@ -249,7 +249,7 @@ export class ProjectsAPI {
                 presentations: comparationVpArray
             }
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, null);
         }
     }
 
@@ -277,7 +277,7 @@ export class ProjectsAPI {
             const projectService = new ProjectService();
             return await projectService.getPolicyProperties();
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, null);
         }
     }
 }

@@ -28,6 +28,7 @@ export class TagsManagerBlockComponent implements OnInit {
     public target: any;
     public entity: any;
     public owner: any;
+    public readonly: boolean = false;
 
     public tagsService: any;
     public tagSchemas: any[] = [];
@@ -108,6 +109,7 @@ export class TagsManagerBlockComponent implements OnInit {
 
     private setData(data: any) {
         if (data) {
+            this.readonly = !!data.readonly;
             this.data = data.data;
             this.tags = data.tags;
             if (this.tags) {

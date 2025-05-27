@@ -2,7 +2,7 @@ import JSZip from 'jszip';
 import { Artifact, Formula, Policy, PolicyCategory, PolicyTool, Schema, Tag, Token } from '../entity/index.js';
 import { DatabaseServer } from '../database-modules/index.js';
 import { ImportExportUtils } from './utils.js';
-import { PolicyCategoryExport } from '@guardian/interfaces';
+import { PolicyCategoryExport, SchemaCategory } from '@guardian/interfaces';
 
 interface IArtifact {
     name: string;
@@ -18,6 +18,7 @@ export interface IPolicyComponents {
     policy: Policy;
     tokens: Token[];
     schemas: Schema[];
+    systemSchemas: Schema[];
     formulas: Formula[];
     artifacts: IArtifact[];
     tags: Tag[];
@@ -39,7 +40,11 @@ export class PolicyImportExport {
         schemasIds: string[]
     ): Promise<Schema[]> {
         const result = new Map<string, Schema>();
-        const schemas = await new DatabaseServer().find(Schema, { iri: { $in: schemasIds }, topicId, readonly: false });
+        const schemas = await new DatabaseServer().find(Schema, {
+            iri: { $in: schemasIds },
+            topicId,
+            readonly: false
+        });
         for (const schema of schemas) {
             result.set(schema.iri, schema);
         }
@@ -53,10 +58,26 @@ export class PolicyImportExport {
                     }
                 }
             }
-
         }
-        const defSchemas = await new DatabaseServer().find(Schema, { iri: { $in: Array.from(defIds) }, topicId, readonly: false });
+        const defSchemas = await new DatabaseServer().find(Schema, {
+            iri: { $in: Array.from(defIds) },
+            topicId,
+            readonly: false
+        });
         for (const schema of defSchemas) {
+            result.set(schema.iri, schema);
+        }
+        return Array.from(result.values());
+    }
+
+    private static async loadSystemSchemas(topicId: string): Promise<Schema[]> {
+        const result = new Map<string, Schema>();
+        const schemas = await new DatabaseServer().find(Schema, {
+            topicId,
+            readonly: true,
+            category: SchemaCategory.SYSTEM
+        });
+        for (const schema of schemas) {
             result.set(schema.iri, schema);
         }
         return Array.from(result.values());
@@ -79,6 +100,7 @@ export class PolicyImportExport {
 
         const tokens = await dataBaseServer.find(Token, { tokenId: { $in: tokenIds } });
         const schemas = await PolicyImportExport.loadSchemas(topicId, schemasIds);
+        const systemSchemas = await PolicyImportExport.loadSystemSchemas(topicId);
         const tools = await dataBaseServer.find(PolicyTool, { messageId: { $in: toolIds } });
         const artifacts: IArtifact[] = [];
         const artifactRows = await dataBaseServer.find(Artifact, { policyId: policy.id });
@@ -119,7 +141,17 @@ export class PolicyImportExport {
 
         const formulas = await dataBaseServer.find(Formula, { policyId: policy.id });
 
-        return { policy, tokens, schemas, tools, artifacts, tags, tests, formulas };
+        return {
+            policy,
+            tokens,
+            schemas,
+            systemSchemas,
+            tools,
+            artifacts,
+            tags,
+            tests,
+            formulas
+        };
     }
 
     /**
@@ -166,11 +198,10 @@ export class PolicyImportExport {
      */
     public static async generateZipFile(components: IPolicyComponents): Promise<JSZip> {
         const policyObject = { ...components.policy };
+        policyObject.id = (components.policy.id || components.policy._id)?.toString();
         delete policyObject._id;
-        delete policyObject.id;
         delete policyObject.messageId;
         delete policyObject.status;
-        delete policyObject.topicId;
         delete policyObject.createDate;
 
         const zip = new JSZip();
@@ -191,29 +222,38 @@ export class PolicyImportExport {
         zip.folder('tokens');
         for (const token of components.tokens) {
             const item = { ...token };
+            item.id = (item.id || item._id)?.toString();
             delete item._id;
-            delete item.id;
             delete item.adminId;
             delete item.owner;
             delete item.wipeContractId;
-            item.id = token.id.toString();
             zip.file(`tokens/${item.tokenName}.json`, JSON.stringify(item));
         }
 
         zip.folder('schemas');
         for (const schema of components.schemas) {
             const item = { ...schema };
+            item.id = (item.id || item._id)?.toString();
             delete item._id;
-            delete item.id;
             delete item.status;
             delete item.readonly;
-            item.id = schema.id.toString();
             zip.file(`schemas/${item.iri}.json`, JSON.stringify(item));
+        }
+
+        zip.folder('systemSchemas');
+        for (const schema of components.systemSchemas) {
+            const item = { ...schema };
+            item.id = (item.id || item._id)?.toString();
+            delete item._id;
+            delete item.status;
+            delete item.readonly;
+            zip.file(`systemSchemas/${item.iri}.json`, JSON.stringify(item));
         }
 
         zip.folder('tools');
         for (const tool of components.tools) {
             const item = {
+                id: (tool.id || tool._id)?.toString(),
                 name: tool.name,
                 description: tool.description,
                 messageId: tool.messageId,
@@ -226,7 +266,7 @@ export class PolicyImportExport {
         zip.folder('tags');
         for (let index = 0; index < components.tags.length; index++) {
             const tag = { ...components.tags[index] };
-            delete tag.id;
+            tag.id = (tag.id || tag._id)?.toString();
             delete tag._id;
             tag.status = 'History';
             zip.file(`tags/${index}.json`, JSON.stringify(tag));
@@ -240,10 +280,9 @@ export class PolicyImportExport {
         zip.folder('formulas');
         for (const formula of components.formulas) {
             const item = { ...formula };
+            item.id = (item.id || item._id)?.toString();
             delete item._id;
-            delete item.id;
             delete item.status;
-            item.id = formula.id.toString();
             zip.file(`formulas/${item.uuid}.json`, JSON.stringify(item));
         }
 
@@ -266,12 +305,20 @@ export class PolicyImportExport {
         const policy = JSON.parse(policyString);
 
         const fileEntries = Object.entries(content.files).filter(file => !file[1].dir);
-        const [tokensStringArray, schemasStringArray, toolsStringArray, tagsStringArray, formulasStringArray] = await Promise.all([
+        const [
+            tokensStringArray,
+            schemasStringArray,
+            toolsStringArray,
+            tagsStringArray,
+            formulasStringArray,
+            systemSchemasStringArray,
+        ] = await Promise.all([
             Promise.all(fileEntries.filter(file => /^tokens\/.+/.test(file[0])).map(file => file[1].async('string'))),
             Promise.all(fileEntries.filter(file => /^schem[a,e]s\/.+/.test(file[0])).map(file => file[1].async('string'))),
             Promise.all(fileEntries.filter(file => /^tools\/.+/.test(file[0])).map(file => file[1].async('string'))),
             Promise.all(fileEntries.filter(file => /^tags\/.+/.test(file[0])).map(file => file[1].async('string'))),
-            Promise.all(fileEntries.filter(file => /^formulas\/.+/.test(file[0])).map(file => file[1].async('string')))
+            Promise.all(fileEntries.filter(file => /^formulas\/.+/.test(file[0])).map(file => file[1].async('string'))),
+            Promise.all(fileEntries.filter(file => /^systemSchem[a,e]s\/.+/.test(file[0])).map(file => file[1].async('string'))),
         ]);
 
         const tokens = tokensStringArray.map(item => JSON.parse(item));
@@ -279,6 +326,7 @@ export class PolicyImportExport {
         const tools = toolsStringArray.map(item => JSON.parse(item));
         const tags = tagsStringArray.map(item => JSON.parse(item));
         const formulas = formulasStringArray.map(item => JSON.parse(item));
+        const systemSchemas = systemSchemasStringArray.map(item => JSON.parse(item));
 
         const metaDataFile = (Object.entries(content.files).find(file => file[0] === 'artifacts/metadata.json'));
         const metaDataString = metaDataFile && await metaDataFile[1].async('string') || '[]';
@@ -324,7 +372,17 @@ export class PolicyImportExport {
             policy.categoriesExport = [];
         }
 
-        return { policy, tokens, schemas, artifacts, tags, tools, tests, formulas };
+        return {
+            policy,
+            tokens,
+            schemas,
+            systemSchemas,
+            artifacts,
+            tags,
+            tools,
+            tests,
+            formulas
+        };
     }
     
     /**

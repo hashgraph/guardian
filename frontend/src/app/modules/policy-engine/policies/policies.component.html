@@ -10,100 +10,160 @@
         </div>
     </ng-container>
 
-    <ng-container *ngIf="isConfirmed && policies">
-        <div class="actions-container" *ngIf="user.POLICIES_POLICY_READ">
-            <form *ngIf="hasPolicies" [formGroup]="filtersForm" class="policy-filters">
-                <span class="p-input-icon-right">
-                    <input
-                        class="search-policy-input"
-                        formControlName="policyName"
-                        pInputText
-                        placeholder="Search by Policy name"
-                        type="text"/>
-                    <i class="pi pi-search search-icon"></i>
-                </span>
-                <p-dropdown
-                    [options]="tagOptions"
-                    appendTo="body"
-                    class="tags-dropdown"
-                    formControlName="tag"
-                    placeholder="Tags"
-                    [appendTo]="'body'"
-                ></p-dropdown>
-                <button (click)="applyFilters()"
-                        class="button ml-8"
-                        label="Apply Filters"
-                        pButton></button>
-                <button (click)="clearFilters()"
-                        [disabled]="!filtersForm.dirty"
-                        class="button secondary ml-8"
-                        label="Clear filters"
-                        pButton></button>
-            </form>
-
-            <div class="actions-container-btns">
-                <p-button
-                    *ngIf="user.POLICIES_POLICY_CREATE"
-                    (click)="openPolicyWizardDialog()"
-                    class="toolbar-btn-primary"
-                    [pTooltip]="'Policy Wizard'"
-                    tooltipPosition="bottom">
-                    <svg-icon src="/assets/images/icons/wizard.svg" svgClass="color-white"></svg-icon>
-                </p-button>
-                <p-button
-                    *ngIf="user.POLICIES_POLICY_CREATE"
-                    (click)="createNewPolicy()"
-                    class="toolbar-btn-primary"
-                    [pTooltip]="'Create a Policy'"
-                    tooltipPosition="bottom">
-                    <svg-icon src="/assets/images/icons/add.svg" svgClass="color-white"></svg-icon>
-                </p-button>
-                <p-button
-                    *ngIf="user.POLICIES_POLICY_CREATE"
-                    (click)="importPolicy()"
-                    class="toolbar-btn-primary"
-                    [pTooltip]="'Import'"
-                    tooltipPosition="bottom">
-                    <svg-icon src="/assets/images/icons/import-cloud-2.svg" svgClass="color-white"></svg-icon>
-                </p-button>
-                <p-button
-                    *ngIf="user.ANALYTIC_POLICY_READ"
-                    (click)="searchPolicy()"
-                    [pTooltip]="'Search policies'"
-                    class="toolbar-btn-secondary"
-                    [outlined]=true
-                    tooltipPosition="bottom">
-                    <svg-icon src="/assets/images/icons/search.svg" svgClass="primary-color"></svg-icon>
-                </p-button>
-                <p-button
-                    *ngIf="user.ANALYTIC_POLICY_READ"
-                    (click)="comparePolicy()"
-                    [pTooltip]="'Compare'"
-                    class="toolbar-btn-secondary"
-                    [outlined]=true
-                    tooltipPosition="bottom">
-                    <svg-icon src="/assets/images/icons/compare.svg" svgClass="primary-color"></svg-icon>
-                </p-button>
-                <p-button
-                    *ngIf="user.POLICIES_MIGRATION_CREATE"
-                    (click)="migrateData()"
-                    [pTooltip]="'Migrate data'"
-                    class="toolbar-btn-secondary"
-                    [outlined]=true
-                    tooltipPosition="bottom">
-                    <svg-icon src="/assets/images/icons/move-down.svg" svgClass="primary-color"></svg-icon>
-                </p-button>
-                <p-button
-                    *ngIf="user.SUGGESTIONS_SUGGESTIONS_READ"
-                    (click)="openSuggestionsDialog()"
-                    [pTooltip]="'Suggestions'"
-                    class="toolbar-btn-secondary"
-                    styleClass="p-button-text"
-                    tooltipPosition="bottom">
-                    <svg-icon src="/assets/images/icons/number-list.svg" svgClass="primary-color"></svg-icon>
-                </p-button>
-            </div>
+    <ng-container *ngIf="isConfirmed">
+        <div class="tabs-nav">
+            <p-tabView (onChange)="onChangeTab($event)" class="guardian-header-tabs">
+                <p-tabPanel [selected]="tab === 'local'">
+                    <ng-template pTemplate="header">
+                        <div class="tabview-label">Local Policies</div>
+                    </ng-template>
+                </p-tabPanel>
+                <p-tabPanel [selected]="tab === 'remote'">
+                    <ng-template pTemplate="header">
+                        <div class="tabview-label">Remote Policies</div>
+                    </ng-template>
+                </p-tabPanel>
+            </p-tabView>
         </div>
+    </ng-container>
+
+    <ng-container *ngIf="isConfirmed && policies">
+
+        <ng-container *ngIf="tab === 'local'">
+            <div class="actions-container" *ngIf="user.POLICIES_POLICY_READ">
+                <form *ngIf="hasPolicies" [formGroup]="filtersForm" class="policy-filters">
+                    <span class="p-input-icon-right">
+                        <input
+                            class="search-policy-input"
+                            formControlName="policyName"
+                            pInputText
+                            placeholder="Search by Policy name"
+                            type="text"/>
+                        <i class="pi pi-search search-icon"></i>
+                    </span>
+                    <p-dropdown
+                        [options]="tagOptions"
+                        appendTo="body"
+                        class="tags-dropdown"
+                        formControlName="tag"
+                        placeholder="Tags"
+                        [appendTo]="'body'"
+                    ></p-dropdown>
+                    <button (click)="applyFilters()"
+                            class="button ml-8"
+                            label="Apply Filters"
+                            pButton></button>
+                    <button (click)="clearFilters()"
+                            [disabled]="!filtersForm.dirty"
+                            class="button secondary ml-8"
+                            label="Clear filters"
+                            pButton></button>
+                </form>
+    
+                <div class="actions-container-btns">
+                    <p-button
+                        *ngIf="user.POLICIES_POLICY_CREATE"
+                        (click)="openPolicyWizardDialog()"
+                        class="toolbar-btn-primary"
+                        [pTooltip]="'Policy Wizard'"
+                        tooltipPosition="bottom">
+                        <svg-icon src="/assets/images/icons/wizard.svg" svgClass="color-white"></svg-icon>
+                    </p-button>
+                    <p-button
+                        *ngIf="user.POLICIES_POLICY_CREATE"
+                        (click)="createNewPolicy()"
+                        class="toolbar-btn-primary"
+                        [pTooltip]="'Create a Policy'"
+                        tooltipPosition="bottom">
+                        <svg-icon src="/assets/images/icons/add.svg" svgClass="color-white"></svg-icon>
+                    </p-button>
+                    <p-button
+                        *ngIf="user.POLICIES_POLICY_CREATE"
+                        (click)="importPolicy()"
+                        class="toolbar-btn-primary"
+                        [pTooltip]="'Import'"
+                        tooltipPosition="bottom">
+                        <svg-icon src="/assets/images/icons/import-cloud-2.svg" svgClass="color-white"></svg-icon>
+                    </p-button>
+                    <p-button
+                        *ngIf="user.ANALYTIC_POLICY_READ"
+                        (click)="searchPolicy()"
+                        [pTooltip]="'Search policies'"
+                        class="toolbar-btn-secondary"
+                        [outlined]=true
+                        tooltipPosition="bottom">
+                        <svg-icon src="/assets/images/icons/search.svg" svgClass="primary-color"></svg-icon>
+                    </p-button>
+                    <p-button
+                        *ngIf="user.ANALYTIC_POLICY_READ"
+                        (click)="comparePolicy()"
+                        [pTooltip]="'Compare'"
+                        class="toolbar-btn-secondary"
+                        [outlined]=true
+                        tooltipPosition="bottom">
+                        <svg-icon src="/assets/images/icons/compare.svg" svgClass="primary-color"></svg-icon>
+                    </p-button>
+                    <p-button
+                        *ngIf="user.POLICIES_MIGRATION_CREATE"
+                        (click)="migrateData()"
+                        [pTooltip]="'Migrate data'"
+                        class="toolbar-btn-secondary"
+                        [outlined]=true
+                        tooltipPosition="bottom">
+                        <svg-icon src="/assets/images/icons/move-down.svg" svgClass="primary-color"></svg-icon>
+                    </p-button>
+                    <p-button
+                        *ngIf="user.SUGGESTIONS_SUGGESTIONS_READ"
+                        (click)="openSuggestionsDialog()"
+                        [pTooltip]="'Suggestions'"
+                        class="toolbar-btn-secondary"
+                        styleClass="p-button-text"
+                        tooltipPosition="bottom">
+                        <svg-icon src="/assets/images/icons/number-list.svg" svgClass="primary-color"></svg-icon>
+                    </p-button>
+                </div>
+            </div>
+        </ng-container>
+
+        <ng-container *ngIf="tab === 'remote'"> 
+            <div class="actions-container" *ngIf="user.POLICIES_EXTERNAL_POLICY_CREATE">
+                <form *ngIf="hasPolicies" [formGroup]="filtersForm" class="policy-filters">
+                    <span class="p-input-icon-right">
+                        <input
+                            class="search-policy-input"
+                            formControlName="policyName"
+                            pInputText
+                            placeholder="Search by Policy name"
+                            type="text"/>
+                        <i class="pi pi-search search-icon"></i>
+                    </span>
+                    <button (click)="applyFilters()"
+                            class="button ml-8"
+                            label="Apply Filters"
+                            pButton></button>
+                    <button (click)="clearFilters()"
+                            [disabled]="!filtersForm.dirty"
+                            class="button secondary ml-8"
+                            label="Clear filters"
+                            pButton></button>
+                </form>
+                <div class="actions-container-btns">
+                    <button
+                        *ngIf="user.POLICIES_EXTERNAL_POLICY_CREATE"
+                        (click)="importExternalPolicy()"
+                        class="guardian-button guardian-button-primary">
+                        <div class="guardian-button-icon">
+                            <svg-icon
+                                class="icon-btn"
+                                src="/assets/images/icons/add.svg"
+                                svgClass="icon-color-secondary">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-button-label">Request Access</div>
+                    </button>
+                </div>
+            </div>
+        </ng-container>
 
         <p *ngIf="noFilterResults" class="no-results-found">
             No results found.
@@ -151,6 +211,10 @@
                                 <th
                                     *ngIf="canDisplayColumn('topic')"
                                     class="header-cell-text cell-140">Topic
+                                </th>
+                                <th
+                                    *ngIf="canDisplayColumn('publicLink')"
+                                    class="header-cell-text cell-210">Public Link
                                 </th>
                                 <th
                                     *ngIf="canDisplayColumn('version')"
@@ -320,10 +384,26 @@
                                     class="cell-140 text-truncate"
                                 >
                                     <span class="text-truncate">
-                                        <hedera-explorer [params]="policy.topicId"
-                                                         type="topics">{{ policy.topicId }}</hedera-explorer>
+                                        <hedera-explorer 
+                                            [params]="policy.topicId"
+                                            type="topics">{{ policy.topicId }}</hedera-explorer>
                                     </span>
                                 </td>
+                                <td
+                                    *ngIf="canDisplayColumn('publicLink')"
+                                    class="cell-225 text-truncate"
+                                >
+                                    <span *ngIf="policy.availability === 'public'" class="text-truncate">
+                                        {{ policy.messageId }}
+                                        <div class="btn-icon-small" (click)="onCopyMessage(policy)">
+                                            <i class="pi pi-copy"></i>
+                                        </div>
+                                    </span>
+                                    <span *ngIf="policy.availability !== 'public'" class="text-truncate">
+                                        Private
+                                    </span>
+                                </td>
+
                                 <td
                                     *ngIf="canDisplayColumn('version')"
                                     class="cell-140"
@@ -351,7 +431,8 @@
                                         [owner]="owner"
                                         [schemas]="tagSchemas"
                                         [service]="tagsService"
-                                        [target]="policy.id"></tags-explorer>
+                                        [target]="policy.id"
+                                        [location]="policy.locationType"></tags-explorer>
                                 </td>
                                 <td
                                     *ngIf="canDisplayColumn('tokens')"

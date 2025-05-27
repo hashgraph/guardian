@@ -291,9 +291,10 @@ export async function initNotifier({
                         result.message = 'Unknown error';
                     }
                 }
+
                 notify.stop({
                     title: action,
-                    message: error instanceof Error ? error.message : error,
+                    message: result.message
                 });
                 new GuardiansService().publish(chanelEvent, {
                     taskId,

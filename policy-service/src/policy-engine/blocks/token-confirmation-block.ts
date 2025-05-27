@@ -2,13 +2,14 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../in
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { ActionCallback, EventBlock, StateField } from '../helpers/decorators/index.js';
-import { IPolicyBlock, IPolicyEventState } from '../policy-engine.interface.js';
+import { ActionType, IPolicyBlock, IPolicyEventState, IPolicyGetData } from '../policy-engine.interface.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { Token as TokenCollection } from '@guardian/common';
 import { BlockActionError } from '../errors/index.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { LocationType } from '@guardian/interfaces';
 
 /**
  * Information block
@@ -16,6 +17,7 @@ import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.j
 @EventBlock({
     blockType: 'tokenConfirmationBlock',
     commonBlock: false,
+    actionType: LocationType.CUSTOM,
     about: {
         label: 'Token Confirmation',
         title: `Add 'Token Confirmation' Block`,
@@ -89,13 +91,18 @@ export class TokenConfirmationBlock {
      * Get block data
      * @param user
      */
-    async getData(user: PolicyUser) {
+    async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         const blockState: any = this.state[user?.id] || {};
         const token = await this.getToken();
-        const block: any = {
+        const block: IPolicyGetData = {
             id: ref.uuid,
             blockType: 'tokenConfirmationBlock',
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            ),
             action: ref.options.action,
             accountId: blockState.accountId,
             tokenName: token.tokenName,
@@ -105,15 +112,13 @@ export class TokenConfirmationBlock {
         return block;
     }
 
-    /**
-     * Set block data
-     * @param user
-     * @param data
-     */
-    async setData(user: PolicyUser, data: any) {
+    async localSetData(user: PolicyUser, data: {
+        action: 'confirm' | 'skip',
+        hederaAccountKey: string
+    }): Promise<{
+        action: 'confirm' | 'skip'
+    }> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-        ref.log(`setData`);
-
         if (!data) {
             throw new BlockActionError(`Data is unknown`, ref.blockType, ref.uuid)
         }
@@ -128,7 +133,27 @@ export class TokenConfirmationBlock {
         }
 
         if (data.action === 'confirm') {
-            await this.confirm(ref, data, blockState, data.action === 'skip');
+            await this.confirm(ref, data, blockState, user.userId);
+        }
+
+        return {
+            action: data.action
+        };
+    }
+
+    async remoteSetData(user: PolicyUser, data: {
+        action: 'confirm' | 'skip'
+    }) {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
+        ref.log(`setData`);
+
+        if (!data) {
+            throw new BlockActionError(`Data is unknown`, ref.blockType, ref.uuid)
+        }
+
+        const blockState = this.state[user?.id];
+        if (!blockState) {
+            throw new BlockActionError(`Document not found`, ref.blockType, ref.uuid)
         }
 
         ref.triggerEvents(PolicyOutputEventType.Confirm, blockState.user, blockState.data);
@@ -140,18 +165,52 @@ export class TokenConfirmationBlock {
     }
 
     /**
+     * Set block data
+     * @param user
+     * @param data
+     */
+    async setData(
+        user: PolicyUser,
+        data: {
+            action: 'confirm' | 'skip',
+            hederaAccountKey: string
+        },
+        type?: ActionType
+    ) {
+        if (type === ActionType.REMOTE) {
+            await this.remoteSetData(user, data);
+            return true;
+        } else if (type === ActionType.LOCAL) {
+            const _data = await this.localSetData(user, data);
+            return _data;
+        } else {
+            const _data = await this.localSetData(user, data);
+            await this.remoteSetData(user, _data);
+            return true;
+        }
+    }
+
+    /**
      * Confirm action
      * @param {IPolicyBlock} ref
      * @param {any} data
      * @param {any} state
+     * @param userId
      */
-    private async confirm(ref: IPolicyBlock, data: any, state: any, skip: boolean = false) {
+    private async confirm(
+        ref: IPolicyBlock,
+        data: {
+            action: 'confirm' | 'skip',
+            hederaAccountKey: string
+        },
+        state: any,
+        userId: string | null) {
         const account = {
             hederaAccountId: state.accountId,
             hederaAccountKey: data.hederaAccountKey
         }
 
-        await PolicyUtils.checkAccountId(account);
+        await PolicyUtils.checkAccountId(account.hederaAccountId, userId);
         if (!account.hederaAccountKey) {
             throw new BlockActionError(`Key value is unknown`, ref.blockType, ref.uuid)
         }
@@ -171,11 +230,11 @@ export class TokenConfirmationBlock {
 
         switch (ref.options.action) {
             case 'associate': {
-                await PolicyUtils.associate(ref, token, account);
+                await PolicyUtils.associate(ref, token, account, userId);
                 break;
             }
             case 'dissociate': {
-                await PolicyUtils.dissociate(ref, token, account);
+                await PolicyUtils.dissociate(ref, token, account, userId);
                 break;
             }
             default:
@@ -214,7 +273,7 @@ export class TokenConfirmationBlock {
                         hederaAccountId = doc.accounts[field];
                     }
                 } else {
-                    hederaAccountId = await PolicyUtils.getHederaAccountId(ref, doc.owner);
+                    hederaAccountId = await PolicyUtils.getHederaAccountId(ref, doc.owner, event?.user?.userId);
                 }
 
                 if (ref.options.useTemplate) {
@@ -231,5 +290,7 @@ export class TokenConfirmationBlock {
             };
             await ref.saveState();
         }
+
+        ref.backup();
     }
 }

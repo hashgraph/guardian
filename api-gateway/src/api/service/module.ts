@@ -61,7 +61,7 @@ export class ModulesApi {
 
             return await guardian.createModule(module, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -118,7 +118,7 @@ export class ModulesApi {
             const { items, count } = await guardians.getModule(options, new EntityOwner(user));
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -178,7 +178,7 @@ export class ModulesApi {
             const { items, count } = await guardians.getModuleV2(options, new EntityOwner(user));
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -255,7 +255,7 @@ export class ModulesApi {
                 .header('X-Total-Count', count)
                 .send(SchemaUtils.toOld(items));
         } catch (error) {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -312,7 +312,7 @@ export class ModulesApi {
 
             return SchemaUtils.toOld(schemas);
         } catch (error) {
-            await this.logger.error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY'], user.id);
 
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -369,7 +369,7 @@ export class ModulesApi {
 
             return await guardian.deleteModule(uuid, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -406,7 +406,7 @@ export class ModulesApi {
             const guardians = new Guardians();
             return await guardians.getMenuModule(new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -451,7 +451,7 @@ export class ModulesApi {
             const guardian = new Guardians();
             return await guardian.getModuleById(uuid, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -514,7 +514,7 @@ export class ModulesApi {
 
             return await guardian.updateModule(uuid, module, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -558,7 +558,7 @@ export class ModulesApi {
             res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -599,7 +599,7 @@ export class ModulesApi {
             const guardian = new Guardians();
             return await guardian.exportModuleMessage(uuid, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -649,7 +649,7 @@ export class ModulesApi {
 
             return await guardian.importModuleMessage(messageId, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -693,7 +693,7 @@ export class ModulesApi {
 
             return await guardian.importModuleFile(body, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -743,7 +743,7 @@ export class ModulesApi {
 
             return await guardian.previewModuleMessage(messageId, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -788,7 +788,7 @@ export class ModulesApi {
 
             return await guardian.previewModuleFile(body, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -845,7 +845,7 @@ export class ModulesApi {
 
             return await guardian.publishModule(uuid, new EntityOwner(user), module);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -883,7 +883,7 @@ export class ModulesApi {
             const guardian = new Guardians();
             return await guardian.validateModule(new EntityOwner(user), module);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

@@ -4,6 +4,7 @@ import { TypedMint } from './typed-mint.js';
 import { IHederaCredentials } from '../../policy-user.js';
 import { TokenConfig } from '../configs/token-config.js';
 import { PolicyUtils } from '../../helpers/utils.js';
+import { PolicyComponentsUtils } from '../../policy-components-utils.js';
 
 /**
  * Mint FT
@@ -57,6 +58,7 @@ export class MintFT extends TypedMint {
             tokenId: string;
             tokenType: TokenType;
             decimals: number;
+            policyId: string;
             secondaryVpIds?: string[];
         },
         root: IHederaCredentials,
@@ -72,7 +74,7 @@ export class MintFT extends TypedMint {
     /**
      * Resolve pending transactions
      */
-    protected override async resolvePendingTransactions(): Promise<void> {
+    protected override async resolvePendingTransactions(userId: string | null): Promise<void> {
         if (this._mintRequest.isMintNeeded) {
             const mintTransaction = await this._db.getMintTransaction({
                 mintRequestId: this._mintRequest.id,
@@ -92,6 +94,7 @@ export class MintFT extends TypedMint {
                                 memo_base64: btoa(this._mintRequest.memo),
                             },
                             limit: 1,
+                            payload: { userId }
                         },
                     },
                     1,
@@ -103,6 +106,7 @@ export class MintFT extends TypedMint {
                         ? MintTransactionStatus.SUCCESS
                         : MintTransactionStatus.NEW;
                 await this._db.saveMintTransaction(mintTransaction);
+                PolicyComponentsUtils.backup(mintTransaction.policyId);
             }
         }
 
@@ -126,6 +130,7 @@ export class MintFT extends TypedMint {
                                     memo_base64: btoa(this._mintRequest.memo),
                                 },
                                 limit: 1,
+                                payload: { userId }
                             },
                         },
                         1,
@@ -137,6 +142,7 @@ export class MintFT extends TypedMint {
                         ? MintTransactionStatus.SUCCESS
                         : MintTransactionStatus.NEW;
                 await this._db.saveMintTransaction(transferTrasaction);
+                PolicyComponentsUtils.backup(transferTrasaction.policyId);
             }
         }
     }
@@ -156,6 +162,7 @@ export class MintFT extends TypedMint {
         if (!transaction) {
             transaction = await this._db.saveMintTransaction({
                 mintRequestId: this._mintRequest.id,
+                policyId: this._mintRequest.policyId,
                 mintStatus: MintTransactionStatus.NEW,
                 transferStatus: this._mintRequest.isTransferNeeded
                     ? MintTransactionStatus.NEW
@@ -178,6 +185,7 @@ export class MintFT extends TypedMint {
                             limit: 1,
                             order: 'desc',
                             transactiontype: 'TOKENMINT',
+                            payload: { userId }
                         },
                     },
                     1,
@@ -189,11 +197,11 @@ export class MintFT extends TypedMint {
                         startTransactions[0]?.consensus_timestamp;
                         await this._db.saveMintRequest(this._mintRequest);
                     } catch (error) {
-                        this.error(error);
+                        this.error(error, userId);
                     }
-                }).catch(error => this.error(error));
+                }).catch(error => this.error(error, userId));
             } catch (error) {
-                this.error(error);
+                this.error(error, userId);
             }
         }
 
@@ -212,6 +220,7 @@ export class MintFT extends TypedMint {
                         supplyKey: this._token.supplyKey,
                         tokenValue: this._mintRequest.amount,
                         transactionMemo: this._mintRequest.memo,
+                        payload: { userId }
                     },
                 },
                 10, 0, userId
@@ -225,6 +234,7 @@ export class MintFT extends TypedMint {
             throw error;
         } finally {
             await this._db.saveMintTransaction(transaction);
+            PolicyComponentsUtils.backup(transaction.policyId);
         }
     }
 
@@ -255,6 +265,7 @@ export class MintFT extends TypedMint {
                             limit: 1,
                             order: 'desc',
                             transactiontype: 'CRYPTOTRANSFER',
+                            payload: { userId }
                         },
                     },
                     1,
@@ -266,11 +277,11 @@ export class MintFT extends TypedMint {
                         startTransactions[0]?.consensus_timestamp;
                         await this._db.saveMintRequest(this._mintRequest);
                     } catch (error) {
-                        this.error(error);
+                        this.error(error, userId);
                     }
-                }).catch(error => this.error(error));
+                }).catch(error => this.error(error, userId));
             } catch (error) {
-                this.error(error);
+                this.error(error, userId);
             }
         }
 
@@ -291,6 +302,7 @@ export class MintFT extends TypedMint {
                         treasuryKey: this._token.treasuryKey,
                         tokenValue: this._mintRequest.amount,
                         transactionMemo: this._mintRequest.memo,
+                        payload: { userId }
                     },
                 },
                 10, 0, userId
@@ -304,6 +316,7 @@ export class MintFT extends TypedMint {
             throw error;
         } finally {
             await this._db.saveMintTransaction(transaction);
+            PolicyComponentsUtils.backup(transaction.policyId);
         }
     }
 
@@ -311,7 +324,7 @@ export class MintFT extends TypedMint {
      * Mint tokens
      * @returns Processed
      */
-    override async mint(): Promise<boolean> {
-        return await super.mint(false);
+    override async mint(isProgressNeeded: boolean = false, userId: string | null): Promise<boolean> {
+        return await super.mint(isProgressNeeded, userId);
     }
 }

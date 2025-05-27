@@ -35,6 +35,7 @@ export class GroupManagerBlockComponent implements OnInit {
     groupRelationshipType: any;
     groupAccessType: any;
     type: any;
+    readonly: boolean = false;
 
     groupColumns: string[] = [
         'id',
@@ -109,6 +110,7 @@ export class GroupManagerBlockComponent implements OnInit {
 
     setData(data: any) {
         if (data) {
+            this.readonly = !!data.readonly;
             this.selected = null;
             this.groups = data.data || [];
             this.isActive = true;

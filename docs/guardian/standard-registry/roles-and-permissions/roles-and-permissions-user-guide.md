@@ -86,6 +86,15 @@ On the policy page administrator can assign specific policies to be accessible f
 
 Similarly to how SR can configure roles and policies, uses with the _**DELEGATION\_ROLE\_MANAGE**_ permission can delegate its access to policies to other users. the list of the options however is limited by the rules and policies assigned to it by SR and/or other users.
 
+### 2.4 Logs Permissions
+
+The Standard Registry (SR) can assign three levels of access to logs for its users:\
+• Read – Allows the user to view their own logs. This permission is enabled by default.\
+• System – Allows the user to view logs from their SR account as well as system logs.\
+• Users – Allows the user to view logs of other users under the same SR.
+
+<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+
 ## **3. Messages**
 
 When a role is created, edited, or deleted a corresponding message will be posted to the SR’s Hedera topic in the following format:

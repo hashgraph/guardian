@@ -190,6 +190,11 @@ a {
     color: var(--color-grey-5, #848FA9) !important;
 }
 
+.status-VIEW {
+    background: var(--color-accent-green-2, #D7F5F5) !important;
+    color: var(--color-accent-green-1, #19BE47) !important;
+}
+
 .btn-approve {
     background: var(--color-primary);
     border-radius: 6px;
