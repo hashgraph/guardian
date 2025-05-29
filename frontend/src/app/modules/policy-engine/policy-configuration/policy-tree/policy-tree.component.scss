@@ -241,7 +241,7 @@
 }
 
 .block-all-expand i,
-.block-all-expand svg{
+.block-all-expand svg {
     position: absolute;
     left: 1px;
     top: 3px;
@@ -498,12 +498,20 @@
     display: flex;
 }
 
-.block-container[selected="true"] .block-body {
+.block-container[selected="true"].block-menu-3 .block-body {
     grid-template-columns: auto 125px;
 }
 
-.tree[move-actions="1"] .block-container[selected="true"] .block-body {
+.block-container[selected="true"].block-menu-4 .block-body {
+    grid-template-columns: auto 160px;
+}
+
+.block-container[selected="true"].block-menu-3-full .block-body {
     grid-template-columns: auto 208px;
+}
+
+.block-container[selected="true"].block-menu-4-full .block-body {
+    grid-template-columns: auto 243px;
 }
 
 .tree[move-actions="0"] .actions-container {

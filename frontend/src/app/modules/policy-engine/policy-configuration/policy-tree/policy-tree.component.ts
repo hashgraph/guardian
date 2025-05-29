@@ -45,6 +45,7 @@ export class PolicyTreeComponent implements OnInit {
     @Output('nested') nested = new EventEmitter();
     @Output('currentBlockChange') currentBlockChange = new EventEmitter();
     @Output('search') search = new EventEmitter();
+    @Output('test') test = new EventEmitter();
 
     @ViewChild('parent') parentRef!: ElementRef<HTMLCanvasElement>;
     @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
@@ -453,6 +454,10 @@ export class PolicyTreeComponent implements OnInit {
         return node.style === BlockStyle.Block;
     }
 
+    public isTest(node: FlatBlockNode): boolean {
+        return (node.node?.blockType === 'customLogicBlock');
+    }
+
     public isSelect(node: FlatBlockNode) {
         return this.currentBlock === node?.node;
     }
@@ -470,6 +475,22 @@ export class PolicyTreeComponent implements OnInit {
 
     public blockStyle(node: FlatBlockNode): any {
         return this.themeService.getStyle(node.node);
+    }
+
+    public getMenu(node: FlatBlockNode): string {
+        if (this.visibleMoveActions === '1') {
+            if (node.node?.blockType === 'customLogicBlock') {
+                return 'block-menu-4-full';
+            } else {
+                return 'block-menu-3-full';
+            }
+        } else {
+            if (node.node?.blockType === 'customLogicBlock') {
+                return 'block-menu-4';
+            } else {
+                return 'block-menu-3';
+            }
+        }
     }
 
     public onSelect(event: MouseEvent, node: FlatBlockNode) {
@@ -709,6 +730,13 @@ export class PolicyTreeComponent implements OnInit {
 
     public onDropRight(event: any) {
         this.onMoveBlockRight()
+    }
+
+    public onTest(event: any) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.test.emit(this.currentBlock);
+        return false;
     }
 
     private moveBlockUpDown(position: number) {

@@ -1,0 +1,146 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{title}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div *ngIf="loading" class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+    </div>
+
+    <div class="left-menu">
+        <div class="guardian-step-container">
+            <div class="guardian-stepper vertical-stepper">
+                <div class="guardian-step" [attr.action]="step === 'prop'" [attr.highlighted]="step === 'prop'" (click)="onStep('prop')">
+                    <div class="guardian-step-marker">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/right-arrow.svg">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-step-name">Properties</div>
+                </div>
+                <div class="guardian-step-separator"></div>
+                <div class="guardian-step" [attr.action]="step === 'data'" [attr.highlighted]="step === 'data'" (click)="onStep('data')">
+                    <div class="guardian-step-marker">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/right-arrow.svg">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-step-name">Input Data</div>
+                </div>
+                <div class="guardian-step-separator"></div>
+                <div class="guardian-step" [attr.action]="step === 'code'" [attr.highlighted]="step === 'code'" (click)="onStep('code')">
+                    <div class="guardian-step-marker">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/right-arrow.svg">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-step-name">Code</div>
+                </div>
+                <ng-container *ngIf="result">
+                    <div class="guardian-step-separator"></div>
+                    <div class="guardian-step" [attr.action]="step === 'result'" [attr.highlighted]="step === 'result'" (click)="onStep('result')">
+                        <div class="guardian-step-marker">
+                            <svg-icon
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/right-arrow.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">Result</div>
+                    </div>
+                </ng-container>
+            </div>
+        </div>
+    </div>
+    <div class="right-container policy-configuration">
+        <div *ngIf="step === 'prop'" class="step-container">
+            <common-properties
+                *ngIf="initDialog" 
+                [block]="block" 
+                [module]="folder" 
+                [readonly]="readonly" 
+                class="readonly-status"
+                type="Common"></common-properties>
+        </div>
+        <div *ngIf="step === 'data'" class="step-container">
+
+        </div>
+        <div *ngIf="step === 'code'" class="step-container">
+            <ngx-codemirror 
+                *ngIf="initDialog" 
+                [(ngModel)]="expression" 
+                [options]="codeMirrorOptions"></ngx-codemirror>
+        </div>
+        <div *ngIf="step === 'result'" class="step-container">
+
+
+            <div class="guardian-step-container">
+                <div class="guardian-stepper horizontal-stepper">
+                    <div class="guardian-step" [attr.action]="resultStep === 'input'"
+                        (click)="onResultStep('input')">
+                        <div class="guardian-step-icon">
+                            <svg-icon class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/file-fill.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">Input</div>
+                    </div>
+                    <div class="guardian-step" [attr.action]="resultStep === 'logs'"
+                        (click)="onResultStep('logs')">
+                        <div class="guardian-step-icon">
+                            <svg-icon class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/tree.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">Logs</div>
+                    </div>
+                    <div class="guardian-step" [attr.action]="resultStep === 'output'"
+                        (click)="onResultStep('output')">
+                        <div class="guardian-step-icon">
+                            <svg-icon class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/table.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">Output</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="output-containers">
+                <div *ngIf="result" class="output-container" [attr.active]="resultStep === 'input'">
+                    <ngx-codemirror 
+                        [(ngModel)]="result.input" 
+                        [options]="codeMirrorOptions2"></ngx-codemirror>
+                </div>
+                <div *ngIf="result" class="output-container" [attr.active]="resultStep === 'logs'">
+                    <ngx-codemirror 
+                        [(ngModel)]="result.logs" 
+                        [options]="codeMirrorOptions2"></ngx-codemirror>
+                </div>
+                <div *ngIf="result" class="output-container" [attr.active]="resultStep === 'output'">
+                    <ngx-codemirror 
+                        [(ngModel)]="result.output" 
+                        [options]="codeMirrorOptions2"></ngx-codemirror>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button (click)="onClose()" class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+        <div *ngIf="step === 'code'" class="dialog-button">
+            <button (click)="onTest()" class="guardian-button guardian-button-primary">Test</button>
+        </div>
+    </div>
+</div>

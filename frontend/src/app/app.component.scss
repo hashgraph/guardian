@@ -455,7 +455,7 @@ body {
 }
 
 ::ng-deep .grid-setting td.propRowCell {
-    height: 38px !important;
+    height: 39px !important;
 }
 
 ::ng-deep .propRowCell .pi-trash {
@@ -470,10 +470,6 @@ body {
 ::ng-deep td.propRowCell.cellName,
 ::ng-deep .propRow .propRowCell{
     align-content: center;
-}
-
-::ng-deep .propRow .propRowCell .remove-prop {
-    top: 10px !important;
 }
 
 ::ng-deep p-progressspinner svg circle {

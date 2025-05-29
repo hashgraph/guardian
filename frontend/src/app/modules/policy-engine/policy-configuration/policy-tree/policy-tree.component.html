@@ -14,6 +14,7 @@
          [cdkDropListSortPredicate]="onDragSortPredicate"
     >
         <div *ngIf="data" class="tree" [attr.readonly]="readonly" [attr.move-actions]="visibleMoveActions">
+
             <div class="block-all-expand" (click)="onAllCollapse()" [attr.collapsed]="allCollapse">
                 <i *ngIf="allCollapse === '2'" class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
                 <i *ngIf="allCollapse !== '2'" class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>
@@ -21,7 +22,7 @@
 
             <ng-container *ngFor="let item of data">
 
-                <div class="block-container"
+                <div class="block-container {{getMenu(item)}}"
                      [attr.expandable]="item.expandable"
                      [attr.collapsed]="item.collapsed"
                      [attr.selected]="isSelect(item)"
@@ -121,6 +122,9 @@
                                 </button>
                                 <button (click)="onSearch($event)" mat-icon-button class="action-button">
                                     <i class="pi pi-search"></i>
+                                </button>
+                                <button *ngIf="isTest(item)" (click)="onTest($event)" mat-icon-button class="action-button">
+                                    <i class="pi pi-play"></i>
                                 </button>
                                 <button (click)="onDelete($event)" mat-icon-button class="action-button delete-action">
                                     <i class="pi pi-trash"></i>

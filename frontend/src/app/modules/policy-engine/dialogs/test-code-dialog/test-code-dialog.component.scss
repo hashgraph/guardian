@@ -1,0 +1,97 @@
+.dialog-header {
+    .header-item {
+        padding: 6px 12px;
+        margin: 0px 16px;
+        border-radius: 6px;
+        font-size: var(--guardian-primary-font-size);
+        color: var(--guardian-dry-run-color);
+        background: var(--guardian-dry-run-background);
+        user-select: none;
+        cursor: default;
+    }
+}
+
+.dialog-body {
+    height: calc(100vh - 325px);
+    position: relative;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    user-select: none;
+
+    &>div {
+        margin-left: 15px;
+        margin-right: 0px;
+    }
+}
+
+.close-icon-color {
+    fill: #848FA9;
+    color: #848FA9;
+}
+
+
+.dialog-body {
+    display: flex;
+    flex-direction: row;
+
+    .left-menu {
+        height: 100%;
+        width: 170px;
+        min-width: 170px;
+        flex: 0;
+        display: flex;
+    }
+
+    .right-container {
+        height: 100%;
+        width: 100%;
+        flex: 1;
+        display: flex;
+        position: relative;
+
+        .step-container {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            overflow: auto;
+        }
+    }
+
+    common-properties {
+        width: 100%;
+    }
+}
+
+.output-containers {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 40px;
+    bottom: 0;
+
+    .output-container {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0px;
+        bottom: 0;
+        opacity: 0;
+        pointer-events: none;
+        z-index: -1;
+
+        &[active="true"] {
+            opacity: 1;
+            pointer-events: all;
+            z-index: 0;
+        }
+    }
+}
+
+.guardian-loading {
+        z-index: 100;
+}
