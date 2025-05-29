@@ -170,8 +170,7 @@ export class PolicyApi {
         try {
             const options: any = {
                 fields: Object.values(POLICY_REQUIRED_PROPS),
-                filters: {},
-                status,
+                filters: status ? { status: { $in: status.split(',') } } : {},
                 type,
                 pageIndex,
                 pageSize

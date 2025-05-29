@@ -757,9 +757,8 @@ export class PolicyEngineService {
             async (msg: { options: any, owner: IOwner }) => {
                 try {
                     const { options, owner } = msg;
-                    const { fields, filters, pageIndex, pageSize, type, status } = options;
+                    const { fields, filters, pageIndex, pageSize, type } = options;
                     const _filters: any = { ...filters };
-                    const statusFilter = status ? status.split(',') : undefined;
 
                     const otherOptions: any = { fields };
 
@@ -773,7 +772,7 @@ export class PolicyEngineService {
                         otherOptions.orderBy = { createDate: 'DESC' };
                         otherOptions.limit = 100;
                     }
-                    await this.policyEngine.addAccessFilters(_filters, owner, statusFilter);
+                    await this.policyEngine.addAccessFilters(_filters, owner);
                     await this.policyEngine.addLocationFilters(_filters, type);
                     const [policies, count] = await DatabaseServer.getPoliciesAndCount(_filters, otherOptions);
                     for (const policy of policies) {
