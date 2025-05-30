@@ -1,12 +1,21 @@
 import JSZip from 'jszip';
-import { Formula } from '../entity/index.js';
+import { Formula, Policy } from '../entity/index.js';
 import { IFormulaConfig } from '@guardian/interfaces';
+import { DatabaseServer } from '../database-modules/index.js';
+
+interface ISchemaComponents {
+    iri: string;
+    name?: string;
+    description?: string;
+    version?: string;
+}
 
 /**
  * Formula components
  */
 export interface IFormulaComponents {
     formula: Formula;
+    schemas: ISchemaComponents[];
 }
 
 /**
@@ -17,6 +26,10 @@ export class FormulaImportExport {
      * Formula filename
      */
     public static readonly formulaFileName = 'formula.json';
+    /**
+     * Formula filename
+     */
+    public static readonly schemasFileName = 'schemas.json';
 
     /**
      * Load Formula components
@@ -25,7 +38,29 @@ export class FormulaImportExport {
      * @returns components
      */
     public static async loadFormulaComponents(formula: Formula): Promise<IFormulaComponents> {
-        return { formula };
+        const policy = await DatabaseServer.getPolicyById(formula.policyId);
+        const schemas: ISchemaComponents[] = [];
+        const ids = FormulaImportExport.getSchemaIds(formula.config);
+        if (policy) {
+            const schemaDocuments = await DatabaseServer.getSchemas({ topicId: policy.topicId });
+            for (const schema of schemaDocuments) {
+                if (ids.has(schema.iri)) {
+                    schemas.push({
+                        name: schema.name,
+                        description: schema.description,
+                        version: schema.version,
+                        iri: schema.iri
+                    });
+                    ids.delete(schema.iri)
+                }
+            }
+        }
+        for (const iri of ids) {
+            schemas.push({
+                iri
+            });
+        }
+        return { formula, schemas };
     }
 
     /**
@@ -47,14 +82,16 @@ export class FormulaImportExport {
      * @returns Zip file
      */
     public static async generateZipFile(components: IFormulaComponents): Promise<JSZip> {
-        const object = { ...components.formula };
-        delete object.id;
-        delete object._id;
-        delete object.owner;
-        delete object.createDate;
-        delete object.updateDate;
+        const formulas = { ...components.formula };
+        delete formulas.id;
+        delete formulas._id;
+        delete formulas.owner;
+        delete formulas.createDate;
+        delete formulas.updateDate;
+        const schemas = components.schemas;
         const zip = new JSZip();
-        zip.file(FormulaImportExport.formulaFileName, JSON.stringify(object));
+        zip.file(FormulaImportExport.schemasFileName, JSON.stringify(schemas));
+        zip.file(FormulaImportExport.formulaFileName, JSON.stringify(formulas));
         return zip;
     }
 
@@ -74,7 +111,12 @@ export class FormulaImportExport {
         }
         const formulaString = await content.files[FormulaImportExport.formulaFileName].async('string');
         const formula = JSON.parse(formulaString);
-        return { formula };
+
+        const schemasFile = (Object.entries(content.files).find(file => file[0] === FormulaImportExport.schemasFileName));
+        const schemasString = schemasFile && await schemasFile[1].async('string') || '[]';
+        const schemas: any[] = JSON.parse(schemasString);
+
+        return { formula, schemas };
     }
 
     /**
@@ -103,5 +145,54 @@ export class FormulaImportExport {
             }
         }
         return data;
+    }
+
+    public static getSchemaIds(data: IFormulaConfig): Set<string> {
+        const ids = new Set<string>();
+        if (data) {
+            const formulas = data.formulas;
+            if (Array.isArray(formulas)) {
+                for (const component of formulas) {
+                    const link = component.link;
+                    if (link && link.type === 'schema') {
+                        ids.add(link.entityId)
+                    }
+                }
+            }
+        }
+        return ids;
+    }
+
+    public static async updateUUID(components: IFormulaComponents, policy: Policy): Promise<IFormulaComponents> {
+        const map = new Map<string, string>();
+        const schemaDocument = await DatabaseServer.getSchemas({ topicId: policy.topicId });
+        for (const schema of schemaDocument) {
+            const _id = `${schema.name}#${schema.description}`;
+            map.set(_id, schema.iri);
+        }
+        const schemas = components.schemas || [];
+        const idMap = new Map<string, string>();
+        for (const schema of schemas) {
+            const _id = `${schema.name}#${schema.description}`;
+            const newId = map.get(_id);
+            const oldId = schema.iri;
+            if (newId && oldId) {
+                idMap.set(oldId, newId);
+            }
+        }
+        const config = components.formula.config;
+        if (config) {
+            const formulas = config.formulas;
+            if (Array.isArray(formulas)) {
+                for (const component of formulas) {
+                    if (component.link && component.link.type === 'schema') {
+                        if (idMap.has(component.link.entityId)) {
+                            component.link.entityId = idMap.get(component.link.entityId);
+                        }
+                    }
+                }
+            }
+        }
+        return components;
     }
 }

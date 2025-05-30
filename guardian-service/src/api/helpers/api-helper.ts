@@ -13,7 +13,7 @@ export function getPageOptions(msg: any, options?: any): any {
         otherOptions.offset = _pageIndex * _pageSize;
     } else {
         otherOptions.orderBy = { createDate: 'DESC' };
-        otherOptions.limit = 100;
+        otherOptions.limit = 200;
     }
 
     if(msg.fields) {
