@@ -813,6 +813,90 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Search policy documents
+     * @param owner Owner
+     * @param policyId Policy identifier
+     * @param textSearch Text search
+     * @param schemas Schemas
+     * @param owners Owners
+     * @param tokens Tokens
+     * @param related Related documents
+     * @param pageIndex Page index
+     * @param pageSize Page size
+     * @returns Documents and count
+     */
+    public async searchDocuments(
+        owner: IOwner,
+        policyId: string,
+        textSearch: string,
+        schemas: string[],
+        owners: string[],
+        tokens: string[],
+        related: string[],
+        pageIndex?: number | string,
+        pageSize?: number | string
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.SEARCH_POLICY_DOCUMENTS,
+            { owner, policyId, textSearch, schemas, owners, tokens, related, pageIndex, pageSize });
+    }
+
+    /**
+     * Export policy documents
+     * @param owner Owner
+     * @param policyId Policy identifier
+     * @param textSearch Text search
+     * @param schemas Schemas
+     * @param owners Owners
+     * @param tokens Tokens
+     * @param related Related documents
+     * @param pageIndex Page index
+     * @param pageSize Page size
+     * @returns Zip file with CSV items
+     */
+    public async exportDocuments(
+        owner: IOwner,
+        policyId: string,
+        ids: string[],
+        textSearch: string,
+        schemas: string[],
+        owners: string[],
+        tokens: string[],
+        related: string[],
+    ): Promise<any> {
+        const file = await this.sendMessage(PolicyEngineEvents.EXPORT_POLICY_DOCUMENTS,
+            { owner, policyId, ids, textSearch, schemas, owners, tokens, related }) as any;
+        return Buffer.from(file, 'base64');
+    }
+
+    /**
+     * Get policy document owners
+     * @param owner Owner
+     * @param policyId Policy identifier
+     * @returns Document owners
+     */
+    public async getDocumentOwners(
+        owner: IOwner,
+        policyId: string,
+    ): Promise<string[]> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_OWNERS,
+            { owner, policyId });
+    }
+
+    /**
+     * Get policy tokens
+     * @param owner Owner
+     * @param policyId Policy identifier
+     * @returns Policy tokens
+     */
+    public async getTokens(
+        owner: IOwner,
+        policyId: string,
+    ): Promise<string[]> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_TOKENS,
+            { owner, policyId });
+    }
+
+    /**
      * Migrate data
      * @param owner Owner
      * @param migrationConfig Migration config

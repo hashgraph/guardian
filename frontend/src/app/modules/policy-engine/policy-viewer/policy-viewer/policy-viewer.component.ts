@@ -58,6 +58,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public newActionsExist: boolean = false;
     public timer: any;
     private destroy$: Subject<boolean> = new Subject<boolean>();
+    public activeTabIndex = 0;
 
     constructor(
         private profileService: ProfileService,
@@ -131,6 +132,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.loading = true;
         this.subscription.add(
             this.route.queryParams.subscribe((queryParams) => {
+                if (queryParams.tab) {
+                    this.activeTabIndex = queryParams.tab;
+                }
+                
                 this.loadPolicy();
             })
         );
@@ -573,5 +578,13 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     this.newActionsExist = response.body.actionsCount > 0 || response.body.delayCount > 0;
                 }
             })
+    }
+
+    public onTabChange(index: number) {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { tab: index },
+        queryParamsHandling: 'merge',
+      });
     }
 }

@@ -71,8 +71,8 @@ export class SchemaService {
         return this.http.get<any[]>(url);
     }
 
-    public getSchemasByPolicy(policyId: string): Observable<ISchema[]> {
-        return this.http.get<ISchema[]>(`${this.url}?policyId=${policyId}`);
+    public getSchemasByPolicy(policyId: string, pageIndex: number = 0, pageSize: number = 1000): Observable<ISchema[]> {
+        return this.http.get<ISchema[]>(`${this.url}?policyId=${policyId}&pageIndex=${pageIndex}&pageSize=${pageSize}`);
     }
 
     public getSchemasByPage(

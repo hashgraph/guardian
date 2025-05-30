@@ -167,22 +167,77 @@ function getNotificationResultTitle(action: TaskAction, result: any) {
 }
 
 function getNotificationResult(action: TaskAction, result: any) {
+    if (!result) {
+        return;
+    }
     switch (action) {
-        case TaskAction.CREATE_RANDOM_KEY:
-            return;
-        case TaskAction.CREATE_TOOL:
         case TaskAction.CREATE_POLICY:
-        case TaskAction.CLONE_POLICY:
-            return result;
+            return result; //id
         case TaskAction.WIZARD_CREATE_POLICY:
-        case TaskAction.IMPORT_POLICY_FILE:
-        case TaskAction.IMPORT_POLICY_MESSAGE:
+            return result.policyId;
         case TaskAction.PUBLISH_POLICY:
             return result.policyId;
+        case TaskAction.IMPORT_POLICY_FILE:
+            return result.policyId;
+        case TaskAction.IMPORT_POLICY_MESSAGE:
+            return result.policyId;
+        case TaskAction.PUBLISH_SCHEMA:
+            return result; //id
+        case TaskAction.IMPORT_SCHEMA_FILE:
+            return;
+        case TaskAction.IMPORT_SCHEMA_MESSAGE:
+            return;
+        case TaskAction.CREATE_SCHEMA:
+            return result; //id
+        case TaskAction.PREVIEW_SCHEMA_MESSAGE:
+            return;
+        case TaskAction.CREATE_RANDOM_KEY:
+            return;
+        case TaskAction.CONNECT_USER:
+            return result; //did
+        case TaskAction.PREVIEW_POLICY_MESSAGE:
+            return;
+        case TaskAction.CREATE_TOKEN:
+            return result.id;
+        case TaskAction.UPDATE_TOKEN:
+            return result.id;
+        case TaskAction.DELETE_TOKEN:
+            return result; //true
+        case TaskAction.FREEZE_TOKEN:
+            return result.id;
+        case TaskAction.UNFREEZE_TOKEN:
+            return result.id;
+        case TaskAction.ASSOCIATE_TOKEN:
+            return result.status;
+        case TaskAction.DISSOCIATE_TOKEN:
+            return result.status;
+        case TaskAction.GRANT_KYC:
+            return result.id;
+        case TaskAction.REVOKE_KYC:
+            return result.id;
+        case TaskAction.DELETE_POLICY:
+            return result; //true
+        case TaskAction.CLONE_POLICY:
+            return result; //id
+        case TaskAction.RESTORE_USER_PROFILE:
+            return result; //did
+        case TaskAction.GET_USER_TOPICS:
+            return;
+        case TaskAction.CREATE_TOOL:
+            return result; //id
+        case TaskAction.PUBLISH_TOOL:
+            return result.errors;
         case TaskAction.IMPORT_TOOL_FILE:
+            return result.toolId;
         case TaskAction.IMPORT_TOOL_MESSAGE:
             return result.toolId;
+        case TaskAction.MIGRATE_DATA:
+            return result; //Errors
         case TaskAction.PUBLISH_POLICY_LABEL:
+            return result.id;
+        case TaskAction.APPROVE_EXTERNAL_POLICY:
+            return result.id;
+        case TaskAction.REJECT_EXTERNAL_POLICY:
             return result.id;
         default:
             return result;
