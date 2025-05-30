@@ -28,6 +28,8 @@
 
 ### `.env / .env.docker` Parameters in `auth-service`
 
-| Parameter             | Purpose                                                                                               | Example    |
-| --------------------- | ----------------------------------------------------------------------------------------------------- | ---------- |
-| SR\_INITIAL\_PASSWORD | Allows to set SR initial password when it will be created first time. It also should have more than 5 | Env!s!0n!@ |
+| Parameter             | Purpose                                                                                                                                                                                                                                                                                                     | Example    |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| SR\_INITIAL\_PASSWORD | Allows to set SR initial password when it will be created first time. It also should have more than 5                                                                                                                                                                                                       | Env!s!0n!@ |
+| MIN\_PASSWORD\_LENGTH | Sets the minimum password length. Default value is 8, minimum value is 1                                                                                                                                                                                                                                    | 8          |
+| PASSWORD\_COMPLEXITY  | Sets the password complexity level<br>Default value is medium<br>Available values: easy, medium, hard<ul><li>easy - no rules</li><li>medium - one uppercase letter, one lowercase letter, one number</li><li>hard - one uppercase letter, one lowercase letter, one number, one special character</li></ul> | medium     |

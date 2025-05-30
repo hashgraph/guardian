@@ -111,6 +111,17 @@ yarn workspace auth-service start
 **Note:** For correct start of auth-service it is necessary to fill in JWT\_PRIVATE\_KEY and JWT\_PUBLIC\_KEY, which are RSA key pair. You can generate it in any convenient way, for example, using this service [https://travistidwell.com/jsencrypt/demo/](https://travistidwell.com/jsencrypt/demo/).
 {% endhint %}
 
+{% hint style="info" %}
+**Note:** For password validation used 2 variables MIN\_PASSWORD\_LENGTH and PASSWORD\_COMPLEXITY.
+MIN\_PASSWORD\_LENGTH sets the minimum password length. Default value is 8, minimum value is 1.
+PASSWORD\_COMPLEXITY sets the password complexity level. Available values: easy, medium, hard
+ - easy: no rules
+ - medium: one uppercase letter, one lowercase letter, one number
+ - hard: one uppercase letter, one lowercase letter, one number, one special character
+
+Default value is medium
+{% endhint %}
+
 7. Build and start _**policy-service**_ service
 
 To build the service:

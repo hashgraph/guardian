@@ -142,6 +142,8 @@ jobs:
                   IPFS_STORAGE_KEY: ${{ secrets.E2E_IPFS_STORAGE_KEY }}
                   IPFS_STORAGE_PROOF: ${{ secrets.E2E_IPFS_STORAGE_PROOF }}
                   ACCESS_TOKEN_UPDATE_INTERVAL: 600000
+                  MIN_PASSWORD_LENGTH: 4
+                  PASSWORD_COMPLEXITY: easy
 
             - name: Run tests with Cypress
               run: |
