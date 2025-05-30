@@ -23,6 +23,12 @@
             grid-column: 2;
             margin-bottom: 30px;
         }
+
+        .option-buttons {
+            height: 40px;
+            display: flex;
+            gap: 8px;
+        }
     }
 
     .view-dialog-content {

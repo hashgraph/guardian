@@ -4816,6 +4816,13 @@ paths:
           schema:
             example: local
             type: string
+        - name: status
+          required: false
+          in: query
+          description: Policy status
+          schema:
+            example: PUBLISH
+            type: string
       responses:
         '200':
           description: Successful operation.
@@ -5585,6 +5592,265 @@ paths:
       security:
         - bearer: []
       summary: Get policy documents.
+      tags:
+        - policies
+  /policies/{policyId}/search-documents:
+    get:
+      description: Get policy documents with filters.
+      operationId: PolicyApi_getPolicyDocumentsExport
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: textSearch
+          required: false
+          in: query
+          description: Text search
+          schema:
+            example: Example
+            type: string
+        - name: schemas
+          required: false
+          in: query
+          description: Schemas
+          schema:
+            example:
+              - '#001, #002'
+            type: string
+        - name: owners
+          required: false
+          in: query
+          description: Owners
+          schema:
+            example:
+              - 001, 002
+            type: string
+        - name: tokens
+          required: false
+          in: query
+          description: Tokens
+          schema:
+            example:
+              - 001, 002
+            type: string
+        - name: related
+          required: false
+          in: query
+          description: Related
+          schema:
+            example:
+              - 001, 002
+            type: string
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          schema:
+            example: 20
+            type: number
+      responses:
+        '200':
+          description: Documents.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get policy documents with filters.
+      tags:
+        - policies
+  /policies/{policyId}/export-documents:
+    get:
+      description: Export policy project data in CSV format.
+      operationId: PolicyApi_exportPolicyDocuments
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: ids
+          required: false
+          in: query
+          description: Ids
+          schema:
+            example:
+              - 001, 002
+            type: string
+        - name: textSearch
+          required: false
+          in: query
+          description: Text search
+          schema:
+            example: Example
+            type: string
+        - name: schemas
+          required: false
+          in: query
+          description: Schemas
+          schema:
+            example:
+              - '#001, #002'
+            type: string
+        - name: owners
+          required: false
+          in: query
+          description: Owners
+          schema:
+            example:
+              - 001, 002
+            type: string
+        - name: tokens
+          required: false
+          in: query
+          description: Tokens
+          schema:
+            example:
+              - 001, 002
+            type: string
+        - name: related
+          required: false
+          in: query
+          description: Related
+          schema:
+            example:
+              - 001, 002
+            type: string
+      responses:
+        '200':
+          description: Successful operation. Response zip file.
+          content:
+            application/json:
+              schema:
+                type: string
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns a zip file containing policy project data.
+      tags:
+        - policies
+  /policies/{policyId}/document-owners:
+    get:
+      description: Get policy document owners.
+      operationId: PolicyApi_getDocumentOwners
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Owner Ids.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get policy document owners.
+      tags:
+        - policies
+  /policies/{policyId}/tokens:
+    get:
+      description: Get policy tokens.
+      operationId: PolicyApi_getTokens
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Token Ids.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get policy tokens.
       tags:
         - policies
   /policies/{policyId}/data:
