@@ -23,6 +23,11 @@ export class HttpRequestBlock {
         const protocol = parsedUrl.protocol.replace(':', '').toLowerCase();
 
         const raw = process.env.ALLOWED_PROTOCOLS || '';
+
+        if (!raw) {
+            throw new Error('There is no allowed protocols configured in environment variable ALLOWED_PROTOCOLS');
+        }
+
         const allowedProtocols = raw
             .split(',')
             .map(p => p.trim().toLowerCase())
