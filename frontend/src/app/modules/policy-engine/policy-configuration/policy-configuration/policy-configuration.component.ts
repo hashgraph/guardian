@@ -1221,9 +1221,10 @@ export class PolicyConfigurationComponent implements OnInit {
                 block: block,
                 folder: this.openFolder,
                 readonly: this.readonly,
+                policyId: this.policyId
             }
         });
-        dialogRef.onClose.subscribe(async (result) => { 
+        dialogRef.onClose.subscribe(async (result) => {
 
         });
     }

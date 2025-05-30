@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { PolicyFolder, PolicyItem } from '../../structures';
+import { PolicyFolder, PolicyItem, SchemaVariables } from '../../structures';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 
 @Component({
     selector: 'test-code-dialog',
@@ -53,10 +54,22 @@ export class TestCodeDialog {
         autoFocus: true
     };
     public result: any;
+    public dataType: string;
+    public schemaId: string;
+    public schema: any;
+    public jsonValue: string;
+    public schemas!: SchemaVariables[];
+    public policyId: string;
+    public schemaValue: UntypedFormGroup;
+    public fileExtension = 'json';
+    public fileLabel = 'Add json .json file';
+    public fileValue: any;
+    public historyValue: any;
 
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
+        private fb: UntypedFormBuilder,
         private dialogService: DialogService,
     ) {
         this.initDialog = false;
@@ -64,10 +77,15 @@ export class TestCodeDialog {
         this.block = this.config.data?.block;
         this.folder = this.config.data?.folder;
         this.readonly = this.config.data?.readonly;
+        this.policyId = this.config.data?.policyId;
         this.step = 'prop';
         this.resultStep = 'output';
+        this.dataType = 'schema';
         this.expression = this.block?.properties?.expression || '';
         this.codeMirrorOptions.readOnly = !!this.readonly;
+        this.jsonValue = '';
+        this.schemas = this.block?.moduleVariables?.schemas || [];
+        this.schemaValue = this.fb.group({});
     }
 
     ngOnInit() {
@@ -90,7 +108,15 @@ export class TestCodeDialog {
         this.ref.close(null);
     }
 
+    public onChangeSchema() {
+        this.schema = this.schemas?.find((s) => s.value === this.schemaId)?.data;
+    }
+
     public onTest(): void {
+        const input = this.getValue();
+        const code = this.expression;
+
+
         this.result = {
             input: JSON.stringify({ a: 1, b: 2 }, null, 4),
             logs: 'Test',
@@ -114,5 +140,35 @@ export class TestCodeDialog {
 
     public onResultStep(step: string) {
         this.resultStep = step;
+    }
+
+    public importFromFile(event: any) {
+        const reader = new FileReader()
+        reader.readAsText(event);
+        reader.addEventListener('load', (e: any) => {
+            const arrayBuffer = e.target.result;
+            this.fileValue = JSON.parse(arrayBuffer);
+        });
+    }
+
+    private getValue() {
+        switch (this.dataType) {
+            case 'schema':
+                return this.schemaValue.value;
+            case 'json':
+                return this.jsonValue;
+            case 'file':
+                return this.fileValue;
+            case 'history':
+                return this.historyValue;
+            default:
+                return null;
+        }
+    }
+
+    onChangeCode() {
+        if (this.block && this.block.properties) {
+            this.block.properties.expression = this.expression;
+        }
     }
 }

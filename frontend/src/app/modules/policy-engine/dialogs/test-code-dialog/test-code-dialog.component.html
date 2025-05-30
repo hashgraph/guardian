@@ -70,12 +70,110 @@
         </div>
         <div *ngIf="step === 'data'" class="step-container">
 
+
+
+            <div class="data-type-values">
+                <div class="data-type-value">
+                    <div class="data-type-value-select">
+                        <p-radioButton
+                            class="guardian-radio-button radio-button-24"
+                            name="types"
+                            value="schema"
+                            [(ngModel)]="dataType"
+                            inputId="type_1"></p-radioButton>
+                    </div>
+                    <label class="data-type-value-name" for="type_1">
+                        Schema
+                    </label>
+                </div>
+                <div class="data-type-value">
+                    <div class="data-type-value-select">
+                        <p-radioButton
+                            class="guardian-radio-button radio-button-24"
+                            name="types"
+                            value="json"
+                            [(ngModel)]="dataType"
+                            inputId="type_2"></p-radioButton>
+                    </div>
+                    <label class="data-type-value-name" for="type_2">
+                        JSON
+                    </label>
+                </div>
+                <div class="data-type-value">
+                    <div class="data-type-value-select">
+                        <p-radioButton
+                            class="guardian-radio-button radio-button-24"
+                            name="types"
+                            value="file"
+                            [(ngModel)]="dataType"
+                            inputId="type_3"></p-radioButton>
+                    </div>
+                    <label class="data-type-value-name" for="type_3">
+                        File
+                    </label>
+                </div>
+                <div class="data-type-value">
+                    <div class="data-type-value-select">
+                        <p-radioButton
+                            class="guardian-radio-button radio-button-24"
+                            name="types"
+                            value="history"
+                            [(ngModel)]="dataType"
+                            inputId="type_4"></p-radioButton>
+                    </div>
+                    <label class="data-type-value-name" for="type_4">
+                        History
+                    </label>
+                </div>
+            </div>
+
+            <div class="type-container">
+                <ng-container *ngIf="dataType==='schema'">
+                    <div>
+                        <select-schema
+                            [schemas]="schemas"
+                            [(value)]="schemaId"
+                            (change)="onChangeSchema()"
+                        ></select-schema>
+                    </div>
+                    <div *ngIf="schema">
+                        <form [formGroup]="schemaValue" class="schema-form">
+                            <app-schema-form
+                                [comesFromDialog]="true"
+                                [showButtons]="false"
+                                [formGroup]="schemaValue"
+                                [dryRun]="true"
+                                [policyId]="policyId"
+                                [schema]="schema"
+                            >
+                            </app-schema-form>
+                        </form>
+                    </div>
+                </ng-container>
+                <ng-container *ngIf="dataType==='json'">
+                    <div class="guardian-textarea-container">
+                        <textarea pTextarea [value]="jsonValue"></textarea>
+                    </div>
+                </ng-container>
+                <ng-container *ngIf="dataType==='file'">
+                    <app-file-drag-n-drop 
+                        class="drag-n-drop"
+                        [multiple]="false"
+                        [fileExtension]="fileExtension" 
+                        (onFileLoaded)="importFromFile($event)"
+                        [dropZoneLabel]="fileLabel"></app-file-drag-n-drop>
+                </ng-container>
+                <ng-container *ngIf="dataType==='history'">
+
+                </ng-container>
+            </div>
         </div>
         <div *ngIf="step === 'code'" class="step-container">
             <ngx-codemirror 
                 *ngIf="initDialog" 
                 [(ngModel)]="expression" 
-                [options]="codeMirrorOptions"></ngx-codemirror>
+                [options]="codeMirrorOptions"
+                (ngModelChange)="onChangeCode()"></ngx-codemirror>
         </div>
         <div *ngIf="step === 'result'" class="step-container">
 

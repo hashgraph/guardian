@@ -89,7 +89,7 @@
                 pointer-events: none;
                 position: absolute;
                 content: "";
-                top: -3px;
+                top: -2px;
                 left: -2px;
                 right: -2px;
                 bottom: -1px;
@@ -216,6 +216,7 @@
                 min-height: var(--pc-row-height);
 
                 p-dropdown,
+                p-multiselect,
                 select-schema {
                     position: absolute;
                     left: 0;
