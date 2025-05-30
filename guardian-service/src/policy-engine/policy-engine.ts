@@ -1502,8 +1502,9 @@ export class PolicyEngine extends NatsService {
     /**
      * Validate Model
      * @param policy
+     * @param isDruRun
      */
-    public async validateModel(policy: Policy | string): Promise<ISerializedErrors> {
+    public async validateModel(policy: Policy | string, isDruRun: boolean = false): Promise<ISerializedErrors> {
         let policyId: string;
         if (typeof policy === 'string') {
             policyId = policy
@@ -1514,7 +1515,7 @@ export class PolicyEngine extends NatsService {
             }
             policyId = policy.id.toString();
         }
-        const policyValidator = new PolicyValidator(policy);
+        const policyValidator = new PolicyValidator(policy, isDruRun);
         await policyValidator.build(policy);
         await policyValidator.validate();
         return policyValidator.getSerializedErrors();

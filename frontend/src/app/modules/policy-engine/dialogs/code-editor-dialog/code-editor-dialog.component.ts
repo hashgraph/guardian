@@ -1,5 +1,6 @@
-import { AfterContentInit, Component, Inject, OnInit } from '@angular/core';
+import {AfterContentInit, Component, OnInit, ViewChild} from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import {CodemirrorComponent} from '@ctrl/ngx-codemirror';
 
 /**
  * Export schema dialog.
@@ -30,6 +31,9 @@ export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
     public initDialog = false;
     public loading = true;
     public data: any
+
+    @ViewChild(CodemirrorComponent)
+    codeEditorComponent!: CodemirrorComponent;
 
     constructor(
         private dialogRef: DynamicDialogRef,
@@ -65,5 +69,15 @@ export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
 
     public onClose(): void {
         this.dialogRef.close(null);
+    }
+
+    focusEditor() {
+        const cm = this.codeEditorComponent?.codeMirror;
+        if (cm) {
+            cm.focus();
+            if (!cm.hasFocus()) {
+                cm.setCursor({ line: 0, ch: 0 });
+            }
+        }
     }
 }

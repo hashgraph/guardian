@@ -65,8 +65,13 @@ export class PolicyValidator {
      * @private
      */
     private readonly schemas: Map<string, SchemaValidator>;
+    /**
+     * Is Dry Run Mode
+     * @private
+     */
+    private readonly isDryRunMode: boolean;
 
-    constructor(policy: Policy) {
+    constructor(policy: Policy, isDruRun: boolean = false) {
         this.blocks = new Map();
         this.modules = new Map();
         this.tools = new Map();
@@ -78,6 +83,14 @@ export class PolicyValidator {
         this.policyTopics = policy.policyTopics || [];
         this.policyGroups = policy.policyGroups;
         this.schemas = new Map();
+        this.isDryRunMode = isDruRun
+    }
+
+    /**
+     * Is Dry Run
+     */
+    public get isDryRun(): boolean {
+        return this.isDryRunMode;
     }
 
     /**
