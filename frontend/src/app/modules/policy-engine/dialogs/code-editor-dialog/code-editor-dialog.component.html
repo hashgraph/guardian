@@ -10,23 +10,23 @@
     <div *ngIf="loading" class="guardian-loading">
         <div class="guardian-loading-image"></div>
     </div>
-    <div class="context">
-        <ngx-codemirror 
-            *ngIf="initDialog" 
-            [(ngModel)]="expression" 
+    <div class="context" (click)="focusEditor()">
+        <ngx-codemirror
+            *ngIf="initDialog"
+            [(ngModel)]="expression"
             [options]="codeMirrorOptions"></ngx-codemirror>
     </div>
 </div>
 <div class="dialog-footer">
     <div class="action-buttons">
         <div class="dialog-button">
-            <button 
-                (click)="onClose()" 
+            <button
+                (click)="onClose()"
                 class="guardian-button guardian-button-secondary">Close</button>
         </div>
         <div class="dialog-button">
-            <button 
-                (click)="onSave()" 
+            <button
+                (click)="onSave()"
                 class="guardian-button guardian-button-primary">Save</button>
         </div>
     </div>
