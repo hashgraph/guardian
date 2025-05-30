@@ -204,7 +204,7 @@ export function profileAPI(logger: PinoLogger) {
                     user.id
                 )
                 notifier.completed();
-                notifier.result('did');
+                notifier.result(oldDidDocument?.getDid());
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], user.id);
                 notifier.error(error);

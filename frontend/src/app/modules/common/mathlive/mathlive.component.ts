@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { MathfieldElement } from 'mathlive';
 import { matrixKeyboard } from './keyboards/matrix-keyboard';
 import { mathKeyboard } from './keyboards/math-keyboard';
@@ -48,6 +48,11 @@ export class MathLiveComponent implements OnInit, OnDestroy {
             this.value = ev?.target?.value;
             this.valueChange.emit(this.value);
         });
+        this.mfe.value = this.value || '';
+        this.mfe.readonly = this.readonly;
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
         this.mfe.value = this.value || '';
         this.mfe.readonly = this.readonly;
     }

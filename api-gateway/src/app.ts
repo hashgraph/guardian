@@ -26,7 +26,12 @@ const PORT = process.env.PORT || 3002;
 const BODY_LIMIT = 1024 * 1024 * 1024
 
 Promise.all([
-    NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter({ ignoreTrailingSlash: true }), {
+    NestFactory.create<NestFastifyApplication>(AppModule,
+        new FastifyAdapter({
+            ignoreTrailingSlash: true,
+            bodyLimit: BODY_LIMIT,
+            maxParamLength: BODY_LIMIT
+        }), {
         rawBody: true,
         bodyParser: false,
     }),
@@ -51,13 +56,17 @@ Promise.all([
             errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY
         }));
 
-        const logger: PinoLogger= app.get(PinoLogger);
-
-        await app.register(fastifyFormbody);
-        await app.register(fastifyMultipart);
+        const logger: PinoLogger = app.get(PinoLogger);
 
         app.useBodyParser('json', { bodyLimit: BODY_LIMIT });
         app.useBodyParser('binary/octet-stream', { bodyLimit: BODY_LIMIT });
+
+        await app.register(fastifyFormbody, {
+            bodyLimit: BODY_LIMIT
+        });
+        await app.register(fastifyMultipart, {
+            limits: { fileSize: BODY_LIMIT }
+        });
 
         await new Guardians().setConnection(cn).init();
         await new IPFS().setConnection(cn).init();
@@ -96,7 +105,7 @@ Promise.all([
             new LargePayloadContainer().runServer();
         }
         app.listen(PORT, '0.0.0.0', async () => {
-           await logger.info(`Started on ${PORT}`, ['API_GATEWAY'], null);
+            await logger.info(`Started on ${PORT}`, ['API_GATEWAY'], null);
         });
     } catch (error) {
         console.error(error.message);

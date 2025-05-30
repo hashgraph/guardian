@@ -20,6 +20,7 @@ import { CommonDidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Met
 import { BBSDidRootKey, DidRootKey } from './did-document.js';
 
 import * as pkg from 'jsonld-signatures';
+import { ContextHelper } from './context-helper.js';
 const { verify, purposes } = pkg;
 
 /**
@@ -451,6 +452,7 @@ export class VCJS {
         documentLoader: DocumentLoaderFunction
     ): Promise<VcDocument> {
         const vc: any = vcDocument.getDocument();
+        ContextHelper.clearContext(vc);
         const verifiableCredential = await vcjs.createVerifiableCredential({
             credential: vc,
             suite,
