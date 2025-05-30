@@ -271,8 +271,9 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
 
-                const preview = await FormulaImportExport.parseZipFile(Buffer.from(zip.data));
-                const { formula } = preview;
+                let components = await FormulaImportExport.parseZipFile(Buffer.from(zip.data));
+                components = await FormulaImportExport.updateUUID(components, policy);
+                const { formula } = components;
 
                 delete formula._id;
                 delete formula.id;
@@ -342,7 +343,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const { schemas, toolSchemas } = await PolicyImportExport.fastLoadSchemas(policy);
-                const all = [].concat(schemas, toolSchemas).filter((s)=>s.entity !== SchemaEntity.NONE);
+                const all = [].concat(schemas, toolSchemas).filter((s) => s.entity !== SchemaEntity.NONE);
 
                 const formulas = await DatabaseServer.getFormulas({
                     id: { $ne: formulaId },

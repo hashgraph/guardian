@@ -1,0 +1,246 @@
+<div class="project-export-container">
+    <div class="guardian-user-page-toolbar">
+        <div class="guardian-user-page-filters">
+            
+        <form [formGroup]="filtersForm" class="filters">
+            <div class="filter-row">
+                <div class="search-input">
+                    <!-- <span class="p-input-icon-right">
+                        <input
+                            class="search-policy-input"
+                            formControlName="textSearch"
+                            pInputText
+                            placeholder="Search by keyword"
+                            type="text" />
+                        <i class="pi pi-search search-icon"></i>
+                    </span> -->
+                </div>
+                <div>
+                    <button (click)="clearFilters()"
+                        type="button"
+                        [disabled]="filtersCount <= 0"
+                        class="button secondary"
+                        label="Clear filters"
+                        pButton></button>
+                    <button (click)="showFilters()"
+                        *ngIf="showMoreFilters"
+                        type="button"
+                        class="button secondary"
+                        label="Filters ({{filtersCount}})"
+                        icon="pi pi-filter-slash"
+                        pButton>
+                    </button>
+                    <button (click)="showFilters()"
+                        *ngIf="!showMoreFilters"
+                        type="button"
+                        class="button"
+                        label="Filters ({{filtersCount}})"
+                        icon="pi pi-filter"
+                        pButton>
+                    </button>
+                </div>
+            </div>
+            <div class="filter-group" [hidden]="!showMoreFilters">
+                <div class="filter-row">
+                    <div class="filter">
+                        <div class="input-item">
+                            <p-multiSelect
+                                formControlName="schemas"
+                                [options]="schemas"
+                                [(ngModel)]="selectedSchemas"
+                                class="sort-by-dropdown"
+                                optionLabel="name"
+                                optionValue="iri"
+                                placeholder="Schemas"
+                                appendTo="body"
+                            >
+                            <ng-template let-value pTemplate="selectedItems">
+                                <div class="filter-label">
+                                    Schemas
+                                    <span *ngIf="!value || value.length === 0">Not selected</span>
+                                    <span *ngIf="value && value.length > 0">{{selectedSchemas.length}} selected</span>
+                                </div>
+                            </ng-template>
+                        </p-multiSelect>
+                        </div>
+                    </div>
+                    <div class="filter">
+                        <div class="input-item">
+                            <p-multiSelect
+                                formControlName="owners"
+                                [options]="owners"
+                                [(ngModel)]="selectedOwners"
+                                class="sort-by-dropdown"
+                                placeholder="Owner"
+                                appendTo="body"
+                            >
+                                <ng-template let-value pTemplate="selectedItems">
+                                    <div class="filter-label">
+                                        Owner
+                                        <span *ngIf="!value || value.length === 0">Not selected</span>
+                                        <span *ngIf="value && value.length > 0">{{selectedOwners.length}} selected</span>
+                                    </div>
+                                </ng-template>
+                            </p-multiSelect>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-row">
+                    <div class="filter">
+                        <p-multiSelect
+                            formControlName="tokens"
+                            [options]="tokens"
+                            [(ngModel)]="selectedTokens" 
+                            class="sort-by-dropdown"
+                            placeholder="Tokens"
+                            appendTo="body"
+                        >
+                            <ng-template let-value pTemplate="selectedItems">
+                                <div class="filter-label">
+                                    Tokens
+                                    <span *ngIf="!value || value.length === 0">Not selected</span>
+                                    <span *ngIf="value && value.length > 0">{{selectedTokens.length}} selected</span>
+                                </div>
+                            </ng-template>
+                        </p-multiSelect>
+                    </div>
+                    <div class="filter">
+                        <div class="filter-related" [ngClass]="{'disabled': !related || related.length <= 0}">
+                            <p class="filter-label">
+                                Search based on
+                                <span *ngIf="related && related.length > 0">{{ related.length }} selected documents</span>
+                                <span *ngIf="!related || related.length <= 0"> - </span>
+                            </p>
+                            <i (click)="onClearRelatedFilter()" class="pi pi-times-circle"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-row" style="justify-content: flex-end">
+                    <button (click)="applyFilters()"
+                        type="submit"
+                        [disabled]="!filtersForm.dirty"
+                        class="button"
+                        label="Apply Filters"
+                        pButton></button>
+                </div>
+            </div>
+        </form>
+        </div>
+    </div>
+
+    <div class="guardian-user-page-grid">
+        <ng-container *ngIf="page && page.length > 0; else noData">
+            <div class="guardian-grid-container">
+                <p-table 
+                    class="guardian-grid-table"
+                    [value]="page" 
+                    [scrollable]="true" 
+                >
+                    <ng-template pTemplate="header">
+                        <tr class="guardian-grid-header">
+                            <ng-container *ngFor="let column of columns">
+                                <th 
+                                    *ngIf="!column.canDisplay || column.canDisplay()"
+                                    class="header-cell-{{column.type}} col-{{column.size}}" 
+                                    [ngSwitch]="column.id"
+                                >
+                                    <ng-container *ngSwitchCase="'select'">
+                                        <p-checkbox
+                                            [binary]="true"
+                                            [(ngModel)]="selectedAll"
+                                            (onChange)="selectAllRows($event)"
+                                        />
+                                    </ng-container>
+                                    <ng-container *ngSwitchDefault>
+                                        {{column.title}}
+                                    </ng-container>
+                                </th>
+                            </ng-container>
+                        </tr>
+                    </ng-template>
+                    <ng-template let-row pTemplate="body">
+                        <tr class="guardian-grid-row">
+                            <ng-container *ngFor="let column of columns">
+                                <td 
+                                    *ngIf="!column.canDisplay || column.canDisplay()"
+                                    class="row-cell-{{column.type}} col-{{column.size}}" 
+                                    pTooltip="{{row[column.id]}}"
+                                    [tooltipDisabled]="!column.tooltip"
+                                    tooltipPosition="top"
+                                    [showDelay]="1000"
+                                    [ngSwitch]="column.id"
+                                >
+                                    <ng-container *ngSwitchCase="'select'">
+                                        <p-checkbox
+                                            [inputId]="row.messageId"
+                                            name="group"
+                                            [value]="row"
+                                            [(ngModel)]="selectedRows"
+                                            (onChange)="selectRow()"
+                                        />
+                                    </ng-container>
+                                    <ng-container *ngSwitchDefault>
+                                        <span [ngClass]="{'text-highlight': isRelated(row)}" class="text-truncate">{{row[column.id]}}</span>
+                                    </ng-container>
+                                </td>
+                            </ng-container>
+                        </tr>
+                    </ng-template>
+                </p-table>
+                <div class="guardian-grid-paginator">
+                    <app-paginator
+                        class="guardian-grid-paginator"
+                        [pageIndex]="pageIndex"
+                        [pageSize]="pageSize"
+                        [length]="pageCount"
+                        (page)="onPage($event)"
+                    ></app-paginator>
+                </div>
+            </div>
+        </ng-container>
+        <ng-template #noData>
+            <div class="guardian-user-not-data">
+                <svg-icon 
+                    class="svg-icon-32" 
+                    src="/assets/images/icons/32/list.svg" 
+                    svgClass="icon-color-disabled"></svg-icon>
+                <span class="guardian-user-not-data__text-strong">There were no documents found</span>
+                <span class="guardian-user-not-data__text">Please try to change or clear filters</span>
+            </div>
+        </ng-template>
+    </div>
+            
+    <div class="progress-footer-container">
+        <div class="progress-footer">
+            <div>
+                <p *ngIf="selectedRows && selectedRows.length > 0">{{ selectedRows.length }} documents selected </p>
+            </div>
+            <div>
+                <button 
+                    *ngIf="canShowFindRelatedButton()"
+                    (click)="onFindRelated()"
+                    class="button secondary" 
+                    label="Find all related" 
+                    pButton
+                    type="button">
+                </button>
+                <button 
+                    (click)="onExport()"
+                    [disabled]="!page || page.length <= 0" 
+                    class="button primary"
+                    [label]="(selectedRows && selectedRows.length > 0) ? 'Export selected to CSV' : 'Export to CSV'" 
+                    pButton
+                    type="button">
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>

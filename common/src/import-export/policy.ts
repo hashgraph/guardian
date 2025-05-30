@@ -384,6 +384,22 @@ export class PolicyImportExport {
             formulas
         };
     }
+    
+    /**
+     * Generate zip file of policy project data
+     * @param csvData csvData
+     *
+     * @returns Zip file
+     */
+    public static async generateProjectData(csvData: Map<string, string>): Promise<JSZip> {
+        const zip = new JSZip();
+        for (const name of csvData.keys()) {
+            const csv = csvData.get(name);
+            zip.file(name + '.csv', csv);
+        }
+
+        return zip;
+    }
 
     /**
      * Get policy categories data

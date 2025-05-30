@@ -31,12 +31,20 @@
                 </ng-template>
             </p-selectButton>
 
-            <app-compare-btn 
-                *ngIf="isCompare"
-                [id]="id" 
-                type="document" 
-                class="compare-container"
-                buttonStyle="guardian"></app-compare-btn>
+
+            <div class="option-buttons">
+                <button 
+                    *ngIf="messageId"
+                    (click)="onFindInExport()" 
+                    class="guardian-button guardian-button-secondary">Export</button>
+
+                <app-compare-btn 
+                    *ngIf="isCompare"
+                    [id]="id" 
+                    type="document" 
+                    class="compare-container"
+                    buttonStyle="guardian"></app-compare-btn>
+            </div>
         </div>
         <div class="view-dialog-content">
             <ng-container *ngIf="viewDocument">
