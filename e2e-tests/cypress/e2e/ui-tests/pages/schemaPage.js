@@ -101,8 +101,6 @@ export class SchemaPage {
         Checks.waitForElement("div:contains('Description')");
         cy.get(CommonElements.dialogWindow).last().find(CommonElements.dropdown).click();
         cy.screenshot();
-        cy.get(CommonElements.dropdownOption).eq(1).focus();
-        cy.screenshot();
         cy.get(CommonElements.dropdownOption).eq(1).realClick();
         cy.get(SchemaPageLocators.oneMoreImportButton).click();
         Checks.waitForTaskComplete();
