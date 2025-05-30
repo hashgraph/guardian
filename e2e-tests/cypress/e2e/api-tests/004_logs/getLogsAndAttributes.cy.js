@@ -76,12 +76,14 @@ context("Logs", { tags: ['logs', 'thirdPool', 'all'] }, () => {
                 }
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
+                let wn;
                 response.body.forEach(element => {
-                    cy.task('log', element);
+                    if (element.startsWith("WORKER"))
+                        wn++;
                 });
                 cy.task('log', response.body.length);
                 cy.task('log', response.body);
-                workersNumber = response.body.length - 1;
+                workersNumber = wn - 1;
             });
         })
     });
