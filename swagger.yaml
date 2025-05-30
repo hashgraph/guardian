@@ -4816,6 +4816,13 @@ paths:
           schema:
             example: local
             type: string
+        - name: status
+          required: false
+          in: query
+          description: Policy status
+          schema:
+            example: PUBLISH
+            type: string
       responses:
         '200':
           description: Successful operation.
