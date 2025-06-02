@@ -83,6 +83,7 @@ context("Logs", { tags: ['logs', 'thirdPool', 'all'] }, () => {
                 });
                 cy.task('log', response.body.length);
                 cy.task('log', response.body);
+                cy.task('log', wn);
                 workersNumber = wn - 1;
             });
         })
@@ -102,9 +103,10 @@ context("Logs", { tags: ['logs', 'thirdPool', 'all'] }, () => {
                 }
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                response.body.forEach(element => {
-                    cy.task('log', element);
-                });
+                cy.task('log', response.body.length);
+                cy.task('log', response.body);
+                cy.task('log', wn);
+                cy.wait(1000);
                 expect(workersNumber).eql(response.body.length);
             });
         })
