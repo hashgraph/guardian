@@ -1801,6 +1801,42 @@ export class PolicyEngineService {
                 }
             });
 
+        // this.channel.getMessages<any, any>(PolicyEngineEvents.DRY_RUN_BLOCK,
+        //     async (msg: { policyId: string, config: any, owner: IOwner }) => {
+        //         try {
+        //             const { policyId, config, owner } = msg;
+        //             const policy = await DatabaseServer.getPolicyById(policyId);
+        //             await this.policyEngine.accessPolicy(policy, owner, 'read');
+        //             const result = await this.policyEngine.runBlock(policyId, config);
+        //             return new MessageResponse(result);
+        //         } catch (error) {
+        //             await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+        //             return new MessageError(error);
+        //         }
+        //     });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.DRY_RUN_BLOCK,
+            async (msg: {
+                policyId: string,
+                config: any,
+                owner: IOwner
+            }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { policyId, config, owner } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+                    const user = await (new Users()).getUser(owner.username, owner.id);
+                    config.policyId = policyId;
+                    config.user = user;
+                    const blockData = await new GuardiansService()
+                        .sendMessageWithTimeout(PolicyEvents.DRY_RUN_BLOCK, 60 * 1000, config)
+                    return new MessageResponse(blockData);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error, error.code);
+                }
+            });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_SAVEPOINT,
             async (msg: { policyId: string, owner: IOwner }) => {
                 try {

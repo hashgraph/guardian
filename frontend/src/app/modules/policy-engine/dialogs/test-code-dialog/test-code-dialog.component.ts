@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { PolicyFolder, PolicyItem, SchemaVariables } from '../../structures';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 
 @Component({
     selector: 'test-code-dialog',
@@ -71,6 +72,7 @@ export class TestCodeDialog {
         public config: DynamicDialogConfig,
         private fb: UntypedFormBuilder,
         private dialogService: DialogService,
+        private policyEngineService: PolicyEngineService,
     ) {
         this.initDialog = false;
         this.title = this.config.header || '';
@@ -114,27 +116,53 @@ export class TestCodeDialog {
 
     public onTest(): void {
         const input = this.getValue();
-        const code = this.expression;
+        const block = this.block.getJSON();
+        const data = {
+            type: 'json',
+            input: 'RunEvent',
+            output: 'RunEvent',
+            document: input
+        }
 
-
-        this.result = {
-            input: JSON.stringify({ a: 1, b: 2 }, null, 4),
-            logs: 'Test',
-            output: JSON.stringify({ a: 10, b: 20 }, null, 4)
-        };
-        this.step = 'result';
-        this.loading = true;
-        setTimeout(() => {
-            this.loading = false;
-        }, 1000);
+        this.policyEngineService
+            .runBlock(this.policyId, {
+                block,
+                data
+            })
+            .subscribe((result) => {
+                debugger;
+                this.step = 'result';
+                this.loading = true;
+                this.result = {
+                    input: JSON.stringify({ a: 1, b: 2 }, null, 4),
+                    logs: ['Test'],
+                    output: JSON.stringify({ a: 10, b: 20 }, null, 4),
+                    errors: []
+                };
+                setTimeout(() => {
+                    this.loading = false;
+                }, 1000);
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+                this.result = {
+                    input: '',
+                    logs: [],
+                    output: '',
+                    errors: [String(e.error)]
+                };
+            });
     }
 
     public onStep(step: string) {
         this.step = step;
         if (this.step === 'result' || this.step === 'code') {
+            this.loading = true;
             setTimeout(() => {
                 this.loading = false;
             }, 1000);
+        } else {
+            this.loading = false;
         }
     }
 

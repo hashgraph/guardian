@@ -207,6 +207,15 @@
                         </div>
                         <div class="guardian-step-name">Output</div>
                     </div>
+                    <div class="guardian-step" [attr.action]="resultStep === 'errors'"
+                        (click)="onResultStep('errors')">
+                        <div class="guardian-step-icon">
+                            <svg-icon class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/table.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">Errors</div>
+                    </div>
                 </div>
             </div>
 
@@ -224,6 +233,11 @@
                 <div *ngIf="result" class="output-container" [attr.active]="resultStep === 'output'">
                     <ngx-codemirror 
                         [(ngModel)]="result.output" 
+                        [options]="codeMirrorOptions2"></ngx-codemirror>
+                </div>
+                <div *ngIf="result" class="output-container" [attr.active]="resultStep === 'errors'">
+                    <ngx-codemirror 
+                        [(ngModel)]="result.errors" 
                         [options]="codeMirrorOptions2"></ngx-codemirror>
                 </div>
             </div>

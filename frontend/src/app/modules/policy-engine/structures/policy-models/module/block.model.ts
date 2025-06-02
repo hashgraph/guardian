@@ -358,6 +358,25 @@ export class PolicyModule extends PolicyBlock {
         return json;
     }
 
+    public override getProp(): any {
+        const json: any = {
+            name: this._name,
+            description: this._description,
+            ...this.properties
+        };
+        delete json.children;
+        delete json.events;
+        delete json.artifacts;
+        delete json.variables;
+        delete json.inputEvents;
+        delete json.outputEvents;
+        delete json.innerEvents;
+        json.id = this.id;
+        json.blockType = this.blockType;
+        json.tag = this.tag;
+        return json;
+    }
+
     public setSchemas(schemas: Schema[]): void {
         this._schemas = schemas;
         this.updateVariables();

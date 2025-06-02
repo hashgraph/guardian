@@ -425,6 +425,14 @@ export class PolicyBlock {
         return json;
     }
 
+    public getProp(): any {
+        const json: any = { ...this.properties };
+        json.id = this.id;
+        json.blockType = this.blockType;
+        json.tag = this.tag;
+        return json;
+    }
+
     public rebuild(object: any) {
         delete object.children;
         delete object.events;

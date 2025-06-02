@@ -633,6 +633,20 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * 
+     * @param policyId
+     * @param config
+     * @param owner
+     */
+    public async runBlock(
+        policyId: string,
+        config: any,
+        owner: IOwner
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.DRY_RUN_BLOCK, { policyId, config, owner });
+    }
+
+    /**
      * Create savepoint
      * @param model
      * @param owner

@@ -2842,6 +2842,49 @@ export class PolicyApi {
     }
 
     /**
+     * 
+     */
+    @Post('/:policyId/dry-run/block')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE,)
+    @ApiOperation({
+        summary: '.',
+        description: '.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'Block config.'
+    })
+    @ApiOkResponse({
+        description: '.'
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    async runBlock(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: any,
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+        await engineService.accessPolicy(policyId, owner, 'read');
+        try {
+            return await engineService.runBlock(policyId, body, owner);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
      * Clear dry-run state.
      */
     @Post('/:policyId/savepoint/create')
