@@ -103,9 +103,9 @@ context("Logs", { tags: ['logs', 'thirdPool', 'all'] }, () => {
                 }
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
+                cy.task('log', workerName);
                 cy.task('log', response.body.length);
                 cy.task('log', response.body);
-                cy.task('log', wn);
                 cy.wait(1000);
                 expect(workersNumber).eql(response.body.length);
             });
