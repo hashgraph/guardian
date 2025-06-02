@@ -150,7 +150,7 @@ jobs:
                   npx cypress run --headed --env "operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=ui,grepFilterSpecs=true" --spec "cypress/e2e/ui-tests/**/*.cy.js" --browser chrome
                   popd
             - name: Publish API Test Results
-              uses: step-security/publish-unit-test-result-action@cc82caac074385ae176d39d2d143ad05e1130b2d # v2.18.0
+              uses: step-security/publish-unit-test-result-action@b495e9a82021fc8f34737416de688298581b847d # v2.19.0
               if: always()
               with:
                   files: e2e-tests/cypress/test_results/**/*.xml
