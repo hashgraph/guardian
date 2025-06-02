@@ -430,13 +430,13 @@ export class PoliciesPage {
 
     openDryRunUser(user = "1") {
         if (user == "Administrator") {
-            cy.contains('Users').click();
+            cy.contains('Users').realClick();
             cy.get(CommonElements.Loading).should('not.exist');
             cy.contains(user).click();
             Checks.waitForLoading();
         }
         else {
-            cy.contains('Users').click();
+            cy.contains('Users').realClick();
             cy.get(CommonElements.Loading).should('not.exist');
             cy.contains(`Virtual User ${user}`).click();
             Checks.waitForLoading();
