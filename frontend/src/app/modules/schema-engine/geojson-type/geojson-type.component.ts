@@ -13,9 +13,9 @@ import View from 'ol/View.js';
 import { Circle as CircleStyle, Fill, Stroke, Style, Text } from 'ol/style.js';
 import { getCenter } from 'ol/extent';
 import { Coordinate } from 'ol/coordinate';
-import { transform } from 'ol/proj';
+import { toLonLat, transform } from 'ol/proj';
 import { Cluster, OSM, Vector as VectorSource } from 'ol/source.js';
-import { doubleClick, pointerMove } from 'ol/events/condition.js';
+import { doubleClick, pointerMove, singleClick } from 'ol/events/condition.js';
 import { LineString, MultiLineString, MultiPoint, MultiPolygon, Polygon } from 'ol/geom';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer.js';
 import Select from 'ol/interaction/Select.js';
@@ -57,6 +57,7 @@ const POLYGON = {
     BORDER_COLOR: '#19BE47',
     BORDER_WIDTH: 2,
     SELECTED_FILL_COLOR: 'rgba(255, 255, 255, 0.4)',
+    SELECTED_FILL_COLOR2: 'rgba(0, 0, 255, 0.2)',
     SELECTED_BORDER_COLOR: '#19BE47',
     SELECTED_BORDER_WIDTH: 3
 };
@@ -113,6 +114,15 @@ const selectedPolygon = new Style({
         width: POLYGON.SELECTED_BORDER_WIDTH,
     }),
 });
+const selectedPolygon2 = new Style({
+    fill: new Fill({
+        color: POLYGON.SELECTED_FILL_COLOR2,
+    }),
+    stroke: new Stroke({
+        color: POLYGON.SELECTED_BORDER_COLOR,
+        width: POLYGON.SELECTED_BORDER_WIDTH,
+    }),
+});
 
 const defaultStyles: any = {
     Point: new Style({
@@ -121,12 +131,10 @@ const defaultStyles: any = {
     Cluster: new Style({
         image: clusterStyle,
     }),
-    MultiPoint:  new Style({
+    MultiPoint: new Style({
         image: pointStyle,
     }),
-    LineString:  new Style({
-        image: pointStyle,
-    }),
+    LineString: polygonStyle,
     Polygon: polygonStyle,
     MultiLineString: polygonStyle,
     MultiPolygon: polygonStyle,
@@ -139,13 +147,29 @@ const activeStyles: any = {
     Cluster: new Style({
         image: selectedCluster,
     }),
+    MultiPoint: new Style({
+        image: selectedPoint,
+    }),
+    LineString: selectedPolygon,
+    Polygon: selectedPolygon,
+    MultiLineString: selectedPolygon,
+    MultiPolygon: selectedPolygon,
+};
+
+const selectedStyles: any = {
+    Point: new Style({
+        image: selectedPoint,
+    }),
+    Cluster: new Style({
+        image: selectedCluster,
+    }),
     MultiPoint:  new Style({
         image: selectedPoint,
     }),
     LineString:  new Style({
         image: selectedPoint,
     }),
-    Polygon: selectedPolygon,
+    Polygon: selectedPolygon2,
     MultiLineString: selectedPolygon,
     MultiPolygon: selectedPolygon,
 };
@@ -169,7 +193,6 @@ function styleFunction(feature: any) {
                         }),
                     })
                     : defaultStyles.Point;
-
             default:
                 return defaultStyles[geometryType];
         }
@@ -191,53 +214,54 @@ function activeStyleFunction(feature: any) {
     }
 }
 
+function selectedStyleFunction(feature: any) {
+    const geometry = feature.getGeometry();
+    if (geometry) {
+        const geometryType = geometry.getType();
+        switch (geometryType) {
+            case 'Point':
+                const size = feature.get('features')?.length;
+                return size > 1
+                    ? new Style({
+                        image: clusterStyle,
+                        text: new Text({
+                            font: CLUSTER.FONT,
+                            text: size.toString(),
+                            fill: new Fill({
+                                color: CLUSTER.FONT_COLOR,
+                            }),
+                        }),
+                    })
+                    : selectedStyles.Point;
+            default:
+                return selectedStyles[geometryType];
+        }
+    }
+}
+
 @Component({
     selector: 'app-geojson-type',
     templateUrl: './geojson-type.component.html',
     styleUrls: ['./geojson-type.component.scss'],
 })
-export class GeojsonTypeComponent implements OnInit, OnChanges {
+export class GeojsonTypeComponent implements OnChanges {
     @Input('formGroup') control?: UntypedFormControl;
     @Input('preset') presetDocument: any = null;
     @Input('disabled') isDisabled: boolean = false;
 
     updateCoordinates: Subject<any> = new Subject<any>();
 
-    mapOptions: google.maps.MapOptions = {
-        clickableIcons: false,
-        disableDoubleClickZoom: true,
-        minZoom: 5,
-    };
-    center2: google.maps.LatLngLiteral = {
+    center2: any = {
         lat: 37,
         lng: -121,
     };
-    markers: {
-        position: google.maps.LatLngLiteral;
-    }[] = [];
-    polygons: {
-        paths: google.maps.LatLngLiteral[];
-    }[] = [];
-    lines: {
-        path: google.maps.LatLngLiteral[];
-    }[] = [];
-    commonOptions: google.maps.MarkerOptions &
-        google.maps.PolygonOptions &
-        google.maps.PolylineOptions = {
-            animation: null,
-            clickable: false,
-        };
+
+
     type: GeoJsonType = GeoJsonType.POINT;
     coordinatesPlaceholder!: string;
-    pointConstructor: any = [];
-    pointMarkerOptions: google.maps.MarkerOptions = {
-        icon: {
-            path: 0,
-            scale: 5,
-        },
-        clickable: false,
-    };
+
     coordinates: string = '';
+    parsedCoordinates: any;
     isJSON: boolean = false;
     jsonInput: string = '';
 
@@ -261,12 +285,41 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
     public mapCreated: boolean = false;;
     private vectorSource: VectorSource = new VectorSource();
     private geoShapesSource: VectorSource = new VectorSource();
+    private selectedSource: VectorSource = new VectorSource();
     private center!: Coordinate;
+
+    private selectedFeatureIndex: number = 0;
+    private selectedRingIndex: number = 0;
+
+    private lastSelectedGeometry: any;
+    private lastSelectedCoordinates: any[] = [];
 
     constructor(
         public mapService: MapService,
         private cdkRef: ChangeDetectorRef
-    ) {
+    ) {}
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes?.isDisabled && !changes?.isDisabled.firstChange) {
+            this.onViewTypeChange(this.control?.value);
+        }
+
+        // this.setupMap();
+    }
+
+    ngAfterViewInit(): void {
+        this.resetCoordinatesStructure();
+
+        this.onTypeChange(false);
+        this.control?.setValidators(
+            ajvSchemaValidator(new ajv().compile(GeoJsonSchema))
+        );
+        this.control?.updateValueAndValidity();
+        this.updateCoordinates.subscribe(this.onCoordinatesUpdate.bind(this));
+        this.onViewTypeChange(this.presetDocument, false);
+
+        // this.map = null;
+        this.setupMap();
     }
 
     private setupMap() {
@@ -314,6 +367,8 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
             this.geoShapesSource?.addFeatures(features);
         }
 
+        this.selectedSource?.clear(true);
+
         if (!this.map && !this.mapCreated) { // ?
             this.mapCreated = true;
             setTimeout(() => {
@@ -330,25 +385,226 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
         }
     }
 
-    private updateMap() {
-        // this.markers = [];
-        // this.polygons = [];
-        // this.lines = [];
-
-        const parsedCoordinates = JSON.parse(this.coordinates);
-
+    private selectPolygon(coordinates: any) {
         const shapeFeatures: any[] = [];
 
         shapeFeatures.push({
             type: 'Feature',
             geometry: {
+                type: GeoJsonType.POLYGON,
+                coordinates: coordinates,
+            },
+        });
+
+        const features = new GeoJSON({
+            featureProjection: 'EPSG:3857',
+        }).readFeatures({
+            type: 'FeatureCollection',
+            features: shapeFeatures,
+        });
+
+        this.selectedSource?.clear(true);
+        this.selectedSource?.addFeatures(features);
+    }
+    
+    private initMap() {
+        const clusterSource = new Cluster({
+            distance: CLUSTER_DISTANCE.distance,
+            minDistance: CLUSTER_DISTANCE.minDistance,
+            source: this.vectorSource,
+        });
+        const clusterLayer = new VectorLayer({
+            source: clusterSource,
+            style: styleFunction,
+        });
+
+        const geoShapesLayer = new VectorLayer({
+            source: this.geoShapesSource,
+            style: styleFunction,
+        });
+
+        const selectedLayer = new VectorLayer({
+            source: this.selectedSource,
+            style: selectedStyleFunction,
+        });
+
+        this.map = new Map({
+            layers: [
+                new TileLayer({
+                    source: new OSM(),
+                }),
+                geoShapesLayer,
+                clusterLayer,
+                selectedLayer,
+            ],
+            target: this.mapElementRef.nativeElement,
+            view: new View(MAP_OPTIONS),
+        });
+        const selectHover = new Select({
+            condition: pointerMove,
+            style: activeStyleFunction,
+        });
+        const selectDoubleClick = new Select({
+            condition: doubleClick,
+            style: styleFunction,
+        });
+        selectDoubleClick.getFeatures().on('add', (event) => {
+            // tslint:disable-next-line:no-shadowed-variable
+            const features = event.element.get('features');
+            const geometry = event.element.getGeometry();
+
+            if (geometry && features?.length == 1 && features[0].get('projectId')) {
+                const geometryType = geometry.getType();
+                if (geometryType == 'Point') {
+                    // this.router.navigate([
+                    //     '/vc-documents',
+                    //     features[0].get('projectId'),
+                    // ]);
+                }
+            }
+        });
+
+        this.map.on('singleclick', (evt) => {
+            const clickOnFeature = this.map?.forEachFeatureAtPixel(evt.pixel, (feature) => {
+                const geom = feature.getGeometry();
+                if (geom instanceof Polygon) {
+                    const coords = geom.getCoordinates();
+                    const clickCoord = evt.coordinate;
+
+                    for (let i = 0; i < coords.length; i++) {
+                        const ring = new Polygon([coords[i]]);
+                        if (ring.intersectsCoordinate(clickCoord)) {
+                            this.selectedRingIndex = i;
+
+                            this.lastSelectedGeometry = feature;
+                            this.lastSelectedCoordinates = clickCoord;
+                            // this.selectPolygon(ring.getCoordinates().map(ring2 =>
+                            //     ring2.map(coord => toLonLat(coord))
+                            // ));
+
+                            break;
+                        }
+                    }
+                } else if (geom instanceof MultiPolygon) {
+                    const polygons = geom.getPolygons();
+                    const clickCoord = evt.coordinate;
+
+                    for (let i = 0; i < polygons.length; i++) {
+                        const polygon = polygons[i];
+                        const coords = polygon.getCoordinates();
+
+                        for (let j = 0; j < coords.length; j++) {
+                            const ring = new Polygon([coords[j]]);
+                            if (ring.intersectsCoordinate(clickCoord)) {
+                                this.selectedFeatureIndex = i;
+                                this.selectedRingIndex = j;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                return true;
+            })
+
+            if (!clickOnFeature) {
+                this.mapClick(toLonLat(evt.coordinate));
+            }
+        });
+
+        this.map.on('dblclick', (evt) => {
+            evt.preventDefault();
+        });
+
+        this.map.getViewport().addEventListener('contextmenu', (evt) => {
+            evt.preventDefault();
+
+            if (this.map) {
+                const pixel = this.map.getEventPixel(evt);
+                const coordinate = this.map.getCoordinateFromPixel(pixel);
+
+                let featureIndex = 0;
+                let ringIndex = 0;
+
+                const clickOnFeature = this.map?.forEachFeatureAtPixel(pixel, (feature) => {
+                    const geom = feature.getGeometry();
+                    if (geom instanceof Polygon) {
+                        const coords = geom.getCoordinates();
+
+                        for (let i = 0; i < coords.length; i++) {
+                            const ring = new Polygon([coords[i]]);
+                            if (ring.intersectsCoordinate(coordinate)) {
+                                ringIndex = i;
+                                return true;
+                            }
+                        }
+                        return false;
+                    } else if (geom instanceof MultiPolygon) {
+                        const polygons = geom.getPolygons();
+
+                        for (let i = 0; i < polygons.length; i++) {
+                            const polygon = polygons[i];
+                            const coords = polygon.getCoordinates();
+
+                            for (let j = 0; j < coords.length; j++) {
+                                const ring = new Polygon([coords[j]]);
+                                if (ring.intersectsCoordinate(coordinate)) {
+                                    featureIndex = i;
+                                    ringIndex = j;
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    }
+
+                    return true;
+                })
+
+                if (clickOnFeature) {
+                    this.mapRightclick(featureIndex, ringIndex);
+                }
+            }
+        });
+
+        this.map.addInteraction(selectHover);
+        this.map.addInteraction(selectDoubleClick);
+        
+        if (this.geoShapes && this.geoShapes.length > 0) {
+            this.map.getView().on('change:resolution', () => {
+                const zoom = this.map?.getView().getZoom();
+
+                if (zoom && zoom > 10) {
+                    clusterLayer.setVisible(false);
+                    geoShapesLayer.setVisible(true);
+                    selectedLayer.setVisible(true);
+                } else {
+                    clusterLayer.setVisible(true);
+                    geoShapesLayer.setVisible(false);
+                    selectedLayer.setVisible(false);
+                }
+            });
+        }
+    }
+    
+    private updateMap(updateInput: boolean = false) {
+
+        const shapeFeatures: any[] = [];
+        
+
+        shapeFeatures.push({
+            type: 'Feature',
+            geometry: {
                 type: this.type,
-                coordinates: parsedCoordinates,
+                coordinates: this.parsedCoordinates,
             },
             properties: {
                 // projectId: location.projectId,
             },
         });
+
+        console.log(shapeFeatures);
+        console.log(this.parsedCoordinates);
 
         // shapeFeatures.push({
         //     type: 'Feature',
@@ -366,24 +622,30 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
 
         // shapeFeatures.push(feature);
         
-        // [
-        //     [
-        //         [
-        //             [1, 1],
-        //             [1, 4],
-        //             [4, 1],
-        //             [4, 4]
-        //         ]
-        //     ],
-        //     [
-        //         [
-        //             [5, 5],
-        //             [5, 9],
-        //             [9, 5],
-        //             [9, 9]
-        //         ]
-        //     ]
-        // ]
+        [
+            [
+                [
+                    [1, 1],
+                    [1, 4],
+                    [4, 4],
+                    [4, 1]
+                ],
+                [
+                    [5, 1],
+                    [5, 4],
+                    [8, 4],
+                    [8, 1]
+                ]
+            ],
+            [
+                [
+                    [15, 1],
+                    [15, 4],
+                    [18, 4],
+                    [18, 1]
+                ]
+            ]
+        ]
         
 
         const features = new GeoJSON({
@@ -393,16 +655,41 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
             features: shapeFeatures,
         });
 
+        if (this.type == GeoJsonType.POLYGON && this.lastSelectedGeometry) {
+            const coords = this.parsedCoordinates;
+            const clickCoord = this.lastSelectedCoordinates;
+
+            console.log(coords);
+            
+
+            for (let i = 0; i < coords.length; i++) {
+                const ring = new Polygon([coords[i]]);
+                if (ring.intersectsCoordinate(clickCoord)) {
+                    this.selectedRingIndex = i;
+
+                    // this.selectPolygon(ring.getCoordinates().map(ring2 =>
+                    //     ring2.map(coord => toLonLat(coord))
+                    // ));
+
+                    break;
+                }
+            }
+        }
+
         // this.vectorSource?.clear(true);
         // this.vectorSource?.addFeatures(features);
 
         this.geoShapesSource?.clear(true);
         this.geoShapesSource?.addFeatures(features);
-
-
-
-
-
+        
+        if (updateInput) {
+            this.coordinates = JSON.stringify(this.parsedCoordinates, null, 4);
+            this.setControlValue({
+                type: this.type,
+                coordinates: this.parsedCoordinates,
+            }, true);
+        }
+        
 
 
         if (this.geoShapes && this.geoShapes.length > 0) {
@@ -445,77 +732,8 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
             this.geoShapesSource?.addFeatures(features);
         }
     }
-    
-    initMap() {
-        const clusterSource = new Cluster({
-            distance: CLUSTER_DISTANCE.distance,
-            minDistance: CLUSTER_DISTANCE.minDistance,
-            source: this.vectorSource,
-        });
-        const clusterLayer = new VectorLayer({
-            source: clusterSource,
-            style: styleFunction,
-        });
 
-        const geoShapesLayer = new VectorLayer({
-            source: this.geoShapesSource,
-            style: styleFunction,
-        });
-        this.map = new Map({
-            layers: [
-                new TileLayer({
-                    source: new OSM(),
-                }),
-                geoShapesLayer,
-                clusterLayer,
-            ],
-            target: this.mapElementRef.nativeElement,
-            view: new View(MAP_OPTIONS),
-        });
-        const selectHover = new Select({
-            condition: pointerMove,
-            style: activeStyleFunction,
-        });
-        const selectClick = new Select({
-            condition: doubleClick,
-            style: styleFunction,
-        });
-        selectClick.getFeatures().on('add', (event) => {
-            // tslint:disable-next-line:no-shadowed-variable
-            const features = event.element.get('features');
-            const geometry = event.element.getGeometry();
-
-            if (geometry && features?.length == 1 && features[0].get('projectId')) {
-                const geometryType = geometry.getType();
-                if (geometryType == 'Point') {
-                    // this.router.navigate([
-                    //     '/vc-documents',
-                    //     features[0].get('projectId'),
-                    // ]);
-                }
-            }
-        });
-
-        this.map.addInteraction(selectHover);
-        this.map.addInteraction(selectClick);
-        
-        if (this.geoShapes && this.geoShapes.length > 0) {
-            this.map.getView().on('change:resolution', () => {
-                const zoom = this.map?.getView().getZoom();
-
-                if (zoom && zoom > 10) {
-                    clusterLayer.setVisible(false);
-                    geoShapesLayer.setVisible(true);
-                } else {
-                    clusterLayer.setVisible(true);
-                    geoShapesLayer.setVisible(false);
-                }
-            });
-        }
-    }
-    
-
-    getFeatureCenter(feature: any): number[] {
+    private getFeatureCenter(feature: any): number[] {
         if (!feature || !feature.type || !feature.coordinates) return [0, 0];
 
         const { type, coordinates } = feature;
@@ -556,47 +774,7 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
         }
     }
 
-    ngOnChanges(changes: SimpleChanges): void {
-        if (changes?.isDisabled && !changes?.isDisabled.firstChange) {
-            this.onViewTypeChange(this.control?.value);
-        }
-
-        // this.setupMap();
-    }
-
-    ngOnInit(): void {
-        // this.commonOptions = {
-
-        // }
-
-        // this.onTypeChange(false);
-        // this.control?.setValidators(
-        //     ajvSchemaValidator(new ajv().compile(GeoJsonSchema))
-        // );
-        // this.control?.updateValueAndValidity();
-        // this.updateCoordinates.subscribe(this.onCoordinatesUpdate.bind(this));
-        // this.onViewTypeChange(this.presetDocument, false);
-    }
-
-    ngAfterViewInit(): void {
-        this.commonOptions = {
-
-        }
-
-        this.onTypeChange(false);
-        this.control?.setValidators(
-            ajvSchemaValidator(new ajv().compile(GeoJsonSchema))
-        );
-        this.control?.updateValueAndValidity();
-        this.updateCoordinates.subscribe(this.onCoordinatesUpdate.bind(this));
-        this.onViewTypeChange(this.presetDocument, false);
-
-        // this.map = null;
-        this.setupMap();
-    }
-
     onCoordinatesUpdate(value: any) {
-        
         if (!value) {
             this.coordinates = '';
             this.setControlValue({});
@@ -610,192 +788,113 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
         });
     }
 
-    // mapClick(event: any) {
-    //     if (this.isDisabled) {
-    //         return;
-    //     }
+    private mapClick(coordinates: any) {
+        if (this.isDisabled) {
+            return;
+        }
+        
+        [
+            [
+                [
+                    [1, 1],
+                    [1, 4],
+                    [4, 4],
+                    [4, 1]
+                ],
+            ],
+            [
+                [
+                    [5, 1],
+                    [5, 4],
+                    [8, 4],
+                    [8, 1]
+                ],
+                [
+                    [15, 1],
+                    [15, 4],
+                    [18, 4],
+                    [18, 1]
+                ]
+            ]
+        ]
+        
+        try {
+            switch (this.type) {
+                case GeoJsonType.POINT:
+                    this.parsedCoordinates = coordinates;
+                    break;
+                case GeoJsonType.MULTI_POINT:
+                    if (this.parsedCoordinates?.[0]?.length <= 0) {
+                        this.parsedCoordinates[0] = coordinates;
+                        break;
+                    }
 
-    //     switch (this.type) {
-    //         case GeoJsonType.POINT:
-    //             this.markers[0] = {
-    //                 position: {
-    //                     lat: event.latLng.lat(),
-    //                     lng: event.latLng.lng(),
-    //                 },
-    //             };
-    //             this.updateCoordinates.next([
-    //                 event.latLng.lng(),
-    //                 event.latLng.lat(),
-    //             ]);
-    //             break;
-    //         case GeoJsonType.MULTI_POINT:
-    //             this.markers.push({
-    //                 position: {
-    //                     lat: event.latLng.lat(),
-    //                     lng: event.latLng.lng(),
-    //                 },
-    //             });
-    //             this.updateCoordinates.next(
-    //                 this.markers.map((item: any) => [
-    //                     item.position.lng,
-    //                     item.position.lat,
-    //                 ])
-    //             );
-    //             break;
-    //         case GeoJsonType.MULTI_POLYGON:
-    //         case GeoJsonType.MULTI_LINE_STRING:
-    //         case GeoJsonType.LINE_STRING:
-    //         case GeoJsonType.POLYGON:
-    //             this.pointConstructor.push({
-    //                 lng: event.latLng.lng(),
-    //                 lat: event.latLng.lat(),
-    //             });
-    //             break;
-    //         default:
-    //             break;
-    //     }
-    // }
+                    this.parsedCoordinates.push(coordinates);
+                    break;
+                case GeoJsonType.POLYGON:
+                    this.parsedCoordinates?.[this.selectedRingIndex]?.push(coordinates);
+                    
+                    break;
+                case GeoJsonType.MULTI_POLYGON:
+                    if (this.parsedCoordinates?.[this.selectedFeatureIndex]?.[this.selectedRingIndex][0]?.length <= 0) {
+                        this.parsedCoordinates[this.selectedFeatureIndex][this.selectedRingIndex][0] = coordinates;
+                        break;
+                    }
 
-    // mapDblclick() {
-    //     if (this.isDisabled) {
-    //         return;
-    //     }
+                    this.parsedCoordinates?.[this.selectedFeatureIndex]?.[this.selectedRingIndex]?.push(coordinates);
+                    break;
+                case GeoJsonType.MULTI_LINE_STRING:
+                    this.parsedCoordinates?.[this.selectedRingIndex]?.push(coordinates);
+                    break;
+                case GeoJsonType.LINE_STRING:
+                    if (this.parsedCoordinates?.[0]?.length <= 0) {
+                        this.parsedCoordinates[0] = coordinates;
+                        break;
+                    }
 
-    //     switch (this.type) {
-    //         case GeoJsonType.POLYGON:
-    //             this.pointConstructor.push(this.pointConstructor[0]);
-    //             this.polygons[0] = {
-    //                 paths: this.pointConstructor,
-    //             };
-    //             this.updateCoordinates.next([
-    //                 this.polygons[0].paths.map((path: any) => [
-    //                     path.lng,
-    //                     path.lat,
-    //                 ]),
-    //             ]);
-    //             break;
-    //         case GeoJsonType.MULTI_POLYGON:
-    //             this.pointConstructor.push(this.pointConstructor[0]);
-    //             this.polygons.push({
-    //                 paths: this.pointConstructor,
-    //             });
-    //             this.updateCoordinates.next(
-    //                 this.polygons.map((polygon: any) => [
-    //                     polygon.paths.map((path: any) => [path.lng, path.lat]),
-    //                 ])
-    //             );
-    //             break;
-    //         case GeoJsonType.LINE_STRING:
-    //             this.lines[0] = {
-    //                 path: this.pointConstructor,
-    //             };
-    //             this.updateCoordinates.next(
-    //                 this.lines[0].path.map((path: any) => [path.lng, path.lat])
-    //             );
-    //             break;
-    //         case GeoJsonType.MULTI_LINE_STRING:
-    //             this.lines.push({
-    //                 path: this.pointConstructor,
-    //             });
-    //             this.updateCoordinates.next(
-    //                 this.lines.map((line: any) =>
-    //                     line.path.map((path: any) => [path.lng, path.lat])
-    //                 )
-    //             );
-    //             break;
-    //         default:
-    //             break;
-    //     }
+                    this.parsedCoordinates.push(coordinates);
+                    break;
+                default:
+                    break;
+            }
+            
+            this.updateMap(true);
+        }
+        catch {}
+    }
 
-    //     this.pointConstructor = [];
-    // }
+    private mapRightclick(featureIndex = 0, ringIndex = 0) {
+        switch (this.type) {
+            case GeoJsonType.POINT:
+                this.parsedCoordinates = [];
+                break;
+            case GeoJsonType.MULTI_POINT:
+                this.parsedCoordinates.pop();
+                break;
+            case GeoJsonType.POLYGON:
+                this.parsedCoordinates[featureIndex].pop();
+                break;
+            case GeoJsonType.MULTI_POLYGON:
+                this.parsedCoordinates[featureIndex][ringIndex].pop();
+                break;
+            case GeoJsonType.LINE_STRING:
+                this.parsedCoordinates.pop();
+                break;
+            case GeoJsonType.MULTI_LINE_STRING:
+                this.parsedCoordinates[featureIndex].pop();
+                break;
+            default:
+                break;
+        }
 
-    // mapRightclick() {
-    //     if (this.pointConstructor?.length) {
-    //         this.pointConstructor.pop();
-    //         return;
-    //     }
-
-    //     switch (this.type) {
-    //         case GeoJsonType.POINT:
-    //             this.markers.pop();
-    //             this.updateCoordinates.next(
-    //                 this.markers[0]
-    //                     ? [
-    //                         this.markers[0].position.lng,
-    //                         this.markers[0].position.lat,
-    //                     ]
-    //                     : null
-    //             );
-    //             break;
-    //         case GeoJsonType.MULTI_POINT:
-    //             this.markers.pop();
-    //             this.updateCoordinates.next(
-    //                 this.markers.length
-    //                     ? this.markers.map((item: any) => [
-    //                         item.position.lng,
-    //                         item.position.lat,
-    //                     ])
-    //                     : null
-    //             );
-    //             break;
-    //         case GeoJsonType.POLYGON:
-    //             this.polygons?.pop();
-    //             this.updateCoordinates.next(
-    //                 this.polygons[0]
-    //                     ? [
-    //                         this.polygons[0].paths.map((path: any) => [
-    //                             path.lng,
-    //                             path.lat,
-    //                         ]),
-    //                     ]
-    //                     : null
-    //             );
-    //             break;
-    //         case GeoJsonType.MULTI_POLYGON:
-    //             this.polygons?.pop();
-    //             this.updateCoordinates.next(
-    //                 this.polygons.length
-    //                     ? this.polygons.map((polygon: any) => [
-    //                         polygon.paths.map((path: any) => [
-    //                             path.lng,
-    //                             path.lat,
-    //                         ]),
-    //                     ])
-    //                     : null
-    //             );
-    //             break;
-    //         case GeoJsonType.LINE_STRING:
-    //             this.lines?.pop();
-    //             this.updateCoordinates.next(
-    //                 this.lines[0]?.path.map((path: any) => [
-    //                     path.lng,
-    //                     path.lat,
-    //                 ]) || null
-    //             );
-    //             break;
-    //         case GeoJsonType.MULTI_LINE_STRING:
-    //             this.lines?.pop();
-    //             this.updateCoordinates.next(
-    //                 this.lines.length
-    //                     ? this.lines.map((line: any) =>
-    //                         line.path.map((path: any) => [path.lng, path.lat])
-    //                     )
-    //                     : null
-    //             );
-    //             break;
-    //         default:
-    //             break;
-    //     }
-    // }
+        this.updateMap(true);
+    }
 
     onTypeChange(dirty = true) {
+        this.resetCoordinatesStructure();
+
         this.setControlValue({}, dirty);
         this.coordinates = '';
-        this.markers = [];
-        this.polygons = [];
-        this.lines = [];
-        this.pointConstructor = [];
 
         switch (this.type) {
             case GeoJsonType.POINT:
@@ -887,6 +986,8 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
             default:
                 break;
         }
+
+        this.updateMap(false);
     }
 
     onViewTypeChange(value: any, dirty = true) {
@@ -922,85 +1023,48 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
     }
 
     coordinatesChanged(dirty = true) {
-        this.markers = [];
-        this.polygons = [];
-        this.lines = [];
         try {
+
+            this.parsedCoordinates = JSON.parse(this.coordinates);
+
             const parsedCoordinates = JSON.parse(this.coordinates);
             this.setControlValue({
                 type: this.type,
                 coordinates: parsedCoordinates,
             }, dirty);
+
             switch (this.type) {
                 case GeoJsonType.POINT:
-                    this.markers.push({
-                        position: {
-                            lat: parsedCoordinates[1],
-                            lng: parsedCoordinates[0],
-                        },
-                    });
                     this.center2 = {
                         lat: parsedCoordinates[1],
                         lng: parsedCoordinates[0],
                     };
                     break;
                 case GeoJsonType.POLYGON:
-                    this.polygons.push({
-                        paths: parsedCoordinates[0].map((path: any) => {
-                            return { lat: path[1], lng: path[0] };
-                        }),
-                    });
                     this.center2 = {
                         lat: parsedCoordinates[0][0][1],
                         lng: parsedCoordinates[0][0][0],
                     };
                     break;
                 case GeoJsonType.LINE_STRING:
-                    this.lines.push({
-                        path: parsedCoordinates.map((path: any) => {
-                            return { lat: path[1], lng: path[0] };
-                        }),
-                    });
                     this.center2 = {
                         lat: parsedCoordinates[0][1],
                         lng: parsedCoordinates[0][0],
                     };
                     break;
                 case GeoJsonType.MULTI_POINT:
-                    for (const coordinate of parsedCoordinates) {
-                        this.markers.push({
-                            position: {
-                                lat: coordinate[1],
-                                lng: coordinate[0],
-                            },
-                        });
-                    }
                     this.center2 = {
                         lat: parsedCoordinates[0][1],
                         lng: parsedCoordinates[0][0],
                     };
                     break;
                 case GeoJsonType.MULTI_POLYGON:
-                    for (const paths of parsedCoordinates) {
-                        this.polygons.push({
-                            paths: paths[0].map((path: any) => {
-                                return { lat: path[1], lng: path[0] };
-                            }),
-                        });
-                    }
                     this.center2 = {
                         lat: parsedCoordinates[0][0][0][1],
                         lng: parsedCoordinates[0][0][0][0],
                     };
                     break;
                 case GeoJsonType.MULTI_LINE_STRING:
-                    for (const paths of parsedCoordinates) {
-                        this.lines.push({
-                            path: paths.map((path: any) => {
-                                return { lat: path[1], lng: path[0] };
-                            }),
-                        });
-                    }
                     this.center2 = {
                         lat: parsedCoordinates[0][0][1],
                         lng: parsedCoordinates[0][0][0],
@@ -1009,10 +1073,45 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                 default:
                     break;
             }
-            
-            this.updateMap();
+                      
+            this.updateMap(true);
         } catch {
+            if (this.coordinates == '') {
+                setTimeout(() => {
+                    this.resetCoordinatesStructure();
+                    // this.coordinates = JSON.stringify(this.parsedCoordinates, null, 4);
+                }, 100)
+            } else {
+                setTimeout(() => {
+                    // this.coordinates = JSON.stringify(this.parsedCoordinates, null, 4);
+                }, 100)
+            }
             this.setControlValue({});
+        }
+    }
+
+    private resetCoordinatesStructure() {
+        switch (this.type) {
+            case GeoJsonType.POINT:
+                this.parsedCoordinates = [];
+                break;
+            case GeoJsonType.POLYGON:
+                this.parsedCoordinates = [[]];
+                break;
+            case GeoJsonType.LINE_STRING:
+                this.parsedCoordinates = [[]];
+                break;
+            case GeoJsonType.MULTI_POINT:
+                this.parsedCoordinates = [[]];
+                break;
+            case GeoJsonType.MULTI_POLYGON:
+                this.parsedCoordinates = [[[[]]]];
+                break;
+            case GeoJsonType.MULTI_LINE_STRING:
+                this.parsedCoordinates = [[]];
+                break;
+            default:
+                break;
         }
     }
 
