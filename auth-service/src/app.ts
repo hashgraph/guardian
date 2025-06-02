@@ -1,6 +1,6 @@
 import { AccountService } from './api/account-service.js';
 import { WalletService } from './api/wallet-service.js';
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, GenerateTLSOptionsNats, LargePayloadContainer, MessageBrokerChannel, Migration, mongoForLoggingInitialization, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager, ValidateConfiguration, } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, MessageBrokerChannel, Migration, mongoForLoggingInitialization, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager, ValidateConfiguration } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -49,21 +49,45 @@ Promise.all([
 ]).then(async ([_, db, cn, app, vault, loggerMongo]) => {
 
     DatabaseServer.connectBD(db);
-
-    const state = new ApplicationState();
-    await state.setServiceName('AUTH_SERVICE').setConnection(cn).init();
-
-    const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
-
-    state.updateState(ApplicationStates.INITIALIZING);
     try {
+        await new OldSecretManager().setConnection(cn).init();
+        const jwtServiceName = 'AUTH_SERVICE';
+        const secretManager = SecretManager.New();
+        JwtServicesValidator.setSecretManager(secretManager)
+        JwtServicesValidator.setServiceName(jwtServiceName)
+
+        await new WalletService().setConnection(cn).init();
+        new WalletService().registerVault(vault);
+        const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
+        new WalletService().registerListeners(logger);
+
+        let { SERVICE_JWT_PUBLIC_KEY } = await secretManager.getSecrets(`publickey/jwt-service/${jwtServiceName}`);
+        if (!SERVICE_JWT_PUBLIC_KEY) {
+            SERVICE_JWT_PUBLIC_KEY = process.env.SERVICE_JWT_PUBLIC_KEY;
+            if (SERVICE_JWT_PUBLIC_KEY?.length < 8) {
+                throw new Error(`${jwtServiceName} service jwt keys not configured`);
+            }
+            await secretManager.setSecrets(`publickey/jwt-service/${jwtServiceName}`, {SERVICE_JWT_PUBLIC_KEY});
+        }
+
+        let { SERVICE_JWT_SECRET_KEY } = await secretManager.getSecrets(`secretkey/jwt-service/${jwtServiceName}`);
+
+        if (!SERVICE_JWT_SECRET_KEY) {
+            SERVICE_JWT_SECRET_KEY = process.env.SERVICE_JWT_SECRET_KEY;
+            if (SERVICE_JWT_SECRET_KEY?.length < 8) {
+                throw new Error(`${jwtServiceName} service jwt keys not configured`);
+            }
+            await secretManager.setSecrets(`secretkey/jwt-service/${jwtServiceName}`, {SERVICE_JWT_SECRET_KEY});
+        }
+
+        const state = new ApplicationState();
+        await state.setServiceName('AUTH_SERVICE').setConnection(cn).init();
+
+        state.updateState(ApplicationStates.INITIALIZING);
         app.listen();
 
         await new AccountService().setConnection(cn).init();
         new AccountService().registerListeners(logger);
-        await new WalletService().setConnection(cn).init();
-        new WalletService().registerVault(vault);
-        new WalletService().registerListeners(logger);
 
         await new RoleService().setConnection(cn).init();
         new RoleService().registerListeners(logger);
@@ -79,8 +103,6 @@ Promise.all([
             await ImportKeysFromDatabase(vault, logger);
         }
 
-        await new OldSecretManager().setConnection(cn).init();
-
         validator.setValidator(async () => {
             if (!ApplicationEnvironment.demoMode) {
                 if (!process.env.SR_INITIAL_PASSWORD) {
@@ -92,7 +114,7 @@ Promise.all([
                     return false;
                 }
             }
-            const secretManager = SecretManager.New();
+
             let {JWT_PRIVATE_KEY, JWT_PUBLIC_KEY} = await secretManager.getSecrets('secretkey/auth');
             if (!JWT_PRIVATE_KEY || !JWT_PUBLIC_KEY) {
                 JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
@@ -102,6 +124,7 @@ Promise.all([
                 }
                 await secretManager.setSecrets('secretkey/auth', {JWT_PRIVATE_KEY, JWT_PUBLIC_KEY});
             }
+
             return true;
         })
 

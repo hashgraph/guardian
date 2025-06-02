@@ -31,7 +31,8 @@ import {
     ValidateConfiguration,
     Wallet,
     Workers,
-    entities
+    entities,
+    JwtServicesValidator
 } from '@guardian/common';
 import { ApplicationStates, PolicyEvents, PolicyStatus, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
@@ -119,20 +120,32 @@ Promise.all([
 
     DatabaseServer.connectGridFS();
 
-    new PolicyServiceChannelsContainer().setConnection(cn);
-    new TransactionLogger().initialization(
-        cn,
-        process.env.TRANSACTION_LOG_LEVEL as TransactionLogLvl
-    );
-    new GuardiansService().setConnection(cn).init();
-    const channel = new MessageBrokerChannel(cn, 'guardians');
-
-    const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
-
-    const state = new ApplicationState();
-    await state.setServiceName('GUARDIAN_SERVICE').setConnection(cn).init();
-    const secretManager = SecretManager.New();
     await new OldSecretManager().setConnection(cn).init();
+    const secretManager = SecretManager.New();
+    const jwtServiceName = 'GUARDIAN_SERVICE';
+
+    JwtServicesValidator.setSecretManager(secretManager)
+    JwtServicesValidator.setServiceName(jwtServiceName)
+
+    let { SERVICE_JWT_PUBLIC_KEY } = await secretManager.getSecrets(`publickey/jwt-service/${jwtServiceName}`);
+    if (!SERVICE_JWT_PUBLIC_KEY) {
+        SERVICE_JWT_PUBLIC_KEY = process.env.SERVICE_JWT_PUBLIC_KEY;
+        if (SERVICE_JWT_PUBLIC_KEY?.length < 8) {
+            throw new Error(`${jwtServiceName} service jwt keys not configured`);
+        }
+        await secretManager.setSecrets(`publickey/jwt-service/${jwtServiceName}`, {SERVICE_JWT_PUBLIC_KEY});
+    }
+
+    let { SERVICE_JWT_SECRET_KEY } = await secretManager.getSecrets(`secretkey/jwt-service/${jwtServiceName}`);
+
+    if (!SERVICE_JWT_SECRET_KEY) {
+        SERVICE_JWT_SECRET_KEY = process.env.SERVICE_JWT_SECRET_KEY;
+        if (SERVICE_JWT_SECRET_KEY?.length < 8) {
+            throw new Error(`${jwtServiceName} service jwt keys not configured`);
+        }
+        await secretManager.setSecrets(`secretkey/jwt-service/${jwtServiceName}`, {SERVICE_JWT_SECRET_KEY});
+    }
+
     let { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator');
     if (!OPERATOR_ID) {
         OPERATOR_ID = process.env.OPERATOR_ID;
@@ -143,6 +156,20 @@ Promise.all([
         })
 
     }
+
+    new PolicyServiceChannelsContainer().setConnection(cn);
+    new TransactionLogger().initialization(
+        cn,
+        process.env.TRANSACTION_LOG_LEVEL as TransactionLogLvl,
+    );
+    new GuardiansService().setConnection(cn).init();
+    const channel = new MessageBrokerChannel(cn, 'guardians');
+
+    const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
+
+    const state = new ApplicationState();
+    await state.setServiceName('GUARDIAN_SERVICE').setConnection(cn).init();
+
     await new AISuggestionsService().setConnection(cn).init();
 
     await state.updateState(ApplicationStates.STARTED);

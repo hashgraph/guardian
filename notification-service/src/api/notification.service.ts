@@ -2,11 +2,13 @@ import { Notification } from '../entity/notification.entity.js';
 import { Progress } from '../entity/progress.entity.js';
 import {
     DatabaseServer,
+    JwtServiceAuthGuard,
     MessageError,
     MessageResponse,
 } from '@guardian/common';
 import { NotifyAPI, OrderDirection } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import {
     Client,
     ClientProxy,
@@ -507,5 +509,11 @@ export class NotificationService {
  */
 @Module({
     controllers: [NotificationService],
+    providers: [
+        {
+          provide: APP_GUARD,
+          useFactory: () => new JwtServiceAuthGuard(Object.values(NotifyAPI)),
+        },
+      ],
 })
 export class NotificationModule {}

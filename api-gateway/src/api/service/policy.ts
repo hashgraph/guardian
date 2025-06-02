@@ -141,7 +141,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy status',
         required: false,
-        example: "PUBLISH"
+        example: 'PUBLISH'
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -1313,7 +1313,6 @@ export class PolicyApi {
             await InternalException(error, this.logger);
         }
     }
-
 
     /**
      * Get policy documents

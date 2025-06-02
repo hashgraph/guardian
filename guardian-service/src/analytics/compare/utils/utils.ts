@@ -128,12 +128,12 @@ export class CompareUtils {
             .addLine();
 
         CompareUtils.convertToCsvRecursive(csv, object);
-        
+
         return csv;
     }
 
     private static convertToCsvRecursive(csv: CSV, object: any, index?: string, parentKey?: string) {
-        
+
         if (Array.isArray(object)) {
             const arrayIndex = index || '0';
             const arrayKey = parentKey || '';
@@ -147,11 +147,11 @@ export class CompareUtils {
 
             object.forEach((value, i) => {
                 const path = (arrayIndex ? arrayIndex + '.' + i : i).toString();
-                const key = (parentKey ? i + '.' + parentKey : i).toString();
+                // const key = (parentKey ? i + '.' + parentKey : i).toString();
 
                 CompareUtils.convertToCsvRecursive(csv, value, path, i.toString());
             })
-        } else if (object != null && typeof object === 'object') {
+        } else if (object !== null && typeof object === 'object') {
             let objectIndex = null;
             const objectKey = parentKey || '';
 
