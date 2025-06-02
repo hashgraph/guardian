@@ -6912,6 +6912,45 @@ paths:
       summary: Change active virtual user.
       tags:
         - policies
+  /policies/{policyId}/dry-run/block:
+    post:
+      description: >-
+        . Only users with the Standard Registry role are allowed to make the
+        request.
+      operationId: PolicyApi_runBlock
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      requestBody:
+        required: true
+        description: Block config.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: .
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: .
+      tags:
+        - policies
   /policies/{policyId}/savepoint/create:
     post:
       description: >-
