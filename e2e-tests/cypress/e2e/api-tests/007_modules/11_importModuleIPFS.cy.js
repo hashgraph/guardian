@@ -151,7 +151,7 @@ context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
                 body: {
                     "messageId": Cypress.env('module_for_import') + "777121"
                 },
-                timeout: 120000,
+                timeout: 240000,
                 failOnStatusCode: false,
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.ERROR);

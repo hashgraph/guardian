@@ -76,7 +76,7 @@ context("Logs", { tags: ['logs', 'thirdPool', 'all'] }, () => {
                 }
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                let wn;
+                let wn = 0;
                 response.body.forEach(element => {
                     if (element.startsWith("WORKER"))
                         wn++;
