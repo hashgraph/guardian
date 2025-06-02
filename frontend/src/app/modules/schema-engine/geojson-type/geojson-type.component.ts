@@ -1,11 +1,10 @@
-import { ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild, } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild, } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { GeoJsonSchema, GeoJsonType } from '@guardian/interfaces';
 import ajv from 'ajv';
 import { Subject } from 'rxjs';
 import { MapService } from 'src/app/services/map.service';
 import { ajvSchemaValidator } from 'src/app/validators/ajv-schema.validator';
-
 import 'ol/ol.css';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import Map from 'ol/Map.js';
@@ -15,20 +14,16 @@ import { getCenter } from 'ol/extent';
 import { Coordinate } from 'ol/coordinate';
 import { toLonLat, transform } from 'ol/proj';
 import { Cluster, OSM, Vector as VectorSource } from 'ol/source.js';
-import { doubleClick, pointerMove, singleClick } from 'ol/events/condition.js';
+import { doubleClick, pointerMove } from 'ol/events/condition.js';
 import { LineString, MultiLineString, MultiPoint, MultiPolygon, Polygon } from 'ol/geom';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer.js';
 import Select from 'ol/interaction/Select.js';
-import Feature from 'ol/Feature';
-
-
 
 const MAP_OPTIONS = {
     center: [0, 0],
     zoom: 0,
     maxZoom: 20,
 };
-
 const CLUSTER_DISTANCE = {
     distance: 35,
     minDistance: 20,
@@ -51,7 +46,6 @@ const POINT = {
     SELECTED_COLOR: '#fff',
     SELECTED_BORDER_COLOR: '#19BE47',
 };
-
 const POLYGON = {
     FILL_COLOR: 'rgba(25, 190, 71, 0.3)',
     BORDER_COLOR: '#19BE47',
@@ -78,7 +72,6 @@ const selectedCluster = new CircleStyle({
         width: CLUSTER.BORDER_WIDTH,
     }),
 });
-
 const pointStyle = new CircleStyle({
     radius: POINT.RADIUS,
     fill: new Fill({ color: POINT.COLOR }),
@@ -95,7 +88,6 @@ const selectedPoint = new CircleStyle({
         width: POINT.BORDER_WIDTH,
     }),
 });
-
 const polygonStyle = new Style({
     fill: new Fill({
         color: POLYGON.FILL_COLOR,
@@ -108,15 +100,6 @@ const polygonStyle = new Style({
 const selectedPolygon = new Style({
     fill: new Fill({
         color: POLYGON.SELECTED_FILL_COLOR,
-    }),
-    stroke: new Stroke({
-        color: POLYGON.SELECTED_BORDER_COLOR,
-        width: POLYGON.SELECTED_BORDER_WIDTH,
-    }),
-});
-const selectedPolygon2 = new Style({
-    fill: new Fill({
-        color: POLYGON.SELECTED_FILL_COLOR2,
     }),
     stroke: new Stroke({
         color: POLYGON.SELECTED_BORDER_COLOR,
@@ -139,7 +122,6 @@ const defaultStyles: any = {
     MultiLineString: polygonStyle,
     MultiPolygon: polygonStyle,
 };
-
 const activeStyles: any = {
     Point: new Style({
         image: selectedPoint,
@@ -155,7 +137,6 @@ const activeStyles: any = {
     MultiLineString: selectedPolygon,
     MultiPolygon: selectedPolygon,
 };
-
 const selectedStyles: any = {
     Point: new Style({
         image: selectedPoint,
@@ -169,7 +150,7 @@ const selectedStyles: any = {
     LineString:  new Style({
         image: selectedPoint,
     }),
-    Polygon: selectedPolygon2,
+    Polygon: selectedPolygon,
     MultiLineString: selectedPolygon,
     MultiPolygon: selectedPolygon,
 };
@@ -198,7 +179,6 @@ function styleFunction(feature: any) {
         }
     }
 }
-
 function activeStyleFunction(feature: any) {
     const geometry = feature.getGeometry();
     if (geometry) {
@@ -213,7 +193,6 @@ function activeStyleFunction(feature: any) {
         }
     }
 }
-
 function selectedStyleFunction(feature: any) {
     const geometry = feature.getGeometry();
     if (geometry) {
@@ -245,21 +224,15 @@ function selectedStyleFunction(feature: any) {
     styleUrls: ['./geojson-type.component.scss'],
 })
 export class GeojsonTypeComponent implements OnChanges {
+    @ViewChild('map', { static: false }) mapElementRef!: ElementRef;
+
     @Input('formGroup') control?: UntypedFormControl;
     @Input('preset') presetDocument: any = null;
     @Input('disabled') isDisabled: boolean = false;
 
     updateCoordinates: Subject<any> = new Subject<any>();
-
-    center2: any = {
-        lat: 37,
-        lng: -121,
-    };
-
-
     type: GeoJsonType = GeoJsonType.POINT;
     coordinatesPlaceholder!: string;
-
     coordinates: string = '';
     parsedCoordinates: any;
     isJSON: boolean = false;
@@ -274,18 +247,10 @@ export class GeojsonTypeComponent implements OnChanges {
         { label: 'MultiLineString', value: 'MultiLineString' }
     ];
 
-
-    ///
-
-    @ViewChild('map', { static: false }) mapElementRef!: ElementRef;
-    
-    @Input() geoShapes?: any[] = [];
-
     public map!: Map | null;
     public mapCreated: boolean = false;;
     private vectorSource: VectorSource = new VectorSource();
     private geoShapesSource: VectorSource = new VectorSource();
-    private selectedSource: VectorSource = new VectorSource();
     private center!: Coordinate;
 
     private selectedFeatureIndex: number = 0;
@@ -303,8 +268,6 @@ export class GeojsonTypeComponent implements OnChanges {
         if (changes?.isDisabled && !changes?.isDisabled.firstChange) {
             this.onViewTypeChange(this.control?.value);
         }
-
-        // this.setupMap();
     }
 
     ngAfterViewInit(): void {
@@ -318,58 +281,11 @@ export class GeojsonTypeComponent implements OnChanges {
         this.updateCoordinates.subscribe(this.onCoordinatesUpdate.bind(this));
         this.onViewTypeChange(this.presetDocument, false);
 
-        // this.map = null;
         this.setupMap();
     }
 
     private setupMap() {
-        // this.markers = [];
-        // this.polygons = [];
-        // this.lines = [];
-
-        if (this.geoShapes && this.geoShapes.length > 0) {
-            const shapeFeatures: any[] = [];
-
-            this.geoShapes.forEach((shape) => {
-                if (Array.isArray(shape)) {
-                    for (const item of shape) {
-                        var feature = {
-                            type: 'Feature',
-                            geometry: item,
-                        }
-                        
-                        shapeFeatures.push(feature);
-                        this.center = transform(this.getFeatureCenter(item), 'EPSG:4326', 'EPSG:3857');
-                    }
-                }
-                else {
-                    var feature = {
-                        type: 'Feature',
-                        geometry: shape,
-                    }
-                    
-                    shapeFeatures.push(feature);
-                    this.center = transform(this.getFeatureCenter(shape), 'EPSG:4326', 'EPSG:3857');
-                }
-            });
-
-            const features = new GeoJSON({
-                featureProjection: 'EPSG:3857',
-            }).readFeatures({
-                type: 'FeatureCollection',
-                features: shapeFeatures,
-            });
-
-            this.vectorSource?.clear(true);
-            this.vectorSource?.addFeatures(features);
-
-            this.geoShapesSource?.clear(true);
-            this.geoShapesSource?.addFeatures(features);
-        }
-
-        this.selectedSource?.clear(true);
-
-        if (!this.map && !this.mapCreated) { // ?
+        if (!this.map && !this.mapCreated) {
             this.mapCreated = true;
             setTimeout(() => {
                 this.initMap();
@@ -377,34 +293,12 @@ export class GeojsonTypeComponent implements OnChanges {
                 if (this.center) {
                     this.map?.getView().animate({
                         center: this.center,
-                        zoom: 15,
-                        duration: 1000,
+                        zoom: 7,
+                        duration: 500,
                     });
                 }
             }, 0)
         }
-    }
-
-    private selectPolygon(coordinates: any) {
-        const shapeFeatures: any[] = [];
-
-        shapeFeatures.push({
-            type: 'Feature',
-            geometry: {
-                type: GeoJsonType.POLYGON,
-                coordinates: coordinates,
-            },
-        });
-
-        const features = new GeoJSON({
-            featureProjection: 'EPSG:3857',
-        }).readFeatures({
-            type: 'FeatureCollection',
-            features: shapeFeatures,
-        });
-
-        this.selectedSource?.clear(true);
-        this.selectedSource?.addFeatures(features);
     }
     
     private initMap() {
@@ -423,19 +317,13 @@ export class GeojsonTypeComponent implements OnChanges {
             style: styleFunction,
         });
 
-        const selectedLayer = new VectorLayer({
-            source: this.selectedSource,
-            style: selectedStyleFunction,
-        });
-
         this.map = new Map({
             layers: [
                 new TileLayer({
                     source: new OSM(),
                 }),
                 geoShapesLayer,
-                clusterLayer,
-                selectedLayer,
+                clusterLayer
             ],
             target: this.mapElementRef.nativeElement,
             view: new View(MAP_OPTIONS),
@@ -447,21 +335,6 @@ export class GeojsonTypeComponent implements OnChanges {
         const selectDoubleClick = new Select({
             condition: doubleClick,
             style: styleFunction,
-        });
-        selectDoubleClick.getFeatures().on('add', (event) => {
-            // tslint:disable-next-line:no-shadowed-variable
-            const features = event.element.get('features');
-            const geometry = event.element.getGeometry();
-
-            if (geometry && features?.length == 1 && features[0].get('projectId')) {
-                const geometryType = geometry.getType();
-                if (geometryType == 'Point') {
-                    // this.router.navigate([
-                    //     '/vc-documents',
-                    //     features[0].get('projectId'),
-                    // ]);
-                }
-            }
         });
 
         this.map.on('singleclick', (evt) => {
@@ -478,10 +351,6 @@ export class GeojsonTypeComponent implements OnChanges {
 
                             this.lastSelectedGeometry = feature;
                             this.lastSelectedCoordinates = clickCoord;
-                            // this.selectPolygon(ring.getCoordinates().map(ring2 =>
-                            //     ring2.map(coord => toLonLat(coord))
-                            // ));
-
                             break;
                         }
                     }
@@ -510,10 +379,6 @@ export class GeojsonTypeComponent implements OnChanges {
             if (!clickOnFeature) {
                 this.mapClick(toLonLat(evt.coordinate));
             }
-        });
-
-        this.map.on('dblclick', (evt) => {
-            evt.preventDefault();
         });
 
         this.map.getViewport().addEventListener('contextmenu', (evt) => {
@@ -569,85 +434,19 @@ export class GeojsonTypeComponent implements OnChanges {
 
         this.map.addInteraction(selectHover);
         this.map.addInteraction(selectDoubleClick);
-        
-        if (this.geoShapes && this.geoShapes.length > 0) {
-            this.map.getView().on('change:resolution', () => {
-                const zoom = this.map?.getView().getZoom();
-
-                if (zoom && zoom > 10) {
-                    clusterLayer.setVisible(false);
-                    geoShapesLayer.setVisible(true);
-                    selectedLayer.setVisible(true);
-                } else {
-                    clusterLayer.setVisible(true);
-                    geoShapesLayer.setVisible(false);
-                    selectedLayer.setVisible(false);
-                }
-            });
-        }
     }
     
     private updateMap(updateInput: boolean = false) {
-
         const shapeFeatures: any[] = [];
         
-
         shapeFeatures.push({
             type: 'Feature',
             geometry: {
                 type: this.type,
                 coordinates: this.parsedCoordinates,
             },
-            properties: {
-                // projectId: location.projectId,
-            },
         });
-
-        console.log(shapeFeatures);
-        console.log(this.parsedCoordinates);
-
-        // shapeFeatures.push({
-        //     type: 'Feature',
-        //     geometry: new LineString([[1,1], [4,4]]),
-        //     properties: {
-        //         // projectId: location.projectId,
-        //     },
-        // });
-
-        // var feature = new Feature({
-        //     geometry: new LineString([
-        //     [1, 1],
-        //     [4, 4]
-        // ])});
-
-        // shapeFeatures.push(feature);
         
-        [
-            [
-                [
-                    [1, 1],
-                    [1, 4],
-                    [4, 4],
-                    [4, 1]
-                ],
-                [
-                    [5, 1],
-                    [5, 4],
-                    [8, 4],
-                    [8, 1]
-                ]
-            ],
-            [
-                [
-                    [15, 1],
-                    [15, 4],
-                    [18, 4],
-                    [18, 1]
-                ]
-            ]
-        ]
-        
-
         const features = new GeoJSON({
             featureProjection: 'EPSG:3857',
         }).readFeatures({
@@ -659,25 +458,15 @@ export class GeojsonTypeComponent implements OnChanges {
             const coords = this.parsedCoordinates;
             const clickCoord = this.lastSelectedCoordinates;
 
-            console.log(coords);
-            
-
             for (let i = 0; i < coords.length; i++) {
                 const ring = new Polygon([coords[i]]);
                 if (ring.intersectsCoordinate(clickCoord)) {
                     this.selectedRingIndex = i;
 
-                    // this.selectPolygon(ring.getCoordinates().map(ring2 =>
-                    //     ring2.map(coord => toLonLat(coord))
-                    // ));
-
                     break;
                 }
             }
         }
-
-        // this.vectorSource?.clear(true);
-        // this.vectorSource?.addFeatures(features);
 
         this.geoShapesSource?.clear(true);
         this.geoShapesSource?.addFeatures(features);
@@ -689,92 +478,16 @@ export class GeojsonTypeComponent implements OnChanges {
                 coordinates: this.parsedCoordinates,
             }, true);
         }
-        
-
-
-        if (this.geoShapes && this.geoShapes.length > 0) {
-            const shapeFeatures: any[] = [];
-
-            this.geoShapes.forEach((shape) => {
-                if (Array.isArray(shape)) {
-                    for (const item of shape) {
-                        var feature = {
-                            type: 'Feature',
-                            geometry: item,
-                        }
-                        
-                        shapeFeatures.push(feature);
-                        this.center = transform(this.getFeatureCenter(item), 'EPSG:4326', 'EPSG:3857');
-                    }
-                }
-                else {
-                    var feature = {
-                        type: 'Feature',
-                        geometry: shape,
-                    }
-                    
-                    shapeFeatures.push(feature);
-                    this.center = transform(this.getFeatureCenter(shape), 'EPSG:4326', 'EPSG:3857');
-                }
-            });
-
-            const features = new GeoJSON({
-                featureProjection: 'EPSG:3857',
-            }).readFeatures({
-                type: 'FeatureCollection',
-                features: shapeFeatures,
-            });
-
-            this.vectorSource?.clear(true);
-            this.vectorSource?.addFeatures(features);
-
-            this.geoShapesSource?.clear(true);
-            this.geoShapesSource?.addFeatures(features);
-        }
     }
 
-    private getFeatureCenter(feature: any): number[] {
-        if (!feature || !feature.type || !feature.coordinates) return [0, 0];
-
-        const { type, coordinates } = feature;
-
-        switch (type) {
-            case 'Point': {
-                return coordinates;
-            }
-            case 'MultiPoint': {
-                const geometry = new MultiPoint(coordinates);
-                return getCenter(geometry.getExtent());
-            }
-            case 'LineString': {
-                const geometry = new LineString(coordinates);
-                return getCenter(geometry.getExtent());
-            }
-            case 'Polygon': {
-                const geometry = new Polygon(coordinates);
-                return getCenter(geometry.getExtent());
-            }
-            case 'MultiLineString': {
-                const geometry = new MultiLineString(coordinates);
-                return getCenter(geometry.getExtent());
-            }
-            case 'MultiPolygon': {
-                const geometry = new MultiPolygon(coordinates);
-                return getCenter(geometry.getExtent());
-            }
-            default:
-                return [0, 0];
-        }
-    }
-
-    setControlValue(value: any, dirty = true) {
+    private setControlValue(value: any, dirty = true) {
         this.control?.patchValue(value);
         if (dirty) {
             this.control?.markAsDirty();
         }
     }
 
-    onCoordinatesUpdate(value: any) {
+    private onCoordinatesUpdate(value: any) {
         if (!value) {
             this.coordinates = '';
             this.setControlValue({});
@@ -792,31 +505,6 @@ export class GeojsonTypeComponent implements OnChanges {
         if (this.isDisabled) {
             return;
         }
-        
-        [
-            [
-                [
-                    [1, 1],
-                    [1, 4],
-                    [4, 4],
-                    [4, 1]
-                ],
-            ],
-            [
-                [
-                    [5, 1],
-                    [5, 4],
-                    [8, 4],
-                    [8, 1]
-                ],
-                [
-                    [15, 1],
-                    [15, 4],
-                    [18, 4],
-                    [18, 1]
-                ]
-            ]
-        ]
         
         try {
             switch (this.type) {
@@ -890,7 +578,7 @@ export class GeojsonTypeComponent implements OnChanges {
         this.updateMap(true);
     }
 
-    onTypeChange(dirty = true) {
+    public onTypeChange(dirty = true) {
         this.resetCoordinatesStructure();
 
         this.setControlValue({}, dirty);
@@ -990,7 +678,7 @@ export class GeojsonTypeComponent implements OnChanges {
         this.updateMap(false);
     }
 
-    onViewTypeChange(value: any, dirty = true) {
+    public onViewTypeChange(value: any, dirty = true) {
         if (!value) {
             return;
         }
@@ -1014,7 +702,7 @@ export class GeojsonTypeComponent implements OnChanges {
         }
     }
 
-    jsonChanged() {
+    public jsonChanged() {
         try {
             this.setControlValue(JSON.parse(this.jsonInput));
         } catch {
@@ -1022,7 +710,7 @@ export class GeojsonTypeComponent implements OnChanges {
         }
     }
 
-    coordinatesChanged(dirty = true) {
+    public coordinatesChanged(dirty = true) {
         try {
 
             this.parsedCoordinates = JSON.parse(this.coordinates);
@@ -1033,53 +721,57 @@ export class GeojsonTypeComponent implements OnChanges {
                 coordinates: parsedCoordinates,
             }, dirty);
 
-            switch (this.type) {
-                case GeoJsonType.POINT:
-                    this.center2 = {
-                        lat: parsedCoordinates[1],
-                        lng: parsedCoordinates[0],
-                    };
-                    break;
-                case GeoJsonType.POLYGON:
-                    this.center2 = {
-                        lat: parsedCoordinates[0][0][1],
-                        lng: parsedCoordinates[0][0][0],
-                    };
-                    break;
-                case GeoJsonType.LINE_STRING:
-                    this.center2 = {
-                        lat: parsedCoordinates[0][1],
-                        lng: parsedCoordinates[0][0],
-                    };
-                    break;
-                case GeoJsonType.MULTI_POINT:
-                    this.center2 = {
-                        lat: parsedCoordinates[0][1],
-                        lng: parsedCoordinates[0][0],
-                    };
-                    break;
-                case GeoJsonType.MULTI_POLYGON:
-                    this.center2 = {
-                        lat: parsedCoordinates[0][0][0][1],
-                        lng: parsedCoordinates[0][0][0][0],
-                    };
-                    break;
-                case GeoJsonType.MULTI_LINE_STRING:
-                    this.center2 = {
-                        lat: parsedCoordinates[0][0][1],
-                        lng: parsedCoordinates[0][0][0],
-                    };
-                    break;
-                default:
-                    break;
-            }
+            setTimeout(() => {
+                let geometry: any;
+                switch (this.type) {
+                    case GeoJsonType.POINT: {
+                        this.center = transform(this.parsedCoordinates, 'EPSG:4326', 'EPSG:3857');
+                        break;
+                    }
+                    case GeoJsonType.MULTI_POINT: {
+                        const geometry = new MultiPoint(this.parsedCoordinates);
+                        this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
+                        break;
+                    }
+                    case GeoJsonType.POLYGON: {
+                        const geometry = new Polygon(this.parsedCoordinates);
+                        this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
+                        break;
+                    }
+                    case GeoJsonType.MULTI_POLYGON: {
+                        const geometry = new MultiPolygon(this.parsedCoordinates);
+                        this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
+                        break;
+                    }
+                    case GeoJsonType.LINE_STRING: {
+                        const geometry = new LineString(this.parsedCoordinates);
+                        this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
+                        break;
+                    }
+                    case GeoJsonType.MULTI_LINE_STRING: {
+                        const geometry = new MultiLineString(this.parsedCoordinates);
+                        this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
+                        break;
+                    }
+                    default:
+                        break;
+                }
+
+                if (this.center?.length > 0) {
+                    this.map?.getView().animate({
+                        center: this.center,
+                        zoom: 7,
+                        duration: 500,
+                    });
+                }
+            }, 500)
                       
             this.updateMap(true);
         } catch {
             if (this.coordinates == '') {
                 setTimeout(() => {
                     this.resetCoordinatesStructure();
-                    // this.coordinates = JSON.stringify(this.parsedCoordinates, null, 4);
+                    this.updateMap();
                 }, 100)
             } else {
                 setTimeout(() => {
