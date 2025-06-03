@@ -251,7 +251,7 @@ export class GeojsonTypeComponent implements OnChanges {
     public mapCreated: boolean = false;;
     private vectorSource: VectorSource = new VectorSource();
     private geoShapesSource: VectorSource = new VectorSource();
-    private center!: Coordinate;
+    private center: Coordinate | null;
 
     private selectedFeatureIndex: number = 0;
     private selectedRingIndex: number = 0;
@@ -722,42 +722,28 @@ export class GeojsonTypeComponent implements OnChanges {
             }, dirty);
 
             setTimeout(() => {
-                let geometry: any;
-                switch (this.type) {
-                    case GeoJsonType.POINT: {
-                        this.center = transform(this.parsedCoordinates, 'EPSG:4326', 'EPSG:3857');
-                        break;
-                    }
-                    case GeoJsonType.MULTI_POINT: {
-                        const geometry = new MultiPoint(this.parsedCoordinates);
-                        this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
-                        break;
-                    }
-                    case GeoJsonType.POLYGON: {
-                        const geometry = new Polygon(this.parsedCoordinates);
-                        this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
-                        break;
-                    }
-                    case GeoJsonType.MULTI_POLYGON: {
-                        const geometry = new MultiPolygon(this.parsedCoordinates);
-                        this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
-                        break;
-                    }
-                    case GeoJsonType.LINE_STRING: {
-                        const geometry = new LineString(this.parsedCoordinates);
-                        this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
-                        break;
-                    }
-                    case GeoJsonType.MULTI_LINE_STRING: {
-                        const geometry = new MultiLineString(this.parsedCoordinates);
-                        this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
-                        break;
-                    }
-                    default:
-                        break;
+                if (this.type == GeoJsonType.POINT && this.parsedCoordinates?.[0]) {
+                    this.center = transform(this.parsedCoordinates, 'EPSG:4326', 'EPSG:3857');
+                } else if (this.type == GeoJsonType.MULTI_POINT && this.parsedCoordinates?.[0]?.[0]) {
+                    const geometry = new MultiPoint(this.parsedCoordinates);
+                    this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
+                } else if (this.type == GeoJsonType.POLYGON && this.parsedCoordinates?.[0]?.[0]?.[0]) {
+                    const geometry = new Polygon(this.parsedCoordinates);
+                    this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
+                } else if (this.type == GeoJsonType.MULTI_POLYGON && this.parsedCoordinates?.[0]?.[0]?.[0]?.[0]) {
+                    const geometry = new MultiPolygon(this.parsedCoordinates);
+                    this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
+                } else if (this.type == GeoJsonType.LINE_STRING && this.parsedCoordinates?.[0]?.[0]) {
+                    const geometry = new LineString(this.parsedCoordinates);
+                    this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
+                } else if (this.type == GeoJsonType.MULTI_LINE_STRING && this.parsedCoordinates?.[0]?.[0]?.[0]) {
+                    const geometry = new MultiLineString(this.parsedCoordinates);
+                    this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
+                } else {
+                    this.center = null;
                 }
-
-                if (this.center?.length > 0) {
+                
+                if (this.center && this.center.length > 0) {
                     this.map?.getView().animate({
                         center: this.center,
                         zoom: 7,
