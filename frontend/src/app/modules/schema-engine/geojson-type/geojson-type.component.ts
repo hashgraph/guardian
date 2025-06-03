@@ -743,7 +743,7 @@ export class GeojsonTypeComponent implements OnChanges {
                     this.center = null;
                 }
                 
-                if (this.center && this.center.length > 0) {
+                if (this.center && this.center.length > 1) {
                     this.map?.getView().animate({
                         center: this.center,
                         zoom: 7,
