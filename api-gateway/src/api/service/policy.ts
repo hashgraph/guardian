@@ -136,6 +136,13 @@ export class PolicyApi {
         required: false,
         example: 'local'
     })
+    @ApiQuery({
+        name: 'status',
+        type: String,
+        description: 'Policy status',
+        required: false,
+        example: 'PUBLISH'
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -154,7 +161,8 @@ export class PolicyApi {
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
-        @Query('type') type?: string
+        @Query('type') type?: string,
+        @Query('status') status?: string
     ): Promise<any> {
         if (!user.did && user.role !== UserRole.AUDITOR) {
             return res.header('X-Total-Count', 0).send([]);
@@ -162,7 +170,7 @@ export class PolicyApi {
         try {
             const options: any = {
                 fields: Object.values(POLICY_REQUIRED_PROPS),
-                filters: {},
+                filters: status ? { status: { $in: status.split(',') } } : {},
                 type,
                 pageIndex,
                 pageSize
@@ -1078,6 +1086,342 @@ export class PolicyApi {
             return res.header('X-Total-Count', count).send(documents);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Get policy documents with advanced filters
+     */
+    @Get('/:policyId/search-documents')
+    @Auth(
+        Permissions.POLICIES_POLICY_READ,
+        Permissions.POLICIES_POLICY_EXECUTE,
+    )
+    @ApiOperation({
+        summary: 'Get policy documents with filters.',
+        description: 'Get policy documents with filters.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'textSearch',
+        type: String,
+        description: 'Text search',
+        required: false,
+        example: 'Example'
+    })
+    @ApiQuery({
+        name: 'schemas',
+        type: String,
+        description: 'Schemas',
+        required: false,
+        example: ['#001, #002']
+    })
+    @ApiQuery({
+        name: 'owners',
+        type: String,
+        description: 'Owners',
+        required: false,
+        example: ['001, 002']
+    })
+    @ApiQuery({
+        name: 'tokens',
+        type: String,
+        description: 'Tokens',
+        required: false,
+        example: ['001, 002']
+    })
+    @ApiQuery({
+        name: 'related',
+        type: String,
+        description: 'Related',
+        required: false,
+        example: ['001, 002']
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Documents.',
+        isArray: true,
+        headers: pageHeader,
+        schema: {
+            type: 'array',
+            items: {
+                type: 'string'
+            }
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getPolicyDocumentsExport(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Param('policyId') policyId: string,
+        @Query('textSearch') textSearch: string,
+        @Query('schemas') schemas: string,
+        @Query('owners') owners: string,
+        @Query('tokens') tokens: string,
+        @Query('related') related: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            if (user.role !== UserRole.STANDARD_REGISTRY) {
+                owners = user.did;
+            }
+            const [documents, count] = await engineService.searchDocuments(
+                new EntityOwner(user),
+                policyId,
+                textSearch,
+                schemas?.split(','),
+                owners?.split(','),
+                tokens?.split(','),
+                related?.split(','),
+                pageIndex,
+                pageSize,
+            );
+            return res.header('X-Total-Count', count).send(documents);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Get policy documents
+     */
+    @Get('/:policyId/export-documents')
+    @Auth(
+        Permissions.POLICIES_POLICY_READ,
+        Permissions.POLICIES_POLICY_EXECUTE,
+    )
+    @ApiOperation({
+        summary: 'Returns a zip file containing policy project data.',
+        description: 'Export policy project data in CSV format.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'ids',
+        type: String,
+        description: 'Ids',
+        required: false,
+        example: ['001, 002']
+    })
+    @ApiQuery({
+        name: 'textSearch',
+        type: String,
+        description: 'Text search',
+        required: false,
+        example: 'Example'
+    })
+    @ApiQuery({
+        name: 'schemas',
+        type: String,
+        description: 'Schemas',
+        required: false,
+        example: ['#001, #002']
+    })
+    @ApiQuery({
+        name: 'owners',
+        type: String,
+        description: 'Owners',
+        required: false,
+        example: ['001, 002']
+    })
+    @ApiQuery({
+        name: 'tokens',
+        type: String,
+        description: 'Tokens',
+        required: false,
+        example: ['001, 002']
+    })
+    @ApiQuery({
+        name: 'related',
+        type: String,
+        description: 'Related',
+        required: false,
+        example: ['001, 002']
+    })
+    @ApiOkResponse({
+        description: 'Successful operation. Response zip file.',
+        type: String
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async exportPolicyDocuments(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Query('ids') ids: string,
+        @Query('textSearch') textSearch: string,
+        @Query('schemas') schemas: string,
+        @Query('owners') owners: string,
+        @Query('tokens') tokens: string,
+        @Query('related') related: string,
+        @Response() res: any
+    ): Promise<any> {
+        try {
+            const owner = new EntityOwner(user);
+            if (user.role !== UserRole.STANDARD_REGISTRY) {
+                owners = user.did;
+            }
+            const engineService = new PolicyEngine();
+            const file = await engineService.exportDocuments(
+                owner,
+                policyId,
+                ids?.split(','),
+                textSearch,
+                schemas?.split(','),
+                owners?.split(','),
+                tokens?.split(','),
+                related?.split(','),
+            );
+            res.header('Content-disposition', `attachment; filename=project_data_${Date.now()}`);
+            res.header('Content-type', 'application/zip');
+            return res.send(file);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Get policy documents
+     */
+    @Get('/:policyId/document-owners')
+    @Auth(
+        Permissions.POLICIES_POLICY_READ,
+        Permissions.POLICIES_POLICY_EXECUTE,
+    )
+    @ApiOperation({
+        summary: 'Get policy document owners.',
+        description: 'Get policy document owners.',
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Owner Ids.',
+        isArray: true,
+        headers: pageHeader,
+        schema: {
+            type: 'array',
+            items: {
+                type: 'string'
+            }
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getDocumentOwners(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Param('policyId') policyId: string,
+    ): Promise<string[]> {
+        try {
+            const engineService = new PolicyEngine();
+            const owners = await engineService.getDocumentOwners(
+                new EntityOwner(user),
+                policyId,
+            );
+            if (user.role !== UserRole.STANDARD_REGISTRY) {
+                return res.header('X-Total-Count', 1).send([user.did]);
+            }
+            return res.header('X-Total-Count', owners.length).send(owners);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Get policy tokens
+     */
+    @Get('/:policyId/tokens')
+    @Auth(
+        Permissions.POLICIES_POLICY_READ,
+        Permissions.POLICIES_POLICY_EXECUTE,
+    )
+    @ApiOperation({
+        summary: 'Get policy tokens.',
+        description: 'Get policy tokens.',
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Token Ids.',
+        isArray: true,
+        headers: pageHeader,
+        schema: {
+            type: 'array',
+            items: {
+                type: 'string'
+            }
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getTokens(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Param('policyId') policyId: string,
+    ): Promise<string[]> {
+        try {
+            const engineService = new PolicyEngine();
+            const tokens = await engineService.getTokens(
+                new EntityOwner(user),
+                policyId,
+            );
+            return res.header('X-Total-Count', tokens.length).send(tokens);
+        } catch (error) {
+            await InternalException(error, this.logger);
         }
     }
 

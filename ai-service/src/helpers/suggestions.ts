@@ -6,7 +6,6 @@ import { GenerateUUIDv4 } from '@guardian/interfaces';
  */
 @Singleton
 export class AISuggestionService extends NatsService {
-
     /**
      * Message queue name
      */

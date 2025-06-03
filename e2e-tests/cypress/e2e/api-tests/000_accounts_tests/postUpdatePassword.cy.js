@@ -125,5 +125,23 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
         }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
         })
-    })
-})
+    });
+
+    it("Change password with weak password - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.ChangePassword,
+            body: {
+                username: name,
+                oldPassword: "test",
+                newPassword: "tt"
+            },
+            failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
+            expect(response.body.message).eql(
+                "Password must be at least 4 characters long."
+            );
+        })
+    });
+});
