@@ -230,7 +230,6 @@ export class GeojsonTypeComponent implements OnChanges {
     @Input('preset') presetDocument: any = null;
     @Input('disabled') isDisabled: boolean = false;
 
-    updateCoordinates: Subject<any> = new Subject<any>();
     type: GeoJsonType = GeoJsonType.POINT;
     coordinatesPlaceholder!: string;
     coordinates: string = '';
@@ -278,7 +277,6 @@ export class GeojsonTypeComponent implements OnChanges {
             ajvSchemaValidator(new ajv().compile(GeoJsonSchema))
         );
         this.control?.updateValueAndValidity();
-        this.updateCoordinates.subscribe(this.onCoordinatesUpdate.bind(this));
         this.onViewTypeChange(this.presetDocument, false);
 
         this.setupMap();
@@ -485,20 +483,6 @@ export class GeojsonTypeComponent implements OnChanges {
         if (dirty) {
             this.control?.markAsDirty();
         }
-    }
-
-    private onCoordinatesUpdate(value: any) {
-        if (!value) {
-            this.coordinates = '';
-            this.setControlValue({});
-            return;
-        }
-
-        this.coordinates = JSON.stringify(value, null, 4);
-        this.setControlValue({
-            type: this.type,
-            coordinates: value,
-        });
     }
 
     private mapClick(coordinates: any) {
@@ -722,21 +706,21 @@ export class GeojsonTypeComponent implements OnChanges {
             }, dirty);
 
             setTimeout(() => {
-                if (this.type == GeoJsonType.POINT && this.parsedCoordinates?.[0]) {
+                if (this.type == GeoJsonType.POINT && this.parsedCoordinates?.length == 2) {
                     this.center = transform(this.parsedCoordinates, 'EPSG:4326', 'EPSG:3857');
-                } else if (this.type == GeoJsonType.MULTI_POINT && this.parsedCoordinates?.[0]?.[0]) {
+                } else if (this.type == GeoJsonType.MULTI_POINT && this.parsedCoordinates?.[0]?.length == 2) {
                     const geometry = new MultiPoint(this.parsedCoordinates);
                     this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
-                } else if (this.type == GeoJsonType.POLYGON && this.parsedCoordinates?.[0]?.[0]?.[0]) {
+                } else if (this.type == GeoJsonType.POLYGON && this.parsedCoordinates?.[0]?.[0]?.length == 2) {
                     const geometry = new Polygon(this.parsedCoordinates);
                     this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
-                } else if (this.type == GeoJsonType.MULTI_POLYGON && this.parsedCoordinates?.[0]?.[0]?.[0]?.[0]) {
+                } else if (this.type == GeoJsonType.MULTI_POLYGON && this.parsedCoordinates?.[0]?.[0]?.[0]?.length == 2) {
                     const geometry = new MultiPolygon(this.parsedCoordinates);
                     this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
-                } else if (this.type == GeoJsonType.LINE_STRING && this.parsedCoordinates?.[0]?.[0]) {
+                } else if (this.type == GeoJsonType.LINE_STRING && this.parsedCoordinates?.[0]?.length == 2) {
                     const geometry = new LineString(this.parsedCoordinates);
                     this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
-                } else if (this.type == GeoJsonType.MULTI_LINE_STRING && this.parsedCoordinates?.[0]?.[0]?.[0]) {
+                } else if (this.type == GeoJsonType.MULTI_LINE_STRING && this.parsedCoordinates?.[0]?.[0]?.length == 2) {
                     const geometry = new MultiLineString(this.parsedCoordinates);
                     this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
                 } else {
@@ -749,10 +733,10 @@ export class GeojsonTypeComponent implements OnChanges {
                         zoom: 7,
                         duration: 500,
                     });
+                      
+                    this.updateMap(true);
                 }
             }, 500)
-                      
-            this.updateMap(true);
         } catch {
             if (this.coordinates == '') {
                 setTimeout(() => {
