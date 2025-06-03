@@ -1,10 +1,63 @@
-import { DatabaseServer } from "@guardian/common";
+import { DatabaseServer, Policy as PolicyCollection } from "@guardian/common";
 import { BlockData, BlockResult } from "./block-result.js";
 import { ComponentsService } from '../helpers/components-service.js';
-import { IPolicyBlock } from "../policy-engine.interface.js";
+import { IPolicyBlock, IPolicyDocument, IPolicyEventState } from "../policy-engine.interface.js";
 import { PolicyComponentsUtils } from "../policy-components-utils.js";
-import { EventActor, PolicyLink } from "../interfaces/index.js";
+import { EventActor, IPolicyEvent, PolicyLink } from "../interfaces/index.js";
 import { PolicyUser } from "../policy-user.js";
+import { DocumentSignature, DocumentStatus } from "@guardian/interfaces";
+
+class DebugComponentsService extends ComponentsService {
+    private controller: BlockEngine;
+
+    constructor(policy: PolicyCollection, policyId: string, controller: BlockEngine) {
+        super(policy, policyId);
+        this.controller = controller;
+    }
+
+    /**
+     * Write log message
+     * @param message
+     * @protected
+     */
+    public override info(message: string, attributes: string[] | null, userId?: string | null) {
+        this.controller.addLog(message);
+    }
+
+    /**
+     * Write error message
+     * @param message
+     * @protected
+     */
+    public override error(message: string, attributes: string[] | null, userId?: string | null) {
+        this.controller.addError(message);
+        this.controller.stop();
+    }
+
+    /**
+     * Write warn message
+     * @param message
+     * @protected
+     */
+    public override warn(message: string, attributes: string[] | null, userId?: string | null) {
+        this.controller.addLog(message);
+    }
+
+    /**
+     * Write debug message
+     * @param message
+     * @protected
+     */
+    public override debug(message: any) {
+        if (message) {
+            if (typeof message === 'string') {
+                this.controller.addLog(message);
+            } else {
+                this.controller.addLog(JSON.stringify(message));
+            }
+        }
+    }
+}
 
 /**
  * Block Validator
@@ -15,6 +68,7 @@ export class BlockEngine {
     private result: BlockResult;
     private inputEvents: Map<string, Function>;
     private outputEvents: Set<string>;
+    private outputObject: any;
 
     constructor(policyId: string) {
         this.policyId = policyId;
@@ -26,13 +80,36 @@ export class BlockEngine {
         }
     }
 
-    public async build(config: any): Promise<IPolicyBlock> {
-        console.debug('----- 1 ');
+    public addLog(message: string) {
+        this.result.logs.push(message);
+    }
 
+    public addError(message: string) {
+        this.result.errors.push(message);
+    }
+
+    public setInput(doc: any) {
+        this.result.input = doc;
+    }
+
+    public setOutput(doc: any) {
+        this.result.output = doc;
+    }
+
+    public getResult(): BlockResult {
+        return this.result;
+    }
+
+    public stop() {
+        this.outputObject?.resolve();
+    }
+
+    public async build(config: any): Promise<IPolicyBlock> {
+        this.addLog('Building...')
         try {
             const policy = await DatabaseServer.getPolicyById(this.policyId);
             const { tools } = await PolicyComponentsUtils.RegeneratePolicy(policy);
-            const components = new ComponentsService(policy, this.policyId);
+            const components = new DebugComponentsService(policy, this.policyId, this);
             await components.registerPolicy(policy);
             for (const tool of tools) {
                 await components.registerTool(tool);
@@ -55,51 +132,95 @@ export class BlockEngine {
                 this.outputEvents.add(type);
             }
         } catch (error) {
-            this.result.errors.push(error?.toString());
+            this.addError(error?.toString());
         }
-
-        console.debug('----- 2 ');
+        this.addLog('Done');
 
         return this.instance;
     }
 
     public async run(user: PolicyUser, data: BlockData): Promise<BlockResult> {
+        this.addLog('Running...')
         try {
-            console.debug('----- 3 ', user);
-
             if (!this.instance) {
                 throw new Error('Invalid instance.');
             }
             if (!data) {
                 throw new Error('Invalid data.');
             }
-            const doc = await this._getDocument(data);
-            this.result.input = doc;
-            await this._run(user, data, doc);
+            const docs: IPolicyDocument[] = this._getDocuments(user, data);
+            this.setInput(docs);
+            await this._run(user, data, docs);
         } catch (error) {
-            this.result.errors.push(error?.toString());
+            this.addError(error?.toString());
         }
-        return this.result;
+        return this.getResult();
     }
 
-    public getResult(): BlockResult {
-        return this.result;
+    private _getDocuments(user: PolicyUser, data: BlockData): IPolicyDocument[] {
+        let document = data?.document;
+        if (!document) {
+            throw new Error('Invalid document.');
+        }
+        if (Array.isArray(document)) {
+            const docs: IPolicyDocument[] = [];
+            for (const d of document) {
+                const doc = this._getDocument(user, d);
+                docs.push(doc);
+            }
+            return docs;
+        } else {
+            const doc = this._getDocument(user, document);
+            return [doc];
+        }
     }
 
+    private _getDocument(user: PolicyUser, document: any): IPolicyDocument {
+        if (document.document) {
+            document = document.document
+        }
 
-    private async _getDocument(data: BlockData): Promise<any[]> {
-        // let documents: any[];
-        // if (Array.isArray(state.data)) {
-        //     documents = state.data;
-        // } else {
-        //     documents = [state.data];
-        // }
-        return data.document;
+        if (document.credentialSubject) {
+            return this._createVcDocument(user, document);
+        } else {
+            const vc = this._createVc(user, document);
+            return this._createVcDocument(user, vc);
+        }
     }
 
+    private _createVcDocument(user: PolicyUser, vc: any): IPolicyDocument {
+        return {
+            policyId: this.policyId,
+            tag: 'test',
+            hash: '',
+            document: vc,
+            owner: user.did,
+            group: user.group,
+            hederaStatus: DocumentStatus.NEW,
+            signature: DocumentSignature.NEW
+        };
+    }
 
-    private async _run(user: PolicyUser, data: BlockData, doc: any[]) {
-        console.debug('----- 4 ');
+    private _createVc(user: PolicyUser, json: any): any {
+        const date = (new Date()).toISOString();
+        return {
+            "id": "urn:uuid:00000000-0000-0000-0000-000000000000",
+            "type": ["VerifiableCredential"],
+            "issuer": user.did,
+            "issuanceDate": date,
+            "@context": ["https://www.w3.org/2018/credentials/v1"],
+            "credentialSubject": [json],
+            "proof": {
+                "type": "Ed25519Signature2018",
+                "created": date,
+                "verificationMethod": user.did + "#did-root-key",
+                "proofPurpose": "assertionMethod",
+                "jws": "..."
+            }
+        }
+    }
+
+    private async _run(user: PolicyUser, data: BlockData, doc: IPolicyDocument[]) {
         const callback = this.inputEvents.get(data.input);
         if (!callback) {
             throw new Error('Invalid input event type.');
@@ -109,18 +230,24 @@ export class BlockEngine {
             throw new Error('Invalid output event type.');
         }
 
-        console.debug('----- 5 ');
         return new Promise((resolve, reject) => {
             try {
-                const outputObject: any = { resolve, reject };
-                const outputFunction: any = function (event: any) {
-                    this.resolve();
+                this.outputObject = { resolve, reject };
+                const outputFunction: any = function (event: IPolicyEvent<IPolicyEventState>) {
+                    this.setOutput(event.data?.data);
+                    this.addLog('Done');
+                    this.stop();
                 }
-                const link = new PolicyLink(null, data.output, this.instance, outputObject, EventActor.EventInitiator, outputFunction);
+                const link = new PolicyLink(
+                    null,
+                    data.output,
+                    this.instance,
+                    this as any,
+                    EventActor.EventInitiator,
+                    outputFunction
+                );
                 this.instance.addSourceLink(link);
-
-                console.debug('----- 6 ');
-                const event: any = {
+                const event: IPolicyEvent<IPolicyEventState> = {
                     type: data.input,
                     inputType: data.input,
                     outputType: null,
@@ -130,7 +257,9 @@ export class BlockEngine {
                     target: null,
                     targetId: null,
                     user,
-                    data: doc
+                    data: {
+                        data: doc
+                    }
                 };
                 callback.call(this.instance, event);
             } catch (error) {

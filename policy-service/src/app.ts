@@ -1,4 +1,4 @@
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, entities, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, entities, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization, Users, Wallet } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { PolicyContainer } from './helpers/policy-container.js';
 import { BlockService } from './helpers/block-service.js';
@@ -37,6 +37,9 @@ Promise.all([
 
     DatabaseServer.connectBD(db);
     DatabaseServer.connectGridFS();
+
+    await new Users().setConnection(cn).init();
+    await new Wallet().setConnection(cn).init();
 
     const c = new PolicyContainer(logger);
     await c.setConnection(cn).init();

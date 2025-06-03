@@ -59,18 +59,22 @@
         </div>
     </div>
     <div class="right-container policy-configuration">
+        <div class="step-header">
+            {{getHeader()}}
+        </div>
+
         <div *ngIf="step === 'prop'" class="step-container">
-            <common-properties
-                *ngIf="initDialog" 
-                [block]="block" 
-                [module]="folder" 
-                [readonly]="readonly" 
-                class="readonly-status"
-                type="Common"></common-properties>
+            <div class="properties-body">
+                <common-properties
+                    *ngIf="initDialog" 
+                    [block]="block" 
+                    [module]="folder" 
+                    [readonly]="readonly" 
+                    class="readonly-status"
+                    type="Common"></common-properties>
+            </div>
         </div>
         <div *ngIf="step === 'data'" class="step-container">
-
-
 
             <div class="data-type-values">
                 <div class="data-type-value">
@@ -129,14 +133,14 @@
 
             <div class="type-container">
                 <ng-container *ngIf="dataType==='schema'">
-                    <div>
+                    <div class="select-schema">
                         <select-schema
                             [schemas]="schemas"
                             [(value)]="schemaId"
                             (change)="onChangeSchema()"
                         ></select-schema>
                     </div>
-                    <div *ngIf="schema">
+                    <div *ngIf="schema" class="schema-body">
                         <form [formGroup]="schemaValue" class="schema-form">
                             <app-schema-form
                                 [comesFromDialog]="true"
@@ -168,12 +172,57 @@
                 </ng-container>
             </div>
         </div>
-        <div *ngIf="step === 'code'" class="step-container">
-            <ngx-codemirror 
-                *ngIf="initDialog" 
-                [(ngModel)]="expression" 
-                [options]="codeMirrorOptions"
-                (ngModelChange)="onChangeCode()"></ngx-codemirror>
+        <div *ngIf="step === 'code'" class="step-container code">
+            <div class="code-help">
+                <div class="code-help-header">Imports</div>
+                <div class="code-variable">
+                    <span class="code-variable-type">Function(result, final)</span>
+                    <span class="code-variable-name">done</span>
+                    <span class="code-variable-description">- code completion function</span>
+                </div>
+                <div class="code-variable">
+                    <span class="code-variable-type">PolicyUser</span>
+                    <span class="code-variable-name">user</span>
+                    <span class="code-variable-description">- the user on whose behalf the code is executed</span>
+                </div>
+                <div class="code-variable">
+                    <span class="code-variable-type">PolicyDocument[]</span>
+                    <span class="code-variable-name">documents</span>
+                    <span class="code-variable-description">- Input VC documents</span>
+                </div>
+                <div class="code-variable">
+                    <span class="code-variable-type">mathjs</span>
+                    <span class="code-variable-name">mathjs</span>
+                    <span class="code-variable-description">- mathjs library</span>
+                </div>
+                <div class="code-variable">
+                    <span class="code-variable-type">Object[]</span>
+                    <span class="code-variable-name">artifacts</span>
+                    <span class="code-variable-description">- Attached files</span>
+                </div>
+                <div class="code-variable">
+                    <span class="code-variable-type">formulajs</span>
+                    <span class="code-variable-name">formulajs</span>
+                    <span class="code-variable-description">- formulajs library</span>
+                </div>
+                <div class="code-variable">
+                    <span class="code-variable-type">PolicyDocument[]</span>
+                    <span class="code-variable-name">sources</span>
+                    <span class="code-variable-description">- additional documents</span>
+                </div>
+                <div class="code-variable">
+                    <span class="code-variable-type">Function(message)</span>
+                    <span class="code-variable-name">debug</span>
+                    <span class="code-variable-description">- logging function</span>
+                </div>
+            </div>
+            <div class="code-body">
+                <ngx-codemirror 
+                    *ngIf="initDialog" 
+                    [(ngModel)]="expression" 
+                    [options]="codeMirrorOptions"
+                    (ngModelChange)="onChangeCode()"></ngx-codemirror>
+            </div>
         </div>
         <div *ngIf="step === 'result'" class="step-container">
 
@@ -193,7 +242,7 @@
                         (click)="onResultStep('logs')">
                         <div class="guardian-step-icon">
                             <svg-icon class="icon-btn svg-icon-16"
-                                src="/assets/images/icons/16/tree.svg">
+                                src="/assets/images/icons/16/table.svg">
                             </svg-icon>
                         </div>
                         <div class="guardian-step-name">Logs</div>
@@ -202,7 +251,7 @@
                         (click)="onResultStep('output')">
                         <div class="guardian-step-icon">
                             <svg-icon class="icon-btn svg-icon-16"
-                                src="/assets/images/icons/16/table.svg">
+                                src="/assets/images/icons/16/file-fill.svg">
                             </svg-icon>
                         </div>
                         <div class="guardian-step-name">Output</div>

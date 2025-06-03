@@ -92,7 +92,6 @@ export class CustomLogicBlock {
     @CatchErrors()
     public async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
-
         try {
             const triggerEvents = (documents: IPolicyDocument | IPolicyDocument[]) => {
                 if (!documents) {
@@ -162,7 +161,6 @@ export class CustomLogicBlock {
                 } else {
                     metadata = await this.aggregateMetadata(documents, user, ref, userId);
                 }
-
                 const done = async (result: any | any[], final: boolean) => {
                     if (!result) {
                         triggerEvents(null);
@@ -218,11 +216,11 @@ export class CustomLogicBlock {
 
                 const sources: IPolicyDocument[] = await this.getSources(user);
 
-                const importCode = `const [done, user, documents, mathjs, artifacts, formulajs, sources] = arguments;\r\n`;
+
                 const expression = ref.options.expression || '';
                 const worker = new Worker(path.join(path.dirname(filename), '..', 'helpers', 'custom-logic-worker.js'), {
                     workerData: {
-                        execFunc: `${importCode}${execCode}${expression}`,
+                        execFunc: `${execCode}${expression}`,
                         user,
                         documents,
                         artifacts,
@@ -235,7 +233,12 @@ export class CustomLogicBlock {
                 });
                 worker.on('message', async (data) => {
                     try {
-                        await done(data.result, data.final);
+                        if (data?.type === 'done') {
+                            await done(data.result, data.final);
+                        }
+                        if (data?.type === 'debug') {
+                            ref.debug(data.message);
+                        }
                     } catch (error) {
                         reject(error);
                     }

@@ -39,10 +39,27 @@
 
     .left-menu {
         height: 100%;
-        width: 170px;
-        min-width: 170px;
+        width: 254px;
+        min-width: 254px;
         flex: 0;
         display: flex;
+
+        .guardian-step-container {
+            width: 230px;
+            border: 1px solid #E1E7EF;
+            border-radius: 8px;
+            height: fit-content;
+            padding: 8px 0px;
+
+            .guardian-step {
+                padding-left: 16px;
+            }
+
+            .guardian-step-separator {
+                margin-left: 8px;
+            }
+        }
+
     }
 
     .right-container {
@@ -52,18 +69,42 @@
         display: flex;
         position: relative;
 
+        .step-header {
+            font-family: Poppins;
+            font-weight: 600;
+            font-size: 24px;
+            line-height: 32px;
+            vertical-align: middle;
+            color: #181818;
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            height: 32px;
+        }
+
         .step-container {
             position: absolute;
             left: 0;
             right: 0;
-            top: 0;
-            bottom: 0;
+            top: 56px;
+            bottom: 24px;
             overflow: auto;
+            padding: 0px;
         }
     }
+}
+
+.properties-body {
+    border: 1px solid #E1E7EF;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
 
     common-properties {
         width: 100%;
+        top: -1px;
+        position: relative;
     }
 }
 
@@ -96,6 +137,17 @@
     z-index: 100;
 }
 
+.select-schema {
+    width: 600px;
+    margin-bottom: 24px;
+}
+
+.schema-body {
+    border: 1px solid #E1E7EF;
+    border-radius: 8px;
+    padding: 24px 24px 0px 24px;
+}
+
 .data-type-values {
     display: flex;
     flex-direction: row;
@@ -106,7 +158,7 @@
         flex-direction: row;
         width: 100%;
         height: 40px;
-        padding-bottom: 16px;
+        padding-bottom: 24px;
         align-items: center;
         cursor: pointer;
         margin-right: 24px;
@@ -145,5 +197,47 @@
     textarea {
         height: 100%;
         resize: none;
+    }
+}
+
+.code {
+    display: flex;
+    flex-direction: column;
+
+    .code-help {
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #4267df;
+        border-radius: 6px;
+        margin-bottom: 16px;
+        padding: 8px 16px;
+        background: #f0f3fc;
+        margin-right: 2px;
+
+        .code-help-header {
+            font-weight: 500;
+            color: #4267df;
+            margin-bottom: 4px;
+        }
+
+        .code-variable {
+            .code-variable-type {
+                color: #708;
+                padding-right: 8px;
+            }
+
+            .code-variable-name {
+                color: #00f;
+                padding-right: 8px;
+            }
+
+            .code-variable-description {}
+        }
+
+    }
+
+    .code-body {
+        display: flex;
+        flex-direction: column;
     }
 }

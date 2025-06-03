@@ -115,6 +115,7 @@ export class TestCodeDialog {
     }
 
     public onTest(): void {
+        this.loading = true;
         const input = this.getValue();
         const block = this.block.getJSON();
         const data = {
@@ -123,22 +124,25 @@ export class TestCodeDialog {
             output: 'RunEvent',
             document: input
         }
-
         this.policyEngineService
             .runBlock(this.policyId, {
                 block,
                 data
             })
             .subscribe((result) => {
-                debugger;
-                this.step = 'result';
                 this.loading = true;
                 this.result = {
-                    input: JSON.stringify({ a: 1, b: 2 }, null, 4),
-                    logs: ['Test'],
-                    output: JSON.stringify({ a: 10, b: 20 }, null, 4),
-                    errors: []
+                    input: result.input ? JSON.stringify(result.input, null, 4) : '',
+                    logs: result.logs?.join('\r\n') || '',
+                    output: result.output ? JSON.stringify(result.output, null, 4) : '',
+                    errors: result.errors?.join('\r\n') || '',
                 };
+                this.step = 'result';
+                if (result.errors?.length) {
+                    this.resultStep = 'errors';
+                } else {
+                    this.resultStep = 'output';
+                }
                 setTimeout(() => {
                     this.loading = false;
                 }, 1000);
@@ -197,6 +201,21 @@ export class TestCodeDialog {
     onChangeCode() {
         if (this.block && this.block.properties) {
             this.block.properties.expression = this.expression;
+        }
+    }
+
+    getHeader() {
+        switch (this.step) {
+            case 'prop':
+                return 'Properties';
+            case 'data':
+                return 'Input Data';
+            case 'code':
+                return 'Code';
+            case 'result':
+                return 'Result';
+            default:
+                return null;
         }
     }
 }

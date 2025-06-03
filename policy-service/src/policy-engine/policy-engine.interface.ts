@@ -296,6 +296,12 @@ export interface IPolicyBlock {
     warn(message: string): void;
 
     /**
+     * Write debug to log
+     * @param message
+     */
+    debug(message: any): void;
+
+    /**
      * Trigger events
      * @param eventType
      * @param user
