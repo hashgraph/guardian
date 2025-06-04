@@ -1,10 +1,9 @@
 import assert from 'assert';
 import { connect, headers, NatsConnection, StringCodec, Subscription } from 'nats';
 import { IMessageResponse, MessageError } from '../models/index.js';
-import { GenerateUUIDv4, WalletEvents } from '@guardian/interfaces';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { ZipCodec } from './zip-codec.js';
 import { GenerateTLSOptionsNats } from '../helpers/index.js';
-import { SecretManager } from '../secret-manager/index.js';
 import { JwtServicesValidator } from '../security/index.js';
 
 const MQ_TIMEOUT = 300000;
@@ -24,15 +23,6 @@ export class MessageBrokerChannel {
         private readonly channel: NatsConnection,
         public channelName: string
     ) {
-        JwtServicesValidator.setWhiteList([
-            WalletEvents.SET_GLOBAL_APPLICATION_KEY,
-            WalletEvents.SET_KEY,
-            WalletEvents.GET_GLOBAL_APPLICATION_KEY,
-            WalletEvents.GET_KEY,
-        ], ['settings-reply-']);
-
-        JwtServicesValidator.setSecretManager(SecretManager.New());
-
         const fn = async (_sub: Subscription) => {
             for await (const m of _sub) {
                 try {
@@ -49,7 +39,7 @@ export class MessageBrokerChannel {
                     const messageId = m.headers.get('messageId');
                     const serviceToken = m.headers?.get('serviceToken');
 
-                    await JwtServicesValidator.verify(serviceToken, m.subject);
+                    await JwtServicesValidator.verify(serviceToken);
 
                     const chunkNumber = m.headers.get('chunk');
                     const countChunks = m.headers.get('chunks');
@@ -115,7 +105,7 @@ export class MessageBrokerChannel {
                     let payload: any;
                     const messageId = m.headers.get('messageId');
                     const serviceToken = m.headers?.get('serviceToken');
-                    await JwtServicesValidator.verify(serviceToken, m.subject);
+                    await JwtServicesValidator.verify(serviceToken);
 
                     if (m.headers.has('chunks')) {
                         const chunkNumber = m.headers.get('chunk');
@@ -320,7 +310,7 @@ export class MessageBrokerChannel {
                 try {
                     const dataObj = JSON.parse(StringCodec().decode(m.data));
                     const serviceToken = m.headers?.get('serviceToken');
-                    await JwtServicesValidator.verify(serviceToken, m.subject);
+                    await JwtServicesValidator.verify(serviceToken);
                     callback(dataObj);
                 } catch (e) {
                     console.error(e.message);
