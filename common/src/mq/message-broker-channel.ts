@@ -1,9 +1,11 @@
 import assert from 'assert';
 import { connect, headers, NatsConnection, StringCodec, Subscription } from 'nats';
 import { IMessageResponse, MessageError } from '../models/index.js';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { GenerateUUIDv4, WalletEvents } from '@guardian/interfaces';
 import { ZipCodec } from './zip-codec.js';
 import { GenerateTLSOptionsNats } from '../helpers/index.js';
+import { SecretManager } from '../secret-manager/index.js';
+import { JwtServicesValidator } from '../security/index.js';
 
 const MQ_TIMEOUT = 300000;
 /**
@@ -22,6 +24,15 @@ export class MessageBrokerChannel {
         private readonly channel: NatsConnection,
         public channelName: string
     ) {
+        JwtServicesValidator.setWhiteList([
+            WalletEvents.SET_GLOBAL_APPLICATION_KEY,
+            WalletEvents.SET_KEY,
+            WalletEvents.GET_GLOBAL_APPLICATION_KEY,
+            WalletEvents.GET_KEY,
+        ], ['settings-reply-']);
+
+        JwtServicesValidator.setSecretManager(SecretManager.New());
+
         const fn = async (_sub: Subscription) => {
             for await (const m of _sub) {
                 try {
@@ -36,6 +47,9 @@ export class MessageBrokerChannel {
                     }
 
                     const messageId = m.headers.get('messageId');
+                    const serviceToken = m.headers?.get('serviceToken');
+
+                    await JwtServicesValidator.verify(serviceToken, m.subject);
 
                     const chunkNumber = m.headers.get('chunk');
                     const countChunks = m.headers.get('chunks');
@@ -100,6 +114,8 @@ export class MessageBrokerChannel {
                 try {
                     let payload: any;
                     const messageId = m.headers.get('messageId');
+                    const serviceToken = m.headers?.get('serviceToken');
+                    await JwtServicesValidator.verify(serviceToken, m.subject);
 
                     if (m.headers.has('chunks')) {
                         const chunkNumber = m.headers.get('chunk');
@@ -114,12 +130,16 @@ export class MessageBrokerChannel {
                             chunkMap.set(messageId, requestChunks);
                         }
 
+                        const chunkHeaders = headers();
+                        const chunkToken = await JwtServicesValidator.sign(m.subject);
+                        chunkHeaders.append('serviceToken', chunkToken);
+
                         if (requestChunks.length < countChunks) {
-                            m.respond(new Uint8Array(0));
+                            m.respond(new Uint8Array(0), { headers: chunkHeaders });
                             continue;
                         } else {
                             chunkMap.delete(messageId);
-                            m.respond(new Uint8Array(0));
+                            m.respond(new Uint8Array(0), { headers: chunkHeaders });
                         }
 
                         const requestChunksSorted = new Array<Buffer>(requestChunks.length);
@@ -143,6 +163,12 @@ export class MessageBrokerChannel {
                     const head = headers();
                     head.append('messageId', messageId);
 
+                    const type = 'response-message';
+
+                    const token = await JwtServicesValidator.sign(type);
+                    head.append('messageId', messageId);
+                    head.append('serviceToken', token);
+
                     const payloadBuffer = Buffer.from(JSON.stringify(responseMessage));
                     let offset = 0;
                     const chunks: Buffer[] = [];
@@ -157,7 +183,7 @@ export class MessageBrokerChannel {
                     for (let i = 0; i < chunks.length; i++) {
                         const chunk = chunks[i];
                         head.set('chunk', (i + 1).toString());
-                        this.channel.publish('response-message', chunk, {headers: head});
+                        this.channel.publish(type, chunk, {headers: head});
                     }
                 } catch (e) {
                     console.error(e.message);
@@ -175,11 +201,13 @@ export class MessageBrokerChannel {
      * @param timeout timeout in milliseconds, this will overwrite default env var MQ_TIMEOUT varlue @default 30000
      * @returns MessageResponse or Error response
      */
-    public request<T, TResponse>(eventType: string, payload: T, timeout?: number): Promise<IMessageResponse<TResponse>> {
+    public async request<T, TResponse>(eventType: string, payload: T, timeout?: number): Promise<IMessageResponse<TResponse>> {
         try {
             const messageId = GenerateUUIDv4();
             const head = headers();
             head.append('messageId', messageId);
+            const token = await JwtServicesValidator.sign(eventType);
+            head.append('serviceToken', token);
 
             let stringPayload: string;
             switch (typeof payload) {
@@ -266,6 +294,8 @@ export class MessageBrokerChannel {
             const messageId = GenerateUUIDv4();
             const head = headers();
             head.append('messageId', messageId);
+            const token = await JwtServicesValidator.sign(eventType);
+            head.append('serviceToken', token);
 
             const zc = ZipCodec();
             this.channel.publish(eventType, await zc.encode(data), { headers: head });
@@ -289,6 +319,8 @@ export class MessageBrokerChannel {
             for await (const m of _sub) {
                 try {
                     const dataObj = JSON.parse(StringCodec().decode(m.data));
+                    const serviceToken = m.headers?.get('serviceToken');
+                    await JwtServicesValidator.verify(serviceToken, m.subject);
                     callback(dataObj);
                 } catch (e) {
                     console.error(e.message);

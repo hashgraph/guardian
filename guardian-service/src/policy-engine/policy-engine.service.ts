@@ -31,7 +31,7 @@ import {
 import { DocumentCategoryType, DocumentType, EntityOwner, ExternalMessageEvents, GenerateUUIDv4, IOwner, PolicyEngineEvents, PolicyEvents, PolicyHelper, PolicyTestStatus, PolicyStatus, Schema, SchemaField, TopicType, PolicyAvailability, PolicyActionType, PolicyActionStatus } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { NatsConnection } from 'nats';
-import { CompareUtils, CSV, HashComparator, IReportTable } from '../analytics/index.js';
+import { CompareUtils, HashComparator } from '../analytics/index.js';
 import { compareResults, getDetails } from '../api/record.service.js';
 import { Inject } from '../helpers/decorators/inject.js';
 import { GuardiansService } from '../helpers/guardians.js';
@@ -1115,7 +1115,7 @@ export class PolicyEngineService {
                         throw new Error(`Policy imported in view mode`);
                     }
 
-                    const errors = await this.policyEngine.validateModel(policyId);
+                    const errors = await this.policyEngine.validateModel(policyId, true);
                     const isValid = !errors.blocks.some(block => !block.isValid);
                     if (isValid) {
                         await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run', false, logger);
@@ -2439,7 +2439,6 @@ export class PolicyEngineService {
                         ...filters,
                         type: { $ne: DocumentCategoryType.USER_ROLE, }
                     }, VcOtherOptions);
-                    
 
                     const VPloader = new VpDocumentLoader(
                         model.id,
@@ -2469,7 +2468,6 @@ export class PolicyEngineService {
                         const csv = CompareUtils.objectToCsv(data.document);
                         csvData.set(data.documentFileId.toString(), csv.result());
                     }
-                    
                     
                     const zip = await PolicyImportExport.generateProjectData(csvData);
                     const file = await zip.generateAsync({

@@ -4,7 +4,6 @@ import { ISchema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, of, Subscription } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
-import { DialogService } from 'primeng/dynamicdialog';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { SchemaService } from 'src/app/services/schema.service';
 

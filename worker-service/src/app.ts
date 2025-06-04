@@ -1,4 +1,4 @@
-import { ApplicationState, GenerateTLSOptionsNats, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager, Users, ValidateConfiguration } from '@guardian/common';
+import { ApplicationState, GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager, Users, ValidateConfiguration } from '@guardian/common';
 import { Worker } from './api/worker.js';
 import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper.js';
 import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
@@ -32,6 +32,32 @@ Promise.all([
 ]).then(async values => {
     const [cn, app, loggerMongo] = values;
     app.listen();
+    await new OldSecretManager().setConnection(cn).init();
+    const secretManager = SecretManager.New();
+    const jwtServiceName = 'WORKER_SERVICE';
+
+    JwtServicesValidator.setSecretManager(secretManager)
+    JwtServicesValidator.setServiceName(jwtServiceName)
+
+    let { SERVICE_JWT_PUBLIC_KEY } = await secretManager.getSecrets(`publickey/jwt-service/${jwtServiceName}`);
+    if (!SERVICE_JWT_PUBLIC_KEY) {
+        SERVICE_JWT_PUBLIC_KEY = process.env.SERVICE_JWT_PUBLIC_KEY;
+        if (SERVICE_JWT_PUBLIC_KEY?.length < 8) {
+            throw new Error(`${jwtServiceName} service jwt keys not configured`);
+        }
+        await secretManager.setSecrets(`publickey/jwt-service/${jwtServiceName}`, {SERVICE_JWT_PUBLIC_KEY});
+    }
+
+    let { SERVICE_JWT_SECRET_KEY } = await secretManager.getSecrets(`secretkey/jwt-service/${jwtServiceName}`);
+
+    if (!SERVICE_JWT_SECRET_KEY) {
+        SERVICE_JWT_SECRET_KEY = process.env.SERVICE_JWT_SECRET_KEY;
+        if (SERVICE_JWT_SECRET_KEY?.length < 8) {
+            throw new Error(`${jwtServiceName} service jwt keys not configured`);
+        }
+        await secretManager.setSecrets(`secretkey/jwt-service/${jwtServiceName}`, {SERVICE_JWT_SECRET_KEY});
+    }
+
     const channel = new MessageBrokerChannel(cn, 'worker');
 
     const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
@@ -40,7 +66,6 @@ Promise.all([
     const state = new ApplicationState();
     await state.setServiceName('WORKER').setConnection(cn).init();
     await state.updateState(ApplicationStates.STARTED);
-    await new OldSecretManager().setConnection(cn).init();
 
     const validator = new ValidateConfiguration();
 
@@ -63,7 +88,6 @@ Promise.all([
         let IPFS_STORAGE_PROOF: string;
         let IPFS_STORAGE_API_KEY: string;
 
-        const secretManager = SecretManager.New();
         if (process.env.IPFS_PROVIDER === 'web3storage') {
             const keyAndProof = await secretManager.getSecrets('apikey/ipfs');
             if (!keyAndProof?.IPFS_STORAGE_API_KEY) {

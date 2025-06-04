@@ -130,7 +130,22 @@ This configuration allows you to leave untouched all the data referring to Mainn
 
 #### 3.2 Setting up JWT keys in /`.env` file
 
-To start of auth-service it is necessary to fill in JWT\_PRIVATE\_KEY and JWT\_PUBLIC\_KEY, which are RSA key pair. You can generate it in any convenient way, for example, using this service [https://travistidwell.com/jsencrypt/demo/](https://travistidwell.com/jsencrypt/demo/).
+To start all services, you must set the `SERVICE_JWT_SECRET_KEY` and `SERVICE_JWT_PUBLIC_KEY` variables in your .env file with a 2048-bit RSA key pair.&#x20;
+
+You can generate a key pair in any convenient way—
+
+for example, using the online tool at [https://mkjwk.org/](https://mkjwk.org/) with the following settings:\
+&#x20;  \- key size: 2048\
+&#x20;  \- key use: signature\
+&#x20;  \- algorithm: RS256: RSA\
+&#x20;  \- key ID: sha256\
+&#x20;  \- show: yes
+
+These keys are required for the initial startup; afterward, they’ll be stored in your secret manager. It is recommended to generate a separate key pair for each service.
+
+{% hint style="info" %}
+**Note**: It is important to add these keys to the env files, because without them the services will return errors, and communication with a service that does not sign messages for the message queue will not be supported.
+{% endhint %}
 
 4\. Now, we have two options to setup IPFS node : 1. Local node 2. IPFS Web3Storage node.
 

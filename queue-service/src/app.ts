@@ -1,4 +1,4 @@
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, GenerateTLSOptionsNats, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, NotificationService, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager } from '@guardian/common';
 import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -37,6 +37,31 @@ Promise.all([
     mongoForLoggingInitialization()
 ]).then(async values => {
     const [db, cn, app, loggerMongo] = values;
+    await new OldSecretManager().setConnection(cn).init();
+    const secretManager = SecretManager.New();
+    const jwtServiceName = 'QUEUE_SERVICE';
+
+    JwtServicesValidator.setSecretManager(secretManager)
+    JwtServicesValidator.setServiceName(jwtServiceName)
+
+    let { SERVICE_JWT_PUBLIC_KEY } = await secretManager.getSecrets(`publickey/jwt-service/${jwtServiceName}`);
+    if (!SERVICE_JWT_PUBLIC_KEY) {
+        SERVICE_JWT_PUBLIC_KEY = process.env.SERVICE_JWT_PUBLIC_KEY;
+        if (SERVICE_JWT_PUBLIC_KEY?.length < 8) {
+            throw new Error(`${jwtServiceName} service jwt keys not configured`);
+        }
+        await secretManager.setSecrets(`publickey/jwt-service/${jwtServiceName}`, {SERVICE_JWT_PUBLIC_KEY});
+    }
+
+    let { SERVICE_JWT_SECRET_KEY } = await secretManager.getSecrets(`secretkey/jwt-service/${jwtServiceName}`);
+
+    if (!SERVICE_JWT_SECRET_KEY) {
+        SERVICE_JWT_SECRET_KEY = process.env.SERVICE_JWT_SECRET_KEY;
+        if (SERVICE_JWT_SECRET_KEY?.length < 8) {
+            throw new Error(`${jwtServiceName} service jwt keys not configured`);
+        }
+        await secretManager.setSecrets(`secretkey/jwt-service/${jwtServiceName}`, {SERVICE_JWT_SECRET_KEY});
+    }
 
     DatabaseServer.connectBD(db);
 
@@ -50,7 +75,6 @@ Promise.all([
     await state.updateState(ApplicationStates.STARTED);
 
     await new QueueService().setConnection(cn).init();
-
     const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
     if (Number.isInteger(maxPayload)) {
         new LargePayloadContainer().runServer();

@@ -20,6 +20,7 @@ import {ForgotPasswordDialogComponent} from './forgot-password-dialog/forgot-pas
 import {RegisterDialogComponent} from './register-dialogs/register-dialog/register-dialog.component';
 import {DemoService} from '../../services/demo.service';
 import {ChangePasswordComponent} from './change-password/change-password.component';
+import { InformService } from 'src/app/services/inform.service';
 
 /**
  * Login page.
@@ -72,6 +73,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
         private dialog: DialogService,
         private brandingService: BrandingService,
         private dialogService: DialogService,
+        private informService: InformService,
     ) {
     }
 
@@ -155,6 +157,13 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
                     const home = this.auth.home(result.role);
                     this.router.navigate([home]);
                 });
+
+                if (result.weakPassword) {
+                    this.informService.shortWarnMessage(
+                        'Your password is considered weak. For your security, please update it to meet our minimum complexity requirements.',
+                        'Weak Password',
+                    );
+                }
             }, (error) => {
                 this.loading = false;
                 this.errorMessage = error.message;

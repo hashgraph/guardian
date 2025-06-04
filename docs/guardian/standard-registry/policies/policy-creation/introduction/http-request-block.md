@@ -18,6 +18,17 @@ Block for retrieving information from outside (3rd party) services via HTTP requ
 
 <figure><img src="../../../../../.gitbook/assets/image (1) (4) (1).png" alt=""><figcaption></figcaption></figure>
 
+To prevent sensitive headers such as Bearer tokens from being published to IPFS during policy export, an "Include value in exported policy" checkbox was added to each HTTP header in the httpRequestBlock.
+
+This mechanism ensures that secrets are not accidentally leaked when the policy is published and stored on IPFS.
+
+{% hint style="info" %}
+Note:
+
+1. By default, this checkbox is set to false, meaning the header's value will not be included in the exported policy.
+2. If a header has a value but the "Include" option is not enabled, publishing the policy will fail with a validation error. The user must either enable the checkbox or remove the header value.
+{% endhint %}
+
 ## 2. Dynamic Variables
 
 The values of the URL, Body and Header parameters can contain variables of the format ${variable}.

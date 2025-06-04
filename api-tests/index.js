@@ -22,7 +22,9 @@ async function Run() {
         [path.resolve(path.join('..', 'auth-service')), {
             HASHICORP_ADDRESS: `http://${process.env.HASHICORP_HOST}:${process.env.HASHICORP_PORT}`,
             GUARDIAN_ENV: 'develop',
-            ACCESS_TOKEN_UPDATE_INTERVAL: '30000000'
+            ACCESS_TOKEN_UPDATE_INTERVAL: '30000000',
+            MIN_PASSWORD_LENGTH: 4,
+            PASSWORD_COMPLEXITY: 'easy'
         }],
         [path.resolve(path.join('..', 'policy-service')), {
             OPERATOR_ID: process.env.OPERATOR_ID,
