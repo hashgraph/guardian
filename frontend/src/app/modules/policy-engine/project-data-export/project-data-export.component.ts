@@ -146,7 +146,7 @@ export class ProjectDataExportComponent implements OnInit {
 
     private loadFiltersData() {
         forkJoin([
-            this.user.SCHEMAS_RULE_READ
+            this.user.SCHEMAS_SCHEMA_READ
                 ? this.schemaService.getSchemasByPolicy(this.currentPolicy.id)
                 : of([]),
             this.policyEngineService.getPolicyDocumentOwners(this.currentPolicy.id),
@@ -247,7 +247,7 @@ export class ProjectDataExportComponent implements OnInit {
             options.owners = [this.user.did];
         }
 
-        if (!this.user.SCHEMAS_RULE_READ) {
+        if (!this.user.SCHEMAS_SCHEMA_READ) {
             const control = this.filtersForm.get('schemas');
             if (control) {
                 control.disable();
