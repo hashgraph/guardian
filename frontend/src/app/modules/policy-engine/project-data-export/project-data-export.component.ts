@@ -45,9 +45,6 @@ export class ProjectDataExportComponent implements OnInit {
     
     public selectedRows: any[] = [];
 
-    public selectedSchemas!: ISchema[];
-    public selectedOwners!: string[];
-    public selectedTokens!: string[];
     public selectedAll: boolean = false;
 
     private subscription = new Subscription();
@@ -321,10 +318,22 @@ export class ProjectDataExportComponent implements OnInit {
         this.showMoreFilters = !this.showMoreFilters;
     }
 
+    get selectedSchemas() {
+        return this.filtersForm?.get('schemas')?.value;
+    }
+
+    get selectedOwners() {
+        return this.filtersForm?.get('owners')?.value;
+    }
+
+    get selectedTokens() {
+        return this.filtersForm?.get('tokens')?.value;
+    }
+
     private setFiltersFromQueryParams(params: any) {
-        this.selectedSchemas = params.schemas ? this.schemas.filter(schema => params.schemas.split(',')?.some((iri: string) => schema.iri === iri)) || [] : [];
-        this.selectedOwners = params.owners ? params.owners.split(',') : [];
-        this.selectedTokens = params.tokens ? params.tokens.split(',') : [];
+        this.filtersForm?.get('schemas')?.setValue(params.schemas ? this.schemas.filter(schema => params.schemas.split(',')?.some((iri: string) => schema.iri === iri)) || [] : []);
+        this.filtersForm?.get('owners')?.setValue(params.owners ? params.owners.split(',') : []);
+        this.filtersForm?.get('tokens')?.setValue(params.tokens ? params.tokens.split(',') : []);
         this.filtersForm?.get('related')?.setValue(params.related ? params.related.split(',') : []);
 
         this.filtersForm.patchValue({
