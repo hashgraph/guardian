@@ -1,6 +1,15 @@
-import { Permissions, PermissionCategories, PermissionEntities } from "@guardian/interfaces";
-import { EntityAccess, EntityDelegate, EntityGroup } from "./permissions-entity";
-import { ICategory, IEntity, IPermission, actionAccessName, actionName, categoryNames, delegateAccessName } from "./permissions-interface";
+import {Permissions, PermissionCategories, PermissionEntities} from "@guardian/interfaces";
+import {EntityAccess, EntityDelegate, EntityGroup, EntityLog} from "./permissions-entity";
+import {
+    ICategory,
+    IEntity,
+    IPermission,
+    actionAccessName,
+    actionName,
+    categoryNames,
+    delegateAccessName,
+    actionLogsName
+} from "./permissions-interface";
 
 export class CategoryDetails implements ICategory {
     public readonly type: string = 'Role';
@@ -223,6 +232,71 @@ export class CategoryGroup implements ICategory {
 
     public mergeValue(permissions: Permissions[]): void {
         for (const entity of this.entities) {
+            entity.mergeValue(permissions);
+        }
+    }
+}
+
+export class CategoryLogs implements ICategory {
+    public readonly type: string = 'Permissions';
+    public readonly id: PermissionCategories;
+    public readonly name: string;
+    public readonly map = new Map<PermissionEntities, IEntity>();
+    public readonly entities: IEntity[] = [];
+    public readonly actions: string[];
+    public count: number = 0;
+
+    constructor() {
+            this.id = PermissionCategories.LOG;
+            this.name = categoryNames.get(PermissionCategories.LOG) || 'Logs';
+            this.actions = actionLogsName;
+    }
+
+    public addEntity(permission: IPermission): IEntity {
+            if (this.map.has(permission.entity)) {
+                return this.map.get(permission.entity) as any;
+            } else {
+                const entity = new EntityLog(permission, this);
+                this.map.set(permission.entity, entity);
+                this.entities.push(entity);
+                return entity;
+            }
+        }
+
+    public checkCount() {
+            let count = 0;
+            for (const entity of this.map.values()) {
+                for (const action of entity.actions) {
+                    if (action && action.control && action.control.value) {
+                        count++;
+                    }
+                }
+            }
+            this.count = count;
+        }
+
+    public checkAll() { }
+
+    public disable(): void {
+            for (const entity of this.map.values()) {
+            entity.disable();
+        }
+    }
+
+    public clearValue(): void {
+            for (const entity of this.map.values()) {
+            entity.clearValue();
+        }
+    }
+
+    public addValue(permissions: Permissions[]): void {
+            for (const entity of this.map.values()) {
+            entity.addValue(permissions);
+        }
+    }
+
+    public mergeValue(permissions: Permissions[]): void {
+            for (const entity of this.entities) {
             entity.mergeValue(permissions);
         }
     }

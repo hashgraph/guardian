@@ -22,7 +22,8 @@ export async function themeAPI(logger: PinoLogger): Promise<void> {
      * @returns {Theme} new theme
      */
     ApiResponse(MessageAPI.CREATE_THEME,
-        async (msg: { theme: Theme, owner: IOwner }) => {
+        async (msg: { theme: Theme, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     throw new Error('Invalid create theme parameters');
@@ -36,7 +37,7 @@ export async function themeAPI(logger: PinoLogger): Promise<void> {
                 const item = await DatabaseServer.createTheme(theme);
                 return new MessageResponse(item);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -49,7 +50,8 @@ export async function themeAPI(logger: PinoLogger): Promise<void> {
      * @returns {Theme} theme
      */
     ApiResponse(MessageAPI.UPDATE_THEME,
-        async (msg: { themeId: string, theme: Theme, owner: IOwner }) => {
+        async (msg: { themeId: string, theme: Theme, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid update theme parameters');
@@ -70,7 +72,7 @@ export async function themeAPI(logger: PinoLogger): Promise<void> {
                 const result = await DatabaseServer.updateTheme(item);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -83,7 +85,8 @@ export async function themeAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} themes
      */
     ApiResponse(MessageAPI.GET_THEMES,
-        async (msg: { owner: IOwner }) => {
+        async (msg: { owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid get theme parameters');
@@ -92,7 +95,7 @@ export async function themeAPI(logger: PinoLogger): Promise<void> {
                 const items = await DatabaseServer.getThemes({ owner: owner.creator });
                 return new MessageResponse(items);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -105,7 +108,8 @@ export async function themeAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} theme
      */
     ApiResponse(MessageAPI.GET_THEME,
-        async (msg: { themeId: string, owner: IOwner }) => {
+        async (msg: { themeId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid get theme parameters');
@@ -114,7 +118,7 @@ export async function themeAPI(logger: PinoLogger): Promise<void> {
                 const item = await DatabaseServer.getTheme({ id: themeId, owner: owner.creator });
                 return new MessageResponse(item);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -127,7 +131,8 @@ export async function themeAPI(logger: PinoLogger): Promise<void> {
      * @returns {boolean} - Operation success
      */
     ApiResponse(MessageAPI.DELETE_THEME,
-        async (msg: { themeId: string, owner: IOwner }) => {
+        async (msg: { themeId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid delete theme parameters');
@@ -140,7 +145,7 @@ export async function themeAPI(logger: PinoLogger): Promise<void> {
                 await DatabaseServer.removeTheme(item);
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -153,7 +158,8 @@ export async function themeAPI(logger: PinoLogger): Promise<void> {
      * @returns {boolean} - zip file
      */
     ApiResponse(MessageAPI.THEME_EXPORT_FILE,
-        async (msg: { themeId: string, owner: IOwner }) => {
+        async (msg: { themeId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid export theme parameters');
@@ -173,7 +179,7 @@ export async function themeAPI(logger: PinoLogger): Promise<void> {
                 });
                 return new BinaryMessageResponse(file);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -186,7 +192,8 @@ export async function themeAPI(logger: PinoLogger): Promise<void> {
      * @returns {boolean} - new theme
      */
     ApiResponse(MessageAPI.THEME_IMPORT_FILE,
-        async (msg: { zip: any, owner: IOwner }) => {
+        async (msg: { zip: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { zip, owner } = msg;
                 if (!zip) {
@@ -211,7 +218,7 @@ export async function themeAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse(item);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });

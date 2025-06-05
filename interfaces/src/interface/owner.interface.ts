@@ -1,4 +1,5 @@
 import { AccessType } from '../type/access.type.js'
+import { LocationType } from '../type/location.type.js'
 
 /**
  * Entity owner
@@ -24,4 +25,8 @@ export interface IOwner {
      * Access assigned
      */
     access: AccessType
+    /**
+     * Location
+     */
+    location: LocationType
 }

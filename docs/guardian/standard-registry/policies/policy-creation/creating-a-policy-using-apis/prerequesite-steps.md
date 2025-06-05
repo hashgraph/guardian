@@ -55,7 +55,8 @@ test
 "username": "StandardRegistry",
     "did": "did:hedera:testnet:5jDN1zBJPjjQhRDZ4MV3q5CFUVM99WvfJ3zMLLhLS2yk_0.0.7495695",
     "role": "STANDARD_REGISTRY",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9....."
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.....",
+    "weakPassword": false
 ```
 {% endswagger-response %}
 {% endswagger %}

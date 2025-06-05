@@ -234,3 +234,8 @@
     grid-template-columns: auto max-content;
     column-gap: 5px;
 }
+
+*[readonly-block="true"] {
+    pointer-events: none !important;
+    filter: grayscale(1);
+}

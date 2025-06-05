@@ -238,7 +238,10 @@ export class Schema extends BaseEntity implements ISchema {
             if (this.documentFileId) {
                 DataBaseHelper.gridFS
                     .delete(this.documentFileId)
-                    .catch(console.error);
+                    .catch((reason) => {
+                        console.error(`BeforeUpdate: Schema, ${this._id}, documentFileId`)
+                        console.error(reason)
+                    });
             }
             await this.createDocument();
         }
@@ -270,7 +273,10 @@ export class Schema extends BaseEntity implements ISchema {
         if (this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`AfterDelete: Schema, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
         }
     }
 
@@ -306,7 +312,10 @@ export class Schema extends BaseEntity implements ISchema {
             if (this.contextFileId) {
                 DataBaseHelper.gridFS
                     .delete(this.contextFileId)
-                    .catch(console.error);
+                    .catch((reason) => {
+                        console.error(`BeforeUpdate: Schema, ${this._id}, contextFileId`)
+                        console.error(reason)
+                    });
             }
             await this.createContext();
         }
@@ -338,7 +347,10 @@ export class Schema extends BaseEntity implements ISchema {
         if (this.contextFileId) {
             DataBaseHelper.gridFS
                 .delete(this.contextFileId)
-                .catch(console.error);
+                .catch((reason) => {
+                    console.error(`AfterDelete: Schema, ${this._id}, contextFileId`)
+                    console.error(reason)
+                });
         }
     }
 }

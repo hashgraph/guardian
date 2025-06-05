@@ -136,6 +136,8 @@ import { StandardRegistryParentCardComponent } from './components/standard-regis
 import { InfoStandardRegistryDialogComponent } from './views/user-profile/info-standard-registry-dialog/info-standard-registry-dialog.component';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { ActiveStandardRegistryDialogComponent } from './views/user-profile/active-standard-registry-dialog/active-standard-registry-dialog.component';
+import { ExternalPoliciesService } from './services/external-policy.service';
+import { UserKeysDialog } from './components/user-keys-dialog/user-keys-dialog.component';
 
 @NgModule({
     declarations: [
@@ -184,7 +186,8 @@ import { ActiveStandardRegistryDialogComponent } from './views/user-profile/acti
         WorkerTasksComponent,
         AddStandardRegistryDialogComponent,
         InfoStandardRegistryDialogComponent,
-        ActiveStandardRegistryDialogComponent
+        ActiveStandardRegistryDialogComponent,
+        UserKeysDialog
     ],
     exports: [],
     bootstrap: [AppComponent],
@@ -267,6 +270,7 @@ import { ActiveStandardRegistryDialogComponent } from './views/user-profile/acti
         CompareStorage,
         ProjectComparisonService,
         FormulasService,
+        ExternalPoliciesService,
         PermissionsService,
         PermissionsGuard,
         {

@@ -1,7 +1,8 @@
 import { ExternalMessageEvents } from '@guardian/interfaces';
-import { connect, JSONCodec, StringCodec } from 'nats';
+import { connect, headers, JSONCodec, StringCodec } from 'nats';
 import zlib from 'zlib';
 import crypto from 'crypto';
+import { JwtServicesValidator } from '../security/index.js';
 
 const ENABLE_IPFS_ENCRYPTION = false;
 /**
@@ -56,17 +57,27 @@ const decrypt = (encrypted: Buffer) => {
         console.log('√ Listening to IPFS event: %s', type);
         (async () => {
             for await (const m of sub) {
+                let token = '';
+                const head = headers();
+
+                try {
+                    token = await JwtServicesValidator.sign(m.subject);
+                } catch (err) {
+                    console.error(`Error when sign message ${m.subject}`, err);
+                }
+                head.append('serviceToken', token);
+
                 console.log(`[${sub.getProcessed()} - ${m.subject}]`);
                 try {
                     const payload = c.decode(m.data) as any;
                     const body = cb(Buffer.from(payload.content, 'base64'));
                     const responseMessage = { body: body.toString('base64') }
                     const archResponse = zlib.deflateSync(JSON.stringify(responseMessage)).toString('binary');
-                    m.respond(StringCodec().encode(archResponse));
+                    m.respond(StringCodec().encode(archResponse), { headers: head });
                 } catch (e) {
                     // It is important that you should handle the content to make sure that is your encrypted/decrypted, skip if that is system ipds file
                     const archResponse = zlib.deflateSync(JSON.stringify({ error: e.message })).toString('binary');
-                    m.respond(StringCodec().encode(archResponse));
+                    m.respond(StringCodec().encode(archResponse), { headers: head });
                 }
 
             }
@@ -78,7 +89,17 @@ const decrypt = (encrypted: Buffer) => {
         const sub = nc.subscribe(type);
         (async () => {
             for await (const m of sub) {
-                m.respond();
+                let token = '';
+                const head = headers();
+
+                try {
+                    token = await JwtServicesValidator.sign(m.subject);
+                } catch (err) {
+                    console.error(`Error when sign message ${m.subject}`, err);
+                }
+                head.append('serviceToken', token);
+
+                m.respond(undefined, { headers: head });
             }
         })();
     }

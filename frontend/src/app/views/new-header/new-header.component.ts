@@ -1,14 +1,16 @@
-import {Component, Input, OnInit, AfterViewInit, ElementRef, ViewChild, NgZone, AfterViewChecked} from '@angular/core';
-import {getMenuItems, NavbarMenuItem} from './menu.model';
-import {IUser, UserCategory, UserPermissions, UserRole} from '@guardian/interfaces';
-import {AuthStateService} from '../../services/auth-state.service';
-import {AuthService} from '../../services/auth.service';
-import {DemoService} from '../../services/demo.service';
-import {NavigationEnd, Router} from '@angular/router';
-import {ProfileService} from '../../services/profile.service';
-import {WebSocketService} from '../../services/web-socket.service';
-import {HeaderPropsService} from '../../services/header-props.service';
-import {BrandingService} from '../../services/branding.service';
+import { Component, Input, OnInit, AfterViewInit, ElementRef, ViewChild, NgZone, AfterViewChecked } from '@angular/core';
+import { getMenuItems, NavbarMenuItem } from './menu.model';
+import { IUser, UserCategory, UserPermissions, UserRole } from '@guardian/interfaces';
+import { AuthStateService } from '../../services/auth-state.service';
+import { AuthService } from '../../services/auth.service';
+import { DemoService } from '../../services/demo.service';
+import { NavigationEnd, Router } from '@angular/router';
+import { ProfileService } from '../../services/profile.service';
+import { WebSocketService } from '../../services/web-socket.service';
+import { HeaderPropsService } from '../../services/header-props.service';
+import { BrandingService } from '../../services/branding.service';
+import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-new-header',
@@ -26,11 +28,15 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
     public activeLink: string = '';
     public activeLinkRoot: string = '';
 
+    public policyRequests = 0;
+    public newPolicyRequests = 0;
+
     private commonLinksDisabled: boolean = false;
     private balanceType: string;
     private balanceInit: boolean = false;
     private ws!: any;
     private authSubscription!: any;
+    private policyRequestsSubscription = new Subscription();
 
     @Input() remoteContainerMethod: any;
 
@@ -46,7 +52,8 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
         public profileService: ProfileService,
         public webSocketService: WebSocketService,
         public headerProps: HeaderPropsService,
-        private brandingService: BrandingService) {
+        private brandingService: BrandingService,
+        private externalPoliciesService: ExternalPoliciesService) {
         this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {
                 this.update();
@@ -83,6 +90,12 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
                 this.getBalance();
             }
         });
+
+        this.policyRequestsSubscription.add(
+            this.webSocketService.requestSubscribe((message => {
+                this.updateRemotePolicyRequests();
+            }))
+        );
     }
 
     ngAfterViewChecked(): void {
@@ -110,6 +123,7 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
             this.authSubscription.unsubscribe();
             this.authSubscription = null;
         }
+        this.policyRequestsSubscription.unsubscribe();
     }
 
     private getBalance() {
@@ -126,6 +140,8 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
                     this.balance = `${b.toFixed(2)} ${balance.unit}`;
                 } else if (b > 9) {
                     this.balance = `${b.toFixed(3)} ${balance.unit}`;
+                } else {
+                    this.balance = `${b.toFixed(4)} ${balance.unit}`;
                 }
                 if (b > 100) {
                     this.balanceType = 'normal';
@@ -162,6 +178,7 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
             } else {
                 this.remoteContainerMethod(this.smallMenuMode ? 'COLLAPSE' : 'EXPAND');
             }
+            this.updateRemotePolicyRequests();
             this.brandingService.getBrandingData().then(res => {
                 const logo = document.getElementById('company-logo') as HTMLImageElement;
                 if (logo) {
@@ -176,7 +193,6 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
                 if (document.getElementById('company-name')) {
                     document.getElementById('company-name')!.innerText = res.companyName;
                 }
-
             })
 
         }, () => {
@@ -250,5 +266,17 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
         } else {
             this.router.navigate([barItem.routerLink]);
         }
+    }
+
+    private updateRemotePolicyRequests() {
+        if (!this.isLogin) {
+            return;
+        }
+        this.externalPoliciesService.getActionRequestsCount().subscribe((response) => {
+            if (response?.body) {
+                this.newPolicyRequests = response.body.requestsCount;
+                this.policyRequests = response.body.total;
+            }
+        })
     }
 }

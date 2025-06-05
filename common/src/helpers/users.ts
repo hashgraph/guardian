@@ -34,9 +34,10 @@ export class Users extends NatsService {
     /**
      * Get user
      * @param target
+     * @param userId
      * @private
      */
-    private async _getUser(target: IAuthUser | AuthenticatedRequest): Promise<IAuthUser> {
+    private async _getUser(target: IAuthUser | AuthenticatedRequest, userId: string | null): Promise<IAuthUser> {
         let user: IAuthUser;
         if (!target) {
             return null;
@@ -47,7 +48,7 @@ export class Users extends NatsService {
             if (!(target as AuthenticatedRequest).user || !(target as AuthenticatedRequest).user.username) {
                 return null;
             }
-            user = await this.sendMessage(AuthEvents.GET_USER, { username: (target as AuthenticatedRequest).user.username });
+            user = await this.sendMessage(AuthEvents.GET_USER, { username: (target as AuthenticatedRequest).user.username, userId });
         }
         return user;
     }
@@ -56,9 +57,10 @@ export class Users extends NatsService {
      * User permission
      * @param target
      * @param role
+     * @param userId
      */
-    public async permission(target: IAuthUser | AuthenticatedRequest, role: UserRole | UserRole[]): Promise<boolean> {
-        const user = await this._getUser(target);
+    public async permission(target: IAuthUser | AuthenticatedRequest, role: UserRole | UserRole[], userId: string | null): Promise<boolean> {
+        const user = await this._getUser(target, userId);
         if (!user) {
             return false;
         }
@@ -72,76 +74,94 @@ export class Users extends NatsService {
     /**
      * Return current user
      * @param req
+     * @param userId
      */
-    public async currentUser(req: AuthenticatedRequest): Promise<IAuthUser> {
-        return await this._getUser(req);
+    public async currentUser(req: AuthenticatedRequest, userId: string | null): Promise<IAuthUser> {
+        return await this._getUser(req, userId);
     }
 
     /**
      * Return user by username
      * @param username
+     * @param userId
      */
-    public async getUser(username: string): Promise<IAuthUser> {
-        return await this.sendMessage(AuthEvents.GET_USER, { username });
+    public async getUser(username: string, userId: string | null): Promise<IAuthUser> {
+        return await this.sendMessage(AuthEvents.GET_USER, { username, userId });
     }
 
     /**
      * Return user by did
      * @param did
+     * @param userId
      */
-    public async getUserById(did: string): Promise<IAuthUser> {
-        return await this.sendMessage(AuthEvents.GET_USER_BY_ID, { did });
+    public async getUserById(did: string, userId: string | null): Promise<IAuthUser> {
+        return await this.sendMessage(AuthEvents.GET_USER_BY_ID, { did, userId });
     }
 
     /**
      * Return user by account
      * @param account
+     * @param userId
      */
-    public async getUserByAccount(account: string): Promise<IAuthUser> {
-        return await this.sendMessage(AuthEvents.GET_USER_BY_ACCOUNT, { account });
+    public async getUserByAccount(account: string, userId: string | null): Promise<IAuthUser> {
+        return await this.sendMessage(AuthEvents.GET_USER_BY_ACCOUNT, { account, userId });
+    }
+
+    /**
+     * Return users by parent did
+     * @param did
+     * @param userId
+     */
+    public async getUsersByParentDid(did: string, userId: string | null): Promise<IAuthUser[]> {
+        return await this.sendMessage(AuthEvents.GET_USERS_BY_SR_ID, { did, userId });
     }
 
     /**
      * Return user by did
      * @param dids
+     * @param userId
      */
-    public async getUsersByIds(dids: string[]): Promise<IAuthUser[]> {
-        return await this.sendMessage(AuthEvents.GET_USERS_BY_ID, { dids });
+    public async getUsersByIds(dids: string[], userId: string | null): Promise<IAuthUser[]> {
+        return await this.sendMessage(AuthEvents.GET_USERS_BY_ID, { dids, userId });
     }
 
     /**
      * Return user by did
-     * @param dids
+     * @param did
+     * @param userId
      */
-    public async getUsersBySrId(did: string): Promise<IAuthUser[]> {
-        return await this.sendMessage(AuthEvents.GET_USERS_BY_SR_ID, { did });
+    public async getUsersBySrId(did: string, userId: string | null): Promise<IAuthUser[]> {
+        return await this.sendMessage(AuthEvents.GET_USERS_BY_SR_ID, { did, userId });
     }
 
     /**
      * Return users with role
      * @param role
+     * @param userId
      */
-    public async getUsersByRole(role: UserRole): Promise<IAuthUser[]> {
-        return await this.sendMessage(AuthEvents.GET_USERS_BY_ROLE, { role });;
+    public async getUsersByRole(role: UserRole, userId: string | null): Promise<IAuthUser[]> {
+        return await this.sendMessage(AuthEvents.GET_USERS_BY_ROLE, { role, userId });;
     }
 
     /**
      * Update current user entity
      * @param username
      * @param item
+     * @param userId
      */
-    public async updateCurrentUser(username: string, item: any) {
-        return await this.sendMessage(AuthEvents.UPDATE_USER, { username, item });
+    public async updateCurrentUser(username: string, item: any, userId: string | null) {
+        return await this.sendMessage(AuthEvents.UPDATE_USER, { username, item, userId });
     }
 
     /**
      * Det default role
      * @param id
      * @param owner
+     * @param userId
      * @returns Operation Success
      */
-    public async setDefaultRole(id: string, owner: string): Promise<any> {
-        return await this.sendMessage(AuthEvents.SET_DEFAULT_ROLE, { id, owner });
+    public async setDefaultRole(id: string, owner: string, userId: string | null): Promise<any> {
+        return await this.sendMessage(AuthEvents.SET_DEFAULT_ROLE, { id, owner, userId });
     }
 
     /**
@@ -151,24 +171,26 @@ export class Users extends NatsService {
      * @returns Operation Success
      */
     public async createRole(role: any, owner: IOwner, restore = false): Promise<any> {
-        return await this.sendMessage(AuthEvents.CREATE_ROLE, { role, owner, restore });
+        return await this.sendMessage(AuthEvents.CREATE_ROLE, { role, owner, restore, userId: owner.id });
     }
 
     /**
      * Update current user entity
      * @param username
      * @param owner
+     * @param userId
      */
-    public async setDefaultUserRole(username: string, owner: string): Promise<IAuthUser> {
-        return await this.sendMessage(AuthEvents.SET_DEFAULT_USER_ROLE, { username, owner });
+    public async setDefaultUserRole(username: string, owner: string, userId: string | null): Promise<IAuthUser> {
+        return await this.sendMessage(AuthEvents.SET_DEFAULT_USER_ROLE, { username, owner, userId });
     }
 
     /**
      * Get user by token
      * @param token
+     * @param userId
      */
-    public async getUserByToken(token: string) {
-        return await this.sendMessage(AuthEvents.GET_USER_BY_TOKEN, { token });
+    public async getUserByToken(token: string, userId: string | null) {
+        return await this.sendMessage(AuthEvents.GET_USER_BY_TOKEN, { token, userId });
     }
 
     /**
@@ -176,39 +198,41 @@ export class Users extends NatsService {
      * @param username
      * @param password
      * @param role
+     * @param userId
      */
-    public async registerNewUser(username: string, password: string, role: string): Promise<IAuthUser> {
-        return await this.sendMessage(AuthEvents.REGISTER_NEW_USER, { username, password, role });
+    public async registerNewUser(username: string, password: string, role: string, userId: string | null): Promise<IAuthUser> {
+        return await this.sendMessage(AuthEvents.REGISTER_NEW_USER, { username, password, role, userId });
     }
 
     /**
      * Generate new token
      * @param username
      * @param password
+     * @param userId
      */
-    public async generateNewToken(username: string, password: string) {
-        return await this.sendMessage(AuthEvents.GENERATE_NEW_TOKEN, { username, password });
+    public async generateNewToken(username: string, password: string, userId: string | null) {
+        return await this.sendMessage(AuthEvents.GENERATE_NEW_TOKEN, { username, password, userId });
     }
 
     /**
      * Get all users accounts
      */
-    public async getAllUserAccounts() {
-        return await this.sendMessage(AuthEvents.GET_ALL_USER_ACCOUNTS);
+    public async getAllUserAccounts(userId: string | null) {
+        return await this.sendMessage(AuthEvents.GET_ALL_USER_ACCOUNTS, { userId });
     }
 
     /**
      * Get all standard registry accounts
      */
-    public async getAllStandardRegistryAccounts(): Promise<unknown[]> {
-        return await this.sendMessage(AuthEvents.GET_ALL_STANDARD_REGISTRY_ACCOUNTS);
+    public async getAllStandardRegistryAccounts(userId: string | null): Promise<unknown[]> {
+        return await this.sendMessage(AuthEvents.GET_ALL_STANDARD_REGISTRY_ACCOUNTS, { userId });
     }
 
     /**
      * Get all user accounts demo
      */
-    public async getAllUserAccountsDemo() {
-        return await this.sendMessage(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO);
+    public async getAllUserAccountsDemo(userId: string | null) {
+        return await this.sendMessage(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO, { userId });
     }
 
     /**
@@ -216,14 +240,16 @@ export class Users extends NatsService {
      * @param role
      * @param did
      * @param parent
+     * @param userId
      * @returns Operation Success
      */
     public async generateNewTemplate(
         role: string,
         did: string,
-        parent: string
+        parent: string,
+        userId: string | null
     ): Promise<any> {
-        return await this.sendMessage(AuthEvents.REGISTER_NEW_TEMPLATE, { role, did, parent });
+        return await this.sendMessage(AuthEvents.REGISTER_NEW_TEMPLATE, { role, did, parent, userId });
     }
 
     /**
@@ -238,7 +264,7 @@ export class Users extends NatsService {
         userRoles: string[],
         owner: IOwner
     ): Promise<any> {
-        return await this.sendMessage(AuthEvents.UPDATE_USER_ROLE, { username, userRoles, owner });
+        return await this.sendMessage(AuthEvents.UPDATE_USER_ROLE, { username, userRoles, owner, userId: owner.id });
     }
 
     public async addUserParent(username: string, parent: string) {
@@ -252,12 +278,13 @@ export class Users extends NatsService {
     /**
      * Get hedera account
      * @param did
+     * @param userId
      */
-    public async getHederaAccount(did: string): Promise<IRootConfig> {
+    public async getHederaAccount(did: string, userId: string | null): Promise<IRootConfig> {
         if (!did) {
             throw new Error('Invalid DID');
         }
-        const userFull = await this.getUserById(did);
+        const userFull = await this.getUserById(did, userId);
         if (!userFull) {
             throw new Error('User not found');
         }

@@ -57,6 +57,10 @@ export abstract class Message {
      * Index
      */
     public index: string | number;
+    /**
+     * Message memo
+     */
+    public transactionMemo: string;
 
     /**
      * Response type
@@ -100,7 +104,7 @@ export abstract class Message {
         return this._responseType;
     }
 
-  constructor(action: MessageAction, type: MessageType) {
+    constructor(action: MessageAction, type: MessageType) {
         this.type = type;
         this.lang = 'en-US';
         this._action = action;
@@ -137,7 +141,7 @@ export abstract class Message {
      * @param url
      */
     public setUrls(url: IURL[]): void {
-      this.urls = url?.filter(u => {
+        this.urls = url?.filter(u => {
             return !!u.cid
         });
     }
@@ -405,7 +409,28 @@ export abstract class Message {
             statusMessage: this._statusMessage,
             statusReason: this._statusReason,
             action: this._action,
+            transactionMemo: this.transactionMemo,
         }
+    }
+
+    /**
+     * To JSON
+     */
+    protected static _fromJson<T extends Message>(message: T, json: any): T {
+        message.id = json.id;
+        message._id = json.messageId;
+        message.topicId = json.topicId;
+        message.lang = json.lang;
+        message.type = json.type;
+        message.payer = json.payer;
+        message.index = json.index;
+        message._status = json.status;
+        message._parentIds = json.parentIds;
+        message._statusMessage = json.statusMessage;
+        message._statusReason = json.statusReason;
+        message._action = json.action;
+        message.transactionMemo = json.transactionMemo;
+        return message;
     }
 
     /**
@@ -413,5 +438,19 @@ export abstract class Message {
      */
     public getOwner(): string {
         return null;
+    }
+
+    /**
+     * Set memo
+     */
+    public setMemo(memo: string) {
+        this.transactionMemo = memo;
+    }
+
+    /**
+     * Set memo
+     */
+    public getMemo(): string {
+        return this.transactionMemo;
     }
 }

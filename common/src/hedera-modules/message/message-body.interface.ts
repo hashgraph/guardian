@@ -1,4 +1,4 @@
-import { ContractType } from '@guardian/interfaces';
+import { ContractType, MultiPolicyType } from '@guardian/interfaces';
 import { MessageStatus } from './message.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
@@ -115,6 +115,18 @@ export interface PolicyMessageBody extends MessageBody {
      * Synchronization topic ID
      */
     synchronizationTopicId: string;
+    /**
+     * Availability
+     */
+    availability: string;
+    /**
+     * restoreTopicId
+     */
+    restoreTopicId: string;
+    /**
+     * actionsTopicId
+     */
+    actionsTopicId: string;
     /**
      * Effective Date
      */
@@ -372,7 +384,7 @@ export interface SynchronizationMessageBody extends MessageBody {
     /**
      * Policy Type
      */
-    policyType?: string,
+    policyType?: MultiPolicyType,
     /**
      * Message Id
      */
@@ -757,4 +769,80 @@ export interface LabelDocumentMessageBody extends MessageBody {
      * Definition
      */
     definition: string;
+}
+
+/**
+ * Policy diff message body
+ */
+export interface PolicyDiffMessageBody extends MessageBody {
+    /**
+     * UUID
+     */
+    uuid: string;
+    /**
+     * Owner
+     */
+    owner: string;
+    /**
+     * Diff type
+     */
+    diffType: string;
+    /**
+     * Diff index
+     */
+    diffIndex: number;
+    /**
+     * Topic id
+     */
+    policyTopicId: string;
+    /**
+     * Instance topic ID
+     */
+    instanceTopicId: string;
+    /**
+     * CID
+     */
+    cid: string;
+    /**
+     * URI
+     */
+    uri: string;
+}
+
+/**
+ * PolicyActionMessageBody
+ */
+export interface PolicyActionMessageBody extends MessageBody {
+    /**
+     * UUID
+     */
+    uuid: string;
+    /**
+     * User
+     */
+    owner: string;
+    /**
+     * Policy
+     */
+    policyId: string;
+    /**
+     * User account
+     */
+    accountId: string;
+    /**
+     * Block
+     */
+    blockTag: string;
+    /**
+     * Parent message
+     */
+    parent: string;
+    /**
+     * CID
+     */
+    cid: string;
+    /**
+     * URI
+     */
+    uri: string;
 }

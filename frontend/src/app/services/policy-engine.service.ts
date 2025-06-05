@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { MigrationConfig, PolicyToolMetadata } from '@guardian/interfaces';
+import { MigrationConfig, PolicyAvailability, PolicyToolMetadata } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
 import { headersV2 } from '../constants';
 import { API_BASE_URL } from './api';
@@ -15,15 +15,48 @@ export class PolicyEngineService {
     constructor(private http: HttpClient) {
     }
 
-    public all(): Observable<any[]> {
-        return this.http.get<any[]>(`${this.url}/`);
+    public static getOptions(
+        filters: any,
+        pageIndex?: number,
+        pageSize?: number
+    ): HttpParams {
+        let params = new HttpParams();
+        if (filters && typeof filters === 'object') {
+            for (const key of Object.keys(filters)) {
+                if (filters[key]) {
+                    params = params.set(key, filters[key]);
+                }
+            }
+        }
+        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            params = params.set('pageIndex', String(pageIndex));
+            params = params.set('pageSize', String(pageSize));
+        }
+        return params;
     }
 
-    public page(pageIndex?: number, pageSize?: number): Observable<HttpResponse<any[]>> {
-        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
-            return this.http.get<any>(`${this.url}?pageIndex=${pageIndex}&pageSize=${pageSize}`, { observe: 'response', headers: headersV2 });
+    public all(type?: string): Observable<any[]> {
+        if (type) {
+            return this.http.get<any[]>(`${this.url}?type=${type}`);
         }
-        return this.http.get<any>(`${this.url}`, { observe: 'response' });
+        return this.http.get<any[]>(`${this.url}`);
+    }
+
+    public page(
+        pageIndex?: number,
+        pageSize?: number,
+        type?: string
+    ): Observable<HttpResponse<any[]>> {
+        const filters: any = {};
+        const header: any = { observe: 'response' };
+        if (type) {
+            filters.type = type;
+        }
+        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            header.headers = headersV2;
+        }
+        header.params = PolicyEngineService.getOptions(filters, pageIndex, pageSize);
+        return this.http.get<any[]>(`${this.url}`, header) as any;
     }
 
     public create(policy: any): Observable<void> {
@@ -46,8 +79,11 @@ export class PolicyEngineService {
         return this.http.put<any>(`${this.url}/${policyId}`, policy);
     }
 
-    public publish(policyId: string, policyVersion: string): Observable<any> {
-        return this.http.put<any>(`${this.url}/${policyId}/publish`, { policyVersion });
+    public publish(
+        policyId: string,
+        options: { policyVersion: string, policyAvailability: PolicyAvailability }
+    ): Observable<any> {
+        return this.http.put<any>(`${this.url}/${policyId}/publish`, options);
     }
 
     public dryRun(policyId: string): Observable<any> {
@@ -62,8 +98,11 @@ export class PolicyEngineService {
         return this.http.put<any>(`${this.url}/${policyId}/draft`, null);
     }
 
-    public pushPublish(policyId: string, policyVersion: string): Observable<{ taskId: string, expectation: number }> {
-        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${policyId}/publish`, { policyVersion });
+    public pushPublish(
+        policyId: string,
+        options: { policyVersion: string, policyAvailability: PolicyAvailability }
+    ): Observable<{ taskId: string, expectation: number }> {
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${policyId}/publish`, options);
     }
 
     public pushDelete(policyId: string): Observable<{ taskId: string, expectation: number }> {
@@ -276,6 +315,36 @@ export class PolicyEngineService {
         return this.http.get<any>(`${this.url}/${policyId}/documents`, { observe: 'response', params });
     }
 
+    public searchDocuments(
+        policyId: string,
+        filters: any,
+        pageIndex?: number,
+        pageSize?: number
+    ): Observable<HttpResponse<any[]>> {
+        const params = this.getOptions(filters, pageIndex, pageSize);
+        return this.http.get<any>(`${this.url}/${policyId}/search-documents`, { observe: 'response', params });
+    }
+
+    public exportDocuments(
+        policyId: string,
+        filters: any,
+    ): Observable<ArrayBuffer> {
+        const params = this.getOptions(filters);
+        return this.http.get(`${this.url}/${policyId}/export-documents`, { responseType: 'arraybuffer', params });
+    }
+
+    public getPolicyDocumentOwners(
+        policyId: string,
+    ): Observable<string[]> {
+        return this.http.get<string[]>(`${this.url}/${policyId}/document-owners`);
+    }
+
+    public getPolicyTokens(
+        policyId: string,
+    ): Observable<string[]> {
+        return this.http.get<string[]>(`${this.url}/${policyId}/tokens`);
+    }
+
     public migrateData(migrationConfig: MigrationConfig) {
         return this.http.post<{ error: string, id: string }[]>(`${this.url}/migrate-data`, migrationConfig);
     }
@@ -380,5 +449,31 @@ export class PolicyEngineService {
             formData.append('tests', file);
         }
         return this.http.post<any[]>(`${this.url}/${policyId}/test/`, formData);
+    }
+
+    public parsePage(response: HttpResponse<any[]>) {
+        const page = response.body || [];
+        const count = Number(response.headers.get('X-Total-Count')) || page.length;
+        return { page, count };
+    }
+
+    public getOptions(
+        filters: any,
+        pageIndex?: number,
+        pageSize?: number
+    ): HttpParams {
+        let params = new HttpParams();
+        if (filters && typeof filters === 'object') {
+            for (const key of Object.keys(filters)) {
+                if (filters[key]) {
+                    params = params.set(key, filters[key]);
+                }
+            }
+        }
+        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            params = params.set('pageIndex', String(pageIndex));
+            params = params.set('pageSize', String(pageSize));
+        }
+        return params;
     }
 }

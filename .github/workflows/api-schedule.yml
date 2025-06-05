@@ -18,7 +18,7 @@ jobs:
                 mongodb-version: [ 7.0.5 ]
         steps:
             - name: Harden Runner
-              uses: step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142 # v2.7.0
+              uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
               with:
                   egress-policy: audit
 
@@ -28,7 +28,7 @@ jobs:
                   ref: 'develop'
 
             - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af #v4.1.0
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 #v4.4.0
               with:
                   node-version: ${{ matrix.node-version }}
 
@@ -62,6 +62,9 @@ jobs:
                   pushd queue-service
                   yarn run build
                   popd
+                  pushd topic-listener-service
+                  yarn run build
+                  popd
                   pushd guardian-service
                   yarn run build
                   popd
@@ -81,7 +84,7 @@ jobs:
                   port: '4222'
 
             - name: Start MongoDB
-              uses: step-security/mongodb-github-action@ff3d5a3dec0957be7ef99d3d1c9ca4499e8a4cb8 # v1.11.0
+              uses: step-security/mongodb-github-action@3160045518552049fae7e4ab834ad6f04836da49 # v1.12.0
               with:
                   mongodb-version: ${{ matrix.mongodb-version }}
 
@@ -111,6 +114,10 @@ jobs:
                   npm start &
                   sleep 20
                   popd
+                  pushd topic-listener-service
+                  npm start &
+                  sleep 20
+                  popd
                   pushd worker-service
                   npm start &
                   npm start &
@@ -130,22 +137,26 @@ jobs:
                   OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
                   JWT_PRIVATE_KEY: ${{ secrets.CI_JWT_PRIVATE_KEY }}
                   JWT_PUBLIC_KEY: ${{ secrets.CI_JWT_PUBLIC_KEY }}
+                  SERVICE_JWT_PUBLIC_KEY: ${{ secrets.CI_JWT_PUBLIC_KEY }}
+                  SERVICE_JWT_SECRET_KEY: ${{ secrets.CI_JWT_PRIVATE_KEY }}
                   IPFS_NODE_ADDRESS: http://localhost:5001
                   IPFS_PROVIDER: web3storage
                   IPFS_PUBLIC_GATEWAY: https://dweb.link/ipfs/${cid}
                   IPFS_STORAGE_KEY: ${{ secrets.E2E_IPFS_STORAGE_KEY }}
                   IPFS_STORAGE_PROOF: ${{ secrets.E2E_IPFS_STORAGE_PROOF }}
                   ACCESS_TOKEN_UPDATE_INTERVAL: 600000
+                  MIN_PASSWORD_LENGTH: 4
+                  PASSWORD_COMPLEXITY: easy
 
             - name: Run tests with Cypress
               run: |
                   pushd e2e-tests
                   npm install
-                  npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=all,grepFilterSpecs=true" --spec "cypress/e2e/api-tests/**/*.cy.js" --browser chrome            
+                  npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=all,grepFilterSpecs=true" --spec "cypress/e2e/api-tests/**/*.cy.js" --browser chrome
                   popd
 
             - name: Publish API Test Results
-              uses: EnricoMi/publish-unit-test-result-action@170bf24d20d201b842d7a52403b73ed297e6645b # v2.18.0
+              uses: step-security/publish-unit-test-result-action@cc82caac074385ae176d39d2d143ad05e1130b2d # v2.18.0
               if: always()
               with:
                   files: e2e-tests/cypress/test_results/**/*.xml

@@ -6,7 +6,7 @@
 @import "codemirror/addon/lint/lint.css";
 @import "codemirror/addon/hint/show-hint.css";
 @import "primeicons/primeicons.css";
-@import url("https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined");
+//@import url("https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined");
 @import "mathlive/fonts.css";
 
 html,
@@ -610,7 +610,8 @@ input:checked+.slider:before {
 .secondary[disabled],
 .button[disabled]:hover,
 .secondary[disabled]:hover {
-    background: var(--color-grey-3) !important;
+    background: var(--color-grey-1) !important;
+    border: 1px solid var(--color-grey-3) !important;
     color: var(--color-grey-5) !important;
     cursor: no-drop;
     filter: brightness(1);

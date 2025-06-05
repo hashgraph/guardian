@@ -8,8 +8,9 @@ import {
     PolicyOutputEventType,
     PolicyTagMap
 } from './interfaces/index.js';
-import { BlockType, GenerateUUIDv4, ModuleStatus, PolicyEvents, PolicyHelper, PolicyType } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, LocationType, ModuleStatus, PolicyEvents, PolicyHelper, PolicyStatus } from '@guardian/interfaces';
 import {
+    ActionType,
     AnyBlockType,
     IPolicyBlock,
     IPolicyContainerBlock,
@@ -20,7 +21,7 @@ import {
     ISerializedBlock,
     ISerializedBlockExtend
 } from './policy-engine.interface.js';
-import { DatabaseServer, Policy, PolicyRoles, PolicyTool, Users } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, Policy, PolicyAction, PolicyRoles, PolicyTool, Users } from '@guardian/common';
 import { STATE_KEY } from './helpers/constants.js';
 import { GetBlockByType } from './blocks/get-block-by-type.js';
 import { GetOtherOptions } from './helpers/get-other-options.js';
@@ -30,6 +31,8 @@ import { ExternalEvent } from './interfaces/external-event.js';
 import { BlockTreeGenerator } from './block-tree-generator.js';
 import { PolicyNavigationMap } from './interfaces/block-state.js';
 import { ComponentsService } from './helpers/components-service.js';
+import { PolicyBackupService, PolicyRestoreService } from './restore-service.js';
+import { PolicyActionsService } from './actions-service.js';
 
 /**
  * Policy tag helper
@@ -140,6 +143,22 @@ export function externalBlockEvent(event: ExternalEvent<any>): void {
     const type = 'external';
     new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, data: [event] }, false);
 }
+
+export function requestNotificationEvent(row: PolicyAction): void {
+    new BlockTreeGenerator().sendMessage(PolicyEvents.REQUEST_UPDATE_BROADCAST, {
+        id: row.id,
+        type: row.type,
+        accountId: row.accountId,
+        policyId: row.policyId,
+        status: row.status
+    }, false);
+};
+
+export function restoreNotificationEvent(policyId: string): void {
+    new BlockTreeGenerator().sendMessage(PolicyEvents.RESTORE_UPDATE_BROADCAST, {
+        policyId
+    }, false);
+};
 
 /**
  * Policy component utils
@@ -304,6 +323,27 @@ export class PolicyComponentsUtils {
         string,
         Map<string, Function[]>
     > = new Map();
+
+    /**
+     * Backup Controllers
+     * policyId -> PolicyBackup
+     * @private
+     */
+    private static readonly BackupControllers: Map<string, PolicyBackupService> = new Map();
+
+    /**
+     * Restore Controllers
+     * policyId -> PolicyRestore
+     * @private
+     */
+    private static readonly RestoreControllers: Map<string, PolicyRestoreService> = new Map();
+
+    /**
+     * Actions Controllers
+     * policyId -> PolicyActions
+     * @private
+     */
+    private static readonly ActionsControllers: Map<string, PolicyActionsService> = new Map();
 
     /**
      * Get document cache fields
@@ -514,8 +554,7 @@ export class PolicyComponentsUtils {
                 blockList
             );
         } else {
-            blockList =
-                PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
+            blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
         }
         blockList.push(component.uuid);
 
@@ -775,6 +814,8 @@ export class PolicyComponentsUtils {
             synchronizationTopicId: policy.synchronizationTopicId,
             owner: policy.owner,
             policyOwner: policy.owner,
+            policyStatus: policy.status,
+            locationType: policy.locationType
         };
         PolicyComponentsUtils.PolicyById.set(policyId, policyInstance);
     }
@@ -838,8 +879,7 @@ export class PolicyComponentsUtils {
      * @param policyId
      */
     public static async UnregisterBlocks(policyId: string) {
-        const blockList =
-            PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
+        const blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
         for (const uuid of blockList) {
             const component = PolicyComponentsUtils.BlockByBlockId.get(uuid);
             if (component) {
@@ -983,9 +1023,7 @@ export class PolicyComponentsUtils {
      * Get block instance by uuid
      * @param uuid
      */
-    public static GetBlockByUUID<
-        T extends IPolicyInterfaceBlock | IPolicyBlock
-    >(uuid: string): T {
+    public static GetBlockByUUID<T extends IPolicyInterfaceBlock | IPolicyBlock>(uuid: string): T {
         return PolicyComponentsUtils.BlockByBlockId.get(uuid) as T;
     }
 
@@ -998,8 +1036,7 @@ export class PolicyComponentsUtils {
         policyId: string,
         tag: string
     ): T {
-        const uuid =
-            PolicyComponentsUtils.TagMapByPolicyId.get(policyId).get(tag);
+        const uuid = PolicyComponentsUtils.TagMapByPolicyId.get(policyId).get(tag);
         return PolicyComponentsUtils.BlockByBlockId.get(uuid) as T;
     }
 
@@ -1146,7 +1183,7 @@ export class PolicyComponentsUtils {
             }
 
             result.userGroups = groups;
-            if (policy.status === PolicyType.PUBLISH || policy.status === PolicyType.DISCONTINUED) {
+            if (policy.status === PolicyStatus.PUBLISH || policy.status === PolicyStatus.DISCONTINUED) {
                 const multiPolicy = await DatabaseServer.getMultiPolicy(
                     policy.instanceTopicId,
                     did
@@ -1296,19 +1333,53 @@ export class PolicyComponentsUtils {
     }
 
     /**
+     * Get user by account
+     * @param account
+     * @param instance
+     */
+    public static async GetPolicyUserByAccount(
+        account: string,
+        instance: IPolicyInstance | AnyBlockType,
+        userId: string | null
+    ): Promise<PolicyUser> {
+        if (!account) {
+            return null;
+        }
+
+        const regUser = await (new Users()).getUserByAccount(account, userId);
+        if (!regUser || !regUser.did) {
+            return null;
+        }
+
+        const userFull = new PolicyUser(regUser, instance);
+        const groups = await instance
+            .components
+            .databaseServer
+            .getGroupsByUser(instance.policyId, userFull.did);
+        for (const group of groups) {
+            if (group.active !== false) {
+                return userFull.setCurrentGroup(group);
+            }
+        }
+        return userFull;
+    }
+
+    /**
      * Get user by name
      * @param username
      * @param instance
+     * @param userId
      */
     public static async GetPolicyUserByName(
         username: string,
-        instance: IPolicyInstance | AnyBlockType
+        instance: IPolicyInstance | AnyBlockType,
+        userId: string | null
     ): Promise<PolicyUser> {
         if (!username) {
             return null;
         }
 
-        const regUser = await (new Users()).getUser(username);
+        const regUser = await (new Users()).getUser(username, userId);
         if (!regUser || !regUser.did) {
             return null;
         }
@@ -1337,14 +1408,15 @@ export class PolicyComponentsUtils {
     public static async GetPolicyUserByDID(
         did: string,
         groupUUID: string,
-        instance: IPolicyInstance | AnyBlockType
+        instance: IPolicyInstance | AnyBlockType,
+        userId: string | null
     ): Promise<PolicyUser> {
         const virtual = !!instance.dryRun;
         let userFull: PolicyUser;
         if (virtual) {
             userFull = new VirtualUser({ did }, instance);
         } else {
-            const regUser = await (new Users()).getUserById(did);
+            const regUser = await (new Users()).getUserById(did, userId);
             if (regUser) {
                 userFull = new PolicyUser(regUser, instance);
             } else {
@@ -1371,14 +1443,15 @@ export class PolicyComponentsUtils {
 
     public static async GetPolicyUserByGroup(
         group: PolicyRoles,
-        instance: IPolicyInstance | AnyBlockType
+        instance: IPolicyInstance | AnyBlockType,
+        userId: string | null
     ): Promise<PolicyUser> {
         const virtual = !!instance.dryRun;
         let userFull: PolicyUser;
         if (virtual) {
             userFull = new VirtualUser(group, instance);
         } else {
-            const regUser = await (new Users()).getUserById(group.did);
+            const regUser = await (new Users()).getUserById(group.did, userId);
             if (regUser) {
                 userFull = new PolicyUser(regUser, instance);
             } else {
@@ -1419,4 +1492,245 @@ export class PolicyComponentsUtils {
         }
         return null;
     }
+
+    /**
+     * Register Backup Controller
+     * @param policyId
+     */
+    public static RegisterBackupService(policyId: string, controller: PolicyBackupService) {
+        PolicyComponentsUtils.BackupControllers.set(policyId, controller);
+    }
+
+    /**
+     * Register Restore Controller
+     * @param policyId
+     */
+    public static RegisterRestoreService(policyId: string, controller: PolicyRestoreService) {
+        PolicyComponentsUtils.RestoreControllers.set(policyId, controller);
+    }
+
+    /**
+     * Register Actions Controller
+     * @param policyId
+     */
+    public static RegisterActionsService(policyId: string, controller: PolicyActionsService) {
+        PolicyComponentsUtils.ActionsControllers.set(policyId, controller);
+    }
+
+    /**
+     * Unregister Backup Controller
+     * @param policyId
+     */
+    public static UnregisterBackupService(policyId: string) {
+        PolicyComponentsUtils.BackupControllers.delete(policyId);
+    }
+
+    /**
+     * Unregister Restore Controller
+     * @param policyId
+     */
+    public static UnregisterRestoreService(policyId: string) {
+        PolicyComponentsUtils.RestoreControllers.delete(policyId);
+    }
+
+    /**
+     * Unregister Actions Controller
+     * @param policyId
+     */
+    public static UnregisterActionsService(policyId: string) {
+        PolicyComponentsUtils.ActionsControllers.delete(policyId);
+    }
+
+    /**
+     * Create new diff
+     * @param policyId
+     */
+    public static backup(policyId: string) {
+        if (PolicyComponentsUtils.BackupControllers.has(policyId)) {
+            PolicyComponentsUtils.BackupControllers.get(policyId).backup();
+        }
+    }
+
+    public static async restoreState(policyId: string) {
+        const blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
+        for (const uuid of blockList) {
+            const component = PolicyComponentsUtils.BlockByBlockId.get(uuid);
+            if (component) {
+                await component.restoreState();
+            }
+        }
+    }
+
+    public static async isAvailableGetData(
+        block: IPolicyInterfaceBlock | null,
+        user: PolicyUser
+    ): Promise<MessageError<any> | null> {
+        if (!block) {
+            return new MessageError('Block Unavailable', 503);
+        }
+        if (!(await block.isAvailable(user))) {
+            return new MessageError('Block Unavailable', 503);
+        }
+        if (typeof block.getData !== 'function') {
+            return new MessageError('Block is not supporting get data functions', 500);
+        }
+        return null;
+    }
+
+    public static async blockGetData(
+        block: IPolicyInterfaceBlock,
+        user: PolicyUser,
+        params: any
+    ): Promise<MessageResponse<any>> {
+        const result = await block.getData(user, block.uuid, params);
+        return new MessageResponse(result);
+    }
+
+    public static async isAvailableSetData(
+        block: IPolicyInterfaceBlock | null,
+        user: PolicyUser
+    ): Promise<MessageError<any> | null> {
+        if (!block) {
+            return new MessageError('Block Unavailable', 503);
+        }
+        if (!(await block.isAvailable(user))) {
+            return new MessageError('Block Unavailable', 503);
+        }
+        if (typeof block.setData !== 'function') {
+            return new MessageError('Block is not supporting set data functions', 500);
+        }
+        return null;
+    }
+
+    private static async _blockSetDataLocal(
+        block: IPolicyInterfaceBlock,
+        user: PolicyUser,
+        data: any
+    ): Promise<MessageResponse<any> | MessageError<any>> {
+        const result = await block.setData(user, data, ActionType.COMMON);
+        return new MessageResponse(result);
+    }
+    private static async _blockSetDataRemote(
+        block: IPolicyInterfaceBlock,
+        user: PolicyUser,
+        data: any
+    ): Promise<MessageResponse<any> | MessageError<any>> {
+        const controller = PolicyComponentsUtils.ActionsControllers.get(block.policyId);
+        if (controller) {
+            const result = await controller.sendAction(block, user, data);
+            return new MessageResponse(result);
+        } else {
+            return new MessageError('Invalid policy controller', 500);
+        }
+    }
+    private static async _blockSetDataCustom(
+        block: IPolicyInterfaceBlock,
+        user: PolicyUser,
+        data: any
+    ): Promise<MessageResponse<any> | MessageError<any>> {
+        const _data = await block.setData(user, data, ActionType.LOCAL);
+        const controller = PolicyComponentsUtils.ActionsControllers.get(block.policyId);
+        if (controller) {
+            const result = await controller.sendAction(block, user, _data);
+            return new MessageResponse(result);
+        } else {
+            return new MessageError('Invalid policy controller', 500);
+        }
+    }
+
+    public static async blockSetData(
+        block: IPolicyInterfaceBlock,
+        user: PolicyUser,
+        data: any
+    ): Promise<MessageResponse<any> | MessageError<any>> {
+        if (block.actionType === LocationType.LOCAL) {
+            //Action - local, policy - local|remote, user - local|remote
+            return await PolicyComponentsUtils._blockSetDataLocal(block, user, data);
+        } else {
+            //Action - custom, policy - local|remote, user - remote
+            if (user.location === LocationType.REMOTE) {
+                return new MessageError('Invalid action for remote user', 503);
+            }
+            if (block.locationType === LocationType.REMOTE) {
+                if (block.actionType === LocationType.CUSTOM) {
+                    //Action - custom, policy - remote, user - local
+                    return await PolicyComponentsUtils._blockSetDataCustom(block, user, data);
+                } else {
+                    //Action - remote, policy - remote, user - local
+                    return await PolicyComponentsUtils._blockSetDataRemote(block, user, data);
+                }
+            } else {
+                //Action - custom | remote, policy - local, user - local
+                return await PolicyComponentsUtils._blockSetDataLocal(block, user, data);
+            }
+        }
+    }
+
+    public static async selectGroup(
+        policyInstance: IPolicyInterfaceBlock,
+        user: PolicyUser,
+        uuid: string
+    ): Promise<MessageResponse<any> | MessageError<any>> {
+        if (policyInstance.policyInstance?.locationType === LocationType.LOCAL) {
+            const result = policyInstance.components.selectGroup(user, uuid) as any;
+            return new MessageResponse(result);
+        }
+
+        if (user.location === LocationType.REMOTE) {
+            return new MessageError('Invalid action for remote user', 503);
+        }
+
+        if (policyInstance.locationType === LocationType.REMOTE) {
+            const controller = PolicyComponentsUtils.ActionsControllers.get(policyInstance.policyId);
+            if (controller) {
+                const result = await controller.selectGroup(user, uuid);
+                return new MessageResponse(result);
+            } else {
+                return new MessageError('Invalid policy controller', 500);
+            }
+        } else {
+            const result = policyInstance.components.selectGroup(user, uuid) as any;
+            return new MessageResponse(result);
+        }
+    }
+
+    public static isAvailableReceiveData(block: IPolicyInterfaceBlock | IPolicyBlock | null, policyId: string): boolean {
+        if (!block) {
+            return false;
+        }
+        if (typeof (block as any).receiveData !== 'function') {
+            return false;
+        }
+        if (block.policyId !== policyId) {
+            return false;
+        }
+        return true;
+    }
+
+    public static async blockReceiveData(block: IPolicyInterfaceBlock | IPolicyBlock, data: any): Promise<any> {
+        return await (block as any).receiveData(data);
+    }
+
+    public static getActionsController(policyId: string) {
+        const controller = PolicyComponentsUtils.ActionsControllers.get(policyId);
+        if (controller) {
+            return controller;
+        } else {
+            throw new MessageError('Invalid policy controller', 500);
+        }
+    }
+
+    /**
+     * Policy request notifications
+     */
+    public static async sentRequestNotification(row: PolicyAction) {
+        requestNotificationEvent(row);
+    };
+
+    /**
+     * Policy restore notifications
+     */
+    public static async sentRestoreNotification(policyId: string) {
+        restoreNotificationEvent(policyId);
+    };
 }

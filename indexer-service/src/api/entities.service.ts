@@ -1122,9 +1122,31 @@ export class EntityService {
         @Payload() msg: PageFilters
     ): Promise<AnyResponse<Page<Token>>> {
         try {
-            const options = parsePageParams(msg);
-            const filters = parsePageFilters(msg);
+            const { topicId, ...params } = msg;
+            const options = parsePageParams(params);
+            const filters = parsePageFilters(params);
             const em = DataBaseHelper.getEntityManager();
+
+            if (topicId) {
+                const tokens = await em.find(Message, {
+                    type: MessageType.TOKEN,
+                    topicId,
+                } as any, {
+                    ...options,
+                    fields: ["options"],
+                });
+
+                filters.tokenId = {
+                    $in: tokens.reduce((res, { options }) => {
+                        if (options?.tokenId) {
+                            res.push(options.tokenId);
+                        }
+
+                        return res;
+                    }, [])
+                }
+            }
+
             const [rows, count] = await em.findAndCount(
                 TokenCache,
                 filters,

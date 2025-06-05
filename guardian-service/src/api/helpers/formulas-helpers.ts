@@ -100,9 +100,12 @@ export async function publishFormula(
     item.status = EntityStatus.PUBLISHED;
 
     notifier.completedAndStart('Resolve topic');
-    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.policyTopicId), true);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
-        .setTopicObject(topic);
+    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.policyTopicId), true, owner.id);
+    const messageServer = new MessageServer({
+        operatorId: root.hederaAccountId,
+        operatorKey: root.hederaAccountKey,
+        signOptions: root.signOptions
+    }).setTopicObject(topic);
 
     notifier.completedAndStart('Publish formula');
     const zip = await FormulaImportExport.generate(item);
@@ -117,7 +120,7 @@ export async function publishFormula(
     const publishMessage = new FormulaMessage(MessageAction.PublishFormula);
     publishMessage.setDocument(item, buffer);
     const statMessageResult = await messageServer
-        .sendMessage(publishMessage);
+        .sendMessage(publishMessage, true, null, owner.id);
 
     item.messageId = statMessageResult.getId();
 

@@ -190,6 +190,21 @@ export class ModuleMessage extends Message {
         return result;
     }
 
+    public static fromJson(json: any): ModuleMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
+        const result = Message._fromJson(new ModuleMessage(json.type, json.action), json);
+        result.uuid = json.uuid;
+        result.name = json.name;
+        result.description = json.description;
+        result.owner = json.owner;
+        result.document = json.document;
+        result.moduleTopicId = json.moduleTopicId;
+        return result;
+    }
+
     /**
      * Get User DID
      */

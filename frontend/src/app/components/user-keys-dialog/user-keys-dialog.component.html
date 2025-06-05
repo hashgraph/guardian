@@ -1,0 +1,49 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div *ngIf="type==='create'" class="header-text">Generate Key</div>
+        <div *ngIf="type==='import'" class="header-text">Import Key</div>
+        <div *ngIf="type==='preview'" class="header-text">Preview</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div *ngIf="loading" class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+    </div>
+
+    <form [formGroup]="dataForm" class="context">
+        <div *ngIf="type==='create' || type==='import'" class="guardian-input-container">
+            <label class="form-label" htmlFor="messageId">* Policy Message ID</label>
+            <input formControlName="messageId" id="messageId" pInputText type="text"/>
+        </div>
+
+        <div *ngIf="type==='import' || type==='preview'" class="guardian-input-container">
+            <label class="form-label" htmlFor="key">* Key</label>
+            <input formControlName="key" id="key" pInputText type="text" [readonly]="type==='preview'"/>
+        </div>
+    </form>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+
+        <div *ngIf="type==='create'" class="dialog-button">
+            <button 
+                (click)="onCreate()" 
+                class="guardian-button guardian-button-primary"
+                [disabled]="dataForm.invalid">Generate</button>
+        </div>
+        <div *ngIf="type==='import'" class="dialog-button">
+            <button 
+                (click)="onImport()" 
+                class="guardian-button guardian-button-primary"
+                [disabled]="dataForm.invalid">Import</button>
+        </div>
+    </div>
+</div>

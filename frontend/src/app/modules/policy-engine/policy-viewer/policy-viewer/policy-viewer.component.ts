@@ -1,10 +1,10 @@
 import { HttpResponse } from '@angular/common/http';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IUser, PolicyType, UserPermissions } from '@guardian/interfaces';
+import { IUser, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
-import { forkJoin, interval, Subscription } from 'rxjs';
-import { audit } from 'rxjs/operators';
+import { forkJoin, interval, Subject, Subscription } from 'rxjs';
+import { audit, takeUntil } from 'rxjs/operators';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -12,6 +12,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 import { RecordControllerComponent } from '../../record/record-controller/record-controller.component';
 import { PolicyProgressService } from '../../services/policy-progress.service';
 import { IStep } from '../../structures';
+import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
 
 /**
  * Component for choosing a policy and
@@ -53,6 +54,11 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public prevButtonDisabled = false;
     public nextButtonDisabled = false;
     public permissions: UserPermissions;
+    public newRequestsExist: boolean = false;
+    public newActionsExist: boolean = false;
+    public timer: any;
+    private destroy$: Subject<boolean> = new Subject<boolean>();
+    public activeTabIndex = 0;
 
     constructor(
         private profileService: ProfileService,
@@ -61,6 +67,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private dialogService: DialogService,
         private policyProgressService: PolicyProgressService,
+        private externalPoliciesService: ExternalPoliciesService,
         private changeDetector: ChangeDetectorRef,
         private router: Router
     ) {
@@ -74,8 +81,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         return (
             this.policyInfo &&
             (
-                this.policyInfo.status === PolicyType.DRY_RUN ||
-                this.policyInfo.status === PolicyType.DEMO
+                this.policyInfo.status === PolicyStatus.DRY_RUN ||
+                this.policyInfo.status === PolicyStatus.DEMO
             )
         );
     }
@@ -125,6 +132,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.loading = true;
         this.subscription.add(
             this.route.queryParams.subscribe((queryParams) => {
+                if (queryParams.tab) {
+                    this.activeTabIndex = queryParams.tab;
+                }
+                
                 this.loadPolicy();
             })
         );
@@ -137,12 +148,34 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.groups = userGroups;
             })
         );
+        this.subscription.add(
+            this.wsService.requestSubscribe((message) => {
+                if (message?.data?.policyId === this.policyId && this.isConfirmed) {
+                    this.updateRemotePolicyRequests();
+                }
+            })
+        );
+
+        this.subscription.add(
+            this.wsService.restoreSubscribe((message) => {
+                if (message?.data?.policyId === this.policyId && this.isConfirmed) {
+                    this.loadPolicy();
+                }
+            })
+        );
 
         this.updateNavigationButtons();
+
+        this.timer = setInterval(() => {
+            this.updateRemotePolicyRequests();
+        }, 30 * 1000);
     }
 
     ngOnDestroy() {
         this.subscription.unsubscribe();
+        clearInterval(this.timer);
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();
     }
 
     loadPolicy() {
@@ -188,12 +221,14 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         forkJoin([
             this.policyEngineService.policy(policyId),
             this.policyEngineService.policyBlock(policyId),
-            this.policyEngineService.getGroups(policyId)
+            this.policyEngineService.getGroups(policyId),
+            this.externalPoliciesService.getActionRequestsCount({ policyId })
         ]).subscribe(
             (value) => {
                 this.policyInfo = value[0];
                 this.policy = value[1];
                 this.groups = value[2] || [];
+                const count: any = value[3]?.body || {};
 
                 this.virtualUsers = [];
                 this.isMultipleGroups = !!(this.policyInfo?.policyGroups && this.groups?.length);
@@ -201,8 +236,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.userRole = this.policyInfo.userRole;
                 this.userGroup = this.policyInfo.userGroup?.groupLabel || this.policyInfo.userGroup?.uuid;
 
-                if (this.policyInfo?.status === PolicyType.DRY_RUN
-                    || this.policyInfo?.status === PolicyType.DEMO
+                if (this.policyInfo?.status === PolicyStatus.DRY_RUN
+                    || this.policyInfo?.status === PolicyStatus.DEMO
                 ) {
                     this.loadDryRunOptions();
                 } else {
@@ -213,17 +248,22 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
                 this.policyProgressService.updateData({ role: this.policyInfo.userRole });
 
-                this.policyProgressService.data$.pipe(audit(ev => interval(1000))).subscribe(() => {
-                    this.policyEngineService.getPolicyNavigation(policyId).subscribe((data: any) => {
-                        this.updatePolicyProgress(data);
-                        if (data && data.length > 0) {
-                            this.policyProgressService.setHasNavigation(true);
-                        } else {
-                            // this.policyProgressService.setHasNavigation(false);
-                        }
+                this.policyProgressService.data$
+                    .pipe(audit(ev => interval(1000)), takeUntil(this.destroy$))
+                    .subscribe(() => {
+                        this.policyEngineService.getPolicyNavigation(this.policyId).subscribe((data: any) => {
+                            this.updatePolicyProgress(data);
+                            if (data && data.length > 0) {
+                                this.policyProgressService.setHasNavigation(true);
+                            } else {
+                                // this.policyProgressService.setHasNavigation(false);
+                            }
+                        })
                     })
-                })
                 this.getSavepointState();
+
+                this.newRequestsExist = count.requestsCount > 0;
+                this.newActionsExist = count.actionsCount > 0 || count.delayCount > 0;
             }, (e) => {
                 this.loading = false;
             });
@@ -523,5 +563,28 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     public onBack() {
         this.router.navigate(['/policy-viewer']);
+    }
+
+    public onPolicyRequests() {
+        this.router.navigate([`/policy-requests`], { queryParams: { policyId: this.policyId } });
+    }
+
+    private updateRemotePolicyRequests() {
+        this.externalPoliciesService
+            .getActionRequestsCount({ policyId: this.policyId })
+            .subscribe((response) => {
+                if (response?.body) {
+                    this.newRequestsExist = response.body.requestsCount > 0;
+                    this.newActionsExist = response.body.actionsCount > 0 || response.body.delayCount > 0;
+                }
+            })
+    }
+
+    public onTabChange(index: number) {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { tab: index },
+        queryParamsHandling: 'merge',
+      });
     }
 }

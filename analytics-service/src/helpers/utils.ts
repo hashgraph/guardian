@@ -209,7 +209,8 @@ export class AnalyticsUtils {
                     data: {
                         topic: topic.topicId,
                         timeStamp: topic.timeStamp,
-                        next
+                        next,
+                        payload: { userId: null }
                     }
                 }, 15, 5);
                 for (const message of data.messages) {
@@ -243,7 +244,8 @@ export class AnalyticsUtils {
             const message = await workers.addRetryableTask({
                 type: WorkerTaskType.GET_TOPIC_MESSAGE,
                 data: {
-                    timeStamp
+                    timeStamp,
+                    payload: { userId: null }
                 }
             }, 10);
             return { message };
@@ -352,7 +354,7 @@ export class AnalyticsUtils {
         AnalyticsUtils.debugMessage('Request count', AnalyticsDebug.REQUESTS);
         const info = await workers.addRetryableTask({
             type: WorkerTaskType.GET_TOKEN_INFO,
-            data: { tokenId }
+            data: { tokenId, payload: { userId: null } }
         }, 10);
         return info;
     }

@@ -37,6 +37,7 @@ export class MultiSignBlockComponent implements OnInit {
     signedCount: any;
     signedMax: any;
     declinedMax: any;
+    readonly: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -99,6 +100,7 @@ export class MultiSignBlockComponent implements OnInit {
 
     setData(data: any) {
         if (data) {
+            this.readonly = !!data.readonly;
             this.data = data.data;
             this.status = data.status || {};
             this.confirmationStatus = this.status.confirmationStatus;

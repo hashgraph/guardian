@@ -6,6 +6,27 @@
     top: 0;
     display: flex;
     flex-direction: column;
+
+    ::ng-deep {
+        .p-tabview .p-tabview-nav {
+            li:first-child {
+                margin-left: 48px;
+            }
+        }
+
+        .p-tabview {
+            height: 100%;
+        }
+        
+        .p-tabview-panels {
+            background: none;
+            padding: 0;
+
+            .p-tabview-panel {
+                height: 100%;
+            }
+        }
+    }
 }
 
 .loading {
@@ -47,6 +68,47 @@
     color: darkgrey;
 }
 
+.new-requests-exist {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 18px;
+    color: var(--color-grey-5);
+    background-color: #ffffffa9;
+    z-index: 3000;
+
+    p {
+        max-width: 500px;
+        text-align: center;
+    }
+
+    div {
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        background-color: #eff3f77d;
+        border-radius: 8px;
+        border: 1px solid var(--color-grey-2);
+    }
+
+    ::ng-deep {
+        .p-button {
+            border-radius: 8px;
+            background-color: var(--color-primary);
+        }
+    }
+}
+
 a.go-back-link {
     text-decoration: none;
     color: #707070;
@@ -68,12 +130,29 @@ a.go-back-link svg {
 .policy-header {
     display: flex;
     flex-direction: column;
-    background: #f9fafc;
+    background: #ffffff;
     padding: 25px 40px 0 48px;
     font-size: 20px;
 }
 
 .back-button {
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 16px;
+    cursor: pointer;
+    color: var(--color-primary);
+
+    &:hover {
+        color: #d5d5d5 !important;
+
+        svg {
+            fill: #d5d5d5 !important;
+            color: #d5d5d5 !important;
+        }
+    }
+}
+
+.dry-run-back-button {
     background: none !important;
     color: #ffffff !important;
     border: 1px solid #fff !important;
@@ -104,7 +183,7 @@ a.go-back-link svg {
     display: flex;
     //flex-direction: column;
     gap: 24px;
-    padding: 18px 20px 78px 48px;
+    padding: 24px 20px 78px 48px;
     background: #f9fafc;
 }
 
@@ -617,6 +696,7 @@ a.go-back-link svg {
     display: flex;
     align-items: center;
     margin-top: 12px;
+    margin-bottom: 24px;
 }
 
 .white-additional-policy-info-text {
@@ -629,6 +709,18 @@ a.go-back-link svg {
     font-style: normal;
     font-weight: 600;
     line-height: normal;
+    position: relative;
+
+    .policy-status {
+        padding: 6px 12px;
+        background: #E1E7EF;
+        margin: 4px 16px;
+        border-radius: 6px;
+        color: #6f7279;
+        font-size: 14px;
+        position: absolute;
+        top: 5px;
+    }
 }
 
 .policy-additional-info-container {

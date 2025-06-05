@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { IUser } from '@guardian/interfaces';
 import { Observable, of } from 'rxjs';
@@ -15,6 +15,32 @@ export class ProfileService {
         private http: HttpClient,
         private auth: AuthService,
     ) {
+    }
+
+    public static getOptions(
+        filters: any,
+        pageIndex?: number,
+        pageSize?: number
+    ): HttpParams {
+        let params = new HttpParams();
+        if (filters && typeof filters === 'object') {
+            for (const key of Object.keys(filters)) {
+                if (filters[key]) {
+                    params = params.set(key, filters[key]);
+                }
+            }
+        }
+        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            params = params.set('pageIndex', String(pageIndex));
+            params = params.set('pageSize', String(pageSize));
+        }
+        return params;
+    }
+
+    public parsePage(response: HttpResponse<any[]>) {
+        const page = response.body || [];
+        const count = Number(response.headers.get('X-Total-Count')) || page.length;
+        return { page, count };
     }
 
     public getProfile(): Observable<IUser> {
@@ -55,5 +81,25 @@ export class ProfileService {
 
     public selectActiveStandartRegistry(standardRegistryDids: string): Observable<any> {
         return this.http.put<any>(`${this.url}/parent/select/${encodeURIComponent(this.auth.getUsername())}`, { did: standardRegistryDids });
+    }
+
+    public keys(
+        pageIndex?: number,
+        pageSize?: number
+    ): Observable<HttpResponse<any[]>> {
+        const filters: any = {};
+        const header: any = { observe: 'response' };
+        header.params = ProfileService.getOptions(filters, pageIndex, pageSize);
+        return this.http.get<any[]>(`${this.url}/keys`, header) as any;
+    }
+
+    public createKey(option: {
+        messageId: string,
+        key?: string,
+    }): Observable<any> {
+        return this.http.post<any>(`${this.url}/keys`, option);
+    }
+    public deleteKey(id: string): Observable<any> {
+        return this.http.delete<any>(`${this.url}/keys/${id}`);
     }
 }

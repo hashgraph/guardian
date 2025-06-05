@@ -137,6 +137,7 @@ export class PolicyLink<T> {
 
     /**
      * Get owner
+     * @param user
      * @param data
      * @private
      */
@@ -152,6 +153,7 @@ export class PolicyLink<T> {
 
     /**
      * Get owner
+     * @param user
      * @param data
      * @private
      */
@@ -165,12 +167,13 @@ export class PolicyLink<T> {
         if (user && user.equal(data.owner, data.group)) {
             return user;
         } else {
-            return await PolicyComponentsUtils.GetPolicyUserByDID(data.owner, data.group, this.target);
+            return await PolicyComponentsUtils.GetPolicyUserByDID(data.owner, data.group, this.target, user.userId);
         }
     }
 
     /**
      * Get issuer
+     * @param user
      * @param data
      * @private
      */
@@ -189,7 +192,7 @@ export class PolicyLink<T> {
             if (user && user.equal(did, data.group)) {
                 return user;
             } else {
-                return await PolicyComponentsUtils.GetPolicyUserByDID(did, data.group, this.target);
+                return await PolicyComponentsUtils.GetPolicyUserByDID(did, data.group, this.target, user.userId);
             }
         }
         return null;

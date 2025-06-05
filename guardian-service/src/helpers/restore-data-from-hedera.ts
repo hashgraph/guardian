@@ -39,7 +39,7 @@ import {
     DidDocumentStatus,
     EntityOwner,
     ISchema,
-    PolicyType,
+    PolicyStatus,
     SchemaCategory,
     SchemaEntity,
     SchemaStatus,
@@ -103,10 +103,10 @@ export class RestoreDataFromHedera {
     /**
      * Read topic
      * @param topicId
-     * @param loadIPFS
+     * @param userId
      * @private
      */
-    private async readTopicMessages(topicId: string): Promise<Message[]> {
+    private async readTopicMessages(topicId: string, userId: string | null): Promise<Message[]> {
         if (typeof topicId !== 'string') {
             throw new Error('Bad topicId');
         }
@@ -115,10 +115,9 @@ export class RestoreDataFromHedera {
             {
                 type: WorkerTaskType.GET_TOPIC_MESSAGES,
                 data: {
-                    operatorId: null,
-                    operatorKey: null,
                     dryRun: false,
                     topic: topicId,
+                    payload: { userId }
                 },
             },
             10
@@ -127,7 +126,7 @@ export class RestoreDataFromHedera {
         let errors = 0;
         for (const m of messages) {
             try {
-                const r = MessageServer.fromMessage<Message>(m.message);
+                const r = MessageServer.fromMessage<Message>(m.message, userId);
                 r.setAccount(m.payer_account_id);
                 r.setTopicId(topicId);
                 r.setId(m.id);
@@ -274,7 +273,7 @@ export class RestoreDataFromHedera {
                         message.messageType === 'DYNAMIC_TOPIC' &&
                         message.childId
                     ) {
-                        const messages = await this.readTopicMessages(message.childId);
+                        const messages = await this.readTopicMessages(message.childId, user.id);
                         const childTopicMessage = messages[0] as TopicMessage;
                         await this.restoreTopic(
                             {
@@ -349,7 +348,7 @@ export class RestoreDataFromHedera {
         logger: PinoLogger
     ): Promise<void> {
         try {
-            const policyMessages = await this.readTopicMessages(policyTopicId);
+            const policyMessages = await this.readTopicMessages(policyTopicId, user.id);
             const policyTopicMessage = policyMessages[0] as TopicMessage;
             await this.restoreTopic(
                 {
@@ -414,7 +413,7 @@ export class RestoreDataFromHedera {
                 policyObject.instanceTopicId = policy.instanceTopicId;
                 policyObject.synchronizationTopicId =
                     policy.synchronizationTopicId;
-                policyObject.status = PolicyType.PUBLISH;
+                policyObject.status = PolicyStatus.PUBLISH;
                 policyObject.topicId = policyTopicId;
 
                 if (!policyObject.instanceTopicId) {
@@ -424,7 +423,7 @@ export class RestoreDataFromHedera {
                     policyObject.instanceTopicId = policyInstanceTopicMessage.childId;
                 }
 
-                const policyInstanceMessages = await this.readTopicMessages(policyObject.instanceTopicId);
+                const policyInstanceMessages = await this.readTopicMessages(policyObject.instanceTopicId, user.id);
                 const p = dataBaseServer.create(PolicyCollection, policyObject);
                 const r = await dataBaseServer.save(PolicyCollection, p);
 
@@ -516,10 +515,10 @@ export class RestoreDataFromHedera {
      * Get main topic messages
      * @private
      */
-    private async getMainTopicMessages(): Promise<Message[]> {
+    private async getMainTopicMessages(userId: string | null): Promise<Message[]> {
         const currentTime = Date.now();
         if (currentTime - this.mainTopicLastUpdate > this.UPDATE_INTERVAL) {
-            this.mainTopicMessages = await this.readTopicMessages(this.MAIN_TOPIC_ID);
+            this.mainTopicMessages = await this.readTopicMessages(this.MAIN_TOPIC_ID, userId);
             this.mainTopicLastUpdate = currentTime;
         }
 
@@ -531,14 +530,17 @@ export class RestoreDataFromHedera {
      * @param username
      * @param hederaAccountID
      * @param hederaAccountKey
+     * @param did
+     * @param userId
      */
     async findAllUserTopics(
         username: string,
         hederaAccountID: string,
         hederaAccountKey: string,
-        did: string
+        did: string,
+        userId: string | null
     ): Promise<any[]> {
-        const mainTopicMessages = await this.getMainTopicMessages();
+        const mainTopicMessages = await this.getMainTopicMessages(userId);
         return mainTopicMessages
             .filter((m: Message) => m.type === MessageType.StandardRegistry)
             .filter((m: RegistrationMessage) => m.did?.includes(did))
@@ -564,6 +566,7 @@ export class RestoreDataFromHedera {
      * @param registrantTopicId
      * @param didDocument
      * @param logger
+     * @param userId
      */
     async restoreRootAuthority(
         username: string,
@@ -571,16 +574,17 @@ export class RestoreDataFromHedera {
         hederaAccountKey: string,
         registrantTopicId: string,
         didDocument: CommonDidDocument,
-        logger: PinoLogger
+        logger: PinoLogger,
+        userId: string | null
     ): Promise<void> {
         const did = didDocument.getDid();
-        const user = await this.users.getUser(username);
+        const user = await this.users.getUser(username, userId);
 
         if (user.role !== UserRole.STANDARD_REGISTRY) {
             throw new Error('User is not a Standard Registry.');
         }
 
-        const mainTopicMessages = await this.getMainTopicMessages();
+        const mainTopicMessages = await this.getMainTopicMessages(user.id);
         const registrationMessage = mainTopicMessages
             .filter((m: Message) => m.type === MessageType.StandardRegistry)
             .filter((m: RegistrationMessage) => m.did === did)
@@ -599,7 +603,7 @@ export class RestoreDataFromHedera {
             throw new Error('User not found.');
         }
 
-        const allMessages = await this.readTopicMessages(registrantTopicId);
+        const allMessages = await this.readTopicMessages(registrantTopicId, user.id);
 
         // Restore account
         const topicMessage = this.findMessageByType<TopicMessage>(MessageType.Topic, allMessages);
@@ -647,10 +651,10 @@ export class RestoreDataFromHedera {
             did,
             parent: undefined,
             hederaAccountId: hederaAccountID,
-        });
+        }, userId);
 
-        await this.restoreUsers(allMessages, did);
-        await this.restorePermissions(allMessages, did, user, hederaAccountID);
+        await this.restoreUsers(allMessages, did, userId);
+        await this.restorePermissions(allMessages, did, user, hederaAccountID, userId);
 
         await this.restoreTopic(
             {
@@ -688,7 +692,7 @@ export class RestoreDataFromHedera {
         }
     }
 
-    private async restoreUsers(messages: Message[], owner: string) {
+    private async restoreUsers(messages: Message[], owner: string, userId: string | null) {
         const userDIDs = this.findMessagesByType<DIDMessage>(MessageType.DIDDocument, messages);
         userDIDs.shift();
 
@@ -702,7 +706,7 @@ export class RestoreDataFromHedera {
                 messageId: message.id,
                 topicId: message.topicId,
             });
-            this.users.generateNewTemplate(UserRole.USER, did, owner);
+            this.users.generateNewTemplate(UserRole.USER, did, owner, userId);
         }
     }
 
@@ -710,7 +714,8 @@ export class RestoreDataFromHedera {
         messages: Message[],
         parentDid: string,
         parent: IAuthUser,
-        hederaAccountID: string
+        hederaAccountID: string,
+        userId: string | null
     ) {
         const guardianRoles = this.findMessagesByType<GuardianRoleMessage>(MessageType.GuardianRole, messages);
         const _guardianRoles = new Map<string, GuardianRoleMessage>();
@@ -760,7 +765,7 @@ export class RestoreDataFromHedera {
                 owner: string
             }[]>('roles');
             const userDid = vcDoc.getField<string>('userId');
-            const template = await this.users.getUserById(userDid);
+            const template = await this.users.getUserById(userDid, userId);
             if (
                 template &&
                 template.role === UserRole.USER &&

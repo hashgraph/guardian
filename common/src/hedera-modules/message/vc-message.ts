@@ -312,6 +312,21 @@ export class VCMessage extends Message {
         return result;
     }
 
+    public static fromJson(json: any): VCMessage {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+
+        const result = Message._fromJson(new VCMessage(json.action), json);
+        result.issuer = json.issuer;
+        result.hash = json.hash;
+        result.relationships = json.relationships;
+        result.document = json.document;
+        result.documentStatus = json.documentStatus;
+        result.encodedData = json.encodedData;
+        return result;
+    }
+
     /**
      * Get User DID
      */

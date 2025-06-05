@@ -10,7 +10,8 @@ export const REQUIRED_PROPS = {
     ROLE: 'role',
     POLICY_ROLES: 'policyRoles',
     PERMISSIONS: 'permissions',
-    PERMISSION_GROUP: 'permissionsGroup'
+    PERMISSION_GROUP: 'permissionsGroup',
+    LOCATION: 'location',
 };
 
 export const USER_KEYS_PROPS = {

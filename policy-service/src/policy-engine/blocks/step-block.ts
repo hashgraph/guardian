@@ -1,11 +1,12 @@
 import { ActionCallback, ContainerBlock, StateField } from '../helpers/decorators/index.js';
 import { BlockActionError } from '../errors/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyEventState } from '../policy-engine.interface.js';
+import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyEventState, IPolicyGetData } from '../policy-engine.interface.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType, SelectItemType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { LocationType } from '@guardian/interfaces';
 
 /**
  * Step block
@@ -13,6 +14,7 @@ import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.j
 @ContainerBlock({
     blockType: 'interfaceStepBlock',
     commonBlock: false,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Step',
         title: `Add 'Step' Block`,
@@ -110,12 +112,14 @@ export class InterfaceStepBlock {
             throw new BlockActionError('Bad child block', ref.blockType, ref.uuid);
         }
         ref.log(`changeStep: ${blockState?.index}, ${user?.id}`);
-        ref.updateBlock(blockState, user);
+        ref.updateBlock(blockState, user, ref.tag, user.userId);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Step, ref, user, {
             index: blockState?.index
         }));
+
+        ref.backup();
     }
 
     /**
@@ -140,17 +144,19 @@ export class InterfaceStepBlock {
                     blockState = this.state[user.id];
                 }
                 blockState.index = 0;
-                ref.updateBlock(blockState, user);
+                ref.updateBlock(blockState, user, ref.tag, user.userId);
                 ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
             }
         }
+
+        ref.backup();
     }
 
     /**
      * Get block data
      * @param user
      */
-    async getData(user: PolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState: any;
         if (!this.state.hasOwnProperty(user.id)) {
@@ -162,8 +168,17 @@ export class InterfaceStepBlock {
         if (blockState.index === undefined) {
             blockState.index = 0;
         }
-        const { options } = ref;
-        return { uiMetaData: options.uiMetaData, index: blockState.index };
+        return {
+            id: ref.uuid,
+            blockType: ref.blockType,
+            actionType: ref.actionType,
+            readonly: (
+                ref.actionType === LocationType.REMOTE &&
+                user.location === LocationType.REMOTE
+            ),
+            uiMetaData: ref.options?.uiMetaData,
+            index: blockState.index
+        };
     }
 
     /**

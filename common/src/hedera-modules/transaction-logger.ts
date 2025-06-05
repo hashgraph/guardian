@@ -4,7 +4,7 @@ import { PinoLogger, RunFunctionAsync, Workers } from '../helpers/index.js';
 import { MessageResponse } from '../models/index.js';
 import { Singleton } from '../decorators/singleton.js';
 import { NatsService } from '../mq/index.js';
-import { SecretManager } from '../secret-manager/index.js';
+import { SecretManager, SecretManagerBase } from '../secret-manager/index.js';
 
 /**
  * Transaction log level
@@ -98,14 +98,15 @@ export class TransactionLogger extends NatsService {
      * @param duration
      * @param name
      * @param attr
+     * @param userId
      * @private
      */
-    private log(types: string[], duration: number, name: string, attr?: string[]) {
+    private log(types: string[], duration: number, name: string, attr?: string[], userId?: string | null) {
         const date = (new Date()).toISOString();
         const d = duration ? `${(duration / 1000)}s` : '_';
         const attribute = attr || [];
         if (this.fn) {
-            this.fn(types, date, d, name, attribute);
+            this.fn(types, date, d, name, attribute, userId);
         }
     }
 
@@ -113,8 +114,9 @@ export class TransactionLogger extends NatsService {
      * Message log
      * @param id
      * @param name
+     * @param userId
      */
-    public async messageLog(id: string, name: string): Promise<void> {
+    public async messageLog(id: string, name: string, userId: string | null): Promise<void> {
         try {
             if (this.logLvl === TransactionLogLvl.NONE) {
                 return;
@@ -125,12 +127,12 @@ export class TransactionLogger extends NatsService {
 
             if (start) {
                 const duration = time - start;
-                this.log(['MESSAGE', 'COMPLETION'], duration, name, [id]);
+                this.log(['MESSAGE', 'COMPLETION'], duration, name, [id], userId);
             } else {
-                this.log(['MESSAGE', 'SEND'], null, name, [id]);
+                this.log(['MESSAGE', 'SEND'], null, name, [id], userId);
             }
         } catch (error) {
-            this.log(['MESSAGE', 'ERROR'], null, name, [id, error.message]);
+            this.log(['MESSAGE', 'ERROR'], null, name, [id, error.message], userId);
         } finally {
             delete this.map[id]
         }
@@ -144,6 +146,7 @@ export class TransactionLogger extends NatsService {
      * @param transactionName
      * @param completed
      * @param metadata
+     * @param userId
      */
     public async transactionLog(
         id: string,
@@ -151,7 +154,8 @@ export class TransactionLogger extends NatsService {
         network: string,
         transactionName: string,
         completed: boolean = false,
-        metadata: string = ''
+        metadata: string = '',
+        userId: string | null
     ): Promise<void> {
         try {
             if (this.logLvl === TransactionLogLvl.NONE) {
@@ -173,7 +177,8 @@ export class TransactionLogger extends NatsService {
                         type: WorkerTaskType.GET_USER_BALANCE,
                         data: {
                             hederaAccountId: OPERATOR_ID,
-                            hederaAccountKey: OPERATOR_KEY
+                            hederaAccountKey: OPERATOR_KEY,
+                            payload: { userId }
                         }
                     }, 20, null);
                     attr.push(balance);
@@ -184,12 +189,12 @@ export class TransactionLogger extends NatsService {
 
             if (completed) {
                 const duration = time - start;
-                this.log(['TRANSACTION', 'COMPLETION'], duration, transactionName, attr);
+                this.log(['TRANSACTION', 'COMPLETION'], duration, transactionName, attr, userId);
             } else {
-                this.log(['TRANSACTION', 'CREATE'], null, transactionName, attr);
+                this.log(['TRANSACTION', 'CREATE'], null, transactionName, attr, userId);
             }
         } catch (error) {
-            this.log(['TRANSACTION', 'ERROR'], null, transactionName, [id, error.message]);
+            this.log(['TRANSACTION', 'ERROR'], null, transactionName, [id, error.message], userId);
         } finally {
             delete this.map[id]
         }
@@ -201,22 +206,23 @@ export class TransactionLogger extends NatsService {
      * @param operatorAccountId
      * @param network
      * @param transactionName
-     * @param transaction
      * @param message
+     * @param userId
      */
     public async transactionErrorLog(
         id: string,
         operatorAccountId: string,
         network: string,
         transactionName: string,
-        message: string
+        message: string,
+        userId: string | null
     ): Promise<void> {
         try {
             const account = operatorAccountId.toString();
             const attr = [id, account, network, message];
-            this.log(['TRANSACTION', 'ERROR'], null, transactionName, attr);
+            this.log(['TRANSACTION', 'ERROR'], null, transactionName, attr, userId);
         } catch (error) {
-            this.log(['TRANSACTION', 'ERROR'], null, transactionName, [error.message]);
+            this.log(['TRANSACTION', 'ERROR'], null, transactionName, [error.message], userId);
         }
     }
 
@@ -254,22 +260,22 @@ export class TransactionLogger extends NatsService {
             RunFunctionAsync(async () => {
                 switch (data.type) {
                     case 'start-log': {
-                        const { id, operatorAccountId, transactionName, network } = data.data;
-                        await this.transactionLog(id, operatorAccountId, network, transactionName);
+                        const { id, operatorAccountId, transactionName, network, payload: {userId} } = data.data;
+                        await this.transactionLog(id, operatorAccountId, network, transactionName, null, null, userId);
                         break;
                     }
 
                     case 'end-log': {
-                        const { id, operatorAccountId, transactionName, network } = data.data;
+                        const { id, operatorAccountId, transactionName, network, payload: {userId} } = data.data;
                         const metadata = data.metadata;
-                        await this.transactionLog(id, operatorAccountId, network, transactionName, true, metadata);
+                        await this.transactionLog(id, operatorAccountId, network, transactionName, true, metadata, userId);
                         break;
                     }
 
                     case 'error-log': {
-                        const { id, operatorAccountId, transactionName, network } = data.data;
+                        const { id, operatorAccountId, transactionName, network, payload: {userId} } = data.data;
                         const error = data.error;
-                        await this.transactionErrorLog(id, operatorAccountId, network, transactionName, error);
+                        await this.transactionErrorLog(id, operatorAccountId, network, transactionName, error, userId);
                         break;
                     }
 
@@ -296,7 +302,7 @@ export class TransactionLogger extends NatsService {
     public async initialization(channel: any, lvl: TransactionLogLvl): Promise<void> {
         await super.setConnection(channel).init();
         this.setLogLevel(lvl);
-        this.setLogFunction((types: string[], date: string, duration: string, name: string, attr?: string[]) => {
+        this.setLogFunction((types: string[], date: string, duration: string, name: string, attr?: string[], userId?: string | null) => {
             const log = new PinoLogger();
             const attributes = [
                 ...types,
@@ -306,9 +312,9 @@ export class TransactionLogger extends NatsService {
                 ...attr
             ]
             if (types[1] === 'ERROR') {
-                log.error(name, attributes, 4);
+                log.error(name, attributes, userId);
             } else {
-                log.info(name, attributes, 4);
+                log.info(name, attributes, userId);
             }
         });
         this.setVirtualFileFunction(async (date: string, id: string, file: ArrayBuffer, url: any) => {

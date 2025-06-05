@@ -674,3 +674,8 @@
 #leader-line-container-2 {
     z-index: 3;
 }
+
+*[readonly-block="true"] {
+    pointer-events: none !important;
+    filter: grayscale(1);
+}

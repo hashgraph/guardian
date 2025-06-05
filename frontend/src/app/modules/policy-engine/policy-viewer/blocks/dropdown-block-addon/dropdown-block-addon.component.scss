@@ -15,3 +15,8 @@
 .content-dropdown::ng-deep .guardian-dropdown .p-dropdown {
     height: 36px !important;
 }
+
+*[readonly-block="true"] {
+    pointer-events: none !important;
+    filter: grayscale(1);
+}

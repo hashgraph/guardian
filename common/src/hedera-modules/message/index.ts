@@ -25,3 +25,5 @@ export { LabelMessage } from './label-message.js';
 export { LabelDocumentMessage } from './label-document-message.js';
 export { FormulaMessage } from './formula-message.js';
 export { UserMessage } from './user-message.js';
+export { PolicyDiffMessage } from './policy-diff-message.js';
+export { PolicyActionMessage } from './policy-action-message.js';

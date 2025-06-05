@@ -3,7 +3,7 @@ import { TagsService } from 'src/app/services/tag.service';
 import { TagCreateDialog } from '../tags-create-dialog/tags-create-dialog.component';
 import { TagsExplorerDialog } from '../tags-explorer-dialog/tags-explorer-dialog.component';
 import { TagsHistory } from '../models/tags-history';
-import { Schema, UserPermissions } from '@guardian/interfaces';
+import { LocationType, Schema, UserPermissions } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
 
 /**
@@ -22,6 +22,7 @@ export class TagsExplorer {
     @Input('service') tagsService!: TagsService;
     @Input('schemas') schemas!: Schema[];
     @Input('user') user!: UserPermissions;
+    @Input('location') location!: LocationType;
 
     public loading = false;
     public history!: TagsHistory;
@@ -31,7 +32,12 @@ export class TagsExplorer {
 
     public get compact(): boolean {
         if (this.user) {
-            return this.user.TAGS_TAG_CREATE && (!this.history || !this.history.top);
+            return (
+                this.user.TAGS_TAG_CREATE &&
+                this.user.location !== LocationType.REMOTE &&
+                this.history.location !== LocationType.REMOTE &&
+                (!this.history || !this.history.top)
+            );
         } else {
             return (!this.history || !this.history.top);
         }
@@ -42,7 +48,8 @@ export class TagsExplorer {
             this.history = new TagsHistory(
                 this.data.entity || this.entity,
                 this.data.target || this.target,
-                this.owner
+                this.owner,
+                this.location || LocationType.LOCAL
             );
             this.history.setData(this.data.tags);
             this.history.setDate(this.data.refreshDate);
@@ -50,7 +57,8 @@ export class TagsExplorer {
             this.history = new TagsHistory(
                 this.entity,
                 this.target,
-                this.owner
+                this.owner,
+                this.location || LocationType.LOCAL
             );
         }
     }

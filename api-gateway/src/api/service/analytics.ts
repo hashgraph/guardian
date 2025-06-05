@@ -115,7 +115,7 @@ export class AnalyticsApi {
             const guardians = new Guardians();
             return await guardians.searchPolicies(owner, filters);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -207,7 +207,7 @@ export class AnalyticsApi {
                 filters.idLvl
             );
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -275,7 +275,7 @@ export class AnalyticsApi {
                 idLvl
             );
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -326,7 +326,7 @@ export class AnalyticsApi {
             const guardians = new Guardians();
             return await guardians.compareSchemas(owner, null, schemas, idLvl);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -407,7 +407,7 @@ export class AnalyticsApi {
                 refLvl
             );
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -484,7 +484,7 @@ export class AnalyticsApi {
                 idLvl
             );
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -584,7 +584,7 @@ export class AnalyticsApi {
                 filters.idLvl
             );
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -660,7 +660,7 @@ export class AnalyticsApi {
                 idLvl
             );
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -719,7 +719,7 @@ export class AnalyticsApi {
             const guardians = new Guardians();
             return await guardians.compareSchemas(owner, type, schemas, idLvl);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -807,7 +807,7 @@ export class AnalyticsApi {
                 refLvl
             );
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -891,7 +891,7 @@ export class AnalyticsApi {
                 idLvl
             );
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -944,7 +944,7 @@ export class AnalyticsApi {
         try {
             return await guardians.searchBlocks(config, id, user);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 
@@ -973,9 +973,9 @@ export class AnalyticsApi {
     ): Promise<boolean> {
         const guardians = new Guardians();
         try {
-            return await guardians.getIndexerAvailability();
+            return await guardians.getIndexerAvailability(user);
         } catch (error) {
-            await InternalException(error, this.logger);
+            await InternalException(error, this.logger, user.id);
         }
     }
 }

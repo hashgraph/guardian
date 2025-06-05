@@ -1,4 +1,4 @@
-<div class="page-content" *ngIf="status === 'NEED_TOPIC' || status === 'NEED_SCHEMA'">
+<div class="page-content" *ngIf="status === 'NEED_TOPIC' || status === 'NEED_SCHEMA'" [attr.readonly-block]="readonly">
     <p-steps [model]="steps" [(activeIndex)]="stepIndex" [readonly]="true"></p-steps>
 
         <div *ngIf="stepIndex === 0">

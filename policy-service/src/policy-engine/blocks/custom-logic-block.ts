@@ -4,15 +4,15 @@ import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyAddonBlock, IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
-import { DIDMessage, HederaDidDocument, MessageAction, MessageServer, VcHelper } from '@guardian/common';
-import { ArtifactType, SchemaHelper } from '@guardian/interfaces';
+import { VcHelper } from '@guardian/common';
+import { ArtifactType, LocationType, SchemaHelper } from '@guardian/interfaces';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
-import { PolicyUser, UserCredentials } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
-import { BlockActionError } from '../errors/index.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { fileURLToPath } from 'url';
+import { PolicyActionsUtils } from '../policy-actions/utils.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -23,7 +23,8 @@ interface IMetadata {
     accounts: any;
     tokens: any;
     relationships: any[];
-    didDocument: HederaDidDocument;
+    issuer: string;
+    // didDocument: HederaDidDocument;
 }
 
 /**
@@ -32,6 +33,7 @@ interface IMetadata {
 @BasicBlock({
     blockType: 'customLogicBlock',
     commonBlock: true,
+    actionType: LocationType.REMOTE,
     about: {
         label: 'Custom Logic',
         title: `Add 'Custom Logic' Block`,
@@ -104,7 +106,8 @@ export class CustomLogicBlock {
                     documents: ExternalDocuments(event?.data?.data)
                 }));
             }
-            await this.execute(event.data, event.user, triggerEvents);
+            await this.execute(event.data, event.user, triggerEvents, event?.user?.userId);
+            ref.backup();
         } catch (error) {
             ref.error(PolicyUtils.getErrorMessage(error));
         }
@@ -134,8 +137,15 @@ export class CustomLogicBlock {
      * Execute logic
      * @param state
      * @param user
+     * @param triggerEvents
+     * @param userId
      */
-    execute(state: IPolicyEventState, user: PolicyUser, triggerEvents: (documents: IPolicyDocument | IPolicyDocument[]) => void): Promise<IPolicyDocument | IPolicyDocument[]> {
+    execute(
+        state: IPolicyEventState,
+        user: PolicyUser,
+        triggerEvents: (documents: IPolicyDocument | IPolicyDocument[]) => void,
+        userId: string | null
+    ): Promise<IPolicyDocument | IPolicyDocument[]> {
         return new Promise<IPolicyDocument | IPolicyDocument[]>(async (resolve, reject) => {
             try {
                 const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
@@ -150,7 +160,7 @@ export class CustomLogicBlock {
                 if (ref.options.unsigned) {
                     metadata = null;
                 } else {
-                    metadata = await this.aggregateMetadata(documents, user, ref);
+                    metadata = await this.aggregateMetadata(documents, user, ref, userId);
                 }
 
                 const done = async (result: any | any[], final: boolean) => {
@@ -168,7 +178,7 @@ export class CustomLogicBlock {
                         if (ref.options.unsigned) {
                             return await this.createUnsignedDocument(json, ref);
                         } else {
-                            return await this.createDocument(json, metadata, ref);
+                            return await this.createDocument(json, metadata, ref, userId);
                         }
                     }
                     if (Array.isArray(result)) {
@@ -182,9 +192,10 @@ export class CustomLogicBlock {
                         }
                         return;
                     } else {
-                        triggerEvents(await processing(result));
+                        const item = await processing(result);
+                        triggerEvents(item);
                         if (final) {
-                            resolve(await processing(result));
+                            resolve(item);
                         }
                         return;
                     }
@@ -240,15 +251,17 @@ export class CustomLogicBlock {
      * @param documents
      * @param user
      * @param ref
+     * @param userId
      */
     private async aggregateMetadata(
         documents: IPolicyDocument | IPolicyDocument[],
         user: PolicyUser,
-        ref: IPolicyCalculateBlock
+        ref: IPolicyCalculateBlock,
+        userId: string | null
     ): Promise<IMetadata> {
         const isArray = Array.isArray(documents);
         const firstDocument = isArray ? documents[0] : documents;
-        const owner = await PolicyUtils.getDocumentOwner(ref, firstDocument);
+        const owner = await PolicyUtils.getDocumentOwner(ref, firstDocument, userId);
         const relationships = [];
         let accounts: any = {};
         let tokens: any = {};
@@ -290,26 +303,20 @@ export class CustomLogicBlock {
             }
         }
 
-        let userCred: UserCredentials;
+        let issuer: string;
         switch (ref.options.documentSigner) {
             case 'owner':
-                userCred = await PolicyUtils.getUserCredentials(ref, owner.did);
+                issuer = owner.did;
                 break;
             case 'issuer':
-                const issuer = PolicyUtils.getDocumentIssuer(firstDocument.document);
-                userCred = await PolicyUtils.getUserCredentials(ref, issuer);
+                issuer = PolicyUtils.getDocumentIssuer(firstDocument.document);
                 break;
             default:
-                userCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
+                issuer = ref.policyOwner
                 break;
         }
-        const didDocument = await userCred.loadDidDocument(ref);
 
-        if (ref.options.idType !== 'DOCUMENT') {
-            id = await this.generateId(ref.options.idType, user, userCred);
-        }
-
-        return { owner, id, reference, accounts, tokens, relationships, didDocument };
+        return { owner, id, reference, accounts, tokens, relationships, issuer };
     }
 
     /**
@@ -321,7 +328,8 @@ export class CustomLogicBlock {
     private async createDocument(
         json: any,
         metadata: IMetadata,
-        ref: IPolicyCalculateBlock
+        ref: IPolicyCalculateBlock,
+        userId: string | null
     ): Promise<IPolicyDocument> {
         const {
             owner,
@@ -330,7 +338,7 @@ export class CustomLogicBlock {
             accounts,
             tokens,
             relationships,
-            didDocument
+            issuer
         } = metadata;
 
         // <-- new vc
@@ -356,12 +364,12 @@ export class CustomLogicBlock {
 
         const uuid = await ref.components.generateUUID();
 
-        const newVC = await VCHelper.createVerifiableCredential(
-            vcSubject,
-            didDocument,
-            null,
-            { uuid }
-        );
+        const newId = await PolicyActionsUtils.generateId(ref, ref.options.idType, owner, userId);
+        if (newId) {
+            vcSubject.id = newId;
+        }
+
+        const newVC = await PolicyActionsUtils.signVC(ref, vcSubject, issuer, { uuid }, userId);
 
         const item = PolicyUtils.createVC(ref, owner, newVC);
         item.type = outputSchema.iri;
@@ -385,61 +393,5 @@ export class CustomLogicBlock {
     ): Promise<IPolicyDocument> {
         const vc = PolicyUtils.createVcFromSubject(json);
         return PolicyUtils.createUnsignedVC(ref, vc);
-    }
-
-    /**
-     * Generate id
-     * Generate id
-     * @param idType
-     * @param user
-     * @param userCred
-     * @param userHederaCred
-     */
-    private async generateId(
-        idType: string,
-        user: PolicyUser,
-        userCred: UserCredentials
-    ): Promise<string | undefined> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            if (idType === 'UUID') {
-                return await ref.components.generateUUID();
-            }
-            if (idType === 'DID') {
-                const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null);
-
-                const didObject = await ref.components.generateDID(topic.topicId);
-
-                const message = new DIDMessage(MessageAction.CreateDID);
-                message.setDocument(didObject);
-
-                const hederaCred = await userCred.loadHederaCredentials(ref);
-                const signOptions = await userCred.loadSignOptions(ref);
-                const client = new MessageServer(
-                    hederaCred.hederaAccountId,
-                    hederaCred.hederaAccountKey,
-                    signOptions,
-                    ref.dryRun
-                );
-                const messageResult = await client
-                    .setTopicObject(topic)
-                    .sendMessage(message);
-
-                const item = PolicyUtils.createDID(ref, user, didObject);
-                item.messageId = messageResult.getId();
-                item.topicId = messageResult.getTopicId();
-
-                await userCred.saveSubDidDocument(ref, item, didObject);
-
-                return didObject.getDid();
-            }
-            if (idType === 'OWNER') {
-                return user.did;
-            }
-            return undefined;
-        } catch (error) {
-            ref.error(`generateId: ${idType} : ${PolicyUtils.getErrorMessage(error)}`);
-            throw new BlockActionError(error, ref.blockType, ref.uuid);
-        }
     }
 }

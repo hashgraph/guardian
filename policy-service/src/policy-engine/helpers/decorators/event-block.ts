@@ -2,7 +2,7 @@ import { PolicyBlockDecoratorOptions } from '../../interfaces/block-options.js';
 import { BasicBlock } from './basic-block.js';
 import { BlockActionError } from '../../errors/index.js';
 import { PolicyUser } from '../../policy-user.js';
-import { PolicyType } from '@guardian/interfaces';
+import { PolicyStatus } from '@guardian/interfaces';
 
 /**
  * Event block decorator
@@ -59,7 +59,7 @@ export function EventBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 if (!this.isActive(args[0])) {
                     throw new BlockActionError('Block not available', this.blockType, this.uuid);
                 }
-                if (this.policyInstance.status === PolicyType.DISCONTINUED) {
+                if (this.policyInstance.status === PolicyStatus.DISCONTINUED) {
                     throw new BlockActionError(`Policy is discontinued and can't produce new artifacts`, this.blockType, this.uuid);
                 }
                 const user = args[0];

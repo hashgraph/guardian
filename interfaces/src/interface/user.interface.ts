@@ -1,3 +1,4 @@
+import { LocationType } from '../type/location.type.js';
 import { UserRole } from '../type/user-role.type.js';
 import { IDidObject } from './did-object.interface.js';
 import { IVCDocument } from './vc-document.interface.js';
@@ -122,4 +123,8 @@ export interface IUser {
      * Permissions
      */
     permissions?: string[];
+    /**
+     * Location
+     */
+    location?: LocationType;
 }

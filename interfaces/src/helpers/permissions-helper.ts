@@ -1,4 +1,4 @@
-import { Permissions, UserRole } from '../type/index.js';
+import { LocationType, Permissions, UserRole } from '../type/index.js';
 
 /**
  * Permissions helper
@@ -27,6 +27,7 @@ export class UserPermissions {
     public readonly role: string;
     public readonly permissions: string[];
     public readonly permissionsGroup: string[];
+    public readonly location: LocationType;
 
     constructor(user?: any) {
         if (user) {
@@ -36,8 +37,10 @@ export class UserPermissions {
             this.role = user.role;
             this.permissions = user.permissions || [];
             this.permissionsGroup = user.permissionsGroup;
+            this.location = user.location;
         } else {
             this.permissions = [];
+            this.location = LocationType.LOCAL;
         }
     }
 
@@ -536,6 +539,23 @@ export class UserPermissions {
 
     public get FORMULAS_FORMULA_READ(): boolean {
         return this.check(Permissions.FORMULAS_FORMULA_READ);
+    }
+
+    //EXTERNAL POLICY
+    public get POLICIES_EXTERNAL_POLICY_READ(): boolean {
+        return this.check(Permissions.POLICIES_EXTERNAL_POLICY_READ);
+    }
+
+    public get POLICIES_EXTERNAL_POLICY_CREATE(): boolean {
+        return this.check(Permissions.POLICIES_EXTERNAL_POLICY_CREATE);
+    }
+
+    public get POLICIES_EXTERNAL_POLICY_DELETE(): boolean {
+        return this.check(Permissions.POLICIES_EXTERNAL_POLICY_DELETE);
+    }
+
+    public get POLICIES_EXTERNAL_POLICY_UPDATE(): boolean {
+        return this.check(Permissions.POLICIES_EXTERNAL_POLICY_UPDATE);
     }
 
     public static isPolicyAdmin(user: any): boolean {

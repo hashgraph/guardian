@@ -169,6 +169,17 @@ To let the Multi-environment transition happen in a transparent way the `GUARDIA
 
 To start of auth-service it is necessary to fill in `JWT_PRIVATE_KEY` and `JWT_PUBLIC_KEY`, which are RSA key pair. You can generate it in any convenient way, for example, using this service https://travistidwell.com/jsencrypt/demo/.
 
+##### 3.3. Setting up JWT keys for each service in the .env file
+
+To start all services, you must set the `SERVICE_JWT_SECRET_KEY` and `SERVICE_JWT_PUBLIC_KEY` variables in your .env file with a 2048-bit RSA key pair. You can generate a key pair in any convenient way—for example, using the online tool at https://mkjwk.org/ with the following settings:
+   - key size: 2048
+   - key use: signature
+   - algorithm: RS256: RSA
+   - key ID: sha256
+   - show: yes
+
+These keys are required for the initial startup; afterward, they’ll be stored in your secret manager. It is recommended to generate a separate key pair for each service.
+
 #### 4. Now, we have two options to setup IPFS node :  1. Local node 2. IPFS Web3Storage node 3. Filebase Bucket.
 
 ##### 4.1 Setting up IPFS Local node:

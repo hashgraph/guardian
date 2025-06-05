@@ -44,7 +44,10 @@ export class SchemaLoader {
         return { schema, policy };
     }
 
-    public static async loadByPolicyMessage(item: IPolicyMessageSchema, user: IOwner): Promise<ISchemaData> {
+    public static async loadByPolicyMessage(
+        item: IPolicyMessageSchema,
+        user: IOwner
+    ): Promise<ISchemaData> {
         const messageId = item.policy;
         const schemaId = item.value;
         if (!messageId) {
@@ -52,10 +55,19 @@ export class SchemaLoader {
         }
 
         const users = new Users()
-        const root = await users.getHederaAccount(user.creator);
+        const root = await users.getHederaAccount(user.creator, user.id);
 
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
-        const message = await messageServer.getMessage<PolicyMessage>(messageId);
+        const messageServer = new MessageServer({
+            operatorId: root.hederaAccountId,
+            operatorKey: root.hederaAccountKey,
+            signOptions: root.signOptions
+        });
+        const message = await messageServer
+            .getMessage<PolicyMessage>({
+                messageId,
+                loadIPFS: true,
+                userId: user.id
+            });
         if (message.type !== MessageType.InstancePolicy) {
             throw new Error('Invalid Message Type');
         }

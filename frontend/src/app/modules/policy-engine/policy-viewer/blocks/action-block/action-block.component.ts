@@ -29,6 +29,7 @@ export class ActionBlockComponent implements OnInit {
     content: any;
     target: any;
     currentValue: any;
+    readonly: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -90,6 +91,7 @@ export class ActionBlockComponent implements OnInit {
 
     setData(data: any) {
         if (data) {
+            this.readonly = !!data.readonly;
             this.data = data.data;
             this.type = data.type;
             this.uiMetaData = data.uiMetaData;

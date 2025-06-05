@@ -1,7 +1,7 @@
 import { Report } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { IPolicyReportBlock } from '../policy-engine.interface.js';
-import { IImpactReport, IPolicyReport, IReport, IReportItem, IVCReport, SchemaEntity, } from '@guardian/interfaces';
+import { IPolicyGetData, IPolicyReportBlock } from '../policy-engine.interface.js';
+import { IImpactReport, IPolicyReport, IReport, IReportItem, IVCReport, LocationType, SchemaEntity, } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyInputEventType } from '../interfaces/index.js';
@@ -17,6 +17,7 @@ import { FilterObject } from '@mikro-orm/core';
 @Report({
     blockType: 'reportBlock',
     commonBlock: false,
+    actionType: LocationType.LOCAL,
     about: {
         label: 'Report',
         title: `Add 'Report' Block`,
@@ -60,8 +61,9 @@ export class ReportBlock {
      * Get username
      * @param did
      * @param map
+     * @param userId
      */
-    async getUserName(did: string, map: any): Promise<string> {
+    async getUserName(did: string, map: any, userId: string | null): Promise<string> {
         if (!did) {
             return null;
         }
@@ -69,7 +71,7 @@ export class ReportBlock {
             return map[did];
         } else {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
-            const curUser = await PolicyUtils.getUser(ref, did);
+            const curUser = await PolicyUtils.getUser(ref, did, userId);
             if (curUser) {
                 map[did] = curUser.username;
                 return map[did];
@@ -83,20 +85,21 @@ export class ReportBlock {
      * Item user map
      * @param documents
      * @param map
+     * @param userId
      */
-    async itemUserMap(documents: any[], map: any) {
+    async itemUserMap(documents: any[], map: any, userId: string | null) {
         if (!documents) {
             return;
         }
         for (const element of documents) {
             if (element.multiple) {
                 for (const document of element.document) {
-                    document.username = await this.getUserName(document.username, map);
+                    document.username = await this.getUserName(document.username, map, userId);
                 }
             } else {
-                element.username = await this.getUserName(element.username, map);
+                element.username = await this.getUserName(element.username, map, userId);
             }
-            await this.itemUserMap(element.documents, map);
+            await this.itemUserMap(element.documents, map, userId);
         }
     }
 
@@ -308,25 +311,26 @@ export class ReportBlock {
     /**
      * Report user map
      * @param report
+     * @param userId
      */
-    private async reportUserMap(report: IReport): Promise<IReport> {
+    private async reportUserMap(report: IReport, userId: string | null): Promise<IReport> {
         const map: any = {};
         if (report.vpDocument) {
-            report.vpDocument.username = await this.getUserName(report.vpDocument.username, map);
+            report.vpDocument.username = await this.getUserName(report.vpDocument.username, map, userId);
         }
         if (report.vcDocument) {
-            report.vcDocument.username = await this.getUserName(report.vcDocument.username, map);
+            report.vcDocument.username = await this.getUserName(report.vcDocument.username, map, userId);
         }
         if (report.mintDocument) {
-            report.mintDocument.username = await this.getUserName(report.mintDocument.username, map);
+            report.mintDocument.username = await this.getUserName(report.mintDocument.username, map, userId);
         }
         if (report.policyDocument) {
-            report.policyDocument.username = await this.getUserName(report.policyDocument.username, map);
+            report.policyDocument.username = await this.getUserName(report.policyDocument.username, map, userId);
         }
         if (report.policyCreatorDocument) {
-            report.policyCreatorDocument.username = await this.getUserName(report.policyCreatorDocument.username, map);
+            report.policyCreatorDocument.username = await this.getUserName(report.policyCreatorDocument.username, map, userId);
         }
-        await this.itemUserMap(report.documents, map);
+        await this.itemUserMap(report.documents, map, userId);
 
         return report
     }
@@ -394,12 +398,19 @@ export class ReportBlock {
      * @param user
      * @param uuid
      */
-    async getData(user: PolicyUser, uuid: string): Promise<any> {
+    async getData(user: PolicyUser, uuid: string): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
             const blockState = this.state[user.id] || {};
             if (!blockState.lastValue) {
                 return {
+                    id: ref.uuid,
+                    blockType: ref.blockType,
+                    actionType: ref.actionType,
+                    readonly: (
+                        ref.actionType === LocationType.REMOTE &&
+                        user.location === LocationType.REMOTE
+                    ),
                     hash: null,
                     uiMetaData: ref.options.uiMetaData,
                     data: null
@@ -426,7 +437,16 @@ export class ReportBlock {
 
             const vp: any = await ref.databaseServer.getVpDocument({ hash, policyId: ref.policyId });
             if (vp) {
-                [vp.serials, vp.amount, vp.error, vp.wasTransferNeeded, vp.transferSerials, vp.transferAmount, vp.tokenIds, vp.target] = await ref.databaseServer.getVPMintInformation(vp);
+                [
+                    vp.serials,
+                    vp.amount,
+                    vp.error,
+                    vp.wasTransferNeeded,
+                    vp.transferSerials,
+                    vp.transferAmount,
+                    vp.tokenIds,
+                    vp.target
+                ] = await ref.databaseServer.getVPMintInformation(vp);
                 report = await this.addReportByVP(report, variables, vp, true);
             } else {
                 const vc = await ref.databaseServer.getVcDocument({ hash, policyId: ref.policyId })
@@ -455,14 +475,21 @@ export class ReportBlock {
                 }
             }
 
-            report = await this.reportUserMap(report);
+            report = await this.reportUserMap(report, user.userId);
             if (report.additionalDocuments) {
                 for (let i = 0; i < report.additionalDocuments.length; i++) {
-                    report.additionalDocuments[i] = await this.reportUserMap(report.additionalDocuments[i]);
+                    report.additionalDocuments[i] = await this.reportUserMap(report.additionalDocuments[i], user.userId);
                 }
             }
 
             return {
+                id: ref.uuid,
+                blockType: ref.blockType,
+                actionType: ref.actionType,
+                readonly: (
+                    ref.actionType === LocationType.REMOTE &&
+                    user.location === LocationType.REMOTE
+                ),
                 hash,
                 uiMetaData: ref.options.uiMetaData,
                 data: report
@@ -487,6 +514,7 @@ export class ReportBlock {
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
                 value
             }));
+            ref.backup();
         } catch (error) {
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }

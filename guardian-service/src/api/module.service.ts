@@ -4,7 +4,7 @@ import { GenerateUUIDv4, IOwner, MessageAPI, ModuleStatus, SchemaCategory, TagTy
 import { emptyNotifier, INotifier } from '../helpers/notifier.js';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
 import { ModuleValidator } from '../policy-engine/block-validators/module-validator.js';
-import { importTag } from './helpers/tag-import-export-helper.js';
+import { importTag } from '../helpers/import-helpers/index.js';
 
 /**
  * Check and update config file
@@ -42,9 +42,18 @@ export async function preparePreviewMessage(
     }
 
     const users = new Users();
-    const root = await users.getHederaAccount(user.creator);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
-    const message = await messageServer.getMessage<ModuleMessage>(messageId);
+    const root = await users.getHederaAccount(user.creator, user.id);
+    const messageServer = new MessageServer({
+        operatorId: root.hederaAccountId,
+        operatorKey: root.hederaAccountKey,
+        signOptions: root.signOptions
+    });
+    const message = await messageServer
+        .getMessage<ModuleMessage>({
+            messageId,
+            loadIPFS: true,
+            userId: user.id
+        });
     if (message.type !== MessageType.Module) {
         throw new Error('Invalid Message Type');
     }
@@ -124,18 +133,21 @@ export async function publishModule(
     notifier: INotifier,
     logger: PinoLogger
 ): Promise<PolicyModule> {
-    logger.info('Publish module', ['GUARDIAN_SERVICE']);
+    logger.info('Publish module', ['GUARDIAN_SERVICE'], user.id);
     notifier.start('Resolve Hedera account');
     const users = new Users();
-    const root = await users.getHederaAccount(user.owner);
+    const root = await users.getHederaAccount(user.owner, user.id);
     notifier.completedAndStart('Find topic');
 
     const userTopic = await TopicConfig.fromObject(
         await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic),
-        true
+        true, user.id
     );
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
-        .setTopicObject(userTopic);
+    const messageServer = new MessageServer({
+        operatorId: root.hederaAccountId,
+        operatorKey: root.hederaAccountKey,
+        signOptions: root.signOptions
+    }).setTopicObject(userTopic);
 
     notifier.completedAndStart('Create module topic');
     const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
@@ -146,8 +158,8 @@ export async function publishModule(
         owner: user.owner,
         policyId: null,
         policyUUID: null
-    });
-    await rootTopic.saveKeys();
+    }, user.id);
+    await rootTopic.saveKeys(user.id);
     await DatabaseServer.saveTopic(rootTopic.toObject());
 
     model.topicId = rootTopic.topicId;
@@ -168,14 +180,14 @@ export async function publishModule(
     const message = new ModuleMessage(MessageType.Module, MessageAction.PublishModule);
     message.setDocument(model, buffer);
     const result = await messageServer
-        .sendMessage(message);
+        .sendMessage(message, true, null, user.id);
     model.messageId = result.getId();
     model.status = ModuleStatus.PUBLISHED;
 
     notifier.completedAndStart('Link topic and module');
-    await topicHelper.twoWayLink(rootTopic, userTopic, result.getId());
+    await topicHelper.twoWayLink(rootTopic, userTopic, result.getId(), user.id);
 
-    logger.info('Published module', ['GUARDIAN_SERVICE']);
+    logger.info('Published module', ['GUARDIAN_SERVICE'], user.id);
 
     notifier.completedAndStart('Saving in DB');
     const retVal = await DatabaseServer.updateModule(model);
@@ -195,7 +207,8 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
      * @returns {PolicyModule} new module
      */
     ApiResponse(MessageAPI.CREATE_MODULE,
-        async (msg: { module: PolicyModule, owner: IOwner }) => {
+        async (msg: { module: PolicyModule, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     throw new Error('Invalid Params');
@@ -210,13 +223,14 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                 const item = await DatabaseServer.createModules(module);
                 return new MessageResponse(item);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.GET_MODULES,
-        async (msg: { filters: any, owner: IOwner }) => {
+        async (msg: { filters: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid load modules parameter');
@@ -244,7 +258,7 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse({ items, count });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
@@ -253,7 +267,8 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
      * Get Modules V2 06.06.2024
      */
     ApiResponse(MessageAPI.GET_MODULES_V2,
-        async (msg: { filters: any, owner: IOwner }) => {
+        async (msg: { filters: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid load modules parameter');
@@ -283,13 +298,14 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse({ items, count });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.DELETE_MODULES,
-        async (msg: { uuid: string, owner: IOwner }) => {
+        async (msg: { uuid: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { uuid, owner } = msg;
                 if (!uuid || !owner) {
@@ -302,13 +318,14 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                 await DatabaseServer.removeModule(item);
                 return new MessageResponse(true);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.GET_MENU_MODULES,
-        async (msg: { owner: IOwner }) => {
+        async (msg: { owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { owner } = msg;
                 if (!owner) {
@@ -328,13 +345,14 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                 }
                 return new MessageResponse(items);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.UPDATE_MODULES,
-        async (msg: { uuid: string, module: PolicyModule, owner: IOwner }) => {
+        async (msg: { uuid: string, module: PolicyModule, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 if (!msg) {
                     return new MessageError('Invalid load modules parameter');
@@ -356,13 +374,14 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                 const result = await DatabaseServer.updateModule(item);
                 return new MessageResponse(result);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.GET_MODULE,
-        async (msg: { uuid: string, owner: IOwner }) => {
+        async (msg: { uuid: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { uuid, owner } = msg;
                 if (!uuid || !owner) {
@@ -374,13 +393,14 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                 }
                 return new MessageResponse(item);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.MODULE_EXPORT_FILE,
-        async (msg: { uuid: string, owner: IOwner }) => {
+        async (msg: { uuid: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { uuid, owner } = msg;
                 if (!uuid || !owner) {
@@ -403,13 +423,14 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                 });
                 return new BinaryMessageResponse(file);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.MODULE_EXPORT_MESSAGE,
-        async (msg: { uuid: string, owner: IOwner }) => {
+        async (msg: { uuid: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { uuid, owner } = msg;
                 if (!uuid || !owner) {
@@ -429,13 +450,14 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                     owner: item.owner
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.MODULE_IMPORT_FILE_PREVIEW,
-        async (msg: { zip: any, owner: IOwner }) => {
+        async (msg: { zip: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { zip } = msg;
                 if (!zip) {
@@ -444,25 +466,27 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                 const preview = await ModuleImportExport.parseZipFile(Buffer.from(zip.data));
                 return new MessageResponse(preview);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.MODULE_IMPORT_MESSAGE_PREVIEW,
-        async (msg: { messageId: string, owner: IOwner }) => {
+        async (msg: { messageId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { messageId, owner } = msg;
                 const preview = await preparePreviewMessage(messageId, owner, emptyNotifier());
                 return new MessageResponse(preview);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.MODULE_IMPORT_FILE,
-        async (msg: { zip: any, owner: IOwner }) => {
+        async (msg: { zip: any, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { zip, owner } = msg;
                 if (!zip) {
@@ -505,13 +529,14 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse(item);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.MODULE_IMPORT_MESSAGE,
-        async (msg: { messageId: string, owner: IOwner }) => {
+        async (msg: { messageId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { messageId, owner } = msg;
                 if (!messageId) {
@@ -537,9 +562,10 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                 const item = await DatabaseServer.createModules(module);
 
                 if (moduleTopicId) {
-                    const messageServer = new MessageServer(null, null);
+                    const messageServer = new MessageServer(null);
                     const tagMessages = await messageServer.getMessages<TagMessage>(
                         moduleTopicId,
+                        userId,
                         MessageType.Tag,
                         MessageAction.PublishTag
                     );
@@ -569,13 +595,14 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                 }
                 return new MessageResponse(item);
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.PUBLISH_MODULES,
-        async (msg: { uuid: string, owner: IOwner, module: PolicyModule }) => {
+        async (msg: { uuid: string, owner: IOwner, module: PolicyModule, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { uuid, owner } = msg;
                 const result = await validateAndPublish(uuid, owner, emptyNotifier(), logger);
@@ -585,13 +612,14 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                     errors: result.errors,
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });
 
     ApiResponse(MessageAPI.VALIDATE_MODULES,
-        async (msg: { owner: IOwner, module: PolicyModule }) => {
+        async (msg: { owner: IOwner, module: PolicyModule, userId: string | null }) => {
+            const userId = msg?.userId
             try {
                 const { module } = msg;
                 const results = await validateModel(module);
@@ -600,7 +628,7 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                     module
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
                 return new MessageError(error);
             }
         });

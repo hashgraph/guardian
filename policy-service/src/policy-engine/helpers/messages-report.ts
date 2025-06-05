@@ -75,10 +75,11 @@ export class MessagesReport {
     /**
      * Build report
      * @param messageId
+     * @param userId
      */
-    public async start(messageId: string) {
-        await this.checkMessage(messageId);
-        await this.checkUsers();
+    public async start(messageId: string, userId: string | null) {
+        await this.checkMessage(messageId, userId);
+        await this.checkUsers(userId);
     }
 
     /**
@@ -96,14 +97,20 @@ export class MessagesReport {
     /**
      * Search messages
      * @param timestamp
+     * @param userId
      */
-    private async checkMessage(timestamp: string) {
+    private async checkMessage(timestamp: string, userId: string | null) {
         if (this.messages.has(timestamp)) {
             return;
         }
         this.messages.set(timestamp, null);
 
-        const message = await MessageServer.getMessage(timestamp);
+        const message = await MessageServer
+            .getMessage({
+                messageId: timestamp,
+                loadIPFS: false,
+                userId,
+            });
         if (!message) {
             return;
         }
@@ -115,19 +122,20 @@ export class MessagesReport {
         this.messages.set(timestamp, message.toJson());
         this.users.set(message.getOwner(), null);
 
-        await this.checkToken(message);
-        await this.checkTopic(message.getTopicId());
+        await this.checkToken(message, userId);
+        await this.checkTopic(message.getTopicId(), userId);
 
         for (const id of message.getRelationships()) {
-            await this.checkMessage(id);
+            await this.checkMessage(id, userId);
         }
     }
 
     /**
      * Search tokens
      * @param message
+     * @param userId
      */
-    private async checkToken(message: Message) {
+    private async checkToken(message: Message, userId: string | null) {
         if (message.type === MessageType.VCDocument) {
             const document = (message as VCMessage).document;
             if (document &&
@@ -137,7 +145,7 @@ export class MessagesReport {
                 const tokenId = document.credentialSubject[0].tokenId;
                 if (tokenId && !this.tokens.has(tokenId)) {
                     this.tokens.set(tokenId, null);
-                    const info = await this.getToken(tokenId);
+                    const info = await this.getToken(tokenId, userId);
                     if (info) {
                         this.tokens.set(tokenId, {
                             name: info.name,
@@ -156,14 +164,15 @@ export class MessagesReport {
     /**
      * Search topics
      * @param topicId
+     * @param userId
      */
-    private async checkTopic(topicId: string) {
+    private async checkTopic(topicId: string, userId: string | null) {
         if (this.topics.has(topicId)) {
             return;
         }
         this.topics.set(topicId, null);
 
-        const message = await MessageServer.getTopic(topicId);
+        const message = await MessageServer.getTopic(topicId, userId);
         if (!message) {
             return;
         }
@@ -171,22 +180,26 @@ export class MessagesReport {
         this.topics.set(topicId, message.toJson());
 
         if (message.parentId) {
-            await this.checkTopic(message.parentId);
+            await this.checkTopic(message.parentId, userId);
         }
         if (message.rationale) {
-            await this.checkMessage(message.rationale);
+            await this.checkMessage(message.rationale, userId);
         }
 
-        await this.checkSchemas(message);
+        await this.checkSchemas(message, userId);
     }
 
     /**
      * Search schemas
      * @param message
+     * @param userId
      */
-    private async checkSchemas(message: TopicMessage) {
+    private async checkSchemas(message: TopicMessage, userId: string | null) {
         if (message.messageType === TopicType.PolicyTopic) {
-            const messages: any[] = await MessageServer.getMessages(message.getTopicId());
+            const messages: any[] = await MessageServer.getTopicMessages({
+                topicId: message.getTopicId(),
+                userId
+            });
             const schemas: SchemaMessage[] = messages.filter((m: SchemaMessage) => m.action === MessageAction.PublishSchema ||
                 m.action === MessageAction.PublishSystemSchema);
             for (const schema of schemas) {
@@ -201,9 +214,9 @@ export class MessagesReport {
 
     /**
      * Search users
-     * @param message
+     * @param userId
      */
-    private async checkUsers() {
+    private async checkUsers(userId: string | null) {
         const topics: Set<string> = new Set<string>();
         for (const did of this.users.keys()) {
             try {
@@ -215,7 +228,7 @@ export class MessagesReport {
         }
         for (const topicId of topics) {
             try {
-                const messages: any[] = await MessageServer.getMessages(topicId);
+                const messages: any[] = await MessageServer.getTopicMessages({ topicId, userId });
                 const documents: DIDMessage[] = messages.filter((m: DIDMessage) => m.action === MessageAction.CreateDID);
                 for (const document of documents) {
                     if (this.users.has(document.did) && !this.users.get(document.did)) {
@@ -233,13 +246,14 @@ export class MessagesReport {
     /**
      * Get token information
      * @param tokenId
+     * @param userId
      */
-    public async getToken(tokenId: string): Promise<any> {
+    public async getToken(tokenId: string, userId: string | null): Promise<any> {
         try {
             const workers = new Workers();
             const info = await workers.addRetryableTask({
                 type: WorkerTaskType.GET_TOKEN_INFO,
-                data: { tokenId }
+                data: { tokenId, payload: { userId } }
             }, 10);
             return info;
         } catch (error) {

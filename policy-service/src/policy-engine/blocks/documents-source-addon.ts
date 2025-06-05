@@ -7,12 +7,14 @@ import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils, QueryType } from '../helpers/utils.js';
 import ObjGet from 'lodash.get';
 import ObjSet from 'lodash.set';
+import { LocationType } from '@guardian/interfaces';
 
 /**
  * Documents source addon
  */
 @SourceAddon({
     blockType: 'documentsSourceAddon',
+    actionType: LocationType.LOCAL,
     about: {
         label: 'Source',
         title: `Add 'DocumentsSourceAddon' Addon`,
@@ -78,7 +80,12 @@ export class DocumentsSourceAddon {
      * @param countResult
      * @param otherOptions
      */
-    async getFromSource(user: PolicyUser, globalFilters: any, countResult?: boolean, otherOptions?: any) {
+    async getFromSource(
+        user: PolicyUser,
+        globalFilters: any,
+        countResult?: boolean,
+        otherOptions?: any
+    ) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
         const filters: any = {};
@@ -166,7 +173,7 @@ export class DocumentsSourceAddon {
                 }
                 break;
             case 'standard-registries':
-                data = await PolicyUtils.getAllStandardRegistryAccounts(ref, countResult);
+                data = await PolicyUtils.getAllStandardRegistryAccounts(ref, countResult, user.userId);
                 break;
             case 'approve':
                 filters.policyId = ref.policyId;
@@ -177,7 +184,7 @@ export class DocumentsSourceAddon {
                 break;
             // @deprecated 2022-10-01
             case 'root-authorities':
-                data = await PolicyUtils.getAllStandardRegistryAccounts(ref, countResult);
+                data = await PolicyUtils.getAllStandardRegistryAccounts(ref, countResult, user.userId);
                 break;
             default:
                 throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)

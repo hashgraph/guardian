@@ -13,7 +13,7 @@ context("Tags", { tags: ['tags', 'thirdPool', 'all'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.ListOfModules,
+                url: API.ApiServer + API.ListOfAllModules,
                 headers: {
                     authorization,
                 },
