@@ -104,7 +104,6 @@ export class ProfileApi {
         await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
     }
 
-
     /**
      * Update user parent
      */

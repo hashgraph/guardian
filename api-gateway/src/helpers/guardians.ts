@@ -491,7 +491,6 @@ export class Guardians extends NatsService {
         return await this.sendMessage(MessageAPI.CREATE_USER_PROFILE_COMMON, { user, username, profile });
     }
 
-
     /**
      * Update standart registry
      * @param username
@@ -502,10 +501,10 @@ export class Guardians extends NatsService {
     }
 
     /**
-    * Update standart registry
-    * @param username
-    * @param standartRegistryDid
-    */
+     * Update standart registry
+     * @param username
+     * @param standartRegistryDid
+     */
     public async addUserStandardRegistry(user: IAuthUser, username: string, standardRegistryDids: string[]): Promise<string> {
         return await this.sendMessage(MessageAPI.USER_ADD_STANDARD_REGISTRY, { user, username, standardRegistryDids });
     }

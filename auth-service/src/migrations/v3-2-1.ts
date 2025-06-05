@@ -1,4 +1,4 @@
-import { DefaultRoles, GenerateUUIDv4, UserRole } from '@guardian/interfaces';
+import { UserRole } from '@guardian/interfaces';
 import { Migration } from '@mikro-orm/migrations-mongodb';
 
 /**
@@ -21,7 +21,7 @@ export class ReleaseMigration extends Migration {
         const users = userCollection.find({ role: UserRole.USER }, { session: this.ctx });
         while (await users.hasNext()) {
             const user = await users.next();
-            if(user.parent && !user.parents) {
+            if (user.parent && !user.parents) {
                 user.parents = [user.parent];
 
                 await parentPermissionsCollection.insertOne({

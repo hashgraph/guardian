@@ -1,9 +1,7 @@
 import { User } from '../entity/user.js';
 import { DatabaseServer, MessageError, MessageResponse, NatsService, PinoLogger, Singleton } from '@guardian/common';
-import { AuthEvents, GenerateUUIDv4, IGetGlobalApplicationKey, IGetKeyMessage, IGetKeyResponse, IGroup, ISetGlobalApplicationKey, ISetKeyMessage, WalletEvents } from '@guardian/interfaces';
-import { IVault } from '../vaults/index.js';
+import { AuthEvents, GenerateUUIDv4 } from '@guardian/interfaces';
 import { ParentPermissions } from '../entity/parent-permissions.js';
-import { permission } from 'process';
 import { UserProp, UserUtils } from '#utils';
 import { getDefaultRole } from './role-service.js';
 
@@ -24,7 +22,6 @@ export class ParentPermissionsService extends NatsService {
      */
     public replySubject = 'parent-permissions-queue-reply-' + GenerateUUIDv4();
 
-
     /**
      * Register listeners
      */
@@ -36,11 +33,11 @@ export class ParentPermissionsService extends NatsService {
                     const entityRepository = new DatabaseServer();
                     const user = await UserUtils.getUser({ username }, UserProp.RAW);
 
-                    if(user.parents?.includes(parent)) {
-                        throw new Error("The Standard Registry DID is already included in the user's parents");
+                    if (user.parents?.includes(parent)) {
+                        throw new Error('The Standard Registry DID is already included in the user\'s parents');
                     }
 
-                    if(!user.parents) {
+                    if (!user.parents) {
                         user.parents = [];
                     }
 
@@ -80,8 +77,8 @@ export class ParentPermissionsService extends NatsService {
                 const { username, parent } = msg;
                 try {
                     const user = await UserUtils.getUser({ username }, UserProp.RAW);
-                    if(!user.parents?.includes(parent)) {
-                        throw new Error("The Standard Registry DID is not included in the user's parents");
+                    if (!user.parents?.includes(parent)) {
+                        throw new Error('The Standard Registry DID is not included in the user\'s parents');
                     }
                     user.parent = parent;
                     await UserUtils.updateUserPermissions(user);

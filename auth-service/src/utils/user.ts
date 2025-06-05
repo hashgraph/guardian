@@ -81,11 +81,11 @@ export class UserUtils {
             parent: user.parent,
         });
 
-        if(permissionsRow) {
+        if (permissionsRow) {
             user.permissions = permissionsRow.permissions;
             user.permissionsGroup = permissionsRow.permissionsGroup;
         }
-        
+
         await new DatabaseServer().update(User, null, user);
         return user;
     }

@@ -164,7 +164,6 @@ export function profileAPI(logger: PinoLogger) {
             }
         });
 
-
     ApiResponse(MessageAPI.CREATE_USER_PROFILE_COMMON,
         async (msg: {
             user: IAuthUser,
