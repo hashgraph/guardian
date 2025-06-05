@@ -408,7 +408,6 @@ export class ComponentsService {
     /**
      * Write log message
      * @param message
-     * @protected
      */
     public info(message: string, attributes: string[] | null, userId?: string | null) {
         this.logger.info(message, attributes, userId);
@@ -417,7 +416,6 @@ export class ComponentsService {
     /**
      * Write error message
      * @param message
-     * @protected
      */
     public error(message: string, attributes: string[] | null, userId?: string | null) {
         this.logger.error(message, attributes, userId);
@@ -426,7 +424,6 @@ export class ComponentsService {
     /**
      * Write warn message
      * @param message
-     * @protected
      */
     public warn(message: string, attributes: string[] | null, userId?: string | null) {
         this.logger.warn(message, attributes, userId);
@@ -435,9 +432,21 @@ export class ComponentsService {
     /**
      * Write debug message
      * @param message
-     * @protected
      */
     public debug(message: any) {
         return;
+    }
+
+    /**
+     * Save and update debug context
+     * @param context
+     */
+    public async debugContext(tag: string, context: any): Promise<any> {
+        await DatabaseServer.saveDebugContext({
+            policyId: this.policyId,
+            tag,
+            document: context
+        });
+        return context;
     }
 }

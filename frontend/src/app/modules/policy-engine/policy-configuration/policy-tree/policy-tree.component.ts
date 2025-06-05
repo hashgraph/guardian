@@ -478,19 +478,24 @@ export class PolicyTreeComponent implements OnInit {
     }
 
     public getMenu(node: FlatBlockNode): string {
-        if (this.visibleMoveActions === '1') {
+        let style = 'block-menu';
+        if (this.readonly) {
             if (node.node?.blockType === 'customLogicBlock') {
-                return 'block-menu-4-full';
+                style += '-1';
             } else {
-                return 'block-menu-3-full';
+                style += '-0';
             }
         } else {
             if (node.node?.blockType === 'customLogicBlock') {
-                return 'block-menu-4';
+                style += '-4';
             } else {
-                return 'block-menu-3';
+                style += '-3';
+            }
+            if (this.visibleMoveActions === '1') {
+                style += '-full';
             }
         }
+        return style;
     }
 
     public onSelect(event: MouseEvent, node: FlatBlockNode) {

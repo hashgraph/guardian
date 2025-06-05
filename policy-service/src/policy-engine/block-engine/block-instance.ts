@@ -1,4 +1,4 @@
-import { BlockResult } from "./block-result.js";
+import { BlockResult } from './block-result.js';
 
 export abstract class BlockInstance {
     public readonly policyId: string;

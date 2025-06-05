@@ -42,6 +42,7 @@ export enum PolicyEngineEvents {
     SET_VIRTUAL_USER = 'policy-engine-event-login-virtual-user',
     RESTART_DRY_RUN = 'policy-engine-event-restart-dry-run',
     DRY_RUN_BLOCK = 'policy-engine-event-dry-run-block',
+    DRY_RUN_BLOCK_HISTORY = 'policy-engine-event-dry-run-block-history',
     GET_VIRTUAL_DOCUMENTS = 'policy-engine-event-get-virtual-documents',
     DELETE_POLICY_ASYNC = 'policy-engine-event-delete-policy-async',
     GET_INVITE = 'policy-engine-event-get-invite',

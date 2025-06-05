@@ -70,7 +70,7 @@ Promise.all([
     const c = new PolicyContainer(logger);
     await c.setConnection(cn).init();
 
-    const b = new BlockService(logger);
+    const b = new BlockService();
     await b.setConnection(cn).init();
 
     const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);

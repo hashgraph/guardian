@@ -3,6 +3,7 @@ import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dy
 import { PolicyFolder, PolicyItem, SchemaVariables } from '../../structures';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 
 @Component({
     selector: 'test-code-dialog',
@@ -66,6 +67,7 @@ export class TestCodeDialog {
     public fileLabel = 'Add json .json file';
     public fileValue: any;
     public historyValue: any;
+    public history: any[];
 
     constructor(
         public ref: DynamicDialogRef,
@@ -88,6 +90,7 @@ export class TestCodeDialog {
         this.jsonValue = '';
         this.schemas = this.block?.moduleVariables?.schemas || [];
         this.schemaValue = this.fb.group({});
+        this.history = [];
     }
 
     ngOnInit() {
@@ -97,9 +100,7 @@ export class TestCodeDialog {
     ngAfterContentInit() {
         setTimeout(() => {
             this.initDialog = true;
-            setTimeout(() => {
-                this.loading = false;
-            }, 1000);
+            this.loadHistory();
         }, 100);
     }
 
@@ -114,12 +115,26 @@ export class TestCodeDialog {
         this.schema = this.schemas?.find((s) => s.value === this.schemaId)?.data;
     }
 
+    private loadHistory(): void {
+        this.policyEngineService
+            .getBlockHistory(this.policyId, this.block?.tag)
+            .subscribe((result) => {
+                this.history = result || [];
+                setTimeout(() => {
+                    this.loading = false;
+                }, 1000);
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
+    }
+
     public onTest(): void {
         this.loading = true;
         const input = this.getValue();
         const block = this.block.getJSON();
         const data = {
-            type: 'json',
+            type: this.dataType,
             input: 'RunEvent',
             output: 'RunEvent',
             document: input
@@ -198,13 +213,13 @@ export class TestCodeDialog {
         }
     }
 
-    onChangeCode() {
+    public onChangeCode() {
         if (this.block && this.block.properties) {
             this.block.properties.expression = this.expression;
         }
     }
 
-    getHeader() {
+    public getHeader() {
         switch (this.step) {
             case 'prop':
                 return 'Properties';
@@ -217,5 +232,31 @@ export class TestCodeDialog {
             default:
                 return null;
         }
+    }
+
+    public viewDocument($event: any, item: any) {
+        if ($event.stopPropagation) {
+            $event.stopPropagation();
+        }
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
+            data: {
+                dryRun: true,
+                document: item.document,
+                title: 'Document',
+                type: 'JSON',
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => { });
+    }
+
+    public onSelectHistory(item: any) {
+        this.historyValue = item.id;
+        for (const element of this.history) {
+            element.selected = false;
+        }
+        item.selected = true;
     }
 }

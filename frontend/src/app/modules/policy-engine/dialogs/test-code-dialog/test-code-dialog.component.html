@@ -137,6 +137,8 @@
                         <select-schema
                             [schemas]="schemas"
                             [(value)]="schemaId"
+                            [bodyStyleClass]="'guardian-dropdown'"
+                            [panelStyleClass]="'guardian-dropdown-panel'"
                             (change)="onChangeSchema()"
                         ></select-schema>
                     </div>
@@ -168,6 +170,51 @@
                         [dropZoneLabel]="fileLabel"></app-file-drag-n-drop>
                 </ng-container>
                 <ng-container *ngIf="dataType==='history'">
+
+                    <div class="history-body history-body-no-data">
+                        <div class="dialog-grid-container">
+                            <div *ngIf="history?.length" class="dialog-grid-header">
+                                <div class="col-44"></div>
+                                <div class="col-auto">Creation date</div>
+                                <div class="col-200">Document</div>
+                            </div>
+                            <div *ngIf="history?.length" class="dialog-grid-body">
+                                <ng-container *ngFor="let item of history" >
+                                    <div class="dialog-grid-row row-52" (click)="onSelectHistory(item)">
+                                        <div class="col-44 col-button">
+                                            <div>
+                                                <p-radioButton
+                                                    class="guardian-radio-button radio-button-24 history-select"
+                                                    name="history"
+                                                    [value]="true"
+                                                    [ngModel]="item.selected"></p-radioButton>
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            {{item.createDate}}
+                                        </div>
+                                        <div class="col-200">
+                                            <button
+                                                (click)="viewDocument($event, item)"
+                                                class="view-document guardian-button guardian-button-secondary">
+                                                <div class="guardian-button-label">View Document</div>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </ng-container>
+                            </div>
+                            <div *ngIf="!history?.length" class="dialog-grid-empty">
+                                <div>
+                                    <svg-icon
+                                        class="icon-btn"
+                                        src="/assets/images/icons/list.svg"
+                                        svgClass="icon-color-disabled">
+                                    </svg-icon>
+                                </div>
+                                <div>There are no data</div>
+                            </div>
+                        </div>
+                    </div>
 
                 </ng-container>
             </div>

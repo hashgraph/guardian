@@ -1,71 +1,19 @@
-import { DatabaseServer, Policy as PolicyCollection } from "@guardian/common";
-import { BlockData, BlockResult } from "./block-result.js";
-import { ComponentsService } from '../helpers/components-service.js';
-import { IPolicyBlock, IPolicyDocument, IPolicyEventState } from "../policy-engine.interface.js";
-import { PolicyComponentsUtils } from "../policy-components-utils.js";
-import { EventActor, IPolicyEvent, PolicyLink } from "../interfaces/index.js";
-import { PolicyUser } from "../policy-user.js";
-import { DocumentSignature, DocumentStatus } from "@guardian/interfaces";
-
-class DebugComponentsService extends ComponentsService {
-    private controller: BlockEngine;
-
-    constructor(policy: PolicyCollection, policyId: string, controller: BlockEngine) {
-        super(policy, policyId);
-        this.controller = controller;
-    }
-
-    /**
-     * Write log message
-     * @param message
-     * @protected
-     */
-    public override info(message: string, attributes: string[] | null, userId?: string | null) {
-        this.controller.addLog(message);
-    }
-
-    /**
-     * Write error message
-     * @param message
-     * @protected
-     */
-    public override error(message: string, attributes: string[] | null, userId?: string | null) {
-        this.controller.addError(message);
-        this.controller.stop();
-    }
-
-    /**
-     * Write warn message
-     * @param message
-     * @protected
-     */
-    public override warn(message: string, attributes: string[] | null, userId?: string | null) {
-        this.controller.addLog(message);
-    }
-
-    /**
-     * Write debug message
-     * @param message
-     * @protected
-     */
-    public override debug(message: any) {
-        if (message) {
-            if (typeof message === 'string') {
-                this.controller.addLog(message);
-            } else {
-                this.controller.addLog(JSON.stringify(message));
-            }
-        }
-    }
-}
+import { DocumentSignature, DocumentStatus, PolicyStatus } from '@guardian/interfaces';
+import { DatabaseServer } from '@guardian/common';
+import { BlockData, BlockResult } from './block-result.js';
+import { IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { EventActor, IPolicyEvent, PolicyLink } from '../interfaces/index.js';
+import { PolicyUser } from '../policy-user.js';
+import { DebugComponentsService } from './debug-components-service.js';
 
 /**
  * Block Validator
  */
 export class BlockEngine {
     public readonly policyId: string;
+    private readonly result: BlockResult;
     private instance: IPolicyBlock;
-    private result: BlockResult;
     private inputEvents: Map<string, Function>;
     private outputEvents: Set<string>;
     private outputObject: any;
@@ -92,6 +40,10 @@ export class BlockEngine {
         this.result.input = doc;
     }
 
+    public getInput(): any {
+        return this.result.input;
+    }
+
     public setOutput(doc: any) {
         this.result.output = doc;
     }
@@ -109,6 +61,8 @@ export class BlockEngine {
         try {
             const policy = await DatabaseServer.getPolicyById(this.policyId);
             const { tools } = await PolicyComponentsUtils.RegeneratePolicy(policy);
+            policy.status = PolicyStatus.DRY_RUN;
+
             const components = new DebugComponentsService(policy, this.policyId, this);
             await components.registerPolicy(policy);
             for (const tool of tools) {
@@ -148,17 +102,33 @@ export class BlockEngine {
             if (!data) {
                 throw new Error('Invalid data.');
             }
-            const docs: IPolicyDocument[] = this._getDocuments(user, data);
-            this.setInput(docs);
-            await this._run(user, data, docs);
+            const inputData = await this._getInputData(user, data);
+            await this._run(user, data, inputData);
         } catch (error) {
             this.addError(error?.toString());
         }
         return this.getResult();
     }
 
+    private async _getInputData(user: PolicyUser, data: BlockData): Promise<IPolicyDocument[]> {
+        if (data.type === 'history') {
+            const item = await DatabaseServer.getDebugContext(data.document);
+            if (item && item.policyId === this.policyId && item.document) {
+                const context = item.document;
+                this.setInput(context);
+                return context.documents;
+            } else {
+                throw new Error('Invalid history.');
+            }
+        } else {
+            const docs: IPolicyDocument[] = this._getDocuments(user, data);
+            this.setInput(docs);
+            return docs;
+        }
+    }
+
     private _getDocuments(user: PolicyUser, data: BlockData): IPolicyDocument[] {
-        let document = data?.document;
+        const document = data?.document;
         if (!document) {
             throw new Error('Invalid document.');
         }
@@ -204,18 +174,18 @@ export class BlockEngine {
     private _createVc(user: PolicyUser, json: any): any {
         const date = (new Date()).toISOString();
         return {
-            "id": "urn:uuid:00000000-0000-0000-0000-000000000000",
-            "type": ["VerifiableCredential"],
-            "issuer": user.did,
-            "issuanceDate": date,
-            "@context": ["https://www.w3.org/2018/credentials/v1"],
-            "credentialSubject": [json],
-            "proof": {
-                "type": "Ed25519Signature2018",
-                "created": date,
-                "verificationMethod": user.did + "#did-root-key",
-                "proofPurpose": "assertionMethod",
-                "jws": "..."
+            'id': 'urn:uuid:00000000-0000-0000-0000-000000000000',
+            'type': ['VerifiableCredential'],
+            'issuer': user.did,
+            'issuanceDate': date,
+            '@context': ['https://www.w3.org/2018/credentials/v1'],
+            'credentialSubject': [json],
+            'proof': {
+                'type': 'Ed25519Signature2018',
+                'created': date,
+                'verificationMethod': user.did + '#did-root-key',
+                'proofPurpose': 'assertionMethod',
+                'jws': '...'
             }
         }
     }
@@ -233,8 +203,8 @@ export class BlockEngine {
         return new Promise((resolve, reject) => {
             try {
                 this.outputObject = { resolve, reject };
-                const outputFunction: any = function (event: IPolicyEvent<IPolicyEventState>) {
-                    this.setOutput(event.data?.data);
+                const outputFunction: any = function (outputEvent: IPolicyEvent<IPolicyEventState>) {
+                    this.setOutput(outputEvent.data?.data);
                     this.addLog('Done');
                     this.stop();
                 }

@@ -759,6 +759,19 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             /**
+             * Save and update debug context
+             * @param context
+             * @protected
+             */
+            protected async debugContext(context: any): Promise<any> {
+                if (this._dryRun) {
+                    return await this.components.debugContext(this.tag, context);
+                } else {
+                    return context;
+                }
+            }
+
+            /**
              * Add Internal Event Listener
              * @param type
              * @protected

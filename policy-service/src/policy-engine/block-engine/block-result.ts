@@ -1,4 +1,4 @@
-import { PolicyInputEventType, PolicyOutputEventType } from "../interfaces/index.js";
+import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 
 export interface BlockResult {
     input: any[];

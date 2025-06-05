@@ -268,6 +268,10 @@ export class PolicyEngineService {
         return this.http.post<any>(`${this.url}/${policyId}/dry-run/block`, config);
     }
 
+    public getBlockHistory(policyId: string, tag: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${policyId}/dry-run/block/${tag}/history`);
+    }
+
     public createSavepoint(policyId: string): Observable<any> {
         return this.http.post<any>(`${this.url}/${policyId}/savepoint/create`, null);
     }

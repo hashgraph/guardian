@@ -3186,7 +3186,7 @@ export class PolicyApi {
     }
 
     /**
-     * 
+     * Test block
      */
     @Post('/:policyId/dry-run/block')
     @Auth(Permissions.POLICIES_POLICY_UPDATE,)
@@ -3223,6 +3223,52 @@ export class PolicyApi {
         await engineService.accessPolicy(policyId, owner, 'read');
         try {
             return await engineService.runBlock(policyId, body, owner);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Get history block
+     */
+    @Get('/:policyId/dry-run/block/:tagName/history')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: '.',
+        description: '.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'tagName',
+        type: 'string',
+        required: true,
+        description: 'Block name (Tag)',
+        example: 'block-tag',
+    })
+    @ApiOkResponse({
+        description: '.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getBlockHistory(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('tagName') tagName: string,
+    ): Promise<any[]> {
+        try {
+            const engineService = new PolicyEngine();
+            const owner = new EntityOwner(user);
+            return await engineService.getBlockHistory(policyId, tagName, owner);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

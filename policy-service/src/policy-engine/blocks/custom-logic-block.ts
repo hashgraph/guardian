@@ -216,15 +216,16 @@ export class CustomLogicBlock {
 
                 const sources: IPolicyDocument[] = await this.getSources(user);
 
+                const context = await ref.debugContext({ documents, sources });
 
                 const expression = ref.options.expression || '';
                 const worker = new Worker(path.join(path.dirname(filename), '..', 'helpers', 'custom-logic-worker.js'), {
                     workerData: {
                         execFunc: `${execCode}${expression}`,
                         user,
-                        documents,
                         artifacts,
-                        sources
+                        documents: context.documents,
+                        sources: context.sources
                     },
                 });
 

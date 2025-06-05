@@ -1,4 +1,4 @@
-import { MessageError, MessageResponse, NatsService, PinoLogger, Singleton, Users } from '@guardian/common';
+import { MessageResponse, NatsService, Singleton } from '@guardian/common';
 import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
 import { BlockEngine } from '../policy-engine/block-engine/index.js';
 import { PolicyUser } from '../policy-engine/policy-user.js';
@@ -19,7 +19,7 @@ export class BlockService extends NatsService {
      */
     public replySubject = 'block-service-queue-reply-' + GenerateUUIDv4();
 
-    constructor(private readonly logger: PinoLogger) {
+    constructor() {
         super();
     }
 
