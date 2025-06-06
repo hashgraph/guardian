@@ -19,6 +19,8 @@ import { ValidateIfFieldEqual } from '../../validators/validate-if-field-equal';
 import { ChangePasswordComponent } from '../login/change-password/change-password.component';
 import { UserKeysDialog } from 'src/app/components/user-keys-dialog/user-keys-dialog.component';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { AddStandardRegistryDialogComponent } from './add-standard-registry-dialog/add-standard-registry-dialog.component';
+import { InfoStandardRegistryDialogComponent } from './info-standard-registry-dialog/info-standard-registry-dialog.component';
 
 enum OperationMode {
     None,
@@ -82,6 +84,30 @@ export class UserProfileComponent implements OnInit {
             : this.standardRegistries;
     }
 
+    public get standardRegistriesAsParentList(): IStandardRegistryResponse[] {
+        const res = this.standardRegistries.length > 0 && this.profile?.parents
+            ? this.standardRegistries.filter((sr: IStandardRegistryResponse) => this.profile?.parents?.includes(sr.did))
+            : [];
+        return res;
+    }
+
+    public get potentialStandardRegistryParents(): IStandardRegistryResponse[] {
+        const res = this.standardRegistries.length
+            ? this.standardRegistries.filter((sr: IStandardRegistryResponse) => !this.profile?.parents?.includes(sr.did))
+            : [];
+        return res;
+    }
+
+    public isActiveStandardRegistry(did: string): boolean {
+        return this.profile?.parent === did;
+    }
+
+    public get activeSr() {
+        return this.standardRegistries.length
+            ? this.standardRegistries.find((sr) => sr.did === this.profile?.parent)
+            : undefined;
+    }
+
     public get isFilterButtonDisabled(): boolean {
         return (
             this.filters.policyName.length === 0 &&
@@ -122,7 +148,7 @@ export class UserProfileComponent implements OnInit {
     public remoteDidDocumentForm!: UntypedFormControl;
     public didKeys: any[] = [];
 
-    public tab: 'general' | 'keys' = 'general';
+    public tab: 'general' | 'keys' | 'srs' = 'general';
     public pageIndex: number;
     public pageSize: number;
     public pageCount: number;
@@ -590,6 +616,36 @@ export class UserProfileComponent implements OnInit {
         this.selectStandardRegistry('');
     }
 
+    public selectStandardRegistryShowMore(did: string): void {
+        const sr = this.standardRegistries.find(sr => sr.did === did);
+        const activeSr = this.standardRegistries.length
+            ? this.standardRegistries.find((sr) => sr.did === this.profile?.parent)
+            : undefined;
+        if (sr) {
+            this.dialogService.open(InfoStandardRegistryDialogComponent, {
+                styleClass: 'guardian-dialog',
+                width: '720px',
+                height: '640px',
+                modal: true,
+                showHeader: false,
+                data: {
+                    title: 'Standard Registry Details',
+                    standardRegistry: sr,
+                    activeSr
+                }
+            }).onClose.subscribe((data) => {
+                if (data?.update) {
+                    this.updateActiveSr(data.parent);
+                }
+            });
+        }
+    }
+
+    public updateActiveSr(nextActiveSrDid: string) {
+        this.profile = { ...this.profile, parent: nextActiveSrDid };
+        this.cdRef.detectChanges();
+    }
+
     public selectStandardRegistry(did: string): void {
         this.standardRegistryForm.setValue(did);
     }
@@ -892,6 +948,23 @@ export class UserProfileComponent implements OnInit {
         });
     }
 
+    public addStandardRegistry() {
+        this.dialogService.open(AddStandardRegistryDialogComponent, {
+            styleClass: 'guardian-dialog',
+            width: '720px',
+            height: '504px',
+            modal: true,
+            showHeader: false,
+            data: {
+                title: 'Add Standard Registry',
+                standardRegistries: this.potentialStandardRegistryParents
+            }
+        }).onClose.subscribe((data) => {
+            if (data?.update) {
+                this.loadDate();
+            }
+        });
+    }
     public download() {
         if (this.profile) {
             const name = this.profile.username;
@@ -928,7 +1001,7 @@ export class UserProfileComponent implements OnInit {
     }
 
     public onChangeTab(tab: any) {
-        this.tab = tab.index === 0 ? 'general' : 'keys';
+        this.tab = tab.index === 0 ? 'general' : tab.index === 1 ? 'keys' : 'srs';
         this.pageIndex = 0;
         this.router.navigate([], {
             queryParams: { tab: this.tab }

@@ -5,6 +5,7 @@ export const REQUIRED_PROPS = {
     USER_NAME: 'username',
     DID: 'did',
     PARENT: 'parent',
+    PARENTS: 'parents',
     HEDERA_ACCOUNT_ID: 'hederaAccountId',
     ROLE: 'role',
     POLICY_ROLES: 'policyRoles',

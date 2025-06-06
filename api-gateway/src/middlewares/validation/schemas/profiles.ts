@@ -21,6 +21,11 @@ export class DidKeyDTO {
     key: string;
 }
 
+export class UserDidDTO {
+    @ApiProperty({ type: 'string', nullable: false, required: true })
+    did: string;
+}
+
 export class DidDocumentDTO {
     @ApiProperty({ type: 'string', nullable: false, required: true })
     id: string;
