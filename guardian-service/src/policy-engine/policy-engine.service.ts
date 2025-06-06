@@ -2452,7 +2452,7 @@ export class PolicyEngineService {
                         vps = vps.filter(vp => {
                             return vp.document.verifiableCredential.find(vc =>
                                 vc.credentialSubject.some(subject =>
-                                    tokens.some(tokenId => subject.tokenId == tokenId)
+                                    tokens.some(tokenId => subject.tokenId === tokenId)
                                 )
                             )
                         });
@@ -2461,7 +2461,7 @@ export class PolicyEngineService {
                     } else {
                         results = [...vcs, ...vps];
                     }
-                    
+
                     const csvData: Map<string,string> = new Map();
 
                     for (const data of results) {
