@@ -24,14 +24,10 @@ export class JwtServiceAuthGuard implements CanActivate {
       throw new ForbiddenException(`NATS ACL: "${subject}" not allowed`);
     }
 
-    const rawMsg = ctx.getArgByIndex(1) as { headers?: any };
-    const token = rawMsg?.headers?.get('serviceToken');
+    const rawMsg = ctx.getArgByIndex(1);
+    const token = rawMsg?.getHeaders?.()?.get('serviceToken');
 
-    if (!token) {
-      throw new ForbiddenException('Missing serviceToken header');
-    }
-
-    await JwtServicesValidator.verify(token, subject);
+    await JwtServicesValidator.verify(token);
 
     return true;
   }
