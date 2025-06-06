@@ -34,7 +34,7 @@
 
             <div class="option-buttons">
                 <button 
-                    *ngIf="messageId"
+                    *ngIf="messageId && !dryRun"
                     (click)="onFindInExport()" 
                     class="guardian-button guardian-button-secondary">Export</button>
 

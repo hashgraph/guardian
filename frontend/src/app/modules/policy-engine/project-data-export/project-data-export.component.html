@@ -47,7 +47,6 @@
                             <p-multiSelect
                                 formControlName="schemas"
                                 [options]="schemas"
-                                [(ngModel)]="selectedSchemas"
                                 class="sort-by-dropdown"
                                 optionLabel="name"
                                 optionValue="iri"
@@ -69,7 +68,6 @@
                             <p-multiSelect
                                 formControlName="owners"
                                 [options]="owners"
-                                [(ngModel)]="selectedOwners"
                                 class="sort-by-dropdown"
                                 placeholder="Owner"
                                 appendTo="body"
@@ -90,7 +88,6 @@
                         <p-multiSelect
                             formControlName="tokens"
                             [options]="tokens"
-                            [(ngModel)]="selectedTokens" 
                             class="sort-by-dropdown"
                             placeholder="Tokens"
                             appendTo="body"
