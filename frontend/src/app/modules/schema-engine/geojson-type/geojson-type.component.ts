@@ -2,8 +2,6 @@ import { ChangeDetectorRef, Component, ElementRef, Input, OnChanges, SimpleChang
 import { UntypedFormControl } from '@angular/forms';
 import { GeoJsonSchema, GeoJsonType } from '@guardian/interfaces';
 import ajv from 'ajv';
-import { Subject } from 'rxjs';
-import { MapService } from 'src/app/services/map.service';
 import { ajvSchemaValidator } from 'src/app/validators/ajv-schema.validator';
 import 'ol/ol.css';
 import GeoJSON from 'ol/format/GeoJSON.js';
@@ -259,7 +257,6 @@ export class GeojsonTypeComponent implements OnChanges {
     private lastSelectedCoordinates: any[] = [];
 
     constructor(
-        public mapService: MapService,
         private cdkRef: ChangeDetectorRef
     ) {}
 
@@ -778,7 +775,6 @@ export class GeojsonTypeComponent implements OnChanges {
     }
 
     authFailed() {
-        this.mapService.mapLoaded = false;
         this.cdkRef.detectChanges();
     }
 }
