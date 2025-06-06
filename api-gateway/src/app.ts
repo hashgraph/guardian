@@ -4,7 +4,7 @@ import { PolicyEngine } from './helpers/policy-engine.js';
 import { WebSocketsService } from './api/service/websockets.js';
 import { Users } from './helpers/users.js';
 import { Wallet } from './helpers/wallet.js';
-import { GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, MessageBrokerChannel, OldSecretManager, PinoLogger, SecretManager } from '@guardian/common';
+import { GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, MessageBrokerChannel, OldSecretManager, PinoLogger } from '@guardian/common';
 import { TaskManager } from './helpers/task-manager.js';
 import { AppModule } from './app.module.js';
 import { NestFactory } from '@nestjs/core';
@@ -39,30 +39,9 @@ Promise.all([
 ]).then(async ([app, cn]) => {
     try {
         await new OldSecretManager().setConnection(cn).init();
-        const secretManager = SecretManager.New();
         const jwtServiceName = 'API_GATEWAY_SERVICE';
 
-        JwtServicesValidator.setSecretManager(secretManager)
-        JwtServicesValidator.setServiceName(jwtServiceName)
-
-        let { SERVICE_JWT_PUBLIC_KEY } = await secretManager.getSecrets(`publickey/jwt-service/${jwtServiceName}`);
-        if (!SERVICE_JWT_PUBLIC_KEY) {
-            SERVICE_JWT_PUBLIC_KEY = process.env.SERVICE_JWT_PUBLIC_KEY;
-            if (SERVICE_JWT_PUBLIC_KEY?.length < 8) {
-                throw new Error(`${jwtServiceName} service jwt keys not configured`);
-            }
-            await secretManager.setSecrets(`publickey/jwt-service/${jwtServiceName}`, {SERVICE_JWT_PUBLIC_KEY});
-        }
-
-        let { SERVICE_JWT_SECRET_KEY } = await secretManager.getSecrets(`secretkey/jwt-service/${jwtServiceName}`);
-
-        if (!SERVICE_JWT_SECRET_KEY) {
-            SERVICE_JWT_SECRET_KEY = process.env.SERVICE_JWT_SECRET_KEY;
-            if (SERVICE_JWT_SECRET_KEY?.length < 8) {
-                throw new Error(`${jwtServiceName} service jwt keys not configured`);
-            }
-            await secretManager.setSecrets(`secretkey/jwt-service/${jwtServiceName}`, {SERVICE_JWT_SECRET_KEY});
-        }
+        JwtServicesValidator.setServiceName(jwtServiceName);
 
         app.connectMicroservice<MicroserviceOptions>({
             transport: Transport.NATS,

@@ -171,14 +171,26 @@ To start of auth-service it is necessary to fill in `JWT_PRIVATE_KEY` and `JWT_P
 
 ##### 3.3. Setting up JWT keys for each service in the .env file
 
-To start all services, you must set the `SERVICE_JWT_SECRET_KEY` and `SERVICE_JWT_PUBLIC_KEY` variables in your .env file with a 2048-bit RSA key pair. You can generate a key pair in any convenient way—for example, using the online tool at https://mkjwk.org/ with the following settings:
+To start all services, you need to create a 2048-bit RSA key pair for each service. You can generate a key pair in any convenient way—for example, using the online tool at https://mkjwk.org/ with the following settings:
    - key size: 2048
    - key use: signature
    - algorithm: RS256: RSA
    - key ID: sha256
    - show: yes
 
-These keys are required for the initial startup; afterward, they’ll be stored in your secret manager. It is recommended to generate a separate key pair for each service.
+For each service, you must add its secret key `SERVICE_JWT_SECRET_KEY` and a list of all public keys from every service:
+- `SERVICE_JWT_PUBLIC_KEY_WORKER_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_TOPIC_LISTENER_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_QUEUE_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_POLICY_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_NOTIFICATION_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_LOGGER_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_GUARDIAN_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_AUTH_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_API_GATEWAY_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_AI_SERVICE`
+
+Alternatively, you can create a single key pair and, instead of adding the public keys for each individual service, you can add `SERVICE_JWT_SECRET_KEY_ALL` and `SERVICE_JWT_PUBLIC_KEY_ALL` to use the same keys for all services. However, it is recommended to generate a separate key pair for each service.
 
 #### 4. Now, we have two options to setup IPFS node :  1. Local node 2. IPFS Web3Storage node 3. Filebase Bucket.
 
