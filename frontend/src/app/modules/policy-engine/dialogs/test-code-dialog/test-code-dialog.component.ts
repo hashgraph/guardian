@@ -68,6 +68,7 @@ export class TestCodeDialog {
     public fileValue: any;
     public historyValue: any;
     public history: any[];
+    public tag: string;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -91,6 +92,7 @@ export class TestCodeDialog {
         this.schemas = this.block?.moduleVariables?.schemas || [];
         this.schemaValue = this.fb.group({});
         this.history = [];
+        this.tag = this.block?.tag;
     }
 
     ngOnInit() {

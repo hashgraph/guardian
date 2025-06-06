@@ -6,6 +6,7 @@ import { startMetricsServer } from './utils/metrics.js';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { DEFAULT_MONGO } from '#constants';
+import { BlockTreeGenerator } from './policy-engine/block-tree-generator.js';
 
 export const obj = {};
 
@@ -46,11 +47,9 @@ Promise.all([
     await new Users().setConnection(cn).init();
     await new Wallet().setConnection(cn).init();
 
-    const c = new PolicyContainer(logger);
-    await c.setConnection(cn).init();
-
-    const b = new BlockService();
-    await b.setConnection(cn).init();
+    await (new PolicyContainer(logger)).setConnection(cn).init();
+    await (new BlockService()).setConnection(cn).init();
+    (new BlockTreeGenerator()).setConnection(cn);
 
     const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
     if (Number.isInteger(maxPayload)) {
