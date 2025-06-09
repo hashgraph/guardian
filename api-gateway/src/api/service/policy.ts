@@ -1,11 +1,32 @@
 import { Auth, AuthUser } from '#auth';
 import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache } from '#helpers';
-import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyTestDTO, PolicyValidationDTO, PolicyVersionDTO, RunningDetailsDTO, ServiceUnavailableErrorDTO, TaskDTO } from '#middlewares';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyHelper, TaskAction, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
+import {
+    BlockDTO,
+    DebugBlockConfigDTO,
+    DebugBlockHistoryDTO,
+    DebugBlockResultDTO,
+    Examples,
+    ExportMessageDTO,
+    ImportMessageDTO,
+    InternalServerErrorDTO,
+    MigrationConfigDTO,
+    pageHeader,
+    PoliciesValidationDTO,
+    PolicyCategoryDTO,
+    PolicyDTO,
+    PolicyPreviewDTO,
+    PolicyTestDTO,
+    PolicyValidationDTO,
+    PolicyVersionDTO,
+    RunningDetailsDTO,
+    ServiceUnavailableErrorDTO,
+    TaskDTO
+} from '#middlewares';
 
 async function getOldResult(user: IAuthUser): Promise<PolicyDTO[]> {
     const options: any = {};
@@ -3202,16 +3223,18 @@ export class PolicyApi {
         example: Examples.DB_ID
     })
     @ApiBody({
-        description: 'Block config.'
+        description: 'Block config.',
+        type: DebugBlockConfigDTO
     })
     @ApiOkResponse({
-        description: '.'
+        description: 'Result.',
+        type: DebugBlockResultDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(DebugBlockConfigDTO, DebugBlockResultDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async runBlock(
         @AuthUser() user: IAuthUser,
@@ -3252,19 +3275,21 @@ export class PolicyApi {
         example: 'block-tag',
     })
     @ApiOkResponse({
-        description: '.',
+        description: 'Input data.',
+        isArray: true,
+        type: DebugBlockHistoryDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(DebugBlockHistoryDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getBlockHistory(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
         @Param('tagName') tagName: string,
-    ): Promise<any[]> {
+    ): Promise<DebugBlockHistoryDTO[]> {
         try {
             const engineService = new PolicyEngine();
             const owner = new EntityOwner(user);

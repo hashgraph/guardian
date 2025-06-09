@@ -504,3 +504,125 @@ export class PolicyVersionDTO {
     @IsOptional()
     policyAvailability?: PolicyAvailability;
 }
+
+export class DebugBlockDataDTO {
+    @ApiProperty({
+        description: 'Input event',
+        type: 'string',
+        example: 'RunEvent'
+    })
+    @IsOptional()
+    @IsString()
+    input?: string;
+
+    @ApiProperty({
+        description: 'Output event',
+        type: 'string',
+        example: 'RunEvent'
+    })
+    @IsOptional()
+    @IsString()
+    output?: string;
+
+    @ApiProperty({
+        description: 'Document type',
+        type: 'string',
+        enum: ['schema', 'json', 'file', 'history'],
+        example: 'json'
+    })
+    @IsOptional()
+    @IsString()
+    type?: string;
+
+    @ApiProperty({
+        description: 'Document',
+        oneOf: [
+            { type: 'string' },
+            { type: 'object', additionalProperties: true }
+        ]
+    })
+    @IsOptional()
+    document?: any | string;
+}
+
+export class DebugBlockConfigDTO {
+    @ApiProperty({
+        description: 'Block config',
+        type: 'object',
+        additionalProperties: true,
+    })
+    @IsOptional()
+    @IsObject()
+    block?: any;
+
+    @ApiProperty({
+        description: 'Input data',
+        type: () => DebugBlockDataDTO
+    })
+    @IsOptional()
+    @IsObject()
+    data: DebugBlockDataDTO;
+}
+
+export class DebugBlockResultDTO {
+    @ApiProperty({
+        description: 'Logs',
+        type: 'string',
+        isArray: true,
+    })
+    @IsOptional()
+    @IsArray()
+    logs?: string[];
+
+    @ApiProperty({
+        description: 'Errors',
+        type: 'string',
+        isArray: true,
+    })
+    @IsOptional()
+    @IsArray()
+    errors?: string[];
+
+    @ApiProperty({
+        description: 'Input documents',
+        type: 'array',
+        isArray: true,
+    })
+    input?: any[];
+
+    @ApiProperty({
+        description: 'Output documents',
+        type: 'array',
+        isArray: true,
+    })
+    output?: any[];
+}
+
+export class DebugBlockHistoryDTO {
+    @ApiProperty({
+        type: 'string',
+        description: 'History ID',
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    id?: string;
+
+    @ApiProperty({
+        description: 'Create date',
+        type: 'string',
+        example: Examples.DATE
+    })
+    @IsOptional()
+    @IsString()
+    createDate?: string;
+
+    @ApiProperty({
+        description: 'Input data',
+        type: 'object',
+        additionalProperties: true,
+    })
+    @IsOptional()
+    @IsObject()
+    document?: any;
+}
