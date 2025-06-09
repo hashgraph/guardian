@@ -205,7 +205,13 @@ export class TestCodeDialog {
             case 'schema':
                 return this.schemaValue.value;
             case 'json':
-                return this.jsonValue;
+                try {
+                    const json = JSON.parse(this.jsonValue);
+                    return json;
+                } catch (error) {
+                    console.error(error)
+                    return null;
+                }
             case 'file':
                 return this.fileValue;
             case 'history':

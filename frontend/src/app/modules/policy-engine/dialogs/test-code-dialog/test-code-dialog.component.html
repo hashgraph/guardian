@@ -159,7 +159,7 @@
                 </ng-container>
                 <ng-container *ngIf="dataType==='json'">
                     <div class="guardian-textarea-container">
-                        <textarea pTextarea [value]="jsonValue"></textarea>
+                        <textarea pTextarea [(ngModel)]="jsonValue"></textarea>
                     </div>
                 </ng-container>
                 <ng-container *ngIf="dataType==='file'">
