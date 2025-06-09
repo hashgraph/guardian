@@ -77,6 +77,10 @@ export class PolicyBlock {
         }
     }
 
+    public get policyId(): string | undefined {
+        return this._module?.id;
+    }
+
     public get isModule(): boolean {
         return false;
     }

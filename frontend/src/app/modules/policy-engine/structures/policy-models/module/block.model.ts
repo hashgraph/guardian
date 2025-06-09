@@ -57,6 +57,10 @@ export class PolicyModule extends PolicyBlock {
         return this;
     }
 
+    public get policyId(): string | undefined {
+        return this._module?.policyId;
+    }
+
     constructor(config: IModuleConfig, parent: PolicyBlock | null) {
         super(config, parent);
     }

@@ -1224,9 +1224,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 policyId: this.policyId
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {
-
-        });
+        dialogRef.onClose.subscribe(async (result) => {});
     }
 
     public onCreateModule() {

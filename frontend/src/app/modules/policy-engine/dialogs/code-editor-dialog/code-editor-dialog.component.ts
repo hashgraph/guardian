@@ -1,6 +1,6 @@
-import {AfterContentInit, Component, OnInit, ViewChild} from '@angular/core';
+import { AfterContentInit, Component, OnInit, ViewChild } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import {CodemirrorComponent} from '@ctrl/ngx-codemirror';
+import { CodemirrorComponent } from '@ctrl/ngx-codemirror';
 
 /**
  * Export schema dialog.
@@ -63,6 +63,14 @@ export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
 
     public onSave(): void {
         this.dialogRef.close({
+            type: 'save',
+            expression: this.expression
+        });
+    }
+
+    public onTest(): void {
+        this.dialogRef.close({
+            type: 'test',
             expression: this.expression
         });
     }

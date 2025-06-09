@@ -60,6 +60,10 @@ export class PolicyTool extends PolicyBlock {
         return this.properties.messageId;
     }
 
+    public get policyId(): string | undefined {
+        return this._module?.policyId;
+    }
+
     constructor(config: IModuleConfig, parent: PolicyBlock | null) {
         super(config, parent);
     }
@@ -670,7 +674,7 @@ export class PolicyTool extends PolicyBlock {
     }
 
     public setEnvironments(env: any): void {
-        if(env) {
+        if (env) {
             this._name = env.name;
             this._description = env.description;
             this._localTag = env.localTag;
