@@ -87,7 +87,7 @@ export class TestCodeDialog {
         this.resultStep = 'output';
         this.dataType = 'schema';
         this.expression = this.block?.properties?.expression || '';
-        this.codeMirrorOptions.readOnly = !!this.readonly;
+        // this.codeMirrorOptions.readOnly = !!this.readonly;
         this.jsonValue = '';
         this.schemas = this.block?.moduleVariables?.schemas || [];
         this.schemaValue = this.fb.group({});
