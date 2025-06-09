@@ -70,6 +70,7 @@ export class TestCodeDialog {
     public history: any[];
     public tag: string;
     public blockType: string;
+    public _value: any;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -178,7 +179,9 @@ export class TestCodeDialog {
     }
 
     public onStep(step: string) {
+        this._value = this.getJsonValue();
         this.step = step;
+        this.setValue(this._value);
         if (this.step === 'result' || this.step === 'code') {
             this.loading = true;
             setTimeout(() => {
@@ -220,6 +223,58 @@ export class TestCodeDialog {
                 return this.historyValue;
             default:
                 return null;
+        }
+    }
+
+    private getJsonValue() {
+        switch (this.dataType) {
+            case 'schema':
+                return this.schemaValue.value;
+            case 'json':
+                try {
+                    const json = JSON.parse(this.jsonValue);
+                    return json;
+                } catch (error) {
+                    console.error(error)
+                    return this._value;
+                }
+            case 'file':
+                return this.fileValue;
+            case 'history':
+                return this._value;
+            default:
+                return this._value;
+        }
+    }
+
+    private setValue(value: any) {
+        switch (this.dataType) {
+            case 'schema':
+                this._value = value;
+                this.schemaValue.setValue(value);
+                break;
+            case 'json':
+                this._value = value;
+                try {
+                    this.jsonValue = JSON.stringify(value, null, 4);
+                } catch (error) {
+                    console.error(error)
+                }
+                break;
+            case 'file':
+                this._value = value;
+                try {
+                    this.fileValue = JSON.stringify(value, null, 4);
+                } catch (error) {
+                    console.error(error)
+                }
+                break;
+            case 'history':
+                this._value = value;
+                break;
+            default:
+                this._value = value;
+                break;
         }
     }
 
