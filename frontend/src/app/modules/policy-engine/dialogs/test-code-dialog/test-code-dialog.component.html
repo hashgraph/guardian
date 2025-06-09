@@ -34,16 +34,18 @@
                     </div>
                     <div class="guardian-step-name">Input Data</div>
                 </div>
-                <div class="guardian-step-separator"></div>
-                <div class="guardian-step" [attr.action]="step === 'code'" [attr.highlighted]="step === 'code'" (click)="onStep('code')">
-                    <div class="guardian-step-marker">
-                        <svg-icon
-                            class="icon-btn svg-icon-16"
-                            src="/assets/images/icons/16/right-arrow.svg">
-                        </svg-icon>
+                <ng-container *ngIf="blockType === 'customLogicBlock'">
+                    <div class="guardian-step-separator"></div>
+                    <div class="guardian-step" [attr.action]="step === 'code'" [attr.highlighted]="step === 'code'" (click)="onStep('code')">
+                        <div class="guardian-step-marker">
+                            <svg-icon
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/right-arrow.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">Code</div>
                     </div>
-                    <div class="guardian-step-name">Code</div>
-                </div>
+                </ng-container>
                 <ng-container *ngIf="result">
                     <div class="guardian-step-separator"></div>
                     <div class="guardian-step" [attr.action]="step === 'result'" [attr.highlighted]="step === 'result'" (click)="onStep('result')">
@@ -354,7 +356,10 @@
         <div class="dialog-button">
             <button (click)="onClose()" class="guardian-button guardian-button-secondary">Close</button>
         </div>
-        <div *ngIf="step === 'code'" class="dialog-button">
+        <div *ngIf="step === 'code' && blockType === 'customLogicBlock'" class="dialog-button">
+            <button (click)="onTest()" class="guardian-button guardian-button-primary">Test</button>
+        </div>
+        <div *ngIf="step === 'data' && blockType !== 'customLogicBlock'" class="dialog-button">
             <button (click)="onTest()" class="guardian-button guardian-button-primary">Test</button>
         </div>
     </div>

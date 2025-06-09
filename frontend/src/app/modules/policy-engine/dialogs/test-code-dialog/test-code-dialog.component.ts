@@ -69,6 +69,7 @@ export class TestCodeDialog {
     public historyValue: any;
     public history: any[];
     public tag: string;
+    public blockType: string;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -93,6 +94,7 @@ export class TestCodeDialog {
         this.schemaValue = this.fb.group({});
         this.history = [];
         this.tag = this.block?.tag;
+        this.blockType = this.block?.blockType;
     }
 
     ngOnInit() {

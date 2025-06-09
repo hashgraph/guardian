@@ -555,11 +555,9 @@ export class SearchPolicyDTO {
     owner?: string;
 
     @ApiProperty({
-        type: 'array',
-        isArray: true,
-        required: false,
-        example: 'Tag',
-        additionalProperties: true
+        type: 'object',
+        additionalProperties: true,
+        isArray: true
     })
     @IsOptional()
     @IsArray()

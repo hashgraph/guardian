@@ -16,6 +16,11 @@ enum BlockStyle {
     RootTool = 'RootTool'
 }
 
+const debugMode:string[] = [
+    'customLogicBlock',
+    'calculateContainerBlock'
+];
+
 /**
  * Settings for all blocks.
  */
@@ -455,7 +460,7 @@ export class PolicyTreeComponent implements OnInit {
     }
 
     public isTest(node: FlatBlockNode): boolean {
-        return (node.node?.blockType === 'customLogicBlock');
+        return debugMode.includes(node.node?.blockType);
     }
 
     public isSelect(node: FlatBlockNode) {
@@ -480,13 +485,13 @@ export class PolicyTreeComponent implements OnInit {
     public getMenu(node: FlatBlockNode): string {
         let style = 'block-menu';
         if (this.readonly) {
-            if (node.node?.blockType === 'customLogicBlock') {
+            if (debugMode.includes(node.node?.blockType)) {
                 style += '-1';
             } else {
                 style += '-0';
             }
         } else {
-            if (node.node?.blockType === 'customLogicBlock') {
+            if (debugMode.includes(node.node?.blockType)) {
                 style += '-4';
             } else {
                 style += '-3';

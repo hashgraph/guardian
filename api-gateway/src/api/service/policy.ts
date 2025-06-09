@@ -3210,7 +3210,7 @@ export class PolicyApi {
      * Test block
      */
     @Post('/:policyId/dry-run/block')
-    @Auth(Permissions.POLICIES_POLICY_UPDATE,)
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
         summary: '.',
         description: '.' + ONLY_SR,

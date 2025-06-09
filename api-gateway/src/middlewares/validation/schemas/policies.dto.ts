@@ -261,7 +261,8 @@ export class PolicyDTO {
     userGroup?: any;
 
     @ApiProperty({
-        type: 'array',
+        type: 'object',
+        additionalProperties: true,
         isArray: true,
         example: [{
             uuid: Examples.UUID,
@@ -285,7 +286,8 @@ export class PolicyDTO {
     policyRoles?: string[];
 
     @ApiProperty({
-        type: 'array',
+        type: 'object',
+        additionalProperties: true,
         isArray: true,
         example: [{
             role: 'Registrant',
@@ -301,7 +303,8 @@ export class PolicyDTO {
     policyNavigation?: any[];
 
     @ApiProperty({
-        type: 'array',
+        type: 'object',
+        additionalProperties: true,
         isArray: true,
         example: [{
             name: 'Project',
@@ -316,7 +319,8 @@ export class PolicyDTO {
     policyTopics?: any[];
 
     @ApiProperty({
-        type: 'array',
+        type: 'object',
+        additionalProperties: true,
         isArray: true,
         example: [{
             tokenName: 'Token name',
@@ -336,7 +340,8 @@ export class PolicyDTO {
     policyTokens?: any[];
 
     @ApiProperty({
-        type: 'array',
+        type: 'object',
+        additionalProperties: true,
         isArray: true,
         example: [{
             name: 'Group name',
@@ -393,7 +398,8 @@ export class PolicyPreviewDTO {
     messageId: string;
 
     @ApiProperty({
-        type: 'array',
+        type: 'object',
+        additionalProperties: true,
         isArray: true
     })
     @IsOptional()
@@ -401,7 +407,8 @@ export class PolicyPreviewDTO {
     schemas?: any[];
 
     @ApiProperty({
-        type: 'array',
+        type: 'object',
+        additionalProperties: true,
         isArray: true
     })
     @IsOptional()
@@ -585,14 +592,16 @@ export class DebugBlockResultDTO {
 
     @ApiProperty({
         description: 'Input documents',
-        type: 'array',
+        type: 'object',
+        additionalProperties: true,
         isArray: true,
     })
     input?: any[];
 
     @ApiProperty({
         description: 'Output documents',
-        type: 'array',
+        type: 'object',
+        additionalProperties: true,
         isArray: true,
     })
     output?: any[];
