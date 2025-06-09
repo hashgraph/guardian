@@ -3430,9 +3430,6 @@ export class PolicyApi {
         required: true,
         example: Examples.DB_ID
     })
-    @ApiBody({
-        description: '.'
-    })
     @ApiOkResponse({
         description: '.'
     })

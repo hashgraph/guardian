@@ -451,7 +451,6 @@ export class FilterSearchBlocksDTO {
 
     @ApiProperty({
         type: 'object',
-        required: [],
         additionalProperties: {}
     })
     @IsObject()
