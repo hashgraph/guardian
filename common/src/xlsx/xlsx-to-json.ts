@@ -657,31 +657,36 @@ export class XlsxToJson {
         //'EXACT(G11,"10")'
         //'NOT(EXACT(G11,"10"))'
         const parsFn = (tree: mathjs.MathNode, invert: boolean) => {
+            const fnNode = tree as mathjs.FunctionNode;
+
             if (tree.type === 'FunctionNode') {
-                if (tree.fn.name === 'EXACT' && tree.args.length === 2) {
+                if (fnNode.fn.name === 'EXACT' && fnNode.args.length === 2) {
+                    const firstNode = fnNode.args[0] as mathjs.SymbolNode | mathjs.ConstantNode;
+                    const secondNode = fnNode.args[1] as mathjs.SymbolNode | mathjs.ConstantNode;
+
                     if (
-                        tree.args[0].type === 'SymbolNode' &&
-                        tree.args[1].type === 'ConstantNode'
+                        firstNode.type === 'SymbolNode' &&
+                        secondNode.type === 'ConstantNode'
                     ) {
                         return {
-                            field: tree.args[0].name,
-                            value: tree.args[1].value,
+                            field: firstNode.name,
+                            value: secondNode.value,
                             invert
                         };
                     }
                     if (
-                        tree.args[0].type === 'ConstantNode' &&
-                        tree.args[1].type === 'SymbolNode'
+                        firstNode.type === 'ConstantNode' &&
+                        secondNode.type === 'SymbolNode'
                     ) {
                         return {
-                            field: tree.args[0].value,
-                            value: tree.args[1].name,
+                            field: firstNode.value,
+                            value: secondNode.name,
                             invert
                         };
                     }
                 }
-                if (tree.fn.name === 'NOT' && tree.args.length === 1) {
-                    return parsFn(tree.args[0], true);
+                if (fnNode.fn.name === 'NOT' && fnNode.args.length === 1) {
+                    return parsFn(fnNode.args[0], true);
                 }
             }
             return null;
@@ -691,7 +696,7 @@ export class XlsxToJson {
         if (node) {
             return {
                 type: 'formulae',
-                field: node.field,
+                field: `${node.field}`,
                 value: node.value,
                 invert: node.invert,
             }
