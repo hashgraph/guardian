@@ -53,7 +53,7 @@ Promise.all([
         await new OldSecretManager().setConnection(cn).init();
         const jwtServiceName = 'AUTH_SERVICE';
         const secretManager = SecretManager.New();
-        
+
         JwtServicesValidator.setServiceName(jwtServiceName);
 
         await new WalletService().setConnection(cn).init();
@@ -96,14 +96,14 @@ Promise.all([
                 }
             }
 
-            let {JWT_PRIVATE_KEY, JWT_PUBLIC_KEY} = await secretManager.getSecrets('secretkey/auth');
+            let { JWT_PRIVATE_KEY, JWT_PUBLIC_KEY } = await secretManager.getSecrets('secretkey/auth');
             if (!JWT_PRIVATE_KEY || !JWT_PUBLIC_KEY) {
                 JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
                 JWT_PUBLIC_KEY = process.env.JWT_PUBLIC_KEY;
                 if (JWT_PRIVATE_KEY.length < 8 || JWT_PUBLIC_KEY.length < 8) {
                     return false;
                 }
-                await secretManager.setSecrets('secretkey/auth', {JWT_PRIVATE_KEY, JWT_PUBLIC_KEY});
+                await secretManager.setSecrets('secretkey/auth', { JWT_PRIVATE_KEY, JWT_PUBLIC_KEY });
             }
 
             return true;
@@ -111,9 +111,7 @@ Promise.all([
 
         validator.setValidAction(async () => {
             import(
-                `./helpers/fixtures${
-                    ApplicationEnvironment.demoMode ? '.demo' : ''
-                }.js`
+                `./helpers/fixtures${ApplicationEnvironment.demoMode ? '.demo' : ''}.js`
             ).then(async (module) => {
                 await module.fixtures();
             });
