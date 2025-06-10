@@ -1,31 +1,53 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Injectable, Post, Query } from '@nestjs/common';
 import { ApiTags, ApiBody, ApiOperation, ApiOkResponse, ApiInternalServerErrorResponse, ApiQuery, ApiExtraModels } from '@nestjs/swagger';
 import { IPageParameters, MessageAPI, Permissions } from '@guardian/interfaces';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientProxy, NatsRecordBuilder } from '@nestjs/microservices';
 import {Auth, AuthUser} from '#auth';
 import { InternalServerErrorDTO, LogFilterDTO, LogResultDTO } from '#middlewares';
 import {UseCache, InternalException, UsersService} from '#helpers';
 import axios from 'axios';
-import {IAuthUser, PinoLogger} from '@guardian/common';
+import {IAuthUser, JwtServicesValidator, PinoLogger} from '@guardian/common';
 import process from 'process';
+import { headers } from 'nats';
 
 @Injectable()
 export class LoggerService {
     constructor(@Inject('GUARDIANS') private readonly client: ClientProxy) {
     }
 
+    /**
+     * Send message
+     * @param subject
+     * @param data
+     * @returns Result
+     */
+    private async sendMessage(subject: MessageAPI, data: any) {
+        try {
+            const token = await JwtServicesValidator.sign(subject);
+            const head = headers();
+            head.append('serviceToken', token);
+            const record = new NatsRecordBuilder(data).setHeaders(head).build();
+            const response = await this.client.send(subject, record).toPromise();
+
+            return response.body;
+        } catch (error) {
+            console.log(error, subject);
+            return null;
+        }
+    }
+
     async getLogs(filters?: any, pageParameters?: IPageParameters, sortDirection?: string): Promise<any> {
-        const logs = await this.client.send(MessageAPI.GET_LOGS, {
+        const logs = await this.sendMessage(MessageAPI.GET_LOGS, {
             filters, pageParameters, sortDirection
-        }).toPromise();
-        return logs.body;
+        });
+        return logs;
     }
 
     async getAttributes(userId: string, filters: any, name?: string, existingAttributes: string[] = []): Promise<any> {
-        const logs = await this.client.send(MessageAPI.GET_ATTRIBUTES, {
+        const logs = await this.sendMessage(MessageAPI.GET_ATTRIBUTES, {
             userId, filters, name, existingAttributes
-        }).toPromise();
-        return logs.body;
+        });
+        return logs;
     }
 }
 
