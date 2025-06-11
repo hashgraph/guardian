@@ -1,7 +1,8 @@
-import {Component, EventEmitter, Inject, Input, OnInit, Output, ViewEncapsulation} from '@angular/core';
-import {CodeEditorDialogComponent} from '../../../../dialogs/code-editor-dialog/code-editor-dialog.component';
-import {IModuleVariables, PolicyBlock, SchemaVariables} from '../../../../structures';
-import {DialogService} from 'primeng/dynamicdialog';
+import { Component, EventEmitter, Inject, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
+import { CodeEditorDialogComponent } from '../../../../dialogs/code-editor-dialog/code-editor-dialog.component';
+import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
+import { DialogService } from 'primeng/dynamicdialog';
+import { TestCodeDialog } from 'src/app/modules/policy-engine/dialogs/test-code-dialog/test-code-dialog.component';
 
 @Component({
     selector: 'app-custom-logic-config',
@@ -24,17 +25,17 @@ export class CustomLogicConfigComponent implements OnInit {
     schemas!: SchemaVariables[];
 
     public documentSignerOptions = [
-        {label: 'Policy Owner', value: ''},
-        {label: 'First Document Owner', value: 'owner'},
-        {label: 'First Document Issuer', value: 'issuer'}
+        { label: 'Policy Owner', value: '' },
+        { label: 'First Document Owner', value: 'owner' },
+        { label: 'First Document Issuer', value: 'issuer' }
     ];
 
     public idTypeOptions = [
-        {label: 'None', value: ''},
-        {label: 'DID (New DID)', value: 'DID'},
-        {label: 'UUID (New UUID)', value: 'UUID'},
-        {label: 'Owner (Owner DID)', value: 'OWNER'},
-        {label: 'From First Document Id', value: 'DOCUMENT'}
+        { label: 'None', value: '' },
+        { label: 'DID (New DID)', value: 'DID' },
+        { label: 'UUID (New UUID)', value: 'UUID' },
+        { label: 'Owner (Owner DID)', value: 'OWNER' },
+        { label: 'From First Document Id', value: 'DOCUMENT' }
     ];
 
     constructor(
@@ -73,11 +74,30 @@ export class CustomLogicConfigComponent implements OnInit {
         dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.properties.expression = result.expression;
+                if (result.type === 'test') {
+                    this.onTest();
+                }
             }
         })
     }
 
     onSave() {
         this.item.changed = true;
+    }
+
+    onTest(): void {
+        const dialogRef = this.dialog.open(TestCodeDialog, {
+            showHeader: false,
+            header: 'Code',
+            width: '1200px',
+            styleClass: 'guardian-dialog',
+            data: {
+                block: this.item,
+                folder: this.moduleVariables,
+                readonly: this.readonly,
+                policyId: this.item?.policyId
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => {});
     }
 }

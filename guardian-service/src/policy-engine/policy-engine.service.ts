@@ -1802,6 +1802,48 @@ export class PolicyEngineService {
                 }
             });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.DRY_RUN_BLOCK_HISTORY,
+            async (msg: { policyId: string, tag: string, owner: IOwner }) => {
+                try {
+                    const { policyId, tag, owner } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+                    if (!(policy.status === PolicyStatus.DRAFT || policy.status === PolicyStatus.DRY_RUN)) {
+                        throw new Error(`Policy is not in Dry Run or Draft`);
+                    }
+                    const result = await DatabaseServer.getDebugContexts(policyId, tag);
+                    return new MessageResponse(result);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.DRY_RUN_BLOCK,
+            async (msg: {
+                policyId: string,
+                config: any,
+                owner: IOwner
+            }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { policyId, config, owner } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+                    if (!(policy.status === PolicyStatus.DRAFT || policy.status === PolicyStatus.DRY_RUN)) {
+                        throw new Error(`Policy is not in Dry Run or Draft`);
+                    }
+                    const user = await (new Users()).getUser(owner.username, owner.id);
+                    config.policyId = policyId;
+                    config.user = user;
+                    const blockData = await new GuardiansService()
+                        .sendMessageWithTimeout(PolicyEvents.DRY_RUN_BLOCK, 60 * 1000, config)
+                    return new MessageResponse(blockData);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error, error.code);
+                }
+            });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_SAVEPOINT,
             async (msg: { policyId: string, owner: IOwner }) => {
                 try {
@@ -2232,7 +2274,6 @@ export class PolicyEngineService {
                     const {
                         owner,
                         policyId,
-                        textSearch,
                         schemas,
                         owners,
                         tokens,
@@ -2306,11 +2347,11 @@ export class PolicyEngineService {
                     let vpCount = 0;
 
                     const vcCountLoader = await VCloader.get(vcFilters, null, true);
-                    if (typeof(vcCountLoader) === 'number') {
+                    if (typeof (vcCountLoader) === 'number') {
                         vcCount = vcCountLoader;
                     }
                     const vpCountLoader = await VPloader.get(filters, null, true);
-                    if (typeof(vpCountLoader) === 'number') {
+                    if (typeof (vpCountLoader) === 'number') {
                         vpCount += vpCountLoader;
                     }
 
@@ -2382,7 +2423,6 @@ export class PolicyEngineService {
                         owner,
                         policyId,
                         ids,
-                        textSearch,
                         schemas,
                         owners,
                         tokens,
@@ -2462,7 +2502,7 @@ export class PolicyEngineService {
                         results = [...vcs, ...vps];
                     }
 
-                    const csvData: Map<string,string> = new Map();
+                    const csvData: Map<string, string> = new Map();
 
                     for (const data of results) {
                         const csv = CompareUtils.objectToCsv(data.document);

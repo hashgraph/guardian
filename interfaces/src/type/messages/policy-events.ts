@@ -48,4 +48,5 @@ export enum PolicyEvents {
     RELOAD_REMOTE_ACTION = 'reload-remote-action',
     REQUEST_UPDATE_BROADCAST = 'policy-event-request-update-broadcast',
     RESTORE_UPDATE_BROADCAST = 'policy-event-restore-update-broadcast',
+    DRY_RUN_BLOCK = 'policy-event-dry-run-block',
 }
