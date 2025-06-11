@@ -31,6 +31,7 @@ export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
     public initDialog = false;
     public loading = true;
     public data: any
+    public test: boolean
 
     @ViewChild(CodemirrorComponent)
     codeEditorComponent!: CodemirrorComponent;
@@ -50,6 +51,7 @@ export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
         }
         this.expression = this.data.expression;
         this.codeMirrorOptions.readOnly = this.data.readonly;
+        this.test = this.data.test;
     }
 
     ngAfterContentInit() {

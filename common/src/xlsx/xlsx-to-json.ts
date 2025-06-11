@@ -198,7 +198,7 @@ export class XlsxToJson {
 
             row = table.end.r + 1;
             const fields: SchemaField[] = [];
-            const fieldCache = new Map<string, SchemaField>();
+            const allFields = new Map<string, SchemaField>();
 
             let parents: SchemaField[] = [];
             for (; row < range.e.r; row++) {
@@ -210,7 +210,7 @@ export class XlsxToJson {
                     xlsxResult
                 );
                 if (field) {
-                    fieldCache.set(field.name, field);
+                    allFields.set(field.name, field);
                     parents = parents.slice(0, groupIndex);
                     parents[groupIndex] = field;
                     if (groupIndex === 0) {
@@ -234,7 +234,7 @@ export class XlsxToJson {
                 const condition = XlsxToJson.readCondition(
                     worksheet,
                     table,
-                    fieldCache,
+                    fields,
                     conditionCache,
                     row,
                     xlsxResult
@@ -250,7 +250,7 @@ export class XlsxToJson {
                 XlsxToJson.readExpression(
                     worksheet,
                     table,
-                    fieldCache,
+                    allFields,
                     expressions,
                     row,
                     xlsxResult
@@ -519,7 +519,7 @@ export class XlsxToJson {
     private static readCondition(
         worksheet: Worksheet,
         table: Table,
-        fieldCache: Map<string, SchemaField>,
+        fields: SchemaField[],
         conditionCache: XlsxSchemaConditions[],
         row: number,
         xlsxResult: XlsxResult
@@ -532,7 +532,7 @@ export class XlsxToJson {
         }
 
         const name = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
-        const field = fieldCache.get(name);
+        const field = fields.find((f) => f.name === name);
 
         try {
             //visibility
@@ -572,7 +572,10 @@ export class XlsxToJson {
                     condition.addField(field, result.invert);
                     return null;
                 } else {
-                    const target = fieldCache.get(result.field);
+                    const target = fields.find((f) => f.name === result.field);
+                    if (!target) {
+                        throw new Error('Invalid target');
+                    }
                     const newCondition = new XlsxSchemaConditions(target, result.value);
                     newCondition.addField(field, result.invert);
                     return newCondition;
@@ -595,7 +598,7 @@ export class XlsxToJson {
     private static readExpression(
         worksheet: Worksheet,
         table: Table,
-        fieldCache: Map<string, SchemaField>,
+        allFields: Map<string, SchemaField>,
         expressionCache: XlsxExpressions,
         row: number,
         xlsxResult: XlsxResult
@@ -606,12 +609,12 @@ export class XlsxToJson {
 
         const path = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
         const description = worksheet.getValue<string>(table.getCol(Dictionary.QUESTION), row);
-        const lvl = worksheet.getRow(row).getOutline();
+        const groupIndex = worksheet.getRow(row).getOutline();
         const type = worksheet.getValue<string>(table.getCol(Dictionary.FIELD_TYPE), row);
 
-        expressionCache.addVariable(path, description, lvl);
+        expressionCache.addVariable(path, description, groupIndex);
 
-        const field = fieldCache.get(path);
+        const field = allFields.get(path);
         try {
             if (field && !field.isRef) {
                 if (XlsxToJson.isAutoCalculate(type, field)) {

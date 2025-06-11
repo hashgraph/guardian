@@ -67,6 +67,7 @@ export class CustomLogicConfigComponent implements OnInit {
             width: '80%',
             styleClass: 'guardian-dialog',
             data: {
+                test: true,
                 expression: this.properties.expression,
                 readonly: this.readonly
             }
