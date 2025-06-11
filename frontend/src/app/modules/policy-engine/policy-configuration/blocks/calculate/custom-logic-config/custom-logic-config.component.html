@@ -47,6 +47,22 @@
 
     <tr class="propRow">
         <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Script Language</td>
+        <td class="propRowCell">
+            <p-dropdown
+                [(ngModel)]="properties.selectedScriptLanguage"
+                [disabled]="readonly"
+                (onChange)="onSave()"
+                placeholder="Select script language"
+                [options]="scriptLanguagesOptions"
+                [appendTo]="'body'"
+            >
+            </p-dropdown>
+        </td>
+    </tr>
+
+    <tr class="propRow">
+        <td class="propRowCol"></td>
         <td class="propRowCell cellName">Expression</td>
         <td class="propRowCell">
             <input class="prop-input" type="text" [(ngModel)]="properties.expression" [readonly]="true"
