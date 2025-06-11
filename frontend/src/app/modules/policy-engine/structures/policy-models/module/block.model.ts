@@ -61,6 +61,10 @@ export class PolicyModule extends PolicyBlock {
         return this._module?.policyId;
     }
 
+    public get isDraft(): boolean {
+        return this._module ? this._module.isDraft : true;
+    }
+
     constructor(config: IModuleConfig, parent: PolicyBlock | null) {
         super(config, parent);
     }

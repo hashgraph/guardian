@@ -224,6 +224,16 @@
             </div>
         </div>
         <div *ngIf="step === 'code'" class="step-container code">
+            <div *ngIf="!folder?.isDraft" class="code-warning">
+                <div class="code-warning-body">
+                    <svg-icon
+                        class="svg-icon-16 icon-btn"
+                        src="/assets/images/icons/16/info.svg">
+                    </svg-icon>
+                    <span class="code-warning-header">This is a Dry-Run mode.</span>
+                    <span>Code or policy changes made in this dialogue are not saved automatically. Please make sure to manually save your policy before closing or navigating away.</span>
+                </div>
+            </div>
             <div class="code-help">
                 <div class="code-help-header">
                     <svg-icon

@@ -32,7 +32,7 @@
 
         .guardian-step-container {
             width: 230px;
-            border: 1px solid #E1E7EF;
+            border: 1px solid var(--guardian-border-color, #E1E7EF);
             border-radius: 8px;
             height: fit-content;
             padding: 8px 0px;
@@ -82,7 +82,7 @@
 }
 
 .properties-body {
-    border: 1px solid #E1E7EF;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
     border-radius: 8px;
     overflow: hidden;
     position: relative;
@@ -102,7 +102,7 @@
     bottom: 0;
 
     .output-container {
-        border: 1px solid #E1E7EF;
+        border: 1px solid var(--guardian-border-color, #E1E7EF);
         border-radius: 8px;
         margin-right: 2px;
         position: absolute;
@@ -143,7 +143,7 @@
 }
 
 .schema-body {
-    border: 1px solid #E1E7EF;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
     border-radius: 8px;
     padding: 24px 24px 0px 24px;
 }
@@ -211,18 +211,18 @@
         margin-bottom: 16px;
         padding: 12px 16px;
         margin-right: 2px;
-        border: 1px solid #C4D0E1;
-        background: #F9FAFC;
+        border: 1px solid var(--guardian-disabled-icon, #C4D0E1);
+        background: var(--guardian-grey-background, #F9FAFC);
 
         .code-help-header {
             margin-bottom: 4px;
-            color: #6C7791;
+            color: var(--guardian-grey-color-4, #6C7791);
             font-family: Inter;
             font-weight: 500;
             font-size: 14px;
             line-height: 18px;
             position: relative;
-            padding-left: 20px;
+            padding-left: 24px;
 
             svg-icon {
                 position: absolute;
@@ -230,8 +230,8 @@
                 top: 1px;
 
                 svg {
-                    fill: #6C7791;
-                    color: #6C7791;
+                    fill: var(--guardian-grey-color-4, #6C7791);
+                    color: var(--guardian-grey-color-4, #6C7791);
                 }
             }
         }
@@ -239,7 +239,7 @@
         .code-variable {
             .code-variable-type {
                 padding-right: 8px;
-                color: #E50299;
+                color: var(--formula-function-color, #E50299);
                 font-family: Inter;
                 font-weight: 400;
                 font-size: 14px;
@@ -256,27 +256,62 @@
             }
 
             .code-variable-description {
-                color: #6C7791;
+                color: var(--guardian-grey-color-4, #6C7791);
                 font-family: Inter;
                 font-weight: 400;
                 font-size: 14px;
                 line-height: 18px;
             }
         }
+    }
 
+    .code-warning {
+        display: flex;
+        flex-direction: column;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        padding: 12px 16px 12px 40px;
+        margin-right: 2px;
+        border: 1px solid var(--guardian-warning-color, #DA9B22);
+        background: var(--guardian-warning-background, #FFF6E3);
+        position: relative;
+
+        svg-icon {
+            position: absolute;
+            left: 16px;
+            top: 12px;
+
+            svg {
+                fill: var(--guardian-warning-color, #DA9B22);
+                color: var(--guardian-warning-color, #DA9B22);
+            }
+        }
+
+        .code-warning-header {
+            font-weight: 700;
+            padding-right: 4px;
+        }
+
+        .code-warning-body {
+            color: var(--guardian-warning-color, #DA9B22);
+            font-family: Inter;
+            font-size: 12px;
+            line-height: 14px;
+            letter-spacing: 0%;
+        }
     }
 
     .code-body {
         display: flex;
         flex-direction: column;
-        border: 1px solid #E1E7EF;
+        border: 1px solid var(--guardian-border-color, #E1E7EF);
         border-radius: 8px;
         margin-right: 2px;
     }
 }
 
 .history-body {
-    border: 1px solid #E1E7EF;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
     border-radius: 8px;
     padding: 24px;
     min-height: 200px;
@@ -298,6 +333,6 @@
     }
 
     &:hover {
-        background: #f0f3fc;
+        background: var(--guardian-hover, #F0F3FC);
     }
 }
