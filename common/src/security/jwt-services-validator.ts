@@ -66,7 +66,8 @@ export class JwtServicesValidator {
       }
 
       return serviceName;
-    } catch {
+    } catch (error) {
+      console.log(error, 'error');
       throw new Error('Service validator: invalid or expired token');
     }
   }
