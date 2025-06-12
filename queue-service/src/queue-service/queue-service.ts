@@ -75,9 +75,10 @@ export class QueueService extends NatsService {
         this.getMessages(QueueEvents.GET_TASKS_BY_USER, async (data: {
             user: IAuthUser,
             pageIndex: number,
-            pageSize: number
+            pageSize: number,
+            status: string
         }) => {
-            const { user, pageSize, pageIndex } = data;
+            const { user, pageSize, pageIndex, status } = data;
             const userId = user?.id?.toString();
             const options: any =
                 typeof pageIndex === 'number' && typeof pageSize === 'number'
@@ -93,7 +94,25 @@ export class QueueService extends NatsService {
                             processedTime: OrderDirection.DESC,
                         },
                     };
-            const result = await new DatabaseServer().findAndCount(TaskEntity, { userId }, options);
+            const filters: any = { userId };
+            if (status) {
+                if (status === 'COMPLETE') {
+                    filters.done = true;
+                }
+                if (status === 'ERROR') {
+                    filters.isError = true;
+                }
+                if (status === 'PROCESSING') {
+                    filters.sent = true;
+                    filters.done = false;
+                }
+                if (status === 'IN QUEUE') {
+                    filters.done = false;
+                    filters.isError = false;
+                    filters.sent = false;
+                }
+            }
+            const result = await new DatabaseServer().findAndCount(TaskEntity, filters, options);
             for (const task of result[0]) {
                 if (task.data) {
                     delete task.data;
