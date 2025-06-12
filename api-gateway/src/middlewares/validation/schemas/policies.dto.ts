@@ -261,7 +261,8 @@ export class PolicyDTO {
     userGroup?: any;
 
     @ApiProperty({
-        type: 'array',
+        type: 'object',
+        additionalProperties: true,
         isArray: true,
         example: [{
             uuid: Examples.UUID,
@@ -285,7 +286,8 @@ export class PolicyDTO {
     policyRoles?: string[];
 
     @ApiProperty({
-        type: 'array',
+        type: 'object',
+        additionalProperties: true,
         isArray: true,
         example: [{
             role: 'Registrant',
@@ -301,7 +303,8 @@ export class PolicyDTO {
     policyNavigation?: any[];
 
     @ApiProperty({
-        type: 'array',
+        type: 'object',
+        additionalProperties: true,
         isArray: true,
         example: [{
             name: 'Project',
@@ -316,7 +319,8 @@ export class PolicyDTO {
     policyTopics?: any[];
 
     @ApiProperty({
-        type: 'array',
+        type: 'object',
+        additionalProperties: true,
         isArray: true,
         example: [{
             tokenName: 'Token name',
@@ -336,7 +340,8 @@ export class PolicyDTO {
     policyTokens?: any[];
 
     @ApiProperty({
-        type: 'array',
+        type: 'object',
+        additionalProperties: true,
         isArray: true,
         example: [{
             name: 'Group name',
@@ -393,7 +398,8 @@ export class PolicyPreviewDTO {
     messageId: string;
 
     @ApiProperty({
-        type: 'array',
+        type: 'object',
+        additionalProperties: true,
         isArray: true
     })
     @IsOptional()
@@ -401,7 +407,8 @@ export class PolicyPreviewDTO {
     schemas?: any[];
 
     @ApiProperty({
-        type: 'array',
+        type: 'object',
+        additionalProperties: true,
         isArray: true
     })
     @IsOptional()
@@ -503,4 +510,128 @@ export class PolicyVersionDTO {
     @IsString()
     @IsOptional()
     policyAvailability?: PolicyAvailability;
+}
+
+export class DebugBlockDataDTO {
+    @ApiProperty({
+        description: 'Input event',
+        type: 'string',
+        example: 'RunEvent'
+    })
+    @IsOptional()
+    @IsString()
+    input?: string;
+
+    @ApiProperty({
+        description: 'Output event',
+        type: 'string',
+        example: 'RunEvent'
+    })
+    @IsOptional()
+    @IsString()
+    output?: string;
+
+    @ApiProperty({
+        description: 'Document type',
+        type: 'string',
+        enum: ['schema', 'json', 'file', 'history'],
+        example: 'json'
+    })
+    @IsOptional()
+    @IsString()
+    type?: string;
+
+    @ApiProperty({
+        description: 'Document',
+        oneOf: [
+            { type: 'string' },
+            { type: 'object', additionalProperties: true }
+        ]
+    })
+    @IsOptional()
+    document?: any | string;
+}
+
+export class DebugBlockConfigDTO {
+    @ApiProperty({
+        description: 'Block config',
+        type: 'object',
+        additionalProperties: true,
+    })
+    @IsOptional()
+    @IsObject()
+    block?: any;
+
+    @ApiProperty({
+        description: 'Input data',
+        type: () => DebugBlockDataDTO
+    })
+    @IsOptional()
+    @IsObject()
+    data: DebugBlockDataDTO;
+}
+
+export class DebugBlockResultDTO {
+    @ApiProperty({
+        description: 'Logs',
+        type: 'string',
+        isArray: true,
+    })
+    @IsOptional()
+    @IsArray()
+    logs?: string[];
+
+    @ApiProperty({
+        description: 'Errors',
+        type: 'string',
+        isArray: true,
+    })
+    @IsOptional()
+    @IsArray()
+    errors?: string[];
+
+    @ApiProperty({
+        description: 'Input documents',
+        type: 'object',
+        additionalProperties: true,
+        isArray: true,
+    })
+    input?: any[];
+
+    @ApiProperty({
+        description: 'Output documents',
+        type: 'object',
+        additionalProperties: true,
+        isArray: true,
+    })
+    output?: any[];
+}
+
+export class DebugBlockHistoryDTO {
+    @ApiProperty({
+        type: 'string',
+        description: 'History ID',
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    id?: string;
+
+    @ApiProperty({
+        description: 'Create date',
+        type: 'string',
+        example: Examples.DATE
+    })
+    @IsOptional()
+    @IsString()
+    createDate?: string;
+
+    @ApiProperty({
+        description: 'Input data',
+        type: 'object',
+        additionalProperties: true,
+    })
+    @IsOptional()
+    @IsObject()
+    document?: any;
 }
