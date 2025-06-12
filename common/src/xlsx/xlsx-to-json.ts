@@ -1,6 +1,6 @@
 import { Workbook, Worksheet } from './models/workbook.js';
 import { Dictionary, FieldTypes, IFieldTypes } from './models/dictionary.js';
-import { xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPresetValue, xlsxToUnit } from './models/value-converters.js';
+import { xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPresetValue, xlsxToUnit, xlsxToVisibility } from './models/value-converters.js';
 import { Table } from './models/table.js';
 import * as mathjs from 'mathjs';
 import { XlsxSchemaConditions } from './models/schema-condition.js';
@@ -340,13 +340,14 @@ export class XlsxToJson {
             const description = worksheet.getValue<string>(table.getCol(Dictionary.QUESTION), row);
             const required = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.REQUIRED_FIELD), row));
             const isArray = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.ALLOW_MULTIPLE_ANSWERS), row));
-            const visibility = worksheet.getValue<string>(table.getCol(Dictionary.VISIBILITY), row);
+            const visibility = xlsxToVisibility(worksheet.getValue<string>(table.getCol(Dictionary.VISIBILITY), row));
 
             field.name = name;
             field.description = description;
             field.required = required;
             field.isArray = isArray;
             field.hidden = visibility === 'Hidden';
+            field.autocalculate = visibility === 'Auto';
 
             let typeError = false;
             const fieldType = FieldTypes.findByName(type);
@@ -387,7 +388,7 @@ export class XlsxToJson {
             }
 
             if (!typeError && !XlsxToJson.isAutoCalculate(type, field)) {
-                let parseType = (val) => val;
+                let parseType = (val: any) => val;
                 if (fieldType) {
                     parseType = fieldType.pars.bind(fieldType);
                 }
@@ -504,6 +505,9 @@ export class XlsxToJson {
                 if (fieldType.name === 'Pattern') {
                     field.pattern = param;
                 }
+                if (field.autocalculate) {
+                    field.expression = param;
+                }
             }
         } catch (error) {
             xlsxResult.addError({
@@ -546,7 +550,7 @@ export class XlsxToJson {
                 if (cell.isFormulae()) {
                     result = XlsxToJson.parseCondition(cell.getFormulae());
                 } else if (cell.isValue()) {
-                    result = XlsxToJson.parseCondition(xlsxToBoolean(cell.getValue<string>()));
+                    result = XlsxToJson.parseCondition(xlsxToVisibility(cell.getValue<string>()));
                 }
             } catch (error) {
                 xlsxResult.addError({
@@ -638,7 +642,7 @@ export class XlsxToJson {
         }
     }
 
-    private static parseCondition(formulae: string | boolean): {
+    private static parseCondition(formulae: string): {
         type: 'const' | 'formulae',
         value?: any,
         field?: string,
@@ -649,12 +653,19 @@ export class XlsxToJson {
         }
         //'TRUE'
         //'FALSE'
-        if (formulae === 'TRUE' || formulae === true) {
+        if (formulae === 'TRUE') {
             return { type: 'const', value: true }
         }
-        if (formulae === 'FALSE' || formulae === false) {
+        if (formulae === 'FALSE') {
             return { type: 'const', value: false }
         }
+        if (formulae === 'Hidden') {
+            return { type: 'const', value: false }
+        }
+        if (formulae === 'Auto') {
+            return { type: 'const', value: true }
+        }
+
         //'EXACT(G11,10)'
         //'NOT(EXACT(G11,10))'
         //'EXACT(G11,"10")'
