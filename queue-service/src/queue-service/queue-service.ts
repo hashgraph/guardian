@@ -53,6 +53,8 @@ export class QueueService extends NatsService {
                     task.sent = false;
                     task.attempt = task.attempt + 1;
                 } else {
+                    task.isError = true;
+                    task.errorReason = data.error;
                     if (!task.userId) {
                         await this.completeTaskInQueue(data.id, data.data, data.error);
                     }
