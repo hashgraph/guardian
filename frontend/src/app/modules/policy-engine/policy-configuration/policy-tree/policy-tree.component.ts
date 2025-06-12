@@ -144,6 +144,28 @@ export class PolicyTreeComponent implements OnInit {
         this.init.emit(this);
     }
 
+    ngOnDestroy(): void {
+        this.canvas?.destroy();
+        this.canvas = undefined as any;
+
+        this.tooltipRef?.nativeElement.remove();
+        clearTimeout(this.tooltipTimeout);
+
+        clearTimeout(this._resizeTimer);
+
+        this.data          = [];
+        this.selectedNode  = undefined;
+        this.collapsedMap.clear();
+
+        if (this.dropListConnector) {
+            this.dropListConnector.body = undefined;
+            this.dropListConnector.menu = undefined;
+            this.dropListConnector = null as any;
+        }
+
+        this.init.complete();
+    }
+
     ngAfterViewInit(): void {
         this.tooltip = this.tooltipRef?.nativeElement;
         this.canvas = new EventCanvas(

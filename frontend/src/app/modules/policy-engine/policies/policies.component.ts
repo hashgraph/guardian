@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
+import {ChangeDetectorRef, Component, Inject, OnInit, ViewChild} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
     ContractType,
@@ -24,13 +24,13 @@ import { InformService } from 'src/app/services/inform.service';
 import { MultiPolicyDialogComponent } from '../dialogs/multi-policy-dialog/multi-policy-dialog.component';
 import { ComparePolicyDialog } from '../dialogs/compare-policy-dialog/compare-policy-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
-import { forkJoin, Subscription } from 'rxjs';
+import {forkJoin, Subject, Subscription} from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { SearchPolicyDialog } from '../../analytics/search-policy-dialog/search-policy-dialog.component';
-import { DialogService } from 'primeng/dynamicdialog';
+import {DialogService, DynamicDialogRef} from 'primeng/dynamicdialog';
 import { SuggestionsConfigurationComponent } from '../../../views/suggestions-configuration/suggestions-configuration.component';
 import { DeletePolicyDialogComponent } from '../dialogs/delete-policy-dialog/delete-policy-dialog.component';
 import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
@@ -47,6 +47,8 @@ import {
     ImportEntityType
 } from '../../common/import-entity-dialog/import-entity-dialog.component';
 import { SearchExternalPolicyDialog } from '../dialogs/search-external-policy-dialog/search-external-policy-dialog.component';
+import {OverlayPanel} from 'primeng/overlaypanel';
+import {takeUntil} from 'rxjs/operators';
 
 class MenuButton {
     public readonly visible: boolean;
@@ -582,6 +584,11 @@ export class PoliciesComponent implements OnInit {
 
     private subscription = new Subscription();
 
+    @ViewChild('policyMenu') policyMenu?: OverlayPanel;
+    @ViewChild('policySubMenu') policySubMenu?: OverlayPanel;
+
+    private _destroy$ = new Subject<void>();
+
     constructor(
         public tagsService: TagsService,
         private profileService: ProfileService,
@@ -599,6 +606,7 @@ export class PoliciesComponent implements OnInit {
         private wsService: WebSocketService,
         @Inject(CONFIGURATION_ERRORS)
         private _configurationErrors: Map<string, any>,
+        private cdRef: ChangeDetectorRef,
     ) {
         this.policies = null;
         this.pageIndex = 0;
@@ -614,7 +622,7 @@ export class PoliciesComponent implements OnInit {
         );
         this.tab = this.route.snapshot.queryParams['tab'] || LocationType.LOCAL;
         this.subscription.add(
-            this.route.queryParams.subscribe((queryParams) => {
+            this.route.queryParams.pipe(takeUntil(this._destroy$)).subscribe((queryParams) => {
                 this.tab = this.route.snapshot.queryParams['tab'] || LocationType.LOCAL;
             })
         );
@@ -623,8 +631,56 @@ export class PoliciesComponent implements OnInit {
         this.handleTagsUpdate();
     }
 
+    private destroyOverlayPanel(panel?: OverlayPanel): void {
+        const container = panel?.container;
+        if (container && container.parentNode) {
+            try {
+                container.parentNode.removeChild(container);
+            } catch (e) {
+                console.warn('Failed to remove overlay panel:', e);
+            }
+        }
+    }
+
     ngOnDestroy(): void {
         this.subscription.unsubscribe();
+
+        this.policyMenu?.hide();
+        this.policySubMenu?.hide();
+
+        setTimeout(() => {
+            requestAnimationFrame(() => {
+                this.destroyOverlayPanel(this.policyMenu);
+                this.destroyOverlayPanel(this.policySubMenu);
+            });
+
+            const selectors = [
+                '.p-dropdown-panel',
+                '.p-dialog',
+                '.cdk-overlay-container',
+                '.p-tooltip',
+                '.p-frozen-view',
+                '.p-unfrozen-view'
+            ];
+
+            selectors.forEach(selector => {
+                document.querySelectorAll(selector).forEach(el => {
+                    try {
+                        el.remove();
+                    } catch (e) {
+                        console.warn(`Failed to remove element: ${selector}`, e);
+                    }
+                });
+            });
+        }, 500);
+
+        this.policyMenu = undefined;
+        this.policySubMenu = undefined;
+
+        this._destroy$.next();
+        this._destroy$.complete();
+
+        this.cdRef.detach()
     }
 
     private loadPolicy() {
@@ -634,7 +690,7 @@ export class PoliciesComponent implements OnInit {
         forkJoin([
             this.profileService.getProfile(),
             this.tagsService.getPublishedSchemas(),
-        ]).subscribe((value) => {
+        ]).pipe(takeUntil(this._destroy$)).subscribe((value) => {
             const profile: IUser | null = value[0];
             const tagSchemas: any[] = value[1] || [];
             this.isConfirmed = !!(profile && profile.confirmed);
@@ -661,7 +717,7 @@ export class PoliciesComponent implements OnInit {
         this.tagOptions = [];
         this.policyEngineService
             .page(this.pageIndex, this.pageSize, this.tab)
-            .subscribe((policiesResponse) => {
+            .pipe(takeUntil(this._destroy$)).subscribe((policiesResponse) => {
                 this.columns = columns
                     .filter((c) => c.permissions(this.user, this.tab))
                     .map((c) => c.id);
@@ -688,7 +744,7 @@ export class PoliciesComponent implements OnInit {
             }, 500);
         } else {
             const ids = policies.map((e) => e.id);
-            this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
+            this.tagsService.search(this.tagEntity, ids).pipe(takeUntil(this._destroy$)).subscribe((data) => {
                 for (const policy of policies) {
                     (policy as any)._tags = data[policy.id];
                     data[policy.id]?.tags.forEach((tag: any) => {
@@ -724,7 +780,7 @@ export class PoliciesComponent implements OnInit {
 
     private dryRun(element: any) {
         this.loading = true;
-        this.policyEngineService.dryRun(element.id).subscribe(
+        this.policyEngineService.dryRun(element.id).pipe(takeUntil(this._destroy$)).subscribe(
             (data: any) => {
                 const { policies, isValid, errors } = data;
                 if (!isValid) {
@@ -766,7 +822,7 @@ export class PoliciesComponent implements OnInit {
 
     private draft(element: any) {
         this.loading = true;
-        this.policyEngineService.draft(element.id).subscribe(
+        this.policyEngineService.draft(element.id).pipe(takeUntil(this._destroy$)).subscribe(
             (data: any) => {
                 const { policies, isValid, errors } = data;
                 this.loadAllPolicy();
@@ -788,7 +844,7 @@ export class PoliciesComponent implements OnInit {
                 policy: item
             }
         });
-        dialogRef.onClose.subscribe(async (options) => {
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => {
             if (options) {
                 this.publish(element, options);
             }
@@ -800,7 +856,7 @@ export class PoliciesComponent implements OnInit {
         options: { policyVersion: string, policyAvailability: PolicyAvailability }
     ) {
         this.loading = true;
-        this.policyEngineService.pushPublish(element.id, options).subscribe(
+        this.policyEngineService.pushPublish(element.id, options).pipe(takeUntil(this._destroy$)).subscribe(
             (result) => {
                 const { taskId, expectation } = result;
                 this.router.navigate(['task', taskId], {
@@ -826,13 +882,13 @@ export class PoliciesComponent implements OnInit {
                     : 'Are you sure want to delete policy?',
             },
         });
-        dialogRef.onClose.subscribe((result) => {
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
             if (!result) {
                 return;
             }
 
             this.loading = true;
-            this.policyEngineService.pushDelete(policy?.id).subscribe(
+            this.policyEngineService.pushDelete(policy?.id).pipe(takeUntil(this._destroy$)).subscribe(
                 (result) => {
                     const { taskId, expectation } = result;
                     this.router.navigate(['task', taskId], {
@@ -851,7 +907,7 @@ export class PoliciesComponent implements OnInit {
     public exportPolicy(policy?: any) {
         this.policyEngineService
             .exportInMessage(policy?.id)
-            .subscribe((exportedPolicy) => {
+            .pipe(takeUntil(this._destroy$)).subscribe((exportedPolicy) => {
                 this.dialogService.open(ExportPolicyDialog, {
                     showHeader: false,
                     header: 'Export Policy',
@@ -867,7 +923,7 @@ export class PoliciesComponent implements OnInit {
     public exportPolicyData(policy: any) {
         this.policyEngineService
             .exportPolicyData(policy?.id)
-            .subscribe((response) => {
+            .pipe(takeUntil(this._destroy$)).subscribe((response) => {
                 const fileName =
                     response.headers
                         ?.get('Content-Disposition')
@@ -885,7 +941,7 @@ export class PoliciesComponent implements OnInit {
     public exportVirtualKeys(policy?: any) {
         this.policyEngineService
             .exportVirtualKeys(policy?.id)
-            .subscribe((response) => {
+            .pipe(takeUntil(this._destroy$)).subscribe((response) => {
                 const fileName =
                     response.headers
                         ?.get('Content-Disposition')
@@ -909,7 +965,7 @@ export class PoliciesComponent implements OnInit {
             this.loading = true;
             this.policyEngineService
                 .importVirtualKeys(policy?.id, input.files![0])
-                .subscribe({
+                .pipe(takeUntil(this._destroy$)).subscribe({
                     complete: () => this.loading = false
                 });
         };
@@ -935,7 +991,7 @@ export class PoliciesComponent implements OnInit {
                 timeStamp: messageId
             }
         });
-        dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importPolicyDetails(result);
             }
@@ -956,7 +1012,7 @@ export class PoliciesComponent implements OnInit {
                 policies: distinctPolicies,
             },
         });
-        dialogRef.onClose.subscribe(async (result) => {
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (result) {
                 if (result.messageId) {
                     this.importPolicy(result.messageId);
@@ -971,7 +1027,7 @@ export class PoliciesComponent implements OnInit {
                 if (type == 'message') {
                     this.policyEngineService
                         .pushImportByMessage(data, versionOfTopicId, { tools }, demo)
-                        .subscribe((result) => {
+                        .pipe(takeUntil(this._destroy$)).subscribe((result) => {
                             const { taskId, expectation } = result;
                             this.router.navigate(['task', taskId], {
                                 queryParams: {
@@ -985,7 +1041,7 @@ export class PoliciesComponent implements OnInit {
                 } else if (type == 'file') {
                     this.policyEngineService
                         .pushImportByFile(data, versionOfTopicId, { tools }, demo)
-                        .subscribe((result) => {
+                        .pipe(takeUntil(this._destroy$)).subscribe((result) => {
                             const { taskId, expectation } = result;
                             this.router.navigate(['task', taskId], {
                                 queryParams: {
@@ -1013,11 +1069,11 @@ export class PoliciesComponent implements OnInit {
                 xlsx: xlsx,
             },
         });
-        dialogRef.onClose.subscribe(async (result) => {
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (result) {
                 this.policyEngineService
                     .pushImportByXlsx(data, policyId)
-                    .subscribe(
+                    .pipe(takeUntil(this._destroy$)).subscribe(
                         (result) => {
                             const { taskId, expectation } = result;
                             this.router.navigate(['task', taskId], {
@@ -1037,7 +1093,7 @@ export class PoliciesComponent implements OnInit {
     public exportToExcel(policy?: any) {
         this.policyEngineService
             .exportToExcel(policy?.id)
-            .subscribe((fileBuffer) => {
+            .pipe(takeUntil(this._destroy$)).subscribe((fileBuffer) => {
                 let downloadLink = document.createElement('a');
                 downloadLink.href = window.URL.createObjectURL(
                     new Blob([new Uint8Array(fileBuffer)], {
@@ -1069,7 +1125,7 @@ export class PoliciesComponent implements OnInit {
                 type: ImportEntityType.Xlsx,
             }
         });
-        dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importExcelDetails(result, policy?.id);
             }
@@ -1114,18 +1170,21 @@ export class PoliciesComponent implements OnInit {
 
     private onPublishedAction(event: any, element: any) {
         if (event.value.id === 'Discontinue') {
-            const dialogRef = this.dialogService.open(DiscontinuePolicy, {
+            let dialogRef: DynamicDialogRef<DiscontinuePolicy> | undefined = this.dialogService.open(DiscontinuePolicy, {
                 header: 'Discontinue policy',
                 width: 'auto',
             });
-            dialogRef.onClose.subscribe((result) => {
+            dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
                 if (!result) {
                     return;
                 }
                 this.loading = true;
-                this.policyEngineService.discontinue(element.id, result).subscribe((policies) => {
+                this.policyEngineService.discontinue(element.id, result).pipe(takeUntil(this._destroy$)).subscribe((policies) => {
                     this.loadAllPolicy();
                 }, () => this.loading = false);
+
+                dialogRef?.close();
+                dialogRef = undefined;
             });
         }
 
@@ -1162,7 +1221,7 @@ export class PoliciesComponent implements OnInit {
             }
         });
 
-        dialogRef.onClose.subscribe(async (result) => {
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (result) {
                 this.importPolicyDetails(result);
             }
@@ -1181,7 +1240,7 @@ export class PoliciesComponent implements OnInit {
                 policy: item
             },
         });
-        dialogRef.onClose.subscribe(async (result) => {
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (result) {
                 const items = btoa(JSON.stringify({
                     parent: null,
@@ -1200,7 +1259,7 @@ export class PoliciesComponent implements OnInit {
     public migrateData(policy?: any) {
         const item = this.policies?.find((e) => e.id === policy?.id);
         this.loading = true;
-        this.contractSerivce.getContracts({ type: ContractType.RETIRE }).subscribe({
+        this.contractSerivce.getContracts({ type: ContractType.RETIRE }).pipe(takeUntil(this._destroy$)).subscribe({
             next: (res) => {
                 const dialogRef = this.dialogService.open(MigrateData, {
                     header: 'Migrate Data',
@@ -1212,11 +1271,11 @@ export class PoliciesComponent implements OnInit {
                         contracts: res.body
                     },
                 });
-                dialogRef.onClose.subscribe(async (result) => {
+                dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
                     if (!result) {
                         return;
                     }
-                    this.policyEngineService.migrateDataAsync(result).subscribe(
+                    this.policyEngineService.migrateDataAsync(result).pipe(takeUntil(this._destroy$)).subscribe(
                         (result) => {
                             const { taskId } = result;
                             this.router.navigate(['task', taskId], {
@@ -1243,10 +1302,10 @@ export class PoliciesComponent implements OnInit {
             width: '650px',
             styleClass: 'guardian-dialog',
         });
-        dialogRef.onClose.subscribe(async (result) => {
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-                this.policyEngineService.pushCreate(result).subscribe(
+                this.policyEngineService.pushCreate(result).pipe(takeUntil(this._destroy$)).subscribe(
                     (result) => {
                         const { taskId, expectation } = result;
                         this.router.navigate(['/task', taskId]);
@@ -1266,7 +1325,7 @@ export class PoliciesComponent implements OnInit {
             this.schemaService.getSchemasByPage(),
             this.policyEngineService.all(),
             this.policyEngineService.getPolicyCategories()
-        ]).subscribe(
+        ]).pipe(takeUntil(this._destroy$)).subscribe(
             (result) => {
                 const tokens = result[0].map((token) => new Token(token));
                 const schemas = result[1].body?.map((schema) => new Schema(schema)) ?? [];
@@ -1281,7 +1340,7 @@ export class PoliciesComponent implements OnInit {
                                 wizardConfig: value.config,
                                 saveState: value.saveState,
                             })
-                            .subscribe(
+                            .pipe(takeUntil(this._destroy$)).subscribe(
                                 (result) => {
                                     const { taskId, expectation } = result;
                                     this.router.navigate(['task', taskId], {
@@ -1353,7 +1412,7 @@ export class PoliciesComponent implements OnInit {
     }
 
     private handleTagsUpdate(): void {
-        this.tagsService.tagsUpdated$.subscribe({
+        this.tagsService.tagsUpdated$.pipe(takeUntil(this._destroy$)).subscribe({
             next: () => this.loadAllPolicy(),
         });
     }
@@ -1382,7 +1441,7 @@ export class PoliciesComponent implements OnInit {
                 policy: item
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (result) {
                 const items = btoa(JSON.stringify({
                     parent: null,
@@ -1406,7 +1465,7 @@ export class PoliciesComponent implements OnInit {
                 closable: true,
                 header: 'Suggestions',
             })
-            .onClose.subscribe();
+            .onClose.pipe(takeUntil(this._destroy$)).subscribe();
     }
 
     public onChangeStatus(event: any, policy: any): void {
@@ -1439,11 +1498,11 @@ export class PoliciesComponent implements OnInit {
                 type: 'File'
             }
         });
-        dialogRef.onClose.subscribe(async (files) => {
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (files) => {
             if (files) {
                 this.loading = true;
                 this.policyEngineService.addPolicyTest(item.id, files)
-                    .subscribe((result) => {
+                    .pipe(takeUntil(this._destroy$)).subscribe((result) => {
                         this.loadAllPolicy();
                     }, (e) => {
                         this.loading = false;
@@ -1463,8 +1522,7 @@ export class PoliciesComponent implements OnInit {
                 policy: item
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {
-        });
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {});
     }
 
     public onRunTest($event: any) {
@@ -1472,7 +1530,7 @@ export class PoliciesComponent implements OnInit {
         this.loading = true;
         this.policyEngineService
             .runTest(policy.id, test.id)
-            .subscribe((result) => {
+            .pipe(takeUntil(this._destroy$)).subscribe((result) => {
                 this.loadAllPolicy();
             }, (e) => {
                 this.loading = false;
@@ -1518,7 +1576,7 @@ export class PoliciesComponent implements OnInit {
             width: '720px',
             styleClass: 'guardian-dialog',
         });
-        dialogRef.onClose.subscribe(async (result: any | null) => {
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result: any | null) => {
             if (result) {
                 // this.loadAllPolicy();
                 this.router.navigate(['/external-policies']);

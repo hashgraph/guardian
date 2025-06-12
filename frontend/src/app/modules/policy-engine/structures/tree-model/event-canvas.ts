@@ -78,6 +78,11 @@ export class EventCanvas {
         if (!this.valid) {
             return;
         }
+
+        if (this.lastImage?.data) {
+            this.lastImage.data = null as any;
+        }
+
         this.maxWidth = 0;
         for (let index = 0; index < renderLine.length; index++) {
             const line = renderLine[index];
@@ -236,5 +241,24 @@ export class EventCanvas {
             this.render();
         }
         return this.lastImage.lines[index - 1];
+    }
+
+    destroy(): void {
+        if (!this.valid || !this.canvas) { return; }
+
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.canvas.width = this.canvas.height = 0;
+
+        if(this.lastImage) {
+            (this.lastImage as any).data = null;
+            this.lastImage = null as any;
+        }
+
+        this.canvas.remove();
+
+        (this as any).context   = null;
+        (this as any).canvas    = null;
+        (this as any).parent    = null;
+        (this as any).container = null;
     }
 }
