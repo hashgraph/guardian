@@ -14,7 +14,6 @@ import { MaterialModule } from '../../../common/material.module';
 import { CommonComponentsModule } from '../../../common/common-components.module';
 import { ArtifactEngineModule } from '../../../artifact-engine/artifact-engine.module';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
-import { GoogleMapsModule } from '@angular/google-maps';
 
 NgModule({
     declarations: [
@@ -31,7 +30,6 @@ NgModule({
         CommonComponentsModule,
         CodemirrorModule,
         ArtifactEngineModule,
-        GoogleMapsModule,
         MaterialModule,
         NgxMatDatetimePickerModule,
         NgxMatNativeDateModule,

@@ -34,7 +34,8 @@
         "primeicons": "^7.0.0",
         "primeng": "17.18.10",
         "rxjs": "~7.8.1",
-        "zone.js": "~0.14.10"
+        "zone.js": "~0.14.10",
+        "ol": "^9.2.2"
     },
     "devDependencies": {
         "@angular-devkit/build-angular": "^18.2.12",
@@ -44,6 +45,7 @@
         "@types/jasmine": "~3.6.0",
         "@types/js-yaml": "^4.0.5",
         "@types/node": "^12.11.1",
+        "@types/mapbox-gl": "^3.1.0",
         "jasmine-core": "~3.9.0",
         "karma": "~6.3.0",
         "karma-chrome-launcher": "~3.1.0",

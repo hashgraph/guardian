@@ -94,12 +94,6 @@ export class PermissionsGuard {
         const permissions: string[] | undefined = route.data.permissions;
         const defaultPage: string | undefined = route.data.defaultPage;
         return this.auth.sessions().pipe(
-            switchMap((user) => {
-                return this.mapSevice.loadMap().pipe(
-                    switchMap(() => of(user)),
-                    catchError(() => of(user))
-                );
-            }),
             map((user: IUser | null) => {
                 if (user) {
                     if (roles) {

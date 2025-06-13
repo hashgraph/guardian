@@ -2195,13 +2195,6 @@ export class Guardians extends NatsService {
     }
 
     /**
-     * Get map api key
-     */
-    public async getMapApiKey(user: IAuthUser): Promise<string> {
-        return await this.sendMessage<string>(MessageAPI.GET_MAP_API_KEY, { user });
-    }
-
-    /**
      * Get sentinel api key
      */
     public async getSentinelApiKey(user: IAuthUser): Promise<string> {
