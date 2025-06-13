@@ -22,7 +22,9 @@ export class RemoteDidLoader extends DocumentLoader {
                     payload: { userId: null }
                 },
             },
-            10
+            {
+                priority: 10
+            }
         );
         const didMessage = messages
             .map(m => {

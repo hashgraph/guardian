@@ -112,7 +112,8 @@ export class PolicyLoader {
             .getMessage<PolicyMessage>({
                 messageId,
                 loadIPFS: true,
-                userId: userAccount.id.toString()
+                userId: userAccount.id.toString(),
+                interception: userAccount.id.toString()
             });
         if (message.type !== MessageType.InstancePolicy) {
             throw new Error('Invalid Message Type');

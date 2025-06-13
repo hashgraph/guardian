@@ -118,6 +118,10 @@ export interface ITask {
      */
     attempt?: number
 
+    /**
+     * UserId
+     */
+    interception?: string | null | undefined;
 }
 
 /**
@@ -159,4 +163,30 @@ export interface IActiveTask {
      * @param data
      */
     callback: (data: any, error: any, isTimeoutError?: boolean) => void;
+}
+
+/**
+ * Task options
+ */
+export interface ITaskOptions {
+    /**
+     * Default value = 10
+     */
+    priority?: number,
+    /**
+     * Default value = 0
+     */
+    attempts?: number,
+    /**
+     * Default value = true
+     */
+    registerCallback?: boolean,
+    /**
+     * Default value = null
+     */
+    interception?: string | boolean,
+    /**
+     * Default value = null
+     */
+    userId?: string,
 }

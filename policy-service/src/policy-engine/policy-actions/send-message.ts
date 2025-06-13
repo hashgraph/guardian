@@ -27,7 +27,12 @@ export class SendMessage {
         });
         const messageResult = await messageServer
             .setTopicObject(topic)
-            .sendMessage(message, updateIpfs, null, userId);
+            .sendMessage(message, {
+                sendToIPFS: updateIpfs,
+                memo: null,
+                userId,
+                interception: null
+            });
 
         return messageResult;
     }
@@ -84,7 +89,12 @@ export class SendMessage {
         });
         const messageResult = await messageServer
             .setTopicObject(topicConfig)
-            .sendMessage(message, updateIpfs, null, userId);
+            .sendMessage(message, {
+                sendToIPFS: updateIpfs,
+                memo: null,
+                userId,
+                interception: null
+            });
 
         return {
             type: PolicyActionType.SendMessage,
@@ -122,7 +132,8 @@ export class SendMessage {
                     messageId,
                     loadIPFS: updateIpfs,
                     encryptKey: userMessageKey,
-                    userId
+                    userId,
+                    interception: null
                 });
 
             data.message = message;

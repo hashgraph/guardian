@@ -119,13 +119,25 @@ export abstract class TypedMint {
      * Mint tokens
      * @param args Arguments
      */
-    protected abstract mintTokens(...args): Promise<void>;
+    protected abstract mintTokens(
+        notifier: NotificationHelper,
+        options: {
+            interception?: string | boolean;
+            userId?: string;
+        }
+    ): Promise<void>;
 
     /**
      * Transfer tokens
      * @param args Arguments
      */
-    protected abstract transferTokens(...args): Promise<void>;
+    protected abstract transferTokens(
+        notifier: NotificationHelper,
+        options: {
+            interception?: string | boolean;
+            userId?: string;
+        }
+    ): Promise<void>;
 
     /**
      * Resolve pending transactions
@@ -224,14 +236,20 @@ export abstract class TypedMint {
         }
         return notification;
     }
-ь
+    ь
     /**
      * Mint tokens
      * @param isProgressNeeded Is progress needed
      * @param userId
      * @returns Processed
      */
-    protected async mint(isProgressNeeded: boolean, userId: string | null): Promise<boolean> {
+    protected async mint(
+        options: {
+            isProgressNeeded: boolean,
+            interception?: string | boolean;
+            userId?: string;
+        }
+    ): Promise<boolean> {
         if (
             !this._mintRequest.isMintNeeded &&
             !this._mintRequest.isTransferNeeded
@@ -240,16 +258,16 @@ export abstract class TypedMint {
         }
 
         if (await this._resolvePendingTransactionsCheck()) {
-            await this.resolvePendingTransactions(userId);
+            await this.resolvePendingTransactions(options.userId);
             await this._handleResolveResult();
         }
 
         let processed = false;
         if (this._mintRequest.isMintNeeded) {
-            MintService.log(`Mint (${this._token.tokenId}) started`, this._ref, userId);
+            MintService.log(`Mint (${this._token.tokenId}) started`, this._ref, options.userId);
 
             let notifier;
-            if (isProgressNeeded) {
+            if (options?.isProgressNeeded) {
                 notifier = await this._notifier?.progress(
                     'Minting tokens',
                     `Start minting ${this._token.tokenName}`
@@ -259,7 +277,7 @@ export abstract class TypedMint {
             try {
                 this._mintRequest.processDate = new Date();
                 await this._db.saveMintRequest(this._mintRequest);
-                await this.mintTokens(notifier, userId);
+                await this.mintTokens(notifier, options);
             } catch (error) {
                 const errorMessage = PolicyUtils.getErrorMessage(error);
                 notifier?.stop();
@@ -286,7 +304,7 @@ export abstract class TypedMint {
             MintService.log(
                 `Mint (${this._token.tokenId}) completed`,
                 this._ref,
-                userId
+                options.userId
             );
             notifier?.finish();
 
@@ -314,11 +332,11 @@ export abstract class TypedMint {
             MintService.log(
                 `Transfer (${this._token.tokenId}) started`,
                 this._ref,
-                userId
+                options.userId
             );
 
             let notifier;
-            if (isProgressNeeded) {
+            if (options.isProgressNeeded) {
                 notifier = await this._notifier?.progress(
                     'Transferring tokens',
                     `Start transfer ${this._token.tokenName}`
@@ -328,7 +346,7 @@ export abstract class TypedMint {
             try {
                 this._mintRequest.processDate = new Date();
                 await this._db.saveMintRequest(this._mintRequest);
-                await this.transferTokens(notifier, userId);
+                await this.transferTokens(notifier, options);
             } catch (error) {
                 const errorMessage = PolicyUtils.getErrorMessage(error);
                 notifier?.stop();
@@ -355,7 +373,7 @@ export abstract class TypedMint {
             MintService.log(
                 `Transfer (${this._token.tokenId}) completed`,
                 this._ref,
-                userId
+                options.userId
             );
             notifier?.finish();
 

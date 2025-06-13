@@ -290,7 +290,7 @@ Promise.all([
                     topicMemo: TopicMemo.getGlobalTopicMemo(),
                     payload: { userId: null }
                 }
-            }, 10);
+            }, { priority: 10 });
         }
 
         state.updateState(ApplicationStates.INITIALIZING);

@@ -55,7 +55,7 @@ export class QueueService extends NatsService {
                 } else {
                     task.isError = true;
                     task.errorReason = data.error;
-                    if (!task.userId) {
+                    if (!task.interception) {
                         await this.completeTaskInQueue(data.id, data.data, data.error);
                     }
                 }
@@ -64,7 +64,7 @@ export class QueueService extends NatsService {
                 task.isError = true;
                 task.errorReason = data.error;
 
-                if (!task.userId) {
+                if (!task.interception) {
                     await this.completeTaskInQueue(data.id, data.data, data.error);
                 }
             }

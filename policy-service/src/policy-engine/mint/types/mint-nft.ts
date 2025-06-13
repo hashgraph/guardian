@@ -84,8 +84,11 @@ export class MintNFT extends TypedMint {
      * @param userId
      */
     protected override async mintTokens(
-        notifier?: NotificationHelper,
-        userId?: string
+        notifier: NotificationHelper,
+        options: {
+            interception?: string | boolean;
+            userId?: string;
+        }
     ): Promise<void> {
         const mintedTransactionsSerials =
             await this._db.getTransactionsSerialsCount(this._mintRequest.id);
@@ -143,22 +146,25 @@ export class MintNFT extends TypedMint {
                             tokenId: this._token.tokenId,
                             limit: 1,
                             order: 'desc',
-                            payload: { userId },
+                            payload: { userId: options.userId },
                         },
                     },
-                    1,
-                    10,
-                    userId
+                    {
+                        priority: 1,
+                        attempts: 10,
+                        userId: options.userId,
+                        interception: options.interception
+                    }
                 ).then(async (startSerial) => {
                     try {
                         this._mintRequest.startSerial = startSerial[0] || 0;
                         await this._db.saveMintRequest(this._mintRequest);
                     } catch (error) {
-                        this.error(error, userId);
+                        this.error(error, options.userId);
                     }
-                }).catch((error) => this.error(error, userId));
+                }).catch((error) => this.error(error, options.userId));
             } catch (error) {
-                this.error(error, userId);
+                this.error(error, options.userId);
             }
         }
 
@@ -197,10 +203,15 @@ export class MintNFT extends TypedMint {
                                     transaction.serials.length
                                 ).fill(this._mintRequest.metadata),
                                 transactionMemo: this._mintRequest.memo,
-                                payload: { userId }
+                                payload: { userId: options.userId }
                             },
                         },
-                        1, 0, userId
+                        {
+                            priority: 1,
+                            attempts: 0,
+                            userId: options.userId,
+                            interception: options.interception
+                        }
                     );
                     transaction.serials.push(...serials);
                     transaction.mintStatus = MintTransactionStatus.SUCCESS;
@@ -246,7 +257,10 @@ export class MintNFT extends TypedMint {
      */
     protected override async transferTokens(
         notifier: NotificationHelper,
-        userId?: string
+        options: {
+            interception?: string | boolean;
+            userId?: string;
+        }
     ): Promise<void> {
         let transferCount = 0;
         const tokensToTransfer = await this._db.getTransactionsSerialsCount(
@@ -287,12 +301,15 @@ export class MintNFT extends TypedMint {
                                 treasuryKey: this._token.treasuryKey,
                                 element: transaction.serials,
                                 transactionMemo: this._mintRequest.memo,
-                                payload: { userId }
+                                payload: { userId: options.userId }
                             },
                         },
-                        1,
-                        10,
-                        userId
+                        {
+                            priority: 1,
+                            attempts: 10,
+                            userId: options.userId,
+                            interception: options.interception
+                        }
                     );
 
                     transaction.transferStatus = MintTransactionStatus.SUCCESS;
@@ -352,8 +369,10 @@ export class MintNFT extends TypedMint {
                         payload: { userId }
                     },
                 },
-                1,
-                10
+                {
+                    priority: 1,
+                    attempts: 10
+                }
             );
 
             const mintPendingTransactions = await this._db.getMintTransactions({
@@ -403,8 +422,10 @@ export class MintNFT extends TypedMint {
                         payload: { userId }
                     },
                 },
-                1,
-                10
+                {
+                    priority: 1,
+                    attempts: 10
+                }
             );
             const transferPendingTransactions =
                 await this._db.getMintTransactions({
@@ -428,7 +449,16 @@ export class MintNFT extends TypedMint {
      * Mint tokens
      * @returns Processed
      */
-    override async mint(isProgressNeeded: boolean = false, userId: string | null): Promise<boolean> {
-        return await super.mint(isProgressNeeded, userId);
+    override async mint(
+        options: {
+            interception?: string | boolean;
+            userId?: string;
+        }
+    ): Promise<boolean> {
+        return await super.mint({
+            isProgressNeeded: true,
+            interception: options.interception,
+            userId: options.userId
+        });
     }
 }
