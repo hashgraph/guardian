@@ -27,6 +27,8 @@ async function execute() {
     const { execFunc, user, documents, artifacts, sources } = workerData;
 
     console.log('python worker working!');
+    pyodide.setStdout({ batched: console.log });
+    pyodide.setStderr({ batched: console.error });
 
     pyodide.globals.set("user", user);
     pyodide.globals.set("documents", documents);
@@ -37,7 +39,8 @@ async function execute() {
     await pyodide.loadPackage("micropip");
     const micropip = pyodide.pyimport("micropip");
     await micropip.install('numpy');
-    await micropip.install('pulp');
+    await micropip.install('scipy');
+    await micropip.install('pandas');
 
     try {
         const result = await pyodide.runPythonAsync(execFunc);
