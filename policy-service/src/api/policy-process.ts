@@ -7,6 +7,7 @@ import {
     ExternalEventChannel,
     GenerateTLSOptionsNats,
     IPFS,
+    JwtServicesValidator,
     LargePayloadContainer,
     MessageBrokerChannel,
     MessageServer,
@@ -84,6 +85,11 @@ Promise.all([
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
     Environment.setNetwork(process.env.HEDERA_NET);
 
+    const jwtServiceName = 'POLICY_SERVICE';
+    JwtServicesValidator.setServiceName(jwtServiceName);
+
+    await new OldSecretManager().setConnection(cn).init();
+
     const policyConfig = await DatabaseServer.getPolicyById(policyId);
 
     const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
@@ -125,7 +131,6 @@ Promise.all([
     new BlockTreeGenerator().setConnection(cn);
     IPFS.setChannel(channel);
     new ExternalEventChannel().setChannel(channel);
-    await new OldSecretManager().setConnection(cn).init();
     await new Users().setConnection(cn).init();
     await new Wallet().setConnection(cn).init();
     await TopicListener.init(cn);

@@ -31,100 +31,93 @@ export class WizardConfigDTO {
     policy: any;
 
     @ApiProperty({
-        type: 'array',
+        type: 'object',
         additionalProperties: false,
-        items: {
-            type: 'object',
-            additionalProperties: false,
-            properties: {
-                name: {
-                    type: 'string'
-                },
-                iri: {
-                    type: 'string'
-                },
-                isApproveEnable: {
-                    type: 'boolean'
-                },
-                isMintSchema: {
-                    type: 'boolean'
-                },
-                mintOptions: {
-                    type: 'object',
-                    properties: {
-                        tokenId: {
-                            type: 'string'
-                        },
-                        rule: {
-                            type: 'string'
-                        }
-                    }
-                },
-                dependencySchemaIri: {
-                    type: 'string'
-                },
-                relationshipsSchemaIri: {
-                    type: 'string'
-                },
-                initialRolesFor: {
-                    type: 'array',
-                    items: {
+        properties: {
+            name: {
+                type: 'string'
+            },
+            iri: {
+                type: 'string'
+            },
+            isApproveEnable: {
+                type: 'boolean'
+            },
+            isMintSchema: {
+                type: 'boolean'
+            },
+            mintOptions: {
+                type: 'object',
+                properties: {
+                    tokenId: {
+                        type: 'string'
+                    },
+                    rule: {
                         type: 'string'
                     }
-                },
-                rolesConfig: {
-                    type: 'array',
-                    items: {
-                        type: 'object',
-                        properties: {
-                            role: {
-                                type: 'string'
-                            },
-                            isApprover: {
-                                type: 'boolean'
-                            },
-                            isCreator: {
-                                type: 'boolean'
-                            },
-                            gridColumns: {
-                                type: 'array',
-                                items: {
-                                    type: 'object',
-                                    properties: {
-                                        field: {
-                                            type: 'string'
-                                        },
-                                        title: {
-                                            type: 'string'
-                                        }
+                }
+            },
+            dependencySchemaIri: {
+                type: 'string'
+            },
+            relationshipsSchemaIri: {
+                type: 'string'
+            },
+            initialRolesFor: {
+                type: 'array',
+                items: {
+                    type: 'string'
+                }
+            },
+            rolesConfig: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    properties: {
+                        role: {
+                            type: 'string'
+                        },
+                        isApprover: {
+                            type: 'boolean'
+                        },
+                        isCreator: {
+                            type: 'boolean'
+                        },
+                        gridColumns: {
+                            type: 'array',
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    field: {
+                                        type: 'string'
+                                    },
+                                    title: {
+                                        type: 'string'
                                     }
                                 }
                             }
                         }
                     }
                 }
-            },
+            }
         },
         isArray: true
     })
     schemas: any[];
 
     @ApiProperty({
-        type: 'array',
-        items: {
-            type: 'object',
-            additionalProperties: false,
-            properties: {
-                role: {
-                    type: 'string'
-                },
-                mintSchemaIri: {
-                    type: 'string'
-                },
-                viewOnlyOwnDocuments: {
-                    type: 'boolean'
-                }
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+            role: {
+                type: 'string'
             },
+            mintSchemaIri: {
+                type: 'string'
+            },
+            viewOnlyOwnDocuments: {
+                type: 'boolean'
+            }
         },
         isArray: true
     })

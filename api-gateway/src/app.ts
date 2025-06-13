@@ -4,7 +4,7 @@ import { PolicyEngine } from './helpers/policy-engine.js';
 import { WebSocketsService } from './api/service/websockets.js';
 import { Users } from './helpers/users.js';
 import { Wallet } from './helpers/wallet.js';
-import { GenerateTLSOptionsNats, LargePayloadContainer, MessageBrokerChannel, PinoLogger } from '@guardian/common';
+import { GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, MessageBrokerChannel, OldSecretManager, PinoLogger } from '@guardian/common';
 import { TaskManager } from './helpers/task-manager.js';
 import { AppModule } from './app.module.js';
 import { NestFactory } from '@nestjs/core';
@@ -26,13 +26,23 @@ const PORT = process.env.PORT || 3002;
 const BODY_LIMIT = 1024 * 1024 * 1024
 
 Promise.all([
-    NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter({ ignoreTrailingSlash: true }), {
+    NestFactory.create<NestFastifyApplication>(AppModule,
+        new FastifyAdapter({
+            ignoreTrailingSlash: true,
+            bodyLimit: BODY_LIMIT,
+            maxParamLength: BODY_LIMIT
+        }), {
         rawBody: true,
         bodyParser: false,
     }),
     MessageBrokerChannel.connect('API_GATEWAY'),
 ]).then(async ([app, cn]) => {
     try {
+        await new OldSecretManager().setConnection(cn).init();
+        const jwtServiceName = 'API_GATEWAY_SERVICE';
+
+        JwtServicesValidator.setServiceName(jwtServiceName);
+
         app.connectMicroservice<MicroserviceOptions>({
             transport: Transport.NATS,
             options: {
@@ -51,13 +61,17 @@ Promise.all([
             errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY
         }));
 
-        const logger: PinoLogger= app.get(PinoLogger);
-
-        await app.register(fastifyFormbody);
-        await app.register(fastifyMultipart);
+        const logger: PinoLogger = app.get(PinoLogger);
 
         app.useBodyParser('json', { bodyLimit: BODY_LIMIT });
         app.useBodyParser('binary/octet-stream', { bodyLimit: BODY_LIMIT });
+
+        await app.register(fastifyFormbody, {
+            bodyLimit: BODY_LIMIT
+        });
+        await app.register(fastifyMultipart, {
+            limits: { fileSize: BODY_LIMIT }
+        });
 
         await new Guardians().setConnection(cn).init();
         await new IPFS().setConnection(cn).init();
@@ -96,7 +110,7 @@ Promise.all([
             new LargePayloadContainer().runServer();
         }
         app.listen(PORT, '0.0.0.0', async () => {
-           await logger.info(`Started on ${PORT}`, ['API_GATEWAY'], null);
+            await logger.info(`Started on ${PORT}`, ['API_GATEWAY'], null);
         });
     } catch (error) {
         console.error(error.message);

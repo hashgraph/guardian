@@ -40,12 +40,9 @@ export class VcDTO {
     type: string[];
 
     @ApiProperty({
-        type: 'array',
-        isArray: true,
-        items: {
-            type: 'object',
-            additionalProperties: true,
-        },
+        type: 'object',
+        additionalProperties: true,
+        isArray: true
     })
     credentialSubject: any | any[];
 
@@ -84,7 +81,9 @@ export class VpDTO {
     type: string[];
 
     @ApiProperty({
-        type: 'array',
+        type: 'object',
+        additionalProperties: true,
+        isArray: true
     })
     verifiableCredential: any[];
 

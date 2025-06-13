@@ -189,6 +189,9 @@ export class SchemaItem {
                 if (Array.isArray(this._value)) {
                     this._value = `[${this._value.join(',')}]`;
                 }
+                if (this._value !== undefined) {
+                    return;
+                }
             }
         }
     }

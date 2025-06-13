@@ -39,6 +39,20 @@ context('Login',  { tags: ['accounts', 'firstPool', 'all'] }, () => {
         })
     })
 
+    it('Login as User with weakPassword', () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.AccountsLogin,
+            body: {
+                username: UserUsername,
+                password: 'test'
+            }
+        }).then((response) => {
+            expect(response.status).to.eq(STATUS_CODE.OK)
+            expect(response.body).to.have.property('weakPassword', true)
+        })
+    })
+
     it('Login with sql injection - Negative', () => {
         cy.request({
             method: METHOD.POST,

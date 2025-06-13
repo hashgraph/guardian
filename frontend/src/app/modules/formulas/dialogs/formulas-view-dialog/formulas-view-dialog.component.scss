@@ -13,6 +13,8 @@
 
 .guardian-input-container {
     margin-bottom: 24px;
+    min-height: 60px;
+    height: auto;
 }
 
 .guardian-textarea-container {
@@ -121,7 +123,7 @@
 }
 
 .formula-link {
-    height: 40px;
+    min-height: 40px;
     border-radius: 8px;
     outline: none;
     border: 1px solid var(--guardian-grey-color-2, #E1E7EF);

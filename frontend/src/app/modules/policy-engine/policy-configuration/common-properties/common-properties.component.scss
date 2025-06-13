@@ -16,64 +16,52 @@
     min-width: 1px;
 }
 
-.mat-option-link {
-    color: #6166ff;
-}
-
-.mat-option-link i,
-.mat-option-link svg,{
-    margin-right: 2px;
-    top: -2px;
-    left: -4px;
-    position: relative;
-}
-
 .ns {
     user-select: none;
 }
 
 .prop-input-event {
     color: #35a307;
-    height: 14px !important;
+    height: 16px !important;
     width: 20px !important;
     line-height: 14px !important;
     overflow: visible !important;
     display: inline-block !important;
     border-left: 2px solid #35a307;
-    margin: 0px 2px 0px 2px;
+    margin: 0px 8px 0px 8px;
     position: relative;
-    top: 4px;
+    top: -1px;
 }
 
 .prop-input-event i,
 .prop-input-event svg {
     position: relative !important;
-    font-size: 20px !important;
+    font-size: 16px !important;
     height: 20px;
     width: 20px;
-    top: -3px;
+    top: -1px;
 }
 
 .prop-output-icon {
     color: #c53227;
-    height: 14px !important;
+    height: 16px !important;
     width: 20px !important;
     line-height: 14px !important;
     overflow: visible !important;
     display: inline-block !important;
     border-left: 2px solid #c53227;
-    margin: 0px 2px 0px 2px;
+    margin: 0px 8px 0px 8px;
     position: relative;
-    top: 4px;
+    top: -1px;
 }
 
 .prop-output-icon i,
 .prop-output-icon svg {
     position: relative !important;
-    font-size: 20px !important;
+    font-size: 16px !important;
     height: 20px;
     width: 20px;
-    top: -3px;
+    top: -1px;
 }
 
 .source-elm {
@@ -96,18 +84,12 @@
     font-weight: 500;
     height: 30px;
     padding-top: 6px;
-    font-size:16px;
+    font-size: 16px;
     font-family: 'Roboto', sans-serif;
 }
 
 .propRowCell {
     height: 40px;
-}
-
-.propRowCell span {
-    font-size:16px;
-    font-family: 'Roboto', sans-serif;
-    font-weight: 500;
 }
 
 ::ng-deep .propRowCell input.prop-input {

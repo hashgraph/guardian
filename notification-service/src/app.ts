@@ -1,4 +1,4 @@
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, GenerateTLSOptionsNats, LargePayloadContainer, MessageBrokerChannel, Migration, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, OldSecretManager, GenerateTLSOptionsNats, LargePayloadContainer, MessageBrokerChannel, Migration, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization, JwtServicesValidator } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -39,6 +39,10 @@ Promise.all([
 ]).then(
     async (values) => {
         const [_, db, mqConnection, app, loggerMongo] = values;
+        await new OldSecretManager().setConnection(mqConnection).init();
+        const jwtServiceName = 'NOTIFICATION_SERVICE';
+
+        JwtServicesValidator.setServiceName(jwtServiceName);
 
         DatabaseServer.connectBD(db);
 

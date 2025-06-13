@@ -20,6 +20,8 @@ import {
     UserRole
 } from '@guardian/interfaces';
 import { UserUtils, UserPassword, PasswordType, UserAccessTokenService, UserProp } from '#utils';
+import { passwordComplexity, PasswordError } from '#constants';
+import { HttpStatus } from '@nestjs/common';
 
 /**
  * Account service
@@ -264,6 +266,12 @@ export class AccountService extends NatsService {
                         return new MessageError('An account with the same name already exists.');
                     }
 
+                    const isValidPassword = UserPassword.validatePassword(password);
+
+                    if (!isValidPassword) {
+                        return new MessageError(PasswordError[passwordComplexity], HttpStatus.UNPROCESSABLE_ENTITY);
+                    }
+
                     const passwordDigest = await UserPassword.generatePasswordV2(password);
                     const user = await UserUtils.createNewUser({
                         username,
@@ -338,11 +346,15 @@ export class AccountService extends NatsService {
                                 user.refreshToken.push(token.id);
 
                                 await new DatabaseServer().save(User, user);
+
+                                const isStrongPassword = UserPassword.validatePassword(password);
+
                                 return new MessageResponse({
                                     username: user.username,
                                     did: user.did,
                                     role: user.role,
-                                    refreshToken: token.token
+                                    refreshToken: token.token,
+                                    weakPassword: !isStrongPassword,
                                 })
                             }
                         } else {
@@ -365,6 +377,12 @@ export class AccountService extends NatsService {
                     const user = await UserUtils.getUser({ username, template: { $ne: true } }, UserProp.RAW);
                     if (!(await UserPassword.verifyPassword(user, oldPassword))) {
                         return new MessageError('Unauthorized request', 401);
+                    }
+
+                    const isValidPassword = UserPassword.validatePassword(newPassword);
+
+                    if (!isValidPassword) {
+                        return new MessageError(PasswordError[passwordComplexity], HttpStatus.UNPROCESSABLE_ENTITY);
                     }
 
                     const passwordDigest = await UserPassword.generatePasswordV2(newPassword);

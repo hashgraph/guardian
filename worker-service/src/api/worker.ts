@@ -14,6 +14,7 @@ import { AccountId, ContractFunctionParameters, ContractId, PrivateKey, TokenId 
 import { HederaUtils } from './helpers/utils.js';
 import axios from 'axios';
 import process from 'process';
+import { MAX_REDIRECTS } from '../constants/index.js';
 
 /**
  * Sleep helper
@@ -391,12 +392,13 @@ export class Worker extends NatsService {
                 }
 
                 case WorkerTaskType.HTTP_REQUEST: {
-                    const { method, url, headers, body } = task.data.payload;
+                    const { method, url, headers, body, maxRedirects = MAX_REDIRECTS.DEFAULT } = task.data.payload;
                     const response = await axios({
                         method,
                         url,
                         headers,
-                        data: body
+                        data: body,
+                        maxRedirects
                     });
                     result.data = response.data;
                     break;
