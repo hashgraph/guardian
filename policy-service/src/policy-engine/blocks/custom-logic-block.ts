@@ -5,7 +5,7 @@ import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyAddonBlock, IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { VcHelper } from '@guardian/common';
-import { ArtifactType, LocationType, SchemaHelper } from '@guardian/interfaces';
+import { ArtifactType, LocationType, SchemaHelper, ScriptLanguageOption } from '@guardian/interfaces';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
@@ -62,6 +62,23 @@ interface IMetadata {
                 label: 'Pass original',
                 title: 'Pass original document',
                 type: PropertyType.Checkbox
+            },
+            {
+                name: 'selectedScriptLanguage',
+                label: 'Script Language',
+                title: 'Select script language',
+                type: PropertyType.Select,
+                items: [
+                    {
+                        label: 'JavaScript',
+                        value: ScriptLanguageOption.JAVASCRIPT
+                    },
+                    {
+                        label: 'Python',
+                        value: ScriptLanguageOption.PYTHON
+                    }
+                ],
+                default: 'javascript'
             }
         ]
     },
@@ -204,7 +221,7 @@ export class CustomLogicBlock {
                 const files = Array.isArray(ref.options.artifacts) ? ref.options.artifacts : [];
                 const execCodeArtifacts = files.filter((file: any) => file.type === ArtifactType.EXECUTABLE_CODE);
                 let execCode = '';
-                for (const execCodeArtifact of execCodeArtifacts) {
+                for (const execCodeArtifact of execCodeArtifacts) { // todo for python???
                     const artifactFile = await PolicyUtils.getArtifactFile(ref, execCodeArtifact.uuid);
                     execCode += artifactFile;
                 }
@@ -218,28 +235,57 @@ export class CustomLogicBlock {
 
                 const sources: IPolicyDocument[] = await this.getSources(user);
 
-                const importCode = `const [done, user, documents, mathjs, artifacts, formulajs, sources] = arguments;\r\n`;
-                const expression = ref.options.expression || '';
-                const worker = new Worker(path.join(path.dirname(filename), '..', 'helpers', 'custom-logic-worker.js'), {
-                    workerData: {
-                        execFunc: `${importCode}${execCode}${expression}`,
-                        user,
-                        documents,
-                        artifacts,
-                        sources
-                    },
-                });
+                if (ref.options.selectedScriptLanguage == ScriptLanguageOption.PYTHON) {
+                    // const importCode = `const [done, user, documents, mathjs, artifacts, formulajs, sources] = arguments;\r\n`;
+                    const expression = ref.options.expression || '';
+                    const worker = new Worker(path.join(path.dirname(filename), '..', 'helpers', 'custom-logic-python-worker.js'), {
+                        workerData: {
+                            execFunc: `${expression}`,
+                            user,
+                            documents,
+                            artifacts,
+                            sources
+                        },
+                    });
 
-                worker.on('error', (error) => {
-                    reject(error);
-                });
-                worker.on('message', async (data) => {
-                    try {
-                        await done(data.result, data.final);
-                    } catch (error) {
+                    worker.on('error', (error) => {
                         reject(error);
-                    }
-                });
+                    });
+                    worker.on('message', async (data) => {
+                        if (data.error) {
+                            reject(new Error(data.error));
+                            return;
+                        }
+                        try {
+                            await done(data.result, data.final);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    });
+                } else {
+                    const importCode = `const [done, user, documents, mathjs, artifacts, formulajs, sources] = arguments;\r\n`;
+                    const expression = ref.options.expression || '';
+                    const worker = new Worker(path.join(path.dirname(filename), '..', 'helpers', 'custom-logic-worker.js'), {
+                        workerData: {
+                            execFunc: `${importCode}${execCode}${expression}`,
+                            user,
+                            documents,
+                            artifacts,
+                            sources
+                        },
+                    });
+
+                    worker.on('error', (error) => {
+                        reject(error);
+                    });
+                    worker.on('message', async (data) => {
+                        try {
+                            await done(data.result, data.final);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    });
+                }
             } catch (error) {
                 reject(error);
             }
