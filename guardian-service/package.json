@@ -24,7 +24,7 @@
         "@nestjs/core": "^11.0.11",
         "@nestjs/microservices": "^11.0.11",
         "@formulajs/formulajs": "4.4.6",
-        "mathjs": "^13.1.1",
+        "mathjs": "^14.5.2",
         "bson": "^6.5.0",
         "cron": "^2.0.0",
         "dotenv": "^16.0.0",
