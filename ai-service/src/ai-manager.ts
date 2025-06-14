@@ -1,7 +1,7 @@
 import { FilesManager } from './helpers/files-manager-helper.js';
 import { FaissStore } from '@langchain/community/vectorstores/faiss';
 import { RetrievalQAChain } from 'langchain/chains';
-import { OpenAI } from '@langchain/openai';
+import { ChatOpenAI } from '@langchain/openai';
 import { OpenAIConnect } from './helpers/openai-helper.js';
 import { VectorStorage } from './helpers/vector-storage-helper.js';
 import { AISuggestionsDB } from './helpers/ai-suggestions-db.js';
@@ -19,7 +19,7 @@ export class AIManager {
     categories: PolicyCategory[];
     chain: RetrievalQAChain | null;
     vector: FaissStore | null;
-    model: OpenAI;
+    model: ChatOpenAI;
     policyDescriptions: PolicyDescription[];
 
     constructor(private readonly logger: PinoLogger) {
@@ -29,12 +29,12 @@ export class AIManager {
         this.categories = [];
         this.policies = [];
         this.policyDescriptions = [];
-        const openAIApiKey = process.env.OPENAI_API_KEY
+        const openAIApiKey = process.env.OPENAI_API_KEY;
         if (!openAIApiKey || openAIApiKey.length < 10) {
             throw new Error('Bad openAIApiKey');
         }
 
-        this.model = new OpenAI({modelName: this.versionGPT, temperature: 0, openAIApiKey});
+        this.model = new ChatOpenAI({modelName: this.versionGPT, temperature: 0, openAIApiKey});
         this.vector = null;
         this.chain = null;
     }

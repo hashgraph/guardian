@@ -92,7 +92,7 @@ export async function documentsAPI(
             const [items, count] = await dataBaseServer.findAndCount(VpDocument, null, {
                 limit: 100,
                 orderBy: { createDate: 'DESC' }
-            } as FindOptions<unknown>);
+            } as FindOptions<object>);
             return new MessageResponse({ items, count });
         }
     });

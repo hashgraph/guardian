@@ -1,4 +1,4 @@
-import { OpenAI } from '@langchain/openai';
+import { ChatOpenAI } from '@langchain/openai';
 import { FaissStore } from '@langchain/community/vectorstores/faiss';
 import { loadQAStuffChain, RetrievalQAChain } from 'langchain/chains';
 import { Methodology, ResponseData } from '../models/models.js';
@@ -9,7 +9,7 @@ const answerAfter = 'For the most up-to-date and comprehensive information on Gu
 
 export class OpenAIConnect {
 
-    static async getChain(model: OpenAI, vector: FaissStore) {
+    static async getChain(model: ChatOpenAI, vector: FaissStore) {
         return new RetrievalQAChain({
             combineDocumentsChain: loadQAStuffChain(model),
             retriever: vector.asRetriever(),
