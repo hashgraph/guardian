@@ -94,8 +94,8 @@ export class Users extends NatsService {
      * @param username
      * @param userId
      */
-    public async getUserPermissions(username: string, userId: string | null): Promise<IAuthUser> {
-        return await this.sendMessage(AuthEvents.GET_USER_PERMISSIONS, { username, userId });
+    public async getUserPermissions(username: string, parent: string, userId: string | null): Promise<IAuthUser> {
+        return await this.sendMessage(AuthEvents.GET_USER_PERMISSIONS, { username, parent, userId });
     }
 
     /**
