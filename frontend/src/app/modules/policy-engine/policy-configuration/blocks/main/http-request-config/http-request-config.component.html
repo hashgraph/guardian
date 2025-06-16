@@ -80,5 +80,18 @@
                 <input class="prop-input" [(ngModel)]="header.value" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
+        <tr class="propRow subRow"
+            [attr.collapse]="propHidden.options || propHidden.conditionsGroup || propHidden.conditions[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Include value</td>
+            <td class="propRowCell">
+                <p-checkbox [(ngModel)]="header.included"
+                            binary="true"
+                            [disabled]="readonly"
+                            (onChange)="onSave()"
+                            label="Include value in exported policy">
+                </p-checkbox>
+            </td>
+        </tr>
     </ng-container>
 </table>

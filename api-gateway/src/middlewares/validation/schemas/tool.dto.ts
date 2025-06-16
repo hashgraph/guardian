@@ -92,13 +92,15 @@ export class ToolPreviewDTO {
     tool: ToolDTO;
 
     @ApiProperty({
-        type: 'array',
+        type: 'object',
+        additionalProperties: true,
         isArray: true,
     })
     schemas?: any[];
 
     @ApiProperty({
-        type: 'array',
+        type: 'object',
+        additionalProperties: true,
         isArray: true,
     })
     tags?: any[];

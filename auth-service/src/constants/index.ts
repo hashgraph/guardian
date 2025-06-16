@@ -5,3 +5,9 @@ export {
     DB_REQUIRED_PROPS
 } from './user.js';
 export { DEFAULT as DEFAULT_MONGO } from './mongo.js';
+export {
+    PasswordComplexityEnum,
+    PasswordError,
+    minPasswordLength,
+    passwordComplexity,
+} from './password.js';

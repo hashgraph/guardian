@@ -98,7 +98,7 @@ export class HttpRequestBlock {
         const res = await new Workers().addNonRetryableTask({
             type: WorkerTaskType.HTTP_REQUEST,
             data: {
-                payload: { method, url, headers, body, userId }
+                payload: { method, url, headers, body, userId, maxRedirects: 0 }
             }
         }, 10);
         if (!res) {

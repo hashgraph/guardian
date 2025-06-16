@@ -6,6 +6,7 @@ import {
     GenerateBlocks,
     IAuthUser,
     IMessageResponse,
+    ImportExportUtils,
     JsonToXlsx,
     MessageAction,
     MessageError,
@@ -30,7 +31,7 @@ import {
 import { DocumentCategoryType, DocumentType, EntityOwner, ExternalMessageEvents, GenerateUUIDv4, IOwner, PolicyEngineEvents, PolicyEvents, PolicyHelper, PolicyTestStatus, PolicyStatus, Schema, SchemaField, TopicType, PolicyAvailability, PolicyActionType, PolicyActionStatus } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { NatsConnection } from 'nats';
-import { HashComparator } from '../analytics/index.js';
+import { CompareUtils, HashComparator } from '../analytics/index.js';
 import { compareResults, getDetails } from '../api/record.service.js';
 import { Inject } from '../helpers/decorators/inject.js';
 import { GuardiansService } from '../helpers/guardians.js';
@@ -1114,7 +1115,7 @@ export class PolicyEngineService {
                         throw new Error(`Policy imported in view mode`);
                     }
 
-                    const errors = await this.policyEngine.validateModel(policyId);
+                    const errors = await this.policyEngine.validateModel(policyId, true);
                     const isValid = !errors.blocks.some(block => !block.isValid);
                     if (isValid) {
                         await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run', false, logger);
@@ -1801,6 +1802,48 @@ export class PolicyEngineService {
                 }
             });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.DRY_RUN_BLOCK_HISTORY,
+            async (msg: { policyId: string, tag: string, owner: IOwner }) => {
+                try {
+                    const { policyId, tag, owner } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+                    if (!(policy.status === PolicyStatus.DRAFT || policy.status === PolicyStatus.DRY_RUN)) {
+                        throw new Error(`Policy is not in Dry Run or Draft`);
+                    }
+                    const result = await DatabaseServer.getDebugContexts(policyId, tag);
+                    return new MessageResponse(result);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.DRY_RUN_BLOCK,
+            async (msg: {
+                policyId: string,
+                config: any,
+                owner: IOwner
+            }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { policyId, config, owner } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+                    if (!(policy.status === PolicyStatus.DRAFT || policy.status === PolicyStatus.DRY_RUN)) {
+                        throw new Error(`Policy is not in Dry Run or Draft`);
+                    }
+                    const user = await (new Users()).getUser(owner.username, owner.id);
+                    config.policyId = policyId;
+                    config.user = user;
+                    const blockData = await new GuardiansService()
+                        .sendMessageWithTimeout(PolicyEvents.DRY_RUN_BLOCK, 60 * 1000, config)
+                    return new MessageResponse(blockData);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error, error.code);
+                }
+            });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_SAVEPOINT,
             async (msg: { policyId: string, owner: IOwner }) => {
                 try {
@@ -2210,6 +2253,342 @@ export class PolicyEngineService {
                         await loader.get(filters, otherOptions),
                         await loader.get(filters, null, true),
                     ]);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.SEARCH_POLICY_DOCUMENTS,
+            async (msg: {
+                owner: IOwner,
+                policyId: string,
+                textSearch: string,
+                schemas: string[],
+                owners: string[],
+                tokens: string[],
+                related: string[],
+                pageIndex: string,
+                pageSize: string
+            }) => {
+                try {
+                    const {
+                        owner,
+                        policyId,
+                        schemas,
+                        owners,
+                        tokens,
+                        related,
+                        pageIndex,
+                        pageSize,
+                    } = msg;
+
+                    const parsedPageSize = parseInt(pageSize, 10);
+                    const parsedPageIndex = parseInt(pageIndex, 10);
+                    const offset = parsedPageIndex * parsedPageSize;
+                    const limit = parsedPageSize;
+
+                    const VcOtherOptions: any = {};
+                    VcOtherOptions.fields = ['id', 'owner', 'messageId', 'relationships', 'documentFileId', 'schema'];
+
+                    const VpOtherOptions: any = {};
+                    VpOtherOptions.fields = ['id', 'owner', 'messageId', 'relationships', 'documentFileId', 'createDate'];
+
+                    const model = await DatabaseServer.getPolicy({ id: policyId });
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isRun(model)) {
+                        throw new Error(`Policy is not running`);
+                    }
+
+                    const filters: any = {
+                        policyId
+                    };
+
+                    if (related) {
+                        filters.$or = [
+                            { relationships: { $in: related } },
+                            { messageId: { $in: related } }
+                        ];
+                    }
+
+                    if (schemas) {
+                        filters.schema = {
+                            $in: schemas,
+                        };
+                    }
+
+                    if (owners) {
+                        filters.owner = {
+                            $in: owners,
+                        };
+                    }
+
+                    let result: any[] = [];
+
+                    const VCloader = new VcDocumentLoader(
+                        model.id,
+                        model.topicId,
+                        model.instanceTopicId,
+                        PolicyHelper.isDryRunMode(model)
+                    );
+
+                    const VPloader = new VpDocumentLoader(
+                        model.id,
+                        model.topicId,
+                        model.instanceTopicId,
+                        PolicyHelper.isDryRunMode(model)
+                    );
+
+                    const vcFilters = {
+                        ...filters,
+                        type: { $ne: DocumentCategoryType.USER_ROLE }
+                    };
+
+                    let vcCount = 0;
+                    let vpCount = 0;
+
+                    const vcCountLoader = await VCloader.get(vcFilters, null, true);
+                    if (typeof (vcCountLoader) === 'number') {
+                        vcCount = vcCountLoader;
+                    }
+                    const vpCountLoader = await VPloader.get(filters, null, true);
+                    if (typeof (vpCountLoader) === 'number') {
+                        vpCount += vpCountLoader;
+                    }
+
+                    const total = vcCount + vpCount;
+
+                    let vcs: any[] = [];
+                    let vps: any[] = [];
+
+                    if (offset + limit <= vcCount) {
+                        vcs = await VCloader.get(vcFilters, {
+                            limit,
+                            offset
+                        });
+                    } else if (offset >= vcCount) {
+                        const vpOffset = offset - vcCount;
+                        vps = await VPloader.get(filters, {
+                            limit,
+                            offset: vpOffset
+                        });
+                    } else {
+                        const fromVC = vcCount - offset;
+                        const fromVP = limit - fromVC;
+
+                        vcs = await VCloader.get(vcFilters, {
+                            limit: fromVC,
+                            offset
+                        });
+
+                        vps = await VPloader.get(filters, {
+                            limit: fromVP,
+                            offset: 0
+                        });
+                    }
+
+                    if (tokens) {
+                        vps = vps.filter(vp => {
+                            return vp.document.verifiableCredential.find(vc =>
+                                vc.credentialSubject.some(subject =>
+                                    tokens.some(tokenId => subject.tokenId === tokenId)
+                                )
+                            )
+                        });
+
+                        result = vps;
+                        return new MessageResponse([result, result.length]);
+                    }
+
+                    result = [...vcs, ...vps];
+
+                    return new MessageResponse([result, total]);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.EXPORT_POLICY_DOCUMENTS,
+            async (msg: {
+                owner: IOwner,
+                policyId: string,
+                ids: string[],
+                textSearch: string,
+                schemas: string[],
+                owners: string[],
+                tokens: string[],
+                related: string
+            }) => {
+                try {
+                    const {
+                        owner,
+                        policyId,
+                        ids,
+                        schemas,
+                        owners,
+                        tokens,
+                        related,
+                    } = msg;
+
+                    const filters: any = {};
+
+                    const VcOtherOptions: any = {};
+                    VcOtherOptions.fields = ['id', 'owner', 'messageId', 'relationships', 'documentFileId', 'schema'];
+
+                    const VpOtherOptions: any = {};
+                    VpOtherOptions.fields = ['id', 'owner', 'messageId', 'relationships', 'documentFileId', 'createDate'];
+
+                    const model = await DatabaseServer.getPolicy({ id: policyId });
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isRun(model)) {
+                        throw new Error(`Policy is not running`);
+                    }
+
+                    filters.policyId = policyId;
+
+                    if (ids && ids.length > 0) {
+                        filters.id = { $in: ids };
+                    }
+
+                    if (related) {
+                        filters.relationships = {
+                            $in: related,
+                        };
+                    }
+
+                    if (schemas) {
+                        filters.schema = {
+                            $in: schemas,
+                        };
+                    }
+
+                    if (owners) {
+                        filters.owner = {
+                            $in: owners,
+                        };
+                    }
+
+                    let results: any[] = [];
+
+                    const VCloader = new VcDocumentLoader(
+                        model.id,
+                        model.topicId,
+                        model.instanceTopicId,
+                        PolicyHelper.isDryRunMode(model)
+                    );
+                    const vcs = await VCloader.get({
+                        ...filters,
+                        type: { $ne: DocumentCategoryType.USER_ROLE, }
+                    }, VcOtherOptions);
+
+                    const VPloader = new VpDocumentLoader(
+                        model.id,
+                        model.topicId,
+                        model.instanceTopicId,
+                        PolicyHelper.isDryRunMode(model)
+                    );
+                    let vps = await VPloader.get(filters, VpOtherOptions);
+
+                    if (tokens) {
+                        vps = vps.filter(vp => {
+                            return vp.document.verifiableCredential.find(vc =>
+                                vc.credentialSubject.some(subject =>
+                                    tokens.some(tokenId => subject.tokenId === tokenId)
+                                )
+                            )
+                        });
+
+                        results = vps;
+                    } else {
+                        results = [...vcs, ...vps];
+                    }
+
+                    const csvData: Map<string, string> = new Map();
+
+                    for (const data of results) {
+                        const csv = CompareUtils.objectToCsv(data.document);
+                        csvData.set(data.documentFileId.toString(), csv.result());
+                    }
+
+                    const zip = await PolicyImportExport.generateProjectData(csvData);
+                    const file = await zip.generateAsync({
+                        type: 'arraybuffer',
+                        compression: 'DEFLATE',
+                        compressionOptions: {
+                            level: 3,
+                        },
+                    });
+
+                    return new BinaryMessageResponse(file);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICY_OWNERS,
+            async (msg: {
+                owner: IOwner,
+                policyId: string,
+            }) => {
+                try {
+                    const {
+                        owner,
+                        policyId,
+                    } = msg;
+
+                    const filters: any = {};
+                    const otherOptions: any = {
+                        fields: ['id', 'owner',],
+                    };
+
+                    await DatabaseServer.getPolicyCache({
+                        id: policyId,
+                        userId: owner.creator,
+                    });
+
+                    const model = await DatabaseServer.getPolicy({ id: policyId });
+                    await this.policyEngine.accessPolicy(model, owner, 'read');
+                    if (!PolicyHelper.isRun(model)) {
+                        throw new Error(`Policy is not running`);
+                    }
+
+                    filters.policyId = policyId;
+
+                    let loader: PolicyDataLoader;
+                    otherOptions.fields.push('schema');
+                    filters.type = {
+                        $ne: DocumentCategoryType.USER_ROLE,
+                    };
+                    loader = new VcDocumentLoader(
+                        model.id,
+                        model.topicId,
+                        model.instanceTopicId,
+                        PolicyHelper.isDryRunMode(model)
+                    );
+
+                    const ownerIds = new Set<string>();
+                    const vcs = await loader.get(filters, otherOptions);
+                    vcs.forEach(item => {
+                        ownerIds.add(item.owner);
+                    });
+
+                    return new MessageResponse(Array.from(ownerIds));
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICY_TOKENS,
+            async (msg: {
+                owner: IOwner,
+                policyId: string,
+            }) => {
+                try {
+                    const { policyId } = msg;
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    const tokenIds = ImportExportUtils.findAllTokens(policy.config);
+
+                    return new MessageResponse(tokenIds);
                 } catch (error) {
                     return new MessageError(error);
                 }

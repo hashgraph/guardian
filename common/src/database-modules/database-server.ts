@@ -4474,4 +4474,35 @@ export class DatabaseServer extends AbstractDatabaseServer {
     public static async deleteKey(key: PolicyKey): Promise<void> {
         return await new DataBaseHelper(PolicyKey).remove(key);
     }
+
+    /**
+     * Save debug context
+     * @param row
+     *
+     * @virtual
+     */
+    public static async saveDebugContext(row: Partial<DryRun>): Promise<DryRun> {
+        row.dryRunId = row.policyId;
+        row.dryRunClass = 'DebugContext';
+        const item = new DataBaseHelper(DryRun).create(row);
+        return await new DataBaseHelper(DryRun).save(item);
+    }
+
+    /**
+     * Get debug context
+     * @param filters
+     * @param options
+     */
+    public static async getDebugContext(id: string): Promise<DryRun> {
+        return await new DataBaseHelper(DryRun).findOne(id);
+    }
+
+    /**
+     * Get debug context
+     * @param filters
+     * @param options
+     */
+    public static async getDebugContexts(policyId: string, tag: string): Promise<DryRun[]> {
+        return await new DataBaseHelper(DryRun).find({ policyId, tag });
+    }
 }

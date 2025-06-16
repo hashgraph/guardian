@@ -67,7 +67,7 @@ export class IPFS {
                     userId
                 }
             }
-        }, 10, 0, userId);
+        }, 10, 3, userId);
         if (!res) {
             throw new Error('Add File: Invalid response');
         }

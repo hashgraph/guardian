@@ -1,6 +1,7 @@
 import {
     DatabaseServer,
     HederaDidDocument,
+    PinoLogger,
     Policy as PolicyCollection,
     PolicyTool as PolicyToolCollection,
     Schema as SchemaCollection,
@@ -58,6 +59,11 @@ export class ComponentsService {
      * @public
      */
     public readonly databaseServer: DatabaseServer;
+    /**
+     * Logger instance
+     * @protected
+     */
+    public readonly logger: PinoLogger;
 
     constructor(policy: PolicyCollection, policyId: string) {
         this.owner = policy.owner;
@@ -76,6 +82,7 @@ export class ComponentsService {
         this.schemasByType = new Map();
         this._recordingController = null;
         this._runningController = null;
+        this.logger = new PinoLogger();
     }
 
     /**
@@ -396,5 +403,50 @@ export class ComponentsService {
             return this._runningController.skipStep();
         }
         return null;
+    }
+
+    /**
+     * Write log message
+     * @param message
+     */
+    public info(message: string, attributes: string[] | null, userId?: string | null) {
+        this.logger.info(message, attributes, userId);
+    }
+
+    /**
+     * Write error message
+     * @param message
+     */
+    public error(message: string, attributes: string[] | null, userId?: string | null) {
+        this.logger.error(message, attributes, userId);
+    }
+
+    /**
+     * Write warn message
+     * @param message
+     */
+    public warn(message: string, attributes: string[] | null, userId?: string | null) {
+        this.logger.warn(message, attributes, userId);
+    }
+
+    /**
+     * Write debug message
+     * @param message
+     */
+    public debug(message: any) {
+        return;
+    }
+
+    /**
+     * Save and update debug context
+     * @param context
+     */
+    public async debugContext(tag: string, context: any): Promise<any> {
+        await DatabaseServer.saveDebugContext({
+            policyId: this.policyId,
+            tag,
+            document: context
+        });
+        return context;
     }
 }

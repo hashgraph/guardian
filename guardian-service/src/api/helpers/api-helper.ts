@@ -9,11 +9,11 @@ export function getPageOptions(msg: any, options?: any): any {
     const _pageIndex = parseInt(msg.pageIndex, 10);
     if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
         otherOptions.orderBy = { createDate: 'DESC' };
-        otherOptions.limit = Math.min(100, _pageSize);
+        otherOptions.limit = Math.min(1000, _pageSize);
         otherOptions.offset = _pageIndex * _pageSize;
     } else {
         otherOptions.orderBy = { createDate: 'DESC' };
-        otherOptions.limit = 100;
+        otherOptions.limit = 200;
     }
 
     if(msg.fields) {

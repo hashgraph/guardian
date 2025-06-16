@@ -1,4 +1,4 @@
-import { DataBaseHelper, MessageError, MessageResponse, NatsService, PinoLogger, Policy, Singleton, Users } from '@guardian/common';
+import { DataBaseHelper, JwtServicesValidator, MessageError, MessageResponse, NatsService, PinoLogger, Policy, Singleton, Users } from '@guardian/common';
 import { GenerateUUIDv4, IUser, PolicyAvailability, PolicyEvents, PolicyStatus } from '@guardian/interfaces';
 import { headers } from 'nats';
 import { Inject } from '../helpers/decorators/inject.js';
@@ -62,12 +62,22 @@ export class BlockTreeGenerator extends NatsService {
         this.connection.subscribe([policyId, subject].join('-'), {
             queue: this.messageQueueName,
             callback: async (error, msg) => {
+                let token = '';
+
+                try {
+                    const replySubject = msg.headers?.get('reply');
+                    token = await JwtServicesValidator.sign(replySubject)
+                } catch (err) {
+                    console.error(`Error sign message ${msg.subject}`, err);
+                }
+
                 try {
                     const pId = msg.headers.get('policyId');
                     if (pId === policyId) {
                         const messageId = msg.headers.get('messageId');
                         const head = headers();
                         head.append('messageId', messageId);
+                        head.append('serviceToken', token);
                         const respond = await cb(await this.codec.decode(msg.data), msg.headers);
                         msg.respond(await this.codec.encode(respond), { headers: head });
                     }
@@ -75,6 +85,7 @@ export class BlockTreeGenerator extends NatsService {
                     const messageId = msg.headers.get('messageId');
                     const head = headers();
                     head.append('messageId', messageId);
+                    head.append('serviceToken', token);
                     msg.respond(await this.codec.encode(new MessageError(error.message)), { headers: head });
                 }
             }

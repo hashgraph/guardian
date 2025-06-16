@@ -68,6 +68,7 @@ export class HttpRequestConfigComponent implements OnInit {
             type: 'equal',
             value: '',
             actor: '',
+            included: false,
         })
     }
 

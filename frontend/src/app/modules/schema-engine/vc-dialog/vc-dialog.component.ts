@@ -4,6 +4,7 @@ import { Schema, UserPermissions } from '@guardian/interfaces';
 import { SchemaService } from '../../../services/schema.service';
 import { forkJoin } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
+import { ActivatedRoute, Router } from '@angular/router';
 
 /**
  * Dialog for display json
@@ -37,6 +38,7 @@ export class VCViewerDialog {
     public policyId?: string;
     public documentId?: string;
     public schemaId?: string;
+    public messageId?: string;
     public user: UserPermissions = new UserPermissions();
 
     constructor(
@@ -44,6 +46,8 @@ export class VCViewerDialog {
         public dialogConfig: DynamicDialogConfig,
         private schemaService: SchemaService,
         private profileService: ProfileService,
+        private route: ActivatedRoute,
+        private router: Router
     ) {
     }
 
@@ -76,6 +80,7 @@ export class VCViewerDialog {
         this.policyId = row?.policyId;
         this.documentId = row?.id;
         this.schemaId = row?.schema;
+        this.messageId = row?.messageId;
 
         this.getByUser = getByUser;
         this.id = id;
@@ -130,6 +135,22 @@ export class VCViewerDialog {
         }, (error) => {
             this.loading = false;
             console.error(error);
+        });
+    }
+
+    public onFindInExport(): void {
+        this.dialogRef.close(null);
+
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: {
+                tab: 1,
+                schemas: null,
+                owners: null,
+                tokens: null,
+                related: this.messageId
+            },
+            queryParamsHandling: 'merge',
         });
     }
 }

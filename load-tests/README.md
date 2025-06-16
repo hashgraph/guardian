@@ -71,7 +71,11 @@ There are tests with few workflows:
 
 3. Setup ACCESS_TOKEN_UPDATE_INTERVAL=6000000 property in .env.auth settings on Open Source
 
-4. Provide filepath to .csv and folders with report's results in "CSV Data Set Config" and "Aggregate Report" elements.
+4. Setup MIN_PASSWORD_LENGTH=4 property in .env.auth settings on Open Source
+
+5. Setup PASSWORD_COMPLEXITY=easy property in .env.auth settings on Open Source
+
+6. Provide filepath to .csv and folders with report's results in "CSV Data Set Config" and "Aggregate Report" elements.
 
 ### Run tests by CLI(recommended)
 

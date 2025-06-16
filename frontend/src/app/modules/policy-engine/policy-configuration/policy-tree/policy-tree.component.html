@@ -14,6 +14,7 @@
          [cdkDropListSortPredicate]="onDragSortPredicate"
     >
         <div *ngIf="data" class="tree" [attr.readonly]="readonly" [attr.move-actions]="visibleMoveActions">
+
             <div class="block-all-expand" (click)="onAllCollapse()" [attr.collapsed]="allCollapse">
                 <i *ngIf="allCollapse === '2'" class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
                 <i *ngIf="allCollapse !== '2'" class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>
@@ -21,7 +22,7 @@
 
             <ng-container *ngFor="let item of data">
 
-                <div class="block-container"
+                <div class="block-container {{getMenu(item)}}"
                      [attr.expandable]="item.expandable"
                      [attr.collapsed]="item.collapsed"
                      [attr.selected]="isSelect(item)"
@@ -68,8 +69,7 @@
                     <div *ngIf="isRootToolStyle(item)" class="block-body module-body">
                         <div class="block-item" (click)="onSelect($event, item)">
                             <div class="module-item-icon">
-                                <svg-icon src="/assets/images/icons/handyman.svg"
-                                          svgClass="icon-style-handyman"></svg-icon>
+                                <svg-icon src="/assets/images/icons/handyman.svg" svgClass="icon-style-handyman"></svg-icon>
                             </div>
                             <div class="module-item-name">
                                 Tool
@@ -91,36 +91,32 @@
                                  [attr.can-up]="item.canUp"
                                  [attr.can-down]="item.canDown"
                                  [attr.can-left]="item.canLeft"
-                                 [attr.can-right]="item.canRight"
-                            >
-                                <button (click)="onDropUp($event)" mat-icon-button
-                                        class="action-button move-action-up">
+                                 [attr.can-right]="item.canRight">
+                                <button (click)="onDropUp($event)" mat-icon-button class="action-button move-action-up">
                                     <i class="pi pi-caret-up"></i>
                                 </button>
-                                <button (click)="onDropLeft($event)" mat-icon-button
-                                        class="action-button move-action-left">
+                                <button (click)="onDropLeft($event)" mat-icon-button class="action-button move-action-left">
                                     <i class="pi pi-caret-left"></i>
                                 </button>
-                                <button (click)="onDropRight($event)" mat-icon-button
-                                        class="action-button move-action-right">
+                                <button (click)="onDropRight($event)" mat-icon-button class="action-button move-action-right">
                                     <i class="pi pi-caret-right"></i>
                                 </button>
-                                <button (click)="onDropDown($event)" mat-icon-button
-                                        class="action-button move-action-down">
+                                <button (click)="onDropDown($event)" mat-icon-button class="action-button move-action-down">
                                     <i class="pi pi-caret-down"></i>
                                 </button>
-                                <button (click)="onVisibleMoreActions($event)" mat-icon-button
-                                        class="action-button move-more-action-button">
+                                <button (click)="onVisibleMoreActions($event)" mat-icon-button class="action-button move-more-action-button">
                                     <i class="pi pi-ellipsis-h"></i>
                                 </button>
                             </div>
                             <div class="actions-container">
-                                <button (click)="onVisibleMoreActions($event)" mat-icon-button
-                                        class="action-button more-action-button">
+                                <button (click)="onVisibleMoreActions($event)" mat-icon-button class="action-button more-action-button">
                                     <i class="pi pi-ellipsis-h"></i>
                                 </button>
                                 <button (click)="onSearch($event)" mat-icon-button class="action-button">
                                     <i class="pi pi-search"></i>
+                                </button>
+                                <button *ngIf="isTest(item)" (click)="onTest($event)" mat-icon-button class="static-button action-button">
+                                    <i class="pi pi-play"></i>
                                 </button>
                                 <button (click)="onDelete($event)" mat-icon-button class="action-button delete-action">
                                     <i class="pi pi-trash"></i>
@@ -145,30 +141,24 @@
                                  [attr.can-left]="item.canLeft"
                                  [attr.can-right]="item.canRight"
                             >
-                                <button (click)="onDropUp($event)" mat-icon-button
-                                        class="action-button move-action-up">
+                                <button (click)="onDropUp($event)" mat-icon-button class="action-button move-action-up">
                                     <i class="pi pi-caret-down"></i>
                                 </button>
-                                <button (click)="onDropLeft($event)" mat-icon-button
-                                        class="action-button move-action-left">
+                                <button (click)="onDropLeft($event)" mat-icon-button class="action-button move-action-left">
                                     <i class="pi pi-caret-left"></i>
                                 </button>
-                                <button (click)="onDropRight($event)" mat-icon-button
-                                        class="action-button move-action-right">
+                                <button (click)="onDropRight($event)" mat-icon-button class="action-button move-action-right">
                                     <i class="pi pi-caret-right"></i>
                                 </button>
-                                <button (click)="onDropDown($event)" mat-icon-button
-                                        class="action-button move-action-down">
+                                <button (click)="onDropDown($event)" mat-icon-button class="action-button move-action-down">
                                     <i class="pi pi-caret-down"></i>
                                 </button>
-                                <button (click)="onVisibleMoreActions($event)" mat-icon-button
-                                        class="action-button move-more-action-button">
+                                <button (click)="onVisibleMoreActions($event)" mat-icon-button class="action-button move-more-action-button">
                                     <i class="pi pi-ellipsis-h"></i>
                                 </button>
                             </div>
                             <div class="actions-container">
-                                <button (click)="onVisibleMoreActions($event)" mat-icon-button
-                                        class="action-button more-action-button">
+                                <button (click)="onVisibleMoreActions($event)" mat-icon-button class="action-button more-action-button">
                                     <i class="pi pi-ellipsis-h"></i>
                                 </button>
                                 <button (click)="onDelete($event)" mat-icon-button class="action-button delete-action">
@@ -181,8 +171,7 @@
                     <div *ngIf="isToolStyle(item)" class="block-body tool-body">
                         <div class="block-item" (click)="onSelect($event, item)">
                             <div class="module-item-icon">
-                                <svg-icon src="/assets/images/icons/handyman.svg"
-                                          svgClass="icon-style-handyman"></svg-icon>
+                                <svg-icon src="/assets/images/icons/handyman.svg" svgClass="icon-style-handyman"></svg-icon>
                             </div>
                             <div class="module-item-name">
                                 {{ item.node.localTag }}
@@ -195,30 +184,24 @@
                                  [attr.can-left]="item.canLeft"
                                  [attr.can-right]="item.canRight"
                             >
-                                <button (click)="onDropUp($event)" mat-icon-button
-                                        class="action-button move-action-up">
+                                <button (click)="onDropUp($event)" mat-icon-button class="action-button move-action-up">
                                     <i class="pi pi-caret-up"></i>
                                 </button>
-                                <button (click)="onDropLeft($event)" mat-icon-button
-                                        class="action-button move-action-left">
+                                <button (click)="onDropLeft($event)" mat-icon-button class="action-button move-action-left">
                                     <i class="pi pi-caret-left"></i>
                                 </button>
-                                <button (click)="onDropRight($event)" mat-icon-button
-                                        class="action-button move-action-right">
+                                <button (click)="onDropRight($event)" mat-icon-button class="action-button move-action-right">
                                     <i class="pi pi-caret-right"></i>
                                 </button>
-                                <button (click)="onDropDown($event)" mat-icon-button
-                                        class="action-button move-action-down">
+                                <button (click)="onDropDown($event)" mat-icon-button class="action-button move-action-down">
                                     <i class="pi pi-caret-down"></i>
                                 </button>
-                                <button (click)="onVisibleMoreActions($event)" mat-icon-button
-                                        class="action-button move-more-action-button">
+                                <button (click)="onVisibleMoreActions($event)" mat-icon-button class="action-button move-more-action-button">
                                     <i class="pi pi-ellipsis-h"></i>
                                 </button>
                             </div>
                             <div class="actions-container">
-                                <button (click)="onVisibleMoreActions($event)" mat-icon-button
-                                        class="action-button more-action-button">
+                                <button (click)="onVisibleMoreActions($event)" mat-icon-button class="action-button more-action-button">
                                     <i class="pi pi-ellipsis-h"></i>
                                 </button>
                                 <button (click)="onDelete($event)" mat-icon-button class="action-button delete-action">
