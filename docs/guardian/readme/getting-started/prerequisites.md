@@ -1,8 +1,9 @@
 # 🗒️ Prerequisites
 
+## 1. Universal Software
+
 * [Docker](https://www.docker.com/) (To build with one command)
 * [MongoDB](https://www.mongodb.com/)[ V6](https://www.mongodb.com/) , [NodeJS](https://nodejs.org/)[ v16](https://nodejs.org/en) and [Nats](https://nats.io/)[ 1.12.2](https://nats.io/) (If you build with docker these components will be installed automatically)
-* [Hedera Testnet Account](https://portal.hedera.com/)
 * [Web3.Storage Account](https://web3.storage/)
 * [Filebase Account](https://filebase.com/)
 * [Redict 7.3.0](https://redict.io/)
@@ -13,12 +14,22 @@ When building reference implementation, you can manually build every component o
 **Note**: If you have already installed another version of Guardian, remember to **perform backup operation before upgrading**.
 {% endhint %}
 
-### Automatic Installation
+## 2. Hedera Network
 
-### Prerequisites for Automatic Installation
+|              | Testnet (default)                  | Mainnet (production)                              |
+| ------------ | ---------------------------------- | ------------------------------------------------- |
+| **Account**  | Create via Hedera Developer Portal | Create via Hedera-enabled wallet (e.g., HashPack) |
+| **Key type** | ED25519                            | ED25519                                           |
+| **Network**  | `testnet`                          | `mainnet`                                         |
+
+> **Fees**: Mainnet operations incur HBAR costs—fund your account before running Guardian.
+
+## 3. Automatic Installation
+
+### 3.1 Prerequisites for Automatic Installation
 
 * [Docker](https://www.docker.com/)
 
-#### Docker Installation
+#### 3.1.1 Docker Installation
 
 If you build with docker [MongoDB](https://www.mongodb.com), [NodeJS](https://nodejs.org) and [Nats](https://nats.io/) will be installed and configured automatically.
