@@ -7,7 +7,7 @@ import { Guardians, parseInteger } from '#helpers';
 
 @Controller('worker-tasks')
 @ApiTags('worker-tasks')
-export class WorkerTasksController{
+export class WorkerTasksController {
     /**
      * Get all notifications
      */
@@ -31,6 +31,13 @@ export class WorkerTasksController{
         required: false,
         example: 20
     })
+    @ApiQuery({
+        name: 'status',
+        type: String,
+        description: 'Status',
+        required: false,
+        example: 'NEW'
+    })
     @ApiOkResponse({
         description: 'Successful operation. Returns notifications and count.',
         isArray: true,
@@ -48,9 +55,10 @@ export class WorkerTasksController{
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
+        @Query('status') status?: string
     ) {
         const guardians = new Guardians();
-        const [tasks, count] = await guardians.getAllWorkerTasks(user, parseInteger(pageIndex), parseInteger(pageSize));
+        const [tasks, count] = await guardians.getAllWorkerTasks(user, parseInteger(pageIndex), parseInteger(pageSize), status);
         res.header('X-Total-Count', count).send(tasks);
     }
 

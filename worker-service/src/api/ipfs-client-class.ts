@@ -121,7 +121,7 @@ export class IpfsClientClass {
      * @param beforeCallback
      */
     public async addFile(file: Buffer): Promise<string> {
-        let cid:string;
+        let cid: string;
         switch (this.IPFS_PROVIDER) {
             case IpfsProvider.WEB3STORAGE: {
                 const result = await this.client.uploadFile(new Blob([file]));
