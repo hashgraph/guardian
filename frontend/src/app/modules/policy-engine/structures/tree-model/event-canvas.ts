@@ -79,38 +79,6 @@ export class EventCanvas {
         return this.box;
     }
 
-    // public setData(renderLine: BlocLine[]) {
-    //     if (!this.valid) {
-    //         return;
-    //     }
-    //
-    //     if (this.lastImage?.data) {
-    //         this.lastImage.data = null as any;
-    //     }
-    //
-    //     this.maxWidth = 0;
-    //     for (let index = 0; index < renderLine.length; index++) {
-    //         const line = renderLine[index];
-    //         this.maxWidth = Math.max(this.maxWidth, line.width);
-    //         line.index = index + 1;
-    //         this.drawData(line);
-    //     }
-    //
-    //     const box = this.parent.getBoundingClientRect();
-    //     const width = Math.max(box.width, this.maxWidth);
-    //     this.canvas.style.width = `${width}px`;
-    //     this.canvas.width = width;
-    //
-    //     const data = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height).data;
-    //     this.lastImage = {
-    //         context: this.context,
-    //         width: this.canvas.width,
-    //         height: this.canvas.height,
-    //         lines: renderLine,
-    //         data: data
-    //     };
-    // }
-
     public setData(renderLine: BlocLine[]) {
         if (!this.valid) {
             return;
@@ -246,23 +214,6 @@ export class EventCanvas {
         }
         return position;
     }
-
-    // public getIndexObject(position: any): number {
-    //     if (this.valid && this.lastImage && position) {
-    //         const idx = (position.y * this.lastImage.width + position.x) * 4;
-    //         const a = this.lastImage.data[idx + 3];
-    //         let index = 0;
-    //         if (a == 255) {
-    //             const r = this.lastImage.data[idx];
-    //             const g = this.lastImage.data[idx + 1];
-    //             const b = this.lastImage.data[idx + 2];
-    //             index = this.fromColor(r, g, b);
-    //         }
-    //         return index;
-    //     } else {
-    //         return -1;
-    //     }
-    // }
 
     public getIndexObject(position: { x: number; y: number }): number {
         if (!this.valid || !this.lastImage || !position) {

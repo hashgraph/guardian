@@ -997,19 +997,6 @@ export class PolicyConfigurationComponent implements OnInit {
         return [result, childConfig];
     }
 
-    private async logHeap(label: string) {
-        if ((performance as any).measureUserAgentSpecificMemory) {
-            const { bytes } =
-                await (performance as any).measureUserAgentSpecificMemory();
-            console.log(`[${label}] JS heap: ${(bytes/1048576).toFixed(1)} MB`);
-        } else if ((performance as any).memory) {
-            const { usedJSHeapSize } = (performance as any).memory;
-            console.log(`[${label}] JS heap: ${(usedJSHeapSize/1048576).toFixed(1)} MB`);
-        } else {
-            console.log(`[${label}] API недоступно — используйте DevTools snapshot`);
-        }
-    }
-
     public ngOnInit() {
         this.loading = true;
         this.options.load();
@@ -1026,10 +1013,6 @@ export class PolicyConfigurationComponent implements OnInit {
         }, ({ message }) => {
             console.error(message);
         });
-    }
-
-    async ngAfterViewInit(): Promise<void> {
-        await this.logHeap('afterViewInit');
     }
 
     public async ngOnDestroy(): Promise<void> {
@@ -1054,8 +1037,6 @@ export class PolicyConfigurationComponent implements OnInit {
         }
 
         this.currentCMStyles?.remove()
-
-        await this.logHeap('onDestroy');
     }
 
     public onConfigChange() {
@@ -1071,7 +1052,6 @@ export class PolicyConfigurationComponent implements OnInit {
                     this.treeOverview.render();
                 }
             }, 10);
-            await this.logHeap('config change');
         }, 1000);
     }
 
