@@ -4,27 +4,72 @@
 
 The Guardian is an innovative open-source platform that streamlines the creation, management, and verification of digital environmental assets. It leverages a customizable Policy Workflow Engine and Web3 technology to ensure transparent and fraud-proof operations, making it a key tool for transforming sustainability practices and carbon markets.
 
-## **2. Prerequisites**
+Below are the universal software prerequisites, followed by network-specific items.
 
-Before starting with Hedera Guardian, ensure that your environment meets the following requirements:
+## 2. Prerequisites
 
-* [Install Git](https://git-scm.com/).
-* [Docker](https://www.docker.com/) (To build with one command)
-* [MongoDB](https://www.mongodb.com/)[ V6](https://www.mongodb.com/) , [NodeJS](https://nodejs.org/)[ v16](https://nodejs.org/en) and [Nats](https://nats.io/)[ 1.12.2](https://nats.io/) (If you build with docker these components will be installed automatically)
-* [Hedera Testnet Account](https://portal.hedera.com/)
-* [Web3.Storage Account](https://web3.storage/)
-* [Filebase Account](https://filebase.com/)
-* [Redict 7.3.0](https://redict.io/)
+### 2.1 Universal software
 
-## **3. Installation**
+1. **Git** – source-control tooling
+2. **Docker** – one-command build & run&#x20;
+3. **MongoDB v6**, **Node.js v16**, and **NATS 1.12.2** – auto-installed when using Docker-Compose
+4. **Web3.Storage account** – IPFS pinning service
+5. **Filebase account** – S3-compatible IPFS pinning&#x20;
+6. **Redis 7.3.0** – in-memory cache & message broker (auto-provisioned by the Docker stack)
 
-There are multiple ways to Install Guardian:
+### 2.2 Hedera network
 
-1. [Using Docker](guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/)
-2. [Pre-Build Containers](guardian/readme/getting-started/installation/building-from-pre-build-containers.md)
-3. [Manually](guardian/readme/getting-started/installation/build-executables-and-run-manually.md)
+|              | Testnet (default)                  | Mainnet (production)                              |
+| ------------ | ---------------------------------- | ------------------------------------------------- |
+| **Account**  | Create via Hedera Developer Portal | Create via Hedera-enabled wallet (e.g., HashPack) |
+| **Key type** | ED25519                            | ED25519                                           |
+| **Network**  | `testnet`                          | `mainnet`                                         |
 
-## **4. Troubleshooting**
+> **Fees**: Mainnet operations incur HBAR costs—fund your account before running Guardian.
+
+***
+
+## 3. Preparing a Mainnet Account & Keys
+
+1. Install a Hedera-enabled wallet (e.g., [HashPack](https://www.hashpack.app/)).
+2. Create a Mainnet account and note the **Account ID** (`0.0.x`).
+3. Export the **ED25519** key pair
+   * _HashPack path_: **Settings → Manage Accounts → Export Private Key** (DER format).
+4.  Update your `.env`
+
+    ```dotenv
+    HEDERA_NET=mainnet
+    HEDERA_OPERATOR_ID=0.0.123456
+    HEDERA_OPERATOR_KEY=-----BEGIN PRIVATE KEY----- … -----END PRIVATE KEY-----
+    ```
+
+## 4. Preparing a Testnet Account & Keys
+
+1. Create a Testnet account via the Hedera Developer Portal.
+2. Record your **Account ID** (`0.0.x`).
+3. Download the **ED25519** private key (ignore **ECDSA**)
+   * Select **DER Encoded** — _do not_ choose _HEX Encoded_.
+4.  Update your `.env`
+
+    ```dotenv
+    dotenvCopyEditHEDERA_NET=testnet
+    HEDERA_OPERATOR_ID=0.0.987654
+    HEDERA_OPERATOR_KEY=-----BEGIN PRIVATE KEY----- … -----END PRIVATE KEY-----
+    ```
+
+## 5. Installation
+
+1.  **Docker-Compose**
+
+    ```bash
+    bashCopyEditdocker compose -f ./deploy/docker-compose.yml --profile all up -d
+    ```
+
+    _(Detects Testnet/Mainnet from `.env`)_
+2. **Pre-built containers** — pull `hashgraph/guardian:latest` and supply `.env` as a secret.
+3. **Manual build** — clone repo, install Node deps, compile, start services.
+
+## **6. Troubleshooting**
 
 * **Server not starting?** Ensure that Docker is running and all containers are up.
 * **Cannot access the admin dashboard?** Check if the correct ports (3000) are open and not blocked by your firewall.
