@@ -55,7 +55,7 @@ export class QueueService extends NatsService {
                 } else {
                     task.isError = true;
                     task.errorReason = data.error;
-                    if (!task.userId) {
+                    if (!task.interception) {
                         await this.completeTaskInQueue(data.id, data.data, data.error);
                     }
                 }
@@ -64,7 +64,7 @@ export class QueueService extends NatsService {
                 task.isError = true;
                 task.errorReason = data.error;
 
-                if (!task.userId) {
+                if (!task.interception) {
                     await this.completeTaskInQueue(data.id, data.data, data.error);
                 }
             }
@@ -81,7 +81,7 @@ export class QueueService extends NatsService {
             const { user, pageSize, pageIndex, status } = data;
             const userId = user?.id?.toString();
             const options: any =
-                typeof pageIndex === 'number' && typeof pageSize === 'number'
+                (typeof pageIndex === 'number' && typeof pageSize === 'number')
                     ? {
                         orderBy: {
                             createDate: OrderDirection.DESC,
@@ -94,7 +94,7 @@ export class QueueService extends NatsService {
                             processedTime: OrderDirection.DESC,
                         },
                     };
-            const filters: any = { userId };
+            const filters: any = { userId, interception: { $ne: null } };
             if (status) {
                 if (status === 'COMPLETE') {
                     filters.done = true;
@@ -240,11 +240,10 @@ export class QueueService extends NatsService {
     }
 
     private async clearLongPendingTasks() {
-
         const dataBaseServer = new DatabaseServer();
 
-        const tasks =
-            await dataBaseServer.aggregate(TaskEntity, dataBaseServer.getTasksAggregationFilters(MAP_TASKS_AGGREGATION_FILTERS.RESULT, this.processTimeout));
+        const filters = dataBaseServer.getTasksAggregationFilters(MAP_TASKS_AGGREGATION_FILTERS.RESULT, this.processTimeout);
+        const tasks = await dataBaseServer.aggregate(TaskEntity, filters);
 
         for (const task of tasks) {
             task.processedTime = null;

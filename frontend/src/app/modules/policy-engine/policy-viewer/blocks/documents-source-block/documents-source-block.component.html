@@ -85,7 +85,7 @@
                                                 {{ getText(element, option) }}
                                             </div>
                                         </span>
-                                        <div *ngIf="option.type == 'block' && element.option.status !== 'Revoked'"  class="col-btn"
+                                        <div *ngIf="option.type == 'block' && element.option?.status !== 'Revoked'"  class="col-btn"
                                              (click)="$event.stopImmediatePropagation()">
                                             <render-block
                                                 [block]="option._block"

@@ -1173,7 +1173,12 @@ export class PolicyEngineService {
                     );
                     await messageServer
                         .setTopicObject(topic)
-                        .sendMessage(message, true, null, owner?.id);
+                        .sendMessage(message, {
+                            sendToIPFS: true,
+                            memo: null,
+                            userId: owner?.id,
+                            interception: null
+                        });
                     await DatabaseServer.updatePolicy(model);
 
                     await new GuardiansService().sendPolicyMessage(PolicyEvents.REFRESH_MODEL, policyId, {});

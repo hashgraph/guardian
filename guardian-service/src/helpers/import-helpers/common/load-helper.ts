@@ -59,7 +59,8 @@ export async function loadSchema(messageId: string, log: PinoLogger, userId: str
                     messageId,
                     loadIPFS: true,
                     type: MessageType.Schema,
-                    userId
+                    userId,
+                    interception: null
                 });
             log.info(`loadedSchema: ${messageId}`, ['GUARDIAN_SERVICE'], userId);
             schemaToImport = {

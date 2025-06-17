@@ -293,7 +293,12 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 });
                 const statMessageResult = await messageServer
                     .setTopicObject(topic)
-                    .sendMessage(statMessage, true, null, userId);
+                    .sendMessage(statMessage, {
+                        sendToIPFS: true,
+                        memo: null,
+                        userId: userId,
+                        interception: null
+                    });
 
                 item.topicId = topic.topicId;
                 item.messageId = statMessageResult.getId();
@@ -461,7 +466,12 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 vcMessage.setRelationships(assessment.relationships);
                 const vcMessageResult = await messageServer
                     .setTopicObject(topic)
-                    .sendMessage(vcMessage, true, null, userId);
+                    .sendMessage(vcMessage, {
+                        sendToIPFS: true,
+                        memo: null,
+                        userId: userId,
+                        interception: null
+                    });
 
                 const row = await DatabaseServer.createStatisticAssessment({
                     definitionId: item.id,
