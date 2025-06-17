@@ -2213,13 +2213,6 @@ export class Guardians extends NatsService {
     }
 
     /**
-     * Get map api key
-     */
-    public async getMapApiKey(user: IAuthUser): Promise<string> {
-        return await this.sendMessage<string>(MessageAPI.GET_MAP_API_KEY, { user });
-    }
-
-    /**
      * Get sentinel api key
      */
     public async getSentinelApiKey(user: IAuthUser): Promise<string> {
@@ -2865,8 +2858,13 @@ export class Guardians extends NatsService {
      * @param pageIndex
      * @param pageSize
      */
-    public async getAllWorkerTasks(user: IAuthUser, pageIndex: number, pageSize: number): Promise<any> {
-        return this.sendMessage(QueueEvents.GET_TASKS_BY_USER, { user, pageIndex, pageSize });
+    public async getAllWorkerTasks(
+        user: IAuthUser,
+        pageIndex: number,
+        pageSize: number,
+        status: string
+    ): Promise<any> {
+        return this.sendMessage(QueueEvents.GET_TASKS_BY_USER, { user, pageIndex, pageSize, status });
     }
 
     /**

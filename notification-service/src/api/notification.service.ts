@@ -3,6 +3,7 @@ import { Progress } from '../entity/progress.entity.js';
 import {
     DatabaseServer,
     JwtServiceAuthGuard,
+    JwtServicesValidator,
     MessageError,
     MessageResponse,
 } from '@guardian/common';
@@ -13,10 +14,12 @@ import {
     Client,
     ClientProxy,
     MessagePattern,
+    NatsRecordBuilder,
     Payload,
     Transport,
 } from '@nestjs/microservices';
 import process from 'process';
+import { headers } from 'nats';
 
 @Controller()
 export class NotificationService {
@@ -88,14 +91,33 @@ export class NotificationService {
     client: ClientProxy;
 
     /**
+     * Send message
+     * @param subject
+     * @param data
+     * @returns Result
+     */
+    private async sendMessage(subject: NotifyAPI, data: any) {
+        try {
+            const token = await JwtServicesValidator.sign(subject);
+            const head = headers();
+            head.append('serviceToken', token);
+            const record = new NatsRecordBuilder(data).setHeaders(head).build();
+            const response = await this.client.send(subject, record).toPromise();
+
+            return response.body;
+        } catch (error) {
+            console.log(error, subject);
+            throw error;
+        }
+    }
+
+    /**
      * Update notification WS
      * @param notification notification
      */
     private async updateNotificationWS(notification: Notification) {
         try {
-            await this.client
-                .send(NotifyAPI.UPDATE_WS, notification)
-                .toPromise();
+            await this.sendMessage(NotifyAPI.UPDATE_WS, notification);
         } catch (error) {
             console.error(error);
         }
@@ -113,12 +135,10 @@ export class NotificationService {
         userId: string;
     }) {
         try {
-            await this.client
-                .send(NotifyAPI.DELETE_WS, {
+            await this.sendMessage(NotifyAPI.DELETE_WS, {
                     userId,
                     notificationId: id,
-                })
-                .toPromise();
+                });
         } catch (error) {
             console.error(error);
         }
@@ -130,9 +150,7 @@ export class NotificationService {
      */
     private async updateProgressWS(progress: Progress) {
         try {
-            await this.client
-                .send(NotifyAPI.UPDATE_PROGRESS_WS, progress)
-                .toPromise();
+            await this.sendMessage(NotifyAPI.UPDATE_PROGRESS_WS, progress);
         } catch (error) {
             console.error(error);
         }
@@ -140,9 +158,7 @@ export class NotificationService {
 
     private async createProgressWS(progress: Progress) {
         try {
-            await this.client
-                .send(NotifyAPI.CREATE_PROGRESS_WS, progress)
-                .toPromise();
+            await this.sendMessage(NotifyAPI.CREATE_PROGRESS_WS, progress);
         } catch (error) {
             console.error(error);
         }
@@ -160,12 +176,10 @@ export class NotificationService {
         userId: string;
     }) {
         try {
-            await this.client
-                .send(NotifyAPI.DELETE_PROGRESS_WS, {
+            await this.sendMessage(NotifyAPI.DELETE_PROGRESS_WS, {
                     notificationId: id,
                     userId,
-                })
-                .toPromise();
+                });
         } catch (error) {
             console.error(error);
         }

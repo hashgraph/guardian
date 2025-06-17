@@ -1,5 +1,5 @@
 import { NatsConnection, headers, Subscription } from 'nats';
-import { GenerateUUIDv4, WalletEvents } from '@guardian/interfaces';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { ZipCodec } from './zip-codec.js';
 import { IMessageResponse } from '../models/index.js';
 import { ForbiddenException } from '@nestjs/common';
@@ -52,12 +52,6 @@ export abstract class NatsService {
 
     constructor() {
         this.codec = ZipCodec();
-        JwtServicesValidator.setWhiteList([
-            WalletEvents.SET_GLOBAL_APPLICATION_KEY,
-            WalletEvents.SET_KEY,
-            WalletEvents.GET_GLOBAL_APPLICATION_KEY,
-            WalletEvents.GET_KEY,
-        ], ['settings-reply-']);
 
         // this.codec = JSONCodec();
     }
@@ -84,13 +78,6 @@ export abstract class NatsService {
             throw new Error('Connection must set first');
         }
 
-        JwtServicesValidator.setWhiteList([
-            WalletEvents.SET_GLOBAL_APPLICATION_KEY,
-            WalletEvents.SET_KEY,
-            WalletEvents.GET_GLOBAL_APPLICATION_KEY,
-            WalletEvents.GET_KEY,
-        ], ['settings-reply-']);
-
         this.addAdditionalAvailableEvents([this.replySubject]);
 
         this.connection.subscribe(this.replySubject, {
@@ -110,7 +97,7 @@ export abstract class NatsService {
                                 }
 
                                 try {
-                                    await JwtServicesValidator.verify(serviceToken, msg.subject);
+                                    await JwtServicesValidator.verify(serviceToken);
                                 } catch (err) {
                                     throw err;
                                 }
@@ -181,7 +168,7 @@ export abstract class NatsService {
                     }
                     data = await this.codec.decode(m.data);
                     try {
-                        await JwtServicesValidator.verify(serviceToken, m.subject);
+                        await JwtServicesValidator.verify(serviceToken);
                     } catch (err) {
                         throw err;
                     }
@@ -321,7 +308,7 @@ export abstract class NatsService {
                     }
 
                     try {
-                        await JwtServicesValidator.verify(serviceToken, msg.subject);
+                        await JwtServicesValidator.verify(serviceToken);
                     } catch (err) {
                         throw err;
                     }

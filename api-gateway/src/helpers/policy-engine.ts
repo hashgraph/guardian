@@ -633,6 +633,34 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Test block
+     * @param policyId
+     * @param config
+     * @param owner
+     */
+    public async runBlock(
+        policyId: string,
+        config: any,
+        owner: IOwner
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.DRY_RUN_BLOCK, { policyId, config, owner });
+    }
+
+    /**
+     * Get history block data
+     * @param policyId
+     * @param tagName
+     * @param owner
+     */
+    public async getBlockHistory(
+        policyId: string,
+        tag: string,
+        owner: IOwner
+    ): Promise<any[]> {
+        return await this.sendMessage(PolicyEngineEvents.DRY_RUN_BLOCK_HISTORY, { policyId, tag, owner });
+    }
+
+    /**
      * Create savepoint
      * @param model
      * @param owner

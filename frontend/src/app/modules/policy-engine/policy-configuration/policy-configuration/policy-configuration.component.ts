@@ -30,6 +30,7 @@ import { OrderOption } from '../../structures/interfaces/order-option.interface'
 import { PolicyFolder, PolicyItem, PolicyRoot } from '../../structures/policy-models/interfaces/types';
 import { PolicyPropertiesComponent } from '../policy-properties/policy-properties.component';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
+import { TestCodeDialog } from '../../dialogs/test-code-dialog/test-code-dialog.component';
 
 /**
  * The page for editing the policy and blocks.
@@ -37,7 +38,10 @@ import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
 @Component({
     selector: 'app-policy-configuration',
     templateUrl: './policy-configuration.component.html',
-    styleUrls: ['./policy-configuration.component.scss'],
+    styleUrls: [
+        './policy-configuration.component.scss',
+        '../../styles/properties.scss'
+    ],
 })
 export class PolicyConfigurationComponent implements OnInit {
     private _searchTimeout!: any;
@@ -1205,6 +1209,22 @@ export class PolicyConfigurationComponent implements OnInit {
         this.updateTemporarySchemas();
         this.onSelect(this.openFolder.root);
         return false;
+    }
+
+    public onTest(block: any) {
+        const dialogRef = this.dialogService.open(TestCodeDialog, {
+            showHeader: false,
+            header: 'Code',
+            width: '1200px',
+            styleClass: 'guardian-dialog',
+            data: {
+                block: block,
+                folder: this.openFolder,
+                readonly: this.readonly,
+                policyId: this.policyId
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => {});
     }
 
     public onCreateModule() {

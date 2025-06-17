@@ -296,6 +296,18 @@ export interface IPolicyBlock {
     warn(message: string): void;
 
     /**
+     * Write debug to log
+     * @param message
+     */
+    debug(message: any): void;
+
+    /**
+     * Save and update debug context
+     * @param context
+     */
+    debugContext(context: any): Promise<any>;
+
+    /**
      * Trigger events
      * @param eventType
      * @param user

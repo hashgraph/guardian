@@ -54,32 +54,13 @@ Promise.all([
         await new OldSecretManager().setConnection(cn).init();
         const jwtServiceName = 'AUTH_SERVICE';
         const secretManager = SecretManager.New();
-        JwtServicesValidator.setSecretManager(secretManager)
-        JwtServicesValidator.setServiceName(jwtServiceName)
+
+        JwtServicesValidator.setServiceName(jwtServiceName);
 
         await new WalletService().setConnection(cn).init();
         new WalletService().registerVault(vault);
         const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
         new WalletService().registerListeners(logger);
-
-        let { SERVICE_JWT_PUBLIC_KEY } = await secretManager.getSecrets(`publickey/jwt-service/${jwtServiceName}`);
-        if (!SERVICE_JWT_PUBLIC_KEY) {
-            SERVICE_JWT_PUBLIC_KEY = process.env.SERVICE_JWT_PUBLIC_KEY;
-            if (SERVICE_JWT_PUBLIC_KEY?.length < 8) {
-                throw new Error(`${jwtServiceName} service jwt keys not configured`);
-            }
-            await secretManager.setSecrets(`publickey/jwt-service/${jwtServiceName}`, {SERVICE_JWT_PUBLIC_KEY});
-        }
-
-        let { SERVICE_JWT_SECRET_KEY } = await secretManager.getSecrets(`secretkey/jwt-service/${jwtServiceName}`);
-
-        if (!SERVICE_JWT_SECRET_KEY) {
-            SERVICE_JWT_SECRET_KEY = process.env.SERVICE_JWT_SECRET_KEY;
-            if (SERVICE_JWT_SECRET_KEY?.length < 8) {
-                throw new Error(`${jwtServiceName} service jwt keys not configured`);
-            }
-            await secretManager.setSecrets(`secretkey/jwt-service/${jwtServiceName}`, {SERVICE_JWT_SECRET_KEY});
-        }
 
         const state = new ApplicationState();
         await state.setServiceName('AUTH_SERVICE').setConnection(cn).init();
@@ -119,14 +100,14 @@ Promise.all([
                 }
             }
 
-            let {JWT_PRIVATE_KEY, JWT_PUBLIC_KEY} = await secretManager.getSecrets('secretkey/auth');
+            let { JWT_PRIVATE_KEY, JWT_PUBLIC_KEY } = await secretManager.getSecrets('secretkey/auth');
             if (!JWT_PRIVATE_KEY || !JWT_PUBLIC_KEY) {
                 JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
                 JWT_PUBLIC_KEY = process.env.JWT_PUBLIC_KEY;
                 if (JWT_PRIVATE_KEY.length < 8 || JWT_PUBLIC_KEY.length < 8) {
                     return false;
                 }
-                await secretManager.setSecrets('secretkey/auth', {JWT_PRIVATE_KEY, JWT_PUBLIC_KEY});
+                await secretManager.setSecrets('secretkey/auth', { JWT_PRIVATE_KEY, JWT_PUBLIC_KEY });
             }
 
             return true;
@@ -134,9 +115,7 @@ Promise.all([
 
         validator.setValidAction(async () => {
             import(
-                `./helpers/fixtures${
-                    ApplicationEnvironment.demoMode ? '.demo' : ''
-                }.js`
+                `./helpers/fixtures${ApplicationEnvironment.demoMode ? '.demo' : ''}.js`
             ).then(async (module) => {
                 await module.fixtures();
             });

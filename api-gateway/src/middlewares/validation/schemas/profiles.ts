@@ -39,25 +39,60 @@ export class DidDocumentDTO {
     @ApiProperty({ type: 'string', isArray: true, nullable: true })
     controller?: string | string[];
 
-    @ApiProperty({ type: 'array', isArray: true, nullable: true })
+    @ApiProperty({
+        type: 'object',
+        additionalProperties: true,
+        isArray: true,
+        nullable: true
+    })
     verificationMethod?: any[];
 
-    @ApiProperty({ type: 'array', isArray: true, nullable: true })
+    @ApiProperty({
+        type: 'object',
+        additionalProperties: true,
+        isArray: true,
+        nullable: true
+    })
     authentication?: (any | string)[];
 
-    @ApiProperty({ type: 'array', isArray: true, nullable: true })
+    @ApiProperty({
+        type: 'object',
+        additionalProperties: true,
+        isArray: true,
+        nullable: true
+    })
     assertionMethod?: (any | string)[];
 
-    @ApiProperty({ type: 'array', isArray: true, nullable: true })
+    @ApiProperty({
+        type: 'object',
+        additionalProperties: true,
+        isArray: true,
+        nullable: true
+    })
     keyAgreement?: (any | string)[];
 
-    @ApiProperty({ type: 'array', isArray: true, nullable: true })
+    @ApiProperty({
+        type: 'object',
+        additionalProperties: true,
+        isArray: true,
+        nullable: true
+    })
     capabilityInvocation?: (any | string)[];
 
-    @ApiProperty({ type: 'array', isArray: true, nullable: true })
+    @ApiProperty({
+        type: 'object',
+        additionalProperties: true,
+        isArray: true,
+        nullable: true
+    })
     capabilityDelegation?: (any | string)[];
 
-    @ApiProperty({ type: 'array', isArray: true, nullable: true })
+    @ApiProperty({
+        type: 'object',
+        additionalProperties: true,
+        isArray: true,
+        nullable: true
+    })
     service?: any[];
 }
 
@@ -79,7 +114,6 @@ export class DidDocumentStatusDTO {
     @ApiProperty({
         type: 'object',
         nullable: false,
-        required: [],
         additionalProperties: {
             type: 'array',
             items: { $ref: getSchemaPath(DidKeyDTO) }
