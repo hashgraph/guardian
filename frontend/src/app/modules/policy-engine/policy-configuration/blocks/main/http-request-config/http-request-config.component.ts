@@ -96,5 +96,6 @@ export class HttpRequestConfigComponent implements OnInit {
 
     onSave() {
         this.item.changed = true;
+        this.item.emitUpdate()
     }
 }
