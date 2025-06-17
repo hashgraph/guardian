@@ -48,6 +48,17 @@
                 line-height: 32px;
                 height: 32px;
             }
+
+            .header-item {
+                padding: 6px 12px;
+                margin: 0px 16px;
+                border-radius: 6px;
+                font-size: var(--guardian-primary-font-size);
+                color: var(--guardian-dry-run-color);
+                background: var(--guardian-dry-run-background);
+                user-select: none;
+                cursor: default;
+            }
         }
 
         .header-icon {

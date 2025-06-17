@@ -384,7 +384,7 @@ export class PolicyImportExport {
             formulas
         };
     }
-    
+
     /**
      * Generate zip file of policy project data
      * @param csvData csvData

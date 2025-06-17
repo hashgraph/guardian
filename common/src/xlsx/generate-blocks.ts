@@ -206,7 +206,6 @@ export class GenerateBlocks {
     }
 
     private static addExpression(field: SchemaField, expressions: Expression[]) {
-        console.log('---', field.name, field.formulae);
         if (field.formulae) {
             expressions.push(new Expression(field.name, field.formulae));
         }
@@ -383,8 +382,6 @@ export class GenerateBlocks {
         body += `        main(document.document.credentialSubject[0])\r\n`;
         body += `    ));\r\n`;
         body += `})();`;
-
-        console.log(body)
 
         return body;
     }

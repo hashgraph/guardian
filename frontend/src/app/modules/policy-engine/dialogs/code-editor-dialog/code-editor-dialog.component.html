@@ -24,6 +24,11 @@
                 (click)="onClose()"
                 class="guardian-button guardian-button-secondary">Close</button>
         </div>
+        <div *ngIf="test" class="dialog-button">
+            <button
+                (click)="onTest()"
+                class="guardian-button guardian-button-primary">Test</button>
+        </div>
         <div class="dialog-button">
             <button
                 (click)="onSave()"

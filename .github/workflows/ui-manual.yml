@@ -134,6 +134,8 @@ jobs:
                   OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
                   JWT_PRIVATE_KEY: ${{ secrets.CI_JWT_PRIVATE_KEY }}
                   JWT_PUBLIC_KEY: ${{ secrets.CI_JWT_PUBLIC_KEY }}
+                  SERVICE_JWT_PUBLIC_KEY_ALL: ${{ secrets.CI_JWT_PUBLIC_KEY }}
+                  SERVICE_JWT_SECRET_KEY_ALL: ${{ secrets.CI_JWT_PRIVATE_KEY }}
                   IPFS_NODE_ADDRESS: http://localhost:5001
                   IPFS_PROVIDER: web3storage
                   IPFS_PUBLIC_GATEWAY: https://dweb.link/ipfs/${cid}

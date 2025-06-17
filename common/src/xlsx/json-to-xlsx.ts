@@ -1,5 +1,5 @@
 import { Dictionary, FieldTypes } from './models/dictionary.js';
-import { anyToXlsx, examplesToXlsx, booleanToXlsx, entityToXlsx, fontToXlsx, stringToXlsx, typeToXlsx, unitToXlsx, valueToFormula } from './models/value-converters.js';
+import { anyToXlsx, examplesToXlsx, booleanToXlsx, entityToXlsx, fontToXlsx, stringToXlsx, typeToXlsx, unitToXlsx, valueToFormula, visibilityToXlsx } from './models/value-converters.js';
 import { Hyperlink, Range, Workbook, Worksheet } from './models/workbook.js';
 import { Table } from './models/table.js';
 import { ISchema, Schema, SchemaCondition, SchemaField } from '@guardian/interfaces';
@@ -264,6 +264,12 @@ export class JsonToXlsx {
             worksheet.getCell(table.getCol(Dictionary.ANSWER), row)
                 .setFormat(unitToXlsx(field));
         }
+        if (field.autocalculate) {
+            worksheet
+                .getCell(table.getCol(Dictionary.PARAMETER), row)
+                .setValue(stringToXlsx(field.expression))
+                .setStyle(table.paramStyle);
+        }
         if (field.font) {
             worksheet
                 .getCell(table.getCol(Dictionary.PARAMETER), row)
@@ -309,7 +315,12 @@ export class JsonToXlsx {
         if (field.hidden) {
             worksheet
                 .getCell(table.getCol(Dictionary.VISIBILITY), row)
-                .setValue(booleanToXlsx(false));
+                .setValue(visibilityToXlsx('Hidden'));
+        }
+        if (field.autocalculate) {
+            worksheet
+                .getCell(table.getCol(Dictionary.VISIBILITY), row)
+                .setValue(visibilityToXlsx('Auto'));
         }
 
         const name = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);

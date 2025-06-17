@@ -6,7 +6,7 @@ import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '
 import { PolicyComponentsUtils } from '../../policy-components-utils.js';
 import { IPolicyEvent, PolicyLink } from '../../interfaces/policy-event.js';
 import { PolicyInputEventType, PolicyOutputEventType } from '../../interfaces/policy-event-type.js';
-import { DatabaseServer, Policy, PinoLogger } from '@guardian/common';
+import { DatabaseServer, Policy } from '@guardian/common';
 import deepEqual from 'deep-equal';
 import { PolicyUser } from '../../policy-user.js';
 import { ComponentsService } from '../components-service.js';
@@ -88,11 +88,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @protected
              */
             protected currentDataState: any = {};
-            /**
-             * Logger instance
-             * @protected
-             */
-            protected logger: PinoLogger;
             /**
              * Policy id
              */
@@ -185,7 +180,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 this.components = _components;
                 this.databaseServer = this.components.databaseServer;
                 this._dryRun = null;
-                this.logger = new PinoLogger();
 
                 if (this.parent) {
                     this.parent.registerChild(this as any as IPolicyBlock);
@@ -716,7 +710,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @protected
              */
             protected log(message: string) {
-                this.logger.info(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId], this.policyInstance.ownerId);
+                this.components.info(message, [
+                    'GUARDIAN_SERVICE',
+                    this.uuid,
+                    this.blockType,
+                    this.tag,
+                    this.policyId
+                ], this.policyInstance.ownerId);
             }
 
             /**
@@ -725,7 +725,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @protected
              */
             protected error(message: string) {
-                this.logger.error(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId], this.policyInstance.ownerId);
+                this.components.error(message, [
+                    'GUARDIAN_SERVICE',
+                    this.uuid,
+                    this.blockType,
+                    this.tag,
+                    this.policyId
+                ], this.policyInstance.ownerId);
             }
 
             /**
@@ -734,7 +740,35 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @protected
              */
             protected warn(message: string) {
-                this.logger.warn(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId], this.policyInstance.ownerId);
+                this.components.warn(message, [
+                    'GUARDIAN_SERVICE',
+                    this.uuid,
+                    this.blockType,
+                    this.tag,
+                    this.policyId
+                ], this.policyInstance.ownerId);
+            }
+
+            /**
+             * Write debug message
+             * @param message
+             * @protected
+             */
+            protected debug(message: any) {
+                this.components.debug(message);
+            }
+
+            /**
+             * Save and update debug context
+             * @param context
+             * @protected
+             */
+            protected async debugContext(context: any): Promise<any> {
+                if (this._dryRun) {
+                    return await this.components.debugContext(this.tag, context);
+                } else {
+                    return context;
+                }
             }
 
             /**

@@ -1,5 +1,17 @@
 <div class="container">
     <ng-container [ngTemplateOutlet]="header"></ng-container>
+    <div class="page-filters">
+        <p-dropdown
+            (onChange)="onFilter($event)"
+            [options]="statuses"
+            [(ngModel)]="currentStatus"
+            optionLabel="name"
+            optionValue="value"
+            appendTo="body"
+            class="guardian-dropdown"
+            placeholder="Status"
+        ></p-dropdown>
+    </div>
     <ng-container *ngIf="!loading">
         <ng-container [ngTemplateOutlet]="tableContainer"></ng-container>
     </ng-container>
@@ -26,30 +38,48 @@
                     <col style="width: 100px;"/>
                 </colgroup>
                 <tr class="row-header">
-                    <th>CREATED</th>
-                    <th>STARTED</th>
-                    <th>TYPE</th>
-                    <th>STATUS</th>
-                    <th></th>
+                    <th class="col-CREATED">CREATED</th>
+                    <th class="col-STARTED">STARTED</th>
+                    <th class="col-TYPE">TYPE</th>
+                    <th class="col-STATUS">STATUS</th>
+                    <th class="col-COMMENTS">COMMENTS</th>
+                    <th class="col-ACTION"></th>
                 </tr>
                 <ng-container *ngFor="let task of workerTasks">
                     <tr class="row-item">
-                        <td style="min-width: 200px;">{{ task.createDate | date: 'yyyy-MM-dd h:mm a' }}</td>
-                        <td *ngIf="task.processedTime"
-                            style="min-width: 200px;">{{ task.processedTime | date: 'yyyy-MM-dd h:mm a' }}
+                        <td class="col-CREATED">
+                            {{ task.createDate | date: 'yyyy-MM-dd h:mm a' }}
                         </td>
-                        <td *ngIf="!task.processedTime" style="min-width: 200px;">Not started yet</td>
-                        <td style="min-width: 200px;">
+                        <td *ngIf="task.processedTime" class="col-STARTED">
+                            {{ task.processedTime | date: 'yyyy-MM-dd h:mm a' }}
+                        </td>
+                        <td *ngIf="!task.processedTime" class="col-STARTED">
+                            Not started yet
+                        </td>
+                        <td class="col-TYPE">
                             <div>{{ task.type }}</div>
                         </td>
-                        <td>{{ taskStatus(task) }}</td>
-                        <td>
+                        <td class="col-STATUS">
+                            <div>{{ task.status }}</div>
+                        </td>
+                        <td class="col-COMMENTS">
+                            <div *ngIf="task.status === 'ERROR'">{{ task.errorReason }}</div>
+                        </td>
+                        <td class="col-ACTION">
                             <div class="operations-container">
-                                <button (click)="restartTask(task)" [disabled]="!(task.isError && task.isRetryableTask)"
-                                        class="p-button-raised p-button-rounded p-button-text" icon="pi pi-undo"
-                                        pButton type="button"></button>
-                                <button (click)="deleteTask(task)" [disabled]="!task.isError" class="p-button-raised p-button-rounded p-button-text" icon="pi pi-minus"
-                                        pButton type="button"></button>
+                                <button 
+                                    (click)="restartTask(task)" 
+                                    [disabled]="!(task.isError && task.isRetryableTask)"
+                                    class="p-button-raised p-button-rounded p-button-text" 
+                                    icon="pi pi-undo"
+                                    pButton type="button"></button>
+                                <button 
+                                    (click)="deleteTask(task)" 
+                                    [disabled]="!task.isError" 
+                                    class="p-button-raised p-button-rounded p-button-text" 
+                                    icon="pi pi-minus"
+                                    pButton 
+                                    type="button"></button>
                             </div>
                         </td>
                     </tr>

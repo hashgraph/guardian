@@ -238,6 +238,10 @@ export class PolicyTemplate {
         return true;
     }
 
+    public get policyId(): string | undefined {
+        return this.id;
+    }
+
     public getBlock(block: any): PolicyItem | undefined {
         return this._idMap[block?.id];
     }

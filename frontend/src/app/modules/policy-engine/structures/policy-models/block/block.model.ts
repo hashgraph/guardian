@@ -77,6 +77,10 @@ export class PolicyBlock {
         }
     }
 
+    public get policyId(): string | undefined {
+        return this._module?.id;
+    }
+
     public get isModule(): boolean {
         return false;
     }
@@ -422,6 +426,14 @@ export class PolicyBlock {
                 }
             }
         }
+        return json;
+    }
+
+    public getProp(): any {
+        const json: any = { ...this.properties };
+        json.id = this.id;
+        json.blockType = this.blockType;
+        json.tag = this.tag;
         return json;
     }
 

@@ -1,6 +1,6 @@
 import { Workbook, Worksheet } from './models/workbook.js';
 import { Dictionary, FieldTypes, IFieldTypes } from './models/dictionary.js';
-import { xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPresetValue, xlsxToUnit } from './models/value-converters.js';
+import { xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPresetValue, xlsxToUnit, xlsxToVisibility } from './models/value-converters.js';
 import { Table } from './models/table.js';
 import * as mathjs from 'mathjs';
 import { XlsxSchemaConditions } from './models/schema-condition.js';
@@ -198,7 +198,7 @@ export class XlsxToJson {
 
             row = table.end.r + 1;
             const fields: SchemaField[] = [];
-            const fieldCache = new Map<string, SchemaField>();
+            const allFields = new Map<string, SchemaField>();
 
             let parents: SchemaField[] = [];
             for (; row < range.e.r; row++) {
@@ -210,7 +210,7 @@ export class XlsxToJson {
                     xlsxResult
                 );
                 if (field) {
-                    fieldCache.set(field.name, field);
+                    allFields.set(field.name, field);
                     parents = parents.slice(0, groupIndex);
                     parents[groupIndex] = field;
                     if (groupIndex === 0) {
@@ -234,7 +234,7 @@ export class XlsxToJson {
                 const condition = XlsxToJson.readCondition(
                     worksheet,
                     table,
-                    fieldCache,
+                    fields,
                     conditionCache,
                     row,
                     xlsxResult
@@ -250,7 +250,7 @@ export class XlsxToJson {
                 XlsxToJson.readExpression(
                     worksheet,
                     table,
-                    fieldCache,
+                    allFields,
                     expressions,
                     row,
                     xlsxResult
@@ -340,13 +340,14 @@ export class XlsxToJson {
             const description = worksheet.getValue<string>(table.getCol(Dictionary.QUESTION), row);
             const required = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.REQUIRED_FIELD), row));
             const isArray = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.ALLOW_MULTIPLE_ANSWERS), row));
-            const visibility = worksheet.getValue<string>(table.getCol(Dictionary.VISIBILITY), row);
+            const visibility = xlsxToVisibility(worksheet.getValue<string>(table.getCol(Dictionary.VISIBILITY), row));
 
             field.name = name;
             field.description = description;
             field.required = required;
             field.isArray = isArray;
             field.hidden = visibility === 'Hidden';
+            field.autocalculate = visibility === 'Auto';
 
             let typeError = false;
             const fieldType = FieldTypes.findByName(type);
@@ -387,7 +388,7 @@ export class XlsxToJson {
             }
 
             if (!typeError && !XlsxToJson.isAutoCalculate(type, field)) {
-                let parseType = (val) => val;
+                let parseType = (val: any) => val;
                 if (fieldType) {
                     parseType = fieldType.pars.bind(fieldType);
                 }
@@ -504,6 +505,9 @@ export class XlsxToJson {
                 if (fieldType.name === 'Pattern') {
                     field.pattern = param;
                 }
+                if (field.autocalculate) {
+                    field.expression = param;
+                }
             }
         } catch (error) {
             xlsxResult.addError({
@@ -519,7 +523,7 @@ export class XlsxToJson {
     private static readCondition(
         worksheet: Worksheet,
         table: Table,
-        fieldCache: Map<string, SchemaField>,
+        fields: SchemaField[],
         conditionCache: XlsxSchemaConditions[],
         row: number,
         xlsxResult: XlsxResult
@@ -532,7 +536,7 @@ export class XlsxToJson {
         }
 
         const name = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
-        const field = fieldCache.get(name);
+        const field = fields.find((f) => f.name === name);
 
         try {
             //visibility
@@ -546,7 +550,7 @@ export class XlsxToJson {
                 if (cell.isFormulae()) {
                     result = XlsxToJson.parseCondition(cell.getFormulae());
                 } else if (cell.isValue()) {
-                    result = XlsxToJson.parseCondition(xlsxToBoolean(cell.getValue<string>()));
+                    result = XlsxToJson.parseCondition(xlsxToVisibility(cell.getValue<string>()));
                 }
             } catch (error) {
                 xlsxResult.addError({
@@ -572,7 +576,10 @@ export class XlsxToJson {
                     condition.addField(field, result.invert);
                     return null;
                 } else {
-                    const target = fieldCache.get(result.field);
+                    const target = fields.find((f) => f.name === result.field);
+                    if (!target) {
+                        throw new Error('Invalid target');
+                    }
                     const newCondition = new XlsxSchemaConditions(target, result.value);
                     newCondition.addField(field, result.invert);
                     return newCondition;
@@ -595,7 +602,7 @@ export class XlsxToJson {
     private static readExpression(
         worksheet: Worksheet,
         table: Table,
-        fieldCache: Map<string, SchemaField>,
+        allFields: Map<string, SchemaField>,
         expressionCache: XlsxExpressions,
         row: number,
         xlsxResult: XlsxResult
@@ -606,12 +613,12 @@ export class XlsxToJson {
 
         const path = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
         const description = worksheet.getValue<string>(table.getCol(Dictionary.QUESTION), row);
-        const lvl = worksheet.getRow(row).getOutline();
+        const groupIndex = worksheet.getRow(row).getOutline();
         const type = worksheet.getValue<string>(table.getCol(Dictionary.FIELD_TYPE), row);
 
-        expressionCache.addVariable(path, description, lvl);
+        expressionCache.addVariable(path, description, groupIndex);
 
-        const field = fieldCache.get(path);
+        const field = allFields.get(path);
         try {
             if (field && !field.isRef) {
                 if (XlsxToJson.isAutoCalculate(type, field)) {
@@ -635,7 +642,7 @@ export class XlsxToJson {
         }
     }
 
-    private static parseCondition(formulae: string | boolean): {
+    private static parseCondition(formulae: string): {
         type: 'const' | 'formulae',
         value?: any,
         field?: string,
@@ -646,12 +653,19 @@ export class XlsxToJson {
         }
         //'TRUE'
         //'FALSE'
-        if (formulae === 'TRUE' || formulae === true) {
+        if (formulae === 'TRUE') {
             return { type: 'const', value: true }
         }
-        if (formulae === 'FALSE' || formulae === false) {
+        if (formulae === 'FALSE') {
             return { type: 'const', value: false }
         }
+        if (formulae === 'Hidden') {
+            return { type: 'const', value: false }
+        }
+        if (formulae === 'Auto') {
+            return { type: 'const', value: true }
+        }
+
         //'EXACT(G11,10)'
         //'NOT(EXACT(G11,10))'
         //'EXACT(G11,"10")'
