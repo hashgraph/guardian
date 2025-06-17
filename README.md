@@ -29,12 +29,12 @@ To get a local copy up and running quickly, follow the steps below. Please refer
 
 ### 2.1 Universal software
 
-1. **Git** – source-control tooling  
-2. **Docker** – one-command build & run (recommended)  
-3. **MongoDB v6**, **Node.js v16**, and **NATS 1.12.2** – auto-installed when using Docker-Compose  
-4. **Web3.Storage account** – IPFS pinning service  
-5. **Filebase account** – S3-compatible IPFS pinning (optional but recommended)  
-6. **Redis 7.3.0** – in-memory cache & message broker (auto-provisioned by the Docker stack)
+1. **[Git](https://git-scm.com/downloads)** – source-control tooling  
+2. **[Docker](https://www.docker.com/)** – one-command build & run (recommended)  
+3. **[MongoDB v6](https://www.mongodb.com/)**, **[Node.js v16](https://nodejs.org/en)**, and **[NATS 1.12.2](https://nats.io/)** – auto-installed when using Docker-Compose  
+4. **[Web3.Storage account](https://web3.storage/)** – IPFS pinning service  
+5. **[Filebase account](https://filebase.com/)** – S3-compatible IPFS pinning (optional but recommended)  
+6. **[Redis 7.3.0](https://redict.io/)** – in-memory cache & message broker (auto-provisioned by the Docker stack)
 
 When building the reference implementation, you can [manually build every component](#manual-installation) or run a single command with Docker.
 
@@ -42,7 +42,7 @@ When building the reference implementation, you can [manually build every compon
 
 |                | Testnet (default)                      | Mainnet (production)                                                                               |
 | -------------- | -------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| **Account**    | Create via Hedera Developer Portal | Create via Hedera-enabled wallet (e.g.HashPack) |
+| **Account**    | Create via [Hedera Developer Portal](https://portal.hedera.com/login) | Create via Hedera-enabled wallet (e.g.HashPack) |
 | **Key type**   | ED25519                            | ED25519                                                                                        |
 | **Network**    | `testnet`                              | `mainnet`                                                                                          |
 
@@ -62,7 +62,7 @@ When building the reference implementation, you can [manually build every compon
    ```
 ## 2.4. Preparing a Testnet Account & Keys
 
-1. Create a Testnet account via the Hedera Developer Portal.
+1. Create a Testnet account via the [Hedera Developer Portal](https://portal.hedera.com/login).
 2. Record your Account ID (0.0.x).
 3. Download the ED25519 private key (ignore ECDSA)
 4. Select DER Encoded — do not choose HEX Encoded.
