@@ -168,14 +168,6 @@ export class HttpRequestBlock {
             } catch (error) {
                 validator.addError(error.message);
             }
-
-            try {
-                if(!validator.isDryRun) {
-                    HttpRequestBlock.validateHeadersIncluded(ref.options.headers);
-                }
-            } catch (error) {
-                validator.addError(error.message);
-            }
         } catch (error) {
             validator.addError(
                 `Unhandled exception ${validator.getErrorMessage(error)}`
