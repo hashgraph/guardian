@@ -2,6 +2,7 @@
 
 ## 1. Universal Software
 
+* [Git](https://git-scm.com/downloads)
 * [Docker](https://www.docker.com/) (To build with one command)
 * [MongoDB](https://www.mongodb.com/)[ V6](https://www.mongodb.com/) , [NodeJS](https://nodejs.org/)[ v16](https://nodejs.org/en) and [Nats](https://nats.io/)[ 1.12.2](https://nats.io/) (If you build with docker these components will be installed automatically)
 * [Web3.Storage Account](https://web3.storage/)
@@ -16,11 +17,11 @@ When building reference implementation, you can manually build every component o
 
 ## 2. Hedera Network
 
-|              | Testnet (default)                  | Mainnet (production)                              |
-| ------------ | ---------------------------------- | ------------------------------------------------- |
-| **Account**  | Create via Hedera Developer Portal | Create via Hedera-enabled wallet (e.g., HashPack) |
-| **Key type** | ED25519                            | ED25519                                           |
-| **Network**  | `testnet`                          | `mainnet`                                         |
+|              | Testnet (default)                                                     | Mainnet (production)                                                           |
+| ------------ | --------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **Account**  | Create via [Hedera Developer Portal](https://portal.hedera.com/login) | Create via Hedera-enabled wallet (e.g., [HashPack](https://www.hashpack.app/)) |
+| **Key type** | ED25519                                                               | ED25519                                                                        |
+| **Network**  | `testnet`                                                             | `mainnet`                                                                      |
 
 > **Fees**: Mainnet operations incur HBAR costs—fund your account before running Guardian.
 
