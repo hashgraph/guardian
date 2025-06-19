@@ -653,25 +653,6 @@ export class PoliciesComponent implements OnInit {
                 this.destroyOverlayPanel(this.policyMenu);
                 this.destroyOverlayPanel(this.policySubMenu);
             });
-
-            const selectors = [
-                '.p-dropdown-panel',
-                '.p-dialog',
-                '.cdk-overlay-container',
-                '.p-tooltip',
-                '.p-frozen-view',
-                '.p-unfrozen-view'
-            ];
-
-            selectors.forEach(selector => {
-                document.querySelectorAll(selector).forEach(el => {
-                    try {
-                        el.remove();
-                    } catch (e) {
-                        console.warn(`Failed to remove element: ${selector}`, e);
-                    }
-                });
-            });
         }, 500);
 
         this.policyMenu = undefined;
