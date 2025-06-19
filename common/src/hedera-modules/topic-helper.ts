@@ -186,7 +186,7 @@ export class TopicHelper {
             .sendMessage(message1, {
                 sendToIPFS: true,
                 memo: null,
-                userId: userId,
+                userId,
                 interception: userId
             });
     }
@@ -226,7 +226,7 @@ export class TopicHelper {
             .sendMessage(message1, {
                 sendToIPFS: true,
                 memo: null,
-                userId: userId,
+                userId,
                 interception: userId
             });
 
@@ -246,7 +246,7 @@ export class TopicHelper {
                 .sendMessage(message2, {
                     sendToIPFS: true,
                     memo: null,
-                    userId: userId,
+                    userId,
                     interception: userId
                 });
         }
