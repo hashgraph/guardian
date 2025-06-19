@@ -108,14 +108,18 @@ export class EnumTable {
         this._headers.set(Dictionary.ENUM_SCHEMA_NAME,
             new TableHeader(Dictionary.ENUM_SCHEMA_NAME, false)
                 .setStyle(this.headersStyle)
-                .setWidth(22)
+                .setWidth(30)
         );
         this._headers.set(Dictionary.ENUM_FIELD_NAME,
             new TableHeader(Dictionary.ENUM_FIELD_NAME, false)
                 .setStyle(this.headersStyle)
                 .setWidth(30)
         );
-
+        this._headers.set(Dictionary.ENUM_IPFS,
+            new TableHeader(Dictionary.ENUM_IPFS, false)
+                .setStyle(this.headersStyle)
+                .setWidth(30)
+        );
         this.end = this.start;
     }
 
@@ -145,6 +149,7 @@ export class EnumTable {
 
         this._headers.get(Dictionary.ENUM_SCHEMA_NAME).setPoint(col, row++);
         this._headers.get(Dictionary.ENUM_FIELD_NAME).setPoint(col, row++);
+        this._headers.get(Dictionary.ENUM_IPFS).setPoint(col, row++);
         this.column = this.start.c
         this.end = {
             c: this.start.c + 2,

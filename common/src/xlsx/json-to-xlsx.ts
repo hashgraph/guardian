@@ -390,6 +390,10 @@ export class JsonToXlsx {
             .setStyle(table.descriptionStyle)
             .setValue(field.description);
         worksheet
+            .getCell(table.start.c + 1, table.getRow(Dictionary.ENUM_IPFS))
+            .setStyle(table.descriptionStyle)
+            .setValue(booleanToXlsx(!!field.remoteLink));
+        worksheet
             .getCol(table.start.c + 1)
             .setWidth(50)
 
