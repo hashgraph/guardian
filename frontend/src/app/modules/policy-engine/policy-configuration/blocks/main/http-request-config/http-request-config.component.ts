@@ -2,6 +2,8 @@ import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncap
 import {CodeEditorDialogComponent} from '../../../../dialogs/code-editor-dialog/code-editor-dialog.component';
 import {IModuleVariables, PolicyBlock} from '../../../../structures';
 import {DialogService} from 'primeng/dynamicdialog';
+import {ConfirmDialog} from 'src/app/modules/common/confirm-dialog/confirm-dialog.component';
+import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
 
 /**
  * Settings for block of 'switch' and 'interfaceStepBlock' types.
@@ -97,5 +99,31 @@ export class HttpRequestConfigComponent implements OnInit {
     onSave() {
         this.item.changed = true;
         this.item.emitUpdate()
+    }
+
+    onIncludeChange(header: any) {
+        if (header.included) {
+            const dialogRef = this.dialog.open(ConfirmDialog, {
+                header: 'Confirm',
+                width: '500px',
+                data: {
+                    title: 'Include Header in Exported Policy?',
+                    description: 'Are you sure you want to include this header in the exported IPFS policy?',
+                    submitButton: 'Yes',
+                    cancelButton: 'No'
+                },
+                modal: true,
+                closable: false,
+            });
+
+            dialogRef.onClose.subscribe(result => {
+                if (!result) {
+                    header.included = false;
+                }
+                this.onSave();
+            });
+        } else {
+            this.onSave();
+        }
     }
 }
