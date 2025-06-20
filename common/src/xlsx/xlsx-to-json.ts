@@ -10,9 +10,14 @@ import { XlsxEnum } from './models/xlsx-enum.js';
 import { EnumTable } from './models/enum-table.js';
 import { XlsxSchema, XlsxTool } from './models/xlsx-schema.js';
 import { XlsxExpressions } from './models/xlsx-expressions.js';
+import { IFieldKey } from './interfaces/field-key.interface.js';
+import { IOption } from './interfaces/option.interface.js';
 
-export interface IOption {
-    preview?: boolean
+interface ICondition {
+    type: 'const' | 'formulae',
+    fieldPath?: string,
+    value?: any,
+    invert?: boolean,
 }
 
 export class XlsxToJson {
@@ -227,6 +232,17 @@ export class XlsxToJson {
                     xlsxResult
                 );
                 if (field) {
+                    if (allFields.has(field.name)) {
+                        xlsxResult.addError({
+                            type: 'error',
+                            text: `Failed to parse field.`,
+                            message: `Key ${field.name} is already exists`,
+                            worksheet: worksheet.name,
+                            cell: worksheet.getPath(table.getCol(Dictionary.KEY), row),
+                            row,
+                            col: table.getCol(Dictionary.KEY),
+                        }, field);
+                    }
                     allFields.set(field.name, field);
                     parents = parents.slice(0, groupIndex);
                     parents[groupIndex] = field;
@@ -351,15 +367,15 @@ export class XlsxToJson {
             order: row
         };
         try {
-            const name = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
-            // const path = worksheet.getFullPath(table.getCol(Dictionary.ANSWER), row);
+            const key = XlsxToJson.getFieldKey(worksheet, table, row);
             const type = worksheet.getValue<string>(table.getCol(Dictionary.FIELD_TYPE), row);
             const description = worksheet.getValue<string>(table.getCol(Dictionary.QUESTION), row);
             const required = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.REQUIRED_FIELD), row));
             const isArray = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.ALLOW_MULTIPLE_ANSWERS), row));
             const visibility = xlsxToVisibility(worksheet.getValue<string>(table.getCol(Dictionary.VISIBILITY), row));
 
-            field.name = name;
+            field.name = key.name;
+            field.title = key.path;
             field.description = description;
             field.required = required;
             field.isArray = isArray;
@@ -578,8 +594,8 @@ export class XlsxToJson {
             return null;
         }
 
-        const name = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
-        const field = fields.find((f) => f.name === name);
+        const key = XlsxToJson.getFieldKey(worksheet, table, row);
+        const field = fields.find((f) => f.title === key.path);
 
         try {
             //visibility
@@ -587,7 +603,7 @@ export class XlsxToJson {
                 return;
             }
             const cell = worksheet.getCell(table.getCol(Dictionary.VISIBILITY), row);
-            let result: any;
+            let result: ICondition | null = null;
 
             try {
                 if (cell.isFormulae()) {
@@ -614,15 +630,15 @@ export class XlsxToJson {
             if (result.type === 'const') {
                 field.hidden = field.hidden || !result.value;
             } else {
-                const condition = conditionCache.find(c => c.equal(result.field, result.value));
+                const target = fields.find((f) => f.title === result.fieldPath);
+                if (!target) {
+                    throw new Error('Invalid target');
+                }
+                const condition = conditionCache.find(c => c.equal(target, result.value));
                 if (condition) {
                     condition.addField(field, result.invert);
                     return null;
                 } else {
-                    const target = fields.find((f) => f.name === result.field);
-                    if (!target) {
-                        throw new Error('Invalid target');
-                    }
                     const newCondition = new XlsxSchemaConditions(target, result.value);
                     newCondition.addField(field, result.invert);
                     return newCondition;
@@ -646,7 +662,7 @@ export class XlsxToJson {
         worksheet: Worksheet,
         table: Table,
         allFields: Map<string, SchemaField>,
-        expressionCache: XlsxExpressions,
+        expressions: XlsxExpressions,
         row: number,
         xlsxResult: XlsxResult
     ): XlsxSchemaConditions | undefined {
@@ -654,14 +670,14 @@ export class XlsxToJson {
             return null;
         }
 
-        const path = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
+        const key = XlsxToJson.getFieldKey(worksheet, table, row);
         const description = worksheet.getValue<string>(table.getCol(Dictionary.QUESTION), row);
         const groupIndex = worksheet.getRow(row).getOutline();
         const type = worksheet.getValue<string>(table.getCol(Dictionary.FIELD_TYPE), row);
 
-        expressionCache.addVariable(path, description, groupIndex);
+        expressions.addVariable(key, description, groupIndex);
 
-        const field = allFields.get(path);
+        const field = allFields.get(key.name);
         try {
             if (field && !field.isRef) {
                 if (XlsxToJson.isAutoCalculate(type, field)) {
@@ -685,12 +701,7 @@ export class XlsxToJson {
         }
     }
 
-    private static parseCondition(formulae: string): {
-        type: 'const' | 'formulae',
-        value?: any,
-        field?: string,
-        invert?: boolean,
-    } {
+    private static parseCondition(formulae: string): ICondition {
         if (formulae === '') {
             return null;
         }
@@ -713,7 +724,11 @@ export class XlsxToJson {
         //'NOT(EXACT(G11,10))'
         //'EXACT(G11,"10")'
         //'NOT(EXACT(G11,"10"))'
-        const parsFn = (tree: mathjs.MathNode, invert: boolean) => {
+        const parsFn = (tree: mathjs.MathNode, invert: boolean): {
+            fieldPath: string,
+            value: any,
+            invert: boolean
+        } => {
             if (tree.type === 'FunctionNode') {
                 if (tree.fn.name === 'EXACT' && tree.args.length === 2) {
                     if (
@@ -721,7 +736,7 @@ export class XlsxToJson {
                         tree.args[1].type === 'ConstantNode'
                     ) {
                         return {
-                            field: tree.args[0].name,
+                            fieldPath: tree.args[0].name,
                             value: tree.args[1].value,
                             invert
                         };
@@ -731,8 +746,8 @@ export class XlsxToJson {
                         tree.args[1].type === 'SymbolNode'
                     ) {
                         return {
-                            field: tree.args[0].value,
-                            value: tree.args[1].name,
+                            value: tree.args[0].value,
+                            fieldPath: tree.args[1].name,
                             invert
                         };
                     }
@@ -748,7 +763,7 @@ export class XlsxToJson {
         if (node) {
             return {
                 type: 'formulae',
-                field: node.field,
+                fieldPath: node.fieldPath,
                 value: node.value,
                 invert: node.invert,
             }
@@ -759,5 +774,21 @@ export class XlsxToJson {
 
     private static isAutoCalculate(type: string, field: SchemaField): boolean {
         return field.hidden || type === 'Auto-Calculate';
+    }
+
+    private static getFieldKey(
+        worksheet: Worksheet,
+        table: Table,
+        row: number
+    ): IFieldKey {
+        const path = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
+        const fullPath = worksheet.getFullPath(table.getCol(Dictionary.ANSWER), row);
+        let name: string;
+        if (table.getCol(Dictionary.KEY) !== -1) {
+            name = worksheet.getValue<string>(table.getCol(Dictionary.KEY), row) || path;
+        } else {
+            name = path;
+        }
+        return { name, path, fullPath }
     }
 }
