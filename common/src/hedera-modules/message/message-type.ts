@@ -23,6 +23,7 @@ export enum MessageType {
     PolicyStatistic = 'Policy-Statistic',
     PolicyLabel = 'Policy-Label',
     Formula = 'Formula',
+    User = 'User',
     PolicyDiff = 'Policy-Diff',
     PolicyAction = 'Policy-Action'
 }

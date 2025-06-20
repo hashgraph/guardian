@@ -492,6 +492,24 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Update standart registry
+     * @param username
+     * @param standartRegistryDid
+     */
+    public async updateUserStandardRegistry(username: string, standardRegistryDid: string): Promise<string> {
+        return await this.sendMessage(MessageAPI.USER_UPDATE_STANDARD_REGISTRY, { username, standardRegistryDid });
+    }
+
+    /**
+     * Update standart registry
+     * @param username
+     * @param standartRegistryDid
+     */
+    public async addUserStandardRegistry(user: IAuthUser, username: string, standardRegistryDids: string[]): Promise<string> {
+        return await this.sendMessage(MessageAPI.USER_ADD_STANDARD_REGISTRY, { user, username, standardRegistryDids });
+    }
+
+    /**
      * Async create user
      * @param username
      * @param profile

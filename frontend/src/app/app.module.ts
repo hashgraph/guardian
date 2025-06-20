@@ -119,6 +119,8 @@ import { ForgotPasswordDialogComponent } from './views/login/forgot-password-dia
 import { MultiSelectModule } from 'primeng/multiselect';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { CalendarModule } from 'primeng/calendar';
+import { CardModule } from 'primeng/card';
+import { ChipModule } from 'primeng/chip';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ContractEngineModule } from './modules/contract-engine/contract-engine.module';
 import { ProjectComparisonService } from './services/project-comparison.service';
@@ -129,6 +131,11 @@ import '../prototypes/date-prototype';
 import { OnlyForDemoDirective } from './directives/onlyfordemo.directive';
 import { UseWithServiceDirective } from './directives/use-with-service.directive';
 import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
+import { AddStandardRegistryDialogComponent } from './views/user-profile/add-standard-registry-dialog/add-standard-registry-dialog.component';
+import { StandardRegistryParentCardComponent } from './components/standard-registry-parent-card/standard-registry-parent-card.component';
+import { InfoStandardRegistryDialogComponent } from './views/user-profile/info-standard-registry-dialog/info-standard-registry-dialog.component';
+import { InputSwitchModule } from 'primeng/inputswitch';
+import { ActiveStandardRegistryDialogComponent } from './views/user-profile/active-standard-registry-dialog/active-standard-registry-dialog.component';
 import { ExternalPoliciesService } from './services/external-policy.service';
 import { UserKeysDialog } from './components/user-keys-dialog/user-keys-dialog.component';
 
@@ -156,6 +163,7 @@ import { UserKeysDialog } from './components/user-keys-dialog/user-keys-dialog.c
         BrandingComponent,
         SuggestionsConfigurationComponent,
         StandardRegistryCardComponent,
+        StandardRegistryParentCardComponent,
         NotificationComponent,
         NotificationsComponent,
         QrCodeDialogComponent,
@@ -176,6 +184,9 @@ import { UserKeysDialog } from './components/user-keys-dialog/user-keys-dialog.c
         UsersManagementComponent,
         UsersManagementDetailComponent,
         WorkerTasksComponent,
+        AddStandardRegistryDialogComponent,
+        InfoStandardRegistryDialogComponent,
+        ActiveStandardRegistryDialogComponent,
         UserKeysDialog
     ],
     exports: [],
@@ -214,12 +225,16 @@ import { UserKeysDialog } from './components/user-keys-dialog/user-keys-dialog.c
         MultiSelectModule,
         RadioButtonModule,
         CalendarModule,
+        CardModule,
+        ChipModule,
         InputTextareaModule,
         ContractEngineModule,
         ProjectComparisonModule,
         DndModule,
         CheckboxModule,
-        AngularSvgIconModule.forRoot()],
+        InputSwitchModule,
+        AngularSvgIconModule.forRoot(),
+    ],
     providers: [
         WebSocketService,
         AuthService,

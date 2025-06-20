@@ -101,6 +101,10 @@ export interface IUser {
     parent?: string;
 
     /**
+     * Parent
+     */
+    parents?: string[];
+    /**
      * DID document instance
      */
     didDocument?: IDidObject;

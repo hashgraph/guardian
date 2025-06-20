@@ -17,6 +17,11 @@ import {
     VcHelper,
     Wallet,
     Workers,
+    UserMessage,
+    Topic,
+    TopicConfig,
+    MessageServer,
+    MessageAction
 } from '@guardian/common';
 import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { RestoreDataFromHedera } from '../helpers/restore-data-from-hedera.js';
@@ -113,6 +118,56 @@ export function profileAPI(logger: PinoLogger) {
                 return new MessageResponse(balance);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                console.error(error);
+                return new MessageError(error, 500);
+            }
+        });
+
+    ApiResponse(MessageAPI.USER_UPDATE_STANDARD_REGISTRY,
+        async (msg: { username: string, standardRegistryDid: string }) => {
+            try {
+                const { username, standardRegistryDid } = msg;
+                const users = new Users();
+                await users.updateUserParent(username, standardRegistryDid);
+                return new MessageResponse(username);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                console.error(error);
+                return new MessageError(error, 500);
+            }
+        });
+
+    ApiResponse(MessageAPI.USER_ADD_STANDARD_REGISTRY,
+        async (msg: { user: IAuthUser, username: string, standardRegistryDids: string[] }) => {
+            try {
+                const { user, username, standardRegistryDids } = msg;
+                const users = new Users();
+
+                for (const standardRegistryDid of standardRegistryDids) {
+                    await users.addUserParent(username, standardRegistryDid);
+                    const cUser = await users.getUser(username, user.id);
+
+                    const row = await new DatabaseServer().findOne(Topic, {
+                        owner: standardRegistryDid,
+                        type: TopicType.UserTopic
+                    });
+                    const userTopic = await new DatabaseServer().findOne(Topic, {
+                        owner: cUser.did,
+                        type: TopicType.UserTopic
+                    });
+                    const topicConfig = await TopicConfig.fromObject(row, true, user.id);
+
+                    const root = await users.getHederaAccount(cUser.did, user.id);
+                    const messageServer = new MessageServer({ operatorId: root.hederaAccountId, operatorKey: root.hederaAccountKey, signOptions: root.signOptions });
+                    messageServer.setTopicObject(topicConfig);
+                    const message = new UserMessage(MessageAction.AddParent);
+                    message.setDocument({ ...cUser, topicId: userTopic.topicId });
+                    await messageServer.sendMessage(message);
+                }
+
+                return new MessageResponse(standardRegistryDids);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 console.error(error);
                 return new MessageError(error, 500);
             }
@@ -380,6 +435,7 @@ export function profileAPI(logger: PinoLogger) {
                     permissions: user.permissions,
                     did: user.did,
                     parent: user.parent,
+                    parents: user.parents,
                     hederaAccountId: user.hederaAccountId,
                     location: user.location,
                     confirmed: false,

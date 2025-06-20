@@ -1,0 +1,35 @@
+<p-card class="sr-card">
+    <p-chip [label]="active ? 'Active': 'Inactive'" [ngClass]="{ 'active': active, 'inactive': !active }" />
+
+    <div class="sr-content">
+        <div class="sr-main-info">
+            <div class="sr-name">{{registry.username}}</div>
+            <div class="sr-policy-count" (click)="showOverlay($event)">
+                {{registry.policies.length}} policies
+                <i class="pi pi-chevron-down"></i>
+            </div>
+        </div>
+        <div class="sr-account-id">{{registry.hederaAccountId}}</div>
+    </div>
+    <div class="sr-action">
+        <button
+            (click)="onMoreInfoClick()"
+            class="button secondary"
+            label="View details"
+            pButton>
+        </button>
+        <button
+            *ngIf="!active"
+            (click)="onSetActive()"
+            class="button set-active-btn"
+            label="Set as active"
+            pButton>
+        </button>
+    </div>
+</p-card>
+
+<p-overlayPanel #overlay [showCloseIcon]="false">
+    <div *ngFor="let policy of registry.policies" class="dropdown-item">
+        {{ policy.name }}
+    </div>
+</p-overlayPanel>
