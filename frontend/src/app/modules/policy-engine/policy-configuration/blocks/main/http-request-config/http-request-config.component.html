@@ -88,7 +88,7 @@
                 <p-checkbox [(ngModel)]="header.included"
                             binary="true"
                             [disabled]="readonly"
-                            (onChange)="onSave()"
+                            (onChange)="onIncludeChange(header)"
                             label="Include value in exported policy">
                 </p-checkbox>
             </td>
