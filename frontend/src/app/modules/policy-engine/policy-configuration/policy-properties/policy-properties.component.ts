@@ -114,6 +114,10 @@ export class PolicyPropertiesComponent implements OnInit {
         this.onInit.emit(this);
     }
 
+    ngOnDestroy(): void {
+        this.onInit.complete();
+    }
+
     ngOnChanges(changes: SimpleChanges) {
         this.roles = this.policy.policyRoles;
         this.navigationRoles = [

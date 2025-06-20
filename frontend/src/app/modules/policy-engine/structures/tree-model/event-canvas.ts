@@ -35,7 +35,12 @@ export class EventCanvas {
             this.parent = parent;
             this.canvas = canvas;
             if (this.canvas) {
-                this.context = this.canvas.getContext('2d');
+                this.context = this.canvas.getContext(
+                    '2d',
+                    {
+                        willReadFrequently: true
+                    }
+                );
                 if (this.context) {
                     this.valid = true;
                 }
@@ -78,11 +83,16 @@ export class EventCanvas {
         if (!this.valid) {
             return;
         }
+
+        if (this.lastImage?.data) {
+            (this.lastImage as any).data = null;
+        }
+
         this.maxWidth = 0;
-        for (let index = 0; index < renderLine.length; index++) {
-            const line = renderLine[index];
+        for (let i = 0; i < renderLine.length; i++) {
+            const line = renderLine[i];
             this.maxWidth = Math.max(this.maxWidth, line.width);
-            line.index = index + 1;
+            line.index = i + 1;
             this.drawData(line);
         }
 
@@ -91,13 +101,12 @@ export class EventCanvas {
         this.canvas.style.width = `${width}px`;
         this.canvas.width = width;
 
-        const data = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height).data;
         this.lastImage = {
             context: this.context,
             width: this.canvas.width,
             height: this.canvas.height,
             lines: renderLine,
-            data: data
+            data: null
         };
     }
 
@@ -206,21 +215,33 @@ export class EventCanvas {
         return position;
     }
 
-    public getIndexObject(position: any): number {
-        if (this.valid && this.lastImage && position) {
-            const idx = (position.y * this.lastImage.width + position.x) * 4;
-            const a = this.lastImage.data[idx + 3];
-            let index = 0;
-            if (a == 255) {
-                const r = this.lastImage.data[idx];
-                const g = this.lastImage.data[idx + 1];
-                const b = this.lastImage.data[idx + 2];
-                index = this.fromColor(r, g, b);
-            }
-            return index;
-        } else {
+    public getIndexObject(position: { x: number; y: number }): number {
+        if (!this.valid || !this.lastImage || !position) {
             return -1;
         }
+
+        for (let i = this.lastImage.lines.length - 1; i >= 0; i--) {
+            const line   = this.lastImage.lines[i];
+            const pts    = line.points;
+
+            this.context.save();
+            this.context.lineWidth = 8;
+            this.context.setLineDash([]);
+            this.context.beginPath();
+
+            for (let p = 0; p < pts.length - 3; p += 2) {
+                this.context.moveTo(pts[p],     pts[p + 1]);
+                this.context.lineTo(pts[p + 2], pts[p + 3]);
+            }
+
+            const hit = this.context.isPointInStroke(position.x, position.y);
+            this.context.restore();
+
+            if (hit) {
+                return line.index;
+            }
+        }
+        return -1;
     }
 
     public getLineByIndex(index: number): BlocLine | undefined {
@@ -236,5 +257,24 @@ export class EventCanvas {
             this.render();
         }
         return this.lastImage.lines[index - 1];
+    }
+
+    destroy(): void {
+        if (!this.valid || !this.canvas) { return; }
+
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.canvas.width = this.canvas.height = 0;
+
+        if(this.lastImage) {
+            (this.lastImage as any).data = null;
+            this.lastImage = null as any;
+        }
+
+        this.canvas.remove();
+
+        (this as any).context   = null;
+        (this as any).canvas    = null;
+        (this as any).parent    = null;
+        (this as any).container = null;
     }
 }
