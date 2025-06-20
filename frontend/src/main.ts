@@ -32,7 +32,7 @@ function createMathjs() {
             }
         }
     }
-    mathjs.import(customFunctions);
+    mathjs.import(customFunctions, { override: true });
     mathjs.import({
         equal: function (a: any, b: any) { return a == b }
     }, { override: true });

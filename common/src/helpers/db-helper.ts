@@ -1,4 +1,4 @@
-import { MikroORM, CreateRequestContext, wrap, FilterObject, FilterQuery, FindAllOptions, EntityData, RequiredEntityData, FindOneOptions } from '@mikro-orm/core';
+import { MikroORM, CreateRequestContext, wrap, FilterObject, FilterQuery, FindAllOptions, EntityData, RequiredEntityData, FindOneOptions, ExpandQuery } from '@mikro-orm/core';
 import { MongoDriver, MongoEntityManager, MongoEntityRepository, ObjectId } from '@mikro-orm/mongodb';
 import { BaseEntity } from '../models/index.js';
 import { DataBaseNamingStrategy } from './db-naming-strategy.js';
@@ -582,7 +582,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
      * @returns Count
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
-    public async count(filters?: FilterQuery<T> | string | ObjectId, options?: FindOptions<unknown>): Promise<number> {
+    public async count(filters?: FilterQuery<T> | string | ObjectId, options?: FindOptions<object>): Promise<number> {
         return await this._em.count(this.entityClass, filters, options);
     }
 
@@ -593,7 +593,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
      * @returns Entities
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
-    public async find(filters?: FilterQuery<T> | string | ObjectId, options?: FindOptions<T>): Promise<T[]> {
+    public async find(filters?: FilterQuery<T> | string | ObjectId, options?: any): Promise<T[]> {
         let query: FilterQuery<T>;
 
         if (typeof filters === 'string' || filters instanceof ObjectId) {
@@ -611,7 +611,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
      * @returns Entities
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
-    public async findAll(options?: FindAllOptions<T>): Promise<T[]> {
+    public async findAll(options?: any): Promise<T[]> {
         return await this._em.getRepository<T>(this.entityClass).findAll(options);
     }
 
@@ -635,7 +635,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
             query = filters;
         }
 
-        return await this._em.getRepository<T>(this.entityClass).findOne(query, options as unknown as FindOneOptions<T>) as T | null;
+        return await this._em.getRepository<T>(this.entityClass).findOne(query, options as unknown as any) as T | null;
     }
 
     /**

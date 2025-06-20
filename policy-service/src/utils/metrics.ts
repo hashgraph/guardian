@@ -12,7 +12,7 @@ export const startMetricsServer = () => {
   app.get('/metrics', async (req, res) => {
     res.set('Content-Type', client.register.contentType);
 
-    return res.send(await client.register.metrics());
+    res.send(await client.register.metrics());
   });
 
   app.listen(PORT, () => {
