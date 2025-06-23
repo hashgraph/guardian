@@ -11,8 +11,13 @@ import { EnumTable } from './models/enum-table.js';
 import { XlsxSchema, XlsxTool } from './models/xlsx-schema.js';
 import { XlsxExpressions } from './models/xlsx-expressions.js';
 
+export interface IOption {
+    preview?: boolean
+}
+
 export class XlsxToJson {
-    public static async parse(buffer: Buffer): Promise<XlsxResult> {
+    public static async parse(buffer: Buffer, options?: IOption): Promise<XlsxResult> {
+        const preview = options?.preview === true;
         const xlsxResult = new XlsxResult();
         try {
             const workbook = new Workbook();
@@ -24,6 +29,15 @@ export class XlsxToJson {
                     const item = await XlsxToJson.readEnumSheet(worksheet, xlsxResult);
                     if (item) {
                         xlsxResult.addEnum(item);
+                    }
+                    const loaded = await item.upload(preview);
+                    if (!loaded) {
+                        xlsxResult.addError({
+                            type: 'error',
+                            text: `Failed to upload enum "${worksheet.name}".`,
+                            message: `Failed to upload enum "${worksheet.name}".`,
+                            worksheet: worksheet.name
+                        }, null);
                     }
                 }
             }
@@ -102,6 +116,9 @@ export class XlsxToJson {
         }
         if (table.getRow(Dictionary.ENUM_FIELD_NAME) !== -1) {
             _enum.setFieldName(worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.ENUM_FIELD_NAME)));
+        }
+        if (table.getRow(Dictionary.ENUM_IPFS) !== -1) {
+            _enum.setIPFS(xlsxToBoolean(worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.ENUM_IPFS))));
         }
 
         row = table.end.r;
@@ -464,13 +481,39 @@ export class XlsxToJson {
                     .getCell(table.getCol(Dictionary.PARAMETER), row)
                     .getLink();
                 const enumName = hyperlink?.worksheet || param;
-                field.enum = xlsxResult.getEnum(enumName);
-                if (!field.enum) {
+                const enumObject = xlsxResult.getEnum(enumName);
+
+                if (enumObject) {
+                    if (enumObject.loaded) {
+                        field.enum = enumObject?.getEnum();
+                        field.remoteLink = enumObject?.getLink();
+                    } else {
+                        field.enum = [];
+                        field.remoteLink = null;
+                        xlsxResult.addError({
+                            type: 'error',
+                            text: `Enum named "${enumName}" not loaded.`,
+                            message: `Enum named "${enumName}" not loaded.`,
+                            worksheet: worksheet.name,
+                            row
+                        }, field);
+                    }
+                } else {
                     field.enum = [];
+                    field.remoteLink = null;
                     xlsxResult.addError({
                         type: 'error',
                         text: `Enum named "${enumName}" not found.`,
                         message: `Enum named "${enumName}" not found.`,
+                        worksheet: worksheet.name,
+                        row
+                    }, field);
+                }
+                if (!(field.enum || field.remoteLink)) {
+                    xlsxResult.addError({
+                        type: 'error',
+                        text: `Enum named "${enumName}" is empty.`,
+                        message: `Enum named "${enumName}" is empty.`,
                         worksheet: worksheet.name,
                         row
                     }, field);

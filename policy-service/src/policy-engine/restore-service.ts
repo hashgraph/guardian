@@ -153,7 +153,12 @@ export class PolicyBackupService {
             instanceTopicId: this.instanceTopicId,
         }, buffer);
         const result = await this.messageServer
-            .sendMessage(message, true, null, this.userId);
+            .sendMessage(message, {
+                sendToIPFS: true,
+                memo: null,
+                userId: this.userId,
+                interception: null
+            });
 
         diff.messageId = result.getId();
     }

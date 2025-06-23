@@ -120,7 +120,9 @@ export class RestoreDataFromHedera {
                     payload: { userId }
                 },
             },
-            10
+            {
+                priority: 10
+            }
         );
         const result = [];
         let errors = 0;

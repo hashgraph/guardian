@@ -86,7 +86,12 @@ export async function importToolByMessage(
     }
     messageId = messageId.trim();
     const message = await messageServer
-        .getMessage<ToolMessage>({ messageId, loadIPFS: true, userId });
+        .getMessage<ToolMessage>({
+            messageId,
+            loadIPFS: true,
+            userId,
+            interception: null
+        });
     if (!message) {
         throw new Error('Invalid Message');
     }
@@ -340,7 +345,12 @@ export async function importToolByFile(
     message.setDocument(tool);
     const messageStatus = await messageServer
         .setTopicObject(parent)
-        .sendMessage(message, true, null, userId);
+        .sendMessage(message, {
+            sendToIPFS: true,
+            memo: null,
+            userId,
+            interception: null
+        });
 
     notifier.completedAndStart('Link topic and tool');
     await topicHelper.twoWayLink(topic, parent, messageStatus.getId(), userId);
@@ -504,7 +514,12 @@ export async function previewToolByMessage(messageId: string, userId: string | n
 
     messageId = messageId.trim();
     const message = await MessageServer
-        .getMessage<ToolMessage>({ messageId, loadIPFS: true, userId });
+        .getMessage<ToolMessage>({
+            messageId,
+            loadIPFS: true,
+            userId,
+            interception: null
+        });
 
     if (!message) {
         throw new Error('Invalid Message');

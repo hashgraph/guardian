@@ -8,6 +8,7 @@ import { IRowField } from './interfaces/row-field.interface.js';
 import { SheetName } from './models/sheet-name.js';
 import { XlsxEnum } from './models/xlsx-enum.js';
 import { EnumTable } from './models/enum-table.js';
+import { IPFS } from '../helpers/index.js';
 
 export class JsonToXlsx {
     public static async generate(
@@ -57,15 +58,20 @@ export class JsonToXlsx {
         for (const item of _schemas) {
             const schema = item.schema as Schema;
             for (const field of schema.fields) {
-                if (field.enum) {
+                if (field.enum || field.remoteLink) {
                     const sheetName = names.getEnumName(field.description);
                     const worksheet = workbook.createWorksheet(sheetName);
                     const _enum = new XlsxEnum(worksheet);
                     _enum.setSchema(schema);
                     _enum.setField(field);
-                    _enum.setData(field.enum);
                     _enums.push(_enum);
                     _enumsCache.set(field.path, _enum);
+                    if (field.enum) {
+                        _enum.setData(field.enum);
+                    } else {
+                        const enumValues = await JsonToXlsx.loadEnum(field.remoteLink);
+                        _enum.setData(enumValues);
+                    }
                 }
             }
         }
@@ -279,7 +285,7 @@ export class JsonToXlsx {
                 .getCell(table.getCol(Dictionary.QUESTION), row)
                 .setStyle(fontToXlsx(field.font, fieldItemStyle));
         }
-        if (field.enum) {
+        if (field.enum || field.remoteLink) {
             const _enum = enumsCache.get(field.path);
             if (_enum) {
                 worksheet
@@ -384,6 +390,10 @@ export class JsonToXlsx {
             .setStyle(table.descriptionStyle)
             .setValue(field.description);
         worksheet
+            .getCell(table.start.c + 1, table.getRow(Dictionary.ENUM_IPFS))
+            .setStyle(table.descriptionStyle)
+            .setValue(booleanToXlsx(!!field.remoteLink));
+        worksheet
             .getCol(table.start.c + 1)
             .setWidth(50)
 
@@ -459,5 +469,22 @@ export class JsonToXlsx {
         }
 
         return row;
+    }
+
+    private static async loadEnum(link: string): Promise<string[]> {
+        try {
+            const cidMatches = link.match(/Qm[1-9A-HJ-NP-Za-km-z]{44,}|b[A-Za-z2-7]{58,}|B[A-Z2-7]{58,}|z[1-9A-HJ-NP-Za-km-z]{48,}|F[0-9A-F]{50,}/);
+            const cid = (cidMatches && cidMatches[0]) || '';
+            const file = await IPFS.getFile(cid, 'raw');
+            const buffer = Buffer.from(file);
+            const json = JSON.parse(buffer.toString());
+            if (Array.isArray(json.enum)) {
+                return json.enum;
+            } else {
+                return [];
+            }
+        } catch (error) {
+            return [];
+        }
     }
 }

@@ -98,7 +98,12 @@ export class PolicyActionsService {
 
         const messageResult = await messageServer
             .setTopicObject(this.topic)
-            .sendMessage(message, true);
+            .sendMessage(message, {
+                sendToIPFS: true,
+                memo: null,
+                userId: null,
+                interception: null
+            });
         row.messageId = messageResult.getId();
         row.startMessageId = messageResult.getId();
         row.sender = messageResult.payer;
@@ -157,7 +162,12 @@ export class PolicyActionsService {
 
         const messageResult = await messageServer
             .setTopicObject(this.topic)
-            .sendMessage(message, true);
+            .sendMessage(message, {
+                sendToIPFS: true,
+                memo: null,
+                userId: null,
+                interception: null
+            });
         row.messageId = messageResult.getId();
         row.startMessageId = messageResult.getId();
         row.sender = messageResult.payer;
@@ -212,7 +222,12 @@ export class PolicyActionsService {
 
         const messageResult = await messageServer
             .setTopicObject(this.topic)
-            .sendMessage(message, true);
+            .sendMessage(message, {
+                sendToIPFS: true,
+                memo: null,
+                userId: null,
+                interception: null
+            });
 
         newRow.messageId = messageResult.getId();
         newRow.startMessageId = messageResult.getId();
@@ -279,7 +294,12 @@ export class PolicyActionsService {
 
         const messageResult = await messageServer
             .setTopicObject(this.topic)
-            .sendMessage(message, true);
+            .sendMessage(message, {
+                sendToIPFS: true,
+                memo: null,
+                userId: null,
+                interception: null
+            });
         newRow.messageId = messageResult.getId();
         newRow.sender = messageResult.payer;
 
@@ -566,7 +586,12 @@ export class PolicyActionsService {
 
             const messageResult = await messageServer
                 .setTopicObject(this.topic)
-                .sendMessage(message, true);
+                .sendMessage(message, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId: null,
+                    interception: null
+                });
             row.messageId = messageResult.getId();
             row.sender = messageResult.payer;
 
@@ -627,7 +652,12 @@ export class PolicyActionsService {
 
             const messageResult = await messageServer
                 .setTopicObject(this.topic)
-                .sendMessage(message, true);
+                .sendMessage(message, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId: null,
+                    interception: null
+                });
             row.messageId = messageResult.getId();
             row.sender = messageResult.payer;
 
@@ -730,7 +760,12 @@ export class PolicyActionsService {
 
         const messageResult = await messageServer
             .setTopicObject(this.topic)
-            .sendMessage(message, true);
+            .sendMessage(message, {
+                sendToIPFS: true,
+                memo: null,
+                userId: null,
+                interception: null
+            });
         newRow.messageId = messageResult.getId();
         newRow.sender = messageResult.payer;
 
@@ -754,7 +789,8 @@ export class PolicyActionsService {
         const message = await MessageServer.getMessage<PolicyActionMessage>({
             messageId,
             loadIPFS: false,
-            type: MessageType.PolicyAction
+            type: MessageType.PolicyAction,
+            interception: null
         })
         if (message) {
             const userMessageKey = await UserCredentials.loadMessageKey(this.messageId, message.owner, null);

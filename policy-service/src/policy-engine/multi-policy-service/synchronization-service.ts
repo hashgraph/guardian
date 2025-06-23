@@ -125,7 +125,9 @@ export class SynchronizationService {
                     topic: policy.synchronizationTopicId,
                     payload: { userId: policyOwnerId },
                 }
-            }, 10);
+            }, {
+                priority: 10
+            });
 
             const policyMap: { [x: string]: SynchronizationMessage[] } = {};
             const vpMap: { [x: string]: Map<string, SynchronizationMessage> } = {};
@@ -336,7 +338,12 @@ export class SynchronizationService {
         userId?: string | null,
     ): Promise<boolean> {
         for (const message of updateMessages) {
-            await messageServer.sendMessage(message, true, null, userId);
+            await messageServer.sendMessage(message, {
+                sendToIPFS: true,
+                memo: null,
+                userId,
+                interception: null
+            });
         }
         return true;
     }

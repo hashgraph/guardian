@@ -180,7 +180,9 @@ export class TransactionLogger extends NatsService {
                             hederaAccountKey: OPERATOR_KEY,
                             payload: { userId }
                         }
-                    }, 20, null);
+                    }, {
+                        priority: 20
+                    });
                     attr.push(balance);
                 } catch (error) {
                     attr.push(null);
@@ -260,20 +262,20 @@ export class TransactionLogger extends NatsService {
             RunFunctionAsync(async () => {
                 switch (data.type) {
                     case 'start-log': {
-                        const { id, operatorAccountId, transactionName, network, payload: {userId} } = data.data;
+                        const { id, operatorAccountId, transactionName, network, payload: { userId } } = data.data;
                         await this.transactionLog(id, operatorAccountId, network, transactionName, null, null, userId);
                         break;
                     }
 
                     case 'end-log': {
-                        const { id, operatorAccountId, transactionName, network, payload: {userId} } = data.data;
+                        const { id, operatorAccountId, transactionName, network, payload: { userId } } = data.data;
                         const metadata = data.metadata;
                         await this.transactionLog(id, operatorAccountId, network, transactionName, true, metadata, userId);
                         break;
                     }
 
                     case 'error-log': {
-                        const { id, operatorAccountId, transactionName, network, payload: {userId} } = data.data;
+                        const { id, operatorAccountId, transactionName, network, payload: { userId } } = data.data;
                         const error = data.error;
                         await this.transactionErrorLog(id, operatorAccountId, network, transactionName, error, userId);
                         break;

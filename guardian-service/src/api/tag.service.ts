@@ -20,7 +20,12 @@ export async function deleteTag(
     const message = new TagMessage(MessageAction.DeleteTag);
     message.setDocument(item);
     const result = await messageServer
-        .sendMessage(message, true, null, owner.id);
+        .sendMessage(message, {
+            sendToIPFS: true,
+            memo: null,
+            interception: owner.id,
+            userId: owner.id
+        });
     const messageId = result.getId();
     const topicId = result.getTopicId();
     item.messageId = messageId;

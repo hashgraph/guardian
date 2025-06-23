@@ -40,7 +40,7 @@ For this example purpose let's name the Guardian platform as "develop"
 **Note** Every single service is provided in its folder with a `.env.template` file, this set of files are only needed for the case of Manual installation.
 {% endhint %}
 
-3.  Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operator\_ID and Operator\_Key by looking at the link: [How to Create Operator\_ID and Operator\_Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-operator-id-and-operator-key). The Operator\_ID and Operator\_Key and HEDERA\_NET are all that Guardian needs to access the Hedera Blockchain assuming a role on it. This parameters needs to be configured in a file at the path `./configs`, the file should use the following naming convention:
+3.  Update the following files with your Hedera Mainnet or Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operator\_ID and Operator\_Key by looking at the link: [How to Create Operator\_ID and Operator\_Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-operator-id-and-operator-key). The Operator\_ID and Operator\_Key and HEDERA\_NET are all that Guardian needs to access the Hedera Blockchain assuming a role on it. This parameters needs to be configured in a file at the path `./configs`, the file should use the following naming convention:
 
     `./configs/.env.\<GUARDIAN_ENV\>.guardian.system`
 

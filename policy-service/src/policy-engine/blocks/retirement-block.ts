@@ -139,7 +139,12 @@ export class RetirementBlock {
         vcMessage.setUser(null);
         const vcMessageResult = await messageServer
             .setTopicObject(topic)
-            .sendMessage(vcMessage, true, null, userId);
+            .sendMessage(vcMessage, {
+                sendToIPFS: true,
+                memo: null,
+                userId,
+                interception: null
+            });
 
         const vcDocument = PolicyUtils.createVC(ref, user, wipeVC);
         vcDocument.type = DocumentCategoryType.RETIREMENT;
@@ -158,7 +163,12 @@ export class RetirementBlock {
 
         const vpMessageResult = await messageServer
             .setTopicObject(topic)
-            .sendMessage(vpMessage, true, null, userId);
+            .sendMessage(vpMessage, {
+                sendToIPFS: true,
+                memo: null,
+                userId,
+                interception: null
+            });
 
         const vpDocument = PolicyUtils.createVP(ref, user, vp);
         vpDocument.type = DocumentCategoryType.RETIREMENT;
