@@ -106,9 +106,10 @@ export class HttpRequestConfigComponent implements OnInit {
             const dialogRef = this.dialog.open(ConfirmDialog, {
                 header: 'Confirm',
                 width: '500px',
+                height: '270px',
                 data: {
-                    title: 'Include Header in Exported Policy?',
-                    description: 'Are you sure you want to include this header in the exported IPFS policy?',
+                    title: 'Include HTTP[S] request header value in Exported Policy?',
+                    description: 'HTTP[S] request header values may contain sensitive information. Are you sure you want to include the value of this header in the exported policy artifact?',
                     submitButton: 'Yes',
                     cancelButton: 'No'
                 },
