@@ -65,11 +65,12 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             name: string,
             owner: IOwner,
             task: any,
+            copyNested: boolean,
         }) => {
-            const { iri, topicId, name, owner, task } = msg;
+            const { iri, topicId, name, owner, task, copyNested } = msg;
             const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
-                const schema = await copySchemaAsync(iri, topicId, name, owner);
+                const schema = await copySchemaAsync(iri, topicId, name, owner, copyNested);
                 notifier.result(schema.iri);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
