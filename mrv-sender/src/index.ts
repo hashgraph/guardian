@@ -68,7 +68,7 @@ const PORT = process.env.PORT || 3005;
 
             switch(mode) {
                 case GenerateMode.TEMPLATES:
-                    let data: any = fs.readFileSync(path.join(__dirname, '..', 'templates', setting.fileName));
+                    let data: any = fs.readFileSync(path.join(dirname, '..', 'templates', setting.fileName));
                     vcSubject = Object.assign(vcSubject, JSON.parse(data));
                     break;
                 case GenerateMode.VALUES:
