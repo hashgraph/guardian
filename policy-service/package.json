@@ -39,7 +39,7 @@
     "devDependencies": {
         "@types/deep-equal": "^1.0.1",
         "@types/express": "^4.17.13",
-        "@types/node": "^22.10.10",
+        "@types/node": "^24.0.3",
         "chai": "4.3.4",
         "gulp": "^4.0.2",
         "gulp-rename": "^2.0.0",
