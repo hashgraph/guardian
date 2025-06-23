@@ -232,30 +232,18 @@ export class XlsxToJson {
                     xlsxResult
                 );
                 if (field) {
-                    if (allFields.has(field.name)) {
-                        xlsxResult.addError({
-                            type: 'error',
-                            text: `Failed to parse field.`,
-                            message: `Key ${field.name} is already exists`,
-                            worksheet: worksheet.name,
-                            cell: worksheet.getPath(table.getCol(Dictionary.KEY), row),
-                            row,
-                            col: table.getCol(Dictionary.KEY),
-                        }, field);
-                    }
-                    allFields.set(field.name, field);
+                    allFields.set(field.title, field);
                     parents = parents.slice(0, groupIndex);
                     parents[groupIndex] = field;
                     if (groupIndex === 0) {
-                        fields.push(field);
+                        XlsxToJson.addFieldByName(worksheet, table, row, xlsxResult, fields, field);
                     } else {
                         const parent = parents[groupIndex - 1];
                         if (parent) {
-                            if (parent.fields) {
-                                parent.fields.push(field);
-                            } else {
-                                parent.fields = [field];
+                            if (!parent.fields) {
+                                parent.fields = [];
                             }
+                            XlsxToJson.addFieldByName(worksheet, table, row, xlsxResult, parent.fields, field);
                         }
                     }
                 }
@@ -677,7 +665,7 @@ export class XlsxToJson {
 
         expressions.addVariable(key, description, groupIndex);
 
-        const field = allFields.get(key.name);
+        const field = allFields.get(key.path);
         try {
             if (field && !field.isRef) {
                 if (XlsxToJson.isAutoCalculate(type, field)) {
@@ -790,5 +778,27 @@ export class XlsxToJson {
             name = path;
         }
         return { name, path, fullPath }
+    }
+
+    private static addFieldByName(
+        worksheet: Worksheet,
+        table: Table,
+        row: number,
+        xlsxResult: XlsxResult,
+        fields: SchemaField[],
+        field: SchemaField
+    ) {
+        if (fields.find((item) => item.name === field.name)) {
+            xlsxResult.addError({
+                type: 'error',
+                text: `Failed to parse field.`,
+                message: `Key ${field.name} is already exists`,
+                worksheet: worksheet.name,
+                cell: worksheet.getPath(table.getCol(Dictionary.KEY), row),
+                row,
+                col: table.getCol(Dictionary.KEY),
+            }, field);
+        }
+        fields.push(field);
     }
 }
