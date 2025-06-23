@@ -96,21 +96,22 @@ const retireEventsAbi = new ethers.Interface([
 ]);
 
 async function getContractMessage(
-    workers,
-    contractId,
+    workers: Workers,
+    contractId: string,
     userId: string | null
 ): Promise<[ContractMessage, string]> {
-    const { memo } = await workers.addNonRetryableTask(
-        {
-            type: WorkerTaskType.GET_CONTRACT_INFO,
-            data: {
-                contractId,
-                payload: { userId }
-            },
-        },
-        20,
-        null
-    );
+    const { memo } = await workers.addNonRetryableTask({
+        type: WorkerTaskType.GET_CONTRACT_INFO,
+        data: {
+            contractId,
+            payload: { userId }
+        }
+    }, {
+        priority: 20,
+        attempts: 0,
+        userId,
+        interception: null
+    });
 
     const message = await workers.addRetryableTask(
         {
@@ -121,7 +122,12 @@ async function getContractMessage(
                 payload: { userId }
             },
         },
-        10
+        {
+            priority: 10,
+            attempts: 0,
+            userId,
+            interception: null
+        }
     );
 
     const contractMessage = ContractMessage.fromMessage(message?.message);

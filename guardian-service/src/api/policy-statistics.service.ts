@@ -296,7 +296,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     .sendMessage(statMessage, {
                         sendToIPFS: true,
                         memo: null,
-                        userId: userId,
+                        userId,
                         interception: null
                     });
 
@@ -469,7 +469,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     .sendMessage(vcMessage, {
                         sendToIPFS: true,
                         memo: null,
-                        userId: userId,
+                        userId,
                         interception: null
                     });
 

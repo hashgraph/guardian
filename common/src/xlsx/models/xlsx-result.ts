@@ -267,12 +267,12 @@ export class XlsxResult {
         this._enums.push(item);
     }
 
-    public getEnum(worksheet: string): string[] {
+    public getEnum(worksheet: string): XlsxEnum | null {
         for (const item of this._enums) {
             if (item.worksheet.name === worksheet) {
-                return item.data;
+                return item;
             }
         }
-
+        return null;
     }
 }
