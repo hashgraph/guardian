@@ -1496,7 +1496,7 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public tryPublishPolicy() {
-        if (this.hasChanges) {
+        if (this.compareState(this.rootTemplate.getJSON(), this.storage.current)) {
             const dialogRef = this.dialog.open(SaveBeforeDialogComponent, {
                 width: '500px',
                 modal: true,
