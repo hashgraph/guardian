@@ -1,14 +1,14 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {PermissionsService} from '../../services/permissions.service';
-import {ProfileService} from '../../services/profile.service';
-import {UserPermissions} from '@guardian/interfaces';
-import {forkJoin} from 'rxjs';
-import {ActivatedRoute, Router} from '@angular/router';
-import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
-import {CategoryGroup, EntityGroup, PermissionsGroup} from 'src/app/utils/index';
-import {ICategory, IEntity} from 'src/app/utils/permissions-interface';
-import {ConfirmationDialogComponent} from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
-import {DialogService} from 'primeng/dynamicdialog';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { PermissionsService } from '../../services/permissions.service';
+import { ProfileService } from '../../services/profile.service';
+import { UserPermissions } from '@guardian/interfaces';
+import { forkJoin } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { PermissionsGroup } from 'src/app/utils/index';
+import { ICategory, IEntity } from 'src/app/utils/permissions-interface';
+import { DialogService } from 'primeng/dynamicdialog';
+import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 
 @Component({
     selector: 'app-roles-view',
@@ -124,24 +124,31 @@ export class RolesViewComponent implements OnInit, OnDestroy {
     }
 
     public onDelete(row: any) {
-        const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+        const dialogRef = this.dialog.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
             data: {
-                dialogTitle: 'Delete role',
-                dialogText: 'Are you sure to delete role?'
+                header: 'Delete Role',
+                text: `Are you sure want to delete role (${row.name})?`,
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Delete',
+                    class: 'delete'
+                }]
             },
-            modal: true,
-            closable: false,
         });
-        dialogRef.onClose.subscribe((result) => {
-            if (!result) {
-                return;
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Delete') {
+                this.loading = true;
+                this.permissionsService.deleteRole(row.id).subscribe((response) => {
+                    this.loadData();
+                }, (e) => {
+                    this.loadError(e);
+                });
             }
-            this.loading = true;
-            this.permissionsService.deleteRole(row.id).subscribe((response) => {
-                this.loadData();
-            }, (e) => {
-                this.loadError(e);
-            });
         });
     }
 

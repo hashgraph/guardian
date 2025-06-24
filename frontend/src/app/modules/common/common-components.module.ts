@@ -7,7 +7,6 @@ import { HederaExplorer } from './hedera-explorer/hedera-explorer.component';
 import { SelectMenuButton } from './select-menu/select-menu.component';
 import { AsyncProgressComponent } from './async-progress/async-progress.component';
 import { SwitchButton } from './switch-button/switch-button.component';
-import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
 import { FileDragNDropComponent } from './file-drag-n-drop/file-drag-n-drop.component';
 import { IconPreviewDialog } from './icon-preview-dialog/icon-preview-dialog.component';
 import { TokenConfigurationComponent } from './token-configuration/token-configuration.component';
@@ -51,7 +50,6 @@ import { IPFSLinkComponent } from './ipfs-link/ipfs-link.component';
         SelectMenuButton,
         AsyncProgressComponent,
         SwitchButton,
-        ConfirmationDialogComponent,
         FileDragNDropComponent,
         IconPreviewDialog,
         TokenConfigurationComponent,
@@ -103,7 +101,6 @@ import { IPFSLinkComponent } from './ipfs-link/ipfs-link.component';
         SelectMenuButton,
         SwitchButton,
         AsyncProgressComponent,
-        ConfirmationDialogComponent,
         FileDragNDropComponent,
         IconPreviewDialog,
         TokenConfigurationComponent,
