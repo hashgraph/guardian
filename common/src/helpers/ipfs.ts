@@ -2,6 +2,11 @@ import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
 import { Workers } from './workers.js';
 import { MessageBrokerChannel } from '../mq/index.js';
 
+export interface IPFSOptions {
+    userId?: string | null,
+    interception?: string | boolean | null
+}
+
 /**
  * IPFS service
  */
@@ -44,11 +49,10 @@ export class IPFS {
     /**
      * Return hash of added file
      * @param {ArrayBuffer} file file to upload on IPFS
-     *
-     * @param userId
+     * @param options
      * @returns {string} - hash
      */
-    public static async addFile(file: ArrayBuffer, userId: string | null): Promise<{
+    public static async addFile(file: ArrayBuffer, options?: IPFSOptions): Promise<{
         /**
          * CID
          */
@@ -64,10 +68,16 @@ export class IPFS {
                 target: [IPFS.target, MessageAPI.IPFS_ADD_FILE].join('.'),
                 payload: {
                     content: Buffer.from(file).toString('base64'),
-                    userId
+                    userId: options?.userId
                 }
             }
-        }, 10, 0, userId);
+        }, {
+            priority: 10,
+            attempts: 3,
+            registerCallback: true,
+            interception: options?.interception,
+            userId: options?.userId
+        });
         if (!res) {
             throw new Error('Add File: Invalid response');
         }
@@ -81,17 +91,30 @@ export class IPFS {
      * Returns file by IPFS CID
      * @param cid IPFS CID
      * @param responseType Response type
-     * @param userId
+     * @param options
      * @returns File
      */
-    public static async getFile(cid: string, responseType: 'json' | 'raw' | 'str', userId?: string): Promise<any> {
+    public static async getFile(
+        cid: string,
+        responseType: 'json' | 'raw' | 'str',
+        options?: IPFSOptions
+    ): Promise<any> {
         const res = await new Workers().addNonRetryableTask({
             type: WorkerTaskType.GET_FILE,
             data: {
                 target: [IPFS.target, MessageAPI.IPFS_GET_FILE].join('.'),
-                payload: { cid, responseType, userId }
+                payload: {
+                    cid,
+                    responseType,
+                    userId: options?.userId
+                }
             }
-        }, 10, userId);
+        }, {
+            priority: 10,
+            registerCallback: true,
+            interception: options?.interception,
+            userId: options?.userId
+        });
         if (!res) {
             throw new Error('Get File: Invalid response');
         }

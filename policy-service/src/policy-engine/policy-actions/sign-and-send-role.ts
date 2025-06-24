@@ -44,7 +44,12 @@ export class SignAndSendRole {
         vcMessage.setRole(group);
         const messageResult = await messageServer
             .setTopicObject(rootTopic)
-            .sendMessage(vcMessage, true, null, userId);
+            .sendMessage(vcMessage, {
+                sendToIPFS: true,
+                memo: null,
+                userId,
+                interception: null
+            });
 
         return { vc: userVC, message: messageResult };
     }
@@ -146,7 +151,12 @@ export class SignAndSendRole {
         vcMessage.setRole(group);
         const messageResult = await messageServer
             .setTopicObject(rootTopic)
-            .sendMessage(vcMessage, true, null, userId);
+            .sendMessage(vcMessage, {
+                sendToIPFS: true,
+                memo: null,
+                userId,
+                interception: null
+            });
 
         return { vc: userVC, message: messageResult };
     }

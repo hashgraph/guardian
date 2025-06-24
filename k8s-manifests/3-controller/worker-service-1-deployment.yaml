@@ -39,10 +39,15 @@ spec:
                 configMapKeyRef:
                   key: OVERRIDE
                   name: general-configs
-            - name: CONTRACT_FILE_ID
+            - name: RETIRE_CONTRACT_FILE_ID
               valueFrom:
                 configMapKeyRef:
-                  key: CONTRACT_FILE_ID
+                  key: RETIRE_CONTRACT_FILE_ID
+                  name: general-configs
+            - name: WIPE_CONTRACT_FILE_ID
+              valueFrom:
+                configMapKeyRef:
+                  key: WIPE_CONTRACT_FILE_ID
                   name: general-configs
             - name: DB_HOST
               valueFrom:

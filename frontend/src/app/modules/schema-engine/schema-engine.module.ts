@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
-import { GoogleMapsModule } from '@angular/google-maps';
 import { GeojsonTypeComponent } from './geojson-type/geojson-type.component';
 //Modules
 import { MaterialModule } from '../common/material.module';
@@ -79,7 +78,6 @@ import { DialogService } from 'primeng/dynamicdialog';
         ClipboardModule,
         CodemirrorModule,
         ArtifactEngineModule,
-        GoogleMapsModule,
         ButtonModule,
         TabViewModule,
         InputTextModule,

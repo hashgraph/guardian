@@ -36,8 +36,8 @@ export class ContextHelper {
                     ContextHelper._clearContext(i, contexts);
                 }
             } else {
-                if (!ContextHelper.types.includes(item['type'])) {
-                    delete item['type'];
+                if (!ContextHelper.types.includes(item.type)) {
+                    delete item.type;
                 }
                 if (item['@context']) {
                     ContextHelper.addContext(item['@context'], contexts);
@@ -56,16 +56,16 @@ export class ContextHelper {
     public static clearContext(vc: any) {
         if (vc.credentialSubject) {
             if (Array.isArray(vc.credentialSubject)) {
-                for (let i = 0; i < vc.credentialSubject.length; i++) {
+                for (const subject of vc.credentialSubject) {
                     const contexts = new Set<string>();
-                    const type = vc.credentialSubject[i].type;
-                    ContextHelper._clearContext(vc.credentialSubject[i], contexts);
+                    const type = subject.type;
+                    ContextHelper._clearContext(subject, contexts);
                     const context = Array.from(contexts);
                     if (context && context.length) {
-                        vc.credentialSubject[i]['@context'] = context;
+                        subject['@context'] = context;
                     }
                     if (type) {
-                        vc.credentialSubject[i].type = type;
+                        subject.type = type;
                     }
 
                 }

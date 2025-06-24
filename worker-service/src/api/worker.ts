@@ -14,6 +14,7 @@ import { AccountId, ContractFunctionParameters, ContractId, PrivateKey, TokenId 
 import { HederaUtils } from './helpers/utils.js';
 import axios from 'axios';
 import process from 'process';
+import { MAX_REDIRECTS } from '../constants/index.js';
 
 /**
  * Sleep helper
@@ -184,8 +185,8 @@ export class Worker extends NatsService {
 
             }
 
-            const completeTask = async (data) => {
-                await this.publish(WorkerEvents.TASK_COMPLETE, data)
+            const completeTask = async (data: any) => {
+                await this.publish(WorkerEvents.TASK_COMPLETE, data);
             }
             await completeTask(result);
             await this.publish(WorkerEvents.WORKER_READY);
@@ -288,9 +289,12 @@ export class Worker extends NatsService {
                         fileContent = Buffer.from(data.body, 'base64')
                     }
                     //const blob: any = new Blob([fileContent]);
-                    const r = await this.ipfsClient.addFile(fileContent);
-                    this.publish(ExternalMessageEvents.IPFS_ADDED_FILE, r);
-                    result.data = r;
+                    const cid = await this.ipfsClient.addFile(fileContent);
+                    if (!cid) {
+                        throw new Error('Add File: Invalid response');
+                    }
+                    this.publish(ExternalMessageEvents.IPFS_ADDED_FILE, cid);
+                    result.data = cid;
                     break;
                 }
 
@@ -391,12 +395,13 @@ export class Worker extends NatsService {
                 }
 
                 case WorkerTaskType.HTTP_REQUEST: {
-                    const { method, url, headers, body } = task.data.payload;
+                    const { method, url, headers, body, maxRedirects = MAX_REDIRECTS.DEFAULT } = task.data.payload;
                     const response = await axios({
                         method,
                         url,
                         headers,
-                        data: body
+                        data: body,
+                        maxRedirects
                     });
                     result.data = response.data;
                     break;

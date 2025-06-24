@@ -185,7 +185,12 @@ export class PolicyImport {
                 message.setDocument(policy);
                 const createPolicyMessage = await this.messageServer
                     .setTopicObject(this.parentTopic)
-                    .sendMessage(message);
+                    .sendMessage(message, {
+                        sendToIPFS: true,
+                        memo: null,
+                        interception: null,
+                        userId
+                    });
 
                 this.notifier.completedAndStart('Create policy topic');
                 this.topicRow = await this.topicHelper.create({

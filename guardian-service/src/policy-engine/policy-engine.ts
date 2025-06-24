@@ -465,7 +465,12 @@ export class PolicyEngine extends NatsService {
             message.setDocument(model);
             const messageStatus = await messageServer
                 .setTopicObject(parent)
-                .sendMessage(message, true, null, user.id);
+                .sendMessage(message, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId: user.id,
+                    interception: null
+                });
 
             notifier.completedAndStart('Link topic and policy');
             await topicHelper.twoWayLink(topic, parent, messageStatus.getId(), user.id);
@@ -713,7 +718,12 @@ export class PolicyEngine extends NatsService {
         const message = new PolicyMessage(MessageType.Policy, MessageAction.DeletePolicy);
         message.setDocument(policyToDelete);
         await messageServer.setTopicObject(topic)
-            .sendMessage(message, true, null, user.id);
+            .sendMessage(message, {
+                sendToIPFS: true,
+                memo: null,
+                userId: user.id,
+                interception: null
+            });
 
         notifier.completedAndStart('Delete policy from DB');
         await DatabaseServer.deletePolicy(policyToDelete.id);
@@ -946,7 +956,12 @@ export class PolicyEngine extends NatsService {
                 const tokenMessage = new TokenMessage(MessageAction.UseToken);
                 tokenMessage.setDocument(_token);
                 await messageServer
-                    .sendMessage(tokenMessage, true, null, user.id);
+                    .sendMessage(tokenMessage, {
+                        sendToIPFS: true,
+                        memo: null,
+                        userId: user.id,
+                        interception: user.id
+                    });
             }
             const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
 
@@ -1064,7 +1079,12 @@ export class PolicyEngine extends NatsService {
             const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
             message.setDocument(model, buffer);
             const result = await messageServer
-                .sendMessage(message, true, null, user.id);
+                .sendMessage(message, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId: user.id,
+                    interception: user.id
+                });
             model.messageId = result.getId();
 
             notifier.completedAndStart('Link topic and policy');
@@ -1201,7 +1221,12 @@ export class PolicyEngine extends NatsService {
         });
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
-        const result = await messageServer.sendMessage(message, true, null, user.id);
+        const result = await messageServer.sendMessage(message, {
+            sendToIPFS: true,
+            memo: null,
+            userId: user.id,
+            interception: null
+        });
 
         //Link topic and message
         await topicHelper.twoWayLink(rootTopic, topic, result.getId(), user.id);
@@ -1395,7 +1420,8 @@ export class PolicyEngine extends NatsService {
             .getMessage<PolicyMessage>({
                 messageId,
                 loadIPFS: true,
-                userId
+                userId,
+                interception: null
             });
         if (message.type !== MessageType.InstancePolicy) {
             throw new Error('Invalid Message Type');
@@ -1502,8 +1528,9 @@ export class PolicyEngine extends NatsService {
     /**
      * Validate Model
      * @param policy
+     * @param isDruRun
      */
-    public async validateModel(policy: Policy | string): Promise<ISerializedErrors> {
+    public async validateModel(policy: Policy | string, isDruRun: boolean = false): Promise<ISerializedErrors> {
         let policyId: string;
         if (typeof policy === 'string') {
             policyId = policy
@@ -1514,7 +1541,7 @@ export class PolicyEngine extends NatsService {
             }
             policyId = policy.id.toString();
         }
-        const policyValidator = new PolicyValidator(policy);
+        const policyValidator = new PolicyValidator(policy, isDruRun);
         await policyValidator.build(policy);
         await policyValidator.validate();
         return policyValidator.getSerializedErrors();
@@ -1554,7 +1581,12 @@ export class PolicyEngine extends NatsService {
         const topic = new TopicConfig({ topicId: multipleConfig.synchronizationTopicId }, null, null);
         await messageServer
             .setTopicObject(topic)
-            .sendMessage(message, true, null, policy.ownerId);
+            .sendMessage(message, {
+                sendToIPFS: true,
+                memo: null,
+                userId: policy.ownerId,
+                interception: null
+            });
 
         return await DatabaseServer.saveMultiPolicy(multipleConfig);
     }

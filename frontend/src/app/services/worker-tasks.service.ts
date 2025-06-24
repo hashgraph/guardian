@@ -6,7 +6,7 @@ import { API_BASE_URL } from './api';
 @Injectable({
     providedIn: 'root',
 })
-export class WorkerTasksService{
+export class WorkerTasksService {
     private readonly url: string = `${API_BASE_URL}/worker-tasks`;
 
     constructor(private http: HttpClient) {
@@ -14,12 +14,16 @@ export class WorkerTasksService{
 
     public all(
         pageIndex?: any,
-        pageSize?: any
+        pageSize?: any,
+        status?: string
     ): Observable<HttpResponse<any[]>> {
         const parameters = {
             pageIndex,
             pageSize,
         } as any;
+        if (status) {
+            parameters.status = status;
+        }
         return this.http.get<any>(`${this.url}`, {
             observe: 'response',
             params: parameters,
@@ -27,7 +31,7 @@ export class WorkerTasksService{
     }
 
     public restartTask(taskId: string): Observable<any> {
-        return this.http.post<any>(`${this.url}/restart`, {taskId})
+        return this.http.post<any>(`${this.url}/restart`, { taskId })
     }
 
     public deleteTask(taskId: string): Observable<any> {

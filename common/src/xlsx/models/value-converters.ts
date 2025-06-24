@@ -101,6 +101,22 @@ export function booleanToXlsx(value: boolean): string {
     return value === true ? 'Yes' : (value === false ? 'No' : '');
 }
 
+export function visibilityToXlsx(value: string | boolean): string {
+    if (value === 'hidden' || value === 'Hidden') {
+        return 'Hidden';
+    }
+    if (value === 'Auto' || value === 'auto') {
+        return 'Auto'
+    }
+    if (value === true) {
+        return 'Yes'
+    }
+    if (value === false) {
+        return 'No'
+    }
+    return '';
+}
+
 export function anyToXlsx(value: any): string | number | boolean {
     if (value === undefined || value === null) {
         return '';
@@ -201,6 +217,16 @@ export function valueToFormula(value: any): any {
     }
     if (typeof value?.toString === 'function') {
         return value.toString();
+    }
+    return value;
+}
+
+export function xlsxToVisibility(value: string): string {
+    if (value === 'hidden' || value === 'Hidden' || value === 'No') {
+        return 'Hidden';
+    }
+    if (value === 'Auto' || value === 'auto' || value === 'Auto-Calculate') {
+        return 'Auto';
     }
     return value;
 }

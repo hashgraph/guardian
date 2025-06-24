@@ -4,10 +4,12 @@ import {
     DatabaseServer,
     Environment,
     GenerateTLSOptionsNats,
+    JwtServicesValidator,
     LargePayloadContainer,
     MessageBrokerChannel,
     Migration,
     mongoForLoggingInitialization,
+    OldSecretManager,
     PinoLogger,
     pinoLoggerInitialization,
     ValidateConfiguration
@@ -57,6 +59,11 @@ Promise.all([
     app.listen();
 
     DatabaseServer.connectBD(db);
+
+    await new OldSecretManager().setConnection(mqConnection).init();
+    const jwtServiceName = 'TOPIC_LISTENER_SERVICE';
+
+    JwtServicesValidator.setServiceName(jwtServiceName);
 
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);

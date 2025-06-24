@@ -5,7 +5,6 @@ import { ContractType, IContract, PolicyAvailability, PolicyCategoryType, Schema
 import * as yaml from 'js-yaml';
 import { DialogService } from 'primeng/dynamicdialog';
 import { forkJoin, Observable } from 'rxjs';
-import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { ContractService } from 'src/app/services/contract.service';
@@ -30,6 +29,8 @@ import { OrderOption } from '../../structures/interfaces/order-option.interface'
 import { PolicyFolder, PolicyItem, PolicyRoot } from '../../structures/policy-models/interfaces/types';
 import { PolicyPropertiesComponent } from '../policy-properties/policy-properties.component';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
+import { TestCodeDialog } from '../../dialogs/test-code-dialog/test-code-dialog.component';
+import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 
 /**
  * The page for editing the policy and blocks.
@@ -37,7 +38,10 @@ import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
 @Component({
     selector: 'app-policy-configuration',
     templateUrl: './policy-configuration.component.html',
-    styleUrls: ['./policy-configuration.component.scss'],
+    styleUrls: [
+        './policy-configuration.component.scss',
+        '../../styles/properties.scss'
+    ],
 })
 export class PolicyConfigurationComponent implements OnInit {
     private _searchTimeout!: any;
@@ -634,21 +638,29 @@ export class PolicyConfigurationComponent implements OnInit {
         if (this.compareState(this.rootTemplate.getJSON(), this.storage.current)) {
             this.rewriteState();
         } else {
-            const applyChangesDialog = this.dialog.open(ConfirmationDialogComponent, {
+            const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+                showHeader: false,
+                width: '640px',
+                styleClass: 'guardian-dialog',
                 data: {
-                    dialogTitle: 'Apply latest changes',
-                    dialogText: 'Do you want to apply latest changes?'
+                    header: 'Apply latest changes',
+                    text: `Do you want to apply latest changes?`,
+                    buttons: [{
+                        name: 'Close',
+                        class: 'secondary'
+                    }, {
+                        name: 'Confirm',
+                        class: 'primary'
+                    }]
                 },
-                modal: true,
-                closable: false,
-            })
-            applyChangesDialog.onClose.subscribe((result) => {
-                if (result) {
+            });
+            dialogRef.onClose.subscribe((result: string) => {
+                if (result === 'Confirm') {
                     this.loadState(this.storage.current);
                 } else {
                     this.rewriteState();
                 }
-            })
+            });
         }
     }
 
@@ -1205,6 +1217,22 @@ export class PolicyConfigurationComponent implements OnInit {
         this.updateTemporarySchemas();
         this.onSelect(this.openFolder.root);
         return false;
+    }
+
+    public onTest(block: any) {
+        const dialogRef = this.dialogService.open(TestCodeDialog, {
+            showHeader: false,
+            header: 'Code',
+            width: '1200px',
+            styleClass: 'guardian-dialog',
+            data: {
+                block: block,
+                folder: this.openFolder,
+                readonly: this.readonly,
+                policyId: this.policyId
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 
     public onCreateModule() {

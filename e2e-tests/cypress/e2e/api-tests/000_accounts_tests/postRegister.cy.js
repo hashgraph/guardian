@@ -31,6 +31,7 @@ context("Register", { tags: ['accounts', 'firstPool', 'all'] }, () => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 expect(response.body).to.have.property("username", name);
                 expect(response.body).to.have.property("role", "USER");
+                expect(response.body).to.have.property("weakPassword", false);
             });
         });
     });
@@ -194,6 +195,26 @@ context("Register", { tags: ['accounts', 'firstPool', 'all'] }, () => {
             expect(response.body.message).eql([
                 "Passwords must match"
             ]);
+        });
+    });
+
+    it('Register user with weak password - Negative', () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.AccountRegister,
+            body: {
+                username: name + 'test',
+                password: "tt",
+                password_confirmation: "tt",
+                role: "USER"
+            },
+            failOnStatusCode: false,
+        }).then(response => {
+            cy.log(response)
+            expect(response.status).eql(STATUS_CODE.UNPROCESSABLE);
+            expect(response.body.message).eql(
+                "Password must be at least 4 characters long."
+            );
         });
     });
 });

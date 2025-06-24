@@ -4,7 +4,7 @@ import { PolicyEngine } from './helpers/policy-engine.js';
 import { WebSocketsService } from './api/service/websockets.js';
 import { Users } from './helpers/users.js';
 import { Wallet } from './helpers/wallet.js';
-import { GenerateTLSOptionsNats, LargePayloadContainer, MessageBrokerChannel, PinoLogger } from '@guardian/common';
+import { GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, MessageBrokerChannel, OldSecretManager, PinoLogger } from '@guardian/common';
 import { TaskManager } from './helpers/task-manager.js';
 import { AppModule } from './app.module.js';
 import { NestFactory } from '@nestjs/core';
@@ -38,6 +38,11 @@ Promise.all([
     MessageBrokerChannel.connect('API_GATEWAY'),
 ]).then(async ([app, cn]) => {
     try {
+        await new OldSecretManager().setConnection(cn).init();
+        const jwtServiceName = 'API_GATEWAY_SERVICE';
+
+        JwtServicesValidator.setServiceName(jwtServiceName);
+
         app.connectMicroservice<MicroserviceOptions>({
             transport: Transport.NATS,
             options: {

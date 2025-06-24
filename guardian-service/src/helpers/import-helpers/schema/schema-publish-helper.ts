@@ -92,7 +92,12 @@ export async function publishSchema(
     message.setDocument(item);
     message.setRelationships(relationships);
     const result = await messageServer
-        .sendMessage(message, true, null, user.id);
+        .sendMessage(message, {
+            sendToIPFS: true,
+            memo: null,
+            userId: user.id,
+            interception: user.id
+        });
 
     const messageId = result.getId();
     const topicId = result.getTopicId();

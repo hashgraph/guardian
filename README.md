@@ -27,15 +27,53 @@ To get a local copy up and running quickly, follow the steps below. Please refer
 
 ## Prerequisites
 
-* [Hedera Testnet Account](https://portal.hedera.com)
-* [Web3.Storage Account](https://web3.storage/)
-* [Filebase Account](https://filebase.com/)
+### 2.1 Universal software
 
-Note: as of January, 10th 2024 old web3.storage upload API (the main upload API before November 20, 2023) has been sunset. New **w3up** service accounts/API must be used with Guardian going forward.
+1. **[Git](https://git-scm.com/downloads)** – source-control tooling  
+2. **[Docker](https://www.docker.com/)** – one-command build & run (recommended)  
+3. **[MongoDB v6](https://www.mongodb.com/)**, **[Node.js v16](https://nodejs.org/en)**, and **[NATS 1.12.2](https://nats.io/)** – auto-installed when using Docker-Compose  
+4. **[Web3.Storage account](https://web3.storage/)** – IPFS pinning service  
+5. **[Filebase account](https://filebase.com/)** – S3-compatible IPFS pinning (optional but recommended)  
+6. **[Redis 7.3.0](https://redict.io/)** – in-memory cache & message broker (auto-provisioned by the Docker stack)
 
 When building the reference implementation, you can [manually build every component](#manual-installation) or run a single command with Docker.
 
-## Automatic installation
+### 2.2 Hedera network
+
+|                | Testnet (default)                      | Mainnet (production)                                                                               |
+| -------------- | -------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| **Account**    | Create via [Hedera Developer Portal](https://portal.hedera.com/login) | Create via Hedera-enabled wallet (e.g.HashPack) |
+| **Key type**   | ED25519                            | ED25519                                                                                        |
+| **Network**    | `testnet`                              | `mainnet`                                                                                          |
+
+> **Fees**: Mainnet operations incur HBAR costs—fund your account before running Guardian.
+
+## 2.3. Preparing a Mainnet Account & Keys
+
+1. Install a Hedera-enabled wallet (e.g., [HashPack](https://www.hashpack.app/)).  
+2. Create a Mainnet account and note the Account ID (`0.0.x`).  
+3. Export the ED25519 key pair  
+   - *HashPack path*: Settings → Manage Accounts → Export Private Key (DER format).  
+4. Update your `.env`  
+   ```dotenv
+   HEDERA_NET=mainnet
+   HEDERA_OPERATOR_ID=0.0.123456
+   HEDERA_OPERATOR_KEY=<Enter your Private Key Here>
+   ```
+## 2.4. Preparing a Testnet Account & Keys
+
+1. Create a Testnet account via the [Hedera Developer Portal](https://portal.hedera.com/login).
+2. Record your Account ID (0.0.x).
+3. Download the ED25519 private key (ignore ECDSA)
+4. Select DER Encoded — do not choose HEX Encoded.
+5. Update your `.env`
+
+```dotenv
+HEDERA_NET=testnet
+HEDERA_OPERATOR_ID=0.0.987654
+HEDERA_OPERATOR_KEY=<Enter your Private Key Here>
+```
+## 2.5. Automatic installation
 
 ### Prerequisites for automatic installation
 
@@ -43,7 +81,7 @@ When building the reference implementation, you can [manually build every compon
 
 If you build with docker [MongoDB V6](https://www.mongodb.com), [NodeJS V20](https://nodejs.org), [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable) and [Nats 1.12.2](https://nats.io/) will be installed and configured automatically.
 
-### Installation
+## Installation
 
 The following steps need to be executed in order to start Guardian using docker:
 
@@ -77,7 +115,7 @@ For this example purpose let's name the Guardian platform as "develop"
 
 #### 3. Update BC access variables.
 
-Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operator_ID and Operator_Key by looking at the link: [How to Create Operator_ID and Operator_Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-operator-id-and-operator-key).
+Update the following files with your Hedera Mainnet or Testnet account info (see prerequisites). Please check complete steps to generate Operator_ID and Operator_Key by looking at the link: [How to Create Operator_ID and Operator_Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-operator-id-and-operator-key).
 The Operator_ID and Operator_Key and HEDERA_NET are all that Guardian needs to access the Hedera Blockchain assuming a role on it. This parameters needs to be configured in a file at the path `./configs`, the file should use the following naming convention:
 
    `./configs/.env.\<GUARDIAN_ENV\>.guardian.system`
@@ -168,6 +206,29 @@ To let the Multi-environment transition happen in a transparent way the `GUARDIA
 ##### 3.2. Setting up JWT keys in /.env file
 
 To start of auth-service it is necessary to fill in `JWT_PRIVATE_KEY` and `JWT_PUBLIC_KEY`, which are RSA key pair. You can generate it in any convenient way, for example, using this service https://travistidwell.com/jsencrypt/demo/.
+
+##### 3.3. Setting up JWT keys for each service in the .env file
+
+To start all services, you need to create a 2048-bit RSA key pair for each service. You can generate a key pair in any convenient way—for example, using the online tool at https://mkjwk.org/ with the following settings:
+   - key size: 2048
+   - key use: signature
+   - algorithm: RS256: RSA
+   - key ID: sha256
+   - show: yes
+
+For each service, you must add its secret key `SERVICE_JWT_SECRET_KEY` and a list of all public keys from every service:
+- `SERVICE_JWT_PUBLIC_KEY_WORKER_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_TOPIC_LISTENER_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_QUEUE_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_POLICY_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_NOTIFICATION_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_LOGGER_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_GUARDIAN_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_AUTH_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_API_GATEWAY_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_AI_SERVICE`
+
+Alternatively, you can create a single key pair and, instead of adding the public keys for each individual service, you can add `SERVICE_JWT_SECRET_KEY_ALL` and `SERVICE_JWT_PUBLIC_KEY_ALL` to use the same keys for all services. However, it is recommended to generate a separate key pair for each service.
 
 #### 4. Now, we have two options to setup IPFS node :  1. Local node 2. IPFS Web3Storage node 3. Filebase Bucket.
 

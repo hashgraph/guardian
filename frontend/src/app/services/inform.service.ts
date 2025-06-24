@@ -86,4 +86,17 @@ export class InformService {
             enableHtml: true,
         });
     }
+
+    public shortWarnMessage(text: string, header: string) {
+        const body = `<div>${text}</div>`;
+
+        this.toastr.warning(body, header, {
+            timeOut: 100000,
+            extendedTimeOut: 30000,
+            closeButton: true,
+            positionClass: 'toast-bottom-right',
+            toastClass: 'ngx-toastr warn-message-toastr',
+            enableHtml: true,
+        });
+    }
 }

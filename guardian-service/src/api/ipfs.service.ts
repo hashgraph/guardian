@@ -62,7 +62,10 @@ export async function ipfsAPI(logger: PinoLogger): Promise<void> {
     }) => {
         try {
             const { user, buffer } = msg;
-            const result = await IPFS.addFile(buffer, user.id);
+            const result = await IPFS.addFile(buffer, {
+                userId: user.id,
+                interception: null
+            });
 
             return new MessageResponse(result);
         }
@@ -115,8 +118,11 @@ export async function ipfsAPI(logger: PinoLogger): Promise<void> {
             if (!msg.responseType) {
                 throw new Error('Invalid response type');
             }
-
-            return new MessageResponse(await IPFS.getFile(msg.cid, msg.responseType, msg.user?.id));
+            const file = await IPFS.getFile(msg.cid, msg.responseType, {
+                userId: msg.user?.id,
+                interception: null
+            });
+            return new MessageResponse(file);
         }
         catch (error) {
             await logger.error(error, ['IPFS_CLIENT'], msg?.user?.id);

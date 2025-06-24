@@ -112,6 +112,10 @@ export class ModuleTemplate {
         return true;
     }
 
+    public get policyId(): string | undefined {
+        return this.id;
+    }
+
     private buildBlock(config: IBlockConfig) {
         if (!config) {
             config = { blockType: 'module' };
@@ -152,7 +156,7 @@ export class ModuleTemplate {
         return json;
     }
 
-    public getConfig():any {
+    public getConfig(): any {
         return this._config.getJSON();
     }
 

@@ -1,8 +1,10 @@
 import { NotificationAction, NotificationType, NotifyAPI, } from '@guardian/interfaces';
 import { Injectable } from '@nestjs/common';
 import { CommonVariables } from './common-variables.js';
-import { Client, ClientProxy, Transport } from '@nestjs/microservices';
+import { Client, ClientProxy, Transport, NatsRecordBuilder } from '@nestjs/microservices';
 import { GenerateTLSOptionsNats } from './generate-tls-options.js';
+import { JwtServicesValidator } from '../security/index.js';
+import { headers } from 'nats';
 
 /**
  * Notification service
@@ -33,10 +35,15 @@ export class NotificationService {
      */
     private async sendMessage(subject: NotifyAPI, data: any) {
         try {
-            const response = await this.client.send(subject, data).toPromise();
+            const token = await JwtServicesValidator.sign(subject);
+            const head = headers();
+            head.append('serviceToken', token);
+            const record = new NatsRecordBuilder(data).setHeaders(head).build();
+            const response = await this.client.send(subject, record).toPromise();
+
             return response.body;
         } catch (error) {
-            console.log(error);
+            console.log(error, subject);
             return null;
         }
     }
