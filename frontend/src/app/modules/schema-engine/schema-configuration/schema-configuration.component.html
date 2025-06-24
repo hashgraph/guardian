@@ -4,7 +4,7 @@
     </div>
     <form *ngIf="started" [formGroup]="dataForm" class="context">
         <div class="configurator-block-title">Schema Properties</div>
-        <div class="input-field-container">
+        <div class="input-field-container guardian-input-container">
             <label class="form-label" htmlFor="schemaName">* Schema Name</label>
             <input
                 formControlName="name"
@@ -16,9 +16,11 @@
         </div>
 
         <div class="optional-row">
-            <div *ngIf="isPolicy" class="dropdown-field">
+            <div *ngIf="isPolicy" class="dropdown-field guardian-input-container">
                 <label class="form-label" htmlFor="policy">* Policy</label>
                 <p-dropdown
+                    class="guardian-dropdown"
+                    panelStyleClass="guardian-dropdown-panel"
                     (onChange)="onFilter($event)"
                     [options]="policies"
                     [showClear]="true"
@@ -32,9 +34,11 @@
                 ></p-dropdown>
             </div>
 
-            <div *ngIf="isTool" class="dropdown-field">
+            <div *ngIf="isTool" class="dropdown-field guardian-input-container">
                 <label class="form-label" htmlFor="tools">* Tool</label>
                 <p-dropdown
+                    class="guardian-dropdown"
+                    panelStyleClass="guardian-dropdown-panel"
                     [options]="tools"
                     appendTo="body"
                     formControlName="topicId"
@@ -45,9 +49,11 @@
                 ></p-dropdown>
             </div>
 
-            <div *ngIf="isSystem" class="dropdown-field">
+            <div *ngIf="isSystem" class="dropdown-field guardian-input-container">
                 <label class="form-label" htmlFor="forSystemEntity">For (Entity)</label>
                 <p-dropdown
+                    class="guardian-dropdown"
+                    panelStyleClass="guardian-dropdown-panel"
                     [options]="systemEntityOptions"
                     appendTo="body"
                     formControlName="entity"
@@ -58,9 +64,11 @@
                 ></p-dropdown>
             </div>
 
-            <div *ngIf="isPolicy || isModule" class="dropdown-field">
+            <div *ngIf="isPolicy || isModule" class="dropdown-field guardian-input-container">
                 <label class="form-label" htmlFor="forPolicyModuleEntity">For (Entity)</label>
                 <p-dropdown
+                    class="guardian-dropdown"
+                    panelStyleClass="guardian-dropdown-panel"
                     [options]="policyModuleEntityOptions"
                     appendTo="body"
                     formControlName="entity"
@@ -72,7 +80,7 @@
             </div>
         </div>
 
-        <div class="input-field-container">
+        <div class="guardian-input-container input-field-container" style="margin-bottom: 32px">
             <label class="form-label" htmlFor="descriptionForSchema">Description</label>
             <input
                 formControlName="description"

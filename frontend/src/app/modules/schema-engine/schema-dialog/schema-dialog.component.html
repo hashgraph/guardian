@@ -1,38 +1,39 @@
 <div class="dialog-body">
     <div class="g-dialog-header">
-        <p-tabView>
+        <p-tabView class="guardian-tabs action-tabs">
             <p-tabPanel *ngFor="let tab of items; let i = index">
                 <ng-template pTemplate="header">
-                    <div (click)="handleChangeTab(i)" class="tabview-label">
+                    <div (click)="onChangeTab(i)" class="tabview-label">
                         {{ tab.label }}
                     </div>
                 </ng-template>
             </p-tabPanel>
         </p-tabView>
     </div>
-    <div
-            (cdkDropListDropped)="drop($event)"
-            [cdkDropListData]="fields"
-            cdkDropList
-            class="g-dialog-body"
-    >
+    <div class="g-dialog-body">
+        <div *ngIf="!started" class="guardian-loading">
+            <div class="guardian-loading-image"></div>
+        </div>
         <div style="padding-right: 12px;">
             <app-schema-configuration
-                #document
+                #schemaControl
+                [hidden]="!!json"
                 [type]="type"
-                [value]="scheme"
+                [value]="schema"
                 [extended]="extended"
-                (change-fields)="onChangeFields($event)"
                 [schemaType]="schemaType"
                 [modules]="modules"
-                (change-form)="onChangeForm($event)"
                 [policies]="policies"
                 [topicId]="topicId"
                 [properties]="properties"
                 [tools]="tools"
-                (use-update-sub-schemas)="getSubSchemes($event)"
+                (change-form)="onChangeForm($event)"
+                (use-update-sub-schemas)="onLoadSubSchemas($event)"
             >
             </app-schema-configuration>
+            <textarea *ngIf="json" [(ngModel)]="document">
+
+            </textarea>
         </div>
     </div>
 </div>
@@ -49,7 +50,7 @@
         <div>
             <button 
                 (click)="onCreate()" 
-                [disabled]="!(valid && started)"
+                [disabled]="disabled"
                 class="button"
                 label="Save"
                 pButton

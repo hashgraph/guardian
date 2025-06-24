@@ -1,8 +1,6 @@
 import { ChangeDetectorRef, Component, ViewChild } from '@angular/core';
-import { UntypedFormBuilder } from '@angular/forms';
 import { SchemaConfigurationComponent } from '../schema-configuration/schema-configuration.component';
 import { ISchema, Schema, SchemaHelper } from '@guardian/interfaces';
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { MenuItem } from 'primeng/api';
 import { SchemaService } from '../../../services/schema.service';
@@ -16,39 +14,39 @@ import { SchemaService } from '../../../services/schema.service';
     styleUrls: ['./schema-dialog.component.scss'],
 })
 export class SchemaDialog {
-    @ViewChild('document') schemaControl!: SchemaConfigurationComponent;
-
-    public scheme: Schema;
-    public schemasMap: any;
-    public started: boolean = false;
     public type: 'new' | 'edit' | 'version' = 'new';
-    public topicId: any;
-
+    public started: boolean = false;
     public schemaType: any = 'policy';
-    public valid: boolean = true;
-    public extended: boolean = false;
-    public fields: any[] = [];
-    public restoreData: any = null;
+    public items: MenuItem[] = [
+        { label: 'Simplified' },
+        { label: 'Advanced' },
+        { label: 'JSON' }
+    ];
+    public tab: number = 0;
 
+    public schema: Schema;
+    public subSchemas: Schema[];
+    public topicId: any;
     public policies: any[];
     public modules: any[];
     public tools: any[];
     public properties: any[];
-
     public category: string;
-    public subSchemas: ISchema[];
+    public document: string;
 
-    items: MenuItem[] = [{label: 'Simplified'}, {label: 'Advanced'}];
+    public valid: boolean = true;
+    public extended: boolean = false;
+    public json: boolean = false;
+
+    @ViewChild('schemaControl') schemaControl!: SchemaConfigurationComponent;
 
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
-        private fb: UntypedFormBuilder,
         private cdr: ChangeDetectorRef,
         private schemaService: SchemaService,
     ) {
-        this.schemasMap = this.config.data.schemasMap || {};
-        this.scheme = this.config.data.scheme || null;
+        this.schema = this.config.data.scheme || null;
         this.type = this.config.data.type || null;
         this.topicId = this.config.data.topicId || null;
         this.schemaType = this.config.data.schemaType || 'policy';
@@ -56,101 +54,143 @@ export class SchemaDialog {
         this.modules = this.config.data.modules || [];
         this.tools = this.config.data.tools || [];
         this.properties = this.config.data.properties || [];
-
-        this.category = this.config.data.category
+        this.category = this.config.data.category;
+        this.valid = true;
+        this.tab = 0;
+        this.extended = this.tab === 1;
+        this.json = this.tab === 2;
+        this.document = '';
     }
 
     ngOnInit(): void {
-        const restoreData = localStorage.getItem('restoreSchemaData');
-        if (restoreData) {
-            try {
-                this.restoreData = JSON.parse(restoreData);
-            } catch {
-                this.restoreData = null;
-            }
-        }
-
-        setTimeout(() => {
-            this.started = true;
-        });
-
-        this.getSubSchemes(this.topicId);
+        this.onLoadSubSchemas(this.topicId);
+        this.loading(false);
     }
 
-    handleChangeTab(order: number): void {
-        this.extended = order === 1;
+    public get disabled(): boolean {
+        return !(this.valid && this.started);
     }
 
-    getDocument(schema: Schema | null) {
-        this.ref.close(schema);
-    }
-
-    onClose() {
-        console.log(this.scheme);
+    public onClose() {
         this.ref.close(null);
     }
 
-    onCreate() {
-        if (!(this.valid && this.started)) {
+    public onCreate() {
+        if (this.disabled) {
             return;
         }
 
-        const schema = this.schemaControl?.getSchema();
+        const schema = this.getSchemaDocument();
 
+        if (!schema) {
+            return;
+        }
+
+        debugger;
+        this.ref.close({
+            ...schema,
+            context: null,
+            fields: [],
+            conditions: []
+        });
+    }
+
+    private getSchemaDocument() {
+        if (this.json) {
+            debugger;
+            return null;
+        } else {
+            return this.schemaControl.getSchema();
+        }
+    }
+
+    private setSubSchemas(topicId: string, schemaId: string, data: any) {
+        if (data.schema) {
+            this.schema = new Schema(data.schema);
+        }
+
+        this.subSchemas = SchemaHelper
+            .map(data.subSchemas || [])
+            .filter(schema => schema.id !== schemaId);
+
+        this.topicId = topicId;
+
+        this.updateFormData();
+        this.loading(false);
+    }
+
+    private updateFormData() {
+        this.schemaControl.mappingSubSchemas(this.subSchemas, this.topicId);
+        setTimeout(() => this.schemaControl.updateFormControls(), 50);
+    }
+
+    public onChangeForm($event: SchemaConfigurationComponent) {
+        this.valid = $event.isValid();
+    }
+
+    public onLoadSubSchemas(topicId: string) {
+        const id = this.schema?.id;
+        let schemaTopicId = topicId;
+        if (this.schema?.topicId) {
+            schemaTopicId = this.schema?.topicId;
+        }
+
+        this.schemaService
+            .getSchemaWithSubSchemas(this.category, id, schemaTopicId)
+            .subscribe((data) => {
+                this.setSubSchemas(topicId, id, data);
+            });
+    }
+
+    public onChangeTab(order: number): void {
+        this.extended = order === 1;
+        this.json = order === 2;
+        if (this.json) {
+            this.updateJsonView();
+        } else if (this.tab === 2) {
+            this.updateFormView();
+        }
+        this.tab = order;
+    }
+
+    private updateJsonView() {
+        this.loading(true);
         try {
-            localStorage.setItem('restoreSchemaData', JSON.stringify(schema));
+            if (this.schema) {
+                this.schema.updateDocument();
+                this.document = JSON.stringify(this.schema.document, null, 4);
+            } else {
+                this.document = '';
+            }
+            this.loading(false);
         } catch (error) {
             console.error(error);
+            this.document = '';
+            this.loading(false);
         }
-        this.ref.close(
-            {
-                ...schema,
-                fields: [],
-                conditions: []
+    }
+
+    private updateFormView() {
+        this.loading(true);
+        try {
+            const document = JSON.parse(this.document);
+            if (this.schema) {
+                this.schema.setDocument(document);
             }
-        );
-    }
-
-    onChangeForm(schemaControl: SchemaConfigurationComponent) {
-        this.valid = schemaControl.isValid();
-    }
-
-    onChangeFields(fields: any[]) {
-        this.fields = fields;
-        this.cdr.detectChanges();
-    }
-
-    drop(event: CdkDragDrop<any[]>) {
-        moveItemInArray(
-            event.container.data,
-            event.previousIndex,
-            event.currentIndex
-        );
-    }
-
-    onRestoreClick() {
-        this.scheme = this.restoreData;
-        this.restoreData = null;
-    }
-
-    getSubSchemes(topicId: string) {
-        const id = this.scheme?.id;
-        let schemaTopicId = topicId;
-        if (this.scheme?.topicId) {
-            schemaTopicId = this.scheme?.topicId;
+            this.schemaControl.reset();
+            this.updateFormData();
+            this.loading(false);
+        } catch (error) {
+            console.error(error);
+            this.loading(false);
         }
+    }
 
-        this.schemaService.getSchemaWithSubSchemas(this.category, id, schemaTopicId).subscribe((data) => {
-            this.subSchemas = data.subSchemas;
-
-            if(this.scheme && data.schema) {
-                this.scheme = new Schema(data.schema)
-
-                setTimeout(()=>this.schemaControl.updateFormControls(), 50)
-            }
-
-            const subSchemas = SchemaHelper.map(data.subSchemas || []).filter(schema => schema.id !== id);
-            this.schemaControl.mappingSubSchemas(subSchemas, topicId);
-        });
+    private loading(value: boolean) {
+        if (value) {
+            this.started = false;
+        } else {
+            setTimeout(() => { this.started = true; }, 1000);
+        }
     }
 }

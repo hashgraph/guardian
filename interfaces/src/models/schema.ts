@@ -226,6 +226,19 @@ export class Schema implements ISchema {
     }
 
     /**
+     * Set user
+     * @param userDID
+     */
+    public setDocument(document: ISchemaDocument, includeSystemProperties: boolean = false): void {
+        this.document = document;
+        if (this.document) {
+            this.name = this.document.title;
+            this.description = this.document.description;
+            this.parseDocument(includeSystemProperties);
+        }
+    }
+
+    /**
      * Parse document
      * @private
      */

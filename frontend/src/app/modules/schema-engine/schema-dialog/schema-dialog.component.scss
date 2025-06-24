@@ -1,47 +1,5 @@
-.mat-button-base:not([started]) {
-    background-color: rgba(0, 0, 0, 0.12);
-}
-
-form {
-    display: flex;
-    flex-direction: column;
-    width: 452px;
-    height: 540px;
-    overflow: visible;
-}
-
-textarea {
-    min-height: 100px;
-}
-
-.switch-btn {
-    height: 46px;
-    font-weight: 500;
-    font-size: 20px;
-    color: #fff;
-    box-sizing: border-box;
-    min-width: 250px;
-    text-align: center;
-    cursor: pointer;
-}
-
 :host ::ng-deep .cdk-drop-list-dragging *:not(.cdk-drag-placeholder) {
     transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
-}
-
-:host .restore-data {
-    flex: 1.7;
-}
-
-:host button.restore-data-button {
-    padding: 0 27px;
-    height: 43px;
-    background-color: unset;
-}
-
-:host .restore-data button i,
-:host .restore-data button svg {
-    margin-left: 5px;
 }
 
 ::ng-deep {
@@ -69,6 +27,7 @@ textarea {
         padding: 0 32px 32px 32px !important;
         border-bottom-left-radius: 16px;
         border-bottom-right-radius: 16px;
+        position: relative;
     }
 }
 
@@ -98,4 +57,9 @@ textarea {
 .cancel-button {
     margin-left: auto;
     margin-right: 15px;
+}
+
+.action-tabs {
+    margin-bottom: 32px;
+    display: block;
 }

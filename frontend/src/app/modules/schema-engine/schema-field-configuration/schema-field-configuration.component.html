@@ -36,7 +36,7 @@
         </div>
 
         <div [attr.extended]="extended" class="extended-config">
-            <div *ngIf="extended" class="input-field-container">
+            <div *ngIf="extended" class="input-field-container guardian-input-container">
                 <label class="form-label">Key</label>
                 <input
                     [formControl]="field.controlKey"
@@ -46,7 +46,7 @@
                 />
             </div>
 
-            <div *ngIf="extended" class="input-field-container">
+            <div *ngIf="extended" class="input-field-container guardian-input-container">
                 <label class="form-label">Title</label>
                 <input
                     [formControl]="field.controlTitle"
@@ -55,10 +55,21 @@
                     type="text"
                 />
             </div>
+
+            <div
+                *ngIf="extended"
+                class="guardian-icon-button custom-fields-remove"
+                (click)="onRemove(field)">
+                <svg-icon
+                    class="icon-btn"
+                    src="/assets/images/icons/delete.svg"
+                    svgClass="icon-color-delete">
+                </svg-icon>
+            </div>
         </div>
 
         <div class="extended-config">
-            <div *ngIf="!helpText" class="input-field-container">
+            <div *ngIf="!helpText" class="input-field-container guardian-input-container">
                 <label class="form-label">* Description</label>
                 <input
                     [formControl]="field.controlDescription"
@@ -67,15 +78,57 @@
                     type="text"
                 />
             </div>
-            <div (click)="onRemove(field)" *ngIf="!helpText" class="custom-fields-remove">
-                <svg-icon src="/assets/images/icons/delete.svg" svgClass="color-accent-red"></svg-icon>
+            <div
+                *ngIf="!helpText && !extended"
+                class="guardian-icon-button custom-fields-remove"
+                (click)="onRemove(field)">
+                <svg-icon
+                    class="icon-btn"
+                    src="/assets/images/icons/delete.svg"
+                    svgClass="icon-color-delete">
+                </svg-icon>
             </div>
         </div>
 
         <div class="extended-config">
-            <div class="dropdown-field">
+            <div *ngIf="helpText" class="input-field-container guardian-input-container">
+                <label class="form-label">Help Text</label>
+                <input
+                    [formControl]="field.controlDescription"
+                    pInputText
+                    placeholder="Field description"
+                    type="text"
+                />
+            </div>
+
+            <div *ngIf="isString" class="input-field-container guardian-input-container">
+                <label class="form-label">Pattern</label>
+                <input
+                    [formControl]="field.controlPattern"
+                    pInputText
+                    placeholder="[0-9]"
+                    type="text"
+                />
+            </div>
+
+            <div
+                *ngIf="helpText && !extended"
+                class="guardian-icon-button custom-fields-remove"
+                (click)="onRemove(field)">
+                <svg-icon
+                    class="icon-btn"
+                    src="/assets/images/icons/delete.svg"
+                    svgClass="icon-color-delete">
+                </svg-icon>
+            </div>
+        </div>
+
+        <div class="extended-config">
+            <div class="dropdown-field guardian-input-container">
                 <label class="form-label">Property</label>
                 <p-dropdown
+                    class="guardian-dropdown"
+                    panelStyleClass="guardian-dropdown-panel"
                     [filterBy]="'title'"
                     [filter]="true"
                     [formControl]="property"
@@ -89,40 +142,12 @@
             </div>
         </div>
 
-        <div class="extended-config">
-            <div *ngIf="helpText" class="input-field-container">
-                <label class="form-label">Help Text</label>
-                <input
-                    [formControl]="field.controlDescription"
-                    pInputText
-                    placeholder="Field description"
-                    type="text"
-                />
-            </div>
-
-            <div *ngIf="isString" class="input-field-container">
-                <label class="form-label">Pattern</label>
-                <input
-                    [formControl]="field.controlPattern"
-                    pInputText
-                    placeholder="[0-9]"
-                    type="text"
-                />
-            </div>
-
-            <div
-                (click)="onRemove(field)"
-                *ngIf="helpText && !extended"
-                class="custom-fields-remove"
-            >
-                <img alt="" src="assets/images/icons/delete.svg"/>
-            </div>
-        </div>
-
         <div class="custom-fields-main-container">
-            <div class="dropdown-field max-width-50">
+            <div class="dropdown-field max-width-50 guardian-input-container">
                 <label class="form-label">Field type</label>
                 <p-dropdown
+                    class="guardian-dropdown"
+                    panelStyleClass="guardian-dropdown-panel"
                     (onChange)="onTypeChange($event)"
                     [formControl]="field.controlType"
                     [group]="true"
@@ -142,7 +167,7 @@
                 </p-dropdown>
             </div>
 
-            <div *ngIf="unit" class="input-field-container">
+            <div *ngIf="unit" class="input-field-container guardian-input-container">
                 <label class="form-label">Unit</label>
                 <input
                     [formControl]="field.controlUnit"
@@ -154,11 +179,14 @@
 
             <ng-container *ngIf="helpText; else notHelpText">
                 <div class="checkbox-field-container">
-                    <p-checkbox binary="true" [formControl]="field.controlBold"></p-checkbox>
+                    <p-checkbox 
+                        class="guardian-checkbox-secondary checkbox-24" 
+                        binary="true" 
+                        [formControl]="field.controlBold"></p-checkbox>
                     <label class="checkbox-label">Bold</label>
                 </div>
 
-                <div class="input-field-container">
+                <div class="input-field-container guardian-input-container">
                     <label class="form-label">Color</label>
                     <input
                         [formControl]="field.controlColor"
@@ -168,7 +196,7 @@
                     />
                 </div>
 
-                <div class="input-field-container">
+                <div class="input-field-container guardian-input-container" style="width: 175px">
                     <label class="form-label">Font</label>
                     <input
                         [formControl]="field.controlSize"
@@ -184,9 +212,11 @@
             </ng-container>
 
             <ng-template #notHelpText>
-                <div class="dropdown-field">
+                <div class="dropdown-field guardian-input-container">
                     <label class="form-label">Required</label>
                     <p-dropdown
+                        class="guardian-dropdown"
+                        panelStyleClass="guardian-dropdown-panel"
                         [formControl]="fieldType"
                         [options]="fieldTypes"
                         appendTo="body"
@@ -197,7 +227,10 @@
                 </div>
 
                 <div *ngIf="!field.autocalculated.value" class="checkbox-field-container">
-                    <p-checkbox [formControl]="field.controlArray" [binary]="true"></p-checkbox>
+                    <p-checkbox 
+                        class="guardian-checkbox-secondary checkbox-24"
+                        [formControl]="field.controlArray" 
+                        [binary]="true"></p-checkbox>
                     <label class="checkbox-label">Allow multiple answers</label>
                 </div>
 
@@ -211,7 +244,10 @@
                 </div>
 
                 <div *ngIf="canBePrivate" class="checkbox-field-container private">
-                    <p-checkbox [formControl]="field.controlPrivate" [binary]="true"></p-checkbox>
+                    <p-checkbox 
+                        class="guardian-checkbox-secondary checkbox-24"
+                        [formControl]="field.controlPrivate" 
+                        [binary]="true"></p-checkbox>
                     <label class="checkbox-label">Private</label>
                 </div>
             </ng-template>
@@ -247,10 +283,9 @@
             </div>
             <div class="selected-values__action">
                 <button
-                    [label]="isShowMore ? 'Show Less' : 'Show More'"
-                    pButton
-                    class="selected-values__show-button button secondary"
+                    class="guardian-button guardian-button-secondary selected-values__show-button"
                     (click)="isShowMore=!isShowMore">
+                    {{ isShowMore ? 'Show Less' : 'Show More' }}
                 </button>
             </div>
             <div class="default-values" [attr.hide]="!isShowMore">
@@ -272,7 +307,7 @@
 
 <div *ngIf="readonly" class="readonly-custom-field">
     <div class="readonly-extended-config" [attr.extended]="extended">
-        <div *ngIf="extended" class="input-field-container">
+        <div *ngIf="extended" class="input-field-container guardian-input-container">
             <label class="form-label" htmlFor="key">Key</label>
             <input
                 [disabled]="true"
@@ -284,7 +319,7 @@
             />
         </div>
 
-        <div *ngIf="extended" class="input-field-container">
+        <div *ngIf="extended" class="input-field-container guardian-input-container">
             <label class="form-label" htmlFor="title">Title</label>
             <input
                 [disabled]="true"
@@ -298,7 +333,7 @@
     </div>
 
     <div class="custom-fields-main-container">
-        <div class="input-field-container">
+        <div class="input-field-container guardian-input-container">
             <label class="form-label" htmlFor="description">* Description</label>
             <input
                 [disabled]="true"
@@ -312,7 +347,7 @@
     </div>
 
     <div class="custom-fields-main-container">
-        <div class="input-field-container">
+        <div class="input-field-container guardian-input-container">
             <label class="form-label" htmlFor="fieldType">Field type</label>
             <input
                 [disabled]="true"
@@ -325,6 +360,7 @@
         </div>
         <div class="checkbox-field-container">
             <p-checkbox
+                class="guardian-checkbox-secondary checkbox-24"
                 [ngModel]="value?.required"
                 [disabled]="readonly"
                 [binary]="true"
@@ -338,6 +374,7 @@
         </div>
         <div class="checkbox-field-container">
             <p-checkbox
+                class="guardian-checkbox-secondary checkbox-24"
                 [ngModel]="value?.required"
                 [disabled]="readonly"
                 [binary]="false"

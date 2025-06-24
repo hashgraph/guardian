@@ -58,6 +58,7 @@
 
 .checkbox-label {
     margin-left: 12px;
+    margin-right: 12px;
     color: #23252e;
     font-family: Inter, sans-serif;
     font-size: 14px;
@@ -138,17 +139,15 @@
 }
 
 .custom-fields-remove {
-    width: 24px;
+    width: 36px;
+    min-width: 36px;
     height: 36px;
-    margin: 0px 20px;
+    margin: 0px 20px 2px 0px;
     justify-content: center;
     justify-items: center;
     align-content: center;
     align-items: center;
     display: flex;
-    color: #f00;
-    cursor: pointer;
-    font-size: 25px;
 }
 
 .custom-fields-remove i,
@@ -406,7 +405,7 @@
 }
 
 .fields-main-container {
-    width: 100%;
+    width: calc(100% - 32px);
     padding: 16px;
 }
 
@@ -522,7 +521,6 @@
         padding: 0;
         width: 108px;
         height: 28px;
-        background-color: white !important;
     }
 
     &__title {
@@ -546,4 +544,8 @@
 .checkbox-field-container.private {
     margin-left: 7px;
     padding-left: 1px;
+}
+
+.cdk-drag-placeholder {
+    opacity: 0.3;
 }

@@ -57,8 +57,8 @@ export class SchemaConfigurationComponent implements OnInit {
     @Input('properties') properties: { title: string; _id: string; value: string }[];
     @Input('subSchemas') subSchemas!: Schema[];
 
+    @Output('init') initForm = new EventEmitter<SchemaConfigurationComponent>();
     @Output('change-form') changeForm = new EventEmitter<any>();
-    @Output('change-fields') changeFields = new EventEmitter<any>();
     @Output('use-update-sub-schemas') useUpdateSubSchemas = new EventEmitter<any>();
 
     public started = false;
@@ -218,6 +218,7 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     public ngOnInit(): void {
+        this.initForm.emit(this);
     }
 
     public ngOnChanges(changes: SimpleChanges): void {
@@ -263,6 +264,15 @@ export class SchemaConfigurationComponent implements OnInit {
                     this.schemaTypes.length
                 );
         }
+    }
+
+    public reset() {
+        this.loading = true;
+        this.dataForm = null as any;
+        this.buildForm();
+        setTimeout(() => {
+            this.loading = false;
+        }, 500);
     }
 
     buildForm() {
@@ -373,7 +383,6 @@ export class SchemaConfigurationComponent implements OnInit {
                 this.changeForm.emit(this);
             });
             this.fields = [];
-            this.changeFields.emit(this.fields);
             this.conditions = [];
         }
     }
@@ -496,7 +505,6 @@ export class SchemaConfigurationComponent implements OnInit {
 
     private updateFieldControls(fields: SchemaField[], conditionsFields: string[]) {
         this.fields = [];
-        this.changeFields.emit(this.fields);
         for (const field of fields) {
             if (field.readOnly || conditionsFields.find(elem => elem === field.name)) {
                 continue;
@@ -702,13 +710,11 @@ export class SchemaConfigurationComponent implements OnInit {
         control.append(this.fieldsForm);
         this.fields.push(control);
         this.fields = this.fields.slice();
-        this.changeFields.emit(this.fields);
     }
 
     public onRemove(item: FieldControl) {
         this.removeConditionsByField(item);
         this.fields = this.fields.filter((e) => e != item);
-        this.changeFields.emit(this.fields);
         item.remove(this.fieldsForm);
     }
 
