@@ -19,7 +19,6 @@ import { SchemaService } from '../../services/schema.service';
 import { PolicyEngineService } from '../../services/policy-engine.service';
 import { TagsService } from '../../services/tag.service';
 //modules
-import { ConfirmationDialogComponent } from '../../modules/common/confirmation-dialog/confirmation-dialog.component';
 import { SchemaDialog } from '../../modules/schema-engine/schema-dialog/schema-dialog.component';
 import { ImportSchemaDialog } from '../../modules/schema-engine/import-schema/import-schema-dialog.component';
 import { ExportSchemaDialog } from '../../modules/schema-engine/export-schema-dialog/export-schema-dialog.component';
@@ -35,6 +34,7 @@ import { CopySchemaDialog } from '../../modules/schema-engine/copy-schema-dialog
 import { SchemaTreeComponent } from 'src/app/modules/schema-engine/schema-tree/schema-tree.component';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
+import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 
 enum SchemaType {
     System = 'system',
@@ -1084,19 +1084,26 @@ export class SchemaConfigComponent implements OnInit {
 
     private onDeleteSchema(element: Schema, parents?: ISchema[]): void {
         if (!Array.isArray(parents) || !parents.length) {
-            const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+            const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+                showHeader: false,
+                width: '640px',
+                styleClass: 'guardian-dialog',
                 data: {
-                    dialogTitle: 'Delete schema',
-                    dialogText: 'Are you sure to delete schema?'
+                    header: 'Delete Schema',
+                    text: `Are you sure want to delete schema (${element.name})?`,
+                    buttons: [{
+                        name: 'Close',
+                        class: 'secondary'
+                    }, {
+                        name: 'Delete',
+                        class: 'delete'
+                    }]
                 },
-                modal: true,
-                closable: false,
             });
-            dialogRef.onClose.subscribe((result) => {
-                if (!result) {
-                    return;
+            dialogRef.onClose.subscribe((result: string) => {
+                if (result === 'Delete') {
+                    this.deleteSchema(element.id);
                 }
-                this.deleteSchema(element.id);
             });
         } else {
             this.dialog.open(AlertComponent, {

@@ -1066,7 +1066,13 @@ export class PolicyEngine extends NatsService {
                 }
             }
 
-            const zip = await PolicyImportExport.generate(model);
+            const configToPublish = structuredClone(model.config);
+            this.cleanHeadersRecursive(configToPublish, ['httpRequestBlock']);
+
+            const modelToPublish = Object.assign(Object.create(Object.getPrototypeOf(model)), model);
+            modelToPublish.config = configToPublish;
+
+            const zip = await PolicyImportExport.generate(modelToPublish);
             const buffer = await zip.generateAsync({
                 type: 'arraybuffer',
                 compression: 'DEFLATE',
@@ -1141,6 +1147,7 @@ export class PolicyEngine extends NatsService {
 
         notifier.completedAndStart('Saving in DB');
         model.status = PolicyStatus.PUBLISH;
+
         let retVal = await DatabaseServer.updatePolicy(model);
 
         notifier.completedAndStart('Updating hash');
@@ -1286,6 +1293,23 @@ export class PolicyEngine extends NatsService {
         return retVal;
     }
 
+    private cleanHeadersRecursive(currentBlock: any, blocks: any[]): void {
+        if (blocks.includes(currentBlock.blockType) && Array.isArray(currentBlock.headers)) {
+            currentBlock.headers = currentBlock.headers.map(header => {
+                if(!header.included) {
+                    delete header.value;
+                }
+                return header
+            });
+        }
+
+        if (Array.isArray(currentBlock.children)) {
+            for (const child of currentBlock.children) {
+                this.cleanHeadersRecursive(child, blocks);
+            }
+        }
+    }
+
     /**
      * Validate and publish policy
      * @param options
@@ -1310,6 +1334,7 @@ export class PolicyEngine extends NatsService {
 
         notifier.start('Find and validate policy');
         const policy = await DatabaseServer.getPolicyById(policyId);
+
         await this.accessPolicy(policy, owner, 'read');
 
         if (!policy.config) {
