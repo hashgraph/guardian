@@ -226,6 +226,9 @@ export class GenerateBlocks {
         xlsxResult: XlsxResult
     ): string {
         //Create
+        if (!xlsxSchema.fields) {
+            return null;
+        }
         const expressions: Expression[] = [];
         for (const field of xlsxSchema.fields) {
             GenerateBlocks.addExpression(field, expressions);
@@ -233,7 +236,7 @@ export class GenerateBlocks {
         if (!expressions.length) {
             return null;
         }
-        const paths = xlsxSchema.getVariables();
+        const fieldPaths = xlsxSchema.getVariables();
 
         //Parse
         for (const expression of expressions) {
@@ -280,8 +283,8 @@ export class GenerateBlocks {
         }
 
         for (const name of variables.keys()) {
-            if (paths.has(name)) {
-                variables.set(name, paths.get(name));
+            if (fieldPaths.has(name)) {
+                variables.set(name, fieldPaths.get(name));
             } else {
                 xlsxResult.addError({
                     type: 'error',

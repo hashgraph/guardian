@@ -18,6 +18,7 @@ export enum Dictionary {
     QUESTION = 'Question',
     ALLOW_MULTIPLE_ANSWERS = 'Allow Multiple Answers',
     ANSWER = 'Answer',
+    KEY = 'Key',
     AUTO_CALCULATE = 'Auto-Calculate',
     SUB_SCHEMA = 'Sub-Schema',
     SCHEMA_NAME = 'Schema',

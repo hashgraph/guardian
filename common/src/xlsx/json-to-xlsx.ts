@@ -241,6 +241,9 @@ export class JsonToXlsx {
         worksheet
             .getCell(table.getCol(Dictionary.SUGGEST), row)
             .setValue(anyToXlsx(undefined));
+        worksheet
+            .getCell(table.getCol(Dictionary.KEY), row)
+            .setValue(stringToXlsx(field.name));
 
         const type = FieldTypes.findByValue(field);
         if (type) {
@@ -331,7 +334,7 @@ export class JsonToXlsx {
 
         const name = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
         const path = worksheet.getFullPath(table.getCol(Dictionary.ANSWER), row);
-        fieldCache.set(field.name, { name, path, row });
+        fieldCache.set(field.name, { key: field.name, name, path, row });
     }
 
     public static writeCondition(

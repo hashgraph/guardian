@@ -22,8 +22,8 @@ export class XlsxSchemaConditions {
         return this.condition;
     }
 
-    public equal(fieldName: string, value: any): boolean {
-        return (fieldName === this.field.name && value === this.value);
+    public equal(field: SchemaField, value: any): boolean {
+        return (field.name === this.field.name && value === this.value);
     }
 
     public addField(field: SchemaField, invert: boolean) {
