@@ -115,6 +115,7 @@ export class HttpRequestConfigComponent implements OnInit {
                 },
                 modal: true,
                 closable: false,
+                styleClass: 'http-confirm-dialog'
             });
 
             dialogRef.onClose.subscribe(result => {

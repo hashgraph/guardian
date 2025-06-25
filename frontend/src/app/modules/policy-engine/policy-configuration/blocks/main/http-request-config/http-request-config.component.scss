@@ -1,9 +1,9 @@
-::ng-deep .p-dialog .mat-raised-button:focus,
-::ng-deep .p-dialog .mat-button:focus {
+::ng-deep .http-confirm-dialog .mat-raised-button:focus,
+::ng-deep .http-confirm-dialog .mat-button:focus {
     outline: 0 0 0 2px var(--color-primary);
     box-shadow: 0 0 0 2px var(--color-primary);
 }
 
-::ng-deep .propRowCell .p-checkbox {
+:host ::ng-deep .propRowCell .p-checkbox {
     margin-left: 12px;
 }

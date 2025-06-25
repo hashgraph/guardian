@@ -217,6 +217,11 @@ export class Table {
                 .setStyle(this.fieldHeadersStyle)
                 .setWidth(50)
         );
+        this._fieldHeaders.set(Dictionary.KEY,
+            new TableHeader(Dictionary.KEY, false)
+                .setStyle(this.fieldHeadersStyle)
+                .setWidth(50)
+        );
 
         this._schemaHeaders = new Map<string, TableHeader>();
         this._schemaHeaders.set(Dictionary.SCHEMA_NAME,
@@ -297,6 +302,7 @@ export class Table {
         this._fieldHeaders.get(Dictionary.ANSWER).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.DEFAULT).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.SUGGEST).setPoint(col++, row);
+        this._fieldHeaders.get(Dictionary.KEY).setPoint(col++, row);
 
         this.end = {
             c: this.start.c + this._fieldHeaders.size,
