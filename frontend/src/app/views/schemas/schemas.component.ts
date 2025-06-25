@@ -966,9 +966,10 @@ export class SchemaConfigComponent implements OnInit {
         }
 
         const dialogRef = this.dialogService.open(SchemaDialog, {
+            showHeader: false,
             header: 'New Schema',
             width: '950px',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
             data: {
                 type: 'new',
                 schemaType: this.type,
@@ -1047,9 +1048,10 @@ export class SchemaConfigComponent implements OnInit {
 
     private onEditDocument(element: ISchema): void {
         const dialogRef = this.dialogService.open(SchemaDialog, {
+            showHeader: false,
             header: 'Edit Schema',
             width: '950px',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
             data: {
                 type: 'edit',
                 schemaType: this.type,
@@ -1123,9 +1125,10 @@ export class SchemaConfigComponent implements OnInit {
 
     private onNewVersion(element: Schema): void {
         const dialogRef = this.dialogService.open(SchemaDialog, {
+            showHeader: false,
             header: 'New Version',
             width: '950px',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
             data: {
                 type: 'version',
                 topicId: this.currentTopic,
@@ -1153,9 +1156,10 @@ export class SchemaConfigComponent implements OnInit {
         delete newDocument.version;
         delete newDocument.previousVersion;
         const dialogRef = this.dialogService.open(SchemaDialog, {
+            showHeader: false,
             header: 'New Version',
             width: '950px',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
             data: {
                 type: 'version',
                 topicId: this.currentTopic,

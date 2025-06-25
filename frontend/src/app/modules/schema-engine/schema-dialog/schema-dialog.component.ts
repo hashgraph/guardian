@@ -14,6 +14,7 @@ import { SchemaService } from '../../../services/schema.service';
     styleUrls: ['./schema-dialog.component.scss'],
 })
 export class SchemaDialog {
+    public header: string;
     public type: 'new' | 'edit' | 'version' = 'new';
     public started: boolean = false;
     public schemaType: any = 'policy';
@@ -37,6 +38,26 @@ export class SchemaDialog {
     public valid: boolean = true;
     public extended: boolean = false;
     public json: boolean = false;
+    public error: any;
+
+    public readonly codeMirrorOptions = {
+        theme: 'default',
+        mode: 'schema-json-lang',
+        styleActiveLine: true,
+        lineNumbers: true,
+        lineWrapping: true,
+        foldGutter: true,
+        gutters: [
+            'CodeMirror-linenumbers',
+            'CodeMirror-foldgutter',
+            'CodeMirror-lint-markers'
+        ],
+        autoCloseBrackets: true,
+        matchBrackets: true,
+        lint: true,
+        readOnly: false,
+        viewportMargin: Infinity
+    };
 
     @ViewChild('schemaControl') schemaControl!: SchemaConfigurationComponent;
 
@@ -46,6 +67,7 @@ export class SchemaDialog {
         private cdr: ChangeDetectorRef,
         private schemaService: SchemaService,
     ) {
+        this.header = this.config.header || '';
         this.schema = this.config.data.scheme || null;
         this.type = this.config.data.type || null;
         this.topicId = this.config.data.topicId || null;
@@ -79,29 +101,16 @@ export class SchemaDialog {
         if (this.disabled) {
             return;
         }
-
         const schema = this.getSchemaDocument();
-
         if (!schema) {
             return;
         }
-
-        debugger;
         this.ref.close({
             ...schema,
             context: null,
             fields: [],
             conditions: []
         });
-    }
-
-    private getSchemaDocument() {
-        if (this.json) {
-            debugger;
-            return null;
-        } else {
-            return this.schemaControl.getSchema();
-        }
     }
 
     private setSubSchemas(topicId: string, schemaId: string, data: any) {
@@ -143,6 +152,7 @@ export class SchemaDialog {
     }
 
     public onChangeTab(order: number): void {
+        this.error = null;
         this.extended = order === 1;
         this.json = order === 2;
         if (this.json) {
@@ -156,9 +166,9 @@ export class SchemaDialog {
     private updateJsonView() {
         this.loading(true);
         try {
-            if (this.schema) {
-                this.schema.updateDocument();
-                this.document = JSON.stringify(this.schema.document, null, 4);
+            const schema = this.schemaControl.getSchema();
+            if (schema) {
+                this.document = JSON.stringify(schema.document, null, 4);
             } else {
                 this.document = '';
             }
@@ -192,5 +202,39 @@ export class SchemaDialog {
         } else {
             setTimeout(() => { this.started = true; }, 1000);
         }
+    }
+
+    private getSchemaDocument() {
+        if (this.json) {
+            try {
+                const document = JSON.parse(this.document);
+                if (this.schema) {
+                    this.schema.setDocument(document);
+                }
+                this.schemaControl.reset();
+                this.schemaControl.mappingSubSchemas(this.subSchemas, this.topicId);
+                this.schemaControl.updateFormControls();
+                if (this.schemaControl.isValid()) {
+                    return this.schemaControl.getSchema();
+                } else {
+                    this.error = 'Invalid document';
+                    return null;
+                }
+            } catch (error) {
+                this.error = error?.toString();
+                return null;
+            }
+        } else {
+            return this.schemaControl.getSchema();
+        }
+    }
+
+    public onChangeDocument($event: any) {
+        // try {
+        //     JSON.parse($event);
+        //     this.valid = true;
+        // } catch (error) {
+        //     this.valid = false;
+        // }
     }
 }

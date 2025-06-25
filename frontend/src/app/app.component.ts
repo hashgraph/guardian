@@ -6,6 +6,7 @@ import './modules/policy-engine/policy-lang-modes/policy-json-lang.mode';
 import './modules/policy-engine/policy-lang-modes/policy-yaml-lang.mode';
 import './modules/common/models/lang-modes/formula-lang.mode';
 import './modules/common/models/lang-modes/single-line';
+import './modules/schema-engine/schema-lang-modes/schema-json-lang.mode';
 import {globalLoaderActive} from './static/global-loader.function';
 import {ActivatedRoute} from '@angular/router';
 import {DomSanitizer} from '@angular/platform-browser';

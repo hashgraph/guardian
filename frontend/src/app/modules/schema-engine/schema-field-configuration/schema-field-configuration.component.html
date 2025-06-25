@@ -182,8 +182,8 @@
                     <p-checkbox 
                         class="guardian-checkbox-secondary checkbox-24" 
                         binary="true" 
-                        [formControl]="field.controlBold"></p-checkbox>
-                    <label class="checkbox-label">Bold</label>
+                        [formControl]="field.controlBold"
+                        label="Bold"></p-checkbox>
                 </div>
 
                 <div class="input-field-container guardian-input-container">
@@ -205,10 +205,19 @@
                         type="text"
                     />
                 </div>
-                <div (click)="onHepTextReset()" class="reset-btn">
-                    <svg-icon src="/assets/images/icons/restart_alt.svg" svgClass="icon-style-restart_alt"></svg-icon>
-                    <span class="reset-btn-label">Reset</span>
-                </div>
+
+                <button 
+                    (click)="onHepTextReset()" 
+                    class="guardian-button guardian-button-secondary reset-btn">
+                    <div class="guardian-button-icon">
+                        <svg-icon 
+                            class="icon-btn svg-icon" 
+                            src="/assets/images/icons/restart_alt.svg"
+                            svgClass="icon-color-primary">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-button-label">Reset</div>
+                </button>
             </ng-container>
 
             <ng-template #notHelpText>
@@ -230,8 +239,8 @@
                     <p-checkbox 
                         class="guardian-checkbox-secondary checkbox-24"
                         [formControl]="field.controlArray" 
-                        [binary]="true"></p-checkbox>
-                    <label class="checkbox-label">Allow multiple answers</label>
+                        [binary]="true"
+                        label="Allow multiple answers"></p-checkbox>
                 </div>
 
                 <div *ngIf="field.autocalculated.value" class="checkbox-field-container">
@@ -247,8 +256,8 @@
                     <p-checkbox 
                         class="guardian-checkbox-secondary checkbox-24"
                         [formControl]="field.controlPrivate" 
-                        [binary]="true"></p-checkbox>
-                    <label class="checkbox-label">Private</label>
+                        [binary]="true"
+                        label="Private"></p-checkbox>
                 </div>
             </ng-template>
         </div>
@@ -257,6 +266,7 @@
                 <label [htmlFor]="'enumValues'" class="form-label">Enum data</label>
                 <div class="p-chips" aria-label="Enum values">
                     <div class="p-chips-container">
+                        
                         <div
                             class="p-chips-token"
                             *ngFor="let keyword of keywords">
@@ -265,17 +275,24 @@
                         <div class="p-chips-token" *ngIf="keywords.length < field.enum.length">
                             <span class="p-chips-token-label">...</span>
                         </div>
+                        
                     </div>
                 </div>
             </div>
-            <div
-                (click)="onEditEnum()"
-                [ngClass]="{ 'enum-edit-button-only': !field.enum.length }"
-                class="enum-edit-button"
-            >
-                <i class="pi pi-pencil"></i>
-                <span class="enum-edit-button-label">Edit values</span>
-            </div>
+
+            <button 
+                (click)="onEditEnum()" 
+                class="guardian-button guardian-button-secondary enum-edit-button"
+                [ngClass]="{ 'enum-edit-button-only': !field.enum.length }">
+                <div class="guardian-button-icon">
+                    <svg-icon 
+                        class="icon-btn svg-icon" 
+                        src="/assets/images/icons/edit.svg"
+                        svgClass="icon-color-primary">
+                    </svg-icon>
+                </div>
+                <div class="guardian-button-label">Edit values</div>
+            </button>
         </div>
         <div *ngIf="!helpText && presetFormFields && defaultValues" class="selected-values">
             <div>
@@ -365,12 +382,9 @@
                 [disabled]="readonly"
                 [binary]="true"
                 [styleClass]="readonly ? 'p-disabled' : 'primary-checkbox'"
+                label="Required Field"
             >
             </p-checkbox>
-
-            <label class="checkbox-label" htmlFor="requiredField">
-                Required Field
-            </label>
         </div>
         <div class="checkbox-field-container">
             <p-checkbox
@@ -379,11 +393,9 @@
                 [disabled]="readonly"
                 [binary]="false"
                 [styleClass]="readonly ? 'p-disabled' : 'primary-checkbox'"
+                label="Allow multiple answers"
             >
             </p-checkbox>
-            <label class="checkbox-label" htmlFor="isArray">
-                Allow multiple answers
-            </label>
         </div>
     </div>
 </div>

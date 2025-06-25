@@ -268,31 +268,25 @@
     .enum-edit-button-only {
         flex: 1;
         padding: 15px 27px;
-    }
-
-    .enum-edit-button {
         margin-bottom: 0px;
+        margin-top: 0px;
     }
 }
 
-.enum-edit-button,
+.enum-edit-button {
+    height: 39px;
+    padding: 18px 24px 18px 20px;
+    margin-bottom: 0px;
+    margin-top: 20px;
+}
+
 .reset-btn {
     height: 39px;
-    color: var(--primary-color);
-    padding: 18px 27px;
-    border: 1px solid #e9e9e9;
-    border-radius: 6px;
-    margin-bottom: 11px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    justify-content: center;
-}
-
-.reset-btn {
-    padding: 17px 15px;
+    padding: 18px 24px 18px 20px;
     margin-top: 20px;
+    margin-bottom: 11px;
+    min-width: 110px;
+    max-width: 110px;
 }
 
 .mat-chip-value-label {
@@ -548,4 +542,23 @@
 
 .cdk-drag-placeholder {
     opacity: 0.3;
+}
+
+.p-chips-container {
+    display: flex;
+    height: 39px;
+    align-items: center;
+
+    .p-chips-token {
+        background: var(--color-grey-1);
+        padding: 4px 8px;
+        border-radius: 6px;
+        margin-right: 8px;
+        border: 1px solid var(--color-grey-3);
+        color: #23252E;
+        max-width: 98px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
 }

@@ -39,6 +39,19 @@
             }
         }
     }
+
+    .p-checkbox-label {
+        margin-left: 12px;
+        margin-right: 12px;
+        color: #23252e;
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 16px;
+        cursor: pointer;
+        user-select: none;
+    }
 }
 
 .guardian-checkbox-secondary {
@@ -81,6 +94,19 @@
                 }
             }
         }
+    }
+
+    .p-checkbox-label {
+        margin-left: 12px;
+        margin-right: 12px;
+        color: #23252e;
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 16px;
+        cursor: pointer;
+        user-select: none;
     }
 }
 
@@ -153,5 +179,18 @@
                 }
             }
         }
+    }
+
+    .p-radiobutton-label {
+        margin-left: 12px;
+        margin-right: 12px;
+        color: #23252e;
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 16px;
+        cursor: pointer;
+        user-select: none;
     }
 }

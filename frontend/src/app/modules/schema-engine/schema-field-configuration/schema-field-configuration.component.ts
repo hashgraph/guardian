@@ -8,17 +8,17 @@ import {
     Output,
     SimpleChanges
 } from '@angular/core';
-import {AbstractControl, UntypedFormControl, UntypedFormGroup, Validators,} from '@angular/forms';
-import {SchemaField, UnitSystem} from '@guardian/interfaces';
-import {ToastrService} from 'ngx-toastr';
-import {IPFS_SCHEMA} from 'src/app/services/api';
-import {IPFSService} from 'src/app/services/ipfs.service';
-import {EnumEditorDialog} from '../enum-editor-dialog/enum-editor-dialog.component';
-import {FieldControl} from '../field-control';
-import {DialogService} from 'primeng/dynamicdialog';
-import {Subject, Subscription} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
-import {CodeEditorDialogComponent} from '../../policy-engine/dialogs/code-editor-dialog/code-editor-dialog.component';
+import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
+import { SchemaField, UnitSystem } from '@guardian/interfaces';
+import { ToastrService } from 'ngx-toastr';
+import { IPFS_SCHEMA } from 'src/app/services/api';
+import { IPFSService } from 'src/app/services/ipfs.service';
+import { EnumEditorDialog } from '../enum-editor-dialog/enum-editor-dialog.component';
+import { FieldControl } from '../field-control';
+import { DialogService } from 'primeng/dynamicdialog';
+import { Subject, Subscription } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { CodeEditorDialogComponent } from '../../policy-engine/dialogs/code-editor-dialog/code-editor-dialog.component';
 
 /**
  * Schemas constructor
@@ -61,21 +61,21 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
             label: 'Units of measure',
             value: 'uom',
             items: [
-                {label: 'Prefix', value: 'prefix'},
-                {label: 'Postfix', value: 'postfix'},
+                { label: 'Prefix', value: 'prefix' },
+                { label: 'Postfix', value: 'postfix' },
             ],
         },
         {
             label: 'Hedera',
             value: 'h',
-            items: [{label: 'Account', value: 'hederaAccount'}],
+            items: [{ label: 'Account', value: 'hederaAccount' }],
         },
     ];
     public fieldTypes: any = [
-        {label: 'None', value: 'none'},
-        {label: 'Hidden', value: 'hidden'},
-        {label: 'Required', value: 'required'},
-        {label: 'Auto Calculate', value: 'autocalculate'},
+        { label: 'None', value: 'none' },
+        { label: 'Hidden', value: 'hidden' },
+        { label: 'Required', value: 'required' },
+        { label: 'Auto Calculate', value: 'autocalculate' },
 
     ];
     public error: any;
@@ -173,7 +173,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                 ) {
                     this.presetValues =
                         JSON.stringify(newField?.controlEnum) !==
-                        JSON.stringify(oldField?.controlEnum)
+                            JSON.stringify(oldField?.controlEnum)
                             ? (this.defaultValues?.value || {})
                             : {};
 
@@ -251,7 +251,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     ngOnChanges(changes: SimpleChanges): void {
         if (changes?.types?.firstChange && this.types) {
             const newSimpleTypes = this.types.map((type: any) => {
-                return {label: type.name, value: type.value};
+                return { label: type.name, value: type.value };
             });
             this.groupedFieldTypes.unshift({
                 label: 'Simple Types',
@@ -386,57 +386,52 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         const dialogRef = this.dialogService.open(EnumEditorDialog, {
             header: 'Enum data',
             width: '700px',
-            styleClass: 'custom-dialog',
+            showHeader: false,
+            styleClass: 'guardian-dialog',
             data: {
                 enumValue: this.field.controlEnum.value,
                 errorHandler: this.errorHandler.bind(this),
             },
         });
-        dialogRef
-            .onClose
-            .subscribe((res: { enumValue: string; loadToIpfs: boolean }) => {
-                if (!res) {
-                    return;
-                }
-                this.field.controlRemoteLink.patchValue('');
+        dialogRef.onClose.subscribe((res: { enumValue: string; loadToIpfs: boolean }) => {
+            if (!res) {
+                return;
+            }
 
-                const uniqueTrimmedEnumValues: string[] = [
-                    ...new Set(
-                        res.enumValue.split('\n').map((item) => item.trim())
-                    ),
-                ] as string[];
+            this.field.controlRemoteLink.patchValue('');
 
-                if (res.loadToIpfs && uniqueTrimmedEnumValues.length > 5) {
-                    this.field.controlEnum.clear();
-                    this.loading = true;
-                    this.ipfs
-                        .addFile(
-                            new Blob([
-                                JSON.stringify({
-                                    enum: uniqueTrimmedEnumValues,
-                                }),
-                            ])
-                        )
-                        .subscribe(
-                            (cid) => {
-                                this.loading = false;
-                                const link = IPFS_SCHEMA + cid;
-                                this.field.controlRemoteLink.patchValue(link);
-                                this.loadRemoteEnumData(link);
-                            },
-                            (err) => {
-                                this.loading = false;
-                                this.errorHandler(
-                                    err.message,
-                                    'Enum data can not be loaded to IPFS'
-                                );
-                                this.updateControlEnum(uniqueTrimmedEnumValues);
-                            }
+            const uniqueTrimmedEnumValues: string[] = [
+                ...new Set(res.enumValue.split('\n').map((item) => item.trim())),
+            ] as string[];
+
+            if (res.loadToIpfs && uniqueTrimmedEnumValues.length > 5) {
+                this.field.controlEnum.clear();
+                this.loading = true;
+                this.ipfs
+                    .addFile(
+                        new Blob([
+                            JSON.stringify({
+                                enum: uniqueTrimmedEnumValues,
+                            }),
+                        ])
+                    )
+                    .subscribe((cid) => {
+                        this.loading = false;
+                        const link = IPFS_SCHEMA + cid;
+                        this.field.controlRemoteLink.patchValue(link);
+                        this.loadRemoteEnumData(link);
+                    }, (err) => {
+                        this.loading = false;
+                        this.errorHandler(
+                            err.message,
+                            'Enum data can not be loaded to IPFS'
                         );
-                } else {
-                    this.updateControlEnum(uniqueTrimmedEnumValues);
-                }
-            });
+                        this.updateControlEnum(uniqueTrimmedEnumValues);
+                    });
+            } else {
+                this.updateControlEnum(uniqueTrimmedEnumValues);
+            }
+        });
     }
 
     onHepTextReset() {

@@ -1,4 +1,15 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{header}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
 <div class="dialog-body">
+    <div *ngIf="!started" class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+    </div>
     <div class="g-dialog-header">
         <p-tabView class="guardian-tabs action-tabs">
             <p-tabPanel *ngFor="let tab of items; let i = index">
@@ -11,10 +22,10 @@
         </p-tabView>
     </div>
     <div class="g-dialog-body">
-        <div *ngIf="!started" class="guardian-loading">
-            <div class="guardian-loading-image"></div>
-        </div>
         <div style="padding-right: 12px;">
+            <div *ngIf="error && json" class="error-message">
+                {{error}}
+            </div>
             <app-schema-configuration
                 #schemaControl
                 [hidden]="!!json"
@@ -31,9 +42,12 @@
                 (use-update-sub-schemas)="onLoadSubSchemas($event)"
             >
             </app-schema-configuration>
-            <textarea *ngIf="json" [(ngModel)]="document">
-
-            </textarea>
+            <ngx-codemirror 
+                *ngIf="json"
+                (ngModelChange)="onChangeDocument($event)"
+                [(ngModel)]="document"
+                [options]="codeMirrorOptions">
+            </ngx-codemirror>
         </div>
     </div>
 </div>
@@ -42,20 +56,15 @@
         <div class="cancel-button">
             <button 
                 (click)="onClose()" 
-                class="button secondary"
-                label="Cancel"
-                pButton
-            ></button>
+                class="guardian-button guardian-button-secondary"
+            >Cancel</button>
         </div>
         <div>
             <button 
                 (click)="onCreate()" 
                 [disabled]="disabled"
-                class="button"
-                label="Save"
-                pButton
-            >
-            </button>
+                class="guardian-button guardian-button-primary"
+            >Save</button>
         </div>
     </div>
 </div>
