@@ -3,7 +3,6 @@ import {CodeEditorDialogComponent} from '../../../../dialogs/code-editor-dialog/
 import {IModuleVariables, PolicyBlock} from '../../../../structures';
 import {DialogService} from 'primeng/dynamicdialog';
 import {ConfirmDialog} from 'src/app/modules/common/confirm-dialog/confirm-dialog.component';
-import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
 
 /**
  * Settings for block of 'switch' and 'interfaceStepBlock' types.
