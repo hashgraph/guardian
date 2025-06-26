@@ -133,7 +133,7 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
             url: API.ApiServer + API.ChangePassword,
             body: {
                 username: name,
-                oldPassword: "test",
+                oldPassword: "test1",
                 newPassword: "tt"
             },
             failOnStatusCode: false,

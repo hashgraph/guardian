@@ -62,6 +62,20 @@ where `tag` can be:
 - tags - all tests for tags operations
 - tokens - all tests for tokens operations
 - trustchains - all tests for trustchains operations
+- worker - all tests for workers tasks logging operations
+- themes - all tests for operations with themes
+- branding - all tests for operations with branding
+- notifications - all tests for operations with notifications
+- wizard - all tests for operations with policy wizard
+- permissions - all tests for operations with permissions
+- formulas - all tests for operations with formulas
+- policy_labels - all tests for operations with policy labels
+
+There's few tags for general tests runs:
+- all - all tests for Guardian platform
+- smoke - all tests for the most important and frequently used functionality
+
+Note: E2E tests for the Guardian platform are interdependent, so when running tests using certain tags, additional tests may be executed to ensure a successful test run.
 
 ### UI Tests (Policies)
 

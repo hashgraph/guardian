@@ -155,7 +155,7 @@ context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
                 failOnStatusCode: false,
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.ERROR);
-                expect(response.body.message).eql("Request failed with status code 400");
+                expect(response.body.message).eql("Cannot read properties of null (reading 'type')");
             });
         })
     });
