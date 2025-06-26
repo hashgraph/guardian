@@ -1,5 +1,5 @@
-import { HederaDidDocument, IAuthUser, KeyType, NotificationHelper, Schema as SchemaCollection, Token, Topic, TopicConfig, TopicHelper, Users, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcDocumentDefinition as HVcDocument, VcSubject, VpDocumentDefinition as VpDocument, Wallet, Workers, EncryptVcHelper } from '@guardian/common';
-import { DidDocumentStatus, DocumentSignature, DocumentStatus, Schema, SchemaEntity, SignatureType, TopicType, WorkerTaskType } from '@guardian/interfaces';
+import { HederaDidDocument, IAuthUser, KeyType, NotificationHelper, Schema as SchemaCollection, Token, Topic, TopicConfig, TopicHelper, Users, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcDocumentDefinition as HVcDocument, VcSubject, VpDocumentDefinition as VpDocument, Wallet, Workers, EncryptVcHelper, SchemaConverterUtils } from '@guardian/common';
+import { DidDocumentStatus, DocumentSignature, DocumentStatus, ISchema, Schema, SchemaEntity, SignatureType, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { TokenId, TopicId } from '@hashgraph/sdk';
 import { FilterQuery } from '@mikro-orm/core';
 import * as mathjs from 'mathjs';
@@ -7,6 +7,7 @@ import { DocumentType } from '../interfaces/document.type.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
 import { IHederaCredentials, PolicyUser, UserCredentials } from '../policy-user.js';
+import { guardianVersion } from '../../version.js';
 
 export enum QueryType {
     eq = 'equal',
@@ -1649,6 +1650,17 @@ export class PolicyUtils {
                 return { $regex: value }
             default:
                 return null;
+        }
+    }
+
+    /**
+     * Add Guardian version to Credential Subject
+     * @param credentialSubject
+     * @param schema
+     */
+    public static setGuardianVersion(credentialSubject: any, schema: ISchema): void {
+        if (SchemaConverterUtils.versionCompare(schema.codeVersion, '1.1.0') > 0) {
+            credentialSubject.guardianVersion = guardianVersion;
         }
     }
 }

@@ -6,10 +6,9 @@ import { loadPyodide } from 'pyodide'
  */
 async function execute() {
     const pyodide = await loadPyodide();
-    
+
     const done = (result, final = true) => {
         try {
-            console.log(result?.toJs);
             const jsResult = typeof result?.toJs === "function"
                 ? result.toJs({ dictConverter: Object })
                 : result;
@@ -26,27 +25,51 @@ async function execute() {
 
     const { execFunc, user, documents, artifacts, sources } = workerData;
 
-    console.log('python worker working!');
-    pyodide.setStdout({ batched: console.log });
-    pyodide.setStderr({ batched: console.error });
+    pyodide.setStdout({ batched: () => {} });
+    pyodide.setStderr({ batched: () => {} });
+    // pyodide.setStdout({ batched: console.log });
+    // pyodide.setStderr({ batched: console.error });
 
     pyodide.globals.set("user", user);
     pyodide.globals.set("documents", documents);
     pyodide.globals.set("artifacts", artifacts);
     pyodide.globals.set("sources", sources);
     pyodide.globals.set("done", done);
-    
+
     await pyodide.loadPackage("micropip");
     const micropip = pyodide.pyimport("micropip");
-    await micropip.install('numpy');
-    await micropip.install('scipy');
-    await micropip.install('pandas');
+
+    const libs = [
+        "numpy",
+        "scipy",
+        "sympy",
+        "pandas",
+        "pint",
+        "duckdb",
+        "sqlalchemy",
+        "cftime",
+        "matplotlib",
+        "seaborn",
+        "bokeh",
+        "altair",
+        "cartopy",
+        "astropy",
+        "statsmodels",
+        "networkx"
+    ];
+
+    for (const lib of libs) {
+        try {
+            await micropip.install(lib);
+        } catch (e) {
+            console.error(`Failed to install python lib: ${lib}`, e);
+        }
+    }
 
     try {
-        const result = await pyodide.runPythonAsync(execFunc);
-        console.log(result);
+        await pyodide.runPythonAsync(execFunc);
     } catch (error) {
-        console.log('error', error);
+        console.log('Failed to run python script:', error);
         parentPort?.postMessage({ error: error.message, final: true });
     }
 }

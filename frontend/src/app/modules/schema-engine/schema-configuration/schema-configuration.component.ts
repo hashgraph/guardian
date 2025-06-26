@@ -143,6 +143,17 @@ export class SchemaConfigurationComponent implements OnInit {
             format: undefined,
             pattern: undefined,
             readOnly: true
+        }, {
+            name: 'guardianVersion',
+            title: 'Guardian Version',
+            description: 'Guardian Version',
+            required: true,
+            isArray: false,
+            isRef: false,
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            readOnly: true
         }];
         this.defaultFieldsMap = {};
         this.defaultFieldsMap[SchemaEntity.VC] = vcDefaultFields;
