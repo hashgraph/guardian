@@ -234,15 +234,16 @@ export class CustomLogicBlock {
                 const sources: IPolicyDocument[] = await this.getSources(user);
 
                 if (ref.options.selectedScriptLanguage == ScriptLanguageOption.PYTHON) {
-                    // const importCode = `const [done, user, documents, mathjs, artifacts, formulajs, sources] = arguments;\r\n`;
+                    const context = await ref.debugContext({ documents, sources });
+
                     const expression = ref.options.expression || '';
                     const worker = new Worker(path.join(path.dirname(filename), '..', 'helpers', 'custom-logic-python-worker.js'), {
                         workerData: {
                             execFunc: `${expression}`,
                             user,
-                            documents,
                             artifacts,
-                            sources
+                            documents: context.documents,
+                            sources: context.sources
                         },
                     });
 
@@ -255,7 +256,12 @@ export class CustomLogicBlock {
                             return;
                         }
                         try {
-                            await done(data.result, data.final);
+                            if (data?.type === 'done') {
+                                await done(data.result, data.final);
+                            }
+                            if (data?.type === 'debug') {
+                                ref.debug(data.message);
+                            }
                         } catch (error) {
                             reject(error);
                         }

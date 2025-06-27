@@ -17,7 +17,23 @@ async function execute() {
                 ? Object.fromEntries(jsResult)
                 : jsResult;
 
-            parentPort.postMessage({ result: serializableResult, final });
+            parentPort.postMessage({ type: 'done', result: serializableResult, final });
+        } catch (err) {
+            parentPort.postMessage({ error: 'Failed to serialize result from Python: ' + err.message, final: true });
+        }
+    }
+
+    const debug = (result: any) => {
+        try {
+            const jsResult = typeof result?.toJs === "function"
+                ? result.toJs({ dictConverter: Object })
+                : result;
+
+            const serializableResult = jsResult instanceof Map
+                ? Object.fromEntries(jsResult)
+                : jsResult;
+
+            parentPort.postMessage({ type: 'debug', result: serializableResult });
         } catch (err) {
             parentPort.postMessage({ error: 'Failed to serialize result from Python: ' + err.message, final: true });
         }
@@ -25,16 +41,15 @@ async function execute() {
 
     const { execFunc, user, documents, artifacts, sources } = workerData;
 
-    pyodide.setStdout({ batched: () => {} });
-    pyodide.setStderr({ batched: () => {} });
-    // pyodide.setStdout({ batched: console.log });
-    // pyodide.setStderr({ batched: console.error });
+    pyodide.setStdout({ batched: console.log });
+    pyodide.setStderr({ batched: console.error })
 
     pyodide.globals.set("user", user);
     pyodide.globals.set("documents", documents);
     pyodide.globals.set("artifacts", artifacts);
     pyodide.globals.set("sources", sources);
     pyodide.globals.set("done", done);
+    pyodide.globals.set("debug", debug);
 
     await pyodide.loadPackage("micropip");
     const micropip = pyodide.pyimport("micropip");
