@@ -1,6 +1,7 @@
 import {
     COMMON_CONNECTION_CONFIG,
     DatabaseServer,
+    JwtServicesValidator,
     LargePayloadContainer,
     MessageBrokerChannel,
     Migration,
@@ -41,6 +42,10 @@ Promise.all([
     mongoForLoggingInitialization(),
 ]).then(async ([db, app, cn, loggerMongo]) => {
     try {
+        const jwtServiceName = 'ANALYTICS_SERVICE';
+
+        JwtServicesValidator.setServiceName(jwtServiceName);
+
         DatabaseServer.connectBD(db);
 
         app.connectMicroservice<MicroserviceOptions>({
