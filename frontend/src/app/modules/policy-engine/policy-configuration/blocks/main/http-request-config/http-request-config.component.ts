@@ -2,7 +2,6 @@ import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncap
 import {CodeEditorDialogComponent} from '../../../../dialogs/code-editor-dialog/code-editor-dialog.component';
 import {IModuleVariables, PolicyBlock} from '../../../../structures';
 import {DialogService} from 'primeng/dynamicdialog';
-import {ConfirmDialog} from 'src/app/modules/common/confirm-dialog/confirm-dialog.component';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 
 /**
