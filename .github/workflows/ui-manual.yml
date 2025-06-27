@@ -47,7 +47,7 @@ jobs:
           yarn run build
           popd
           pushd frontend
-          npm installAdd commentMore actions
+          npm install
           popd
           pushd notification-service
           yarn run build
