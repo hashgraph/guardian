@@ -3,6 +3,7 @@ import {CodeEditorDialogComponent} from '../../../../dialogs/code-editor-dialog/
 import {IModuleVariables, PolicyBlock} from '../../../../structures';
 import {DialogService} from 'primeng/dynamicdialog';
 import {ConfirmDialog} from 'src/app/modules/common/confirm-dialog/confirm-dialog.component';
+import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 
 /**
  * Settings for block of 'switch' and 'interfaceStepBlock' types.
@@ -102,19 +103,20 @@ export class HttpRequestConfigComponent implements OnInit {
 
     onIncludeChange(header: any) {
         if (header.included) {
-            const dialogRef = this.dialog.open(ConfirmDialog, {
-                header: 'Confirm',
-                width: '500px',
-                height: '270px',
+            const dialogRef = this.dialog.open(CustomConfirmDialogComponent, {
+                showHeader: false,
+                width: '640px',
+                styleClass: 'http-confirm-dialog',
                 data: {
-                    title: 'Include HTTP[S] request header value in Exported Policy?',
-                    description: 'HTTP[S] request header values may contain sensitive information. Are you sure you want to include the value of this header in the exported policy artifact?',
-                    submitButton: 'Yes',
-                    cancelButton: 'No'
-                },
-                modal: true,
-                closable: false,
-                styleClass: 'http-confirm-dialog'
+                    header: 'Include HTTP[S] request header value in Exported Policy?',
+                    text:   'HTTP[S] request header values may contain sensitive information. ' +
+                        'Are you sure you want to include the value of this header ' +
+                        'in the exported policy artifact?',
+                    buttons: [
+                        { name: 'No',  class: 'secondary' },
+                        { name: 'Yes', class: 'primary'   }
+                    ]
+                }
             });
 
             dialogRef.onClose.subscribe(result => {
