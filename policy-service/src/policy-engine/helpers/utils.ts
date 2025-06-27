@@ -461,7 +461,9 @@ export class PolicyUtils {
                     hederaAccountId,
                     payload: { userId }
                 }
-            }, 20);
+            }, {
+                priority: 20
+            });
         }
     }
 
@@ -492,7 +494,9 @@ export class PolicyUtils {
                     dryRun: ref.dryRun,
                     payload: { userId }
                 }
-            }, 20);
+            }, {
+                priority: 20
+            });
             const userProfile = await new Users().getUserByAccount(user.hederaAccountId, userId);
             await NotificationHelper.info(
                 `Associate token`,
@@ -530,7 +534,9 @@ export class PolicyUtils {
                     dryRun: ref.dryRun,
                     payload: { userId }
                 }
-            }, 20);
+            }, {
+                priority: 20
+            });
             const userProfile = await new Users().getUserByAccount(user.hederaAccountId, userId);
             await NotificationHelper.info(
                 `Dissociate token`,
@@ -572,7 +578,9 @@ export class PolicyUtils {
                     dryRun: ref.dryRun,
                     payload: { userId }
                 }
-            }, 20);
+            }, {
+                priority: 20
+            });
         }
     }
 
@@ -607,7 +615,9 @@ export class PolicyUtils {
                     dryRun: ref.dryRun,
                     payload: { userId }
                 }
-            }, 20);
+            }, {
+                priority: 20
+            });
         }
     }
 
@@ -643,7 +653,9 @@ export class PolicyUtils {
                     dryRun: ref.dryRun,
                     payload: { userId }
                 }
-            }, 20);
+            }, {
+                priority: 20
+            });
         }
     }
 
@@ -679,7 +691,9 @@ export class PolicyUtils {
                     dryRun: ref.dryRun,
                     payload: { userId }
                 }
-            }, 20);
+            }, {
+                priority: 20
+            });
         }
     }
 
@@ -713,7 +727,9 @@ export class PolicyUtils {
                     payload: { userId },
                     ...tokenTemplate
                 }
-            }, 20);
+            }, {
+                priority: 20
+            });
             tokenId = createdToken.tokenId;
 
             const wallet = new Wallet();
@@ -787,7 +803,9 @@ export class PolicyUtils {
                 hederaAccountId,
                 payload: { userId }
             }
-        }, 20);
+        }, {
+            priority: 20
+        });
     }
 
     /**

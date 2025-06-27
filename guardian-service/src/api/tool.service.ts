@@ -55,7 +55,8 @@ export async function preparePreviewMessage(
         .getMessage<ToolMessage>({
             messageId,
             loadIPFS: true,
-            userId: user.id
+            userId: user.id,
+            interception: null
         });
     if (message.type !== MessageType.Tool) {
         throw new Error('Invalid Message Type');
@@ -183,7 +184,12 @@ export async function publishTool(
         const message = new ToolMessage(MessageType.Tool, MessageAction.PublishTool);
         message.setDocument(tool, buffer);
         const result = await messageServer
-            .sendMessage(message, true, null, user.id);
+            .sendMessage(message, {
+                sendToIPFS: true,
+                memo: null,
+                userId: user.id,
+                interception: user.id
+            });
 
         notifier.completedAndStart('Publish tags');
         try {
@@ -332,7 +338,12 @@ export async function createTool(
             message.setDocument(tool);
             const messageStatus = await messageServer
                 .setTopicObject(parent)
-                .sendMessage(message, true, null, user.id);
+                .sendMessage(message, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId: user.id,
+                    interception: null
+                });
 
             notifier.completedAndStart('Link topic and tool');
             await topicHelper.twoWayLink(topic, parent, messageStatus.getId(), user.id);

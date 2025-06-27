@@ -120,7 +120,12 @@ export async function publishFormula(
     const publishMessage = new FormulaMessage(MessageAction.PublishFormula);
     publishMessage.setDocument(item, buffer);
     const statMessageResult = await messageServer
-        .sendMessage(publishMessage, true, null, owner.id);
+        .sendMessage(publishMessage, {
+            sendToIPFS: true,
+            memo: null,
+            userId: owner.id,
+            interception: owner.id
+        });
 
     item.messageId = statMessageResult.getId();
 

@@ -110,6 +110,7 @@ export class MessagesReport {
                 messageId: timestamp,
                 loadIPFS: false,
                 userId,
+                interception: null
             });
         if (!message) {
             return;
@@ -254,7 +255,9 @@ export class MessagesReport {
             const info = await workers.addRetryableTask({
                 type: WorkerTaskType.GET_TOKEN_INFO,
                 data: { tokenId, payload: { userId } }
-            }, 10);
+            }, {
+                priority: 10
+            });
             return info;
         } catch (error) {
             return null;

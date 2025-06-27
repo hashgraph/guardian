@@ -151,6 +151,7 @@ import { DataTransformationConfigComponent } from './policy-configuration/blocks
 import { ExternalPolicyComponent } from './external-policies/external-policies.component';
 import { SearchExternalPolicyDialog } from './dialogs/search-external-policy-dialog/search-external-policy-dialog.component';
 import { PolicyRequestsComponent } from './requests/requests.component';
+import { TestCodeDialog } from './dialogs/test-code-dialog/test-code-dialog.component';
 import { ProjectDataExportComponent } from './project-data-export/project-data-export.component';
 
 @NgModule({
@@ -262,7 +263,8 @@ import { ProjectDataExportComponent } from './project-data-export/project-data-e
         ProjectDataExportComponent,
         ExternalPolicyComponent,
         PolicyRequestsComponent,
-        SearchExternalPolicyDialog
+        SearchExternalPolicyDialog,
+        TestCodeDialog
     ],
     imports: [
         CommonModule,

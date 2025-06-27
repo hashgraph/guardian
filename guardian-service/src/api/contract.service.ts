@@ -96,21 +96,22 @@ const retireEventsAbi = new ethers.Interface([
 ]);
 
 async function getContractMessage(
-    workers,
-    contractId,
+    workers: Workers,
+    contractId: string,
     userId: string | null
 ): Promise<[ContractMessage, string]> {
-    const { memo } = await workers.addNonRetryableTask(
-        {
-            type: WorkerTaskType.GET_CONTRACT_INFO,
-            data: {
-                contractId,
-                payload: { userId }
-            },
-        },
-        20,
-        null
-    );
+    const { memo } = await workers.addNonRetryableTask({
+        type: WorkerTaskType.GET_CONTRACT_INFO,
+        data: {
+            contractId,
+            payload: { userId }
+        }
+    }, {
+        priority: 20,
+        attempts: 0,
+        userId,
+        interception: null
+    });
 
     const message = await workers.addRetryableTask(
         {
@@ -121,7 +122,12 @@ async function getContractMessage(
                 payload: { userId }
             },
         },
-        10
+        {
+            priority: 10,
+            attempts: 0,
+            userId,
+            interception: null
+        }
     );
 
     const contractMessage = ContractMessage.fromMessage(message?.message);
@@ -197,7 +203,9 @@ async function setPool(
                     type: WorkerTaskType.GET_TOKEN_INFO,
                     data: { tokenId: item.token, payload: { userId } },
                 },
-                10
+                {
+                    priority: 10
+                }
             );
             const wipeContractId = getTokenContractId(tokenInfo.wipe_key);
 
@@ -377,7 +385,9 @@ async function setRetireRequest(
                     type: WorkerTaskType.GET_TOKEN_INFO,
                     data: { tokenId: token.token, payload: { userId } },
                 },
-                10
+                {
+                    priority: 10
+                }
             );
             const tokenInfo = {
                 type:
@@ -502,8 +512,9 @@ export async function syncWipeContract(
                     payload: { userId }
                 },
             },
-            20,
-            null
+            {
+                priority: 20
+            }
         );
 
         if (!result || !result.length) {
@@ -778,8 +789,9 @@ export async function syncRetireContract(
                     payload: { userId }
                 },
             },
-            20,
-            null
+            {
+                priority: 20
+            }
         );
 
         if (!result || !result.length) {
@@ -1073,8 +1085,9 @@ async function isContractWiper(
                     payload: { userId }
                 },
             },
-            20,
-            null
+            {
+                priority: 20
+            }
         );
 
         if (!result || !result.length) {
@@ -1257,7 +1270,12 @@ async function saveRetireVC(
 
     const vcMessage = new VCMessage(MessageAction.CreateVC);
     vcMessage.setDocument(vcObject);
-    await messageServer.sendMessage(vcMessage, true, null, userId);
+    await messageServer.sendMessage(vcMessage, {
+        sendToIPFS: true,
+        memo: null,
+        interception: null,
+        userId
+    });
 
     await dataBaseServer.save(VcDocumentCollection, {
         hash: vcMessage.hash,
@@ -1405,7 +1423,12 @@ export async function contractAPI(
             });
             const contractMessageResult = await messageServer
                 .setTopicObject(topic)
-                .sendMessage(contractMessage, true, null, userId);
+                .sendMessage(contractMessage, {
+                    sendToIPFS: true,
+                    memo: null,
+                    interception: null,
+                    userId
+                });
             const userTopic = await TopicConfig.fromObject(
                 await DatabaseServer.getTopicByType(owner.owner, TopicType.UserTopic),
                 true, userId
@@ -2485,7 +2508,9 @@ export async function contractAPI(
                                 type: WorkerTaskType.GET_TOKEN_INFO,
                                 data: { tokenId: token.token, payload: { userId } },
                             },
-                            10
+                            {
+                                priority: 10
+                            }
                         );
                         token.contract = getTokenContractId(tokenInfo.wipe_key);
                         if (handledContracts.has(token.contract)) {
@@ -3532,7 +3557,9 @@ export async function contractAPI(
                 data: {
                     payload: { options: { topicId: contractTopicId }, userId }
                 }
-            }, 2);
+            }, {
+                priority: 2
+            });
 
             return new MessageResponse([messages, messages.length]);
         } catch (error) {

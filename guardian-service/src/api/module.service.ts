@@ -52,7 +52,8 @@ export async function preparePreviewMessage(
         .getMessage<ModuleMessage>({
             messageId,
             loadIPFS: true,
-            userId: user.id
+            userId: user.id,
+            interception: null
         });
     if (message.type !== MessageType.Module) {
         throw new Error('Invalid Message Type');
@@ -180,7 +181,12 @@ export async function publishModule(
     const message = new ModuleMessage(MessageType.Module, MessageAction.PublishModule);
     message.setDocument(model, buffer);
     const result = await messageServer
-        .sendMessage(message, true, null, user.id);
+        .sendMessage(message, {
+            sendToIPFS: true,
+            memo: null,
+            userId: user.id,
+            interception: null
+        });
     model.messageId = result.getId();
     model.status = ModuleStatus.PUBLISHED;
 

@@ -809,7 +809,13 @@ export class PolicyDataMigrator {
             MessageAction.CreateContract
         );
         contractMessage.setDocument(contract);
-        await this._ms.setTopicObject(topic).sendMessage(contractMessage, true, null, userId);
+        await this._ms.setTopicObject(topic)
+            .sendMessage(contractMessage, {
+                sendToIPFS: true,
+                memo: null,
+                userId,
+                interception: null
+            });
 
         this._createdWipeContractId = contract.contractId;
         return this._createdWipeContractId;
@@ -1063,7 +1069,12 @@ export class PolicyDataMigrator {
             const message = vcMessage;
             const vcMessageResult = await this._ms
                 .setTopicObject(this._policyInstanceTopic)
-                .sendMessage(message, true, null, userId);
+                .sendMessage(message, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId,
+                    interception: null
+                });
             doc.messageId = vcMessageResult.getId();
             doc.topicId = vcMessageResult.getTopicId();
             doc.messageHash = vcMessageResult.toHash();
@@ -1238,7 +1249,12 @@ export class PolicyDataMigrator {
             vpMessage.setRelationships([...doc.relationships, doc.messageId]);
             const vpMessageResult = await this._ms
                 .setTopicObject(this._policyInstanceTopic)
-                .sendMessage(vpMessage, true, null, userId);
+                .sendMessage(vpMessage, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId,
+                    interception: null
+                });
             const vpMessageId = vpMessageResult.getId();
             this.vpIds.set(doc.messageId, vpMessageId);
             doc.messageId = vpMessageId;
@@ -1430,7 +1446,12 @@ export class PolicyDataMigrator {
             const message = vcMessage;
             const vcMessageResult = await this._ms
                 .setTopicObject(this._policyInstanceTopic)
-                .sendMessage(message, true, null, userId);
+                .sendMessage(message, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId,
+                    interception: null
+                });
             doc.messageId = vcMessageResult.getId();
             doc.topicId = vcMessageResult.getTopicId();
             doc.messageHash = vcMessageResult.toHash();

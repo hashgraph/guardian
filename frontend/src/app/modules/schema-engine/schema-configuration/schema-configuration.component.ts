@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges,} from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, } from '@angular/core';
 import {
     AbstractControl,
     UntypedFormBuilder,
@@ -18,12 +18,12 @@ import {
     UnitSystem,
 } from '@guardian/interfaces';
 import moment from 'moment';
-import {Subject} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
-import {ConditionControl} from '../condition-control';
-import {FieldControl} from '../field-control';
-import {CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
-import {SchemaService} from 'src/app/services/schema.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { ConditionControl } from '../condition-control';
+import { FieldControl } from '../field-control';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { SchemaService } from 'src/app/services/schema.service';
 
 enum SchemaType {
     System = 'system',
@@ -34,7 +34,7 @@ enum SchemaType {
 }
 
 function NoBindingValidator(control: UntypedFormControl): ValidationErrors | null {
-    return (control.value && control.value.length) ? null : {wrongTopicId: true};
+    return (control.value && control.value.length) ? null : { wrongTopicId: true };
 }
 
 /**
@@ -83,13 +83,13 @@ export class SchemaConfigurationComponent implements OnInit {
         integer: /^-?\d*$/
     };
     public systemEntityOptions: { label: string; value: string }[] = [
-        {label: 'STANDARD REGISTRY', value: 'STANDARD_REGISTRY'},
-        {label: 'USER', value: 'USER'},
+        { label: 'STANDARD REGISTRY', value: 'STANDARD_REGISTRY' },
+        { label: 'USER', value: 'USER' },
     ];
     public policyModuleEntityOptions: { label: string; value: string }[] = [
-        {label: 'Default', value: 'NONE'},
-        {label: 'Verifiable Credential', value: 'VC'},
-        {label: 'Encrypted Verifiable Credential', value: 'EVC'},
+        { label: 'Default', value: 'NONE' },
+        { label: 'Verifiable Credential', value: 'VC' },
+        { label: 'Encrypted Verifiable Credential', value: 'EVC' },
     ];
 
     public get isSystem(): boolean {
@@ -163,8 +163,8 @@ export class SchemaConfigurationComponent implements OnInit {
         this.schemaTypeMap = {};
         for (const type of FieldTypesDictionary.FieldTypes) {
             const value = this.getId('default');
-            this.types.push({name: type.name, value: value});
-            this.schemaTypeMap[value] = {...type};
+            this.types.push({ name: type.name, value: value });
+            this.schemaTypeMap[value] = { ...type };
         }
         this.schemaTypeMap[UnitSystem.Postfix] = {
             name: UnitSystem.Postfix,
@@ -474,7 +474,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 condition.ifCondition.fieldValue
             )
 
-            this.onIfConditionFieldChange(newCondition, newCondition.field!.value);
+            this.ifConditionFieldChange(newCondition, newCondition.field!.value);
 
             condition.thenFields.forEach((field) => {
                 const fieldValue = new FieldControl(
@@ -912,7 +912,11 @@ export class SchemaConfigurationComponent implements OnInit {
         return schema;
     }
 
-    public onIfConditionFieldChange(condition: ConditionControl, field: FieldControl | any) {
+    public onIfConditionFieldChange(condition: ConditionControl, event: any) {
+        this.ifConditionFieldChange(condition, event.value)
+    }
+
+    public ifConditionFieldChange(condition: ConditionControl, field: FieldControl | any) {
         if (condition.changeEvents) {
             condition.fieldValue.patchValue('', {
                 emitEvent: false
@@ -921,24 +925,30 @@ export class SchemaConfigurationComponent implements OnInit {
         }
 
         condition.changeEvents = [];
-        condition.changeEvents.push(field.controlType.valueChanges
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(() => {
-                condition.fieldValue.patchValue('', {
-                    emitEvent: false
-                });
-                this.ifFormatValue(condition, field);
-            }));
-        condition.changeEvents.push(field.controlRequired.valueChanges
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(() => {
-                this.ifFormatValue(condition, field);
-            }));
-        condition.changeEvents.push(field.controlArray.valueChanges
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(() => {
-                this.ifFormatValue(condition, field);
-            }));
+        condition.changeEvents.push(
+            field.controlType.valueChanges
+                .pipe(takeUntil(this.destroy$))
+                .subscribe(() => {
+                    condition.fieldValue.patchValue('', {
+                        emitEvent: false
+                    });
+                    this.ifFormatValue(condition, field);
+                })
+        );
+        condition.changeEvents.push(
+            field.controlRequired.valueChanges
+                .pipe(takeUntil(this.destroy$))
+                .subscribe(() => {
+                    this.ifFormatValue(condition, field);
+                })
+        );
+        condition.changeEvents.push(
+            field.controlArray.valueChanges
+                .pipe(takeUntil(this.destroy$))
+                .subscribe(() => {
+                    this.ifFormatValue(condition, field);
+                })
+        );
 
         this.ifFormatValue(condition, field);
     }
@@ -1165,7 +1175,7 @@ export class SchemaConfigurationComponent implements OnInit {
             let error = null;
             for (const control of all) {
                 if (map[control.value] > 1) {
-                    error = {unique: true};
+                    error = { unique: true };
                     control.setErrors(error);
                 } else if (control.errors) {
                     delete control.errors.unique;

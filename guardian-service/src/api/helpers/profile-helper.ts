@@ -207,7 +207,13 @@ export async function createUserProfile(
         await workers.addNonRetryableTask({
             type: WorkerTaskType.GET_USER_BALANCE,
             data: { hederaAccountId, hederaAccountKey }
-        }, 20, user.id.toString());
+        }, {
+            priority: 20,
+            attempts: 0,
+            registerCallback: true,
+            interception: user.id.toString(),
+            userId: user.id.toString()
+        });
     } catch (error) {
         throw new Error(`Invalid Hedera account or key.`);
     }
@@ -281,7 +287,12 @@ export async function createUserProfile(
         didMessage.setDocument(currentDidDocument);
         const didMessageResult = await messageServer
             .setTopicObject(topicConfig)
-            .sendMessage(didMessage, true, null, user.id.toString())
+            .sendMessage(didMessage, {
+                sendToIPFS: true,
+                memo: null,
+                userId: user.id.toString(),
+                interception: user.id.toString()
+            })
         didRow.status = DidDocumentStatus.CREATE;
         didRow.messageId = didMessageResult.getId();
         didRow.topicId = didMessageResult.getTopicId();
@@ -395,7 +406,12 @@ export async function createUserProfile(
         try {
             const vcMessageResult = await messageServer
                 .setTopicObject(topicConfig)
-                .sendMessage(vcMessage, true, null, user.id.toString());
+                .sendMessage(vcMessage, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId: user.id.toString(),
+                    interception: user.id.toString()
+                });
             vcDoc.hederaStatus = DocumentStatus.ISSUE;
             vcDoc.messageId = vcMessageResult.getId();
             vcDoc.topicId = vcMessageResult.getTopicId();
@@ -428,7 +444,12 @@ export async function createUserProfile(
         regMessage.setDocument(userDID, topicConfig?.topicId, attributes);
         await messageServer
             .setTopicObject(globalTopic)
-            .sendMessage(regMessage, true, null, user.id.toString())
+            .sendMessage(regMessage, {
+                sendToIPFS: true,
+                memo: null,
+                userId: user.id.toString(),
+                interception: user.id.toString()
+            })
     }
 
     // -----------------------
@@ -473,7 +494,12 @@ export async function createRemoteUserProfile(
         await workers.addNonRetryableTask({
             type: WorkerTaskType.GET_USER_BALANCE_REST,
             data: { hederaAccountId }
-        }, 20, user.id.toString());
+        }, {
+            priority: 20,
+            attempts: 0,
+            userId: user.id.toString(),
+            interception: null
+        });
     } catch (error) {
         throw new Error(`Invalid Hedera account or key.`);
     }
@@ -726,7 +752,12 @@ export async function createDefaultRoles(
         const message = new GuardianRoleMessage(MessageAction.CreateRole);
         message.setRole(credentialSubject);
         message.setDocument(document);
-        await messageServer.sendMessage(message, true, null, logId);
+        await messageServer.sendMessage(message, {
+            sendToIPFS: true,
+            memo: null,
+            interception: userId,
+            userId: logId
+        });
 
         vcDocumentCollectionObjects.push({
             hash: message.hash,

@@ -212,7 +212,12 @@ export class AnalyticsUtils {
                         next,
                         payload: { userId: null }
                     }
-                }, 15, 5);
+                }, {
+                    priority: 15,
+                    attempts: 5,
+                    userId: null,
+                    interception: null
+                });
                 for (const message of data.messages) {
                     messages.push(message);
                 }
@@ -247,7 +252,7 @@ export class AnalyticsUtils {
                     timeStamp,
                     payload: { userId: null }
                 }
-            }, 10);
+            }, { priority: 10 });
             return { message };
         } catch (error) {
             return { message: null, error };
@@ -355,7 +360,7 @@ export class AnalyticsUtils {
         const info = await workers.addRetryableTask({
             type: WorkerTaskType.GET_TOKEN_INFO,
             data: { tokenId, payload: { userId: null } }
-        }, 10);
+        }, { priority: 10 });
         return info;
     }
 

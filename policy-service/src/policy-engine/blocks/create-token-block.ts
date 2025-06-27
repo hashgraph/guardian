@@ -192,7 +192,12 @@ export class CreateTokenBlock {
         }).setTopicObject(rootTopic);
         const tokenMessage = new TokenMessage(MessageAction.CreateToken);
         tokenMessage.setDocument(createdToken);
-        await messageServer.sendMessage(tokenMessage, true, null, userId);
+        await messageServer.sendMessage(tokenMessage, {
+            sendToIPFS: true,
+            memo: null,
+            userId,
+            interception: null
+        });
         // #endregion
 
         // #region Set token in document
