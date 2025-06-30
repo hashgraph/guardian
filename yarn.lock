@@ -727,9 +727,9 @@
     tslib "^2.6.2"
 
 "@azure/identity@^4.10.0":
-  version "4.10.0"
-  resolved "https://registry.yarnpkg.com/@azure/identity/-/identity-4.10.0.tgz#10cfe49207b4d111ebe3aab3ade47561c2852c6d"
-  integrity sha512-iT53Sre2NJK6wzMWnvpjNiR3md597LZ3uK/5kQD2TkrY9vqhrY5bt2KwELNjkOWQ9n8S/92knj/QEykTtjMNqQ==
+  version "4.10.1"
+  resolved "https://registry.yarnpkg.com/@azure/identity/-/identity-4.10.1.tgz#6ce1e7b367d2eb6680d0efa5817382aafcd86f05"
+  integrity sha512-YM/z6RxRtFlXUH2egAYF/FDPes+MUE6ZoknjEdaq7ebJMMNUzn9zCJ3bd2ZZZlkP0r1xKa88kolhFH/FGV7JnA==
   dependencies:
     "@azure/abort-controller" "^2.0.0"
     "@azure/core-auth" "^1.9.0"
