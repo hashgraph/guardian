@@ -151,36 +151,13 @@ export class SchemaConfigurationComponent implements OnInit {
         this.measureTypes = [];
         this.schemaTypeMap = {};
         for (const type of FieldTypesDictionary.FieldTypes) {
-            const value = this.getId('default');
-            this.types.push({ name: type.name, value: value });
-            this.schemaTypeMap[value] = { ...type };
+            const typeId = this.getId('default');
+            this.types.push({ name: type.name, value: typeId });
+            this.schemaTypeMap[typeId] = { ...type };
         }
-        this.schemaTypeMap[UnitSystem.Postfix] = {
-            name: UnitSystem.Postfix,
-            type: 'number',
-            format: undefined,
-            pattern: undefined,
-            isRef: false,
-            unit: '',
-            unitSystem: UnitSystem.Postfix
-        };
-        this.schemaTypeMap[UnitSystem.Prefix] = {
-            name: UnitSystem.Prefix,
-            type: 'number',
-            format: undefined,
-            pattern: undefined,
-            isRef: false,
-            unit: '',
-            unitSystem: UnitSystem.Prefix
-        };
-        this.schemaTypeMap['hederaAccount'] = {
-            name: 'hederaAccount',
-            type: 'string',
-            format: undefined,
-            pattern: '^\\d+\\.\\d+\\.\\d+$',
-            isRef: false,
-            customType: 'hederaAccount'
-        };
+        for (const type of FieldTypesDictionary.CustomFieldTypes) {
+            this.schemaTypeMap[type.name] = { ...type };
+        }
         this.buildField = this.buildSchemaField.bind(this);
     }
 

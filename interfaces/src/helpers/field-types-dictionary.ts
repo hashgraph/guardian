@@ -1,3 +1,6 @@
+import { SchemaField } from '../interface';
+import { UnitSystem } from '../type/unit-system.type.js';
+
 /**
  * Field types dictionary
  */
@@ -123,8 +126,47 @@ export class FieldTypesDictionary {
         }
     ];
 
+    public static readonly CustomFieldTypes = [
+        {
+            name: UnitSystem.Postfix,
+            type: 'number',
+            format: undefined,
+            pattern: undefined,
+            isRef: false,
+            unit: '',
+            unitSystem: UnitSystem.Postfix
+        },
+        {
+            name: UnitSystem.Prefix,
+            type: 'number',
+            format: undefined,
+            pattern: undefined,
+            isRef: false,
+            unit: '',
+            unitSystem: UnitSystem.Prefix
+        },
+        {
+            name: 'hederaAccount',
+            type: 'string',
+            format: undefined,
+            pattern: '^\\d+\\.\\d+\\.\\d+$',
+            isRef: false,
+            customType: 'hederaAccount'
+        }
+    ];
+
     /**
      * Measure types
      */
-    public static readonly MeasureFieldTypes = []
+    public static readonly MeasureFieldTypes = [];
+
+    public static equal(field: SchemaField, type: any): boolean {
+        return (
+            field.type == type.type &&
+            field.format == type.format &&
+            field.pattern == type.pattern &&
+            field.isRef == type.isRef &&
+            field.customType == type.customType
+        )
+    }
 }

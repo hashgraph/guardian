@@ -1,9 +1,10 @@
 import { ChangeDetectorRef, Component, ViewChild } from '@angular/core';
 import { SchemaConfigurationComponent } from '../schema-configuration/schema-configuration.component';
-import { ISchema, Schema, SchemaHelper } from '@guardian/interfaces';
+import { ISchema, Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { MenuItem } from 'primeng/api';
 import { SchemaService } from '../../../services/schema.service';
+import { SchemaJson } from './schema-json';
 
 /**
  * Dialog for creating and editing schemas.
@@ -124,13 +125,18 @@ export class SchemaDialog {
 
         this.topicId = topicId;
 
-        this.updateFormData();
+        this.schemaControl.mappingSubSchemas(this.subSchemas, this.topicId);
+        setTimeout(() => this.schemaControl.updateFormControls(), 50);
+
         this.loading(false);
     }
 
-    private updateFormData() {
-        this.schemaControl.mappingSubSchemas(this.subSchemas, this.topicId);
-        setTimeout(() => this.schemaControl.updateFormControls(), 50);
+    private loading(value: boolean) {
+        if (value) {
+            this.started = false;
+        } else {
+            setTimeout(() => { this.started = true; }, 1000);
+        }
     }
 
     public onChangeForm($event: SchemaConfigurationComponent) {
@@ -151,69 +157,89 @@ export class SchemaDialog {
             });
     }
 
-    public onChangeTab(order: number): void {
+    public onChangeTab($event: any, order: number): void {
+        $event.stopPropagation();
         this.error = null;
+        if (this.tab === order) {
+            return;
+        }
+        if (order === 2 && this.tab !== 2) {
+            if (!this.updateJsonView()) {
+                return;
+            }
+        }
+        if (order !== 2 && this.tab === 2) {
+            if (!this.updateFormView()) {
+                return;
+            }
+        }
         this.extended = order === 1;
         this.json = order === 2;
-        if (this.json) {
-            this.updateJsonView();
-        } else if (this.tab === 2) {
-            this.updateFormView();
-        }
         this.tab = order;
     }
 
-    private updateJsonView() {
+    private updateJsonView(): boolean {
         this.loading(true);
         try {
-            const schema = this.schemaControl.getSchema();
-            if (schema) {
-                this.document = JSON.stringify(schema.document, null, 4);
-            } else {
-                this.document = '';
-            }
+            this.document = this.schemaToJson();
             this.loading(false);
+            return true;
         } catch (error) {
             console.error(error);
             this.document = '';
             this.loading(false);
+            return true;
         }
     }
 
-    private updateFormView() {
+    private updateFormView(): boolean {
+        let document: any;
+        try {
+            document = this.jsonToSchema(this.document, this.subSchemas);
+        } catch (error) {
+            this.error = error?.toString();
+            return false;
+        }
         this.loading(true);
         try {
-            const document = JSON.parse(this.document);
-            if (this.schema) {
-                this.schema.setDocument(document);
-            }
+            this.schema.name = document.name;
+            this.schema.description = document.description;
+            this.schema.entity = document.entity;
+            this.schema.update(document.fields, document.conditions);
+            this.schema.updateDocument();
+            this.schema.updateRefs(this.subSchemas);
+
             this.schemaControl.reset();
-            this.updateFormData();
+            this.schemaControl.mappingSubSchemas(this.subSchemas, this.topicId);
+            setTimeout(() => this.schemaControl.updateFormControls(), 50);
+
             this.loading(false);
+            return true;
         } catch (error) {
             console.error(error);
             this.loading(false);
-        }
-    }
-
-    private loading(value: boolean) {
-        if (value) {
-            this.started = false;
-        } else {
-            setTimeout(() => { this.started = true; }, 1000);
+            return true;
         }
     }
 
     private getSchemaDocument() {
         if (this.json) {
             try {
-                const document = JSON.parse(this.document);
-                if (this.schema) {
-                    this.schema.setDocument(document);
+                const document = this.jsonToSchema(this.document, this.subSchemas);
+                if (!document) {
+                    return null;
                 }
+                this.schema.name = document.name;
+                this.schema.description = document.description;
+                this.schema.entity = document.entity;
+                this.schema.update(document.fields, document.conditions);
+                this.schema.updateDocument();
+                this.schema.updateRefs(this.subSchemas);
+
                 this.schemaControl.reset();
                 this.schemaControl.mappingSubSchemas(this.subSchemas, this.topicId);
                 this.schemaControl.updateFormControls();
+
                 if (this.schemaControl.isValid()) {
                     return this.schemaControl.getSchema();
                 } else {
@@ -236,5 +262,27 @@ export class SchemaDialog {
         // } catch (error) {
         //     this.valid = false;
         // }
+    }
+
+    private schemaToJson(): string {
+        try {
+            const schema = this.schemaControl.getSchema();
+            if (schema) {
+                const json = SchemaJson.schemaToJson(schema);
+                return JSON.stringify(json, null, 4);
+            } else {
+                return '';
+            }
+        } catch (error) {
+            console.error(error);
+            return '';
+        }
+
+    }
+
+    private jsonToSchema(json: string, all: Schema[]): any {
+        const document = JSON.parse(json);
+        const schema = SchemaJson.fromJson(document, all);
+        return schema;
     }
 }

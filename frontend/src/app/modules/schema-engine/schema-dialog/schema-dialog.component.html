@@ -11,10 +11,10 @@
         <div class="guardian-loading-image"></div>
     </div>
     <div class="g-dialog-header">
-        <p-tabView class="guardian-tabs action-tabs">
+        <p-tabView class="guardian-tabs action-tabs" [activeIndex]="tab">
             <p-tabPanel *ngFor="let tab of items; let i = index">
                 <ng-template pTemplate="header">
-                    <div (click)="onChangeTab(i)" class="tabview-label">
+                    <div (click)="onChangeTab($event, i)" class="tabview-label">
                         {{ tab.label }}
                     </div>
                 </ng-template>

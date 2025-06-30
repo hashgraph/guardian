@@ -61,8 +61,8 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
             label: 'Units of measure',
             value: 'uom',
             items: [
-                { label: 'Prefix', value: 'prefix' },
-                { label: 'Postfix', value: 'postfix' },
+                { label: 'Prefix', value: UnitSystem.Prefix },
+                { label: 'Postfix', value: UnitSystem.Postfix },
             ],
         },
         {
