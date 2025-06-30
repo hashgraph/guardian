@@ -30,6 +30,10 @@ export class LogResultDTO {
     @ApiProperty({ type: 'number' })
     totalCount: number;
 
-    @ApiProperty({ type: 'array', isArray: true })
+    @ApiProperty({
+        type: 'object',
+        additionalProperties: true,
+        isArray: true
+    })
     logs?: any[];
 }

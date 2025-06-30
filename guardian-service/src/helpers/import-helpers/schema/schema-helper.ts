@@ -188,7 +188,12 @@ export async function sendSchemaMessage(
     message.setDocument(schema);
     await messageServer
         .setTopicObject(topic)
-        .sendMessage(message, true, null, owner.id);
+        .sendMessage(message, {
+            sendToIPFS: true,
+            memo: null,
+            userId: owner.id,
+            interception: owner.id
+        });
 }
 
 export async function copyDefsSchemas(

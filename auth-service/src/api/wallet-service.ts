@@ -8,7 +8,6 @@ import { IVault } from '../vaults/index.js';
  */
 @Singleton
 export class WalletService extends NatsService {
-
     /**
      * Message queue name
      */

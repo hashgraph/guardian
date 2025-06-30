@@ -53,7 +53,9 @@ export class QueueService extends NatsService {
                     task.sent = false;
                     task.attempt = task.attempt + 1;
                 } else {
-                    if (!task.userId) {
+                    task.isError = true;
+                    task.errorReason = data.error;
+                    if (!task.interception) {
                         await this.completeTaskInQueue(data.id, data.data, data.error);
                     }
                 }
@@ -62,7 +64,7 @@ export class QueueService extends NatsService {
                 task.isError = true;
                 task.errorReason = data.error;
 
-                if (!task.userId) {
+                if (!task.interception) {
                     await this.completeTaskInQueue(data.id, data.data, data.error);
                 }
             }
@@ -73,12 +75,13 @@ export class QueueService extends NatsService {
         this.getMessages(QueueEvents.GET_TASKS_BY_USER, async (data: {
             user: IAuthUser,
             pageIndex: number,
-            pageSize: number
+            pageSize: number,
+            status: string
         }) => {
-            const { user, pageSize, pageIndex } = data;
+            const { user, pageSize, pageIndex, status } = data;
             const userId = user?.id?.toString();
             const options: any =
-                typeof pageIndex === 'number' && typeof pageSize === 'number'
+                (typeof pageIndex === 'number' && typeof pageSize === 'number')
                     ? {
                         orderBy: {
                             createDate: OrderDirection.DESC,
@@ -91,7 +94,25 @@ export class QueueService extends NatsService {
                             processedTime: OrderDirection.DESC,
                         },
                     };
-            const result = await new DatabaseServer().findAndCount(TaskEntity, { userId }, options);
+            const filters: any = { userId, interception: { $ne: null } };
+            if (status) {
+                if (status === 'COMPLETE') {
+                    filters.done = true;
+                }
+                if (status === 'ERROR') {
+                    filters.isError = true;
+                }
+                if (status === 'PROCESSING') {
+                    filters.sent = true;
+                    filters.done = false;
+                }
+                if (status === 'IN QUEUE') {
+                    filters.done = false;
+                    filters.isError = false;
+                    filters.sent = false;
+                }
+            }
+            const result = await new DatabaseServer().findAndCount(TaskEntity, filters, options);
             for (const task of result[0]) {
                 if (task.data) {
                     delete task.data;
@@ -219,11 +240,10 @@ export class QueueService extends NatsService {
     }
 
     private async clearLongPendingTasks() {
-
         const dataBaseServer = new DatabaseServer();
 
-        const tasks =
-            await dataBaseServer.aggregate(TaskEntity, dataBaseServer.getTasksAggregationFilters(MAP_TASKS_AGGREGATION_FILTERS.RESULT, this.processTimeout));
+        const filters = dataBaseServer.getTasksAggregationFilters(MAP_TASKS_AGGREGATION_FILTERS.RESULT, this.processTimeout);
+        const tasks = await dataBaseServer.aggregate(TaskEntity, filters);
 
         for (const task of tasks) {
             task.processedTime = null;

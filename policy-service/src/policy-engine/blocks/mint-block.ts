@@ -319,7 +319,12 @@ export class MintBlock {
         vcMessage.setUser(null);
         const vcMessageResult = await messageServer
             .setTopicObject(topic)
-            .sendMessage(vcMessage, true, null, userId);
+            .sendMessage(vcMessage, {
+                sendToIPFS: true,
+                memo: null,
+                userId,
+                interception: null
+            });
         const mintVcDocument = PolicyUtils.createVC(ref, user, mintVC);
         mintVcDocument.type = DocumentCategoryType.MINT;
         mintVcDocument.schema = `#${mintVC.getSubjectType()}`;
@@ -342,7 +347,12 @@ export class MintBlock {
 
         const vpMessageResult = await messageServer
             .setTopicObject(topic)
-            .sendMessage(vpMessage, true, null, userId);
+            .sendMessage(vpMessage, {
+                sendToIPFS: true,
+                memo: null,
+                userId,
+                interception: null
+            });
         const vpMessageId = vpMessageResult.getId();
         const vpDocument = PolicyUtils.createVP(ref, user, vp);
         vpDocument.type = DocumentCategoryType.MINT;
@@ -369,6 +379,7 @@ export class MintBlock {
             policyOwnerSignOptions,
             userId
         );
+
         return [savedVp, tokenValue];
     }
 

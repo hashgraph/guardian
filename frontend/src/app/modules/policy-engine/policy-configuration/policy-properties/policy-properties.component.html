@@ -248,7 +248,7 @@
                             <ng-container *ngFor="let nav of navigation">
                                 <ng-container *ngIf="nav.role === role">
                                     <ng-container *ngFor="let step of nav.steps; let s=index">
-                                        <tr *ngIf="!propHidden.navigationRoles[role]" class="propRow subRow stepRow">
+                                        <tr *ngIf="!propHidden.navigationRoles[role]" class="propHeader subRow stepRow">
                                             <td (click)="onHide(propHidden.navigationSteps, role + s)"
                                                 [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
                                                 class="propRowCol cellCollapse">

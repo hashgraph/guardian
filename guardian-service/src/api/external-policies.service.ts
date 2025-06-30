@@ -46,7 +46,7 @@ async function preparePolicyPreviewMessage(
         signOptions: root.signOptions
     });
     const message = await messageServer
-        .getMessage<PolicyMessage>({ messageId, loadIPFS: true, userId });
+        .getMessage<PolicyMessage>({ messageId, loadIPFS: true, userId, interception: userId });
     if (message.type !== MessageType.InstancePolicy) {
         throw new Error('Invalid Message Type');
     }

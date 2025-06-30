@@ -30,7 +30,12 @@ export class SendMessages {
             const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId, userId);
             const messageResult = await messageServer
                 .setTopicObject(topic)
-                .sendMessage(message, updateIpfs, null, userId);
+                .sendMessage(message, {
+                    sendToIPFS: updateIpfs,
+                    memo: null,
+                    userId,
+                    interception: null
+                });
             results.push(messageResult);
         }
         return results;
@@ -99,7 +104,12 @@ export class SendMessages {
             const topicConfig = await TopicConfig.fromObject(topic, false, userId);
             const messageResult = await messageServer
                 .setTopicObject(topicConfig)
-                .sendMessage(message, updateIpfs, null, userId);
+                .sendMessage(message, {
+                    sendToIPFS: updateIpfs,
+                    memo: null,
+                    userId,
+                    interception: null
+                });
             messageIds.push(messageResult.getId());
         }
 
@@ -142,7 +152,8 @@ export class SendMessages {
                         messageId,
                         loadIPFS: updateIpfs,
                         encryptKey: userMessageKey,
-                        userId
+                        userId,
+                        interception: null
                     });
                 messages.push(message);
             }

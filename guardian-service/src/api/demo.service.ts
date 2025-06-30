@@ -49,7 +49,13 @@ async function generateDemoKey(role: any, notifier: INotifier, userId: string): 
             initialBalance,
             payload: { userId }
         }
-    }, 20, userId);
+    }, {
+        priority: 20,
+        attempts: 0,
+        userId,
+        interception: userId,
+        registerCallback: true
+    });
 
     notifier.completed();
     return result;

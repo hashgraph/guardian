@@ -185,8 +185,8 @@ export class Worker extends NatsService {
 
             }
 
-            const completeTask = async (data) => {
-                await this.publish(WorkerEvents.TASK_COMPLETE, data)
+            const completeTask = async (data: any) => {
+                await this.publish(WorkerEvents.TASK_COMPLETE, data);
             }
             await completeTask(result);
             await this.publish(WorkerEvents.WORKER_READY);
@@ -289,9 +289,12 @@ export class Worker extends NatsService {
                         fileContent = Buffer.from(data.body, 'base64')
                     }
                     //const blob: any = new Blob([fileContent]);
-                    const r = await this.ipfsClient.addFile(fileContent);
-                    this.publish(ExternalMessageEvents.IPFS_ADDED_FILE, r);
-                    result.data = r;
+                    const cid = await this.ipfsClient.addFile(fileContent);
+                    if (!cid) {
+                        throw new Error('Add File: Invalid response');
+                    }
+                    this.publish(ExternalMessageEvents.IPFS_ADDED_FILE, cid);
+                    result.data = cid;
                     break;
                 }
 

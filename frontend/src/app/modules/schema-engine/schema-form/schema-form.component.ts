@@ -254,6 +254,12 @@ export class SchemaFormComponent implements OnInit {
         this.destroy$.unsubscribe();
     }
 
+    public preset(data: any) {
+        this.presetDocument = data;
+        this.buildFields();
+        this.changeDetectorRef.detectChanges();
+    }
+
     private buildFields() {
         let schemaFields: SchemaField[] | undefined = undefined;
 

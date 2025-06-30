@@ -224,7 +224,12 @@ export async function publishTag(
     const message = new TagMessage(MessageAction.PublishTag);
     message.setDocument(item);
     const result = await messageServer
-        .sendMessage(message, true, null, owner.id);
+        .sendMessage(message, {
+            sendToIPFS: true,
+            memo: null,
+            userId: owner.id,
+            interception: owner.id
+        });
     const messageId = result.getId();
     const topicId = result.getTopicId();
     item.messageId = messageId;

@@ -1,6 +1,6 @@
-import {Component, OnInit} from '@angular/core';
-import {HttpResponse} from '@angular/common/http';
-import {WorkerTasksService} from '../../services/worker-tasks.service';
+import { Component, OnInit } from '@angular/core';
+import { HttpResponse } from '@angular/common/http';
+import { WorkerTasksService } from '../../services/worker-tasks.service';
 
 /**
  * Notifications
@@ -8,15 +8,32 @@ import {WorkerTasksService} from '../../services/worker-tasks.service';
 @Component({
     selector: 'app-worker-tasks',
     templateUrl: './worker-tasks.component.html',
-    styleUrls: ['./worker-tasks.component.css'],
+    styleUrls: ['./worker-tasks.component.scss'],
 })
 export class WorkerTasksComponent implements OnInit {
-    loading: boolean = true;
-    workerTasks: any[] = [];
-    workerTasksCount: any;
-    workerTasksColumns: string[] = ['type', 'operations'];
-    pageIndex: number;
-    pageSize: number;
+    public loading: boolean = true;
+    public workerTasks: any[] = [];
+    public workerTasksCount: any;
+    public workerTasksColumns: string[] = ['type', 'operations'];
+    public pageIndex: number;
+    public pageSize: number;
+    public currentStatus: any = '';
+    public statuses = [{
+        name: 'All',
+        value: ''
+    }, {
+        name: 'Complete',
+        value: 'COMPLETE'
+    }, {
+        name: 'Processing',
+        value: 'PROCESSING'
+    }, {
+        name: 'In queue',
+        value: 'IN QUEUE'
+    }, {
+        name: 'Error',
+        value: 'ERROR'
+    }];
 
     constructor(
         private tasksService: WorkerTasksService,
@@ -29,11 +46,12 @@ export class WorkerTasksComponent implements OnInit {
         this.loadWorkerTasks();
     }
 
-    loadWorkerTasks() {
+    private loadWorkerTasks() {
         this.loading = true;
         const request = this.tasksService.all(
             this.pageIndex,
-            this.pageSize
+            this.pageSize,
+            this.currentStatus
         );
         request.subscribe(
             (notificationsResponse: HttpResponse<any[]>) => {
@@ -41,6 +59,9 @@ export class WorkerTasksComponent implements OnInit {
                 this.workerTasksCount =
                     notificationsResponse.headers.get('X-Total-Count') ||
                     this.workerTasks.length;
+                for (const task of this.workerTasks) {
+                    task.status = this.getStatus(task);
+                }
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
@@ -52,7 +73,19 @@ export class WorkerTasksComponent implements OnInit {
         );
     }
 
-    onPage(event: any) {
+    private getStatus(task: any) {
+        if (task.done) {
+            return 'COMPLETE'
+        } else if (task.isError) {
+            return 'ERROR';
+        } else if (task.sent) {
+            return 'PROCESSING'
+        } else {
+            return 'IN QUEUE'
+        }
+    }
+
+    public onPage(event: any) {
         if (this.pageSize !== event.pageSize) {
             this.pageIndex = 0;
             this.pageSize = event.pageSize;
@@ -63,19 +96,13 @@ export class WorkerTasksComponent implements OnInit {
         this.loadWorkerTasks();
     }
 
-    taskStatus(task: any) {
-        if (task.done) {
-            return 'COMPLETE'
-        } else if (task.isError) {
-            return 'ERROR, Reason: ' + task.errorReason;
-        } else if (task.sent) {
-            return 'PROCESSING'
-        } else {
-            return 'IN QUEUE'
-        }
+    public onFilter(event: any) {
+        this.pageIndex = 0;
+        this.loadWorkerTasks();
     }
 
-    restartTask(task: any) {
+
+    public restartTask(task: any) {
         if (!task.isError) {
             return;
         }
@@ -84,7 +111,7 @@ export class WorkerTasksComponent implements OnInit {
         });
     }
 
-    deleteTask(task: any) {
+    public deleteTask(task: any) {
         if (!task.isError) {
             return;
         }

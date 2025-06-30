@@ -1,4 +1,4 @@
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, GenerateTLSOptionsNats, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, NotificationService, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
 import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -37,6 +37,10 @@ Promise.all([
     mongoForLoggingInitialization()
 ]).then(async values => {
     const [db, cn, app, loggerMongo] = values;
+    await new OldSecretManager().setConnection(cn).init();
+    const jwtServiceName = 'QUEUE_SERVICE';
+
+    JwtServicesValidator.setServiceName(jwtServiceName);
 
     DatabaseServer.connectBD(db);
 
@@ -50,7 +54,6 @@ Promise.all([
     await state.updateState(ApplicationStates.STARTED);
 
     await new QueueService().setConnection(cn).init();
-
     const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
     if (Number.isInteger(maxPayload)) {
         new LargePayloadContainer().runServer();

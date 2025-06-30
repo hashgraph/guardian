@@ -40,7 +40,7 @@ For this example purpose let's name the Guardian platform as "develop"
 **Note** Every single service is provided in its folder with a `.env.template` file, this set of files are only needed for the case of Manual installation.
 {% endhint %}
 
-3.  Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operator\_ID and Operator\_Key by looking at the link: [How to Create Operator\_ID and Operator\_Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-operator-id-and-operator-key). The Operator\_ID and Operator\_Key and HEDERA\_NET are all that Guardian needs to access the Hedera Blockchain assuming a role on it. This parameters needs to be configured in a file at the path `./configs`, the file should use the following naming convention:
+3.  Update the following files with your Hedera Mainnet or Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operator\_ID and Operator\_Key by looking at the link: [How to Create Operator\_ID and Operator\_Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-operator-id-and-operator-key). The Operator\_ID and Operator\_Key and HEDERA\_NET are all that Guardian needs to access the Hedera Blockchain assuming a role on it. This parameters needs to be configured in a file at the path `./configs`, the file should use the following naming convention:
 
     `./configs/.env.\<GUARDIAN_ENV\>.guardian.system`
 
@@ -130,7 +130,28 @@ This configuration allows you to leave untouched all the data referring to Mainn
 
 #### 3.2 Setting up JWT keys in /`.env` file
 
-To start of auth-service it is necessary to fill in JWT\_PRIVATE\_KEY and JWT\_PUBLIC\_KEY, which are RSA key pair. You can generate it in any convenient way, for example, using this service [https://travistidwell.com/jsencrypt/demo/](https://travistidwell.com/jsencrypt/demo/).
+To start of auth-service it is necessary to fill in `JWT_PRIVATE_KEY` and `JWT_PUBLIC_KEY`, which are RSA key pair. You can generate it in any convenient way, for example, using this service [https://travistidwell.com/jsencrypt/demo/](https://travistidwell.com/jsencrypt/demo/).
+
+To start all services, you need to create a 2048-bit RSA key pair for each service. You can generate a key pair in any convenient way—for example, using the online tool at [https://mkjwk.org/](https://mkjwk.org/) with the following settings:\
+&#x20;  \- key size: 2048\
+&#x20;  \- key use: signature\
+&#x20;  \- algorithm: RS256: RSA\
+&#x20;  \- key ID: sha256\
+&#x20;  \- show: yesFor each service, you must add its secret key \`SERVICE\_JWT\_SECRET\_KEY\` and a list of all public keys from every service:\
+\- \`SERVICE\_JWT\_PUBLIC\_KEY\_WORKER\_SERVICE\`\
+\- \`SERVICE\_JWT\_PUBLIC\_KEY\_TOPIC\_LISTENER\_SERVICE\`\
+\- \`SERVICE\_JWT\_PUBLIC\_KEY\_QUEUE\_SERVICE\`\
+\- \`SERVICE\_JWT\_PUBLIC\_KEY\_POLICY\_SERVICE\`\
+\- \`SERVICE\_JWT\_PUBLIC\_KEY\_NOTIFICATION\_SERVICE\`\
+\- \`SERVICE\_JWT\_PUBLIC\_KEY\_LOGGER\_SERVICE\`\
+\- \`SERVICE\_JWT\_PUBLIC\_KEY\_GUARDIAN\_SERVICE\`\
+\- \`SERVICE\_JWT\_PUBLIC\_KEY\_AUTH\_SERVICE\`\
+\- \`SERVICE\_JWT\_PUBLIC\_KEY\_API\_GATEWAY\_SERVICE\`\
+\- \`SERVICE\_JWT\_PUBLIC\_KEY\_AI\_SERVICE\`Alternatively, you can create a single key pair and, instead of adding the public keys for each individual service, you can add \`SERVICE\_JWT\_SECRET\_KEY\_ALL\` and \`SERVICE\_JWT\_PUBLIC\_KEY\_ALL\` to use the same keys for all services. However, it is recommended to generate a separate key pair for each service
+
+{% hint style="info" %}
+**Note**: It is important to add these keys to the env files, because without them the services will return errors, and communication with a service that does not sign messages for the message queue will not be supported.
+{% endhint %}
 
 4\. Now, we have two options to setup IPFS node : 1. Local node 2. IPFS Web3Storage node.
 

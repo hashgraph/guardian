@@ -39,16 +39,20 @@
 <div class="dialog-footer">
     <div class="action-buttons">
         <div class="cancel-button">
-            <button (click)="onClose()" class="button secondary"
-                    label="Cancel"
-                    pButton
+            <button 
+                (click)="onClose()" 
+                class="button secondary"
+                label="Cancel"
+                pButton
             ></button>
         </div>
         <div>
-            <button (click)="onCreate()" [disabled]="!(valid && started)"
-                    class="button"
-                    label="Save"
-                    pButton
+            <button 
+                (click)="onCreate()" 
+                [disabled]="!(valid && started)"
+                class="button"
+                label="Save"
+                pButton
             >
             </button>
         </div>

@@ -43,4 +43,7 @@ export class TaskEntity extends BaseEntity implements ITask{
 
     @Property({nullable: true})
     attempt: number;
+
+    @Property({nullable: true})
+    interception: string | null;
 }
