@@ -74,7 +74,12 @@ jobs:
           yarn run build
           popd
           pushd api-gateway
-          yarn run build
+          npm start &
+          sleep 30
+          popd
+          pushd frontend
+          ./node_modules/.bin/ng  serve --proxy-config ./proxy.conf.json &
+          sleep 120
           popd
       - name: Start NatsMQ
         uses: step-security/nats-action@0306fc1c4e4f49dbe4db5865a3135ab1516a5aee # v0.1.0
