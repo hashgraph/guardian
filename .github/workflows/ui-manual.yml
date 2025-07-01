@@ -74,8 +74,7 @@ jobs:
           yarn run build
           popd
           pushd api-gateway
-          npm start &
-          sleep 30
+          npm run build
           popd
           pushd frontend
           ./node_modules/.bin/ng  serve --proxy-config ./proxy.conf.json &
@@ -131,9 +130,12 @@ jobs:
           popd
           pushd api-gateway
           npm start &
-          sleep 20
+          sleep 30
           popd
-          sleep 60
+          pushd frontend
+          ./node_modules/.bin/ng  serve --proxy-config ./proxy.conf.json &
+          sleep 120
+          popd
         env:
           CI: true
           OPERATOR_ID: ${{ secrets.CI_HEDERA_ACCOUNT }}
