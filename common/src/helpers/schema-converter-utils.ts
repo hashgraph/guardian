@@ -124,7 +124,7 @@ export class SchemaConverterUtils {
         };
 
         if (Array.isArray(document.required) && !document.required.includes('guardianVersion')) {
-            document.required.push('guardianVersion');
+            // document.required.push('guardianVersion');
         }
 
         return document;

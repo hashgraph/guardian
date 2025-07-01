@@ -147,7 +147,7 @@ export class SchemaConfigurationComponent implements OnInit {
             name: 'guardianVersion',
             title: 'Guardian Version',
             description: 'Guardian Version',
-            required: true,
+            required: false,
             isArray: false,
             isRef: false,
             type: 'string',
