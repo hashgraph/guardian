@@ -74,11 +74,7 @@ jobs:
           yarn run build
           popd
           pushd api-gateway
-          npm run build
-          popd
-          pushd frontend
-          ./node_modules/.bin/ng  serve --proxy-config ./proxy.conf.json &
-          sleep 120
+          yarn run build
           popd
       - name: Start NatsMQ
         uses: step-security/nats-action@0306fc1c4e4f49dbe4db5865a3135ab1516a5aee # v0.1.0
@@ -152,6 +148,7 @@ jobs:
           ACCESS_TOKEN_UPDATE_INTERVAL: 600000
           MIN_PASSWORD_LENGTH: 4
           PASSWORD_COMPLEXITY: easy
+          NODE_OPTIONS: '--openssl-legacy-provider'
 
       - name: Build Cypress Docker image
         run: docker build -t cypress-runner ./e2e-tests

@@ -130,11 +130,6 @@ jobs:
           npm start &
           sleep 20
           popd
-          pushd frontend
-          npm install
-          ./node_modules/.bin/ng  serve --proxy-config ./proxy.conf.json &
-          sleep 120
-          popd
           sleep 60
         env:
           CI: true
@@ -166,7 +161,7 @@ jobs:
             -e CYPRESS_grepTags="preparing ${{ inputs.tags }}" \
             -e CYPRESS_grepFilterSpecs=true \
             cypress-runner \
-            --spec "cypress/e2e/api-tests/**/*.cy.js" \
+            --spec "cypress/e2e/**/**/*.cy.js" \
             --browser chrome
 
       - name: Copy test results from Docker container
