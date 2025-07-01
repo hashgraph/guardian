@@ -197,7 +197,7 @@ export class SchemaDialog {
         try {
             document = this.jsonToSchema(this.document, this.subSchemas);
         } catch (error) {
-            this.error = error?.toString();
+            this.error = (error as any)?.message?.toString() || error?.toString();
             return false;
         }
         this.loading(true);
@@ -247,7 +247,7 @@ export class SchemaDialog {
                     return null;
                 }
             } catch (error) {
-                this.error = error?.toString();
+                this.error = (error as any)?.message?.toString() || error?.toString();
                 return null;
             }
         } else {

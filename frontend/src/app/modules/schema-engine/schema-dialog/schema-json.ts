@@ -1,21 +1,21 @@
 import { SchemaField, UnitSystem, FieldTypesDictionary, SchemaCondition, Schema, SchemaEntity } from '@guardian/interfaces';
 
 export enum JsonError {
-    INVALID_FORMAT = '1',
-    NOT_AVAILABLE = '2',
-    THEN_ELSE = '3'
+    INVALID_FORMAT = 'Invalid format for variable "${prop}" in ${entity}. ${message}',
+    NOT_AVAILABLE = 'Using property "${prop}" in ${entity} is not available in this field type.',
+    THEN_ELSE = 'Empty "then" or "else" branches, at least one value must be specified.'
 }
 
 export enum JsonErrorMessage {
-    STRING = '1',
-    BOOLEAN = '2',
-    TYPE = '3',
-    SIZE = '4',
-    COLOR = '5',
-    REQUIRED_ENUM = '6',
-    ENUM = '7',
-    ARRAY = '8',
-    REF = '9',
+    STRING = 'Value of type string is required.',
+    BOOLEAN = 'Value of type boolean is required.',
+    TYPE = 'Value of a primitive type or a sub-schema reference is required.',
+    SIZE = 'Positive numeric value between 0 and 70 is required.',
+    COLOR = 'Rgb color definition in format #xxxxxx is required.',
+    REQUIRED_ENUM = 'Value must be one of [None, Required, Hidden, Auto Calculate]',
+    ENUM = 'Value of type enum or a reference to enum is required.',
+    ARRAY = 'Value of type array is required.',
+    REF = 'Value must be a reference to an existing field.',
 }
 
 export interface IFieldJson {
