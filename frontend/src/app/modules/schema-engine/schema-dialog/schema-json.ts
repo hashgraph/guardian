@@ -1,5 +1,23 @@
 import { SchemaField, UnitSystem, FieldTypesDictionary, SchemaCondition, Schema, SchemaEntity } from '@guardian/interfaces';
 
+export enum JsonError {
+    INVALID_FORMAT = '1',
+    NOT_AVAILABLE = '2',
+    THEN_ELSE = '3'
+}
+
+export enum JsonErrorMessage {
+    STRING = '1',
+    BOOLEAN = '2',
+    TYPE = '3',
+    SIZE = '4',
+    COLOR = '5',
+    REQUIRED_ENUM = '6',
+    ENUM = '7',
+    ARRAY = '8',
+    REF = '9',
+}
+
 export interface IFieldJson {
     key: string;
     title: string;
@@ -13,7 +31,6 @@ export interface IFieldJson {
 
     enum?: string[] | string;
 
-    font?: any;
     textSize?: string;
     textColor?: string;
     textBold?: boolean;
@@ -46,7 +63,79 @@ export interface ISchemaJson {
     conditions: IConditionJson[];
 }
 
-export class SchemaJson {
+export interface IErrorContext {
+    entity?: string;
+    property?: string;
+    reason?: string;
+}
+
+export class ErrorContext implements IErrorContext {
+    public entity: string;
+    public property: string;
+    public error: string;
+    public message: string;
+
+    private path: string[];
+    private data: any;
+
+    constructor() {
+        this.entity = '';
+        this.property = '';
+        this.error = '';
+        this.message = '';
+    }
+
+    public setData(data: any) {
+        this.data = data;
+    }
+
+    public setPath(path: string[]): ErrorContext {
+        this.path = path;
+        this.entity = '';
+        this.property = '';
+        if (this.path) {
+            this.entity = this.entity + this.path[0];
+            for (let i = 1; i < this.path.length - 1; i++) {
+                const entity = this.path[i];
+                if (entity && entity.startsWith('[')) {
+                    this.entity = this.entity + entity;
+                } else {
+                    this.entity = this.entity + '.' + entity;
+                }
+            }
+            for (let i = this.path.length - 1; i < this.path.length; i++) {
+                const entity = this.path[i];
+                if (entity && entity.startsWith('[')) {
+                    this.property = this.path[i - 1] + entity;
+                } else {
+                    this.property = entity;
+                }
+            }
+        }
+        return this;
+    }
+
+    public add(field: string): ErrorContext {
+        const path = this.path ? this.path.slice() : [];
+        path.push(field);
+        return (
+            new ErrorContext()
+                .setPath(path)
+        )
+    }
+
+    public setMessage(
+        error: JsonError,
+        message?: JsonErrorMessage
+    ): ErrorContext {
+        this.error = error;
+        this.message = message || '';
+        return this;
+    }
+}
+
+
+export class SchemaToJson {
     private static getType(field: SchemaField): string {
         if (field.isRef) {
             return field.type;
@@ -142,8 +231,8 @@ export class SchemaJson {
     }
 
     private static getExamples(field: SchemaField): string[] | null {
-        if (field.examples) {
-            return field.examples;
+        if (field.examples && field.examples[0]) {
+            return field.examples[0];
         }
         return null;
     }
@@ -166,49 +255,49 @@ export class SchemaJson {
             key: field.name || '',
             title: field.title || '',
             description: field.description || '',
-            required: SchemaJson.getRequired(field),
-            type: SchemaJson.getType(field),
-            pattern: SchemaJson.getPattern(field),
+            required: SchemaToJson.getRequired(field),
+            type: SchemaToJson.getType(field),
+            pattern: SchemaToJson.getPattern(field),
             isArray: field.isArray,
             property: field.property || ''
         };
 
-        const privateValue = SchemaJson.getPrivate(field);
+        const privateValue = SchemaToJson.getPrivate(field);
         if (privateValue !== null) {
             fieldJson.private = privateValue;
         }
 
-        const enumValue = SchemaJson.getEnum(field);
+        const enumValue = SchemaToJson.getEnum(field);
         if (enumValue) {
             fieldJson.enum = enumValue;
         }
 
-        const font = SchemaJson.getFront(field);
+        const font = SchemaToJson.getFront(field);
         if (font) {
             fieldJson.textSize = font.size;
             fieldJson.textColor = font.color;
             fieldJson.textBold = font.bold;
         }
 
-        const expression = SchemaJson.getExpression(field);
+        const expression = SchemaToJson.getExpression(field);
         if (expression !== null) {
             fieldJson.expression = expression;
         }
 
-        const unit = SchemaJson.getUnit(field);
+        const unit = SchemaToJson.getUnit(field);
         if (unit) {
             fieldJson.unit = unit;
         }
 
-        const examples = SchemaJson.getExamples(field);
+        const examples = SchemaToJson.getExamples(field);
         if (examples) {
             fieldJson.examples = examples;
         }
-        const defaultValue = SchemaJson.getDefault(field);
+        const defaultValue = SchemaToJson.getDefault(field);
         if (defaultValue) {
             fieldJson.default = defaultValue;
         }
-        const suggest = SchemaJson.getSuggest(field);
+        const suggest = SchemaToJson.getSuggest(field);
         if (suggest) {
             fieldJson.suggest = suggest;
         }
@@ -227,12 +316,12 @@ export class SchemaJson {
         };
         if (condition.thenFields) {
             for (let index = 0; index < condition.thenFields.length; index++) {
-                json.then.push(SchemaJson.fieldToJson(condition.thenFields[index], index));
+                json.then.push(SchemaToJson.fieldToJson(condition.thenFields[index], index));
             }
         }
         if (condition.elseFields) {
             for (let index = 0; index < condition.elseFields.length; index++) {
-                json.else.push(SchemaJson.fieldToJson(condition.elseFields[index], index));
+                json.else.push(SchemaToJson.fieldToJson(condition.elseFields[index], index));
             }
         }
         return json;
@@ -252,16 +341,20 @@ export class SchemaJson {
         const conditions = schema.conditions || [];
 
         for (let index = 0; index < fields.length; index++) {
-            json.fields.push(SchemaJson.fieldToJson(fields[index], index));
+            json.fields.push(SchemaToJson.fieldToJson(fields[index], index));
         }
 
         for (const condition of conditions) {
-            json.conditions.push(SchemaJson.conditionToJson(condition));
+            json.conditions.push(SchemaToJson.conditionToJson(condition));
         }
 
         return json;
     }
+}
 
+
+
+export class JsonToSchema {
     private static equalString(a: string, b: string): boolean {
         if (a === b) {
             return true;
@@ -277,24 +370,37 @@ export class SchemaJson {
         }
     }
 
-    private static fromString(value: any, propName: string, position: string): string | undefined {
+    private static fromString(
+        value: any,
+        context: ErrorContext
+    ): string | undefined {
         if (typeof value === 'string') {
             return value;
         }
         if (typeof value === 'undefined') {
             return undefined;
         }
-        throw new Error(`Prop: ${propName}, Pos: ${position}`);
+        throw JsonToSchema.createError(
+            context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.STRING)
+        );
     }
 
-    private static fromRequiredString(value: any, propName: string, position: string): string {
+    private static fromRequiredString(
+        value: any,
+        context: ErrorContext
+    ): string {
         if (typeof value === 'string' && value) {
             return value;
         }
-        throw new Error(`Prop: ${propName}, Pos: ${position}`);
+        throw JsonToSchema.createError(
+            context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.STRING)
+        );
     }
 
-    private static fromBoolean(value: any, propName: string, position: string): boolean | undefined {
+    private static fromBoolean(
+        value: any,
+        context: ErrorContext
+    ): boolean | undefined {
         if (value === true || value === 'true') {
             return true;
         }
@@ -302,12 +408,17 @@ export class SchemaJson {
             return false;
         }
         if (value !== undefined) {
-            throw new Error(`Prop: ${propName}, Pos: ${position}`);
+            throw JsonToSchema.createError(
+                context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.BOOLEAN)
+            );
         }
         return undefined;
     }
 
-    private static fromEntity(value: any): SchemaEntity {
+    private static fromEntity(
+        value: any,
+        context: ErrorContext
+    ): SchemaEntity {
         if (value === SchemaEntity.NONE) {
             return SchemaEntity.NONE;
         }
@@ -324,14 +435,18 @@ export class SchemaJson {
 
     // }
 
-    private static fromType(value: IFieldJson, all: Schema[], position: string): string {
+    private static fromType(
+        value: IFieldJson,
+        all: Schema[],
+        context: ErrorContext
+    ): string {
         for (const type of FieldTypesDictionary.FieldTypes) {
-            if (SchemaJson.equalString(value.type, type.name)) {
+            if (JsonToSchema.equalString(value.type, type.name)) {
                 return type.type;
             }
         }
         for (const type of FieldTypesDictionary.CustomFieldTypes) {
-            if (SchemaJson.equalString(value.type, type.name)) {
+            if (JsonToSchema.equalString(value.type, type.name)) {
                 return type.type;
             }
         }
@@ -340,51 +455,65 @@ export class SchemaJson {
                 return subSchema.iri;
             }
         }
-        throw new Error(`Prop: ${'type'}, Pos: ${position}`);
+        throw JsonToSchema.createError(
+            context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.TYPE)
+        );
     }
 
-    private static fromFormat(value: IFieldJson): string | undefined {
+    private static fromFormat(
+        value: IFieldJson,
+        context: ErrorContext
+    ): string | undefined {
         for (const type of FieldTypesDictionary.FieldTypes) {
-            if (SchemaJson.equalString(value.type, type.name)) {
+            if (JsonToSchema.equalString(value.type, type.name)) {
                 return type.format;
             }
         }
         for (const type of FieldTypesDictionary.CustomFieldTypes) {
-            if (SchemaJson.equalString(value.type, type.name)) {
+            if (JsonToSchema.equalString(value.type, type.name)) {
                 return type.format;
             }
         }
         return undefined;
     }
 
-    private static fromPattern(value: IFieldJson, position: string): string | undefined {
-        if (SchemaJson.equalString(value.type, 'String')) {
-            return SchemaJson.fromString(value.pattern, 'pattern', position);
+    private static fromPattern(
+        value: IFieldJson,
+        context: ErrorContext
+    ): string | undefined {
+        if (JsonToSchema.equalString(value.type, 'String')) {
+            return JsonToSchema.fromString(value.pattern, context);
         }
         for (const type of FieldTypesDictionary.FieldTypes) {
-            if (SchemaJson.equalString(value.type, type.name)) {
+            if (JsonToSchema.equalString(value.type, type.name)) {
                 return type.pattern;
             }
         }
         for (const type of FieldTypesDictionary.CustomFieldTypes) {
-            if (SchemaJson.equalString(value.type, type.name)) {
+            if (JsonToSchema.equalString(value.type, type.name)) {
                 return type.pattern;
             }
         }
         if (value.pattern) {
-            throw new Error(`Prop: ${'pattern'}, Pos: ${position}`);
+            throw JsonToSchema.createError(
+                context.setMessage(JsonError.NOT_AVAILABLE)
+            );
         }
         return undefined;
     }
 
-    private static fromIsRef(value: IFieldJson, all: Schema[]): boolean {
+    private static fromIsRef(
+        value: IFieldJson,
+        all: Schema[],
+        context: ErrorContext
+    ): boolean {
         for (const type of FieldTypesDictionary.FieldTypes) {
-            if (SchemaJson.equalString(value.type, type.name)) {
+            if (JsonToSchema.equalString(value.type, type.name)) {
                 return false;
             }
         }
         for (const type of FieldTypesDictionary.CustomFieldTypes) {
-            if (SchemaJson.equalString(value.type, type.name)) {
+            if (JsonToSchema.equalString(value.type, type.name)) {
                 return false;
             }
         }
@@ -396,61 +525,84 @@ export class SchemaJson {
         return false;
     }
 
-
-    private static fromUnit(value: IFieldJson, position: string): string | undefined {
-        if (SchemaJson.equalString(value.type, 'Prefix')) {
-            return SchemaJson.fromString(value.unit, 'unit', position);
+    private static fromUnit(
+        value: IFieldJson,
+        context: ErrorContext
+    ): string | undefined {
+        if (JsonToSchema.equalString(value.type, 'Prefix')) {
+            return JsonToSchema.fromString(value.unit, context);
         }
-        if (SchemaJson.equalString(value.type, 'Postfix')) {
-            return SchemaJson.fromString(value.unit, 'unit', position);
+        if (JsonToSchema.equalString(value.type, 'Postfix')) {
+            return JsonToSchema.fromString(value.unit, context);
         }
         return undefined;
     }
 
-    private static fromUnitType(value: IFieldJson): UnitSystem | undefined {
-        if (SchemaJson.equalString(value.type, 'Prefix')) {
+    private static fromUnitType(
+        value: IFieldJson,
+        context: ErrorContext
+    ): UnitSystem | undefined {
+        if (JsonToSchema.equalString(value.type, 'Prefix')) {
             return UnitSystem.Prefix;
         }
-        if (SchemaJson.equalString(value.type, 'Postfix')) {
+        if (JsonToSchema.equalString(value.type, 'Postfix')) {
             return UnitSystem.Postfix;
         }
         return undefined;
     }
 
-    private static fromCustomType(value: IFieldJson): string | undefined {
+    private static fromCustomType(
+        value: IFieldJson,
+        context: ErrorContext
+    ): string | undefined {
         for (const type of FieldTypesDictionary.FieldTypes) {
-            if (SchemaJson.equalString(value.type, type.name)) {
+            if (JsonToSchema.equalString(value.type, type.name)) {
                 return type.customType;
             }
         }
         for (const type of FieldTypesDictionary.CustomFieldTypes) {
-            if (SchemaJson.equalString(value.type, type.name)) {
+            if (JsonToSchema.equalString(value.type, type.name)) {
                 return type.customType;
             }
         }
         return undefined;
     }
 
-    private static fromFont(value: IFieldJson, position: string): {
+    private static fromFont(
+        value: IFieldJson,
+        context: ErrorContext
+    ): {
         size: string | undefined;
         color: string | undefined;
         bold: boolean | undefined;
     } {
-        if (SchemaJson.equalString(value.type, 'Help Text')) {
+        if (JsonToSchema.equalString(value.type, 'Help Text')) {
             return {
-                size: SchemaJson.fromTextSize(value.textSize, position) || '18',
-                color: SchemaJson.fromTextColor(value.textColor, position) || '#000000',
-                bold: SchemaJson.fromBoolean(value.textBold, 'textBold', position) || false,
+                size: JsonToSchema.fromTextSize(value.textSize, context.add('textSize')) || '18',
+                color: JsonToSchema.fromTextColor(value.textColor, context.add('textColor')) || '#000000',
+                bold: JsonToSchema.fromBoolean(value.textBold, context.add('textBold')) || false,
             }
         }
         if (value.textSize) {
-            throw new Error(`Prop: ${'textSize'}, Pos: ${position}`);
+            throw JsonToSchema.createError(
+                context
+                    .add('textSize')
+                    .setMessage(JsonError.NOT_AVAILABLE)
+            );
         }
         if (value.textColor) {
-            throw new Error(`Prop: ${'textColor'}, Pos: ${position}`);
+            throw JsonToSchema.createError(
+                context
+                    .add('textColor')
+                    .setMessage(JsonError.NOT_AVAILABLE)
+            );
         }
         if (value.textBold) {
-            throw new Error(`Prop: ${'textBold'}, Pos: ${position}`);
+            throw JsonToSchema.createError(
+                context
+                    .add('textBold')
+                    .setMessage(JsonError.NOT_AVAILABLE)
+            );
         }
         return {
             size: undefined,
@@ -459,7 +611,10 @@ export class SchemaJson {
         }
     }
 
-    private static fromTextSize(value: any, position: string): string | undefined {
+    private static fromTextSize(
+        value: any,
+        context: ErrorContext
+    ): string | undefined {
         if (typeof value === 'number') {
             if (value && value > 0 && value < 70) {
                 return String(value);
@@ -472,28 +627,39 @@ export class SchemaJson {
             }
         }
         if (value) {
-            throw new Error(`Prop: ${'textSize'}, Pos: ${position}`);
+            throw JsonToSchema.createError(
+                context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.SIZE)
+            );
         }
         return undefined;
     }
 
-    private static fromTextColor(value: any, position: string): string | undefined {
+    private static fromTextColor(
+        value: any,
+        context: ErrorContext
+    ): string | undefined {
         if (typeof value === 'string') {
             if ((new RegExp('^\#([a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]){1,2}$')).test(value)) {
                 return value;
             }
         }
         if (value) {
-            throw new Error(`Prop: ${'textColor'}, Pos: ${position}`);
+            throw JsonToSchema.createError(
+                context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.COLOR)
+            );
         }
         return undefined;
     }
 
-    private static fromRequired(value: IFieldJson, position: string): {
+    private static fromRequired(
+        value: IFieldJson,
+        context: ErrorContext
+    ): {
         required: boolean,
         hidden: boolean,
         autocalculate: boolean,
     } {
+        context = context.add('required');
         const required: any = value.required;
         if (required === true || required === 'true') {
             return {
@@ -509,28 +675,28 @@ export class SchemaJson {
                 autocalculate: false
             };
         }
-        if (SchemaJson.equalString(required, 'None')) {
+        if (JsonToSchema.equalString(required, 'None')) {
             return {
                 required: false,
                 hidden: false,
                 autocalculate: false
             };
         }
-        if (SchemaJson.equalString(required, 'Required')) {
+        if (JsonToSchema.equalString(required, 'Required')) {
             return {
                 required: true,
                 hidden: false,
                 autocalculate: false
             };
         }
-        if (SchemaJson.equalString(required, 'Hidden')) {
+        if (JsonToSchema.equalString(required, 'Hidden')) {
             return {
                 required: false,
                 hidden: true,
                 autocalculate: false
             };
         }
-        if (SchemaJson.equalString(required, 'Auto Calculate')) {
+        if (JsonToSchema.equalString(required, 'Auto Calculate')) {
             return {
                 required: false,
                 hidden: false,
@@ -538,7 +704,9 @@ export class SchemaJson {
             };
         }
         if (required) {
-            throw new Error(`Prop: ${'required'}, Pos: ${position}`);
+            throw JsonToSchema.createError(
+                context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.REQUIRED_ENUM)
+            );
         }
         return {
             required: false,
@@ -550,26 +718,35 @@ export class SchemaJson {
     private static fromIsPrivate(
         value: IFieldJson,
         entity: SchemaEntity,
-        position: string
+        context: ErrorContext
     ): boolean | undefined {
+        context = context.add('private');
         if (entity === SchemaEntity.EVC) {
-            return SchemaJson.fromBoolean(value.private, 'private', position);
+            return JsonToSchema.fromBoolean(value.private, context);
         }
         if (value.private !== undefined) {
-            throw new Error(`Prop: ${'private'}, Pos: ${position}`);
+            throw JsonToSchema.createError(
+                context.setMessage(JsonError.NOT_AVAILABLE)
+            );
         }
         return undefined;
     }
 
-    private static fromEnum(value: IFieldJson, position: string): {
+    private static fromEnum(
+        value: IFieldJson,
+        context: ErrorContext
+    ): {
         enum: string[] | undefined,
         link: string | undefined,
     } {
-        if (SchemaJson.equalString(value.type, 'Enum')) {
+        context = context.add('enum');
+        if (JsonToSchema.equalString(value.type, 'Enum')) {
             if (Array.isArray(value.enum)) {
                 const enumValue: string[] = [];
                 for (let i = 0; i < value.enum.length; i++) {
-                    enumValue.push(SchemaJson.fromRequiredString(value.enum[i], 'key', position))
+                    enumValue.push(
+                        JsonToSchema.fromRequiredString(value.enum[i], context.add(`[${i}]`))
+                    )
                 }
                 return {
                     enum: enumValue,
@@ -581,11 +758,15 @@ export class SchemaJson {
                     link: value.enum
                 }
             } else {
-                throw new Error(`Prop: ${'enum'}, Pos: ${position}`);
+                throw JsonToSchema.createError(
+                    context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ENUM)
+                );
             }
         }
         if (value.enum) {
-            throw new Error(`Prop: ${'enum'}, Pos: ${position}`);
+            throw JsonToSchema.createError(
+                context.setMessage(JsonError.NOT_AVAILABLE)
+            );
         }
         return {
             enum: undefined,
@@ -593,17 +774,26 @@ export class SchemaJson {
         }
     }
 
-    private static fromExpression(value: IFieldJson, position: string): string | undefined {
-        if (SchemaJson.equalString(value.type, 'Auto Calculate')) {
-            return SchemaJson.fromString(value.expression, 'pattern', position);
+    private static fromExpression(
+        value: IFieldJson,
+        context: ErrorContext
+    ): string | undefined {
+        context = context.add('expression');
+        if (JsonToSchema.equalString(value.type, 'Auto Calculate')) {
+            return JsonToSchema.fromString(value.expression, context);
         }
         if (value.expression) {
-            throw new Error(`Prop: ${'expression'}, Pos: ${position}`);
+            throw JsonToSchema.createError(
+                context.setMessage(JsonError.NOT_AVAILABLE)
+            );
         }
         return undefined;
     }
 
-    private static fromExamples(value: IFieldJson, position: string): {
+    private static fromExamples(
+        value: IFieldJson,
+        context: ErrorContext
+    ): {
         examples: any[] | undefined,
         suggest: any[] | undefined,
         default: any[] | undefined,
@@ -614,23 +804,35 @@ export class SchemaJson {
 
         if (value.examples) {
             if (Array.isArray(value.examples)) {
-                examplesValue = value.examples;
+                examplesValue = [value.examples];
             } else {
-                throw new Error(`Prop: ${'examples'}, Pos: ${position}`);
+                throw JsonToSchema.createError(
+                    context
+                        .add('examples')
+                        .setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY)
+                );
             }
         }
         if (value.suggest) {
             if (Array.isArray(value.suggest)) {
                 suggestValue = value.suggest;
             } else {
-                throw new Error(`Prop: ${'suggest'}, Pos: ${position}`);
+                throw JsonToSchema.createError(
+                    context
+                        .add('suggest')
+                        .setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY)
+                );
             }
         }
         if (value.default) {
             if (Array.isArray(value.default)) {
                 defaultValue = value.default;
             } else {
-                throw new Error(`Prop: ${'default'}, Pos: ${position}`);
+                throw JsonToSchema.createError(
+                    context
+                        .add('default')
+                        .setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY)
+                );
             }
         }
 
@@ -641,14 +843,18 @@ export class SchemaJson {
         }
     }
 
-    private static fromSubFields(value: IFieldJson, all: Schema[]): SchemaField[] {
+    private static fromSubFields(
+        value: IFieldJson,
+        all: Schema[],
+        context: ErrorContext
+    ): SchemaField[] {
         for (const type of FieldTypesDictionary.FieldTypes) {
-            if (SchemaJson.equalString(value.type, type.name)) {
+            if (JsonToSchema.equalString(value.type, type.name)) {
                 return [];
             }
         }
         for (const type of FieldTypesDictionary.CustomFieldTypes) {
-            if (SchemaJson.equalString(value.type, type.name)) {
+            if (JsonToSchema.equalString(value.type, type.name)) {
                 return [];
             }
         }
@@ -660,39 +866,47 @@ export class SchemaJson {
         return [];
     }
 
-    private static fromField(value: IFieldJson, index: number, all: Schema[], entity: SchemaEntity): SchemaField {
+    private static fromField(
+        value: IFieldJson,
+        index: number,
+        all: Schema[],
+        entity: SchemaEntity,
+        context: ErrorContext
+    ): SchemaField {
+        context = context.add(`[${index}]`);
         const field: SchemaField = {
-            name: SchemaJson.fromRequiredString(value.key, 'key', `field #${index}`),
-            title: SchemaJson.fromString(value.title, 'title', `field #${index}`),
-            description: SchemaJson.fromRequiredString(value.description, 'description', `field #${index}`),
-            property: SchemaJson.fromString(value.property, 'property', `field #${index}`) as '',
-            type: SchemaJson.fromType(value, all, `field #${index}`),
-            format: SchemaJson.fromFormat(value) as any,
-            pattern: SchemaJson.fromPattern(value, `field #${index}`) as any,
-            unit: SchemaJson.fromUnit(value, `field #${index}`) as any,
-            unitSystem: SchemaJson.fromUnitType(value) as any,
-            customType: SchemaJson.fromCustomType(value) as any,
-            textColor: SchemaJson.fromFont(value, `field #${index}`).color,
-            textSize: SchemaJson.fromFont(value, `field #${index}`).size,
-            textBold: SchemaJson.fromFont(value, `field #${index}`).bold,
+            name: JsonToSchema.fromRequiredString(value.key, context.add('key')),
+            title: JsonToSchema.fromString(value.title, context.add('title')),
+            description: JsonToSchema.fromRequiredString(value.description, context.add('description')),
+            property: JsonToSchema.fromString(value.property, context.add('property')) as '',
+            type: JsonToSchema.fromType(value, all, context.add('type')),
+            format: JsonToSchema.fromFormat(value, context.add('format')) as any,
+            pattern: JsonToSchema.fromPattern(value, context.add('pattern')) as any,
+            unit: JsonToSchema.fromUnit(value, context.add('unit')) as any,
+            unitSystem: JsonToSchema.fromUnitType(value, context.add('unitSystem')) as any,
+            customType: JsonToSchema.fromCustomType(value, context.add('customType')) as any,
+            isArray: JsonToSchema.fromBoolean(value.isArray, context.add('isArray')) || false,
+            isRef: JsonToSchema.fromIsRef(value, all, context),
+            isPrivate: JsonToSchema.fromIsPrivate(value, entity, context),
 
-            required: SchemaJson.fromRequired(value, `field #${index}`).required,
-            hidden: SchemaJson.fromRequired(value, `field #${index}`).hidden,
-            autocalculate: SchemaJson.fromRequired(value, `field #${index}`).autocalculate,
-            isArray: SchemaJson.fromBoolean(value.isArray, 'isArray', `field #${index}`) || false,
-            isRef: SchemaJson.fromIsRef(value, all),
-            isPrivate: SchemaJson.fromIsPrivate(value, entity, `field #${index}`),
+            required: JsonToSchema.fromRequired(value, context).required,
+            hidden: JsonToSchema.fromRequired(value, context).hidden,
+            autocalculate: JsonToSchema.fromRequired(value, context).autocalculate,
 
-            enum: SchemaJson.fromEnum(value, `field #${index}`).enum,
-            remoteLink: SchemaJson.fromEnum(value, `field #${index}`).link,
+            textColor: JsonToSchema.fromFont(value, context).color,
+            textSize: JsonToSchema.fromFont(value, context).size,
+            textBold: JsonToSchema.fromFont(value, context).bold,
 
-            expression: SchemaJson.fromExpression(value, `field #${index}`),
+            enum: JsonToSchema.fromEnum(value, context).enum,
+            remoteLink: JsonToSchema.fromEnum(value, context).link,
 
-            examples: SchemaJson.fromExamples(value, `field #${index}`).examples,
-            suggest: SchemaJson.fromExamples(value, `field #${index}`).suggest,
-            default: SchemaJson.fromExamples(value, `field #${index}`).default,
+            expression: JsonToSchema.fromExpression(value, context),
 
-            fields: SchemaJson.fromSubFields(value, all),
+            examples: JsonToSchema.fromExamples(value, context).examples,
+            suggest: JsonToSchema.fromExamples(value, context).suggest,
+            default: JsonToSchema.fromExamples(value, context).default,
+
+            fields: JsonToSchema.fromSubFields(value, all, context),
 
             order: index,
 
@@ -701,17 +915,25 @@ export class SchemaJson {
         return field;
     }
 
-
-
-    private static fromCondTarget(value: IConditionJson, fields: SchemaField[], position: string): SchemaField {
+    private static fromCondTarget(
+        value: IConditionJson,
+        fields: SchemaField[],
+        context: ErrorContext
+    ): SchemaField {
+        context = context.add('if').add('field');
         const target = fields.find((f) => f.name === value.if?.field);
         if (!target) {
-            throw new Error(`Prop: ${'field'}, Pos: ${position}`);
+            throw JsonToSchema.createError(
+                context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.REF)
+            );
         }
         return target;
     }
 
-    private static fromCondValue(value: IConditionJson, position: string): any {
+    private static fromCondValue(
+        value: IConditionJson,
+        context: ErrorContext
+    ): any {
         return value?.if?.value;
     }
 
@@ -719,7 +941,7 @@ export class SchemaJson {
         value: IConditionJson,
         all: Schema[],
         entity: SchemaEntity,
-        position: string
+        context: ErrorContext
     ): {
         then: SchemaField[];
         else: SchemaField[];
@@ -728,24 +950,34 @@ export class SchemaJson {
         let elseFields: SchemaField[];
         if (value.then) {
             if (Array.isArray(value.then)) {
-                thenFields = SchemaJson.fromFields(value.then, all, entity);
+                thenFields = JsonToSchema.fromFields(value.then, all, entity, context.add(`then`));
             } else {
-                throw new Error(`Prop: ${'then'}, Pos: ${position}`);
+                throw JsonToSchema.createError(
+                    context
+                        .add('then')
+                        .setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY)
+                );
             }
         } else {
             thenFields = [];
         }
         if (value.else) {
             if (Array.isArray(value.else)) {
-                elseFields = SchemaJson.fromFields(value.else, all, entity);
+                elseFields = JsonToSchema.fromFields(value.else, all, entity, context.add(`else`));
             } else {
-                throw new Error(`Prop: ${'else'}, Pos: ${position}`);
+                throw JsonToSchema.createError(
+                    context
+                        .add('else')
+                        .setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY)
+                );
             }
         } else {
             elseFields = [];
         }
         if (thenFields.length === 0 && elseFields.length === 0) {
-            throw new Error(`Prop: ${'then or else'}, Pos: ${position}`);
+            throw JsonToSchema.createError(
+                context.setMessage(JsonError.THEN_ELSE)
+            );
         }
         return {
             then: thenFields,
@@ -758,15 +990,17 @@ export class SchemaJson {
         index: number,
         fields: SchemaField[],
         all: Schema[],
-        entity: SchemaEntity
+        entity: SchemaEntity,
+        context: ErrorContext
     ): SchemaCondition {
+        context = context.add(`[${index}]`);
         const condition: SchemaCondition = {
             ifCondition: {
-                field: SchemaJson.fromCondTarget(value, fields, `condition #${index}`),
-                fieldValue: SchemaJson.fromCondValue(value, `condition #${index}`),
+                field: JsonToSchema.fromCondTarget(value, fields, context),
+                fieldValue: JsonToSchema.fromCondValue(value, context),
             },
-            thenFields: SchemaJson.fromCondFields(value, all, entity, `condition #${index}`).then,
-            elseFields: SchemaJson.fromCondFields(value, all, entity, `condition #${index}`).else,
+            thenFields: JsonToSchema.fromCondFields(value, all, entity, context).then,
+            elseFields: JsonToSchema.fromCondFields(value, all, entity, context).else,
         }
         return condition;
     }
@@ -774,16 +1008,18 @@ export class SchemaJson {
     private static fromFields(
         value: IFieldJson[],
         all: Schema[],
-        entity: SchemaEntity
+        entity: SchemaEntity,
+        context: ErrorContext
     ): SchemaField[] {
         const fields: SchemaField[] = [];
-
         if (!Array.isArray(value)) {
-            throw new Error(`fields`);
+            throw JsonToSchema.createError(
+                context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY)
+            );
         }
 
         for (let index = 0; index < value.length; index++) {
-            const field = SchemaJson.fromField(value[index], index, all, entity);
+            const field = JsonToSchema.fromField(value[index], index, all, entity, context);
             fields.push(field);
         }
 
@@ -794,15 +1030,19 @@ export class SchemaJson {
         value: IConditionJson[],
         fields: SchemaField[],
         all: Schema[],
-        entity: SchemaEntity): SchemaCondition[] {
+        entity: SchemaEntity,
+        context: ErrorContext
+    ): SchemaCondition[] {
         const conditions: SchemaCondition[] = [];
         if (value) {
             if (!Array.isArray(value)) {
-                throw new Error(`conditions`);
+                throw JsonToSchema.createError(
+                    context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY)
+                );
             }
 
             for (let index = 0; index < value.length; index++) {
-                const condition = SchemaJson.fromCondition(value[index], index, fields, all, entity);
+                const condition = JsonToSchema.fromCondition(value[index], index, fields, all, entity, context);
                 conditions.push(condition);
             }
         }
@@ -810,11 +1050,14 @@ export class SchemaJson {
     }
 
     public static fromJson(json: ISchemaJson, all: Schema[]) {
-        const name = SchemaJson.fromRequiredString(json.name, 'name', 'schema');
-        const description = SchemaJson.fromString(json.description, 'description', 'schema');
-        const entity = SchemaJson.fromEntity(json.entity);
-        const fields = SchemaJson.fromFields(json.fields, all, entity);
-        const conditions = SchemaJson.fromConditions(json.conditions, fields, all, entity);
+        const context: ErrorContext = new ErrorContext();
+        context.setPath(['schema']);
+        context.setData(json);
+        const name = JsonToSchema.fromRequiredString(json.name, context.add('name'));
+        const description = JsonToSchema.fromString(json.description, context.add('description'));
+        const entity = JsonToSchema.fromEntity(json.entity, context.add('entity'));
+        const fields = JsonToSchema.fromFields(json.fields, all, entity, context.add('fields'));
+        const conditions = JsonToSchema.fromConditions(json.conditions, fields, all, entity, context.add('conditions'));
         return {
             name,
             description,
@@ -822,5 +1065,13 @@ export class SchemaJson {
             fields,
             conditions
         }
+    }
+
+    private static createError(context: ErrorContext) {
+        let massage = context.error;
+        massage = massage.replace('${prop}', context.property);
+        massage = massage.replace('${entity}', context.entity);
+        massage = massage.replace('${message}', context.message);
+        throw new Error(massage);
     }
 }

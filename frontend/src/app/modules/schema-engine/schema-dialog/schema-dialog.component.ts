@@ -4,7 +4,7 @@ import { ISchema, Schema, SchemaEntity, SchemaHelper } from '@guardian/interface
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { MenuItem } from 'primeng/api';
 import { SchemaService } from '../../../services/schema.service';
-import { SchemaJson } from './schema-json';
+import { JsonToSchema, SchemaToJson } from './schema-json';
 
 /**
  * Dialog for creating and editing schemas.
@@ -268,7 +268,7 @@ export class SchemaDialog {
         try {
             const schema = this.schemaControl.getSchema();
             if (schema) {
-                const json = SchemaJson.schemaToJson(schema);
+                const json = SchemaToJson.schemaToJson(schema);
                 return JSON.stringify(json, null, 4);
             } else {
                 return '';
@@ -282,7 +282,7 @@ export class SchemaDialog {
 
     private jsonToSchema(json: string, all: Schema[]): any {
         const document = JSON.parse(json);
-        const schema = SchemaJson.fromJson(document, all);
+        const schema = JsonToSchema.fromJson(document, all);
         return schema;
     }
 }
