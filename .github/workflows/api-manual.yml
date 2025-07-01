@@ -161,7 +161,7 @@ jobs:
             -e CYPRESS_grepTags="preparing ${{ inputs.tags }}" \
             -e CYPRESS_grepFilterSpecs=true \
             cypress-runner \
-            --spec "cypress/e2e/**/**/*.cy.js" \
+            --spec "cypress/e2e/api-tests/**/*.cy.js" \
             --browser chrome
 
       - name: Copy test results from Docker container
