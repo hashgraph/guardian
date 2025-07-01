@@ -43,7 +43,9 @@ For a single test, use:
 ### Run By Tag
 To run only the specs that have any tests tagged "tag":
 
-`npx cypress run --env "grepTags=tag,grepFilterSpecs=true"`
+`npx cypress run --env "grepTags=tag,grepFilterSpecs=true"` for one tag,
+`npx cypress run --env "grepTags=tag1 tag2,grepFilterSpecs=true"` for two and more tags
+
 
 where `tag` can be:
 - accounts - all tests for accounts operations
@@ -73,6 +75,7 @@ where `tag` can be:
 
 There's few tags for general tests runs:
 - all - all tests for Guardian platform
+- preparing - all service test used for generated accounts for tests
 - smoke - all tests for the most important and frequently used functionality
 
 Note: E2E tests for the Guardian platform are interdependent, so when running tests using certain tags, additional tests may be executed to ensure a successful test run.
