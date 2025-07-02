@@ -9,6 +9,7 @@ import {
     Validators,
 } from '@angular/forms';
 import {
+    DefaultFieldDictionary,
     FieldTypesDictionary,
     Schema,
     SchemaCategory,
@@ -121,32 +122,9 @@ export class SchemaConfigurationComponent implements OnInit {
         private schemaService: SchemaService,
         private fb: UntypedFormBuilder
     ) {
-        const vcDefaultFields = [{
-            name: 'policyId',
-            title: 'Policy Id',
-            description: 'Policy Id',
-            required: true,
-            isArray: false,
-            isRef: false,
-            type: 'string',
-            format: undefined,
-            pattern: undefined,
-            readOnly: true
-        }, {
-            name: 'ref',
-            title: 'Relationships',
-            description: 'Relationships',
-            required: false,
-            isArray: false,
-            isRef: false,
-            type: 'string',
-            format: undefined,
-            pattern: undefined,
-            readOnly: true
-        }];
         this.defaultFieldsMap = {};
-        this.defaultFieldsMap[SchemaEntity.VC] = vcDefaultFields;
-        this.defaultFieldsMap[SchemaEntity.EVC] = vcDefaultFields;
+        this.defaultFieldsMap[SchemaEntity.VC] = DefaultFieldDictionary.getDefaultFields(SchemaEntity.VC);
+        this.defaultFieldsMap[SchemaEntity.EVC] = DefaultFieldDictionary.getDefaultFields(SchemaEntity.EVC);
         this.types = [];
         this.measureTypes = [];
         this.schemaTypeMap = {};
@@ -820,8 +798,8 @@ export class SchemaConfigurationComponent implements OnInit {
             const fieldConfig = defaultFields[i];
             const schemaField: SchemaField = {
                 name: fieldConfig.name,
-                title: '',
-                description: '',
+                title: fieldConfig.title,
+                description: fieldConfig.description,
                 autocalculate: fieldConfig.autocalculate,
                 expression: fieldConfig.expression,
                 required: fieldConfig.required,

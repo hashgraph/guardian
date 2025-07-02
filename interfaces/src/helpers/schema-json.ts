@@ -1,4 +1,9 @@
-import { SchemaField, UnitSystem, FieldTypesDictionary, SchemaCondition, Schema, SchemaEntity } from '@guardian/interfaces';
+import { SchemaCondition } from '../interface/schema-condition.interface.js';
+import { SchemaField } from '../interface/schema-field.interface.js';
+import { Schema } from '../models/schema.js';
+import { SchemaEntity } from '../type/schema-entity.type.js';
+import { UnitSystem } from '../type/unit-system.type.js';
+import { FieldTypesDictionary, DefaultFieldDictionary } from './field-types-dictionary.js';
 
 export enum JsonError {
     INVALID_FORMAT = 'Invalid format for variable "${prop}" in ${entity}. ${message}',
@@ -16,6 +21,7 @@ export enum JsonErrorMessage {
     ENUM = 'Value of type enum or a reference to enum is required.',
     ARRAY = 'Value of type array is required.',
     REF = 'Value must be a reference to an existing field.',
+    REQUIRED_ENTITY = 'Value must be one of [NONE, VC, EVC]',
 }
 
 export interface IFieldJson {
@@ -74,9 +80,9 @@ export class ErrorContext implements IErrorContext {
     public property: string;
     public error: string;
     public message: string;
+    public data: any;
 
     private path: string[];
-    private data: any;
 
     constructor() {
         this.entity = '';
@@ -133,7 +139,6 @@ export class ErrorContext implements IErrorContext {
         return this;
     }
 }
-
 
 export class SchemaToJson {
     private static getType(field: SchemaField): string {
@@ -341,7 +346,9 @@ export class SchemaToJson {
         const conditions = schema.conditions || [];
 
         for (let index = 0; index < fields.length; index++) {
-            json.fields.push(SchemaToJson.fieldToJson(fields[index], index));
+            if (!fields[index].readOnly) {
+                json.fields.push(SchemaToJson.fieldToJson(fields[index], index));
+            }
         }
 
         for (const condition of conditions) {
@@ -351,8 +358,6 @@ export class SchemaToJson {
         return json;
     }
 }
-
-
 
 export class JsonToSchema {
     private static equalString(a: string, b: string): boolean {
@@ -428,12 +433,10 @@ export class JsonToSchema {
         if (value === SchemaEntity.EVC) {
             return SchemaEntity.EVC;
         }
-        throw new Error(`Prop: ${'entity'}, Pos: schema`);
+        throw JsonToSchema.createError(
+            context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.REQUIRED_ENTITY)
+        );
     }
-
-    // private static fromTopic(value: any): string {
-
-    // }
 
     private static fromType(
         value: IFieldJson,
@@ -877,8 +880,8 @@ export class JsonToSchema {
         const field: SchemaField = {
             name: JsonToSchema.fromRequiredString(value.key, context.add('key')),
             title: JsonToSchema.fromString(value.title, context.add('title')),
-            description: JsonToSchema.fromRequiredString(value.description, context.add('description')),
-            property: JsonToSchema.fromString(value.property, context.add('property')) as '',
+            description: JsonToSchema.fromString(value.description, context.add('description')) || '',
+            property: JsonToSchema.fromString(value.property, context.add('property')) || '',
             type: JsonToSchema.fromType(value, all, context.add('type')),
             format: JsonToSchema.fromFormat(value, context.add('format')) as any,
             pattern: JsonToSchema.fromPattern(value, context.add('pattern')) as any,
@@ -913,6 +916,42 @@ export class JsonToSchema {
             readOnly: false,
         }
         return field;
+    }
+
+    private static fromDefaultField(
+        defaultConfig: any
+    ): SchemaField {
+        const schemaField: SchemaField = {
+            name: defaultConfig.name,
+            title: defaultConfig.title,
+            description: defaultConfig.description,
+            autocalculate: defaultConfig.autocalculate,
+            expression: defaultConfig.expression,
+            required: defaultConfig.required,
+            isArray: defaultConfig.isArray,
+            isRef: defaultConfig.isRef,
+            type: defaultConfig.type,
+            format: defaultConfig.format,
+            pattern: defaultConfig.pattern,
+            unit: defaultConfig.unit,
+            unitSystem: defaultConfig.unitSystem,
+            customType: defaultConfig.customType,
+            isPrivate: defaultConfig.isPrivate,
+            property: defaultConfig.property,
+            readOnly: true,
+        };
+        return schemaField;
+    }
+
+    private static fromDefaultFields(
+        fields: SchemaField[],
+        entity: SchemaEntity
+    ): SchemaField[] {
+        const defaultFields = DefaultFieldDictionary.getDefaultFields(entity);
+        for (const defaultField of defaultFields) {
+            fields.push(JsonToSchema.fromDefaultField(defaultField));
+        }
+        return fields;
     }
 
     private static fromCondTarget(
@@ -1058,6 +1097,7 @@ export class JsonToSchema {
         const entity = JsonToSchema.fromEntity(json.entity, context.add('entity'));
         const fields = JsonToSchema.fromFields(json.fields, all, entity, context.add('fields'));
         const conditions = JsonToSchema.fromConditions(json.conditions, fields, all, entity, context.add('conditions'));
+        JsonToSchema.fromDefaultFields(fields, entity);
         return {
             name,
             description,

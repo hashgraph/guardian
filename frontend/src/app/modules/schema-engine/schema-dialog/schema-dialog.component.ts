@@ -1,10 +1,10 @@
 import { ChangeDetectorRef, Component, ViewChild } from '@angular/core';
 import { SchemaConfigurationComponent } from '../schema-configuration/schema-configuration.component';
-import { ISchema, Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
+import { JsonToSchema, Schema, SchemaHelper, SchemaToJson } from '@guardian/interfaces';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { MenuItem } from 'primeng/api';
 import { SchemaService } from '../../../services/schema.service';
-import { JsonToSchema, SchemaToJson } from './schema-json';
+
 
 /**
  * Dialog for creating and editing schemas.
@@ -256,12 +256,6 @@ export class SchemaDialog {
     }
 
     public onChangeDocument($event: any) {
-        // try {
-        //     JSON.parse($event);
-        //     this.valid = true;
-        // } catch (error) {
-        //     this.valid = false;
-        // }
     }
 
     private schemaToJson(): string {
