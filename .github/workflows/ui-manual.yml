@@ -14,8 +14,8 @@ jobs:
           - 6379:6379
     strategy:
       matrix:
-        node-version: [ 20.19.3 ]
-        mongodb-version: [ 7.0.21 ]
+        node-version: [20.19.3]
+        mongodb-version: [7.0.21]
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
@@ -79,7 +79,7 @@ jobs:
       - name: Start NatsMQ
         uses: step-security/nats-action@0306fc1c4e4f49dbe4db5865a3135ab1516a5aee # v0.1.0
         with:
-          port: '4222'
+          port: "4222"
 
       - name: Start MongoDB
         uses: step-security/mongodb-github-action@3160045518552049fae7e4ab834ad6f04836da49 # v1.12.0
@@ -148,7 +148,7 @@ jobs:
           ACCESS_TOKEN_UPDATE_INTERVAL: 600000
           MIN_PASSWORD_LENGTH: 4
           PASSWORD_COMPLEXITY: easy
-          NODE_OPTIONS: '--openssl-legacy-provider'
+          NODE_OPTIONS: "--openssl-legacy-provider"
 
       - name: Build Cypress Docker image
         run: docker build -t cypress-runner ./e2e-tests
@@ -169,11 +169,19 @@ jobs:
         if: always()
         run: |
           docker cp cypress-test-run:/e2e/cypress/test_results ./e2e-tests/cypress/test_results || true
+          docker cp cypress-test-run:/e2e/cypress/screenshots ./e2e-tests/cypress/screenshots || true
 
       - name: Cleanup Docker resources
         if: always()
         run: |
           docker rm -f cypress-test-run || true
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: e2e-tests/cypress/screenshots
 
       - name: Publish API Test Results
         uses: step-security/publish-unit-test-result-action@cc82caac074385ae176d39d2d143ad05e1130b2d # v2.18.0

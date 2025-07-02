@@ -15,10 +15,6 @@ context("Logs", { tags: ['logs', 'thirdPool', 'all'] }, () => {
                     authorization,
                 },
             }).then((response) => {
-                for (let i = 0; i < response.body.logs.length; i++) {
-                    if (response.body.logs.at(i).attributes.length === 2)
-                        workerName = response.body.logs.at(i).attributes.at(0)
-                }
                 expect(response.status).eql(STATUS_CODE.OK);
                 expect(response.body.logs.at(0)).to.have.property("id");
                 expect(response.body.logs.at(0)).to.have.property("attributes");
@@ -76,16 +72,8 @@ context("Logs", { tags: ['logs', 'thirdPool', 'all'] }, () => {
                 }
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                let wn = 0;
-                response.body.forEach(element => {
-                    if (element.startsWith("WORKER"))
-                        wn++;
-                });
-                cy.task('log', response.body.length);
-                cy.task('log', response.body);
-                cy.task('log', wn);
-                workersNumber = wn - 1;
-                cy.task('log', workersNumber);
+                workersNumber = response.body.length;
+                workerName = response.body.at(-1);
             });
         })
     });
@@ -105,10 +93,7 @@ context("Logs", { tags: ['logs', 'thirdPool', 'all'] }, () => {
                 failOnStatusCode: true
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                cy.task('log', workerName);
-                cy.task('log', workersNumber);
-                cy.task('log', response.body.length);
-                //expect(workersNumber).eql(response.body.length);
+                expect(workersNumber - 1).eql(response.body.length);
             });
         })
     });
