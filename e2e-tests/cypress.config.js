@@ -6,8 +6,6 @@ module.exports = defineConfig({
     watchForFileChanges: false,
     defaultCommandTimeout: 10000,
     e2e: {
-        experimentalRunAllSpecs: true,
-        experimentalSessionAndOrigin: true,
         reporter: 'cypress-multi-reporters',
         reporterOptions: {
             configFile: 'reporter-config.js',
