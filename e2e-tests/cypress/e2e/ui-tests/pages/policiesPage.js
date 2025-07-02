@@ -208,7 +208,7 @@ export class PoliciesPage {
         cy.get(PoliciesPageLocators.importPolicyButton).click();
         cy.contains(PoliciesPageLocators.importIPFSOption).click();
         cy.get(CommonElements.dialogWindow).find(CommonElements.Input).type(messageId);
-        cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).click();
+        cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).realClick();
         Checks.waitForElement(PoliciesPageLocators.asNewPolicyRadioButton);
         cy.get(CommonElements.dialogWindow).last().find(PoliciesPageLocators.importButton).click();
         Checks.waitForElement(PoliciesPageLocators.policyBlock, undefined, 5000);
