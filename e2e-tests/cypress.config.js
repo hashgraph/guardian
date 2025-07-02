@@ -25,15 +25,15 @@ module.exports = defineConfig({
                 },
             });
             on('task', {
-                log (message) {
-                  console.log(message)
-                  return null
+                log(message) {
+                    console.log(message)
+                    return null
                 }
-              })
+            })
             return config;
         },
         env: {
-            downloadFolder: '../e2e-tests/cypress/downloads/'
+            downloadFolder: 'cypress/downloads/'
         }
     }
 });

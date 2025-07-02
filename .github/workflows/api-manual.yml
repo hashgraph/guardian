@@ -152,6 +152,9 @@ jobs:
       - name: Build Cypress Docker image
         run: docker build -t cypress-runner ./e2e-tests
 
+      - name: Check file names
+        run: ls -1 e2e-tests/cypress/e2e/api-tests
+
       - name: Run Cypress API Tests in Docker
         run: |
           docker run --network host --name cypress-test-run \
