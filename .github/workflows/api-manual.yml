@@ -152,13 +152,14 @@ jobs:
       - name: Build Cypress Docker image
         run: docker build -t cypress-runner ./e2e-tests
 
-      - name: Run Cypress API Tests in Docker
+      - name: Run All Cypress API Tests in Docker
         if: "${{ inputs.tags == 'all' }}"
         run: |
           docker run --network host --name cypress-test-run \
             -e CYPRESS_portApi=3002 \
             -e CYPRESS_operatorId=${{ secrets.CI_HEDERA_ACCOUNT }} \
             -e CYPRESS_operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }} \
+            -e CYPRESS_grepTags="all" \
             cypress-runner \
             --spec "cypress/e2e/api-tests/**/*.cy.js" \
             --browser chrome
