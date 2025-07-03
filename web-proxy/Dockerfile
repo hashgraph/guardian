@@ -24,8 +24,41 @@ COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz ./interfa
 COPY --link ./frontend/. ./
 RUN npm install interfaces.tgz && npm run build
 
-# Stage 3: Create the final image
+# Stage 3: Compile headers-more module for the same NGINX_VERSION
+FROM nginxinc/nginx-unprivileged:${NGINX_VERSION} AS build-mod
+
+ARG NGINX_VERSION
+USER root
+WORKDIR /tmp
+
+RUN apk add --no-cache build-base pcre-dev zlib-dev openssl-dev git wget \
+  && NGINX_PLAIN=${NGINX_VERSION%%-*} \
+  && wget http://nginx.org/download/nginx-${NGINX_PLAIN}.tar.gz \
+  && tar xf nginx-${NGINX_PLAIN}.tar.gz \
+  && git clone --depth=1 https://github.com/openresty/headers-more-nginx-module.git \
+  && cd nginx-${NGINX_PLAIN} \
+  && ./configure --with-compat --add-dynamic-module=../headers-more-nginx-module \
+  && make modules \
+  && mkdir -p /modules \
+  && cp objs/ngx_http_headers_more_filter_module.so /modules/
+
+# Stage 4: Create the final image
 FROM nginxinc/nginx-unprivileged:${NGINX_VERSION} AS image
+
+USER root
+
+# copy module for disable headers
+RUN mkdir -p /etc/nginx/modules
+COPY --from=build-mod /modules/ngx_http_headers_more_filter_module.so \
+                      /etc/nginx/modules/
+
+# add load module and disable headers
+RUN sed -i '1iload_module /etc/nginx/modules/ngx_http_headers_more_filter_module.so;' /etc/nginx/nginx.conf \
+ && sed -i '/http {/a \
+     server_tokens off;\
+     more_clear_headers Server;' /etc/nginx/nginx.conf
+
+USER nginx
 
 # Copy config and built application from the build stage into the image
 COPY --link ./web-proxy/configs/default.conf /etc/nginx/conf.d/default.conf
