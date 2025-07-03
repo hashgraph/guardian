@@ -20,7 +20,7 @@ const SchemaPageLocators = {
     deleteSchemaButton: 'button.accent-color-red',
     menuSchemaButton: 'div[ptooltip="Menu"]',
     dialogPublishButton: 'button[ng-reflect-label="Ok"]',
-    confirmDeleteButton: 'p-button[ng-reflect-label="Confirm"]',
+    confirmDeleteButton: 'button.guardian-button-delete',
     documentSchemaButton: 'p-button[ng-reflect-content="View schema details"]',
     schemaEditBtn: "div[ptooltip='Edit']",
     saveBtn: 'button[ng-reflect-label="Save"]',
@@ -185,6 +185,7 @@ export class SchemaPage {
         cy.get(CommonElements.dropdownOption).eq(0).click();
         cy.get(SchemaPageLocators.filterDropdownCompareSchema).last().click();
         cy.get(CommonElements.dropdownOption).eq(0).click();
+        cy.screenshot();
         cy.get(SchemaPageLocators.compareFinalBtn).click();
         Checks.waitForLoading();
         cy.contains(SchemaPageLocators.compareSchemaName, schemaPolicy1).should('exist');
