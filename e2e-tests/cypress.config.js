@@ -28,6 +28,14 @@ module.exports = defineConfig({
                     return null
                 }
             })
+            on('task', {
+                logFS(message) {
+                    const fs = require('fs');
+                    const files = fs.readdirSync('cypress/e2e/api-tests');
+                    console.log(files)
+                    return null
+                }
+            })
             return config;
         },
         env: {
