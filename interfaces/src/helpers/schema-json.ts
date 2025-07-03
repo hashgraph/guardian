@@ -7,7 +7,7 @@ import { FieldTypesDictionary, DefaultFieldDictionary } from './field-types-dict
 
 export enum JsonError {
     INVALID_FORMAT = 'Invalid format for variable "${prop}" in ${entity}. ${message}',
-    NOT_AVAILABLE = 'Using property "${prop}" in ${entity} is not available in this field type.',
+    NOT_AVAILABLE = 'Invalid property type for variable "${prop}" in ${entity}.',
     THEN_ELSE = 'Empty "then" or "else" branches, at least one value must be specified.'
 }
 
