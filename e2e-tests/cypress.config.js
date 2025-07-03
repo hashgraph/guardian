@@ -31,7 +31,7 @@ module.exports = defineConfig({
             on('task', {
                 logFS(message) {
                     const fs = require('fs');
-                    const files = fs.readdirSync('cypress/e2e/api-tests');
+                    const files = fs.readdirSync('cypress/e2e/api-tests/*.cy.js');
                     console.log(files)
                     return null
                 }
