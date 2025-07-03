@@ -32,6 +32,7 @@ import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
 import {takeUntil} from 'rxjs/operators';
 import { TestCodeDialog } from '../../dialogs/test-code-dialog/test-code-dialog.component';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 
 /**
  * The page for editing the policy and blocks.
@@ -156,10 +157,11 @@ export class PolicyConfigurationComponent implements OnInit {
         private profileService: ProfileService,
         private contractService: ContractService,
         @Inject(CONFIGURATION_ERRORS)
-        private _configurationErrors: Map<string, any>
+        private _configurationErrors: Map<string, any>,
+        storage: IndexedDbRegistryService
     ) {
         this.options = new Options();
-        this.storage = new PolicyStorage(localStorage);
+        this.storage = new PolicyStorage(storage);
 
         this.policyTemplate = new PolicyTemplate();
         this.openFolder = this.policyTemplate;
@@ -289,7 +291,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.toolsService.menuList(),
                 this.policyEngineService.getPolicyCategories(),
                 this.contractService.getContracts({ type: ContractType.WIPE }),
-            ]).pipe(takeUntil(this._destroy$)).subscribe((data) => {
+            ]).pipe(takeUntil(this._destroy$)).subscribe( async (data) => {
                 const tokens = data[0] || [];
                 const blockInformation = data[1] || {};
                 const schemas = data[2] || [];
@@ -307,7 +309,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.policyTemplate.setTokens(this.tokens);
                 this.policyTemplate.setSchemas(this.schemas);
                 this.policyTemplate.setTools(this.tools.items);
-                this.finishedLoad(this.policyTemplate);
+                await this.finishedLoad(this.policyTemplate);
 
                 this.categories.forEach((item: IPolicyCategory) => {
                     switch (item.type) {
@@ -457,11 +459,11 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
-    private finishedLoad(root: PolicyRoot): void {
+    private async finishedLoad(root: PolicyRoot): Promise<void> {
         this.readonly = root.readonly;
         this.codeMirrorOptions.readOnly = this.readonly;
 
-        this.storage.load(root.id);
+        await this.storage.load(root.id);
         this.checkState();
 
         root.subscribe(this.onConfigChange.bind(this));
@@ -1326,13 +1328,13 @@ export class PolicyConfigurationComponent implements OnInit {
         this.changeDetector.detectChanges();
     }
 
-    public undoPolicy() {
-        const item = this.storage.undo();
+    public async undoPolicy() {
+        const item = await this.storage.undo();
         this.loadState(item);
     }
 
-    public redoPolicy() {
-        const item = this.storage.redo();
+    public async redoPolicy() {
+        const item = await this.storage.redo();
         this.loadState(item);
     }
 

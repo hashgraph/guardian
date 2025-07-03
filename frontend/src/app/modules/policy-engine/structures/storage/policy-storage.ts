@@ -1,31 +1,32 @@
-import { Stack, PolicyStorageItem } from "./storage";
+import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
+import { Stack, PolicyStorageItem } from './storage';
 
 export class PolicyStorage {
+    private readonly DB_NAME = 'GUARDIAN';
     private readonly STORAGE_NAME = 'POLICY_STORAGE';
 
-    private _storage: Storage;
+    private _storage: IndexedDbRegistryService;
     private _policyStorage: Stack<PolicyStorageItem>;
     private _policyId!: string;
 
-    constructor(storage: Storage) {
+    constructor(storage: IndexedDbRegistryService) {
         this._storage = storage;
         this._policyStorage = new Stack(10);
+
+        this._storage.registerStore(this.DB_NAME, { name: this.STORAGE_NAME, options: { keyPath: 'policyId' } });
     }
 
-    public load(policyId: string) {
+    public async load(policyId: string) {
         this._policyId = policyId;
         this._policyStorage.clear();
 
-        const storageMap = this.getMap();
-        const item = storageMap[policyId];
+        const item = await this._storage.get(this.DB_NAME, this.STORAGE_NAME, policyId);
         if (item) {
             this._policyStorage.push(item);
         }
     }
 
-    public destroy(): void {
-
-    }
+    public destroy(): void {}
 
     public get current(): PolicyStorageItem | null {
         return this._policyStorage.current();
@@ -39,77 +40,54 @@ export class PolicyStorage {
         return this._policyStorage.isRedo();
     }
 
-    public undo(): PolicyStorageItem | null {
+    public async undo(): Promise<PolicyStorageItem | null> {
         const item = this._policyStorage.undo();
-        this.save();
+        await this.save();
         return item;
     }
 
-    public redo(): PolicyStorageItem | null {
+    public async redo(): Promise<PolicyStorageItem | null> {
         const item = this._policyStorage.redo();
-        this.save();
+        await this.save();
         return item;
     }
 
-    public push(view: string, value: string) {
+    public async push(view: string, value: string) {
         const current = this._policyStorage.current();
-        if (current &&
-            current.value == value &&
-            current.view == view) {
+        if (current && current.value === value && current.view === view) {
             return;
         }
-        this._policyStorage.push({
-            value: value,
-            view: view
-        });
-        this.save();
+        this._policyStorage.push({ value, view });
+        await this.save();
     }
 
-    public set(view: string, value: string | null) {
+    public async set(view: string, value: string | null) {
         this._policyStorage.clear();
         if (value) {
-            this._policyStorage.push({
-                value: value,
-                view: view
-            });
+            this._policyStorage.push({ value, view });
         }
-        this.save();
+        await this.save();
     }
 
-    public save() {
+    public async save() {
         if (this._policyId) {
-            this.setMap(this._policyId, this._policyStorage.current());
+            await this.setMap(this._policyId, this._policyStorage.current());
         }
     }
 
-    private setMap(policyId: string, value: any): any {
-        const storageMap = this.getMap();
-        try {
-            storageMap[policyId] = value;
-            const storageValue = JSON.stringify(storageMap);
-            this._storage.setItem(this.STORAGE_NAME, storageValue);
-        } catch (error) {
-            delete storageMap[policyId];
-            const storageValue = JSON.stringify(storageMap);
-            this._storage.setItem(this.STORAGE_NAME, storageValue);
-        }
+    private async setMap(policyId: string, value: any): Promise<void> {
+        await this._storage.put(this.DB_NAME, this.STORAGE_NAME, { policyId, ...value });
     }
 
-    private getMap(): any {
-        try {
-            const storageValue = this._storage.getItem(this.STORAGE_NAME);
-            let storageMap = {};
-            if (storageValue) {
-                storageMap = JSON.parse(storageValue) || {};
-            } else {
-                storageMap = {};
-                this._storage.setItem(this.STORAGE_NAME, JSON.stringify(storageMap));
-            }
-            return storageMap;
-        } catch (error) {
-            let storageMap = {};
-            this._storage.setItem(this.STORAGE_NAME, JSON.stringify(storageMap));
-            return storageMap;
-        }
+    private async getMap(): Promise<any> {
+        const db = await this._storage.getDB(this.DB_NAME);
+        const tx = db.transaction(this.STORAGE_NAME, 'readonly');
+        const store = tx.objectStore(this.STORAGE_NAME);
+
+        const allItems = await store.getAll();
+        const map: Record<string, any> = {};
+        allItems.forEach(item => map[item.policyId] = item);
+
+        return map;
     }
 }
