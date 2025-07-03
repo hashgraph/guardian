@@ -239,7 +239,7 @@ export class CustomLogicBlock {
                     const expression = ref.options.expression || '';
                     const worker = new Worker(path.join(path.dirname(filename), '..', 'helpers', 'custom-logic-python-worker.js'), {
                         workerData: {
-                            execFunc: `${expression}`,
+                            execFunc: `${execCode}${expression}`,
                             user,
                             artifacts,
                             documents: context.documents,
