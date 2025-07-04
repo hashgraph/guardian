@@ -237,7 +237,7 @@ export class CustomLogicBlock {
 
                 const sources: IPolicyDocument[] = await this.getSources(user);
 
-                if (ref.options.selectedScriptLanguage == ScriptLanguageOption.PYTHON) {
+                if (ref.options.selectedScriptLanguage === ScriptLanguageOption.PYTHON) {
                     const context = await ref.debugContext({ documents, sources });
 
                     const expression = ref.options.expression || '';
@@ -411,7 +411,7 @@ export class CustomLogicBlock {
         }
         vcSubject.policyId = ref.policyId;
         vcSubject.id = id;
-        
+
         PolicyUtils.setGuardianVersion(vcSubject, outputSchema);
 
         if (reference) {

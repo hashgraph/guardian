@@ -9,7 +9,7 @@ async function execute() {
 
     const done = (result, final = true) => {
         try {
-            const jsResult = typeof result?.toJs === "function"
+            const jsResult = typeof result?.toJs === 'function'
                 ? result.toJs({ dictConverter: Object })
                 : result;
 
@@ -25,7 +25,7 @@ async function execute() {
 
     const debug = (result: any) => {
         try {
-            const jsResult = typeof result?.toJs === "function"
+            const jsResult = typeof result?.toJs === 'function'
                 ? result.toJs({ dictConverter: Object })
                 : result;
 
@@ -44,33 +44,33 @@ async function execute() {
     pyodide.setStdout({ batched: console.log });
     pyodide.setStderr({ batched: console.error })
 
-    pyodide.globals.set("user", user);
-    pyodide.globals.set("documents", documents);
-    pyodide.globals.set("artifacts", artifacts);
-    pyodide.globals.set("sources", sources);
-    pyodide.globals.set("done", done);
-    pyodide.globals.set("debug", debug);
+    pyodide.globals.set('user', user);
+    pyodide.globals.set('documents', documents);
+    pyodide.globals.set('artifacts', artifacts);
+    pyodide.globals.set('sources', sources);
+    pyodide.globals.set('done', done);
+    pyodide.globals.set('debug', debug);
 
-    await pyodide.loadPackage("micropip");
-    const micropip = pyodide.pyimport("micropip");
+    await pyodide.loadPackage('micropip');
+    const micropip = pyodide.pyimport('micropip');
 
     const libs = [
-        "numpy",
-        "scipy",
-        "sympy",
-        "pandas",
-        "pint",
-        "duckdb",
-        "sqlalchemy",
-        "cftime",
-        "matplotlib",
-        "seaborn",
-        "bokeh",
-        "altair",
-        "cartopy",
-        "astropy",
-        "statsmodels",
-        "networkx"
+        'numpy',
+        'scipy',
+        'sympy',
+        'pandas',
+        'pint',
+        'duckdb',
+        'sqlalchemy',
+        'cftime',
+        'matplotlib',
+        'seaborn',
+        'bokeh',
+        'altair',
+        'cartopy',
+        'astropy',
+        'statsmodels',
+        'networkx'
     ];
 
     for (const lib of libs) {

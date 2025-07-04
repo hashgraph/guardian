@@ -111,16 +111,16 @@ export class SchemaConverterUtils {
             return document;
         }
 
-        if (schemaEntity != SchemaEntity.VC) {
+        if (schemaEntity !== SchemaEntity.VC) {
             return document;
         }
 
-        document.properties['guardianVersion'] = {
-            "$comment": "{\"term\": \"guardianVersion\", \"@id\": \"https://www.schema.org/text\"}",
-            "title": "Guardian Version",
-            "description": "Guardian Version",
-            "type": "string",
-            "readOnly": true
+        document.properties.guardianVersion = {
+            '$comment': '{\"term\": \"guardianVersion\", \"@id\": \"https://www.schema.org/text\"}',
+            'title': 'Guardian Version',
+            'description': 'Guardian Version',
+            'type': 'string',
+            'readOnly': true
         };
 
         if (Array.isArray(document.required) && !document.required.includes('guardianVersion')) {
