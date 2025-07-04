@@ -36,7 +36,7 @@ export class IndexedDbRegistryService {
     getDB<T = unknown>(dbName: string): Promise<IDBPDatabase<T>> {
         const meta = this.metas.get(dbName);
         if (!meta) {
-            throw new Error(`DB "${dbName}" не зарегистрирована`);
+            throw new Error(`DB "${dbName}" is not registered`);
         }
         if (!meta.dbPromise) {
             meta.dbPromise = this.open(dbName, meta);
