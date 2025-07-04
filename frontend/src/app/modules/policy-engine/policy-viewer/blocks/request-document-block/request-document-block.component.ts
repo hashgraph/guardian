@@ -408,7 +408,7 @@ export class RequestDocumentBlockComponent
 
     public onDryRun() {
         if (this.schema) {
-            const presetDocument = DocumentGenerator.generateDocument(this.schema);
+            const presetDocument = DocumentGenerator.generateDocument(this.schema, undefined, this.rowDocument);
             this.preset(presetDocument);
         }
     }

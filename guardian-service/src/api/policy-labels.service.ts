@@ -766,7 +766,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     .sendMessage(vpMessage, {
                         sendToIPFS: true,
                         memo: null,
-                        userId: userId,
+                        userId,
                         interception: null
                     });
 

@@ -13,6 +13,7 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { fileURLToPath } from 'url';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
+import { BlockActionError } from '../errors/index.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -153,6 +154,9 @@ export class CustomLogicBlock {
                     documents = state.data;
                 } else {
                     documents = [state.data];
+                }
+                if (!documents || !documents.length) {
+                    throw new BlockActionError('Invalid input VC', ref.blockType, ref.uuid);
                 }
 
                 let metadata: IMetadata;

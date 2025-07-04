@@ -19,7 +19,7 @@ enum SchemaType {
 @Component({
     selector: 'copy-schema-dialog',
     templateUrl: './copy-schema-dialog.html',
-    styleUrls: ['./copy-schema-dialog.css']
+    styleUrls: ['./copy-schema-dialog.scss']
 })
 export class CopySchemaDialog {
     @ViewChild('document') schemaControl!: SchemaConfigurationComponent;
@@ -94,7 +94,8 @@ export class CopySchemaDialog {
         this.dataForm = this.fb.group({
             name: this.scheme.name,
             schemaType: this.fb.control(this.schemaType),
-            topicId: this.fb.control(this.scheme.topicId)
+            topicId: this.fb.control(this.scheme.topicId),
+            copyNested: true,
         });
     }
 
@@ -120,8 +121,9 @@ export class CopySchemaDialog {
         const topicId = this.dataForm.get('topicId')?.value;
         const name = this.dataForm.get('name')?.value;
         const iri = this.scheme.iri;
+        const copyNested = this.dataForm.get('copyNested')?.value;
         this.dialogRef.close({
-            topicId, name, iri
+            topicId, name, iri, copyNested
         });
     }
 

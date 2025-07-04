@@ -100,7 +100,7 @@ export class PolicyStorage {
             const storageValue = this._storage.getItem(this.STORAGE_NAME);
             let storageMap = {};
             if (storageValue) {
-                storageMap = JSON.parse(storageValue);
+                storageMap = JSON.parse(storageValue) || {};
             } else {
                 storageMap = {};
                 this._storage.setItem(this.STORAGE_NAME, JSON.stringify(storageMap));
