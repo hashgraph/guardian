@@ -5,7 +5,7 @@ import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyUtils } from '../helpers/utils.js';
-import { LocationType, Schema } from '@guardian/interfaces';
+import { LocationType, Schema, SchemaField } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
@@ -90,27 +90,69 @@ export class ExtractDataBlock {
         this._schema = new Schema(schema);
     }
 
-    private extract(
-        json: any,
-        schema: string,
-        result: any[]
-    ): void {
+    private async getSchema(json: IPolicyDocument): Promise<Schema | null> {
+        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        const config = await PolicyUtils.loadSchemaByID(ref, json.schema);
+        if (config) {
+            return new Schema(config);
+        }
+        return null;
+    }
+
+    private compareSchema(field: SchemaField, iri: string): boolean {
+        if (field.isRef) {
+            let type = field.type || '';
+            if (!type.startsWith('#')) {
+                type = '#' + type;
+            }
+            if (!iri.startsWith('#')) {
+                iri = '#' + iri;
+            }
+            return type === iri;
+        }
+        return false;
+    }
+
+    private searchFieldsPath(json: IPolicyDocument, path: string): any {
+        const result = [];
+        const paths = (path || '').split('.');
+        if (paths.length) {
+            json = PolicyUtils.getCredentialSubject(json);
+            this._searchFieldsPath(json, paths, 0, result);
+        }
+        return result;
+    }
+
+    private _searchFieldsPath(json: any, paths: string[], i: number, result: any[]): any {
         if (!json || typeof json !== 'object') {
             return;
         }
         if (Array.isArray(json)) {
             for (const item of json) {
-                this.extract(item, schema, result);
+                this._searchFieldsPath(item, paths, i, result);
             }
         } else {
-            if (json.type === schema) {
+            if (i < paths.length) {
+                const key = paths[i];
+                this._searchFieldsPath(json[key], paths, i + 1, result);
+            } else if (json) {
                 result.push(json);
-            } else {
-                const entities = Object.entries(json);
-                for (const [key, value] of entities) {
-                    if (key !== '@context' && key !== 'type') {
-                        this.extract(value, schema, result);
-                    }
+            }
+        }
+    }
+
+    private async extract(
+        json: IPolicyDocument,
+        schemaIRI: string,
+        result: any[]
+    ): Promise<void> {
+        const schema = await this.getSchema(json);
+        if (schema) {
+            const fields = schema.searchFields((f) => this.compareSchema(f, schemaIRI));
+            for (const field of fields) {
+                const subJsons = this.searchFieldsPath(json, field.path);
+                for (const subJson of subJsons) {
+                    result.push(subJson);
                 }
             }
         }
@@ -144,7 +186,7 @@ export class ExtractDataBlock {
         }
         const sourceSubjects: any[] = [];
         for (const source of sources) {
-            this.extract(source.document, schema, sourceSubjects);
+            await this.extract(source, schema, sourceSubjects);
         }
         if (data.length !== sourceSubjects.length) {
             throw new BlockActionError(`Invalid documents count`, ref.blockType, ref.uuid);
@@ -177,10 +219,10 @@ export class ExtractDataBlock {
         const subDocs: any[] = [];
         if (Array.isArray(docs)) {
             for (const doc of docs) {
-                this.extract(doc.document, schema, subDocs);
+                await this.extract(doc, schema, subDocs);
             }
         } else {
-            this.extract(docs.document, schema, subDocs);
+            await this.extract(docs, schema, subDocs);
         }
 
         const result: IPolicyDocument[] = [];

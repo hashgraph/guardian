@@ -97,7 +97,7 @@ export class ComponentsService {
      * Load schema by id
      * @param id
      */
-    public async loadSchemaByID(id: SchemaEntity): Promise<SchemaCollection> {
+    public async loadSchemaByID(id: string): Promise<SchemaCollection> {
         return this.schemasByID.get(id);
     }
 

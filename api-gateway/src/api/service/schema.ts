@@ -898,9 +898,9 @@ export class SchemaApi {
         const owner = new EntityOwner(user);
         const task = taskManager.start(TaskAction.CREATE_SCHEMA, user.id);
         RunFunctionAsync<ServiceError>(async () => {
-            const { iri, topicId, name } = body;
+            const { iri, topicId, name, copyNested } = body;
             taskManager.addStatus(task.taskId, 'Check schema version', StatusType.PROCESSING);
-            await guardians.copySchemaAsync(iri, topicId, name, owner, task);
+            await guardians.copySchemaAsync(iri, topicId, name, owner, task, copyNested);
         }, async (error) => {
             await this.logger.error(error, ['API_GATEWAY'], user.id);
             taskManager.addError(task.taskId, { code: 500, message: error.message });

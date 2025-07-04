@@ -770,9 +770,10 @@ export class Guardians extends NatsService {
         topicId: string,
         name: string,
         owner: IOwner,
-        task: NewTask
+        task: NewTask,
+        copyNested: boolean,
     ): Promise<NewTask> {
-        return await this.sendMessage(MessageAPI.COPY_SCHEMA_ASYNC, { iri, topicId, name, task, owner });
+        return await this.sendMessage(MessageAPI.COPY_SCHEMA_ASYNC, { iri, topicId, name, task, owner, copyNested });
     }
 
     /**
