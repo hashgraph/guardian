@@ -628,7 +628,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
     @CreateRequestContext(() => DataBaseHelper.orm)
     public async findOne(filters: FilterQuery<T> | string | ObjectId | null, options: FindOneOptions<object> = {}): Promise<T | null> {
         const repository: MongoEntityRepository<T> = this._em.getRepository(this.entityClass);
-        
+
         let query: FilterQuery<T>;
 
         if (!filters) {
