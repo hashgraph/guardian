@@ -202,7 +202,7 @@ export async function copyDefsSchemas(
     topicId: string,
     root: any,
     copyNested: boolean,
-    copiedShemas: Map<string, SchemaCollection>
+    copiedSchemas: Map<string, SchemaCollection>
 
 ) {
     if (!defs) {
@@ -210,7 +210,7 @@ export async function copyDefsSchemas(
     }
     const schemasIdsInDocument = Object.keys(defs);
     for (const schemaId of schemasIdsInDocument) {
-        await copySchemaAsync(schemaId, topicId, null, user, copyNested, copiedShemas);
+        await copySchemaAsync(schemaId, topicId, null, user, copyNested, copiedSchemas);
     }
 }
 
@@ -220,13 +220,13 @@ export async function copySchemaAsync(
     name: string,
     user: IOwner,
     copyNested: boolean = true,
-    copiedShemas: Map<string, SchemaCollection> = new Map()
+    copiedSchemas: Map<string, SchemaCollection> = new Map()
 ) {
     if (['#SentinelHUB', '#GeoJSON'].includes(iri)) {
         return;
     }
 
-    if (copiedShemas.has(iri)) {
+    if (copiedSchemas.has(iri)) {
         return;
     }
 
@@ -236,7 +236,7 @@ export async function copySchemaAsync(
     let item = await DatabaseServer.getSchema({ iri });
 
     if (copyNested) {
-        await copyDefsSchemas(item.document?.$defs, user, topicId, root, copyNested, copiedShemas);
+        await copyDefsSchemas(item.document?.$defs, user, topicId, root, copyNested, copiedSchemas);
     }
 
     let contextURL = null;
@@ -272,10 +272,10 @@ export async function copySchemaAsync(
         const newDefs = {};
 
         for (const oldId of oldDefsIds) {
-            const copiedShema = copiedShemas.get(oldId);
+            const copiedSchema = copiedSchemas.get(oldId);
 
-            if (copiedShema) {
-                newDefs[copiedShema.iri] = copiedShema.document;
+            if (copiedSchema) {
+                newDefs[copiedSchema.iri] = copiedSchema.document;
             } else {
                 newDefs[oldId] = item.document.$defs[oldId];
             }
@@ -284,7 +284,7 @@ export async function copySchemaAsync(
 
     let document = JSON.stringify(item.document) as string;
 
-    for (const [oldId, newSchema] of copiedShemas.entries()) {
+    for (const [oldId, newSchema] of copiedSchemas.entries()) {
         document = document.replaceAll(oldId.substring(1), newSchema.iri.substring(1));
     }
 
@@ -292,7 +292,7 @@ export async function copySchemaAsync(
 
     const newItem = await DatabaseServer.saveSchema(item);
 
-    copiedShemas.set(iri, newItem);
+    copiedSchemas.set(iri, newItem);
 
     const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true, user.id);
 
