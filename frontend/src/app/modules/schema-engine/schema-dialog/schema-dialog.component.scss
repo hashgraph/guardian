@@ -8,8 +8,15 @@
 }
 
 .dialog-body {
-    height: 72vh;
-    overflow-y: auto;
+    overflow-y: hidden !important;
+    max-height: calc(100vh - 335px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: auto !important;
+
+    .g-dialog-body {
+        overflow: auto;
+    }
 }
 
 .tabview-label {

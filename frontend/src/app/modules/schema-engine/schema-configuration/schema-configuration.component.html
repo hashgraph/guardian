@@ -20,10 +20,9 @@
                 <label class="form-label" htmlFor="policy">* Policy</label>
                 <p-dropdown
                     class="guardian-dropdown"
-                    panelStyleClass="guardian-dropdown-panel"
+                    panelStyleClass="guardian-dropdown-panel width-825"
                     (onChange)="onFilter($event)"
                     [options]="policies"
-                    [showClear]="true"
                     [disabled]="!isNewSchema"
                     appendTo="body"
                     formControlName="topicId"
@@ -38,7 +37,7 @@
                 <label class="form-label" htmlFor="tools">* Tool</label>
                 <p-dropdown
                     class="guardian-dropdown"
-                    panelStyleClass="guardian-dropdown-panel"
+                    panelStyleClass="guardian-dropdown-panel width-825"
                     [options]="tools"
                     appendTo="body"
                     formControlName="topicId"

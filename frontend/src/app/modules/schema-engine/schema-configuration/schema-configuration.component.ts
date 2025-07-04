@@ -482,41 +482,41 @@ export class SchemaConfigurationComponent implements OnInit {
 
         if (this.isSystem) {
             this.dataForm.setValue({
-                name: this.value.name,
-                description: this.value.description,
-                entity: this.value.entity,
+                name: this.value?.name || '',
+                description: this.value?.description || '',
+                entity: this.value?.entity || SchemaEntity.VC,
                 fields: {},
                 conditions: {}
             });
         } else if (this.isTag) {
             this.dataForm.setValue({
-                name: this.value.name,
-                description: this.value.description,
+                name: this.value?.name || '',
+                description: this.value?.description || '',
                 fields: {},
                 conditions: {}
             });
         } else if (this.isModule) {
             this.dataForm.setValue({
-                name: this.value.name,
-                description: this.value.description,
-                entity: this.value.entity,
+                name: this.value?.name || '',
+                description: this.value?.description || '',
+                entity: this.value?.entity || SchemaEntity.VC,
                 fields: {},
                 conditions: {}
             });
         } else {
             this.dataForm.setValue({
-                name: this.value.name,
-                description: this.value.description,
-                entity: this.value.entity,
-                topicId: this.value.topicId,
+                name: this.value?.name || '',
+                description: this.value?.description || '',
+                entity: this.value?.entity || SchemaEntity.VC,
+                topicId: this.value?.topicId || '',
                 fields: {},
                 conditions: {}
             });
         }
 
-        const fields = this.value.fields;
-        const conditions = this.value.conditions || [];
-        const errors = this.value.errors || [];
+        const fields = this.value?.fields || [];
+        const conditions = this.value?.conditions || [];
+        const errors = this.value?.errors || [];
         const conditionsFields: string[] = [];
         conditions.forEach((item) => {
             conditionsFields.push(
