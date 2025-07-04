@@ -116,6 +116,7 @@ export class HttpRequestBlock {
      * Validate headers: excluded headers must not contain a value
      * @param headers
      */
+    // tslint:disable-next-line:no-unused-variable
     private static validateHeadersIncluded(headers: any): void {
         if (!Array.isArray(headers)) {
             return;

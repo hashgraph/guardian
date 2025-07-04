@@ -1183,8 +1183,9 @@ export class SchemaConfigComponent implements OnInit {
         delete newDocument.version;
         delete newDocument.previousVersion;
         const dialogRef = this.dialog.open(CopySchemaDialog, {
-            width: '950px',
-            styleClass: 'g-dialog',
+            width: '860px',
+            showHeader: false,
+            styleClass: 'guardian-dialog',
             modal: true,
             closable: false,
             data: {

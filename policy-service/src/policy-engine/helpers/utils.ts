@@ -1431,7 +1431,7 @@ export class PolicyUtils {
      * @param ref
      * @param type
      */
-    public static async loadSchemaByID(ref: AnyBlockType, id: SchemaEntity): Promise<SchemaCollection> {
+    public static async loadSchemaByID(ref: AnyBlockType, id: string): Promise<SchemaCollection> {
         return await ref.components.loadSchemaByID(id);
     }
 
