@@ -400,3 +400,7 @@ form {
     height: 60px;
     padding-top: 16px;
 }
+
+*[disabled-dropdown="true"] {
+    pointer-events: none !important;
+}

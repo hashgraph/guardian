@@ -26,11 +26,11 @@ export class SchemaDialog {
     ];
     public tab: number = 0;
 
+    public id: string;
     public schema: Schema;
     public subSchemas: Schema[];
     public topicId: any;
     public policies: any[];
-    public modules: any[];
     public tools: any[];
     public properties: any[];
     public category: string;
@@ -68,13 +68,11 @@ export class SchemaDialog {
         private cdr: ChangeDetectorRef,
         private schemaService: SchemaService,
     ) {
+        const schema = this.config.data.scheme || null;
         this.header = this.config.header || '';
-        this.schema = this.config.data.scheme || null;
         this.type = this.config.data.type || null;
-        this.topicId = this.config.data.topicId || null;
         this.schemaType = this.config.data.schemaType || 'policy';
         this.policies = this.config.data.policies || [];
-        this.modules = this.config.data.modules || [];
         this.tools = this.config.data.tools || [];
         this.properties = this.config.data.properties || [];
         this.category = this.config.data.category;
@@ -83,11 +81,18 @@ export class SchemaDialog {
         this.extended = this.tab === 1;
         this.json = this.tab === 2;
         this.document = '';
+        this.id = schema?.id;
+        this.topicId = this.schema?.topicId || this.config.data.topicId || null;
     }
 
     ngOnInit(): void {
-        this.onLoadSubSchemas(this.topicId);
-        this.loading(false);
+        this.loading(true);
+        this.schemaService
+            .getSchemaWithSubSchemas(this.category, this.id, this.topicId)
+            .subscribe((data) => {
+                this.setSubSchemas(this.topicId, this.id, data);
+                this.loading(false);
+            });
     }
 
     public get disabled(): boolean {
@@ -114,23 +119,6 @@ export class SchemaDialog {
         });
     }
 
-    private setSubSchemas(topicId: string, schemaId: string, data: any) {
-        if (data.schema) {
-            this.schema = new Schema(data.schema);
-        }
-
-        this.subSchemas = SchemaHelper
-            .map(data.subSchemas || [])
-            .filter(schema => schema.id !== schemaId);
-
-        this.topicId = topicId;
-
-        this.schemaControl.mappingSubSchemas(this.subSchemas, this.topicId);
-        setTimeout(() => this.schemaControl.updateFormControls(), 50);
-
-        this.loading(false);
-    }
-
     private loading(value: boolean) {
         if (value) {
             this.started = false;
@@ -143,19 +131,44 @@ export class SchemaDialog {
         this.valid = $event.isValid();
     }
 
-    public onLoadSubSchemas(topicId: string) {
-        const id = this.schema?.id;
-        let schemaTopicId = topicId;
-        if (this.schema?.topicId) {
-            schemaTopicId = this.schema?.topicId;
-        }
-
+    public onChangePolicy(topicId: string) {
+        this.loading(true);
+        this.topicId = topicId;
         this.schemaService
-            .getSchemaWithSubSchemas(this.category, id, schemaTopicId)
+            .getSchemaWithSubSchemas(this.category, this.id, this.topicId)
             .subscribe((data) => {
-                this.setSubSchemas(topicId, id, data);
+                this.updateSubSchemas(this.topicId, this.id, data);
+                this.loading(false);
             });
     }
+
+    private setSubSchemas(topicId: string, schemaId: string, data: any) {
+        this.topicId = topicId;
+        this.subSchemas = SchemaHelper
+            .map(data.subSchemas || [])
+            .filter(schema => schema.id !== schemaId);
+        if (data.schema) {
+            this.schema = new Schema(data.schema);
+        } else {
+            this.schema = new Schema();
+        }
+
+        this.schemaControl.setData(this.schema, this.topicId);
+        this.schemaControl.setSubSchemas(this.subSchemas);
+        this.schemaControl.build();
+    }
+
+    private updateSubSchemas(topicId: string, schemaId: string, data: any) {
+        this.topicId = topicId;
+        this.subSchemas = SchemaHelper
+            .map(data.subSchemas || [])
+            .filter(schema => schema.id !== schemaId);
+
+        this.schemaControl.setData(this.schema, this.topicId);
+        this.schemaControl.setSubSchemas(this.subSchemas);
+        this.cdr.detectChanges();
+    }
+
 
     public onChangeTab($event: any, order: number): void {
         $event.stopPropagation();
@@ -209,9 +222,9 @@ export class SchemaDialog {
             this.schema.updateDocument();
             this.schema.updateRefs(this.subSchemas);
 
-            this.schemaControl.reset();
-            this.schemaControl.mappingSubSchemas(this.subSchemas, this.topicId);
-            setTimeout(() => this.schemaControl.updateFormControls(), 50);
+            this.schemaControl.setData(this.schema, this.topicId);
+            this.schemaControl.setSubSchemas(this.subSchemas);
+            this.schemaControl.build();
 
             this.loading(false);
             return true;
@@ -236,9 +249,9 @@ export class SchemaDialog {
                 this.schema.updateDocument();
                 this.schema.updateRefs(this.subSchemas);
 
-                this.schemaControl.reset();
-                this.schemaControl.mappingSubSchemas(this.subSchemas, this.topicId);
-                this.schemaControl.updateFormControls();
+                this.schemaControl.setData(this.schema, this.topicId);
+                this.schemaControl.setSubSchemas(this.subSchemas);
+                this.schemaControl.build();
 
                 if (this.schemaControl.isValid()) {
                     return this.schemaControl.getSchema();

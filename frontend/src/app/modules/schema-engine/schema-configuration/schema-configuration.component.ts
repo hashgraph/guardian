@@ -47,12 +47,9 @@ function NoBindingValidator(control: UntypedFormControl): ValidationErrors | nul
     styleUrls: ['./schema-configuration.component.scss'],
 })
 export class SchemaConfigurationComponent implements OnInit {
-    @Input('value') value!: Schema;
-    @Input('type') type!: string;
+    @Input('type') type!: 'new' | 'edit' | 'version';
     @Input('policies') policies!: any[];
-    @Input('modules') modules!: any[];
     @Input('tools') tools!: any[];
-    @Input('topicId') topicId!: any;
     @Input('schemaType') schemaType!: SchemaType;
     @Input('extended') extended!: boolean;
     @Input('properties') properties: { title: string; _id: string; value: string }[];
@@ -63,7 +60,6 @@ export class SchemaConfigurationComponent implements OnInit {
     @Output('use-update-sub-schemas') useUpdateSubSchemas = new EventEmitter<any>();
 
     public started = false;
-    public loading: boolean = true;
     public fields!: FieldControl[];
     public conditions!: ConditionControl[];
     public fieldsForm!: UntypedFormGroup;
@@ -92,6 +88,9 @@ export class SchemaConfigurationComponent implements OnInit {
         { label: 'Verifiable Credential', value: 'VC' },
         { label: 'Encrypted Verifiable Credential', value: 'EVC' },
     ];
+    private _schema: Schema;
+    private _topicId: string;
+    private _id: string | undefined;
 
     public get isSystem(): boolean {
         return this.schemaType === SchemaType.System;
@@ -173,32 +172,12 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     public ngOnInit(): void {
+        this.started = false;
         this.initForm.emit(this);
     }
 
     public ngOnChanges(changes: SimpleChanges): void {
-        if (changes.extended && Object.keys(changes).length === 1) {
-            return;
-        }
-
-        this.started = false;
-
-        if (changes.value && Object.keys(changes).length === 1) {
-            this.dataForm = null as any;
-        }
-
-        this.loading = true;
-
-        this.buildForm();
-
         this.changeForm.emit(this);
-        setTimeout(() => {
-            this.started = true;
-        });
-        setTimeout(() => {
-            this.loading = false;
-        }, 500);
-
     }
 
     public ngOnDestroy() {
@@ -206,177 +185,32 @@ export class SchemaConfigurationComponent implements OnInit {
         this.destroy$.unsubscribe();
     }
 
-    private getId(type: 'default' | 'measure' | 'schemas'): string {
-        switch (type) {
-            case 'default':
-                return String(this.types.length);
-            case 'measure':
-                return String(this.types.length + this.measureTypes.length);
-            case 'schemas':
-                return String(
-                    this.types.length +
-                    this.measureTypes.length +
-                    this.schemaTypes.length
-                );
-        }
-    }
-
-    public reset() {
-        this.loading = true;
-        this.dataForm = null as any;
-        this.buildForm();
-        setTimeout(() => {
-            this.loading = false;
-        }, 500);
-    }
-
-    buildForm() {
-        if (this.dataForm) {
-            if (this.isSystem) {
-                this.dataForm.setValue({
-                    name: '',
-                    description: '',
-                    entity: SchemaEntity.STANDARD_REGISTRY,
-                    fields: {},
-                    conditions: {}
-                });
-            } else if (this.isTag) {
-                this.dataForm.setValue({
-                    name: '',
-                    description: '',
-                    fields: {},
-                    conditions: {}
-                });
-            } else if (this.isTool) {
-                this.dataForm.setValue({
-                    name: '',
-                    description: '',
-                    entity: SchemaEntity.VC,
-                    topicId: [this.topicId, NoBindingValidator],
-                    fields: {},
-                    conditions: {}
-                });
-            } else if (this.isPolicy) {
-                this.dataForm.setValue({
-                    name: '',
-                    description: '',
-                    entity: SchemaEntity.VC,
-                    topicId: [this.topicId],
-                    fields: {},
-                    conditions: {}
-                });
-            } else {
-                this.dataForm.setValue({
-                    name: '',
-                    description: '',
-                    entity: SchemaEntity.VC,
-                    topicId: [this.topicId],
-                    fields: {},
-                    conditions: {}
-                });
-            }
-        } else {
-            this.fieldsForm = this.fb.group({});
-            this.conditionsForm = new UntypedFormGroup({});
-
-            let props: any;
-            if (this.isSystem) {
-                props = {
-                    name: ['', Validators.required],
-                    description: [''],
-                    entity: new UntypedFormControl(SchemaEntity.STANDARD_REGISTRY, Validators.required),
-                    fields: this.fieldsForm,
-                    conditions: this.conditionsForm
-                };
-            } else if (this.isTag) {
-                props = {
-                    name: ['', Validators.required],
-                    description: [''],
-                    fields: this.fieldsForm,
-                    conditions: this.conditionsForm
-                };
-            } else if (this.isModule) {
-                props = {
-                    name: ['', Validators.required],
-                    description: [''],
-                    entity: new UntypedFormControl(SchemaEntity.VC, Validators.required),
-                    fields: this.fieldsForm,
-                    conditions: this.conditionsForm
-                };
-            } else if (this.isTool) {
-                props = {
-                    name: ['', Validators.required],
-                    description: [''],
-                    topicId: [this.topicId, NoBindingValidator],
-                    entity: new UntypedFormControl(SchemaEntity.VC, Validators.required),
-                    fields: this.fieldsForm,
-                    conditions: this.conditionsForm
-                };
-            } else if (this.isPolicy) {
-                props = {
-                    name: ['', Validators.required],
-                    description: [''],
-                    topicId: [this.topicId],
-                    entity: new UntypedFormControl(SchemaEntity.VC, Validators.required),
-                    fields: this.fieldsForm,
-                    conditions: this.conditionsForm
-                };
-            } else {
-                props = {
-                    name: ['', Validators.required],
-                    description: [''],
-                    topicId: [this.topicId],
-                    entity: new UntypedFormControl(SchemaEntity.VC, Validators.required),
-                    fields: this.fieldsForm,
-                    conditions: this.conditionsForm
-                };
-            }
-            this.dataForm = this.fb.group(props, {
-                validators: this.fieldNameValidator()
-            });
-            this.dataForm.valueChanges.subscribe(() => {
-                this.changeForm.emit(this);
-            });
-            this.fields = [];
-            this.conditions = [];
-        }
-    }
-
     public onFilter(event: any) {
         const topicId = event.value;
-        this.loading = true;
-
-        this.updateSubSchemas(topicId);
-
-        setTimeout(() => {
-            this.loading = false;
-        }, 500);
-    }
-
-    private updateSubSchemas(topicId?: string): void {
-        if (!topicId || topicId === 'draft') {
-            this.mappingSubSchemas();
-        }
-
         this.useUpdateSubSchemas.emit(topicId);
     }
 
-    mappingSubSchemas(data?: Schema[], topicId?: string): void {
+    public setData(schema: Schema, topicId: string) {
+        this._id = schema?.document?.$id;
+        this._schema = schema;
+        this._topicId = topicId;
+    }
+
+    public setSubSchemas(subSchemas: Schema[]) {
         this.subSchemas = [];
         this.schemaTypes = [];
-        if (Array.isArray(data)) {
-            const currentSchemaId = this.value?.document?.$id;
-            for (const schema of data) {
-                if (this.checkDependencies(currentSchemaId, schema)) {
+        if (Array.isArray(subSchemas)) {
+            for (const schema of subSchemas) {
+                if (this.checkDependencies(this._id, schema)) {
                     this.subSchemas.push(schema);
                 }
             }
             for (const schema of this.subSchemas) {
                 const value = this.getId('schemas');
-                const type = schema.topicId === topicId ? 'main' : 'sub';
+                const type = schema.topicId === this._topicId ? 'main' : 'sub';
                 const name = schema.name;
                 const version = schema.version ? `v${schema.version}` : '';
-                const component = (schema.topicId !== topicId && schema.component) ? schema.component : '';
+                const component = (schema.topicId !== this._topicId && schema.component) ? schema.component : '';
                 let title = name;
                 if (component) {
                     title = component + ': ' + title;
@@ -400,18 +234,130 @@ export class SchemaConfigurationComponent implements OnInit {
                 }
             }
         }
-    }
-
-    private checkDependencies(currentSchemaId: any, schema: Schema): boolean {
-        if (currentSchemaId && schema.document) {
-            if (schema.document.$id === currentSchemaId) {
-                return false;
-            }
-            if (schema.document.$defs && schema.document.$defs[currentSchemaId]) {
-                return false;
+        if (this.fields) {
+            for (const field of this.fields) {
+                field.type = '';
             }
         }
-        return true;
+    }
+
+    public build() {
+        this.buildForm();
+        this.buildFieldForm();
+    }
+
+    private buildForm() {
+        if (this.dataForm) {
+            this.dataForm = null as any;
+        }
+
+        this.fieldsForm = this.fb.group({});
+        this.conditionsForm = new UntypedFormGroup({});
+
+        let props: any = {
+            name: ['', Validators.required],
+            description: [''],
+            fields: this.fieldsForm,
+            conditions: this.conditionsForm
+        }
+        if (this.isSystem) {
+            props.entity = new UntypedFormControl(SchemaEntity.STANDARD_REGISTRY, Validators.required);
+        } else if (this.isTag) {
+            //None
+        } else if (this.isModule) {
+            props.entity = new UntypedFormControl(SchemaEntity.VC, Validators.required);
+        } else if (this.isTool) {
+            props.entity = new UntypedFormControl(SchemaEntity.VC, Validators.required);
+            props.topicId = [this._topicId, NoBindingValidator];
+        } else if (this.isPolicy) {
+            props.entity = new UntypedFormControl(SchemaEntity.VC, Validators.required);
+            props.topicId = [this._topicId];
+        } else {
+            props.entity = new UntypedFormControl(SchemaEntity.VC, Validators.required);
+            props.topicId = [this._topicId];
+        }
+        this.dataForm = this.fb.group(props, {
+            validators: this.fieldNameValidator()
+        });
+        this.dataForm.valueChanges.subscribe(() => {
+            this.changeForm.emit(this);
+        });
+        this.fields = [];
+        this.conditions = [];
+        this.started = true;
+    }
+
+    private buildFieldForm() {
+        if (this.isSystem) {
+            this.dataForm.setValue({
+                name: this._schema?.name || '',
+                description: this._schema?.description || '',
+                entity: this._schema?.entity || SchemaEntity.VC,
+                fields: {},
+                conditions: {}
+            });
+        } else if (this.isTag) {
+            this.dataForm.setValue({
+                name: this._schema?.name || '',
+                description: this._schema?.description || '',
+                fields: {},
+                conditions: {}
+            });
+        } else if (this.isModule) {
+            this.dataForm.setValue({
+                name: this._schema?.name || '',
+                description: this._schema?.description || '',
+                entity: this._schema?.entity || SchemaEntity.VC,
+                fields: {},
+                conditions: {}
+            });
+        } else {
+            this.dataForm.setValue({
+                name: this._schema?.name || '',
+                description: this._schema?.description || '',
+                entity: this._schema?.entity || SchemaEntity.VC,
+                topicId: this._schema?.topicId || '',
+                fields: {},
+                conditions: {}
+            });
+        }
+
+        const fields = this._schema?.fields || [];
+        const conditions = this._schema?.conditions || [];
+        const errors = this._schema?.errors || [];
+        const conditionsFields: string[] = [];
+        conditions.forEach((item) => {
+            conditionsFields.push(
+                ...item.thenFields.map((thenf) => thenf.name)
+            );
+            conditionsFields.push(
+                ...item.elseFields!.map((elsef) => elsef.name)
+            );
+        });
+
+        this.updateFieldControls(fields, conditionsFields);
+        this.updateConditionControls(conditions);
+        this.errors = errors;
+    }
+
+
+    private updateFieldControls(fields: SchemaField[], conditionsFields: string[]) {
+        this.fields = [];
+        for (const field of fields) {
+            if (field.readOnly || conditionsFields.find(elem => elem === field.name)) {
+                continue;
+            }
+            const control = new FieldControl(
+                field,
+                this.getType(field),
+                this.destroy$,
+                this.defaultFieldsMap,
+                this.dataForm?.get('entity') as UntypedFormControl,
+                this.getFieldName()
+            );
+            control.append(this.fieldsForm);
+            this.fields.push(control);
+        }
     }
 
     private updateConditionControls(conditions: SchemaCondition[]) {
@@ -458,78 +404,31 @@ export class SchemaConfigurationComponent implements OnInit {
         }
     }
 
-    private updateFieldControls(fields: SchemaField[], conditionsFields: string[]) {
-        this.fields = [];
-        for (const field of fields) {
-            if (field.readOnly || conditionsFields.find(elem => elem === field.name)) {
-                continue;
+    private checkDependencies(currentSchemaId: any, schema: Schema): boolean {
+        if (currentSchemaId && schema.document) {
+            if (schema.document.$id === currentSchemaId) {
+                return false;
             }
-            const control = new FieldControl(
-                field,
-                this.getType(field),
-                this.destroy$,
-                this.defaultFieldsMap,
-                this.dataForm?.get('entity') as UntypedFormControl,
-                this.getFieldName()
-            );
-            control.append(this.fieldsForm);
-            this.fields.push(control);
+            if (schema.document.$defs && schema.document.$defs[currentSchemaId]) {
+                return false;
+            }
         }
+        return true;
     }
 
-    updateFormControls() {
-        this.fieldsForm.reset();
-
-        if (this.isSystem) {
-            this.dataForm.setValue({
-                name: this.value?.name || '',
-                description: this.value?.description || '',
-                entity: this.value?.entity || SchemaEntity.VC,
-                fields: {},
-                conditions: {}
-            });
-        } else if (this.isTag) {
-            this.dataForm.setValue({
-                name: this.value?.name || '',
-                description: this.value?.description || '',
-                fields: {},
-                conditions: {}
-            });
-        } else if (this.isModule) {
-            this.dataForm.setValue({
-                name: this.value?.name || '',
-                description: this.value?.description || '',
-                entity: this.value?.entity || SchemaEntity.VC,
-                fields: {},
-                conditions: {}
-            });
-        } else {
-            this.dataForm.setValue({
-                name: this.value?.name || '',
-                description: this.value?.description || '',
-                entity: this.value?.entity || SchemaEntity.VC,
-                topicId: this.value?.topicId || '',
-                fields: {},
-                conditions: {}
-            });
+    private getId(type: 'default' | 'measure' | 'schemas'): string {
+        switch (type) {
+            case 'default':
+                return String(this.types.length);
+            case 'measure':
+                return String(this.types.length + this.measureTypes.length);
+            case 'schemas':
+                return String(
+                    this.types.length +
+                    this.measureTypes.length +
+                    this.schemaTypes.length
+                );
         }
-
-        const fields = this.value?.fields || [];
-        const conditions = this.value?.conditions || [];
-        const errors = this.value?.errors || [];
-        const conditionsFields: string[] = [];
-        conditions.forEach((item) => {
-            conditionsFields.push(
-                ...item.thenFields.map((thenf) => thenf.name)
-            );
-            conditionsFields.push(
-                ...item.elseFields!.map((elsef) => elsef.name)
-            );
-        });
-
-        this.updateFieldControls(fields, conditionsFields);
-        this.updateConditionControls(conditions);
-        this.errors = errors;
     }
 
     private getType(field: SchemaField | null): string {
@@ -566,8 +465,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 }
             }
         }
-        const stringType = this.types.find((type) => type.name === 'String')
-            ?.value;
+        const stringType = this.types.find((type) => type.name === 'String')?.value;
         return (field.type === 'string' && stringType) || '';
     }
 
@@ -741,41 +639,31 @@ export class SchemaConfigurationComponent implements OnInit {
             description,
             required,
             isArray,
-            isRef: type.isRef,
-            fields:
-                this.subSchemas.find((schema) => schema.iri === type.type)
-                    ?.fields || [],
-            type: type.type,
-            format: type.format,
-            pattern: type.pattern || pattern,
-            unit: type.unitSystem ? unit : undefined,
-            unitSystem: type.unitSystem,
-            customType: type.customType,
+            isRef: type?.isRef,
+            fields: this.subSchemas.find((schema) => schema.iri === type?.type)?.fields || [],
+            type: type?.type,
+            format: type?.format,
+            pattern: type?.pattern || pattern,
+            unit: type?.unitSystem ? unit : undefined,
+            unitSystem: type?.unitSystem,
+            customType: type?.customType,
             textColor,
             textSize,
             textBold,
             hidden,
             property,
             readOnly: false,
-            remoteLink: type.customType === 'enum' ? remoteLink : undefined,
-            enum:
-                type.customType === 'enum' && !remoteLink
-                    ? enumArray
-                    : undefined,
-            isPrivate:
-                this.dataForm.value?.entity === SchemaEntity.EVC
-                    ? isPrivate
-                    : undefined,
+            remoteLink: type?.customType === 'enum' ? remoteLink : undefined,
+            enum: type?.customType === 'enum' && !remoteLink ? enumArray : undefined,
+            isPrivate: this.dataForm.value?.entity === SchemaEntity.EVC ? isPrivate : undefined,
             default: defaultValue,
             suggest: suggestValue,
-            examples: this.isNotEmpty(exampleValue)
-                ? [exampleValue]
-                : undefined,
+            examples: this.isNotEmpty(exampleValue) ? [exampleValue] : undefined,
         };
     }
 
     private buildSchema(value: any) {
-        const schema = new Schema(this.value);
+        const schema = new Schema(this._schema);
 
         schema.name = value.name;
         schema.description = value.description;

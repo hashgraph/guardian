@@ -144,6 +144,10 @@ export class FieldControl {
         return this.controlType.value;
     }
 
+    public set type(value: string) {
+        this.controlType.setValue(value);
+    }
+
     public get required(): string {
         return this.controlRequired.value;
     }

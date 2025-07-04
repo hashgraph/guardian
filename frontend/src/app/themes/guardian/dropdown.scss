@@ -185,50 +185,42 @@
     }
 
     &.width-200 {
-        .p-dropdown-item {
-            span {
-                max-width: 200px;
-                display: block;
-                overflow: hidden;
-                white-space: nowrap;
-                text-overflow: ellipsis;
-            }
+        .p-dropdown-item>* {
+            max-width: 200px;
+            display: block;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
     }
 
     &.width-300 {
-        .p-dropdown-item {
-            span {
-                max-width: 300px;
-                display: block;
-                overflow: hidden;
-                white-space: nowrap;
-                text-overflow: ellipsis;
-            }
+        .p-dropdown-item>* {
+            max-width: 300px;
+            display: block;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
     }
 
     &.width-400 {
-        .p-dropdown-item {
-            span {
-                max-width: 400px;
-                display: block;
-                overflow: hidden;
-                white-space: nowrap;
-                text-overflow: ellipsis;
-            }
+        .p-dropdown-item>* {
+            max-width: 400px;
+            display: block;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
     }
 
     &.width-825 {
-        .p-dropdown-item {
-            span {
-                max-width: 825px;
-                display: block;
-                overflow: hidden;
-                white-space: nowrap;
-                text-overflow: ellipsis;
-            }
+        .p-dropdown-item>* {
+            max-width: 825px;
+            display: block;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
     }
 }

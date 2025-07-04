@@ -1,7 +1,4 @@
 <div class="context">
-    <div *ngIf="loading" class="loading">
-        <div class="preloader-image preloader-image-l-size"></div>
-    </div>
     <form *ngIf="started" [formGroup]="dataForm" class="context">
         <div class="configurator-block-title">Schema Properties</div>
         <div class="input-field-container guardian-input-container">
@@ -23,7 +20,7 @@
                     panelStyleClass="guardian-dropdown-panel width-825"
                     (onChange)="onFilter($event)"
                     [options]="policies"
-                    [disabled]="!isNewSchema"
+                    [attr.disabled-dropdown]="!isNewSchema"
                     appendTo="body"
                     formControlName="topicId"
                     id="policy"
@@ -45,6 +42,7 @@
                     optionLabel="name"
                     optionValue="topicId"
                     placeholder="No binding"
+                    [attr.disabled-dropdown]="!isNewSchema"
                 ></p-dropdown>
             </div>
 

@@ -56,21 +56,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     public isString: boolean = false;
     public fieldType: UntypedFormControl;
     public property: UntypedFormControl;
-    public groupedFieldTypes: any = [
-        {
-            label: 'Units of measure',
-            value: 'uom',
-            items: [
-                { label: 'Prefix', value: UnitSystem.Prefix },
-                { label: 'Postfix', value: UnitSystem.Postfix },
-            ],
-        },
-        {
-            label: 'Hedera',
-            value: 'h',
-            items: [{ label: 'Account', value: 'hederaAccount' }],
-        },
-    ];
+    public groupedFieldTypes: any[] = this.createFieldTypes();
     public fieldTypes: any = [
         { label: 'None', value: 'none' },
         { label: 'Hidden', value: 'hidden' },
@@ -99,6 +85,34 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     ) {
         this.fieldType = new UntypedFormControl();
         this.property = new UntypedFormControl();
+    }
+
+    private createFieldTypes() {
+        return [
+            {
+                label: 'Simple Types',
+                value: 'st',
+                items: [],
+            },
+            {
+                label: 'Units of measure',
+                value: 'uom',
+                items: [
+                    { label: 'Prefix', value: UnitSystem.Prefix },
+                    { label: 'Postfix', value: UnitSystem.Postfix },
+                ],
+            },
+            {
+                label: 'Hedera',
+                value: 'h',
+                items: [{ label: 'Account', value: 'hederaAccount' }],
+            },
+            {
+                label: 'Schema defined',
+                value: 'sd',
+                items: [],
+            }
+        ];
     }
 
     ngOnInit(): void {
@@ -249,43 +263,22 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes?.types?.firstChange && this.types) {
-            const newSimpleTypes = this.types.map((type: any) => {
+        this.groupedFieldTypes = this.createFieldTypes();
+        if (this.types) {
+            this.groupedFieldTypes[0].items = this.types.map((type: any) => {
                 return { label: type.name, value: type.value };
-            });
-            this.groupedFieldTypes.unshift({
-                label: 'Simple Types',
-                value: 'st',
-                items: newSimpleTypes,
             });
         }
         if (this.schemaTypes) {
-            if (changes?.schemaTypes?.firstChange) {
-                const newSchemasTypes = this.schemaTypes.map((schemaType: any) => {
-                    return {
-                        ...schemaType,
-                        label: schemaType.name,
-                        value: schemaType.value
-                    };
-                });
-                this._sd = {
-                    label: 'Schema defined',
-                    value: 'sd',
-                    items: newSchemasTypes,
+            this.groupedFieldTypes[3].items = this.schemaTypes.map((schemaType: any) => {
+                return {
+                    ...schemaType,
+                    label: schemaType.name,
+                    value: schemaType.value
                 };
-                this.groupedFieldTypes.push(this._sd);
-            } else if (changes?.schemaTypes?.firstChange === false) {
-                const newSchemasTypes = this.schemaTypes.map((schemaType: any) => {
-                    return {
-                        ...schemaType,
-                        label: schemaType.name,
-                        value: schemaType.value
-                    };
-                });
-                this._sd.items = newSchemasTypes;
-                this.cdr.detectChanges();
-            }
+            });
         }
+        // this.cdr.detectChanges();
         if (changes.extended && Object.keys(changes).length === 1) {
             return;
         }

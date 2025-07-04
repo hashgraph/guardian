@@ -28,18 +28,15 @@
             </div>
             <app-schema-configuration
                 #schemaControl
-                [hidden]="!!json"
                 [type]="type"
-                [value]="schema"
+                [hidden]="!!json"
                 [extended]="extended"
-                [schemaType]="schemaType"
-                [modules]="modules"
                 [policies]="policies"
-                [topicId]="topicId"
-                [properties]="properties"
                 [tools]="tools"
+                [schemaType]="schemaType"
+                [properties]="properties"
                 (change-form)="onChangeForm($event)"
-                (use-update-sub-schemas)="onLoadSubSchemas($event)"
+                (use-update-sub-schemas)="onChangePolicy($event)"
             >
             </app-schema-configuration>
             <ngx-codemirror 
