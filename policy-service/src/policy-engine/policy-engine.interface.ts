@@ -989,6 +989,8 @@ export interface IPolicyDocument extends IPolicyDBDocument<any> {
      * sourceTag
      */
     __sourceTag__?: string;
+
+    draft?: boolean;
 }
 
 /**
@@ -1124,4 +1126,6 @@ export interface IPolicyGetData {
     readonly: boolean;
 
     [x: string]: any;
+
+    draftDocument?: any;
 }

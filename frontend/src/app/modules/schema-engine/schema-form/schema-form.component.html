@@ -569,7 +569,9 @@
                 (click)="config.fn()"
                 [disabled]="config.disabled()"
                 type="button"
-                class="guardian-button guardian-button-{{config.type}}">{{ config.text }}
+                class="guardian-button guardian-button-{{config.type}}">
+                <svg-icon *ngIf="config.iconPath" src="{{config.iconPath}}" svgClass="save-icon-color"></svg-icon>
+                {{ config.text }}
             </button>
         </ng-container>
     </div>
