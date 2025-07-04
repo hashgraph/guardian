@@ -200,14 +200,17 @@ export async function copyDefsSchemas(
     defs: any,
     user: IOwner,
     topicId: string,
-    root: any
+    root: any,
+    copyNested: boolean,
+    copiedShemas: Map<string, SchemaCollection>
+
 ) {
     if (!defs) {
         return;
     }
     const schemasIdsInDocument = Object.keys(defs);
     for (const schemaId of schemasIdsInDocument) {
-        await copySchemaAsync(schemaId, topicId, null, user);
+        await copySchemaAsync(schemaId, topicId, null, user, copyNested, copiedShemas);
     }
 }
 
@@ -215,16 +218,26 @@ export async function copySchemaAsync(
     iri: string,
     topicId: string,
     name: string,
-    user: IOwner
+    user: IOwner,
+    copyNested: boolean = true,
+    copiedShemas: Map<string, SchemaCollection> = new Map()
 ) {
+    if (['#SentinelHUB', '#GeoJSON'].includes(iri)) {
+        return;
+    }
+
+    if (copiedShemas.has(iri)) {
+        return;
+    }
+
     const users = new Users();
     const root = await users.getHederaAccount(user.creator, user.id);
 
     let item = await DatabaseServer.getSchema({ iri });
 
-    const oldSchemaIri = item.iri;
-    await copyDefsSchemas(item.document?.$defs, user, topicId, root);
-    item = await DatabaseServer.getSchema({ iri });
+    if (copyNested) {
+        await copyDefsSchemas(item.document?.$defs, user, topicId, root, copyNested, copiedShemas);
+    }
 
     let contextURL = null;
     if (item.contextURL && item.contextURL.startsWith('schema:')) {
@@ -254,10 +267,32 @@ export async function copySchemaAsync(
     SchemaHelper.updateIRI(item);
     item.iri = item.iri || item.uuid;
 
-    await DatabaseServer.saveSchema(item)
+    if (item.document?.$defs) {
+        const oldDefsIds = Object.keys(item.document?.$defs);
+        const newDefs = {};
 
-    await updateSchemaDocument(item);
-    await updateSchemaDefs(item.iri, oldSchemaIri);
+        for (const oldId of oldDefsIds) {
+            const copiedShema = copiedShemas.get(oldId);
+
+            if (copiedShema) {
+                newDefs[copiedShema.iri] = copiedShema.document;
+            } else {
+                newDefs[oldId] = item.document.$defs[oldId];
+            }
+        }
+    }
+
+    let document = JSON.stringify(item.document) as string;
+
+    for (const [oldId, newSchema] of copiedShemas.entries()) {
+        document = document.replaceAll(oldId.substring(1), newSchema.iri.substring(1));
+    }
+
+    item.document = JSON.parse(document);
+
+    const newItem = await DatabaseServer.saveSchema(item);
+
+    copiedShemas.set(iri, newItem);
 
     const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true, user.id);
 
