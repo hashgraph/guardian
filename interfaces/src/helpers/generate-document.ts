@@ -27,17 +27,37 @@ export class DocumentGenerator {
     }
 
     /**
+     * Check if value is plain object
+     * @param value value
+     * @returns boolean
+     */
+    private static _isPlainObject(value) {
+        return (
+            typeof value === 'object' &&
+            value !== null &&
+            !Array.isArray(value) &&
+            Object.prototype.toString.call(value) === '[object Object]'
+        );
+    }
+
+    /**
      * Generate new field
      * @param field field
      * @param context context
      * @param option option
+     * @param rowPresets presets
      * @returns document
      */
     private static _generateGeoJSON(
         subSchema: SchemaField,
         context: string[],
-        option: GenerateOption
+        option: GenerateOption,
+        rowPresets?: Record<string, any>,
     ): any {
+        if (DocumentGenerator._isPlainObject(rowPresets?.[subSchema.name])) {
+            return rowPresets[subSchema.name];
+        }
+
         const json: any = {};
         json.type = 'Point';
         json['@context'] = context;
@@ -50,13 +70,18 @@ export class DocumentGenerator {
      * @param field field
      * @param context context
      * @param option option
+     * @param rowPresets presets
      * @returns document
      */
     private static _generateSentinelHub(
         subSchema: SchemaField,
         context: string[],
-        option: GenerateOption
+        option: GenerateOption,
+        rowPresets?: Record<string, any>,
     ): any {
+        if (DocumentGenerator._isPlainObject(rowPresets?.[subSchema.name])) {
+            return rowPresets[subSchema.name];
+        }
         const json: any = {};
         // json.type = 'Point';
         json['@context'] = context;
@@ -69,17 +94,19 @@ export class DocumentGenerator {
      * @param field field
      * @param context context
      * @param option option
+     * @param rowPresets presets
      * @returns document
      */
     private static _generateSubDocument(
         subSchema: SchemaField,
         context: string[],
-        option: GenerateOption
+        option: GenerateOption,
+        rowPresets?: Record<string, any>,
     ): any {
         const { type } = SchemaHelper.parseRef(subSchema.type);
         const json: any = {};
         for (const field of subSchema.fields) {
-            const value = DocumentGenerator.generateField(field, context, option);
+            const value = DocumentGenerator.generateField(field, context, option, rowPresets);
             if (value !== undefined) {
                 json[field.name] = value;
             }
@@ -94,16 +121,23 @@ export class DocumentGenerator {
      * @param field field
      * @param context context
      * @param option option
+     * @param rowPresets presets
      * @returns document
      */
     private static _generateSimpleField(
         field: SchemaField,
         context: string[],
-        option: GenerateOption
+        option: GenerateOption,
+        rowPresets?: Record<string, any>,
     ): any {
+        if (rowPresets?.[field.name] !== undefined) {
+            return rowPresets[field.name];
+        }
+
         if (Array.isArray(field.examples) && field.examples[0]) {
             return field.examples[0];
         }
+
         switch (field.type) {
             case 'number':
                 return 1;
@@ -160,26 +194,28 @@ export class DocumentGenerator {
      * @param field field
      * @param context context
      * @param option option
+     * @param rowPresets presets
      * @returns document
      */
     private static _generateField(
         field: SchemaField,
         context: string[],
-        option: GenerateOption
+        option: GenerateOption,
+        rowPresets?: Record<string, any>,
     ): any {
         if (!option.enableHiddenFields && field.hidden) {
             return undefined;
         }
         if (field.isRef && !field.examples?.[0]) {
             if (field.type === '#GeoJSON') {
-                return DocumentGenerator._generateGeoJSON(field, context, option);
+                return DocumentGenerator._generateGeoJSON(field, context, option, rowPresets?.[field.name]);
             } else if (field.type === '#SentinelHUB') {
-                return DocumentGenerator._generateSentinelHub(field, context, option);
+                return DocumentGenerator._generateSentinelHub(field, context, option, rowPresets?.[field.name]);
             } else {
-                return DocumentGenerator._generateSubDocument(field, context, option);
+                return DocumentGenerator._generateSubDocument(field, context, option, rowPresets?.[field.name]);
             }
         } else {
-            return DocumentGenerator._generateSimpleField(field, context, option);
+            return DocumentGenerator._generateSimpleField(field, context, option, rowPresets);
         }
     }
 
@@ -188,14 +224,16 @@ export class DocumentGenerator {
      * @param field field
      * @param context context
      * @param option option
+     * @param rowPresets presets
      * @returns document
      */
     private static generateField(
         field: SchemaField,
         context: string[],
-        option: GenerateOption
+        option: GenerateOption,
+        rowPresets?: Record<string, any>,
     ): any {
-        const value = DocumentGenerator._generateField(field, context, option);
+        const value = DocumentGenerator._generateField(field, context, option, rowPresets);
         if (field.isArray && value !== undefined) {
             if (Array.isArray(value)) {
                 return value;
@@ -211,9 +249,10 @@ export class DocumentGenerator {
      * Generate new document
      * @param schema schema
      * @param option option
+     * @param rowPresets presets
      * @returns document
      */
-    public static generateDocument(schema: Schema, option?: GenerateOption): any {
+    public static generateDocument(schema: Schema, option?: GenerateOption, rowPresets?: Record<string, any>): any {
         if (!option) {
             option = DocumentGenerator.DefaultOption;
         }
@@ -221,7 +260,7 @@ export class DocumentGenerator {
         const json: any = {};
         json.id = GenerateUUIDv4();
         for (const field of schema.fields) {
-            const value = DocumentGenerator.generateField(field, context, option);
+            const value = DocumentGenerator.generateField(field, context, option, rowPresets);
             if (value !== undefined) {
                 json[field.name] = value;
             }
