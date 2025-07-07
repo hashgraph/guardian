@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {openDB, IDBPDatabase} from 'idb';
 
-export interface StoreConfig {
+interface StoreConfig {
     name: string;
     options?: IDBObjectStoreParameters;
 }
