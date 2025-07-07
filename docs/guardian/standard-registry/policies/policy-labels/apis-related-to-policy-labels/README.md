@@ -1,2 +1,2 @@
-# ⚙️ APIs related to Policy Labels
+# APIs related to Policy Labels
 

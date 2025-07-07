@@ -1,4 +1,4 @@
-# 🔨 Build executables and run manually
+# Build executables and run manually
 
 If you want to manually build every component with debug information, then build and run the services and packages in the following sequence: Interfaces, Logger Helper, Message Broker, Logger Service, Auth Service, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
 
@@ -28,7 +28,7 @@ Install, configure and start all the prerequisites, then build and start each co
     If need to configure OVERRIDE uncomment the variable in file `./guardian-service/.env`:
 
     ```plaintext
-        OVERRIDE="false" 
+        OVERRIDE="false"
     ```
 *   configure the file `./<service_name>/configs/.env.<service>.<GUARDIAN_ENV>` file: to do this copy, past and rename the file `./<service_name>/.env.<service>.template`
 

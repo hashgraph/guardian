@@ -1,4 +1,4 @@
-# ⛽ Verra VMR0006: Energy Efficiency and Fuel Switch Measures in Thermal Applications
+# Verra VMR0006: Energy Efficiency and Fuel Switch Measures in Thermal Applications
 
 ## Table of Contents
 

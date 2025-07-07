@@ -1,4 +1,4 @@
-# 💻 Launching Guardian
+# Launching Guardian
 
 Once [http://localhost:3000](http://localhost:3000) is launched, we need to first generate Operator ID and Operator Key by clicking on Generate button as shown below:
 

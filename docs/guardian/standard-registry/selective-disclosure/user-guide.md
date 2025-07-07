@@ -2,9 +2,9 @@
 description: This is an Alpha Version
 ---
 
-# 📔 User Guide
+# User Guide
 
-## Overview <a href="#_xw1hte24c5p" id="_xw1hte24c5p"></a>
+## Overview <a href="#xw1hte24c5p" id="xw1hte24c5p"></a>
 
 By default Guardian publishes project info and MRV data to IPFS in plaintext so that it is viewable by anyone examining the trust chain of an asset. While transparency of the trust chain is critical to establishing confidence in the qualities of an asset, and the data implications on its price, complete public transparency creates challenges for certain types of data.
 
@@ -12,7 +12,7 @@ The Guardian Selective Disclosure (SD) mechanism supports a more granular access
 
 This guide provides an overview of the SD Mechanism, how it is configured and used, and consideration for that use
 
-### Selective Disclosure Use Cases <a href="#_b9e5d4yg5h00" id="_b9e5d4yg5h00"></a>
+### Selective Disclosure Use Cases <a href="#b9e5d4yg5h00" id="b9e5d4yg5h00"></a>
 
 We can distinguish at a high level the nature of the attributes that Guardian deals with and so the reason for which it might be desirable to treat them as private with the SD mechanism
 
@@ -23,7 +23,7 @@ Another distinction is between project info and MRV data. Validation of project 
 
 Conversely, MRV data may be recorded and published on a much higher frequency, with a corresponding need for more frequent verification. Applying SD to high frequency MRV data, with a corresponding requirement for high frequency of requesting private attributes, may create an unacceptable processing burden on MRV verification.
 
-### Selective Disclosure Model <a href="#_w5eiwxu6e19q" id="_w5eiwxu6e19q"></a>
+### Selective Disclosure Model <a href="#w5eiwxu6e19q" id="w5eiwxu6e19q"></a>
 
 The default Guardian model for publishing data as part of a provenance chain is:
 
@@ -68,13 +68,13 @@ The high level sequence is shown below:
 
 ![](<../../../.gitbook/assets/0 (4) (1).png>)
 
-### 'Supply' Side <a href="#_bakygsypldnr" id="_bakygsypldnr"></a>
+### 'Supply' Side <a href="#bakygsypldnr" id="bakygsypldnr"></a>
 
 A Guardian admin triggers the SD mechanism by stipulating that a particular schema is type “Encrypted Verifiable Credential”, and specifies some attributes as private. To get complete information, please check [selective-disclosure-demo.md](selective-disclosure-demo.md "mention")
 
 With the configuration, whenever in the future that Guardian creates a VC complying to that schema - it will follow the SD sequence and not the default .
 
-### Considerations <a href="#_wpykyf38v0u8" id="_wpykyf38v0u8"></a>
+### Considerations <a href="#wpykyf38v0u8" id="wpykyf38v0u8"></a>
 
 Transparency is fundamental to the premise of trusting the provenance chain for an asset. SD could be seen as being in opposition to transparency as it creates the possibility that a given actor examining an asset’s provenance chain will not be able to view all its aspects - if those are defined as private and they do not meet the defined qualifications for access.
 

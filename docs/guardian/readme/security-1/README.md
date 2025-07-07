@@ -4,7 +4,7 @@ description: >-
   application to allow authentication via the Meeco Wallet
 ---
 
-# 🔑 Meeco authentication
+# Meeco authentication
 
 At the end of this doc, this is what suppose to see in the Guardian app.
 

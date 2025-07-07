@@ -1,2 +1,2 @@
-# 👬 Community Standards
+# Community Standards
 

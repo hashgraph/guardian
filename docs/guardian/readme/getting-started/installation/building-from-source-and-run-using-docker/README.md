@@ -1,4 +1,4 @@
-# 🔨 Building from source and run using Docker
+# Building from source and run using Docker
 
 [Step By Step Process](./#step-by-step-process)
 

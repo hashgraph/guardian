@@ -1,4 +1,4 @@
-# 💻 Schema Tree UI
+# Schema Tree UI
 
 ## 1. Viewing Schema Tree
 

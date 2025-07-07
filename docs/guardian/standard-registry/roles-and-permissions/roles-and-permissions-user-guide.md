@@ -1,4 +1,4 @@
-# 💻 Roles and Permissions User Guide
+# Roles and Permissions User Guide
 
 1. [Step By Step Process](roles-and-permissions-user-guide.md#id-1.-step-by-step-process)
 2. [Demo Video](roles-and-permissions-user-guide.md#id-2.-demo-video)

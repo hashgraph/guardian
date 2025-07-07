@@ -1,4 +1,4 @@
-# 💻 Dry Run Mode using UI
+# Dry Run Mode using UI
 
 1. [Step By Step Process](demo-guide-on-dry-run-operations.md#id-1.-step-by-step-process)
 2. [Demo Video](demo-guide-on-dry-run-operations.md#id-2.-demo-video)

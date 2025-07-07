@@ -1,2 +1,2 @@
-# 👾 Automation Testing
+# Automation Testing
 

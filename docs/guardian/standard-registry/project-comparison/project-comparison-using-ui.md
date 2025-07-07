@@ -1,4 +1,4 @@
-# 💻 Project Comparison using UI
+# Project Comparison using UI
 
 1. [Step By Step Process](project-comparison-using-ui.md#id-1.-step-by-step-process)
 2. [Demo Video](project-comparison-using-ui.md#id-2.-demo-video)

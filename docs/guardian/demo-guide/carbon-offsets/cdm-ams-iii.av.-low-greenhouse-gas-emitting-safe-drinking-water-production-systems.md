@@ -1,4 +1,4 @@
-# 🏨 CDM AMS-III.AV.: Low Greenhouse Gas Emitting Safe Drinking Water Production Systems
+# CDM AMS-III.AV.: Low Greenhouse Gas Emitting Safe Drinking Water Production Systems
 
 ## Table of Contents
 

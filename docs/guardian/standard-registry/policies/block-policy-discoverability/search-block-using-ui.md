@@ -1,4 +1,4 @@
-# 💻 Search Block using UI
+# Search Block using UI
 
 1. [Step By Step Process](search-block-using-ui.md#id-1.-step-by-step-process)
 2. [Demo Video](search-block-using-ui.md#id-2.-demo-video)

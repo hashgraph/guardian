@@ -2,7 +2,7 @@
 description: Policy developed by Tolam Earth, Inc and Nova Institute
 ---
 
-# ♨️ Improved Cookstove
+# Improved Cookstove
 
 This first-of-its-kind Improved Cookstove Guardian Policy was designed per the Anthropogenic Impact Accounting Ontology found here An ontology for anthropogenic impact accounting. To this end, the Guardian Policy does not adhere to a specific Standard or approved methodology for carbon offset quantification, rather it abstracts concepts from all known standards and methodologies, categorizes them, models their relationships, and then instantiates them in the form of this digitally native Guardian Policy and its associated Guardian Schema. This policy issues a non-fungible Improved Cookstove Carbon Credit (ICCC) Token.
 

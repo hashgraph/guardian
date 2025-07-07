@@ -1,4 +1,4 @@
-# 💻 Creating Schema using UI
+# Creating Schema using UI
 
 To create a new Schemas, click on the **New** button at the top right corner.
 
