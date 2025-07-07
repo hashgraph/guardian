@@ -1,4 +1,4 @@
-# 💻 Indexer User Guide
+# Indexer User Guide
 
 [Step By Step Process](indexer-user-guide.md#id-1.-step-by-step-process)
 

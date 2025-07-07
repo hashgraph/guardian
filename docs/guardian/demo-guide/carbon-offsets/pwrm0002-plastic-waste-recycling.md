@@ -1,4 +1,4 @@
-# 🏭 PWRM0002 : Plastic Waste Recycling Methodology
+# PWRM0002 : Plastic Waste Recycling Methodology
 
 ## Table of Contents
 

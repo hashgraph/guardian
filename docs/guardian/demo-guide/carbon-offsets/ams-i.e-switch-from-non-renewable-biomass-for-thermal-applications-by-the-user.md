@@ -1,4 +1,4 @@
-# 🌩️ AMS-I.E Switch from Non-Renewable Biomass for Thermal Applications by the User
+# AMS-I.E Switch from Non-Renewable Biomass for Thermal Applications by the User
 
 ## Table of Contents
 

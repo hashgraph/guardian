@@ -1,4 +1,4 @@
-# 🏭 CDM ACM0001: Flaring or Use of Landfill Gas
+# CDM ACM0001: Flaring or Use of Landfill Gas
 
 ## ​​Table of Contents&#x20;
 

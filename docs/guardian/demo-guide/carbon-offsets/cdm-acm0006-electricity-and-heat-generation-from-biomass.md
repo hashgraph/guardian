@@ -1,4 +1,4 @@
-# 🏭 CDM ACM0006: Electricity and Heat Generation from Biomass
+# CDM ACM0006: Electricity and Heat Generation from Biomass
 
 ## Table of contents <a href="#table-of-contents" id="table-of-contents"></a>
 

@@ -1,4 +1,4 @@
-# 💻 Creating Contract using UI
+# Creating Contract using UI
 
 1. Guardian instance out of the box contains implementations for ‘Wiping’ and ‘Retirement’ contracts which can be deployed/enabled from the UI.
 

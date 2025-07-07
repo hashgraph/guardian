@@ -1,2 +1,2 @@
-# ⚙ Logs APIs
+# Logs APIs
 

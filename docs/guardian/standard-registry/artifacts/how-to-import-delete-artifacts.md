@@ -1,4 +1,4 @@
-# 💻 Importing/Deleting Artifacts using UI
+# Importing/Deleting Artifacts using UI
 
 1. To check all the Artifacts of the policies, you need to click on Artifacts Tab in the menu.
 

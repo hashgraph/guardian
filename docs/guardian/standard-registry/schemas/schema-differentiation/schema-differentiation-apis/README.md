@@ -1,2 +1,2 @@
-# ⚙ Schema Differentiation APIs
+# Schema Differentiation APIs
 

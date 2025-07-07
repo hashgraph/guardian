@@ -1,4 +1,4 @@
-# 🏭 CDM ACM0018: Electricity Generation from Biomass in Power-Only Plants
+# CDM ACM0018: Electricity Generation from Biomass in Power-Only Plants
 
 ## Table of contents
 

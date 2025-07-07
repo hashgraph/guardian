@@ -1,2 +1,2 @@
-# ⚙️ APIs related to Formula Linked
+# APIs related to Formula Linked
 

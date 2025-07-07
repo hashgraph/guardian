@@ -1,4 +1,4 @@
-# 💻 Performing UI Automation Testing
+# Performing UI Automation Testing
 
 Following command is used to run all UI tests in an interactive dashboard that allows you to see the status of the tests while they are running and at the same time view the application under test.
 

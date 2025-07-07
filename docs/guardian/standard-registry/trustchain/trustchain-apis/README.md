@@ -1,2 +1,2 @@
-# ⚙ TrustChain APIs
+# TrustChain APIs
 

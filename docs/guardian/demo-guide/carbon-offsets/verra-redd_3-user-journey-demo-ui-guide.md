@@ -5,7 +5,7 @@ description: >-
   Verra policy.
 ---
 
-# 💻 Verra Redd\_3 User Journey Demo UI Guide
+# Verra Redd\_3 User Journey Demo UI Guide
 
 **Here are the users that will be involved within this Verra policy demo UI:**
 

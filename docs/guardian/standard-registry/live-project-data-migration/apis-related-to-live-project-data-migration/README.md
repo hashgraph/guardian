@@ -1,2 +1,2 @@
-# ⚙️ APIs related to Live Project Data Migration
+# APIs related to Live Project Data Migration
 

@@ -1,4 +1,4 @@
-# 💻 Policy Differentiation using UI
+# Policy Differentiation using UI
 
 1. [Step By Step Process](policy-differentiation-using-ui.md#step-by-step-process)
 2. [Demo Video](policy-differentiation-using-ui.md#demo-video)

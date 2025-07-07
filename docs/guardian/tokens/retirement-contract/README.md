@@ -1,4 +1,4 @@
-# 📔 Token Retirement Contract
+# Token Retirement Contract
 
 The implementation of token retirement in Guardian relies on the capability of Hedera HCS allowing ‘wipe’ rights for a given token to be assigned to a contract identifier instead of an account key (the account key is commonly referred to as ‘wipe key’). Thus in Guardian for each token a corresponding ‘wiping contract’ is created, which controls the lifecycle of the token instances. These contracts implement a dynamic access control logic/list (ACL) managed by the Standard Registries (SRs) which issued the corresponding tokens. The contracts provide methods to add/remove ‘retirement contract’ identifiers to ACLs, thus giving/retracting their permissions to call ‘wipe’ methods of wiping contracts, which actually execute the wiping of token instances.
 

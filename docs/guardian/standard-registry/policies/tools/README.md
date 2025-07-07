@@ -1,4 +1,4 @@
-# 📂 Tools
+# Tools
 
 ## **Overview of Tools in the Guardian**
 

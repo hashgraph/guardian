@@ -1,2 +1,2 @@
-# ⚙ Import/Export Schemas APIs
+# Import/Export Schemas/Policies APIs
 

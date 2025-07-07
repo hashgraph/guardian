@@ -1,4 +1,4 @@
-# 🏨 CDM AMS-I.F.: Renewable Electricity Generation for Captive Use and Mini-Grid
+# CDM AMS-I.F.: Renewable Electricity Generation for Captive Use and Mini-Grid
 
 ## ​​Table of Contents
 

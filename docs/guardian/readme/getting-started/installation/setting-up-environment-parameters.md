@@ -1,4 +1,4 @@
-# 🏡 Setting up environment parameters
+# Setting up environment parameters
 
 ### `.env / .env.docker` Parameters in `guardian-service`
 

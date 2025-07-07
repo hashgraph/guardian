@@ -1,4 +1,4 @@
-# 🏭 CDM AMS-I.A.: Electricity Generation by the User
+# CDM AMS-I.A.: Electricity Generation by the User
 
 ## Table of Contents
 

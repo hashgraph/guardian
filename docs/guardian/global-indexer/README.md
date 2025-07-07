@@ -1,4 +1,4 @@
-# 📇 Global Indexer
+# Global Indexer
 
 Global Indexer is a crucial component designed to enhance data search, retrieval, and management across various instances of the Guardian framework. Here are the key features and functionalities of the Global Indexer:
 

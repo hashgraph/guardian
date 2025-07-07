@@ -1,2 +1,2 @@
-# 📁 Example Data
+# Example Data
 

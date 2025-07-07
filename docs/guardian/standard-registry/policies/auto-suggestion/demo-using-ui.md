@@ -1,4 +1,4 @@
-# 💻 Demo using UI
+# Demo using UI
 
 “Suggestions” tab is added for Standard Registry (SR) section under Policies menu option.
 

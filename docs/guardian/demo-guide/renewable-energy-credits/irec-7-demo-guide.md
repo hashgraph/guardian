@@ -2,7 +2,7 @@
 description: Demonstrating Split functionality
 ---
 
-# 💻 iREC 7 Demo UI Guide
+# iREC 7 Demo UI Guide
 
 Following are the steps to run iREC 7 Policy.
 

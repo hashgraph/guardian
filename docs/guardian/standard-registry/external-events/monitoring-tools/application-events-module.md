@@ -1,4 +1,4 @@
-# ⛏ Application-events module
+# Application-events module
 
 The application-events module provide resources in order to integrate the external events described [here](https://docs.hedera.com/guardian/guardian/standard-registry/external-events) to the external application.
 

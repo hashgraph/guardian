@@ -805,7 +805,6 @@
     * [GHGP Corporate Standard](guardian/demo-guide/carbon-emissions/ghgp-corporate-standard.md)
     * [GHGP Corporate Standard V2](guardian/demo-guide/carbon-emissions/ghgp-corporate-standard-v2.md)
     * [Climate Action Reserve’s U.S. Landfill Protocol Version 6.0](guardian/demo-guide/carbon-emissions/climate-action-reserves-u.s.-landfill-protocol-version-6.0.md)
-    * [Landfill Gas Destruction and Beneficial Use Projects, Version 2.0](guardian/demo-guide/carbon-emissions/landfill-gas-destruction-and-beneficial-use-projects-version-2.0.md)
 * [FAQs](guardian/faqs.md)
 * [Community Standards](guardian/community-standards/README.md)
   * [Guardian Policy Standards (GPS)](guardian/community-standards/guardian-policy-standards-gps.md)

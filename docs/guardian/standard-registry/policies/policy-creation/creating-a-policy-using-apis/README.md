@@ -1,2 +1,2 @@
-# ⚙ Creating a Policy using APIs
+# Creating a Policy using APIs
 
