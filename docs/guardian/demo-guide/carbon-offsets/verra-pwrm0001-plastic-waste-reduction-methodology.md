@@ -1,4 +1,4 @@
-# ⬇️ Verra PWRM0001: Plastic Waste Reduction Methodology
+# Verra PWRM0001 :Plastic Waste Collection Methodology
 
 ## Table of Contents
 
@@ -8,7 +8,7 @@
 
 [Demo Video](verra-pwrm0001-plastic-waste-reduction-methodology.md#toc192784261)
 
-[Policy Workflow](verra-pwrm0001-plastic-waste-reduction-methodology.md#\_toc895640644)
+[Policy Workflow](verra-pwrm0001-plastic-waste-reduction-methodology.md#_toc895640644)
 
 [Policy Guide](verra-pwrm0001-plastic-waste-reduction-methodology.md#toc1368814671)
 

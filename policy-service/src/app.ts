@@ -1,4 +1,4 @@
-import { ApplicationState, JwtServicesValidator, COMMON_CONNECTION_CONFIG, DatabaseServer, entities, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization, Users, Wallet, OldSecretManager } from '@guardian/common';
+import { ApplicationState, JwtServicesValidator, COMMON_CONNECTION_CONFIG, DatabaseServer, entities, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization, Users, Wallet } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { PolicyContainer } from './helpers/policy-container.js';
 import { BlockService } from './helpers/block-service.js';
@@ -26,7 +26,6 @@ Promise.all([
 ]).then(async values => {
     const [db, cn, loggerMongo] = values;
 
-    await new OldSecretManager().setConnection(cn).init();
     const jwtServiceName = 'POLICY_SERVICE';
 
     JwtServicesValidator.setServiceName(jwtServiceName);

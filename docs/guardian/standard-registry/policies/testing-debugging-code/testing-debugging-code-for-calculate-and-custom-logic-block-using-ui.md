@@ -16,7 +16,7 @@ The `customLogicBlock` supports isolated dry-run execution. This means it can be
 
 Execution is controlled through a step-by-step interface in the UI, enabling users to define parameters, input data, and immediately inspect the results.
 
-<figure><img src="../../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
 
 ***
 
@@ -26,7 +26,7 @@ Execution is controlled through a step-by-step interface in the UI, enabling use
 
 Users can adjust various configuration options related to the block directly within the dry-run interface. This avoids the need to navigate back to the main policy editor and streamlines the testing workflow.
 
-<figure><img src="../../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 ***
 
@@ -40,7 +40,7 @@ The block can be tested using mock input data. Three primary input methods are s
 * A dynamic form is generated based on the schema, allowing users to fill in relevant fields.
 * Ideal for users who prefer a structured and guided input interface.
 
-<figure><img src="../../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 **b. JSON Editor**
 

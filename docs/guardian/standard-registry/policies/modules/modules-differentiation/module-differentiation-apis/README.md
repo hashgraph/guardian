@@ -1,2 +1,2 @@
-# ⚙ Module Differentiation APIs
+# Module Differentiation APIs
 

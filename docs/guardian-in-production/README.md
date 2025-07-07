@@ -1,2 +1,2 @@
-# 📈 Guardian in Production
+# Guardian in Production
 

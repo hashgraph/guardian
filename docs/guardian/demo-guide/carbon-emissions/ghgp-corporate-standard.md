@@ -2,7 +2,7 @@
 description: This policy is developed by Envision
 ---
 
-# 🏭 GHGP Corporate Standard
+# GHGP Corporate Standard
 
 ## Table of Contents
 

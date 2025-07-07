@@ -1,4 +1,4 @@
-# 🔐 Selective Disclosure Demo
+# Selective Disclosure Demo
 
 1. [Step By Step Process](selective-disclosure-demo.md#id-1.-step-by-step-process)
 2. [Demo Video](selective-disclosure-demo.md#id-2.-demo-video)

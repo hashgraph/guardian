@@ -1,4 +1,4 @@
-# 💻 Demo on Policy Wizard using UI
+# Demo on Policy Wizard using UI
 
 1. [Step By Step Process](demo-on-policy-wizard-using-ui.md#id-1.-step-by-step-process)
 2. [Demo Video](demo-on-policy-wizard-using-ui.md#id-2.-demo-video)

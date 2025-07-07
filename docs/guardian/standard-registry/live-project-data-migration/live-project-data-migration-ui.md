@@ -1,4 +1,4 @@
-# ↔️ Live Project Data Migration UI
+# Live Project Data Migration UI
 
 1. [Step By Step Process](live-project-data-migration-ui.md#id-1.-step-by-step-process)
 2. [Demo Video](live-project-data-migration-ui.md#id-2.-demo-video)
@@ -57,4 +57,4 @@ For Policies with dynamic tokens mapping of token templates might be required.
 
 ## 2. Demo Video
 
-[Youtube](https://youtu.be/stSudc82pZU?si=Nsv6RyM6I\_NpRvwE\&t=110)
+[Youtube](https://youtu.be/stSudc82pZU?si=Nsv6RyM6I_NpRvwE\&t=110)

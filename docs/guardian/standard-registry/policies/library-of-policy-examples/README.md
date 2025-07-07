@@ -1,4 +1,4 @@
-# 📔 Library of Policy Examples
+# Library of Policy Examples
 
 Guardian ecosystem is enriched with a comprehensive "Library of Policy Examples," designed to facilitate and inspire the development of robust and effective policies for managing digital environmental assets. This library serves as a foundational resource for users navigating the complexities of policy creation within the the Guardian platform.&#x20;
 

@@ -1,4 +1,4 @@
-# 💻 Creating Tag Schemas using UI
+# Creating Tag Schemas using UI
 
 ## Tag Schemas
 

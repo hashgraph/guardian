@@ -1,2 +1,2 @@
-# ⚙ Send Data using the External Data APIs
+# Send Data using the External Data APIs
 

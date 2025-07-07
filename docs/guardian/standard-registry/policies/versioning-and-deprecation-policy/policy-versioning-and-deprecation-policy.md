@@ -2,7 +2,7 @@
 description: This protocol comes into effect beginning with Guardian 1.3.0
 ---
 
-# ℹ Policy Versioning & Deprecation Policy
+# Policy Versioning & Deprecation Policy
 
 Guardian Policy documents capture policy workflows – a combination of policy actions, information flows and rules under which the run-time sequence of steps is constructed and executed. The content of Guardian Policies is determined by the specific sustainability use-case they are designed to address. As such there three main driving forces for the changes in the area of policy definition and management:
 

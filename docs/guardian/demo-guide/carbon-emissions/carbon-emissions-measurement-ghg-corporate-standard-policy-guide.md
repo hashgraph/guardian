@@ -2,7 +2,7 @@
 description: Policy developed by TYMLEZ
 ---
 
-# 🏢 Carbon Emissions Measurement - GHG Corporate Standard Policy Guide
+# Carbon Emissions Measurement - GHG Corporate Standard Policy Guide
 
 On this page you'll find:
 
@@ -17,7 +17,7 @@ On this page you'll find:
 
 TYMLEZ aims to provide the capability to quantify and tokenize carbon. To do this, we have designed a universal schema that can be used as the basis for both insetting and avoidance claims made against any GHG Protocol compatible project. Whilst these schemas will not be able to be used verbatim for all carbon registries, they form an important base for digital measurement, reporting, and verification (dMRV) recording against a particular project. A core focus at TYMLEZ is the accurate reading of MRV data from source devices. As such, this schema is not designed for use in scenarios requiring the manual entry of carbon data – we have however included UI screens to support manual entry in this public version.
 
-We have included a full schema for the CET policy [here](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CET%20&%20CRU/Tymlez/methodologies/CET\_CRU\_TYMLEZ.pdf)[ ](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CET%20&%20CRU/Tymlez/methodologies/CET\_CRU\_TYMLEZ.pdf)that can be used to record Scope 1 & 2 emissions data
+We have included a full schema for the CET policy [here](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CET%20&%20CRU/Tymlez/methodologies/CET_CRU_TYMLEZ.pdf)[ ](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CET%20&%20CRU/Tymlez/methodologies/CET_CRU_TYMLEZ.pdf)that can be used to record Scope 1 & 2 emissions data
 
 \\
 

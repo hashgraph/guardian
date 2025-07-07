@@ -1,4 +1,4 @@
-# 📖 Introduction to Remote Work GHG
+# Introduction to Remote Work GHG
 
 ## Policy Description
 

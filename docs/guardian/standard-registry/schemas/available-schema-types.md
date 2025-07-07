@@ -1,4 +1,4 @@
-# 📂 Available Schema Types
+# Available Schema Types
 
 ## **Embracing GBBC Specifications for Universal Data Comparability**
 

@@ -2,7 +2,7 @@
 description: Policy developed by Envision Blockchain
 ---
 
-# 🌲 Gold Standard Afforestation and Reforestation (AR) v2.0
+# Gold Standard Afforestation and Reforestation (AR) v2.0
 
 * [Policy Description](gold-standard-afforestation-and-reforestation-ar-v2.0.md#policy-description)
 * [Workflow Description](gold-standard-afforestation-and-reforestation-ar-v2.0.md#workflow-description)
