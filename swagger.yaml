@@ -19464,8 +19464,15 @@ components:
             #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
         parent:
           type: string
+          example:
+            - >-
+              #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        parents:
           example: >-
             #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+          type: array
+          items:
+            type: string
         hederaAccountId:
           type: string
           example: 0.0.1
