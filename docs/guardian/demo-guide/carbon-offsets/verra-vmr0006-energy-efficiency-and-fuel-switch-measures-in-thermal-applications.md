@@ -153,7 +153,7 @@ Verified Carbon Unit (VCU) credits, each equivalent to one tonne of CO2.
 15. Once minting is completed, we can view tokens in the “VPs” tab.\
 
 
-    <figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+    <figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 16. The Trust Chain can also be viewed by clicking on the “View Trust Chain” button:
 
-<figure><img src="../../../.gitbook/assets/image (5) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>

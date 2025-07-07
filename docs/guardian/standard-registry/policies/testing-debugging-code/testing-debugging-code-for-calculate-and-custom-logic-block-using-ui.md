@@ -16,7 +16,7 @@ The `customLogicBlock` supports isolated dry-run execution. This means it can be
 
 Execution is controlled through a step-by-step interface in the UI, enabling users to define parameters, input data, and immediately inspect the results.
 
-<figure><img src="../../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
 
 ***
 
@@ -47,14 +47,14 @@ The block can be tested using mock input data. Three primary input methods are s
 * Directly input JSON-formatted data using the built-in editor.
 * Best suited for advanced users or when precise control over the input format is needed.
 
-<figure><img src="../../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 **c. File Upload**
 
 * Upload a JSON file containing the test data.
 * The file must be well-formed JSON.
 
-<figure><img src="../../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 > **Note**: Only valid JSON inputs are accepted. Malformed files will cause parsing errors.
 
