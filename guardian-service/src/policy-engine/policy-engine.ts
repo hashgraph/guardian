@@ -465,7 +465,12 @@ export class PolicyEngine extends NatsService {
             message.setDocument(model);
             const messageStatus = await messageServer
                 .setTopicObject(parent)
-                .sendMessage(message, true, null, user.id);
+                .sendMessage(message, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId: user.id,
+                    interception: null
+                });
 
             notifier.completedAndStart('Link topic and policy');
             await topicHelper.twoWayLink(topic, parent, messageStatus.getId(), user.id);
@@ -713,7 +718,12 @@ export class PolicyEngine extends NatsService {
         const message = new PolicyMessage(MessageType.Policy, MessageAction.DeletePolicy);
         message.setDocument(policyToDelete);
         await messageServer.setTopicObject(topic)
-            .sendMessage(message, true, null, user.id);
+            .sendMessage(message, {
+                sendToIPFS: true,
+                memo: null,
+                userId: user.id,
+                interception: null
+            });
 
         notifier.completedAndStart('Delete policy from DB');
         await DatabaseServer.deletePolicy(policyToDelete.id);
@@ -946,7 +956,12 @@ export class PolicyEngine extends NatsService {
                 const tokenMessage = new TokenMessage(MessageAction.UseToken);
                 tokenMessage.setDocument(_token);
                 await messageServer
-                    .sendMessage(tokenMessage, true, null, user.id);
+                    .sendMessage(tokenMessage, {
+                        sendToIPFS: true,
+                        memo: null,
+                        userId: user.id,
+                        interception: user.id
+                    });
             }
             const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
 
@@ -1051,7 +1066,13 @@ export class PolicyEngine extends NatsService {
                 }
             }
 
-            const zip = await PolicyImportExport.generate(model);
+            const configToPublish = structuredClone(model.config);
+            this.cleanHeadersRecursive(configToPublish, ['httpRequestBlock']);
+
+            const modelToPublish = Object.assign(Object.create(Object.getPrototypeOf(model)), model);
+            modelToPublish.config = configToPublish;
+
+            const zip = await PolicyImportExport.generate(modelToPublish);
             const buffer = await zip.generateAsync({
                 type: 'arraybuffer',
                 compression: 'DEFLATE',
@@ -1064,7 +1085,12 @@ export class PolicyEngine extends NatsService {
             const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
             message.setDocument(model, buffer);
             const result = await messageServer
-                .sendMessage(message, true, null, user.id);
+                .sendMessage(message, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId: user.id,
+                    interception: user.id
+                });
             model.messageId = result.getId();
 
             notifier.completedAndStart('Link topic and policy');
@@ -1121,6 +1147,7 @@ export class PolicyEngine extends NatsService {
 
         notifier.completedAndStart('Saving in DB');
         model.status = PolicyStatus.PUBLISH;
+
         let retVal = await DatabaseServer.updatePolicy(model);
 
         notifier.completedAndStart('Updating hash');
@@ -1201,7 +1228,12 @@ export class PolicyEngine extends NatsService {
         });
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
-        const result = await messageServer.sendMessage(message, true, null, user.id);
+        const result = await messageServer.sendMessage(message, {
+            sendToIPFS: true,
+            memo: null,
+            userId: user.id,
+            interception: null
+        });
 
         //Link topic and message
         await topicHelper.twoWayLink(rootTopic, topic, result.getId(), user.id);
@@ -1261,6 +1293,23 @@ export class PolicyEngine extends NatsService {
         return retVal;
     }
 
+    private cleanHeadersRecursive(currentBlock: any, blocks: any[]): void {
+        if (blocks.includes(currentBlock.blockType) && Array.isArray(currentBlock.headers)) {
+            currentBlock.headers = currentBlock.headers.map(header => {
+                if(!header.included) {
+                    delete header.value;
+                }
+                return header
+            });
+        }
+
+        if (Array.isArray(currentBlock.children)) {
+            for (const child of currentBlock.children) {
+                this.cleanHeadersRecursive(child, blocks);
+            }
+        }
+    }
+
     /**
      * Validate and publish policy
      * @param options
@@ -1285,6 +1334,7 @@ export class PolicyEngine extends NatsService {
 
         notifier.start('Find and validate policy');
         const policy = await DatabaseServer.getPolicyById(policyId);
+
         await this.accessPolicy(policy, owner, 'read');
 
         if (!policy.config) {
@@ -1395,7 +1445,8 @@ export class PolicyEngine extends NatsService {
             .getMessage<PolicyMessage>({
                 messageId,
                 loadIPFS: true,
-                userId
+                userId,
+                interception: null
             });
         if (message.type !== MessageType.InstancePolicy) {
             throw new Error('Invalid Message Type');
@@ -1555,7 +1606,12 @@ export class PolicyEngine extends NatsService {
         const topic = new TopicConfig({ topicId: multipleConfig.synchronizationTopicId }, null, null);
         await messageServer
             .setTopicObject(topic)
-            .sendMessage(message, true, null, policy.ownerId);
+            .sendMessage(message, {
+                sendToIPFS: true,
+                memo: null,
+                userId: policy.ownerId,
+                interception: null
+            });
 
         return await DatabaseServer.saveMultiPolicy(multipleConfig);
     }

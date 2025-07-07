@@ -1173,7 +1173,12 @@ export class PolicyEngineService {
                     );
                     await messageServer
                         .setTopicObject(topic)
-                        .sendMessage(message, true, null, owner?.id);
+                        .sendMessage(message, {
+                            sendToIPFS: true,
+                            memo: null,
+                            userId: owner?.id,
+                            interception: null
+                        });
                     await DatabaseServer.updatePolicy(model);
 
                     await new GuardiansService().sendPolicyMessage(PolicyEvents.REFRESH_MODEL, policyId, {});
@@ -1558,7 +1563,7 @@ export class PolicyEngineService {
                     if (!xlsx) {
                         throw new Error('file in body is empty');
                     }
-                    const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
+                    const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data), { preview: true });
                     for (const toolId of xlsxResult.getToolIds()) {
                         try {
                             const tool = await previewToolByMessage(toolId.messageId, owner?.id);

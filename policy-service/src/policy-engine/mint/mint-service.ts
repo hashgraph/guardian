@@ -179,7 +179,10 @@ export class MintService {
                 );
                 MintService.activeMintProcesses.add(mintNFT.mintRequestId);
                 mintNFT
-                    .mint(null, userId)
+                    .mint({
+                        userId,
+                        interception: null
+                    })
                     .catch((error) =>
                         MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
                     )
@@ -207,7 +210,10 @@ export class MintService {
                 );
                 MintService.activeMintProcesses.add(mintFT.mintRequestId);
                 mintFT
-                    .mint(null, userId)
+                    .mint({
+                        userId,
+                        interception: null
+                    })
                     .catch((error) =>
                         MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
                     )
@@ -362,7 +368,10 @@ export class MintService {
                             NotificationHelper.init([policyOwnerId, actorId, documentOwnerId]),
                             actorId
                         )
-                    ).mint(null, userId);
+                    ).mint({
+                        userId,
+                        interception: null
+                    });
                     break;
                 case TokenType.NON_FUNGIBLE:
                     processed = await (
@@ -374,7 +383,10 @@ export class MintService {
                             NotificationHelper.init([policyOwnerId, actorId, documentOwnerId]),
                             actorId
                         )
-                    ).mint(null, userId);
+                    ).mint({
+                        userId,
+                        interception: null
+                    });
                     break;
                 default:
                     throw new Error('Unknown token type');
@@ -419,7 +431,14 @@ export class MintService {
             null,
             null
         );
-        await messageServer.setTopicObject(topic).sendMessage(message, null, null, userId);
+        await messageServer
+            .setTopicObject(topic)
+            .sendMessage(message, {
+                sendToIPFS: true,
+                memo: null,
+                userId,
+                interception: null
+            });
     }
 
     /**
@@ -492,7 +511,10 @@ export class MintService {
             );
             MintService.activeMintProcesses.add(mintNFT.mintRequestId);
             mintNFT
-                .mint(null, userId)
+                .mint({
+                    userId,
+                    interception: null
+                })
                 .catch((error) =>
                     MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
                 )
@@ -520,7 +542,10 @@ export class MintService {
             );
             MintService.activeMintProcesses.add(mintFT.mintRequestId);
             mintFT
-                .mint(null, userId)
+                .mint({
+                    userId,
+                    interception: null
+                })
                 .catch((error) =>
                     MintService.error(PolicyUtils.getErrorMessage(error), null, userId)
                 )
@@ -592,7 +617,9 @@ export class MintService {
                         payload: { userId }
                     },
                 },
-                20
+                {
+                    priority: 20
+                }
             );
         } else {
             const wipeKey = await MintService.wallet.getUserKey(
@@ -616,7 +643,9 @@ export class MintService {
                         payload: { userId }
                     },
                 },
-                10
+                {
+                    priority: 10
+                }
             );
         }
     }

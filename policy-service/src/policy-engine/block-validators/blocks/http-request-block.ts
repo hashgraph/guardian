@@ -116,6 +116,7 @@ export class HttpRequestBlock {
      * Validate headers: excluded headers must not contain a value
      * @param headers
      */
+    // tslint:disable-next-line:no-unused-variable
     private static validateHeadersIncluded(headers: any): void {
         if (!Array.isArray(headers)) {
             return;
@@ -165,14 +166,6 @@ export class HttpRequestBlock {
 
             try {
                 await HttpRequestBlock.validatePrivateIp(ref.options.url);
-            } catch (error) {
-                validator.addError(error.message);
-            }
-
-            try {
-                if(!validator.isDryRun) {
-                    HttpRequestBlock.validateHeadersIncluded(ref.options.headers);
-                }
             } catch (error) {
                 validator.addError(error.message);
             }

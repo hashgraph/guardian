@@ -62,7 +62,12 @@ export function profileAPI(logger: PinoLogger) {
                     data: {
                         hederaAccountId: target.hederaAccountId
                     }
-                }, 20, user.id);
+                }, {
+                    priority: 20,
+                    attempts: 0,
+                    userId: user.id,
+                    interception: null
+                });
                 return new MessageResponse({
                     balance,
                     unit: 'Hbar',
@@ -104,7 +109,11 @@ export function profileAPI(logger: PinoLogger) {
                     data: {
                         hederaAccountId: target.hederaAccountId
                     }
-                }, 20, target.id.toString());
+                }, {
+                    priority: 20,
+                    userId: target.id.toString(),
+                    interception: null
+                });
 
                 return new MessageResponse(balance);
             } catch (error) {
@@ -234,7 +243,11 @@ export function profileAPI(logger: PinoLogger) {
                     await workers.addNonRetryableTask({
                         type: WorkerTaskType.GET_USER_BALANCE,
                         data: { hederaAccountId, hederaAccountKey }
-                    }, 20, target.id.toString());
+                    }, {
+                        priority: 20,
+                        userId: target.id.toString(),
+                        interception: null
+                    });
                 } catch (error) {
                     throw new Error(`Invalid Hedera account or key.`);
                 }

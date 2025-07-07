@@ -1,6 +1,6 @@
 import { AccountId, PrivateKey, TopicId, } from '@hashgraph/sdk';
 import { GenerateUUIDv4, ISignOptions, SignType, WorkerTaskType } from '@guardian/interfaces';
-import { IPFS, PinoLogger, Workers } from '../../helpers/index.js';
+import { IPFS, IPFSOptions, PinoLogger, Workers } from '../../helpers/index.js';
 import { TransactionLogger } from '../transaction-logger.js';
 import { Environment } from '../environment.js';
 import { MessageMemo } from '../memo-mappings/message-memo.js';
@@ -38,6 +38,7 @@ interface LoadMessageOptions {
     userId?: string | null,
     dryRun?: string,
     encryptKey?: string,
+    interception: string | boolean | null
 }
 
 interface LoadMessagesOptions {
@@ -55,6 +56,13 @@ interface MessageServerOptions {
     encryptKey?: string | PrivateKey | null,
     signOptions?: ISignOptions,
     dryRun?: string | null
+}
+
+interface MessageOptions {
+    sendToIPFS?: boolean,
+    memo?: string,
+    userId?: string | null
+    interception?: string | boolean | null
 }
 
 /**
@@ -145,11 +153,14 @@ export class MessageServer {
      * @param memo
      * @param userId
      */
-    public async sendMessage<T extends Message>(message: T, sendToIPFS: boolean = true, memo?: string, userId?: string): Promise<T> {
-        if (sendToIPFS) {
-            message = await this.sendIPFS(message, userId);
+    public async sendMessage<T extends Message>(
+        message: T,
+        options: MessageOptions
+    ): Promise<T> {
+        if (options.sendToIPFS !== false) {
+            message = await this.sendIPFS(message, options);
         }
-        message = await this.sendHedera(message, memo, userId);
+        message = await this.sendHedera(message, options);
         if (this.dryRun) {
             await DatabaseServer.saveVirtualMessage<T>(this.dryRun, message);
         }
@@ -233,11 +244,10 @@ export class MessageServer {
     /**
      * Save File
      * @param file
-     * @param userId
-     * @virtual
+     * @param options
      * @private
      */
-    private async addFile(file: ArrayBuffer, userId: string = null) {
+    private async addFile(file: ArrayBuffer, options?: IPFSOptions) {
         if (this.dryRun) {
             const id = GenerateUUIDv4();
             const result = {
@@ -247,7 +257,8 @@ export class MessageServer {
             await new TransactionLogger().virtualFileLog(this.dryRun, file, result);
             return result
         }
-        return IPFS.addFile(file, userId);
+
+        return IPFS.addFile(file, options);
     }
 
     /**
@@ -288,18 +299,21 @@ export class MessageServer {
     /**
      * Send IPFS
      * @param message
-     * @param userId
+     * @param options
      * @private
      */
-    private async sendIPFS<T extends Message>(message: T, userId: string = null): Promise<T> {
+    private async sendIPFS<T extends Message>(
+        message: T,
+        options?: IPFSOptions
+    ): Promise<T> {
         const buffers = await message.toDocuments(this.encryptKey);
         if (buffers && buffers.length) {
-            const time = await this.messageStartLog('IPFS', userId);
+            const time = await this.messageStartLog('IPFS', options.userId);
             const promises = buffers.map(buffer => {
-                return this.addFile(buffer, userId);
+                return this.addFile(buffer, options);
             });
             const urls = await Promise.all(promises);
-            await this.messageEndLog(time, 'IPFS', userId);
+            await this.messageEndLog(time, 'IPFS', options.userId);
             message.setUrls(urls);
         } else {
             message.setUrls([]);
@@ -497,18 +511,23 @@ export class MessageServer {
      * @param userId
      * @private
      */
-    private async sendHedera<T extends Message>(message: T, memo?: string, userId: string = null): Promise<T> {
+    private async sendHedera<T extends Message>(
+        message: T,
+        options: MessageOptions
+        // memo?: string,
+        // userId: string = null
+    ): Promise<T> {
         if (!this.topicId) {
             throw new Error('Topic is not set');
         }
 
         message.setLang(MessageServer.lang);
-        if (memo) {
-            message.setMemo(memo);
+        if (options.memo) {
+            message.setMemo(options.memo);
         } else {
             message.setMemo(MessageMemo.getMessageMemo(message));
         }
-        const time = await this.messageStartLog('Hedera', userId);
+        const time = await this.messageStartLog('Hedera', options.userId);
         const buffer = message.toMessage();
         const timestamp = await new Workers().addRetryableTask({
             type: WorkerTaskType.SEND_HEDERA,
@@ -523,10 +542,17 @@ export class MessageServer {
                 signOptions: this.signOptions,
                 memo: message.getMemo(),
                 dryRun: this.dryRun,
-                payload: { userId },
+                payload: { userId: options.userId },
             }
-        }, 10, 0, userId);
-        await this.messageEndLog(time, 'Hedera', userId);
+        }, {
+            priority: 10,
+            attempts: 0,
+            userId: options.userId,
+            interception: options.interception,
+            registerCallback: true
+        });
+
+        await this.messageEndLog(time, 'Hedera', options.userId);
         message.setId(timestamp);
         message.setTopicId(this.topicId);
         return message;
@@ -537,7 +563,10 @@ export class MessageServer {
      * @param topicId
      * @param userId
      */
-    public static async getTopic(topicId: string | TopicId, userId: string | null): Promise<TopicMessage> {
+    public static async getTopic(
+        topicId: string | TopicId,
+        userId: string | null
+    ): Promise<TopicMessage> {
         if (!topicId) {
             throw new Error(`Invalid Topic Id`);
         }
@@ -550,7 +579,9 @@ export class MessageServer {
                 index: 1,
                 payload: { userId }
             }
-        }, 10);
+        }, {
+            priority: 10
+        });
         new PinoLogger().info(`getTopic, ${topic}`, ['GUARDIAN_SERVICE'], userId);
         try {
             const json = JSON.parse(message.message);
@@ -645,7 +676,9 @@ export class MessageServer {
                         timeStamp,
                         payload: { userId }
                     }
-                }, 10);
+                }, {
+                    priority: 10
+                });
                 return topicId;
             }
             return null;
@@ -675,7 +708,7 @@ export class MessageServer {
             if (dryRun) {
                 return await MessageServer.getDryRunTopicMessage<T>(dryRun, messageId, type, userId);
             } else {
-                let message = await MessageServer.getTopicMessage<T>(messageId, type, userId);
+                let message = await MessageServer.getTopicMessage<T>(messageId, type, options);
                 if (loadIPFS) {
                     message = await MessageServer.loadIPFS(message, options.encryptKey);
                 }
@@ -708,7 +741,7 @@ export class MessageServer {
             if (this.dryRun) {
                 return await this.getDryRunTopicMessage<T>(messageId, type, userId);
             } else {
-                let message = await this.getTopicMessage<T>(messageId, type, userId);
+                let message = await this.getTopicMessage<T>(messageId, type, options);
                 if (loadIPFS) {
                     message = await this.loadIPFS(message);
                 }
@@ -729,7 +762,7 @@ export class MessageServer {
     private async getTopicMessage<T extends Message>(
         timeStamp: string,
         type: MessageType | null,
-        userId: string | null
+        options: LoadMessageOptions
     ): Promise<T> {
         const workers = new Workers();
         const {
@@ -745,10 +778,19 @@ export class MessageServer {
                 operatorId: this.operatorId,
                 operatorKey: this.operatorKey,
                 dryRun: this.dryRun,
-                payload: { userId }
+                payload: {
+                    userId: options.userId
+                }
             }
-        }, 10, null, userId);
-        const item = MessageServer.fromMessage<T>(message, userId, type);
+        }, {
+            priority: 10,
+            attempts: 0,
+            userId: options.userId,
+            interception: options.interception,
+            registerCallback: true
+        });
+
+        const item = MessageServer.fromMessage<T>(message, options.userId, type);
         item.setAccount(payer_account_id);
         item.setIndex(sequence_number);
         item.setId(id);
@@ -767,7 +809,7 @@ export class MessageServer {
     private static async getTopicMessage<T extends Message>(
         timeStamp: string,
         type: MessageType | null,
-        userId: string | null
+        options: LoadMessageOptions
     ): Promise<T> {
         const workers = new Workers();
         const {
@@ -780,10 +822,17 @@ export class MessageServer {
             type: WorkerTaskType.GET_TOPIC_MESSAGE,
             data: {
                 timeStamp,
-                payload: { userId }
+                payload: { userId: options.userId }
             }
-        }, 10, null, userId);
-        const item = MessageServer.fromMessage<T>(message, userId, type);
+        }, {
+            priority: 10,
+            attempts: 0,
+            userId: options.userId,
+            interception: options.interception,
+            registerCallback: true
+        });
+
+        const item = MessageServer.fromMessage<T>(message, options.userId, type);
         item.setAccount(payer_account_id);
         item.setIndex(sequence_number);
         item.setId(id);
@@ -917,7 +966,9 @@ export class MessageServer {
                 timeStamp,
                 payload: { userId }
             }
-        }, 10);
+        }, {
+            priority: 10
+        });
         new PinoLogger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE'], userId);
         const result: Message[] = [];
         for (const message of messages) {
@@ -1041,7 +1092,9 @@ export class MessageServer {
                 timeStamp,
                 payload: { userId }
             }
-        }, 10);
+        }, {
+            priority: 10
+        });
 
         new PinoLogger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE'], userId);
         const result: Message[] = [];

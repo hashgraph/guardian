@@ -30,7 +30,12 @@ export class GenerateDID {
         message.setDocument(didObject);
         const messageResult = await client
             .setTopicObject(topic)
-            .sendMessage(message, true, null, userId);
+            .sendMessage(message, {
+                sendToIPFS: true,
+                memo: null,
+                userId,
+                interception: null
+            });
 
         const item = PolicyUtils.createDID(ref, user, didObject);
         item.messageId = messageResult.getId();
@@ -114,7 +119,12 @@ export class GenerateDID {
         });
         const messageResult = await messageServer
             .setTopicObject(topic)
-            .sendMessage(message, true, null, userId);
+            .sendMessage(message, {
+                sendToIPFS: true,
+                memo: null,
+                userId,
+                interception: null
+            });
 
         const item = PolicyUtils.createDID(ref, user, didObject);
         item.messageId = messageResult.getId();

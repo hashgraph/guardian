@@ -97,8 +97,10 @@ export class MintFT extends TypedMint {
                             payload: { userId }
                         },
                     },
-                    1,
-                    10
+                    {
+                        priority: 1,
+                        attempts: 10
+                    }
                 );
 
                 mintTransaction.mintStatus =
@@ -133,8 +135,10 @@ export class MintFT extends TypedMint {
                                 payload: { userId }
                             },
                         },
-                        1,
-                        10
+                        {
+                            priority: 1,
+                            attempts: 10
+                        }
                     );
 
                 transferTrasaction.transferStatus =
@@ -150,7 +154,13 @@ export class MintFT extends TypedMint {
     /**
      * Mint tokens
      */
-    override async mintTokens(userId?: string): Promise<void> {
+    override async mintTokens(
+        notifier: NotificationHelper,
+        options: {
+            interception?: string | boolean;
+            userId?: string;
+        }
+    ): Promise<void> {
         const workers = new Workers();
 
         let transaction = await this._db.getMintTransaction({
@@ -185,23 +195,26 @@ export class MintFT extends TypedMint {
                             limit: 1,
                             order: 'desc',
                             transactiontype: 'TOKENMINT',
-                            payload: { userId }
+                            payload: { userId: options.userId }
                         },
                     },
-                    1,
-                    10,
-                    userId
+                    {
+                        priority: 1,
+                        attempts: 10,
+                        userId: options.userId,
+                        interception: options.interception
+                    }
                 ).then(async startTransactions => {
                     try {
                         this._mintRequest.startTransaction =
-                        startTransactions[0]?.consensus_timestamp;
+                            startTransactions[0]?.consensus_timestamp;
                         await this._db.saveMintRequest(this._mintRequest);
                     } catch (error) {
-                        this.error(error, userId);
+                        this.error(error, options.userId);
                     }
-                }).catch(error => this.error(error, userId));
+                }).catch(error => this.error(error, options.userId));
             } catch (error) {
-                this.error(error, userId);
+                this.error(error, options.userId);
             }
         }
 
@@ -220,10 +233,15 @@ export class MintFT extends TypedMint {
                         supplyKey: this._token.supplyKey,
                         tokenValue: this._mintRequest.amount,
                         transactionMemo: this._mintRequest.memo,
-                        payload: { userId }
+                        payload: { userId: options.userId }
                     },
                 },
-                10, 0, userId
+                {
+                    priority: 10,
+                    attempts: 0,
+                    userId: options.userId,
+                    interception: options.interception
+                }
             );
             transaction.mintStatus = MintTransactionStatus.SUCCESS;
         } catch (error) {
@@ -241,7 +259,13 @@ export class MintFT extends TypedMint {
     /**
      * Transfer tokens
      */
-    override async transferTokens(userId?: string): Promise<void> {
+    override async transferTokens(
+        notifier: NotificationHelper,
+        options: {
+            interception?: string | boolean;
+            userId?: string;
+        }
+    ): Promise<void> {
         const workers = new Workers();
 
         const transaction = await this._db.getMintTransaction({
@@ -265,23 +289,26 @@ export class MintFT extends TypedMint {
                             limit: 1,
                             order: 'desc',
                             transactiontype: 'CRYPTOTRANSFER',
-                            payload: { userId }
+                            payload: { userId: options.userId }
                         },
                     },
-                    1,
-                    10,
-                    userId
+                    {
+                        priority: 1,
+                        attempts: 10,
+                        userId: options.userId,
+                        interception: options.interception
+                    }
                 ).then(async startTransactions => {
                     try {
                         this._mintRequest.startTransaction =
-                        startTransactions[0]?.consensus_timestamp;
+                            startTransactions[0]?.consensus_timestamp;
                         await this._db.saveMintRequest(this._mintRequest);
                     } catch (error) {
-                        this.error(error, userId);
+                        this.error(error, options.userId);
                     }
-                }).catch(error => this.error(error, userId));
+                }).catch(error => this.error(error, options.userId));
             } catch (error) {
-                this.error(error, userId);
+                this.error(error, options.userId);
             }
         }
 
@@ -302,11 +329,17 @@ export class MintFT extends TypedMint {
                         treasuryKey: this._token.treasuryKey,
                         tokenValue: this._mintRequest.amount,
                         transactionMemo: this._mintRequest.memo,
-                        payload: { userId }
+                        payload: { userId: options.userId }
                     },
                 },
-                10, 0, userId
+                {
+                    priority: 10,
+                    attempts: 0,
+                    userId: options.userId,
+                    interception: options.interception
+                }
             );
+
             transaction.transferStatus = MintTransactionStatus.SUCCESS;
         } catch (error) {
             if (!error?.isTimeoutError) {
@@ -324,7 +357,16 @@ export class MintFT extends TypedMint {
      * Mint tokens
      * @returns Processed
      */
-    override async mint(isProgressNeeded: boolean = false, userId: string | null): Promise<boolean> {
-        return await super.mint(isProgressNeeded, userId);
+    override async mint(
+        options: {
+            interception?: string | boolean;
+            userId?: string;
+        }
+    ): Promise<boolean> {
+        return await super.mint({
+            isProgressNeeded: false,
+            interception: options.interception,
+            userId: options.userId
+        });
     }
 }

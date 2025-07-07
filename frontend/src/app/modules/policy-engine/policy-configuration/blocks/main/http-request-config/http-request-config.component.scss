@@ -1,0 +1,52 @@
+:host ::ng-deep .propRowCell .p-checkbox {
+    margin-left: 12px;
+}
+
+::ng-deep .http-confirm-dialog .p-dialog-content {
+    border-radius: 10px;
+}
+
+::ng-deep .http-confirm-dialog .p-dialog {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.16);
+    overflow: hidden !important;
+}
+
+::ng-deep .http-confirm-dialog .dialog-header {
+    display: grid;
+    grid-template-columns: max-content auto;
+    column-gap: 10px;
+    margin: 12px;
+}
+
+::ng-deep .http-confirm-dialog .header-text {
+    font-family: var(--guardian-font-family);
+    font-size: var(--guardian-header-2-font-size);
+    font-style: var(--guardian-font-style);
+    font-weight: 600;
+    line-height: 32px;
+    padding: 12px;
+}
+
+::ng-deep .http-confirm-dialog .header-icon {
+    width: 100%;
+    display: grid;
+    justify-items: center;
+    align-items: center;
+    svg-icon {
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+    }
+}
+
+::ng-deep .http-confirm-dialog .dialog-body {
+    padding: 0 24px 16px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+::ng-deep .http-confirm-dialog .dialog-footer {
+    border-top: 1px solid var(--guardian-border-color);
+    padding: 20px;
+}

@@ -100,7 +100,9 @@ export class HttpRequestBlock {
             data: {
                 payload: { method, url, headers, body, userId, maxRedirects: 0 }
             }
-        }, 10);
+        }, {
+            priority: 10
+        });
         if (!res) {
             throw new Error('Invalid response');
         }

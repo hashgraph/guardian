@@ -196,7 +196,9 @@ async function globalSearch(options: any, userId: string | null): Promise<ISearc
         data: {
             payload: { options, userId }
         }
-    }, 2);
+    }, {
+        priority: 2
+    });
     if (!policies) {
         throw new Error('Invalid response');
     }
@@ -748,7 +750,9 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 const result = await new Workers().addNonRetryableTask({
                     type: WorkerTaskType.ANALYTICS_GET_INDEXER_AVAILABILITY,
                     data: { payload: { userId: user?.id } }
-                }, 2);
+                }, {
+                    priority: 2
+                });
 
                 return new MessageResponse(result);
             } catch (error) {

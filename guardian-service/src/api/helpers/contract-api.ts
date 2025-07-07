@@ -155,7 +155,7 @@ export async function _contractCall(
             : CONTRACT_GAS_DEFAULT_VALUES.get(event);
     }
     try {
-        return await workers.addNonRetryableTask(task, priority);
+        return await workers.addNonRetryableTask(task, { priority });
     } catch (error) {
         throw error;
     }
