@@ -6,9 +6,10 @@ import { UnitSystem } from '../type/unit-system.type.js';
 import { FieldTypesDictionary, DefaultFieldDictionary } from './field-types-dictionary.js';
 
 export enum JsonError {
-    INVALID_FORMAT = 'Invalid format for variable "${prop}" in ${entity}. ${message}',
+    INVALID_FORMAT = 'Invalid format for variable \'${prop}\' in ${entity}. ${message}',
     NOT_AVAILABLE = 'Invalid property type for variable "${prop}" in ${entity}.',
-    THEN_ELSE = 'Empty "then" or "else" branches, at least one value must be specified.'
+    THEN_ELSE = 'Empty "then" or "else" branches, at least one value must be specified.',
+    UNIQUE = 'The value of the variable \'${prop}\' in ${entity} must be unique.'
 }
 
 export enum JsonErrorMessage {
@@ -383,8 +384,9 @@ export class JsonToSchema {
         if (typeof value === 'undefined') {
             return undefined;
         }
-        throw JsonToSchema.createError(
-            context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.STRING)
+        throw JsonToSchema.createErrorWithValue(
+            context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.STRING),
+            value
         );
     }
 
@@ -395,8 +397,9 @@ export class JsonToSchema {
         if (typeof value === 'string' && value) {
             return value;
         }
-        throw JsonToSchema.createError(
-            context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.STRING)
+        throw JsonToSchema.createErrorWithValue(
+            context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.STRING),
+            value
         );
     }
 
@@ -411,8 +414,9 @@ export class JsonToSchema {
             return false;
         }
         if (value !== undefined) {
-            throw JsonToSchema.createError(
-                context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.BOOLEAN)
+            throw JsonToSchema.createErrorWithValue(
+                context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.BOOLEAN),
+                value
             );
         }
         return undefined;
@@ -431,8 +435,9 @@ export class JsonToSchema {
         if (value === SchemaEntity.EVC) {
             return SchemaEntity.EVC;
         }
-        throw JsonToSchema.createError(
-            context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.REQUIRED_ENTITY)
+        throw JsonToSchema.createErrorWithValue(
+            context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.REQUIRED_ENTITY),
+            value
         );
     }
 
@@ -456,8 +461,9 @@ export class JsonToSchema {
                 return subSchema.iri;
             }
         }
-        throw JsonToSchema.createError(
-            context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.TYPE)
+        throw JsonToSchema.createErrorWithValue(
+            context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.TYPE),
+            value
         );
     }
 
@@ -628,8 +634,9 @@ export class JsonToSchema {
             }
         }
         if (value) {
-            throw JsonToSchema.createError(
-                context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.SIZE)
+            throw JsonToSchema.createErrorWithValue(
+                context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.SIZE),
+                value
             );
         }
         return undefined;
@@ -645,8 +652,9 @@ export class JsonToSchema {
             }
         }
         if (value) {
-            throw JsonToSchema.createError(
-                context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.COLOR)
+            throw JsonToSchema.createErrorWithValue(
+                context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.COLOR),
+                value
             );
         }
         return undefined;
@@ -705,8 +713,9 @@ export class JsonToSchema {
             };
         }
         if (required) {
-            throw JsonToSchema.createError(
-                context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.REQUIRED_ENUM)
+            throw JsonToSchema.createErrorWithValue(
+                context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.REQUIRED_ENUM),
+                required
             );
         }
         return {
@@ -759,8 +768,9 @@ export class JsonToSchema {
                     link: value.enum
                 }
             } else {
-                throw JsonToSchema.createError(
-                    context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ENUM)
+                throw JsonToSchema.createErrorWithValue(
+                    context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ENUM),
+                    value.enum
                 );
             }
         }
@@ -807,10 +817,11 @@ export class JsonToSchema {
             if (Array.isArray(value.examples)) {
                 examplesValue = [value.examples];
             } else {
-                throw JsonToSchema.createError(
+                throw JsonToSchema.createErrorWithValue(
                     context
                         .add('examples')
-                        .setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY)
+                        .setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY),
+                    value.examples
                 );
             }
         }
@@ -818,10 +829,11 @@ export class JsonToSchema {
             if (Array.isArray(value.suggest)) {
                 suggestValue = value.suggest;
             } else {
-                throw JsonToSchema.createError(
+                throw JsonToSchema.createErrorWithValue(
                     context
                         .add('suggest')
-                        .setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY)
+                        .setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY),
+                    value.suggest
                 );
             }
         }
@@ -829,10 +841,11 @@ export class JsonToSchema {
             if (Array.isArray(value.default)) {
                 defaultValue = value.default;
             } else {
-                throw JsonToSchema.createError(
+                throw JsonToSchema.createErrorWithValue(
                     context
                         .add('default')
-                        .setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY)
+                        .setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY),
+                    value.default
                 );
             }
         }
@@ -872,6 +885,7 @@ export class JsonToSchema {
         index: number,
         all: Schema[],
         entity: SchemaEntity,
+        allFields: Set<string>,
         context: ErrorContext
     ): SchemaField {
         context = context.add(`[${index}]`);
@@ -912,6 +926,14 @@ export class JsonToSchema {
             order: index,
 
             readOnly: false,
+        }
+        if (allFields.has(field.name)) {
+            throw JsonToSchema.createErrorWithValue(
+                context.add('key').setMessage(JsonError.UNIQUE),
+                field.name
+            );
+        } else {
+            allFields.add(field.name);
         }
         return field;
     }
@@ -960,8 +982,9 @@ export class JsonToSchema {
         context = context.add('if').add('field');
         const target = fields.find((f) => f.name === value.if?.field);
         if (!target) {
-            throw JsonToSchema.createError(
-                context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.REF)
+            throw JsonToSchema.createErrorWithValue(
+                context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.REF),
+                value.if?.field
             );
         }
         return target;
@@ -978,6 +1001,7 @@ export class JsonToSchema {
         value: IConditionJson,
         all: Schema[],
         entity: SchemaEntity,
+        allFields: Set<string>,
         context: ErrorContext
     ): {
         then: SchemaField[];
@@ -987,12 +1011,13 @@ export class JsonToSchema {
         let elseFields: SchemaField[];
         if (value.then) {
             if (Array.isArray(value.then)) {
-                thenFields = JsonToSchema.fromFields(value.then, all, entity, context.add(`then`));
+                thenFields = JsonToSchema.fromFields(value.then, all, entity, allFields, context.add(`then`));
             } else {
-                throw JsonToSchema.createError(
+                throw JsonToSchema.createErrorWithValue(
                     context
                         .add('then')
-                        .setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY)
+                        .setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY),
+                    value.then
                 );
             }
         } else {
@@ -1000,12 +1025,13 @@ export class JsonToSchema {
         }
         if (value.else) {
             if (Array.isArray(value.else)) {
-                elseFields = JsonToSchema.fromFields(value.else, all, entity, context.add(`else`));
+                elseFields = JsonToSchema.fromFields(value.else, all, entity, allFields, context.add(`else`));
             } else {
-                throw JsonToSchema.createError(
+                throw JsonToSchema.createErrorWithValue(
                     context
                         .add('else')
-                        .setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY)
+                        .setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY),
+                    value.else
                 );
             }
         } else {
@@ -1028,6 +1054,7 @@ export class JsonToSchema {
         fields: SchemaField[],
         all: Schema[],
         entity: SchemaEntity,
+        allFields: Set<string>,
         context: ErrorContext
     ): SchemaCondition {
         context = context.add(`[${index}]`);
@@ -1036,8 +1063,8 @@ export class JsonToSchema {
                 field: JsonToSchema.fromCondTarget(value, fields, context),
                 fieldValue: JsonToSchema.fromCondValue(value, context),
             },
-            thenFields: JsonToSchema.fromCondFields(value, all, entity, context).then,
-            elseFields: JsonToSchema.fromCondFields(value, all, entity, context).else,
+            thenFields: JsonToSchema.fromCondFields(value, all, entity, allFields, context).then,
+            elseFields: JsonToSchema.fromCondFields(value, all, entity, allFields, context).else,
         }
         return condition;
     }
@@ -1046,17 +1073,19 @@ export class JsonToSchema {
         value: IFieldJson[],
         all: Schema[],
         entity: SchemaEntity,
+        allFields: Set<string>,
         context: ErrorContext
     ): SchemaField[] {
         const fields: SchemaField[] = [];
         if (!Array.isArray(value)) {
-            throw JsonToSchema.createError(
-                context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY)
+            throw JsonToSchema.createErrorWithValue(
+                context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY),
+                value
             );
         }
 
         for (let index = 0; index < value.length; index++) {
-            const field = JsonToSchema.fromField(value[index], index, all, entity, context);
+            const field = JsonToSchema.fromField(value[index], index, all, entity, allFields, context);
             fields.push(field);
         }
 
@@ -1068,18 +1097,20 @@ export class JsonToSchema {
         fields: SchemaField[],
         all: Schema[],
         entity: SchemaEntity,
+        allFields: Set<string>,
         context: ErrorContext
     ): SchemaCondition[] {
         const conditions: SchemaCondition[] = [];
         if (value) {
             if (!Array.isArray(value)) {
-                throw JsonToSchema.createError(
-                    context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY)
+                throw JsonToSchema.createErrorWithValue(
+                    context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY),
+                    value
                 );
             }
 
             for (let index = 0; index < value.length; index++) {
-                const condition = JsonToSchema.fromCondition(value[index], index, fields, all, entity, context);
+                const condition = JsonToSchema.fromCondition(value[index], index, fields, all, entity, allFields, context);
                 conditions.push(condition);
             }
         }
@@ -1090,11 +1121,12 @@ export class JsonToSchema {
         const context: ErrorContext = new ErrorContext();
         context.setPath(['schema']);
         context.setData(json);
+        const allFields = new Set<string>();
         const name = JsonToSchema.fromRequiredString(json.name, context.add('name'));
         const description = JsonToSchema.fromString(json.description, context.add('description'));
         const entity = JsonToSchema.fromEntity(json.entity, context.add('entity'));
-        const fields = JsonToSchema.fromFields(json.fields, all, entity, context.add('fields'));
-        const conditions = JsonToSchema.fromConditions(json.conditions, fields, all, entity, context.add('conditions'));
+        const fields = JsonToSchema.fromFields(json.fields, all, entity, allFields, context.add('fields'));
+        const conditions = JsonToSchema.fromConditions(json.conditions, fields, all, entity, allFields, context.add('conditions'));
         JsonToSchema.fromDefaultFields(fields, entity);
         return {
             name,
@@ -1111,5 +1143,26 @@ export class JsonToSchema {
         massage = massage.replace('${entity}', context.entity);
         massage = massage.replace('${message}', context.message);
         throw new Error(massage);
+    }
+
+    private static createErrorWithValue(context: ErrorContext, value: any) {
+        let massage = context.error;
+        const prop = `"${context.property}": ${JsonToSchema.getStringValue(value)}`;
+        massage = massage.replace('${prop}', prop);
+        massage = massage.replace('${entity}', context.entity);
+        massage = massage.replace('${message}', context.message);
+        throw new Error(massage);
+    }
+
+    private static getStringValue(value: any): string {
+        try {
+            let _value = JSON.stringify(value);
+            if (_value.length > 20) {
+                _value = _value.slice(0, 20) + '...';
+            }
+            return _value
+        } catch (error) {
+            return '';
+        }
     }
 }

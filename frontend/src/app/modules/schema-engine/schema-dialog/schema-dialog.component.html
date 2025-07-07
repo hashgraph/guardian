@@ -21,11 +21,11 @@
             </p-tabPanel>
         </p-tabView>
     </div>
+    <div *ngIf="error && json" class="error-message">
+        {{error}}
+    </div>
     <div class="g-dialog-body">
         <div style="padding-right: 12px;">
-            <div *ngIf="error && json" class="error-message">
-                {{error}}
-            </div>
             <app-schema-configuration
                 #schemaControl
                 [type]="type"

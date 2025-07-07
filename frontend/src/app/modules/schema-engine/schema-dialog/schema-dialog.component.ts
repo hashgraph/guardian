@@ -82,7 +82,7 @@ export class SchemaDialog {
         this.json = this.tab === 2;
         this.document = '';
         this.id = schema?.id;
-        this.topicId = this.schema?.topicId || this.config.data.topicId || null;
+        this.topicId = schema?.topicId || this.config.data.topicId || null;
     }
 
     ngOnInit(): void {
@@ -96,7 +96,7 @@ export class SchemaDialog {
     }
 
     public get disabled(): boolean {
-        return !(this.valid && this.started);
+        return (!this.valid && !this.json) || !this.started;
     }
 
     public onClose() {
