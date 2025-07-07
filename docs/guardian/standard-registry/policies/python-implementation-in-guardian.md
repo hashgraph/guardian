@@ -6,11 +6,11 @@ icon: python
 
 ### Overview
 
-The Guardian platform now supports **Python scripting** within its **Custom Logic** blocks, expanding its flexibility and enabling developers to perform complex computations and logic more easily. This feature introduces a new **Script Language selection option** and includes enhancements to **VC (Verifiable Credential) document schemas** for better version tracking.
+The Guardian platform now supports Python scripting within its Custom Logic blocks, expanding its flexibility and enabling developers to perform complex computations and logic more easily. This feature introduces a new Script Language selection option and includes enhancements to VC (Verifiable Credential) document schemas for better version tracking.
 
 ### 1. Custom Logic Block: Script Language Selection
 
-**Feature:** A new dropdown setting has been added to the **Custom Logic** block in the **Policy Editor**, allowing users to select the desired scripting language.
+A new dropdown setting has been added to the Custom Logic block in the Policy Editor, allowing users to select the desired scripting language.
 
 #### 🔧 Configuration
 
@@ -25,11 +25,11 @@ The Guardian platform now supports **Python scripting** within its **Custom Logi
 
 #### 💡 Use Case
 
-Choose **Python** when you want to leverage Python’s expressive syntax and advanced computation libraries for policy logic.
+Choose "Python" when you want to leverage Python’s expressive syntax and advanced computation libraries for policy logic.
 
 ### 2. Python Scripting Support
 
-**Feature:** Guardian now supports Python as a language for defining business logic in Custom Logic blocks.
+Guardian now supports Python as a language for defining business logic in Custom Logic blocks.
 
 #### ✅ Capabilities
 
@@ -49,11 +49,11 @@ if document['type'] == 'Certificate':
 
 ### 3. VC Document Schema Enhancement: `guardianVersion`
 
-**Feature:** A new **default field** has been introduced in all Verifiable Credential document schemas: `guardianVersion`.
+A new default field has been introduced in all Verifiable Credential document schemas: `guardianVersion`.
 
 #### 📝 Purpose
 
-This field helps track the Guardian system version that was used to generate or interact with the VC. It is especially useful when managing backward compatibility and knowing which **Python packages** and versions were available during execution.
+This field helps track the Guardian system version that was used to generate or interact with the VC. It is especially useful when managing backward compatibility and knowing which Python packages and versions were available during execution.
 
 #### 🔍 Field Details
 
