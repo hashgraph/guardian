@@ -992,11 +992,15 @@ export class SchemaConfigComponent implements OnInit {
 
     public onOpenForm(schema: Schema, example: boolean): void {
         const dialogRef = this.dialog.open(SchemaFormDialog, {
+            showHeader: false,
+            header: 'Example',
             width: '950px',
-            data: { schema, example, category: this.getCategory() },
-            styleClass: 'g-dialog',
-            modal: true,
-            closable: false,
+            styleClass: 'guardian-dialog',
+            data: {
+                schema,
+                example,
+                category: this.getCategory()
+            },
         });
         dialogRef.onClose.subscribe(async ({ exampleDate, currentSchema }: {
             exampleDate: any,
@@ -1348,6 +1352,10 @@ export class SchemaConfigComponent implements OnInit {
 
     public onViewSchemaTree(element: Schema): void {
         this.dialog.open(SchemaTreeComponent, {
+            showHeader: false,
+            header: 'Tree',
+            width: '650px',
+            styleClass: 'guardian-dialog',
             data: element,
             // autoFocus: false
         })
