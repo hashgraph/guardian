@@ -144,6 +144,7 @@
       * [Previews the Schema from IPFS](guardian/standard-registry/schemas/schema-apis-for-asynchronous-execution/previews-the-schema-from-ipfs.md)
       * [Importing Schema from IPFS](guardian/standard-registry/schemas/schema-apis-for-asynchronous-execution/importing-schema-from-ipfs.md)
       * [Importing Schema from .zip](guardian/standard-registry/schemas/schema-apis-for-asynchronous-execution/importing-schema-from-.zip.md)
+      * [Copy Schema](guardian/standard-registry/schemas/schema-apis-for-asynchronous-execution/copy-schema.md)
     * [Schema Differentiation](guardian/standard-registry/schemas/schema-differentiation/README.md)
       * [Schema Differentiation using UI](guardian/standard-registry/schemas/schema-differentiation/schema-differentiation-using-ui.md)
       * [Schema Differentiation APIs](guardian/standard-registry/schemas/schema-differentiation/schema-differentiation-apis/README.md)
