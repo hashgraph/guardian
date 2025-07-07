@@ -64,7 +64,6 @@ export interface ISchemaJson {
     name: string;
     description: string;
     entity: SchemaEntity;
-    topicId: string;
     fields: IFieldJson[];
     conditions: IConditionJson[];
 }
@@ -337,7 +336,6 @@ export class SchemaToJson {
             name: schema.name || '',
             description: schema.description || '',
             entity: schema.entity || SchemaEntity.NONE,
-            topicId: schema.topicId || '',
             fields: [],
             conditions: []
         };

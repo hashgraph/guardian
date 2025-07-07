@@ -151,6 +151,7 @@ export class SchemaDialog {
             this.schema = new Schema(data.schema);
         } else {
             this.schema = new Schema();
+            this.schema.topicId = this.topicId;
         }
 
         this.schemaControl.setData(this.schema, this.topicId);

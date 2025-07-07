@@ -376,8 +376,11 @@ export class Schema implements ISchema {
      * @param conditions
      */
     public update(fields?: SchemaField[], conditions?: SchemaCondition[]): void {
-        if (fields) {
+        if (Array.isArray(fields)) {
             this.fields = fields;
+        }
+        if (Array.isArray(conditions)) {
+            this.conditions = conditions;
         }
 
         if (!this.fields) {
