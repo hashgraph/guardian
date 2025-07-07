@@ -129,14 +129,14 @@ export class RequestDocumentBlockDialog {
                                 blockId: this.parent.id,
                                 data
                             };
-                        }
 
-                        this.toastr.success('The draft version of the document was saved successfully', '', {
-                            timeOut: 3000,
-                            closeButton: true,
-                            positionClass: 'toast-bottom-right',
-                            enableHtml: true,
-                        });
+                            this.toastr.success('The draft version of the document was saved successfully', '', {
+                                timeOut: 3000,
+                                closeButton: true,
+                                positionClass: 'toast-bottom-right',
+                                enableHtml: true,
+                            });
+                        }
 
                         this.dialogRef.close(null);
                     }, 1000);
