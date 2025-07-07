@@ -385,6 +385,7 @@ export class SchemaConfigurationComponent implements OnInit {
                     this.dataForm?.get('entity') as UntypedFormControl,
                     this.getFieldName()
                 );
+                fieldValue.refreshType(this.types);
                 newCondition.addThenControl(fieldValue);
             });
 
@@ -397,6 +398,7 @@ export class SchemaConfigurationComponent implements OnInit {
                     this.dataForm?.get('entity') as UntypedFormControl,
                     this.getFieldName()
                 );
+                fieldValue.refreshType(this.types);
                 newCondition.addElseControl(fieldValue);
             });
 
