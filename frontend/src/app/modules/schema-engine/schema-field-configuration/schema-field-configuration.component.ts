@@ -336,43 +336,13 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     }
 
     onTypeChange(event: any) {
-        const item = this.types.find((e) => e.value == event.value);
-        if (item && item.name == 'Boolean') {
-            this.field.controlArray.setValue(false);
-            this.field.controlArray.disable();
-        } else {
-            this.field.controlArray.enable();
-        }
-
-        this.unit =
-            event.value == UnitSystem.Prefix ||
-            event.value == UnitSystem.Postfix;
-
+        const typeName = event.value;
+        const item = this.types.find((e) => e.value == typeName);
+        this.field.setType(((item && item.name) || typeName));
+        this.unit = typeName == UnitSystem.Prefix || typeName == UnitSystem.Postfix;
         this.isString = (item && item.name === 'String') || false;
-        if (!this.isString) {
-            this.field.controlPattern.disable();
-        } else {
-            this.field.controlPattern.enable();
-        }
-
         this.helpText = (item && item.name === 'Help Text') || false;
-        if (!this.helpText) {
-            this.field.controlColor.disable();
-            this.field.controlSize.disable();
-            this.field.controlBold.disable();
-        } else {
-            this.field.controlColor.enable();
-            this.field.controlSize.enable();
-            this.field.controlBold.enable();
-        }
-
-        this.enum = ((item && item.name) || event.value) === 'Enum';
-        if (this.enum) {
-            this.field.controlEnum.setValidators([Validators.required]);
-        } else {
-            this.field.controlEnum.clearValidators();
-        }
-        this.field.controlEnum.updateValueAndValidity();
+        this.enum = ((item && item.name) || typeName) === 'Enum';
     }
 
     onEditEnum() {

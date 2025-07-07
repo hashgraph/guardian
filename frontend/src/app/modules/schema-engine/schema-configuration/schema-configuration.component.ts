@@ -356,6 +356,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 this.getFieldName()
             );
             control.append(this.fieldsForm);
+            control.refreshType(this.types);
             this.fields.push(control);
         }
     }
