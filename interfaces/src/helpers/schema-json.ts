@@ -23,6 +23,8 @@ export enum JsonErrorMessage {
     ARRAY = 'Value of type array is required.',
     REF = 'Value must be a reference to an existing field.',
     REQUIRED_ENTITY = 'Value must be one of [NONE, VC, EVC]',
+    NOT_ARRAY = 'Value of type non-array is required.',
+    NOT_OBJECT = 'Value of type non-object is required.',
 }
 
 export interface IFieldJson {
@@ -47,7 +49,7 @@ export interface IFieldJson {
 
     unit?: string;
 
-    examples?: any[];
+    example?: any[];
     default?: any[];
     suggest?: any[];
 }
@@ -235,7 +237,7 @@ export class SchemaToJson {
         return null;
     }
 
-    private static getExamples(field: SchemaField): string[] | null {
+    private static getExample(field: SchemaField): string[] | null {
         if (field.examples && field.examples[0]) {
             return field.examples[0];
         }
@@ -294,9 +296,9 @@ export class SchemaToJson {
             fieldJson.unit = unit;
         }
 
-        const examples = SchemaToJson.getExamples(field);
-        if (examples) {
-            fieldJson.examples = examples;
+        const example = SchemaToJson.getExample(field);
+        if (example) {
+            fieldJson.example = example;
         }
         const defaultValue = SchemaToJson.getDefault(field);
         if (defaultValue) {
@@ -801,11 +803,46 @@ export class JsonToSchema {
         return undefined;
     }
 
+    private static fromArray(
+        value: any,
+        context: ErrorContext
+    ) {
+        if (Array.isArray(value)) {
+            return value;
+        } else {
+            throw JsonToSchema.createErrorWithValue(
+                context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY),
+                value
+            );
+        }
+    }
+
+    private static fromNotArray(
+        value: any,
+        context: ErrorContext
+    ) {
+        if (typeof value === 'object') {
+            if (Array.isArray(value)) {
+                throw JsonToSchema.createErrorWithValue(
+                    context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.NOT_ARRAY),
+                    value
+                );
+            } else {
+                throw JsonToSchema.createErrorWithValue(
+                    context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.NOT_OBJECT),
+                    value
+                );
+            }
+        } else {
+            return value;
+        }
+    }
+
     private static fromExamples(
         value: IFieldJson,
         context: ErrorContext
     ): {
-        examples: any[] | undefined,
+        examples: any[] | any | undefined,
         suggest: any[] | undefined,
         default: any[] | undefined,
     } {
@@ -813,40 +850,25 @@ export class JsonToSchema {
         let suggestValue: any[] | undefined = undefined;
         let defaultValue: any[] | undefined = undefined;
 
-        if (value.examples) {
-            if (Array.isArray(value.examples)) {
-                examplesValue = [value.examples];
+        if (value.example) {
+            if (value.isArray) {
+                examplesValue = [JsonToSchema.fromArray(value.example, context.add('example'))];
             } else {
-                throw JsonToSchema.createErrorWithValue(
-                    context
-                        .add('examples')
-                        .setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY),
-                    value.examples
-                );
+                examplesValue = [JsonToSchema.fromNotArray(value.example, context.add('example'))];
             }
         }
         if (value.suggest) {
-            if (Array.isArray(value.suggest)) {
-                suggestValue = value.suggest;
+            if (value.isArray) {
+                suggestValue = JsonToSchema.fromArray(value.suggest, context.add('suggest'));
             } else {
-                throw JsonToSchema.createErrorWithValue(
-                    context
-                        .add('suggest')
-                        .setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY),
-                    value.suggest
-                );
+                suggestValue = JsonToSchema.fromNotArray(value.suggest, context.add('suggest'));
             }
         }
         if (value.default) {
-            if (Array.isArray(value.default)) {
-                defaultValue = value.default;
+            if (value.isArray) {
+                defaultValue = JsonToSchema.fromArray(value.default, context.add('default'));
             } else {
-                throw JsonToSchema.createErrorWithValue(
-                    context
-                        .add('default')
-                        .setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.ARRAY),
-                    value.default
-                );
+                defaultValue = JsonToSchema.fromNotArray(value.default, context.add('default'));
             }
         }
 

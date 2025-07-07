@@ -19,7 +19,7 @@ export const keyKeywords = [
     'pattern',
     'expression',
     'unit',
-    'examples',
+    'example',
     'default',
     'suggest',
 ];

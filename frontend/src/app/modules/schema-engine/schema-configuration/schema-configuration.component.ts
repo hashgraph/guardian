@@ -614,22 +614,61 @@ export class SchemaConfigurationComponent implements OnInit {
         let defaultValue;
         let exampleValue;
         if (isArray) {
-            suggestValue =
-                suggest && suggest.length > 0
-                    ? suggest.filter(this.isNotEmpty)
-                    : undefined;
-            defaultValue =
-                defaultValueRaw && defaultValueRaw.length > 0
-                    ? defaultValueRaw.filter(this.isNotEmpty)
-                    : undefined;
-            exampleValue =
-                example && example.length > 0
-                    ? example.filter(this.isNotEmpty)
-                    : undefined;
+            if (Array.isArray(suggest)) {
+                if (suggest.length > 0) {
+                    suggestValue = suggest.filter(this.isNotEmpty)
+                } else {
+                    suggestValue = undefined;
+                }
+            } else {
+                if (this.isNotEmpty(suggest)) {
+                    suggestValue = [suggest];
+                } else {
+                    suggestValue = undefined;
+                }
+            }
+            if (Array.isArray(defaultValueRaw)) {
+                if (defaultValueRaw.length > 0) {
+                    defaultValue = defaultValueRaw.filter(this.isNotEmpty)
+                } else {
+                    defaultValue = undefined;
+                }
+            } else {
+                if (this.isNotEmpty(defaultValueRaw)) {
+                    defaultValue = [defaultValueRaw];
+                } else {
+                    defaultValue = undefined;
+                }
+            }
+            if (Array.isArray(example)) {
+                if (example.length > 0) {
+                    exampleValue = example.filter(this.isNotEmpty)
+                } else {
+                    exampleValue = undefined;
+                }
+            } else {
+                if (this.isNotEmpty(example)) {
+                    exampleValue = [example];
+                } else {
+                    exampleValue = undefined;
+                }
+            }
         } else {
-            suggestValue = suggest;
-            defaultValue = defaultValueRaw;
-            exampleValue = example;
+            if (Array.isArray(suggest)) {
+                suggestValue = suggest[0];
+            } else {
+                suggestValue = suggest;
+            }
+            if (Array.isArray(defaultValueRaw)) {
+                defaultValue = defaultValueRaw[0];
+            } else {
+                defaultValue = defaultValueRaw;
+            }
+            if (Array.isArray(example)) {
+                exampleValue = example[0];
+            } else {
+                exampleValue = example;
+            }
         }
         return {
             autocalculate,
