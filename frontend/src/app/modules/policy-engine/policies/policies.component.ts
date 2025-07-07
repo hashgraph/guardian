@@ -49,6 +49,7 @@ import {
 import { SearchExternalPolicyDialog } from '../dialogs/search-external-policy-dialog/search-external-policy-dialog.component';
 import {OverlayPanel} from 'primeng/overlaypanel';
 import {takeUntil} from 'rxjs/operators';
+import {IndexedDbRegistryService} from 'src/app/services/indexed-db-registry.service';
 
 class MenuButton {
     public readonly visible: boolean;
@@ -607,6 +608,7 @@ export class PoliciesComponent implements OnInit {
         @Inject(CONFIGURATION_ERRORS)
         private _configurationErrors: Map<string, any>,
         private cdRef: ChangeDetectorRef,
+        private indexedDb: IndexedDbRegistryService,
     ) {
         this.policies = null;
         this.pageIndex = 0;
@@ -870,7 +872,11 @@ export class PoliciesComponent implements OnInit {
 
             this.loading = true;
             this.policyEngineService.pushDelete(policy?.id).pipe(takeUntil(this._destroy$)).subscribe(
-                (result) => {
+                async (result) => {
+                    const DB_NAME = 'GUARDIAN';
+                    const STORE_NAME = 'POLICY_STORAGE';
+                    await this.indexedDb.delete(DB_NAME, STORE_NAME, policy?.id);
+
                     const { taskId, expectation } = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {

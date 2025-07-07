@@ -637,9 +637,10 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     private checkState() {
-        if (!this.rootTemplate || this.readonly) {
+        if (!this.rootTemplate || this.readonly || !this.storage.current) {
             return;
         }
+
         if (this.compareState(this.rootTemplate.getJSON(), this.storage.current)) {
             this.rewriteState();
         } else {

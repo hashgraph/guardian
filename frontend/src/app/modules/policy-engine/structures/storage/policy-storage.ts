@@ -70,9 +70,27 @@ export class PolicyStorage {
     }
 
     public async save() {
+        if (!this._policyId) {
+            return;
+        }
+
+        const curr = this._policyStorage.current();
+        if (!curr) {
+            await this._storage.delete(this.DB_NAME, this.STORAGE_NAME, this._policyId);
+            return
+        }
+
         if (this._policyId) {
             await this.setMap(this._policyId, this._policyStorage.current());
         }
+    }
+
+    public async deleteById(policyId: string): Promise<void> {
+        console.log('deleteById', policyId)
+        const db = await this._storage.getDB(this.DB_NAME);
+        const tx = db.transaction(this.STORAGE_NAME, 'readwrite');
+        tx.objectStore(this.STORAGE_NAME).delete(policyId);
+        await tx.done;
     }
 
     private async setMap(policyId: string, value: any): Promise<void> {
