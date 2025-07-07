@@ -1,9 +1,10 @@
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { Stack, PolicyStorageItem } from './storage';
+import {DB_NAME, STORES_NAME} from 'src/app/constants';
 
 export class PolicyStorage {
-    private readonly DB_NAME = 'GUARDIAN';
-    private readonly STORAGE_NAME = 'POLICY_STORAGE';
+    private readonly DB_NAME = DB_NAME.GUARDIAN;
+    private readonly STORAGE_NAME = STORES_NAME.POLICY_STORAGE;
 
     private _storage: IndexedDbRegistryService;
     private _policyStorage: Stack<PolicyStorageItem>;
@@ -13,7 +14,7 @@ export class PolicyStorage {
         this._storage = storage;
         this._policyStorage = new Stack(10);
 
-        this._storage.registerStore(this.DB_NAME, { name: this.STORAGE_NAME, options: { keyPath: 'policyId' } });
+        this._storage.registerStore(DB_NAME.GUARDIAN, { name: STORES_NAME.POLICY_STORAGE, options: { keyPath: 'policyId' } });
     }
 
     public async load(policyId: string) {
