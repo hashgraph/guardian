@@ -1076,7 +1076,6 @@ export class JsonToSchema {
         fields: SchemaField[],
         all: Schema[],
         entity: SchemaEntity,
-        allFields: Set<string>,
         context: ErrorContext
     ): SchemaCondition {
         context = context.add(`[${index}]`);
@@ -1085,8 +1084,8 @@ export class JsonToSchema {
                 field: JsonToSchema.fromCondTarget(value, fields, context),
                 fieldValue: JsonToSchema.fromCondValue(value, context),
             },
-            thenFields: JsonToSchema.fromCondFields(value, all, entity, allFields, context).then,
-            elseFields: JsonToSchema.fromCondFields(value, all, entity, allFields, context).else,
+            thenFields: JsonToSchema.fromCondFields(value, all, entity, new Set<string>(), context).then,
+            elseFields: JsonToSchema.fromCondFields(value, all, entity, new Set<string>(), context).else,
         }
         return condition;
     }
@@ -1119,7 +1118,6 @@ export class JsonToSchema {
         fields: SchemaField[],
         all: Schema[],
         entity: SchemaEntity,
-        allFields: Set<string>,
         context: ErrorContext
     ): SchemaCondition[] {
         const conditions: SchemaCondition[] = [];
@@ -1132,7 +1130,7 @@ export class JsonToSchema {
             }
 
             for (let index = 0; index < value.length; index++) {
-                const condition = JsonToSchema.fromCondition(value[index], index, fields, all, entity, allFields, context);
+                const condition = JsonToSchema.fromCondition(value[index], index, fields, all, entity, context);
                 conditions.push(condition);
             }
         }
@@ -1143,12 +1141,11 @@ export class JsonToSchema {
         const context: ErrorContext = new ErrorContext();
         context.setPath(['schema']);
         context.setData(json);
-        const allFields = new Set<string>();
         const name = JsonToSchema.fromRequiredString(json.name, context.add('name'));
         const description = JsonToSchema.fromString(json.description, context.add('description'));
         const entity = JsonToSchema.fromEntity(json.entity, context.add('entity'));
-        const fields = JsonToSchema.fromFields(json.fields, all, entity, allFields, context.add('fields'));
-        const conditions = JsonToSchema.fromConditions(json.conditions, fields, all, entity, allFields, context.add('conditions'));
+        const fields = JsonToSchema.fromFields(json.fields, all, entity, new Set<string>(), context.add('fields'));
+        const conditions = JsonToSchema.fromConditions(json.conditions, fields, all, entity, context.add('conditions'));
         JsonToSchema.fromDefaultFields(fields, entity);
         return {
             name,
