@@ -1476,7 +1476,7 @@
     cborg "^1.6.0"
     multiformats "^9.5.4"
 
-"@ipld/dag-cbor@^9.0.0", "@ipld/dag-cbor@^9.0.5", "@ipld/dag-cbor@^9.0.6", "@ipld/dag-cbor@^9.0.7", "@ipld/dag-cbor@^9.2.1", "@ipld/dag-cbor@^9.2.2":
+"@ipld/dag-cbor@^9.0.0", "@ipld/dag-cbor@^9.0.3", "@ipld/dag-cbor@^9.0.6", "@ipld/dag-cbor@^9.0.7", "@ipld/dag-cbor@^9.2.1", "@ipld/dag-cbor@^9.2.2":
   version "9.2.4"
   resolved "https://registry.yarnpkg.com/@ipld/dag-cbor/-/dag-cbor-9.2.4.tgz#64aba7060836af081debe87610cd1c915997ba6a"
   integrity sha512-GbDWYl2fdJgkYtIJN0HY9oO0o50d1nB4EQb7uYWKUd2ztxCjxiEW3PjwGG0nqUpN1G4Cug6LX8NzbA7fKT+zfA==
@@ -1515,16 +1515,16 @@
     "@ipld/dag-json" "^10.0.0"
     multiformats "^13.3.1"
 
-"@ipld/unixfs@^2.1.1":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@ipld/unixfs/-/unixfs-2.2.0.tgz#977ba394c5051cf0f0d85ebd0797ca1ac04dfb8b"
-  integrity sha512-lDQ2eRhJlbFaBoO3bhOmDVCLmpOnhwtwbilqUgAAhbhoPSmLrnv7gsBuToZjXOdPaEGSL7apkmm6nFrcU6zh4Q==
+"@ipld/unixfs@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@ipld/unixfs/-/unixfs-3.0.0.tgz#7139755eedcf468d654d3c254d14cfcb647c70ba"
+  integrity sha512-Tj3/BPOlnemcZQ2ETIZAO8hqAs9KNzWyX5J9+JCL9jDwvYwjxeYjqJ3v+9DusNvTBmJhZnGVP6ijUHrsuOLp+g==
   dependencies:
     "@ipld/dag-pb" "^4.0.0"
     "@multiformats/murmur3" "^2.1.3"
     "@perma/map" "^1.0.2"
     actor "^2.3.1"
-    multiformats "^11.0.1"
+    multiformats "^13.0.1"
     protobufjs "^7.1.2"
     rabin-rs "^2.1.0"
 
@@ -2854,6 +2854,11 @@
     "@stablelib/wipe" "^1.0.1"
     "@stablelib/xchacha20" "^1.0.1"
 
+"@storacha/one-webcrypto@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@storacha/one-webcrypto/-/one-webcrypto-1.0.1.tgz#4465090c2cf27e110d6490c84e52c298a3057e6f"
+  integrity sha512-bD+vWmcgsEBqU0Dz04BR43SA03bBoLTAY29vaKasY9Oe8cb6XIP0/vkm0OS2UwKC13c8uRgFW4rjJUgDCNLejQ==
+
 "@tokenizer/inflate@^0.2.7":
   version "0.2.7"
   resolved "https://registry.yarnpkg.com/@tokenizer/inflate/-/inflate-0.2.7.tgz#32dd9dfc9abe457c89b3d9b760fc0690c85a103b"
@@ -3332,10 +3337,10 @@
   resolved "https://registry.yarnpkg.com/@types/retry/-/retry-0.12.0.tgz#2b35eccfcee7d38cd72ad99232fbd58bffb3c84d"
   integrity sha512-wWKOClTTiizcZhXnPY4wikVAwmdYHp8q6DmC+EJUzAMsycb7HB32Kh9RN4+0gExjmPmZSAQjgURXIGATPegAvA==
 
-"@types/retry@0.12.1":
-  version "0.12.1"
-  resolved "https://registry.yarnpkg.com/@types/retry/-/retry-0.12.1.tgz#d8f1c0d0dc23afad6dc16a9e993a0865774b4065"
-  integrity sha512-xoDlM2S4ortawSWORYqsdU+2rxdh4LRW9ytc3zmT37RIKQh6IHyKwwtKhKis9ah8ol07DCkZxPt8BBvPjC6v4g==
+"@types/retry@0.12.2":
+  version "0.12.2"
+  resolved "https://registry.yarnpkg.com/@types/retry/-/retry-0.12.2.tgz#ed279a64fa438bb69f2480eda44937912bb7480a"
+  integrity sha512-XISRgDJ2Tc5q4TRqvgJtzsRkFYNJzZrhTdtMoGVBttwzzQJkPnS3WWTFc7kuDRoPtPakl+T+OfdEUjYJj7Jbow==
 
 "@types/rimraf@^3.0.2":
   version "3.0.2"
@@ -3546,7 +3551,7 @@
   dependencies:
     web-streams-polyfill "^3.1.1"
 
-"@web3-storage/access@^18.1.0", "@web3-storage/access@^18.3.2":
+"@web3-storage/access@^18.1.0":
   version "18.4.0"
   resolved "https://registry.yarnpkg.com/@web3-storage/access/-/access-18.4.0.tgz#8b107a74f55c13596032ca0f47c8b7d4690a7ac0"
   integrity sha512-EQQxSCip9FNgiNGwpKTnpff7/5A6MSn/Etf1Xpei3Au2oQkUe25DHwRJd/mbUzjnhcYh6UMGk2f0dIJ4Me00LA==
@@ -3570,17 +3575,42 @@
     type-fest "^4.9.0"
     uint8arrays "^4.0.6"
 
-"@web3-storage/capabilities@^14.0.2":
-  version "14.0.2"
-  resolved "https://registry.yarnpkg.com/@web3-storage/capabilities/-/capabilities-14.0.2.tgz#7ad38afd22e54cc14d4e83fa61cb46a70fb95b5b"
-  integrity sha512-0BTzzn60S7eC2xwZjla3v2SNiyxSuVYD2bAokHuO4ztfi0O7L76R2pVDpOI67ZnIL+Cl3FX022NKt+qLxFIoSg==
+"@web3-storage/access@^20.2.0":
+  version "20.3.0"
+  resolved "https://registry.yarnpkg.com/@web3-storage/access/-/access-20.3.0.tgz#0bffd9d2cb6b00723519b9d5543f17cec7da9443"
+  integrity sha512-5Gf8tTDp7CSZHN162RNGEOQLPXN5EpKr/aCnig8EvXip2VJ9AphjSNwjHKmcPiWXUjQvQdYFkpNs5oByCIehbA==
   dependencies:
+    "@ipld/car" "^5.1.1"
+    "@ipld/dag-ucan" "^3.4.0"
+    "@scure/bip39" "^1.2.1"
+    "@storacha/one-webcrypto" "^1.0.1"
+    "@ucanto/client" "^9.0.1"
     "@ucanto/core" "^10.0.1"
     "@ucanto/interface" "^10.0.1"
     "@ucanto/principal" "^9.0.1"
     "@ucanto/transport" "^9.1.1"
     "@ucanto/validator" "^9.0.2"
-    "@web3-storage/data-segment" "^3.2.0"
+    "@web3-storage/capabilities" "^18.1.0"
+    "@web3-storage/did-mailto" "^2.1.0"
+    bigint-mod-arith "^3.1.2"
+    conf "11.0.2"
+    multiformats "^13.3.2"
+    p-defer "^4.0.0"
+    type-fest "^4.9.0"
+    uint8arrays "^5.1.0"
+
+"@web3-storage/blob-index@^1.0.5":
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@web3-storage/blob-index/-/blob-index-1.0.5.tgz#089bd4d88946912946537fbfa7c3d911c7cd86de"
+  integrity sha512-mhzupWeRfxLljoULcagU++mOmQOriCBMKniUhsmrCXrtRV8voF7op/ymqix1f9uX1M5iB93YXcfxAVBwGWWKoA==
+  dependencies:
+    "@ipld/dag-cbor" "^9.0.6"
+    "@storacha/one-webcrypto" "^1.0.1"
+    "@ucanto/core" "^10.0.1"
+    "@ucanto/interface" "^10.0.1"
+    "@web3-storage/capabilities" "^18.0.1"
+    carstream "^2.1.0"
+    multiformats "^13.0.1"
     uint8arrays "^5.0.3"
 
 "@web3-storage/capabilities@^17.1.0":
@@ -3596,7 +3626,7 @@
     "@web3-storage/data-segment" "^5.2.0"
     uint8arrays "^5.0.3"
 
-"@web3-storage/capabilities@^18.0.0":
+"@web3-storage/capabilities@^18.0.0", "@web3-storage/capabilities@^18.0.1", "@web3-storage/capabilities@^18.1.0":
   version "18.1.0"
   resolved "https://registry.yarnpkg.com/@web3-storage/capabilities/-/capabilities-18.1.0.tgz#3279e748270761643cd498eb0b5b6c6983153fa8"
   integrity sha512-jgZtymt2jJtER3SPsE0yoRSf1BzNo1hQIir6hfY3QlooxTwdETzPbF1rBs5El7BCCMHhQfB9hiLRniTIhnX4wA==
@@ -3608,15 +3638,6 @@
     "@ucanto/validator" "^9.0.2"
     "@web3-storage/data-segment" "^5.2.0"
     uint8arrays "^5.0.3"
-
-"@web3-storage/data-segment@^3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@web3-storage/data-segment/-/data-segment-3.2.0.tgz#62d109a01fb800486c270e65fb2e482a4bc40b47"
-  integrity sha512-SM6eNumXzrXiQE2/J59+eEgCRZNYPxKhRoHX2QvV3/scD4qgcf4g+paWBc3UriLEY1rCboygGoPsnqYJNyZyfA==
-  dependencies:
-    "@ipld/dag-cbor" "^9.0.5"
-    multiformats "^11.0.2"
-    sync-multihash-sha2 "^1.0.0"
 
 "@web3-storage/data-segment@^5.1.0", "@web3-storage/data-segment@^5.2.0":
   version "5.3.0"
@@ -3632,7 +3653,7 @@
   resolved "https://registry.yarnpkg.com/@web3-storage/did-mailto/-/did-mailto-2.1.0.tgz#4ba7bd52772e48181d78ece0bdc27728857e919e"
   integrity sha512-TRmfSXj1IhtX3ESurSNOylZSBKi0z/VJNoMLpof+AVRdovgZjjocpiePQTs2pfHKqHTHfJXc9AboWyK4IKTWMw==
 
-"@web3-storage/filecoin-client@^3.3.2":
+"@web3-storage/filecoin-client@^3.3.5":
   version "3.3.5"
   resolved "https://registry.yarnpkg.com/@web3-storage/filecoin-client/-/filecoin-client-3.3.5.tgz#62f3a296badba9b10e30d13e73130907787ba06e"
   integrity sha512-3JFKnHFizlljRSJyyCdNN3Np4MN5riBvjAXweqNmu4s2sChMB8kopnCkAFoMeEom9r7ZAnBAkMO3Wacjs6Nlcw==
@@ -3649,30 +3670,32 @@
   resolved "https://registry.yarnpkg.com/@web3-storage/multipart-parser/-/multipart-parser-1.0.0.tgz#6b69dc2a32a5b207ba43e556c25cc136a56659c4"
   integrity sha512-BEO6al7BYqcnfX15W2cnGR+Q566ACXAT9UQykORCWW80lmkpWsnEob6zJS1ZVBKsSJC8+7vJkHwlp+lXG1UCdw==
 
-"@web3-storage/upload-client@^13.2.2":
-  version "13.2.2"
-  resolved "https://registry.yarnpkg.com/@web3-storage/upload-client/-/upload-client-13.2.2.tgz#a389596b1f4c7392771ae622718034015d119ae3"
-  integrity sha512-dtedxw9azYUG5LTbZ37CnjggCRIuSsi0nD8phpWjWN20v3pqlrMCCh4cwl0z1bDk/GnYmOxDBViE19paEaYPBw==
+"@web3-storage/upload-client@^17.1.4":
+  version "17.1.4"
+  resolved "https://registry.yarnpkg.com/@web3-storage/upload-client/-/upload-client-17.1.4.tgz#106ca4e9cbb91492399b98307bb2e6f78fdee8e8"
+  integrity sha512-jfVEcF7bVouxPy7kd1K5m6BaKeFzcH9zyyWC0CArByWLnKhuPhZ7+ykry3lwn82JIFXbEtmI563ewNuAAibieg==
   dependencies:
     "@ipld/car" "^5.2.2"
     "@ipld/dag-cbor" "^9.0.6"
     "@ipld/dag-ucan" "^3.4.0"
-    "@ipld/unixfs" "^2.1.1"
+    "@ipld/unixfs" "^3.0.0"
     "@ucanto/client" "^9.0.1"
+    "@ucanto/core" "^10.0.1"
     "@ucanto/interface" "^10.0.1"
     "@ucanto/transport" "^9.1.1"
-    "@web3-storage/capabilities" "^14.0.2"
+    "@web3-storage/blob-index" "^1.0.5"
+    "@web3-storage/capabilities" "^18.1.0"
     "@web3-storage/data-segment" "^5.1.0"
-    "@web3-storage/filecoin-client" "^3.3.2"
+    "@web3-storage/filecoin-client" "^3.3.5"
     ipfs-utils "^9.0.14"
-    multiformats "^12.1.2"
-    p-retry "^5.1.2"
+    multiformats "^13.3.2"
+    p-retry "^6.2.1"
     varint "^6.0.0"
 
-"@web3-storage/w3up-client@^12.0.0":
-  version "12.5.3"
-  resolved "https://registry.yarnpkg.com/@web3-storage/w3up-client/-/w3up-client-12.5.3.tgz#f9665e3cbf1b34d25e473861f7c3474247c35364"
-  integrity sha512-tpkjSU6amVDojiBRK6l43bIPQYcwx63T3uO3jNMMyOo9khzru+wBV2P0mTsMd1VkaBMdxo8ylzLdDPp8m2X5rQ==
+"@web3-storage/w3up-client@^17.3.0":
+  version "17.3.0"
+  resolved "https://registry.yarnpkg.com/@web3-storage/w3up-client/-/w3up-client-17.3.0.tgz#55aa92e816dfb8b10f2cde7ec8a865a049a07591"
+  integrity sha512-2AaaZgFEk3Y+ARMGEtQr496IbMh2QJVaRxETAzSQUfxd1hQeP/X9Cf5PoIOLv/VhkaptO2r7CLQGijIE2jEvNw==
   dependencies:
     "@ipld/dag-ucan" "^3.4.0"
     "@ucanto/client" "^9.0.1"
@@ -3680,11 +3703,12 @@
     "@ucanto/interface" "^10.0.1"
     "@ucanto/principal" "^9.0.1"
     "@ucanto/transport" "^9.1.1"
-    "@web3-storage/access" "^18.3.2"
-    "@web3-storage/capabilities" "^14.0.2"
+    "@web3-storage/access" "^20.2.0"
+    "@web3-storage/blob-index" "^1.0.5"
+    "@web3-storage/capabilities" "^18.1.0"
     "@web3-storage/did-mailto" "^2.1.0"
-    "@web3-storage/filecoin-client" "^3.3.2"
-    "@web3-storage/upload-client" "^13.2.2"
+    "@web3-storage/filecoin-client" "^3.3.5"
+    "@web3-storage/upload-client" "^17.1.4"
 
 "@zxing/text-encoding@0.9.0":
   version "0.9.0"
@@ -4959,6 +4983,15 @@ carbites@^1.0.6:
     "@ipld/dag-cbor" "^6.0.3"
     "@ipld/dag-pb" "^2.0.2"
     multiformats "^9.0.4"
+
+carstream@^2.1.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/carstream/-/carstream-2.3.0.tgz#dffee8c53ced819f8fa43068a82d071666da7a8b"
+  integrity sha512-2YwFg5Kxs2tqVCJv7sthWbYoUpALCYBBfTdpQcpicV7ipi6bBb1h9M4MNb1vm+724f39lUNp5VWhW43IFxfPlA==
+  dependencies:
+    "@ipld/dag-cbor" "^9.0.3"
+    multiformats "^13.0.1"
+    uint8arraylist "^2.4.3"
 
 caseless@~0.12.0:
   version "0.12.0"
@@ -8883,6 +8916,11 @@ is-negative-zero@^2.0.3:
   resolved "https://registry.yarnpkg.com/is-negative-zero/-/is-negative-zero-2.0.3.tgz#ced903a027aca6381b777a5743069d7376a49747"
   integrity sha512-5KoIu2Ngpyek75jXodFvnafB6DJgr3u8uuK0LEZJjrU19DrMD3EVERaR8sjz8CCGgpZvxPl9SuE1GMVPFHx1mw==
 
+is-network-error@^1.0.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/is-network-error/-/is-network-error-1.1.0.tgz#d26a760e3770226d11c169052f266a4803d9c997"
+  integrity sha512-tUdRRAnhT+OtCZR/LxZelH/C7QtjtFrTu5tXCA8pl55eTUElUHT+GPYV8MBMBvea/j+NxQqVt3LbWMRir7Gx9g==
+
 is-number-object@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/is-number-object/-/is-number-object-1.1.1.tgz#144b21e95a1bc148205dcc2814a9134ec41b2541"
@@ -10686,11 +10724,6 @@ multicodec@3.2.1, multicodec@^3.0.1:
     uint8arrays "^3.0.0"
     varint "^6.0.0"
 
-multiformats@^11.0.1, multiformats@^11.0.2:
-  version "11.0.2"
-  resolved "https://registry.yarnpkg.com/multiformats/-/multiformats-11.0.2.tgz#b14735efc42cd8581e73895e66bebb9752151b60"
-  integrity sha512-b5mYMkOkARIuVZCpvijFj9a6m5wMVLC7cf/jIPd5D/ARDOfLC5+IFkbgDXQgcU2goIsTD/O9NY4DI/Mt4OGvlg==
-
 multiformats@^12.0.1, multiformats@^12.1.2:
   version "12.1.3"
   resolved "https://registry.yarnpkg.com/multiformats/-/multiformats-12.1.3.tgz#cbf7a9861e11e74f8228b21376088cb43ba8754e"
@@ -10700,6 +10733,11 @@ multiformats@^13.0.0, multiformats@^13.1.0, multiformats@^13.3.0, multiformats@^
   version "13.3.6"
   resolved "https://registry.yarnpkg.com/multiformats/-/multiformats-13.3.6.tgz#3a657fd4ae39e04b739491b9e8b3be7926e0f792"
   integrity sha512-yakbt9cPYj8d3vi/8o/XWm61MrOILo7fsTL0qxNx6zS0Nso6K5JqqS2WV7vK/KSuDBvrW3KfCwAdAgarAgOmww==
+
+multiformats@^13.0.1, multiformats@^13.3.2:
+  version "13.3.7"
+  resolved "https://registry.yarnpkg.com/multiformats/-/multiformats-13.3.7.tgz#9313edd1b152d9997ab6830c4f702783e724d62f"
+  integrity sha512-meL9DERHj+fFVWoOX9fXqfcYcSpUfSYJPcFvDPKrxitICbwAoWR+Ut4j5NO9zAT917HUHLQmqzQbAsGNHlDcxQ==
 
 multiformats@^9.0.4, multiformats@^9.4.13, multiformats@^9.4.2, multiformats@^9.4.5, multiformats@^9.4.7, multiformats@^9.5.4, multiformats@^9.6.2, multiformats@^9.6.3, multiformats@^9.6.4:
   version "9.9.0"
@@ -11520,12 +11558,13 @@ p-retry@4, p-retry@^4.6.1:
     "@types/retry" "0.12.0"
     retry "^0.13.1"
 
-p-retry@^5.1.2:
-  version "5.1.2"
-  resolved "https://registry.yarnpkg.com/p-retry/-/p-retry-5.1.2.tgz#c16eaee4f2016f9161d12da40d3b8b0f2e3c1b76"
-  integrity sha512-couX95waDu98NfNZV+i/iLt+fdVxmI7CbrrdC2uDWfPdUAApyxT4wmDlyOtR5KtTDmkDO0zDScDjDou9YHhd9g==
+p-retry@^6.2.1:
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/p-retry/-/p-retry-6.2.1.tgz#81828f8dc61c6ef5a800585491572cc9892703af"
+  integrity sha512-hEt02O4hUct5wtwg4H4KcWgDdm+l1bOaEy/hWzd8xtXB9BqxTWBBhb+2ImAtH4Cv4rPjV76xN3Zumqk3k3AhhQ==
   dependencies:
-    "@types/retry" "0.12.1"
+    "@types/retry" "0.12.2"
+    is-network-error "^1.0.0"
     retry "^0.13.1"
 
 p-timeout@^3.2.0:
