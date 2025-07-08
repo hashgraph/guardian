@@ -1,4 +1,4 @@
-# 💻 Import and Export Excel file User Guide
+# Import and Export Excel file User Guide
 
 The ‘Import/Export schemas from/to Excel’ UI menu options trigger the process of seamless transformation of schemas written in Excel into valid Guardian JSON schemas, and vice versa. The content of such schema excel files must conform to the format presented in the template accessible via the corresponding button on the 'Policy Schemas’ page. The menu options for actioning Import and Export are accessible via the ‘Manage Policies’ and ‘Policy Schemas’ pages.
 

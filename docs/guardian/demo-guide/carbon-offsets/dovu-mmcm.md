@@ -4,7 +4,7 @@ description: >-
   Program
 ---
 
-# 🍀 Dovu MMCM
+# Dovu MMCM
 
 ## Executive Summary
 
@@ -79,7 +79,7 @@ Naturally, over time, these features and elements will be automated, and there w
 
 ## Data Schemas
 
-These schemas, or data points, have been collaborated upon between DOVU and the MMCM team using the [DOVU generic dMRV structure](https://docs.google.com/document/d/1micqwUz2-dVQ8VbWf55WBOxMzB\_xTqMfxlqFUoHFW-8/edit) as an initial template, which comprises document or entity submissions:
+These schemas, or data points, have been collaborated upon between DOVU and the MMCM team using the [DOVU generic dMRV structure](https://docs.google.com/document/d/1micqwUz2-dVQ8VbWf55WBOxMzB_xTqMfxlqFUoHFW-8/edit) as an initial template, which comprises document or entity submissions:
 
 3 Document Submissions
 

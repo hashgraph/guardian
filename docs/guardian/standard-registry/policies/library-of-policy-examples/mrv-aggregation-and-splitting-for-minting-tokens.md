@@ -1,4 +1,4 @@
-# ➗ MRV aggregation and splitting for minting tokens
+# MRV aggregation and splitting for minting tokens
 
 For a demo example of following steps, here is the policy timestamp: **1675266693.102366003**
 

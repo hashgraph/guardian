@@ -1,2 +1,2 @@
-# ⚙ System Schema APIs
+# System Schema APIs
 

@@ -1,4 +1,4 @@
-# 📁 Modules
+# Modules
 
 Guardian introduces a highly modular architecture designed to streamline the development and management of digital environmental assets. This architecture, centered around the concept of modules, enables users to harness distinct, reusable units of functionality tailored to the specific needs of sustainability projects and policies.&#x20;
 

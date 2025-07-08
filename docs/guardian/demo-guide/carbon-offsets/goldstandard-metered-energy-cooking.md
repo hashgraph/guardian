@@ -2,7 +2,7 @@
 description: Policy developed by Gautam Prajapati during the SBS Hackathon
 ---
 
-# ♨️ GoldStandard - Metered Energy Cooking
+# GoldStandard - Metered Energy Cooking
 
 ### Table of content
 

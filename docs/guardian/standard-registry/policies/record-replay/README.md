@@ -1,4 +1,4 @@
-# 📁 Record/Replay
+# Record/Replay
 
 **“**&#x52;ecord/Run” options provide facilities to capture policy execution events, save and/or export them in a records file, which can then be replayed in the context of a different policy.
 

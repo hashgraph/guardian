@@ -1,4 +1,4 @@
-# 💻 Performing API Automation Testing
+# Performing API Automation Testing
 
 The /e2e-tests folder comprises guardian Cypress test automation framework and automated UI and API tests
 

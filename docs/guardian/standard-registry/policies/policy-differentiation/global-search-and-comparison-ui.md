@@ -1,4 +1,4 @@
-# 💻 Global search and comparison UI
+# Global search and comparison UI
 
 1. [Step By Step Process](global-search-and-comparison-ui.md#id-1.-step-by-step-process)
 2. [Demo Video](global-search-and-comparison-ui.md#demo-video)

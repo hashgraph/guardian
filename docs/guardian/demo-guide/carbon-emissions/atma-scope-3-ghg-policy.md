@@ -1,4 +1,4 @@
-# 🏭 Atma Scope 3 GHG Policy
+# Atma Scope 3 GHG Policy
 
 The atma.io connected product cloud from Avery Dennison utilizes this policy to calculate scope 3 emissions during the RFID Inlay production processes. The policy is fully integrated into the atma.io platform and is designed for API-driven usage.
 

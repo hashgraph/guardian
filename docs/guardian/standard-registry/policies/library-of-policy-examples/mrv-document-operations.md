@@ -1,4 +1,4 @@
-# 🔎 MRV Document Operations
+# MRV Document Operations
 
 For a demo example of following steps, here is the policy timestamp: **1675164736.675731674**
 

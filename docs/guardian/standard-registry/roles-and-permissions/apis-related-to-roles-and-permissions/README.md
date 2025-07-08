@@ -1,2 +1,2 @@
-# ⚙️ APIs related to Roles & Permissions
+# APIs related to Roles & Permissions
 

@@ -1,4 +1,4 @@
-# ⚙️ Demo Using APIs and UI
+# Demo Using APIs and UI
 
 ## 1. Login as a User
 
@@ -70,7 +70,7 @@
 {% endtab %}
 {% endtabs %}
 
-![](<../../../.gitbook/assets/API\_2 (1) (1).png>)
+![](<../../../.gitbook/assets/API_2 (1) (1).png>)
 
 ### 1.5 At present only PolicyRolesBlock is available to the user. Select the "INSTALLER" role.
 
@@ -180,7 +180,7 @@ Request the role
 | type<mark style="color:red;">\*</mark>     | token  | 0d4b2c1f-dc7a-47f5-a9ab-238d190f6769&1.0.0                                            |
 | @context<mark style="color:red;">\*</mark> | array  | \["https://ipfs.io/ipfs/bafkreihj5c6npywzkfx2pylalh5f23lhy2ogofxhdqctvpoh3gczwtzjg4"] |
 
-![](<../../../.gitbook/assets/API\_4 (1) (1).png>)
+![](<../../../.gitbook/assets/API_4 (1) (1).png>)
 
 ### 1.8 Request the root block and all contained blocks again.
 

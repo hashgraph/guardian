@@ -1,2 +1,2 @@
-# ⚙ Task Statuses APIs
+# Task Statuses APIs
 

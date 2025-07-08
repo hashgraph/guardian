@@ -1,2 +1,2 @@
-# ⚙ Search APIs
+# Search APIs
 
