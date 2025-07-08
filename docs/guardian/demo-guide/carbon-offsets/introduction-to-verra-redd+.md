@@ -1,4 +1,4 @@
-# 📖 Introduction to Verra VM0007 Redd+
+# Introduction to Verra Redd+
 
 ## Policy Description:
 

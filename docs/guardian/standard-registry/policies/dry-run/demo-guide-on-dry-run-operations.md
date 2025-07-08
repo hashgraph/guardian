@@ -1,4 +1,4 @@
-# 💻 Dry Run Mode using UI
+# Dry Run Mode using UI
 
 1. [Step By Step Process](demo-guide-on-dry-run-operations.md#id-1.-step-by-step-process)
 2. [Demo Video](demo-guide-on-dry-run-operations.md#id-2.-demo-video)
@@ -223,9 +223,9 @@ To get complete information on above API, please check : [#returns-lists-of-ipfs
 
 Savepoint will allow to mark any of the action in the dry run as savepoint, which can restored from that point. This feature is similar to adding checkpoints in the execution workflow.
 
-<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
-
 <figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Demo Video
 

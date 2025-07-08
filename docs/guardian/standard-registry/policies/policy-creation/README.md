@@ -1,2 +1,2 @@
-# 🔩 Policy Creation
+# Policy Creation
 

@@ -1,2 +1,2 @@
-# 🔥 FireBlocks Raw Signing
+# FireBlocks Raw Signing
 

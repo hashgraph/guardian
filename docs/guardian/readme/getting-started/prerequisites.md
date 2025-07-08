@@ -1,4 +1,4 @@
-# 🗒️ Prerequisites
+# Prerequisites
 
 ## 1. Universal Software
 

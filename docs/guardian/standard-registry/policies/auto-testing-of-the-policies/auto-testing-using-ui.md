@@ -1,4 +1,4 @@
-# 💻 Auto Testing using UI
+# Auto Testing using UI
 
 ## **Add test data to the Policy**
 

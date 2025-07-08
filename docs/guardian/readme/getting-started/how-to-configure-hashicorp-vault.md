@@ -1,4 +1,4 @@
-# 🔨 How to Configure HashiCorp Vault
+# How to Configure HashiCorp Vault
 
 1. Configure .env/.env.docker files in **auth-service** folder
 

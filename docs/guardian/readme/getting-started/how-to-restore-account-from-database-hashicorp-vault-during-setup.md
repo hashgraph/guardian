@@ -1,4 +1,4 @@
-# 🔨 How to Restore Account from Database/Hashicorp Vault during Setup
+# How to Restore Account from Database/Hashicorp Vault during Setup
 
 For backup all data, we need to create dump of all used mongodb databases and hashicorp vault (if it use)
 

@@ -1,4 +1,4 @@
-# 💻 Creating and using Roles
+# Creating and using Roles
 
 For a demo example of following steps, here is the policy timestamp: **1675164531.823309003**
 

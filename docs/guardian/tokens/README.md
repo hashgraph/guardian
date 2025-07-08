@@ -1,2 +1,2 @@
-# 🪙 Tokens
+# Tokens
 

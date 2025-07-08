@@ -1,4 +1,4 @@
-# 💻 Performing UI Automation Testing
+# Performing UI Automation Testing
 
 Following command is used to run all UI tests in an interactive dashboard that allows you to see the status of the tests while they are running and at the same time view the application under test.
 
@@ -28,7 +28,7 @@ and then select test under ui-tests/specs/policies
 
 Finally, all the selected test runs and you can see the key components of the Test Runner that you need to pay attention to when executing tests.
 
-<figure><img src="../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Test Status Menu:** The menu shows a summary of the number of tests passed, passed, failed, or incomplete, and the time spent on the test.
 

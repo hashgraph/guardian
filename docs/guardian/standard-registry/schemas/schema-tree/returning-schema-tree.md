@@ -1,15 +1,19 @@
-# ⚙ Returning Schema Tree
+# API for Returning Schema Tree
 
-{% swagger method="get" path="" baseUrl="/schema/{schemaId}/tree" summary="Returns schema tree." %}
-{% swagger-description %}
+## Returns schema tree.
+
+<mark style="color:blue;">`GET`</mark> `/schema/{schemaId}/tree`
+
 Returns schema tree.
-{% endswagger-description %}
 
-{% swagger-parameter in="path" name="schemaId" type="String" required="true" %}
-Schema identifier
-{% endswagger-parameter %}
+#### Path Parameters
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+| Name                                       | Type   | Description       |
+| ------------------------------------------ | ------ | ----------------- |
+| schemaId<mark style="color:red;">\*</mark> | String | Schema identifier |
+
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```
 content:
             application/json:
@@ -25,22 +29,22 @@ content:
                     items:
                       type: object
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+{% tab title="401: Unauthorized Unauthorized" %}
 
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+{% tab title="403: Forbidden Forbidden" %}
 
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+{% tab title="500: Internal Server Error Internal Server Error" %}
 ```
 content:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

@@ -1,4 +1,4 @@
-# 📁 Global Policy Search & Compare
+# Global Policy Search & Compare
 
 Global Policy Search & Compare feature allows users to efficiently manage and analyze policies across different Guardian instances. Here are the main aspects of this feature:
 

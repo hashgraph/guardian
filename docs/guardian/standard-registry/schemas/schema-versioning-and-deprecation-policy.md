@@ -2,7 +2,7 @@
 description: This policy comes into effect beginning with Guardian 1.3.0
 ---
 
-# ℹ Schema Versioning & Deprecation Policy
+# Schema Versioning & Deprecation Policy
 
 Guardian schema documents specify the content of Verifiable Credentials (VCs) and Verifiable Presentations (VP), which are produced by the Policy Workflow Engine in accordance with the configuration of the specific policy being executed. Effectively, schemas define the input/output ‘data’ part of policy execution, and therefore are constituent part of policy definition. The driving forces for the evolution of policies fully apply to schemas, namely:
 

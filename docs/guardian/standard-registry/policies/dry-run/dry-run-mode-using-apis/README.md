@@ -1,2 +1,2 @@
-# ⚙ Dry Run Mode using APIs
+# Dry Run Mode using APIs
 
