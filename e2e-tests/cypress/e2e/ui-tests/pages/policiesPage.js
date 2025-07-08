@@ -206,10 +206,10 @@ export class PoliciesPage {
 
     importPolicyFromIPFS(messageId) {
         cy.get(PoliciesPageLocators.importPolicyButton).click();
-        cy.contains(PoliciesPageLocators.importIPFSOption).click();
+        cy.contains(PoliciesPageLocators.importIPFSOption).should('be.visible').click();
         cy.get(CommonElements.dialogWindow).find(CommonElements.Input).type(messageId);
         cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).should("have.not.attr", "disabled");
-        cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).realClick();
+        cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).click();
         Checks.waitForElement(PoliciesPageLocators.asNewPolicyRadioButton);
         cy.get(CommonElements.dialogWindow).last().find(PoliciesPageLocators.importButton).click();
         Checks.waitForElement(PoliciesPageLocators.policyBlock, undefined, 5000);

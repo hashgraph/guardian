@@ -32,6 +32,10 @@ context("Policy Schema Operations", { tags: ['ui'] }, () => {
         schemaPage.publishPolicySchema(schemaNameImportedIPFS);
     });
 
+    it("publish policy schema", () => {
+        schemaPage.publishPolicySchema(schemaNameImportedFile);
+    });
+
     it("Export by File", () => {
         schemaPage.exportSchemaFile(schemaNameImportedFile);
     });
