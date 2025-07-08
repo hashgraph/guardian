@@ -233,7 +233,7 @@ export async function copySchemaAsync(
     const users = new Users();
     const root = await users.getHederaAccount(user.creator, user.id);
 
-    let item = await DatabaseServer.getSchema({ iri });
+     const item = await DatabaseServer.getSchema({ iri });
 
     if (copyNested) {
         await copyDefsSchemas(item.document?.$defs, user, topicId, root, copyNested, copiedSchemas);
