@@ -52,7 +52,7 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
             const parent = await getParent(parentId);
 
             if (!parent) {
-                throw new Error('There is no appropriate entity');
+                return new MessageError('There is no appropriate policy or policy is not in DRAFT status', 422);
             }
 
             const category: string = parent.type;
