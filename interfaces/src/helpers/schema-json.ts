@@ -820,7 +820,7 @@ export class JsonToSchema {
         context: ErrorContext
     ): string | undefined {
         context = context.add('expression');
-        if (JsonToSchema.equalString(value.type, 'Auto Calculate')) {
+        if (JsonToSchema.equalString(value.required, 'Auto Calculate')) {
             return JsonToSchema.fromString(value.expression, context);
         }
         if (value.expression) {
