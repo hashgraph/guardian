@@ -47,7 +47,7 @@ export function AnyFilesInterceptor(options: MultipartOptions = {}): Type<NestIn
       if (options.requiredFields?.length > 0) {
         for (const field of options.requiredFields) {
           if (!files.find((f) => f.fieldname === field)) {
-            throw new HttpException(`Missing required field ${field}. (required keys: ${options.requiredFields.join(', ')})`, HttpStatus.UNPROCESSABLE_ENTITY);
+            throw new HttpException(`There are no files to upload.`, HttpStatus.UNPROCESSABLE_ENTITY);
           }
         }
       }

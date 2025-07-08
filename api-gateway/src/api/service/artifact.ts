@@ -278,8 +278,8 @@ export class ArtifactApi {
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @UseInterceptors(AnyFilesInterceptor({
-        allowedFields: ['schema', 'artifacts', 'items'],
-        requiredFields: ['schema', 'artifacts', 'items']
+        allowedFields: ['artifacts'],
+        requiredFields: ['artifacts']
     }))
     @HttpCode(HttpStatus.CREATED)
     async uploadArtifacts(
