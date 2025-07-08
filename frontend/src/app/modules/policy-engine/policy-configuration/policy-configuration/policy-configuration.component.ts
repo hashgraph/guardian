@@ -1530,7 +1530,9 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public tryPublishPolicy() {
-        if (this.compareState(this.rootTemplate.getJSON(), this.storage.current)) {
+        const isSameStates = this.compareState(this.rootTemplate.getJSON(), this.storage.current)
+
+        if (this.storage.current && isSameStates) {
             const dialogRef = this.dialog.open(SaveBeforeDialogComponent, {
                 width: '500px',
                 modal: true,
