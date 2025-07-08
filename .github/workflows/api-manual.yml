@@ -159,7 +159,6 @@ jobs:
             -e CYPRESS_portApi=3002 \
             -e CYPRESS_operatorId=${{ secrets.CI_HEDERA_ACCOUNT }} \
             -e CYPRESS_operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }} \
-            -e CYPRESS_grepTags="all" \
             cypress-runner \
             --spec "cypress/e2e/api-tests/**/*.cy.js" \
             --browser chrome

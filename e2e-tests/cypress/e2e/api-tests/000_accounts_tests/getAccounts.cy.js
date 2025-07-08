@@ -7,8 +7,7 @@ context("Get accounts", { tags: ['accounts', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 
-    it("Get list of users", () => {        
-        cy.task('logFS')
+    it("Get list of users", () => {       
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
