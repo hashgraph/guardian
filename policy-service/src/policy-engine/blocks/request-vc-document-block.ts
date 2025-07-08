@@ -186,7 +186,7 @@ export class RequestVcDocumentBlock {
 
         try {
             const document = _data.document;
-            this.autoCalculate(document);
+            PolicyUtils.setAutoCalculateFields(this._schema, document);
             const documentRef = await this.getRelationships(ref, _data.ref);
             const presetCheck = await this.checkPreset(ref, document, documentRef)
             if (!presetCheck.valid) {
@@ -259,26 +259,6 @@ export class RequestVcDocumentBlock {
         } catch (error) {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
-        }
-    }
-
-    private autoCalculate(document: any): void {
-        for (const key in this._schema.document.properties) {
-            if (!this._schema.document.properties.hasOwnProperty(key)) {
-                continue;
-            }
-            const value = this._schema.document.properties[key];
-            if (!value.$comment) {
-                continue;
-            }
-            const { autocalculate, expression } = JSON.parse(value.$comment);
-            if (!autocalculate) {
-                continue;
-            }
-            const func = Function(`with (this) { return ${expression} }`);
-            const calcValue = func.apply(document);
-            document[value.title] = calcValue;
-
         }
     }
 
