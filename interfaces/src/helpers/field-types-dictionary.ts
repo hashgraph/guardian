@@ -162,6 +162,22 @@ export class FieldTypesDictionary {
      */
     public static readonly MeasureFieldTypes = [];
 
+    public static readonly SystemFieldTypes = [{
+        name: 'GeoJSON',
+        type: '#GeoJSON',
+        format: undefined,
+        pattern: undefined,
+        isRef: true,
+        customType: undefined
+    }, {
+        name: 'SentinelHUB',
+        type: '#SentinelHUB',
+        format: undefined,
+        pattern: undefined,
+        isRef: true,
+        customType: undefined
+    }];
+
     public static equal(field: SchemaField, type: any): boolean {
         return (
             // tslint:disable-next-line:triple-equals

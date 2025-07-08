@@ -145,14 +145,22 @@ export class ErrorContext implements IErrorContext {
 export class SchemaToJson {
     private static getType(field: SchemaField): string {
         if (field.isRef) {
+            for (const type of FieldTypesDictionary.SystemFieldTypes) {
+                if (field.type === type.type) {
+                    return type.name;
+                }
+            }
             return field.type;
         }
+
         if (field.unitSystem === UnitSystem.Prefix) {
             return 'Prefix';
         }
+
         if (field.unitSystem === UnitSystem.Postfix) {
             return 'Postfix';
         }
+
         if (field.customType === 'hederaAccount') {
             return 'HederaAccount';
         }
@@ -161,6 +169,10 @@ export class SchemaToJson {
             if (FieldTypesDictionary.equal(field, type)) {
                 return type.name;
             }
+        }
+
+        if (field.type === 'string') {
+            return 'String';
         }
 
         return '';
@@ -458,6 +470,14 @@ export class JsonToSchema {
                 return type.type;
             }
         }
+        if (JsonToSchema.equalString(value.type, 'String')) {
+            return 'string';
+        }
+        for (const type of FieldTypesDictionary.SystemFieldTypes) {
+            if (JsonToSchema.equalString(value.type, type.name)) {
+                return type.type;
+            }
+        }
         for (const subSchema of all) {
             if (value.type === subSchema.iri) {
                 return subSchema.iri;
@@ -465,7 +485,7 @@ export class JsonToSchema {
         }
         throw JsonToSchema.createErrorWithValue(
             context.setMessage(JsonError.INVALID_FORMAT, JsonErrorMessage.TYPE),
-            value
+            value.type
         );
     }
 
@@ -524,6 +544,14 @@ export class JsonToSchema {
         for (const type of FieldTypesDictionary.CustomFieldTypes) {
             if (JsonToSchema.equalString(value.type, type.name)) {
                 return false;
+            }
+        }
+        if (JsonToSchema.equalString(value.type, 'String')) {
+            return false;
+        }
+        for (const type of FieldTypesDictionary.SystemFieldTypes) {
+            if (JsonToSchema.equalString(value.type, type.name)) {
+                return true;
             }
         }
         for (const subSchema of all) {
