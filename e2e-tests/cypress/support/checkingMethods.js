@@ -230,7 +230,7 @@ export const waitForElement = (element, maxAttempts = 200, interval = 2000) => {
         cy.get('body').then((body) => {
             cy.log(body.find(element));
             if (body.find(element).length == 0) {
-                cy.log(`Waiting for operation to complete after ${interval / 1000} seconds...`);
+                cy.log(`Waiting for element to complete after ${interval / 1000} seconds...`);
                 cy.wait(interval, { log: false });
                 waitForElement(element, maxAttempts, interval);
             }
