@@ -1,4 +1,4 @@
-# 🔨 How to create Operator ID and Operator Key
+# How to create Operator ID and Operator Key
 
 1. [Step by Step Process](how-to-create-operator-id-and-operator-key.md#step-by-step-process)
 2. [Demo Video](how-to-create-operator-id-and-operator-key.md#demo-video)

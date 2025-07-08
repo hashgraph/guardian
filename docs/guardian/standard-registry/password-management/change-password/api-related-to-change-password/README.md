@@ -1,2 +1,2 @@
-# ⚙️ API related to Change Password
+# API related to Change Password
 

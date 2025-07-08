@@ -1,4 +1,4 @@
-# 📁 TrustChain
+# TrustChain
 
 ### Introduction&#x20;
 

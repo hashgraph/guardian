@@ -1,4 +1,4 @@
-# 💻 Document Comparison using UI
+# Document Comparison using UI
 
 1. [Step By Step Process](document-comparison-using-ui.md#id-1.-step-by-step-process)
 2. [Demo Video](document-comparison-using-ui.md#id-2.-demo-video)

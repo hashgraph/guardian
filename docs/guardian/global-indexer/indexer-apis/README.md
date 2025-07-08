@@ -1,2 +1,2 @@
-# ⚙️ Indexer APIs
+# Indexer APIs
 

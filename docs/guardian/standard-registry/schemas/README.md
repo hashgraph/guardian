@@ -1,4 +1,4 @@
-# 🛠 Schemas
+# Schemas
 
 From an Environmental perspective, schemas contain environmentally-oriented vocabularies of terms for representing machine- and human-comprehensible structured data. In other words, they are linguistic “templates”, “frames”, or “patterns” together with rules for using them to specify a potentially infinite multitude of numbers, phrases, sentences, or arguments, which represent environmental data.
 

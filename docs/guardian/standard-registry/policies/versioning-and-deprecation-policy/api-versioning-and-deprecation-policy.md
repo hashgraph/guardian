@@ -2,7 +2,7 @@
 description: This policy comes into effect beginning with Guardian 3.0
 ---
 
-# ℹ️ API Versioning & Deprecation Policy
+# API Versioning & Deprecation Policy
 
 Guardian platform is evolving rapidly, new capabilities are frequently introduced which expand the set of supported use-cases. Changes in the underlying platform functionality inevitably get reflected in the API - to expose them to the end users and enable the development of new applications and/or new integrations. This can result in some features being removed, i.e. some APIs becoming obsolete, which necessitates changes in 3rd party applications which relied on them.&#x20;
 

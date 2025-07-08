@@ -2,7 +2,7 @@
 description: Policy developed by Envision Blockchain
 ---
 
-# 🌲 Verra Afforestation, Reforestation, and Revegetation (ARR) v0.1
+# Verra VM0047 - Afforestation, Reforestation, and Revegetation (ARR) v0.1
 
 * [Policy Description](verra-afforestation-reforestation-and-revegetation-arr-v0.1.md#policy-description)
 * [Workflow Description](verra-afforestation-reforestation-and-revegetation-arr-v0.1.md#workflow-description)

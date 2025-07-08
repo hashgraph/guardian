@@ -1,4 +1,4 @@
-# 🏡 Ecosystem Environments
+# Ecosystem Environments
 
 The set of environment parameters represent the context in which a service is executed. Each service needs to know this context to adapt its behavour to the real working condition. At the service level the node .env library allows to read environment of the kind \<key,value> this library by default reads from .env file. The data are reads in a process .environment data structure available in the execution context of Node process. A unique file defines the environment and keeps the responsibility to create the shared operative ecosystem.
 

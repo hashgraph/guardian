@@ -2,7 +2,7 @@
 description: Policy developed by Tolam Earth, Inc and Nova Institute
 ---
 
-# ♨️ Improved Cookstove
+# Improved Cookstove
 
 This first-of-its-kind Improved Cookstove Guardian Policy was designed per the Anthropogenic Impact Accounting Ontology found here An ontology for anthropogenic impact accounting. To this end, the Guardian Policy does not adhere to a specific Standard or approved methodology for carbon offset quantification, rather it abstracts concepts from all known standards and methodologies, categorizes them, models their relationships, and then instantiates them in the form of this digitally native Guardian Policy and its associated Guardian Schema. This policy issues a non-fungible Improved Cookstove Carbon Credit (ICCC) Token.
 
@@ -40,7 +40,7 @@ We need to first import the policy from open source repository.
 
 Once imported, there will be 2 additional users with different roles (aside from the Standard Registry) that need to be created. Create a user account for the Project Developer. Once created and entered into the Policy, select the Project Developer role from the drop-down.
 
-<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Fill out the Agent Application and wait for the approval.
 
@@ -74,7 +74,7 @@ Now, the Project Developer must go into their screen and "Submit a PDD" and fill
 
 <figure><img src="../../../.gitbook/assets/image (25) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Now, the Project Developer must go into their screen and "Submit a PDD" and fill out the Project Design Document form.
 
@@ -94,7 +94,7 @@ After that, the Verifer can select a Review ID and "Finalise review."
 
 Once the PDD has been verified, the Project Developer can "Request registration."
 
-<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (15) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 

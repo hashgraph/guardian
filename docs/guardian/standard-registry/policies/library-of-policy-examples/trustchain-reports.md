@@ -1,4 +1,4 @@
-# ⛓ TrustChain reports
+# TrustChain reports
 
 For a demo example of following steps, here is the policy timestamp: **1675176247.137536341**
 

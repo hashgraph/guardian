@@ -1,4 +1,4 @@
-# 💻 Themes using UI
+# Themes using UI
 
 ## **Themes**
 

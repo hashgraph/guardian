@@ -1,4 +1,4 @@
-# 📔 Guidance for Open Source Policy Submissions
+# Guidance for Open Source Policy Submissions
 
 There are items to be submitted to process open source policies and add it to open source repo:
 

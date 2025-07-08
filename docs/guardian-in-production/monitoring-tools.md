@@ -4,7 +4,7 @@ description: >-
   you metrics to observe and analyze the performance and health of applications
 ---
 
-# 📉 Monitoring tools
+# Monitoring tools
 
 Now, the Guardian application provides some ways to monitor its services using two widely used open-source applications.
 

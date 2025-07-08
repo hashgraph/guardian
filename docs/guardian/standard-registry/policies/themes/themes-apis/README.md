@@ -1,2 +1,2 @@
-# ⚙ Themes APIs
+# Themes APIs
 

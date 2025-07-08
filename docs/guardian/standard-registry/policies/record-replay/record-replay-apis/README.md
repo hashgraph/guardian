@@ -1,2 +1,2 @@
-# ⚙ Record/Replay APIs
+# Record/Replay APIs
 

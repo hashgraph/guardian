@@ -5,7 +5,7 @@ description: >-
   the iREC policy.
 ---
 
-# 💻 iREC 7 User Journey UI Demo Guide
+# iREC 7 User Journey UI Demo Guide
 
 **Here are the users that will be involved within this iREC policy demo UI:**
 
