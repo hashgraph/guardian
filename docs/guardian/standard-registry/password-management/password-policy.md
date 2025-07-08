@@ -12,7 +12,7 @@ or
 
 if you’re using Building from Pre-build containers ([https://docs.hedera.com/guardian/guardian/readme/getting-started/installation/building-from-pre-build-containers](https://docs.hedera.com/guardian/guardian/readme/getting-started/installation/building-from-pre-build-containers)) - the corresponding file is used for the auth-service.
 
-<figure><img src="../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 Note: These variables are not mandatory, if they’re not present, default values will be used.

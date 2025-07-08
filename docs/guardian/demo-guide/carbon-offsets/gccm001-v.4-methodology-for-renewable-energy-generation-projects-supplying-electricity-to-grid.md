@@ -222,11 +222,11 @@ Approved Carbon Credit (ACC), each equivalent to one tonne of CO2.
 
 12. Log in as the Steering Committee and approve or reject the Project Verification Report. This approval will register the project. Any comments submitted by the administrator can be viewed by clicking on the history dropdown.
 
-<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 13. The project owner can now submit monitoring reports by clicking the monitoring report button and completing the form.
 
-<figure><img src="../../../.gitbook/assets/image (5) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (6) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
