@@ -240,6 +240,9 @@ export class CalculateContainerBlock {
         }
         vcSubject.policyId = ref.policyId;
         vcSubject.id = id;
+
+        PolicyUtils.setGuardianVersion(vcSubject, outputSchema);
+
         if (reference) {
             vcSubject.ref = reference;
         }

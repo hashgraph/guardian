@@ -3,6 +3,7 @@ import { CodeEditorDialogComponent } from '../../../../dialogs/code-editor-dialo
 import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
 import { DialogService } from 'primeng/dynamicdialog';
 import { TestCodeDialog } from 'src/app/modules/policy-engine/dialogs/test-code-dialog/test-code-dialog.component';
+import { ScriptLanguageOption } from '@guardian/interfaces';
 
 @Component({
     selector: 'app-custom-logic-config',
@@ -38,6 +39,11 @@ export class CustomLogicConfigComponent implements OnInit {
         { label: 'From First Document Id', value: 'DOCUMENT' }
     ];
 
+    public scriptLanguagesOptions = [
+        {label: 'JavaScript', value: ScriptLanguageOption.JAVASCRIPT},
+        {label: 'Python', value: ScriptLanguageOption.PYTHON},
+    ];
+
     constructor(
         private dialog: DialogService,
     ) {
@@ -58,6 +64,7 @@ export class CustomLogicConfigComponent implements OnInit {
         this.properties.expression = this.properties.expression || ''
         this.properties.documentSigner = this.properties.documentSigner || '';
         this.properties.idType = this.properties.idType || '';
+        this.properties.selectedScriptLanguage = this.properties.selectedScriptLanguage || ScriptLanguageOption.JAVASCRIPT;
         this.schemas = this.moduleVariables?.schemas || [];
     }
 
