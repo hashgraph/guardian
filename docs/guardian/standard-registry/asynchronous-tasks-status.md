@@ -1,4 +1,4 @@
-# 💻 Asynchronous Tasks Status
+# Asynchronous Tasks Status
 
 Worker Tasks tab displays active user's jobs performed asynchronously by the ‘worker’.
 

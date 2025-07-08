@@ -1,4 +1,4 @@
-# 🧪 How to perform Unit Tests?
+# How to perform Unit Tests?
 
 To run **guardian-service** unit tests, following commands needs to be executed:
 

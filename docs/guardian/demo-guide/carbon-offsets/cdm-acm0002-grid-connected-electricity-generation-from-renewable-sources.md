@@ -1,4 +1,4 @@
-# 🏭 CDM ACM0002: Grid-Connected Electricity Generation from Renewable Sources
+# CDM ACM0002: Grid-Connected Electricity Generation from Renewable Sources
 
 ## Table of Contents
 

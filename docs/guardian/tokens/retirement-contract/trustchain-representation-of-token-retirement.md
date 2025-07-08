@@ -1,4 +1,4 @@
-# ⛓️ TrustChain representation of token retirement
+# TrustChain representation of token retirement
 
 Guardian TrustChain represents token retirement operations as special card groups which are positioned following the ‘Token Minted’ card in the trust chain sequence. Each such group consists of a main card and several instance cards connected to it. Main card displays information about the token, the retirement contract used in the retirement operation, and the number of instances retired. Instance cards contain information about the “Instance ID” of the retired instances, retirement transaction IDs, user IDs which retired the tokens, and provide access to the retirement confirmation VC files.
 

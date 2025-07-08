@@ -1,4 +1,4 @@
-# 🏭 CDM AMS-III.AR : Substituting fossil fuel based lighting with LED/CFL lighting systems
+# CDM AMS-III.AR : Substituting fossil fuel based lighting with LED/CFL lighting systems
 
 ## **Table of Contents**
 

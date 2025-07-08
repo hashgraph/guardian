@@ -1,4 +1,4 @@
-# 💻 Adding Example data using UI
+# Adding Example data using UI
 
 1. **Example:** To add example values to a schema, we need to click on "Example" option as shown below:
 

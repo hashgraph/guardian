@@ -1,4 +1,4 @@
-# 🏭 CDM AMS-III.F.: Avoidance of Methane Emissions Through Composting
+# CDM AMS-III.F.: Avoidance of Methane Emissions Through Composting
 
 ## ​​Table of Contents
 

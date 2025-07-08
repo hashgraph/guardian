@@ -1,4 +1,4 @@
-# 🏭 GHGP Corporate Standard V2
+# GHGP Corporate Standard V2
 
 ## Table of Contents
 

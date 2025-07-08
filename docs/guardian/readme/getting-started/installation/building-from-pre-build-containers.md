@@ -1,4 +1,4 @@
-# 🔨 Building from Pre-build containers
+# Building from Pre-build containers
 
 #### Docker compose configuration for apple M1 using images:
 

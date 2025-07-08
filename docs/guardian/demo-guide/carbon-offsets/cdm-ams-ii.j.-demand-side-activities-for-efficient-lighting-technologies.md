@@ -1,4 +1,4 @@
-# 🏭 CDM AMS-II.J.: Demand-Side Activities for Efficient Lighting Technologies
+# CDM AMS-II.J.: Demand-Side Activities for Efficient Lighting Technologies
 
 ## Table of Contents
 

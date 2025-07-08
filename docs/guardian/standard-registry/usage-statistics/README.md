@@ -1,4 +1,4 @@
-# 📈 Usage Statistics
+# Usage Statistics
 
 In the pursuit of optimizing digital asset management and enhancing environmental sustainability practices, Guardian introduces a pivotal feature: Usage Statistics. This tool provides stakeholders with a comprehensive overview of Guardian usage across the Hedera Testnet and Mainnet, offering unprecedented insights into operational trends and performance metrics. &#x20;
 

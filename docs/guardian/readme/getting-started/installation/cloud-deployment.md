@@ -3,23 +3,9 @@ description: >-
   This document describes how to deploy a guardian instance on one of the three
   major cloud providers using Kubernetes.
 coverY: 0
-layout:
-  cover:
-    visible: false
-    size: full
-  title:
-    visible: true
-  description:
-    visible: true
-  tableOfContents:
-    visible: true
-  outline:
-    visible: true
-  pagination:
-    visible: true
 ---
 
-# ☁ Cloud Deployment
+# Cloud Deployment
 
 This document provides a comprehensive guide for deploying the platform on various cloud providers, including AWS, GCP, and Azure. The guide focuses on using Rancher as the cluster management tool, making it applicable to a wide range of cloud providers supported by Rancher, as well as on-premises and hybrid cloud deployments.
 

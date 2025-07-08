@@ -1,2 +1,2 @@
-# ⚙ Artifacts APIs
+# Artifacts APIs
 

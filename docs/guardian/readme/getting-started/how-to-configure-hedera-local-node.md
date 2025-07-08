@@ -1,4 +1,4 @@
-# 🔨 How to Configure Hedera Local Node
+# How to Configure Hedera Local Node
 
 1. [Step By Step Process](how-to-configure-hedera-local-node.md#step-by-step-process)
 2. [Demo Video](how-to-configure-hedera-local-node.md#demo-video)

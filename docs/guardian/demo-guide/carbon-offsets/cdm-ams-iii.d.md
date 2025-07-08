@@ -1,4 +1,4 @@
-# 🏭 CDM AMS III.D: Methane Recovery in Animal Manure Management Systems
+# CDM AMS III.D: Methane Recovery in Animal Manure Management Systems
 
 ## Table of Contents
 

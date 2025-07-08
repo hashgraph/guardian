@@ -1,4 +1,4 @@
-# 🎓 Policy Glossary
+# Policy Glossary
 
 Next, we discuss the terms that need to be understood to create Policies within the Guardian framework:
 

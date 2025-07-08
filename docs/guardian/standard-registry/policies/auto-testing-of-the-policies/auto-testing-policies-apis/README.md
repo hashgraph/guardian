@@ -1,2 +1,2 @@
-# ⚙️ Auto Testing Policies APIs
+# Auto Testing Policies APIs
 

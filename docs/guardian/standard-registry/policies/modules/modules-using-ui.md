@@ -1,4 +1,4 @@
-# 💻 Modules using UI
+# Modules using UI
 
 1. [Step By Step Process](modules-using-ui.md#id-1.-step-by-step-process)
 2. [Demo Video](modules-using-ui.md#id-2.-demo-video)
@@ -135,4 +135,4 @@ Modules added or created in the policy are ‘instances’ of the module and can
 
 ## 2. Demo Video
 
-[Youtube](https://youtu.be/YS0XgdnHWzc?si=sOExP1gTuEzm0kZ\_\&t=131)
+[Youtube](https://youtu.be/YS0XgdnHWzc?si=sOExP1gTuEzm0kZ_\&t=131)

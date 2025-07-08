@@ -1,4 +1,4 @@
-# 💻 Demo on Integrating external policies using UI
+# Demo on Integrating external policies using UI
 
 1. [Step By Step Process](demo-on-integrating-external-policies-using-ui.md#id-1.-step-by-step-process)
 2. Demo Video

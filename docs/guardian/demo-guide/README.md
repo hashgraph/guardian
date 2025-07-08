@@ -1,2 +1,2 @@
-# 📝 Demo Guide
+# Demo Guide
 
