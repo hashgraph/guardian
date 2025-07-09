@@ -66,10 +66,12 @@ export class TestCodeDialog {
     public fileExtension = 'json';
     public fileLabel = 'Add json .json file';
     public fileValue: any;
+    public fileBuffer: any;
     public historyValue: any;
     public history: any[];
     public tag: string;
     public blockType: string;
+    public isPolicy: boolean;
     public _value: any;
 
     constructor(
@@ -95,6 +97,7 @@ export class TestCodeDialog {
         this.history = [];
         this.tag = this.block?.tag;
         this.blockType = this.block?.blockType;
+        this.isPolicy = this.block?.rootParent.isPolicy;
     }
 
     ngOnInit() {
@@ -120,17 +123,24 @@ export class TestCodeDialog {
     }
 
     private loadHistory(): void {
-        this.policyEngineService
-            .getBlockHistory(this.policyId, this.block?.tag)
-            .subscribe((result) => {
-                this.history = result || [];
-                setTimeout(() => {
+        if (this.isPolicy) {
+            this.policyEngineService
+                .getBlockHistory(this.policyId, this.block?.tag)
+                .subscribe((result) => {
+                    this.history = result || [];
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 1000);
+                }, (e) => {
+                    console.error(e.error);
                     this.loading = false;
-                }, 1000);
-            }, (e) => {
-                console.error(e.error);
+                });
+        } else {
+            this.history = [];
+            setTimeout(() => {
                 this.loading = false;
-            });
+            }, 1000);
+        }
     }
 
     public onTest(): void {
@@ -199,8 +209,8 @@ export class TestCodeDialog {
         const reader = new FileReader()
         reader.readAsText(event);
         reader.addEventListener('load', (e: any) => {
-            const arrayBuffer = e.target.result;
-            this.fileValue = JSON.parse(arrayBuffer);
+            this.fileBuffer = e.target.result;
+            this.fileValue = JSON.parse(this.fileBuffer);
         });
     }
 

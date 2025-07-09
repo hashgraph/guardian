@@ -10,6 +10,7 @@ import { DatabaseServer, Policy } from '@guardian/common';
 import deepEqual from 'deep-equal';
 import { PolicyUser } from '../../policy-user.js';
 import { ComponentsService } from '../components-service.js';
+import { IDebugContext } from '../../block-engine/block-result.js';
 
 /**
  * Basic block decorator
@@ -763,7 +764,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param context
              * @protected
              */
-            protected async debugContext(context: any): Promise<any> {
+            protected async debugContext(context: IDebugContext): Promise<IDebugContext> {
                 if (this._dryRun) {
                     return await this.components.debugContext(this.tag, context);
                 } else {

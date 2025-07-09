@@ -119,7 +119,7 @@
                         File
                     </label>
                 </div>
-                <div class="data-type-value">
+                <div class="data-type-value" *ngIf="isPolicy">
                     <div class="data-type-value-select">
                         <p-radioButton
                             class="guardian-radio-button radio-button-24"
@@ -172,6 +172,9 @@
                         [fileExtension]="fileExtension" 
                         (onFileLoaded)="importFromFile($event)"
                         [dropZoneLabel]="fileLabel"></app-file-drag-n-drop>
+                    <div *ngIf="fileBuffer" class="guardian-textarea-container textarea-preview">
+                        <textarea pTextarea [ngModel]="fileBuffer"></textarea>
+                    </div>
                 </ng-container>
                 <ng-container *ngIf="dataType==='history'">
 

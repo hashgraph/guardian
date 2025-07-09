@@ -1,5 +1,5 @@
 .dialog-body {
-    height: calc(100vh - 325px);
+    height: calc(100vh - 335px);
     position: relative;
 }
 
@@ -335,4 +335,9 @@
     &:hover {
         background: var(--guardian-hover, #F0F3FC);
     }
+}
+
+.textarea-preview {
+    margin-top: 32px !important;
+    height: calc(100% - 262px) !important;
 }
