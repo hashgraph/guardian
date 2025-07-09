@@ -136,6 +136,10 @@ export class Schema implements ISchema {
      */
     private userDID: string;
     /**
+     * Code version
+     */
+    public codeVersion?: string;
+    /**
      * Schema constructor
      * @param schema
      * @param includeSystemProperties
@@ -195,6 +199,7 @@ export class Schema implements ISchema {
             }
             this.component = (schema as any).component || (schema as any).__component;
             this.errors = schema.errors;
+            this.codeVersion = schema.codeVersion;
         } else {
             this._id = undefined;
             this.id = undefined;
@@ -219,6 +224,7 @@ export class Schema implements ISchema {
             this.contextURL = `schema:${this.uuid}`;
             this.iri = '';
             this.errors = [];
+            this.codeVersion = '';
         }
         if (this.document) {
             this.parseDocument(includeSystemProperties);

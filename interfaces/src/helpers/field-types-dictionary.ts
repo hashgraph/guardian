@@ -217,6 +217,17 @@ export class DefaultFieldDictionary {
         format: undefined,
         pattern: undefined,
         readOnly: true
+    }, {
+        name: 'guardianVersion',
+        title: 'Guardian Version',
+        description: 'Guardian Version',
+        required: false,
+        isArray: false,
+        isRef: false,
+        type: 'string',
+        format: undefined,
+        pattern: undefined,
+        readOnly: true
     }];
 
     public static getDefaultFields(entity: SchemaEntity) {
