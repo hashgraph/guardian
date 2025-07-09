@@ -660,11 +660,13 @@ export class PolicyConfigurationComponent implements OnInit {
                     }]
                 },
             });
-            dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: string) => {
+            dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result: string) => {
                 if (result === 'Confirm') {
                     this.loadState(this.storage.current);
                 } else {
                     this.rewriteState();
+
+                    await this.storage.deleteById(this.policyId)
                 }
             });
         }
@@ -1252,7 +1254,7 @@ export class PolicyConfigurationComponent implements OnInit {
             width: '1200px',
             styleClass: 'guardian-dialog',
             data: {
-                block: block,
+                block,
                 folder: this.openFolder,
                 readonly: this.readonly,
                 policyId: this.policyId
@@ -1529,10 +1531,10 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
-    public tryPublishPolicy() {
-        const isSameStates = this.compareState(this.rootTemplate.getJSON(), this.storage.current)
+    public async tryPublishPolicy() {
+        const isPolicyStorage = await this.storage.getPolicyById(this.policyId)
 
-        if (this.storage.current && isSameStates) {
+        if (!!isPolicyStorage) {
             const dialogRef = this.dialog.open(SaveBeforeDialogComponent, {
                 width: '500px',
                 modal: true,
@@ -1550,8 +1552,10 @@ export class PolicyConfigurationComponent implements OnInit {
         }
     }
 
-    public tryRunPolicy() {
-        if (this.hasChanges) {
+    public async tryRunPolicy() {
+        const isPolicyStorage = await this.storage.getPolicyById(this.policyId)
+
+        if (!!isPolicyStorage) {
             const dialogRef = this.dialog.open(SaveBeforeDialogComponent, {
                 width: '500px',
                 modal: true,

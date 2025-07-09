@@ -21,7 +21,7 @@ export class PolicyStorage {
         this._policyId = policyId;
         this._policyStorage.clear();
 
-        const item = await this._storage.get(this.DB_NAME, this.STORAGE_NAME, policyId);
+        const item = await this.getPolicyById(policyId);
         if (item) {
             this._policyStorage.push(item);
         }
@@ -87,7 +87,6 @@ export class PolicyStorage {
     }
 
     public async deleteById(policyId: string): Promise<void> {
-        console.log('deleteById', policyId)
         const db = await this._storage.getDB(this.DB_NAME);
         const tx = db.transaction(this.STORAGE_NAME, 'readwrite');
         tx.objectStore(this.STORAGE_NAME).delete(policyId);
@@ -96,6 +95,11 @@ export class PolicyStorage {
 
     private async setMap(policyId: string, value: any): Promise<void> {
         await this._storage.put(this.DB_NAME, this.STORAGE_NAME, { policyId, ...value });
+    }
+
+    public async getPolicyById(policyId: string): Promise<PolicyStorageItem | null> {
+        const item = await this._storage.get<PolicyStorageItem>(this.DB_NAME, this.STORAGE_NAME, policyId);
+        return item ?? null;
     }
 
     private async getMap(): Promise<any> {
