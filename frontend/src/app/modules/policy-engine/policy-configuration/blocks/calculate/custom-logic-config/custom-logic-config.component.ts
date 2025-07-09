@@ -103,7 +103,7 @@ export class CustomLogicConfigComponent implements OnInit {
                 block: this.item,
                 folder: this.moduleVariables,
                 readonly: this.readonly,
-                policyId: this.item?.policyId
+                policyId: this.item?.rootParent?.policyId
             }
         });
         dialogRef.onClose.subscribe(async (result) => {});
