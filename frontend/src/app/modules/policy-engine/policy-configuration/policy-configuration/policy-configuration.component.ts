@@ -463,7 +463,11 @@ export class PolicyConfigurationComponent implements OnInit {
         this.readonly = root.readonly;
         this.codeMirrorOptions.readOnly = this.readonly;
 
-        await this.storage.load(root.id);
+        await this.storage.load(root.id, {
+            view: 'blocks',
+                value: this.objectToJson(root.getJSON())
+        });
+
         this.checkState();
 
         root.subscribe(this.onConfigChange.bind(this));

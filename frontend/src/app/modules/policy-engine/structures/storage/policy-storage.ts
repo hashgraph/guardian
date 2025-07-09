@@ -17,13 +17,16 @@ export class PolicyStorage {
         this._storage.registerStore(DB_NAME.GUARDIAN, { name: STORES_NAME.POLICY_STORAGE, options: { keyPath: 'policyId' } });
     }
 
-    public async load(policyId: string) {
+    public async load(policyId: string, initialState?: PolicyStorageItem) {
         this._policyId = policyId;
         this._policyStorage.clear();
 
         const item = await this.getPolicyById(policyId);
+
         if (item) {
             this._policyStorage.push(item);
+        } else if (initialState) {
+            this._policyStorage.push(initialState);
         }
     }
 
