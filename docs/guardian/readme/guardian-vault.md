@@ -1,4 +1,4 @@
-# 🔐 Guardian Vault
+# Guardian Vault
 
 Guardian Vault is intended to provide supports in securely storing sensitive data such as api keys, secrets, wallets and private keys, etc. Instead of keeping keys and secrets in env files or database in plain format, Vault is designed to encrypt data and restrict access according to per service Access Policies and Roles.
 

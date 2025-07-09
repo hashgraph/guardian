@@ -1,2 +1,2 @@
-# ⚙ Retirement APIs
+# Retirement APIs
 

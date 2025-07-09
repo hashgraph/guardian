@@ -1,2 +1,2 @@
-# 🏭 Carbon Emissions
+# Carbon Emissions
 

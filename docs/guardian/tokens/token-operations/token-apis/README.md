@@ -1,2 +1,2 @@
-# ⚙ Token APIs
+# Token APIs
 

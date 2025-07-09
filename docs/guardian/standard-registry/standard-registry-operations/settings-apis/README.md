@@ -1,2 +1,2 @@
-# ⚙ Settings APIs
+# Settings APIs
 

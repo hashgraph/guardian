@@ -1,4 +1,4 @@
-# 🏭 VM0041 Methodology for the Reduction of Enteric Methane Emissions from Ruminants through the Use of
+# VM0041 Methodology for the Reduction of Enteric Methane Emissions from Ruminants through the Use of
 
 ## Table of Contents
 

@@ -1,4 +1,4 @@
-# ⚙ iREC 5 json
+# iREC 5 json
 
 To get complete and detailed iREC 5 postman collection JSON file, please download the below file:
 

@@ -1,2 +1,2 @@
-# ⚙ Auto Suggestion APIs
+# Auto Suggestion APIs
 

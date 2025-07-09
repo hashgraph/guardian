@@ -206,6 +206,8 @@ export class RequestVcDocumentBlock {
             const credentialSubject = document;
             credentialSubject.policyId = ref.policyId;
 
+            PolicyUtils.setGuardianVersion(credentialSubject, this._schema);
+
             const newId = await PolicyActionsUtils.generateId(ref, idType, user, user.userId);
             if (newId) {
                 credentialSubject.id = newId;

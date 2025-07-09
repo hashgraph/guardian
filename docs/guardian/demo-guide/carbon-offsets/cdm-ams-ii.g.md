@@ -1,26 +1,26 @@
-# 🏨 CDM AMS II.G: Energy Efficiency Measures in Thermal Applications of Non-Renewable Biomass
+# CDM AMS II.G: Energy Efficiency Measures in Thermal Applications of Non-Renewable Biomass
 
 ## Table of Contents
 
-[Introduction](cdm-ams-ii.g.md#\_toc975016542)
+[Introduction](cdm-ams-ii.g.md#_toc975016542)
 
-[Need and Use for the AMS-II.G Policy](cdm-ams-ii.g.md#\_toc752136503)
+[Need and Use for the AMS-II.G Policy](cdm-ams-ii.g.md#_toc752136503)
 
-[Demo Video](cdm-ams-ii.g.md#\_toc264453392)
+[Demo Video](cdm-ams-ii.g.md#_toc264453392)
 
-[Policy Workflow](cdm-ams-ii.g.md#\_toc2070089206)
+[Policy Workflow](cdm-ams-ii.g.md#_toc2070089206)
 
-[Policy Guide](cdm-ams-ii.g.md#\_toc93669646)
+[Policy Guide](cdm-ams-ii.g.md#_toc93669646)
 
-[Available Roles](cdm-ams-ii.g.md#\_toc21187385)
+[Available Roles](cdm-ams-ii.g.md#_toc21187385)
 
-[Important Documents & Schemas](cdm-ams-ii.g.md#\_toc1808393583)
+[Important Documents & Schemas](cdm-ams-ii.g.md#_toc1808393583)
 
 [Tools Referenced](cdm-ams-ii.g.md#tools-referenced)
 
-[Token (Carbon Emission Reduction)](cdm-ams-ii.g.md#\_toc360615091)
+[Token (Carbon Emission Reduction)](cdm-ams-ii.g.md#_toc360615091)
 
-[Step by Step](cdm-ams-ii.g.md#\_toc619173481)
+[Step by Step](cdm-ams-ii.g.md#_toc619173481)
 
 ## Introduction <a href="#toc975016542" id="toc975016542"></a>
 
@@ -46,7 +46,7 @@ AMS-II.G provides a standardized and measurable framework for clean cooking proj
 
 ## Demo Video <a href="#toc264453392" id="toc264453392"></a>
 
-[Youtube](https://youtu.be/jfl72\_fL6iU?si=M5MbBFlVH2SCReRf)
+[Youtube](https://youtu.be/jfl72_fL6iU?si=M5MbBFlVH2SCReRf)
 
 ## Policy Workflow <a href="#toc2070089206" id="toc2070089206"></a>
 

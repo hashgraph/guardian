@@ -2,7 +2,7 @@
 description: This policy comes into effect once the specific APIs reach versions 1.0.
 ---
 
-# ℹ️ Internal APIs Versioning & Deprecation Policy
+# Internal APIs Versioning & Deprecation Policy
 
 Guardian ecosystem is expanding, community-developed new applications and Guardian customizations, targeting custom integration use-cases specific for the customisation authors, are frequently introduced. The pace and breadth of innovation in the ecosystem requires coordination to ensure compatibility of different Guardian instances and versions, and maintainability of their codebases. Thus, this policy introduces a set of principles and rules which will ensure the long-term compatibility and co-evolution of mainstream and customised Guardian codebases.&#x20;
 

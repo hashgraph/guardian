@@ -1,2 +1,2 @@
-# 📖 Token Authenticity
+# Token Authenticity
 

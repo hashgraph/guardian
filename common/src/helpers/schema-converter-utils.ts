@@ -1,4 +1,4 @@
-import { ISchema } from '@guardian/interfaces';
+import { ISchema, SchemaEntity } from '@guardian/interfaces';
 
 /**
  * Schema converter utils
@@ -7,7 +7,7 @@ export class SchemaConverterUtils {
     /**
      * Base version
      */
-    public static readonly VERSION = '1.1.0';
+    public static readonly VERSION = '1.2.0';
 
     /**
      * Policy converter
@@ -20,7 +20,8 @@ export class SchemaConverterUtils {
         }
         schema.document = SchemaConverterUtils.DocumentConverter(
             schema.document,
-            schema.codeVersion
+            schema.codeVersion,
+            schema.entity
         );
         schema.codeVersion = SchemaConverterUtils.VERSION;
         return schema;
@@ -62,20 +63,24 @@ export class SchemaConverterUtils {
      */
     private static DocumentConverter(
         document: any,
-        schemaVersion: string
+        schemaVersion: string,
+        schemaEntity?: SchemaEntity,
     ): any {
-        if (SchemaConverterUtils.versionCompare('1.0.0', schemaVersion) > 0) {
-            document = SchemaConverterUtils.v1_0_0(document);
+        if (SchemaConverterUtils.versionCompare('1.1.0', schemaVersion) > 0) {
+            document = SchemaConverterUtils.v1_1_0(document);
+        }
+        if (SchemaConverterUtils.versionCompare('1.2.0', schemaVersion) > 0) {
+            document = SchemaConverterUtils.v1_2_0(document, schemaEntity);
         }
         return document;
     }
 
     /**
-     * Create 1.0.0 version
+     * Create 1.1.0 version
      * @param document
      * @private
      */
-    private static v1_0_0(document: any): any {
+    private static v1_1_0(document: any): any {
         if (!document.properties) {
             return document;
         }
@@ -91,6 +96,35 @@ export class SchemaConverterUtils {
             ) {
                 properties.items.pattern = '^ipfs://.+';
             }
+        }
+
+        return document;
+    }
+
+    /**
+     * Create 1.2.0 version
+     * @param document
+     * @private
+     */
+    private static v1_2_0(document: any, schemaEntity?: SchemaEntity): any {
+        if (!document.properties) {
+            return document;
+        }
+
+        if (schemaEntity !== SchemaEntity.VC) {
+            return document;
+        }
+
+        document.properties.guardianVersion = {
+            '$comment': '{\"term\": \"guardianVersion\", \"@id\": \"https://www.schema.org/text\"}',
+            'title': 'Guardian Version',
+            'description': 'Guardian Version',
+            'type': 'string',
+            'readOnly': true
+        };
+
+        if (Array.isArray(document.required) && !document.required.includes('guardianVersion')) {
+            // document.required.push('guardianVersion');
         }
 
         return document;

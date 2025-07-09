@@ -1,2 +1,2 @@
-# ⚙ Document Comparison APIs
+# Document Comparison APIs
 

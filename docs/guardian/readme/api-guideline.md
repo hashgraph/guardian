@@ -1,4 +1,4 @@
-# ⚙ API Guideline
+# API Guideline
 
 We have changed the code avoiding the generalization of the validation status code and any error status code. Instead of 500, we added a specific status code that depends on the situation. Below we provide more information:
 

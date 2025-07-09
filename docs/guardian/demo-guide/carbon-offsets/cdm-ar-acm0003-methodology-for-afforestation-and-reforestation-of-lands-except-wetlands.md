@@ -1,4 +1,4 @@
-# 🏭 CDM AR-ACM0003: Methodology for Afforestation and Reforestation of Lands Except Wetlands
+# CDM AR-ACM0003: Methodology for Afforestation and Reforestation of Lands Except Wetlands
 
 ## Table of Contents
 

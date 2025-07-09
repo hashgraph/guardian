@@ -1,2 +1,2 @@
-# ⚙️ Related APIs
+# Related APIs
 

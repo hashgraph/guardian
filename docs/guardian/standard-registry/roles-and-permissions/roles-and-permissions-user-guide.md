@@ -1,4 +1,4 @@
-# 💻 Roles and Permissions User Guide
+# Roles and Permissions User Guide
 
 1. [Step By Step Process](roles-and-permissions-user-guide.md#id-1.-step-by-step-process)
 2. [Demo Video](roles-and-permissions-user-guide.md#id-2.-demo-video)
@@ -93,7 +93,7 @@ The Standard Registry (SR) can assign three levels of access to logs for its use
 • System – Allows the user to view logs from their SR account as well as system logs.\
 • Users – Allows the user to view logs of other users under the same SR.
 
-<figure><img src="../../../.gitbook/assets/image (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## **3. Messages**
 
