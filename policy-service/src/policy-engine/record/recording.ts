@@ -142,6 +142,7 @@ export class Recording {
      * @public
      */
     public async setBlockData(user: PolicyUser, block: AnyBlockType, data: any): Promise<void> {
+        await this.addDocumentUUID(data, block);
         await this.record(RecordAction.SetBlockData, block?.tag, user?.did, data);
     }
 
@@ -268,5 +269,22 @@ export class Recording {
      */
     public async getResults(): Promise<any> {
         return null;
+    }
+
+    /**
+     * Add uuid in document
+     * @param data
+     * @public
+     */
+    private async addDocumentUUID(data: any, block: AnyBlockType): Promise<void> {
+        //multi-sign-block
+        if (block.blockType === 'multiSignBlock') {
+            if (data?.document?.id && !data?.document?.uuid) {
+                const doc = await (new DatabaseServer(this.policyId)).getVcDocument(data.document.id);
+                if (doc) {
+                    data.document.uuid = doc.document?.id;
+                }
+            }
+        }
     }
 }
