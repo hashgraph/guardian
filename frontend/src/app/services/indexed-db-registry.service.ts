@@ -33,15 +33,26 @@ export class IndexedDbRegistryService {
         await meta.dbPromise;
     }
 
-    getDB<T = unknown>(dbName: string): Promise<IDBPDatabase<T>> {
+    async getDB<T = unknown>(dbName: string): Promise<IDBPDatabase<T>> {
         const meta = this.metas.get(dbName);
         if (!meta) {
             throw new Error(`DB "${dbName}" is not registered`);
         }
-        if (!meta.dbPromise) {
-            meta.dbPromise = this.open(dbName, meta);
+
+        try {
+            if (!meta.dbPromise) {
+                meta.dbPromise = this.open(dbName, meta);
+            }
+            return await meta.dbPromise as IDBPDatabase<T>;
+        } catch (error: any) {
+            if (error instanceof DOMException && error.name === 'InvalidStateError') {
+                console.warn(`[IndexedDB] Connection to "${dbName}" is closed. Re-opening...`);
+                meta.dbPromise = this.open(dbName, meta);
+                return await meta.dbPromise as IDBPDatabase<T>;
+            }
+
+            throw error;
         }
-        return meta.dbPromise as Promise<IDBPDatabase<T>>;
     }
 
     put<T = unknown>(db: string, store: string, value: T) {
