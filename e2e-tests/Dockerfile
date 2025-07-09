@@ -1,5 +1,6 @@
 FROM cypress/included:14.5.1
 WORKDIR /e2e
+ENV CYPRESS_INSTALL_BINARY=0
 
 COPY --link package.json package-lock.json ./
 RUN npm ci
