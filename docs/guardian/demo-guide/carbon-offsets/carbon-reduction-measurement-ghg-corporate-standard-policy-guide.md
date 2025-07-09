@@ -2,7 +2,7 @@
 description: Policy developed by TYMLEZ
 ---
 
-# 🍀 Carbon Reduction Measurement - GHG Corporate Standard Policy Guid
+# Carbon Reduction Measurement - GHG Corporate Standard Policy Guid
 
 The setup for the CRU policy is identical to the Carbon Emission Measurement - GHG Corporate Standard policy, please refer to [here](../carbon-emissions/carbon-emissions-measurement-ghg-corporate-standard-policy-guide.md), except for the below steps
 

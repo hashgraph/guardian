@@ -1,4 +1,4 @@
-# 📁 Import/Export Schemas in Excel
+# Import/Export in Excel
 
 The Guardian introduces a powerful feature designed to streamline the management of policy schemas by enabling users to import and export schemas directly from and to Excel file format. This functionality bridges the gap between the flexibility of spreadsheet management and the structured requirements of Guardian JSON schemas, making it significantly easier for users to handle large volumes of data and complex schema structures.&#x20;
 

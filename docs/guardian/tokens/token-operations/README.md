@@ -1,2 +1,2 @@
-# 🛠 Token Operations
+# Token Operations
 

@@ -1,2 +1,2 @@
-# 🛠 Monitoring Tools
+# Monitoring Tools
 

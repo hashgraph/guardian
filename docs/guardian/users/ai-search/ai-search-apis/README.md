@@ -1,2 +1,2 @@
-# ⚙ AI Search APIs
+# AI Search APIs
 

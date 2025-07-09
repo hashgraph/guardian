@@ -1,22 +1,22 @@
-# 🏢 VM0044 Methodology for Biochar Utilization in Soil and Non-Soil Applications
+# VM0044 Methodology for Biochar Utilization in Soil and Non-Soil Applications
 
 ## Table of Contents
 
-[Introduction](verra-vm0044.md#\_toc149219502)
+[Introduction](verra-vm0044.md#_toc149219502)
 
-[Need and Use for the VM0044 Policy](verra-vm0044.md#\_toc149219503)
+[Need and Use for the VM0044 Policy](verra-vm0044.md#_toc149219503)
 
-[Demo Video](verra-vm0044.md#\_toc149219504)
+[Demo Video](verra-vm0044.md#_toc149219504)
 
-[Policy Workflow](verra-vm0044.md#\_toc149219505)
+[Policy Workflow](verra-vm0044.md#_toc149219505)
 
-[Policy Guide](verra-vm0044.md#\_toc149219506)
+[Policy Guide](verra-vm0044.md#_toc149219506)
 
-[Important Documents & Schemas](verra-vm0044.md#\_toc149219507)
+[Important Documents & Schemas](verra-vm0044.md#_toc149219507)
 
-[Token (Verified Carbon Unit)](verra-vm0044.md#\_toc149219508)
+[Token (Verified Carbon Unit)](verra-vm0044.md#_toc149219508)
 
-[Step by Step](verra-vm0044.md#\_toc149219509)
+[Step by Step](verra-vm0044.md#_toc149219509)
 
 ### Introduction   <a href="#toc149219502" id="toc149219502"></a>
 

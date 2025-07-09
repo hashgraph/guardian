@@ -1,4 +1,4 @@
-# 🏜️ External Events
+# External Events
 
 ### Introduction
 

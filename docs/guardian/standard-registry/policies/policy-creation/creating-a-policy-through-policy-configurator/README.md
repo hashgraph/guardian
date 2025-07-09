@@ -1,2 +1,2 @@
-# 💻 Creating a Policy through Policy Configurator
+# Creating a Policy through Policy Configurator
 

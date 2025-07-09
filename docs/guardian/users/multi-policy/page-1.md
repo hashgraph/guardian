@@ -1,4 +1,4 @@
-# 💻 Configuring Multi Policy using UI
+# Configuring Multi Policy using UI
 
 1. [Step By Step Process](page-1.md#id-1.-step-by-step-process)
 2. [Demo Video](page-1.md#demo-video)

@@ -1,4 +1,4 @@
-# 🔢 Data input via Forms, using Roles to partition user activities.
+# Data input via Forms, using Roles to partition user activities.
 
 For a demo example of following steps, here is the policy timestamp: **1675164605.096601003**
 

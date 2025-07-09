@@ -1,4 +1,4 @@
-# 🥇 Carbon Sequestration through Accelerated Carbonation of Concrete Aggregate
+# Carbon Sequestration through Accelerated Carbonation of Concrete Aggregate
 
 ## Table of Contents
 

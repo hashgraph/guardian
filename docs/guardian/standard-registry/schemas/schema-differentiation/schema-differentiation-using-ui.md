@@ -1,4 +1,4 @@
-# 💻 Schema Differentiation using UI
+# Schema Differentiation using UI
 
 We can compare two schemas by following some steps as follows:
 

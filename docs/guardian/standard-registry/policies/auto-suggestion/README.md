@@ -1,4 +1,4 @@
-# 📂 Auto Suggestion
+# Auto Suggestion
 
 Guardian brings a groundbreaking enhancement to the realm of policy creation through its Auto Suggestion feature. Aimed at simplifying the intricate process of policy development, this feature is a testament to the Guardian's commitment to enhancing usability and fostering wider adoption.&#x20;
 

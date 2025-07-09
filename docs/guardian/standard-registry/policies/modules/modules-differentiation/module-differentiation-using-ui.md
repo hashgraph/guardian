@@ -1,4 +1,4 @@
-# 💻 Module Differentiation using UI
+# Module Differentiation using UI
 
 ## 1. **Modules differentiation**
 

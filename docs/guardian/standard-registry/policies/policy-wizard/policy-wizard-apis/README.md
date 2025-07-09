@@ -1,2 +1,2 @@
-# ⚙ Policy Wizard APIs
+# Policy Wizard APIs
 

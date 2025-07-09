@@ -1,2 +1,2 @@
-# ⚙ Account APIs
+# Account APIs
 

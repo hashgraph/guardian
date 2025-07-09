@@ -1,2 +1,2 @@
-# ☘ Carbon Offsets
+# Carbon Offsets
 

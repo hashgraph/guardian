@@ -1,4 +1,4 @@
-# 🏭 AMS-I.D: Grid Connected Renewable Electricity Generation – v.18.0
+# AMS-I.D: Grid Connected Renewable Electricity Generation – v.18.0
 
 ## Table of Contents
 

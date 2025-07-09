@@ -1,2 +1,2 @@
-# 🌎 Environments
+# Environments
 

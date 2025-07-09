@@ -1,4 +1,4 @@
-# 📕 Logging Configuration using Pino Library
+# Logging Configuration using Pino Library
 
 ## Introduction
 
