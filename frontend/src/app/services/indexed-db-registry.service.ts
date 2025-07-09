@@ -39,18 +39,27 @@ export class IndexedDbRegistryService {
             throw new Error(`DB "${dbName}" is not registered`);
         }
 
-        try {
-            if (!meta.dbPromise) {
-                meta.dbPromise = this.open(dbName, meta);
+        if (meta.dbPromise) {
+            try {
+                const oldDb = await meta.dbPromise;
+                oldDb.close();
+            } catch(err) {
+                console.warn(`[IndexedDB] Failed to close "${dbName}", but continuing…`, err);
             }
+            meta.dbPromise = undefined;
+        }
+
+        meta.dbPromise = this.open(dbName, meta);
+
+        try {
             return await meta.dbPromise as IDBPDatabase<T>;
         } catch (error: any) {
-            if (error instanceof DOMException && error.name === 'InvalidStateError') {
-                console.warn(`[IndexedDB] Connection to "${dbName}" is closed. Re-opening...`);
+            if (error instanceof DOMException &&
+                (error.name === 'InvalidStateError' || error.name === 'VersionError')) {
+                console.warn(`[IndexedDB] Re-opening "${dbName}" after error ${error.name}`);
                 meta.dbPromise = this.open(dbName, meta);
                 return await meta.dbPromise as IDBPDatabase<T>;
             }
-
             throw error;
         }
     }
