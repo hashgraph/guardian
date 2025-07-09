@@ -232,6 +232,19 @@ export class Schema implements ISchema {
     }
 
     /**
+     * Set user
+     * @param userDID
+     */
+    public setDocument(document: ISchemaDocument, includeSystemProperties: boolean = false): void {
+        this.document = document;
+        if (this.document) {
+            this.name = this.document.title;
+            this.description = this.document.description;
+            this.parseDocument(includeSystemProperties);
+        }
+    }
+
+    /**
      * Parse document
      * @private
      */
@@ -369,8 +382,11 @@ export class Schema implements ISchema {
      * @param conditions
      */
     public update(fields?: SchemaField[], conditions?: SchemaCondition[]): void {
-        if (fields) {
+        if (Array.isArray(fields)) {
             this.fields = fields;
+        }
+        if (Array.isArray(conditions)) {
+            this.conditions = conditions;
         }
 
         if (!this.fields) {
