@@ -1,4 +1,4 @@
-# 💻 Creating Roles and Groups using Policy Configurator UI
+# Creating Roles and Groups using Policy Configurator UI
 
 1. [Step By Step Process](roles-and-groups.md#id-1.-step-by-step-process)
 2. [Demo Video](roles-and-groups.md#id-2.-demo-video)

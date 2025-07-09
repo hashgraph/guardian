@@ -313,6 +313,23 @@ export class XlsxToJson {
                     isPrivate: undefined,
                     property: undefined,
                 });
+                fields.push({
+                    name: 'guardianVersion',
+                    title: 'Guardian Version',
+                    description: 'Guardian Version',
+                    required: true,
+                    isArray: false,
+                    isRef: false,
+                    type: 'string',
+                    format: undefined,
+                    pattern: undefined,
+                    unit: undefined,
+                    unitSystem: undefined,
+                    customType: undefined,
+                    readOnly: true,
+                    isPrivate: undefined,
+                    property: undefined,
+                });
             }
             const conditions = conditionCache.map(c => c.toJson());
             schema.update(fields, conditions, expressions);

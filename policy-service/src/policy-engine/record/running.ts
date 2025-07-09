@@ -317,7 +317,7 @@ export class Running {
                 $gte: new Date(this._startTime),
                 $lt: new Date(this._endTime)
             }
-        } ) as VcDocumentCollection[];
+        }) as VcDocumentCollection[];
 
         for (const vc of vcs) {
             results.push({
@@ -457,7 +457,7 @@ export class Running {
                 case RecordAction.SetBlockData: {
                     const block = PolicyComponentsUtils.GetBlockByTag<any>(this.policyId, action.target);
                     if (await this.isAvailable(block, userFull)) {
-                        const doc = await this.getActionDocument(action);
+                        const doc = await this.getActionDocument(action, block);
                         await block.setData(userFull, doc);
                         return null;
                     } else {
@@ -532,12 +532,15 @@ export class Running {
      * @param action
      * @private
      */
-    private async getActionDocument(action: RecordItem): Promise<any> {
+    private async getActionDocument(action: RecordItem, block?: any): Promise<any> {
         try {
             let document = action.document;
             if (document) {
                 document = await this.replaceId(document);
                 document = await this.replaceRow(document);
+            }
+            if (block && document) {
+                document = await this.replaceBlockData(block, document);
             }
             switch (action.action) {
                 case RecordAction.SelectGroup: {
@@ -590,6 +593,26 @@ export class Running {
             }
         }
         return did;
+    }
+
+    /**
+     * Replace custom data
+     * @param obj
+     * @private
+     */
+    private async replaceBlockData(block: any, obj: any): Promise<any> {
+        //multi-sign-block
+        if (block.blockType === 'multiSignBlock') {
+            if (obj?.document?.uuid) {
+                const doc = await this.policyInstance
+                    .databaseServer
+                    .getVcDocument({ 'document.id': obj.document.uuid } as any);
+                if (doc) {
+                    obj.document.id = doc.id.toString();
+                }
+            }
+        }
+        return obj;
     }
 
     /**

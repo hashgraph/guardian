@@ -25,6 +25,10 @@ export function AnyFilesInterceptor(options: MultipartOptions = {}): Type<NestIn
         for await (const part of req.parts()) {
           const { type, fieldname } = part;
 
+          if (options.allowedFields?.length > 0 && !options.allowedFields.includes(fieldname)) {
+            throw new HttpException(`There are no files to upload. (allowed keys: ${options.allowedFields.join(', ')})`, HttpStatus.UNPROCESSABLE_ENTITY);
+          }
+
           if (type !== 'file') {
             body[fieldname] = (part as MultipartValue).value;
             continue;
@@ -37,7 +41,15 @@ export function AnyFilesInterceptor(options: MultipartOptions = {}): Type<NestIn
           }
         }
       } catch (error) {
-        throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+        throw new HttpException(error.message, error.status || HttpStatus.BAD_REQUEST);
+      }
+
+      if (options.requiredFields?.length > 0) {
+        for (const field of options.requiredFields) {
+          if (!files.find((f) => f.fieldname === field)) {
+            throw new HttpException(`There are no files to upload.`, HttpStatus.UNPROCESSABLE_ENTITY);
+          }
+        }
       }
 
       if (files.length) {

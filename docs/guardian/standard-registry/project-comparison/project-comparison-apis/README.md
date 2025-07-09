@@ -1,2 +1,2 @@
-# ⚙ Project Comparison APIs
+# Project Comparison APIs
 

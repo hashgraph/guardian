@@ -1,4 +1,4 @@
-# 🌎 Multi session consistency according to Environment
+# Multi session consistency according to Environment
 
 Content of data stored during Guardian operative sessions are discriminated according to the environment so that they are always consistent with the data persisted in Hedera Network. This is guaranteed for every operative data and messages exchanged between services that are persisted during different sessions. With the word “session” the time in which the Guardian platform is up and running with the same environment between two different start and stop of the Guardian system is intended. Persisted data during each session regarding transactions both towards Hedera net and or Guardian database are easily discriminated against in terms of environment and remain consistent with target Hedera network.
 

@@ -5,7 +5,7 @@ description: >-
   policy.
 ---
 
-# 💻 GHG Policy User Journey UI Demo Guide
+# GHG Policy User Journey UI Demo Guide
 
 **Here are the users that will be involved within this GHG policy demo UI:**
 

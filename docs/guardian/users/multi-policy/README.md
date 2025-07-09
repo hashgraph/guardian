@@ -1,4 +1,4 @@
-# ✖ Multi Policy
+# Multi Policy
 
 It is possible to ‘join’ multiple independent policies, which are hosted/ran by different Guardian instances, into a group in which one policy would be ‘primary’ and the rest ‘dependent’ or ‘secondary’.
 

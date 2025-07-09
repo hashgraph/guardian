@@ -1,4 +1,4 @@
-# 🛠 Installation
+# Installation
 
 There are multiple ways to Install Guardian:
 

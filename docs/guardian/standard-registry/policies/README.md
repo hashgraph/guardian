@@ -1,4 +1,4 @@
-# 🛠 Policies
+# Policies
 
 The process to create credit or offset claims can be validated and verified to be turned into a product that is called measurement, reporting, and verification data, also known as MRV data. Today, this process of collecting the supporting data for these carbon credits or offsets is heavily manual and prone to errors due to poor data quality, a lack of assurance, potential double counting, greenwashing, and an overall lack of trust. This is where Guardian, which leverages a Policy Workflow Engine, ameliorates the issue with the current processes. The dynamic Policy Workflow Engine can mirror the standards and business requirements of regulatory bodies.
 

@@ -1,4 +1,4 @@
-# 🧑‍🤝‍🧑 Roles and Groups
+# Roles and Groups
 
 In Guardian, the concept of "Roles and Groups" plays a pivotal role in managing user access and permissions across different operations within the platform. This segmentation is designed to ensure that users have access only to the functionalities necessary for their role, enhancing both security and operational efficiency.&#x20;
 

@@ -24,12 +24,12 @@ export class SchemaService {
 
     public create(category: SchemaCategory, schema: ISchema, topicId: any): Observable<ISchema[]> {
         schema.category = category;
-        return this.http.post<any[]>(`${this.url}/${topicId}`, schema);
+        return this.http.post<any[]>(`${this.url}/${topicId || null}`, schema);
     }
 
     public pushCreate(category: SchemaCategory, schema: ISchema, topicId: any): Observable<ITask> {
         schema.category = category;
-        return this.http.post<ITask>(`${this.url}/push/${topicId}`, schema);
+        return this.http.post<ITask>(`${this.url}/push/${topicId || null}`, schema);
     }
 
     public update(schema: ISchema, id?: string): Observable<ISchema[]> {
@@ -40,7 +40,7 @@ export class SchemaService {
     public newVersion(category: SchemaCategory, schema: ISchema, id?: string): Observable<ITask> {
         const data = Object.assign({}, schema, { id: id || schema.id });
         schema.category = category;
-        return this.http.post<ITask>(`${this.url}/push/${data.topicId}`, data);
+        return this.http.post<ITask>(`${this.url}/push/${data.topicId || null}`, data);
     }
 
     public list(): Observable<any[]> {
@@ -129,11 +129,11 @@ export class SchemaService {
     }
 
     public pushImportByMessage(messageId: string, topicId: any): Observable<ITask> {
-        return this.http.post<ITask>(`${this.url}/push/${topicId}/import/message`, { messageId });
+        return this.http.post<ITask>(`${this.url}/push/${topicId || null}/import/message`, { messageId });
     }
 
     public pushImportByFile(schemasFile: any, topicId: any): Observable<ITask> {
-        return this.http.post<ITask>(`${this.url}/push/${topicId}/import/file`, schemasFile, {
+        return this.http.post<ITask>(`${this.url}/push/${topicId || null}/import/file`, schemasFile, {
             headers: {
                 'Content-Type': 'binary/octet-stream',
             },
@@ -224,7 +224,7 @@ export class SchemaService {
     }
 
     public pushImportByXlsx(schemasFile: any, topicId: any): Observable<{ taskId: string, expectation: number }> {
-        return this.http.post<ITask>(`${this.url}/push/${topicId}/import/xlsx`, schemasFile, {
+        return this.http.post<ITask>(`${this.url}/push/${topicId || null}/import/xlsx`, schemasFile, {
             headers: {
                 'Content-Type': 'binary/octet-stream',
             },

@@ -1,4 +1,4 @@
-# 💻 Tools using UI
+# Tools using UI
 
 1. [Step By Step Process](tools-using-ui.md#id-1.-step-by-step-process)
 2. [Demo Video](tools-using-ui.md#id-2.-demo-video)
@@ -120,4 +120,4 @@ Tools can be added to the Policy similarly to Module and/or Blocks.
 
 ## 2. Demo Video
 
-[Youtube](https://youtu.be/L0L0Kd7vkkU?si=4oB\_YnRq7cOV4BMR\&t=110)
+[Youtube](https://youtu.be/L0L0Kd7vkkU?si=4oB_YnRq7cOV4BMR\&t=110)

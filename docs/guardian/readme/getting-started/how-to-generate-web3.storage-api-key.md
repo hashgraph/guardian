@@ -1,4 +1,4 @@
-# 🔨 How to generate Web3.Storage API values
+# How to generate Web3.Storage API values
 
 For additional information, please visit: [https://web3.storage/docs/#quickstart](https://web3.storage/docs/#quickstart)
 

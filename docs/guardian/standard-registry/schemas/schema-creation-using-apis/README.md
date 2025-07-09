@@ -1,2 +1,2 @@
-# ⚙ Schema creation using APIs
+# Schema APIs
 

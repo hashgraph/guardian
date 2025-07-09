@@ -1,2 +1,2 @@
-# 📁 Modules Differentiation
+# Modules Differentiation
 

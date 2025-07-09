@@ -1,2 +1,2 @@
-# ⚙ Tools APIs
+# Tools APIs
 

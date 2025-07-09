@@ -1,2 +1,2 @@
-# 🔑 Password Management
+# Password Management
 

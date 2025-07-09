@@ -1,4 +1,4 @@
-# 📁 Live Project Data Migration
+# Live Project Data Migration
 
 Live project data migration allows seamless transitions of project data across different policies, versions, registries, and Guardian instances. This process involves the following key aspects:
 

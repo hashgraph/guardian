@@ -1,4 +1,4 @@
-# 🏭 CDM AMS III.BB: Electrification of Communities Through Grid Extension
+# CDM AMS III.BB: Electrification of communities through grid extension
 
 ## Table of Contents
 
@@ -109,7 +109,7 @@ Mini-grids are localized power generation and distribution systems, often deploy
 
 ### Demo Video <a href="#toc146642051" id="toc146642051"></a>
 
-[Youtube](https://www.youtube.com/watch?v=CN0IDPGGS44\&list=PLnld0e1pwLho3M7uAzcbyzyJobn-X9wG\_\&index=10)
+[Youtube](https://www.youtube.com/watch?v=CN0IDPGGS44\&list=PLnld0e1pwLho3M7uAzcbyzyJobn-X9wG_\&index=10)
 
 ### Policy Workflow <a href="#toc146642052" id="toc146642052"></a>
 

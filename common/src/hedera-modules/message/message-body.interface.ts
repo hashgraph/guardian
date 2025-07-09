@@ -265,6 +265,10 @@ export interface VcMessageBody extends MessageBody {
      * Encoded Data
      */
     encodedData: boolean;
+    /**
+     * Guardian Version
+     */
+    guardianVersion: string;
 }
 
 /**

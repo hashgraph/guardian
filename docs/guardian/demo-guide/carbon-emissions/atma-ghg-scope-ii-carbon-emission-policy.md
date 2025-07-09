@@ -2,7 +2,7 @@
 description: Policy developed by atma
 ---
 
-# 🏭 atma GHG Scope II Carbon Emission Policy
+# atma GHG Scope II Carbon Emission Policy
 
 ## Process Overview
 
