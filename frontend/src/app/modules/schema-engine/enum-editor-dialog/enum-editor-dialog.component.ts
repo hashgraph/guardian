@@ -11,32 +11,35 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
     styleUrls: ['./enum-editor-dialog.component.scss'],
 })
 export class EnumEditorDialog implements AfterContentInit {
-    enumValue!: string;
+    public header: string;
 
-    codeMirrorOptions: any = {
+    public enumValue!: string;
+
+    public codeMirrorOptions: any = {
         lineNumbers: true,
         theme: 'default',
         mode: 'text/plain',
     };
 
-    initDialog: boolean = false;
-    loading: boolean = false;
-    loadToIpfs: boolean = false;
-    loadToIpfsValue: boolean = true;
+    public initDialog: boolean = false;
+    public loading: boolean = false;
+    public loadToIpfs: boolean = false;
+    public loadToIpfsValue: boolean = true;
 
-    code: UntypedFormControl = new UntypedFormControl();
-    urlControl = new UntypedFormControl('', [
+    public code: UntypedFormControl = new UntypedFormControl();
+    public urlControl = new UntypedFormControl('', [
         Validators.pattern(
             /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/
         ),
     ]);
 
-    errorHandler!: Function;
+    public errorHandler!: Function;
 
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig
     ) {
+        this.header = this.config.header || '';
         this.enumValue =
             this.config.data.enumValue?.join('\n') ||
             'FIRST_OPTION\nSECOND_OPTION\nTHIRD_OPTION';
@@ -45,10 +48,6 @@ export class EnumEditorDialog implements AfterContentInit {
     }
 
     ngOnInit() {
-    }
-
-    onNoClick(): void {
-        this.ref.close(null);
     }
 
     ngAfterContentInit() {
@@ -68,7 +67,7 @@ export class EnumEditorDialog implements AfterContentInit {
         }, 150);
     }
 
-    importEnumData(file: any) {
+    public importEnumData(file: any) {
         const reader = new FileReader();
         reader.readAsText(file);
         reader.addEventListener('load', (e: any) => {
@@ -83,7 +82,7 @@ export class EnumEditorDialog implements AfterContentInit {
         });
     }
 
-    onImportByUrl() {
+    public onImportByUrl() {
         this.loading = true;
         fetch(this.urlControl.value)
             .then((res) => res.text())
@@ -106,7 +105,7 @@ export class EnumEditorDialog implements AfterContentInit {
             });
     }
 
-    onImportByFile() {
+    public onImportByFile() {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.txt';
@@ -127,8 +126,21 @@ export class EnumEditorDialog implements AfterContentInit {
         input.click();
     }
 
-    checkLoadIpfsVisible(value: string) {
+    public checkLoadIpfsVisible(value: string) {
         const linesCount = (value?.match(/\n/g) || []).length;
         this.loadToIpfs = linesCount > 4;
+    }
+
+
+    public onClose() {
+        this.ref.close(null);
+    }
+
+
+    public onSave() {
+        this.ref.close({
+            enumValue: this.enumValue,
+            loadToIpfs: this.loadToIpfs && this.loadToIpfsValue
+        });
     }
 }
