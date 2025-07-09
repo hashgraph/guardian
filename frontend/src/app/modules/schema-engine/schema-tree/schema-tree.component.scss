@@ -3,6 +3,7 @@
     max-height: 80vh;
     overflow: auto;
     cursor: grab;
+    padding: 0px 0px 32px 2px;
 }
 
 .content::-webkit-scrollbar {
@@ -13,49 +14,12 @@
     margin: 50px auto;
 }
 
-.dialog-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    h1 {
-        margin: 0;
-    }
+.guardian-button {
+    padding: 6px 32px;
+    height: 40px;
 }
 
-.dialog-actions {
-    display: flex;
-    width: 80px;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.dialog-header {
-    margin: 0 0 20px 20px;
-}
-
-.dialog-header h1 {
-    margin-right: 20px;
-}
-
-::ng-deep .custom-download-button {
-    width: 30px;
-    height: 30px;
-}
-
-::ng-deep .custom-download-button button {
-    background-color: transparent;
-    color: black;
-    border: none;
-    box-shadow: none;
-    width: 30px;
-    height: 30px;
-}
-
-::ng-deep .custom-download-button:hover button {
-    border: none;
-    background-color: var(--color-grey-3);
-}
-
-::ng-deep .custom-download-button .pi {
-    font-size: 1rem;
+.cancel-button {
+    margin-left: auto;
+    margin-right: 15px;
 }

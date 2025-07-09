@@ -144,6 +144,10 @@ export class FieldControl {
         return this.controlType.value;
     }
 
+    public set type(value: string) {
+        this.controlType.setValue(value);
+    }
+
     public get required(): string {
         return this.controlRequired.value;
     }
@@ -320,5 +324,46 @@ export class FieldControl {
             return false;
         }
         return true;
+    }
+
+    public refreshType(types: any[]) {
+        const typeName = this.controlType.value;
+        const item = types.find((e) => e.value == typeName);
+        this.setType(((item && item.name) || typeName));
+    }
+
+    public setType(typeName: string) {
+        if (typeName === 'Boolean') {
+            this.controlArray.setValue(false);
+            this.controlArray.disable();
+        } else {
+            this.controlArray.enable();
+        }
+
+        const _isString = typeName === 'String';
+        if (!_isString) {
+            this.controlPattern.disable();
+        } else {
+            this.controlPattern.enable();
+        }
+
+        const _helpText = typeName === 'Help Text';
+        if (!_helpText) {
+            this.controlColor.disable();
+            this.controlSize.disable();
+            this.controlBold.disable();
+        } else {
+            this.controlColor.enable();
+            this.controlSize.enable();
+            this.controlBold.enable();
+        }
+
+        const _enum = typeName === 'Enum';
+        if (_enum) {
+            this.controlEnum.setValidators([Validators.required]);
+        } else {
+            this.controlEnum.clearValidators();
+        }
+        this.controlEnum.updateValueAndValidity();
     }
 }
