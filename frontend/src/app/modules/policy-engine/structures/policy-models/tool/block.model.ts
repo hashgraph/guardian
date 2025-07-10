@@ -162,6 +162,13 @@ export class PolicyTool extends PolicyBlock {
         return false;
     }
 
+    public get isTest(): boolean {
+        if(this._module) {
+            return this._module.isTest;
+        }
+        return false;
+    }
+
     public get rootParent(): PolicyBlock {
         if (this._parent) {
             return this._parent.rootParent;

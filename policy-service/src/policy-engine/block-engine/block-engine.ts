@@ -254,9 +254,7 @@ export class BlockEngine {
                         data: doc
                     }
                 };
-                console.debug(callback)
                 const result = callback.call(this.instance, event);
-                console.debug(result)
                 if (typeof result?.catch === 'function') {
                     (result as Promise<any>).then().catch((error) => {
                         reject(error);

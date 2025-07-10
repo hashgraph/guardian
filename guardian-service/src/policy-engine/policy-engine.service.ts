@@ -1827,7 +1827,7 @@ export class PolicyEngineService {
                     const policy = await this.getBlockRoot(policyId);
                     await this.policyEngine.accessPolicy(policy as any, owner, 'read');
                     if (!(policy.status === PolicyStatus.DRAFT || policy.status === PolicyStatus.DRY_RUN)) {
-                        throw new Error(`Policy is not in Dry Run or Draft`);
+                        throw new Error(`Entity is not in Dry Run or Draft`);
                     }
                     const result = await DatabaseServer.getDebugContexts(policyId, tag);
                     return new MessageResponse(result);
@@ -1848,7 +1848,7 @@ export class PolicyEngineService {
                     const policy = await this.getBlockRoot(policyId);
                     await this.policyEngine.accessPolicy(policy as any, owner, 'read');
                     if (!(policy.status === PolicyStatus.DRAFT || policy.status === PolicyStatus.DRY_RUN)) {
-                        throw new Error(`Policy is not in Dry Run or Draft`);
+                        throw new Error(`Entity is not in Dry Run or Draft`);
                     }
                     const user = await (new Users()).getUser(owner.username, owner.id);
                     config.policyId = policyId;
