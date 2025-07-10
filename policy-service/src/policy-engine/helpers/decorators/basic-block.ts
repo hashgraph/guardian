@@ -773,6 +773,17 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             /**
+             * Save debug error
+             * @param context
+             * @protected
+             */
+            protected debugError(error: any): void {
+                if (this._dryRun) {
+                    this.components.debugError(this.tag, error);
+                }
+            }
+
+            /**
              * Add Internal Event Listener
              * @param type
              * @protected

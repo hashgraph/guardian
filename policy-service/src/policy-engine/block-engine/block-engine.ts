@@ -31,7 +31,7 @@ export class BlockEngine {
     }
 
     public addLog(message: string) {
-        this.result.logs.push(message);
+        this.result.logs.push(String(message));
     }
 
     public addError(message: string) {
@@ -56,6 +56,10 @@ export class BlockEngine {
 
     public stop() {
         this.outputObject?.resolve();
+    }
+
+    public error(error?: string) {
+        this.outputObject?.reject(error);
     }
 
     private async getBlockRoot(id: string) {
@@ -254,12 +258,7 @@ export class BlockEngine {
                         data: doc
                     }
                 };
-                const result = callback.call(this.instance, event);
-                if (typeof result?.catch === 'function') {
-                    (result as Promise<any>).then().catch((error) => {
-                        reject(error);
-                    })
-                }
+                callback.call(this.instance, event);
             } catch (error) {
                 reject(error);
             }

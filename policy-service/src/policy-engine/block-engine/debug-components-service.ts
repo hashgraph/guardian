@@ -68,4 +68,13 @@ export class DebugComponentsService extends ComponentsService {
     public override async debugContext(tag: string, context: IDebugContext): Promise<IDebugContext> {
         return this.controller.getInput();
     }
+
+    /**
+     * Save debug error
+     * @param context
+     * @protected
+     */
+    public override debugError(tag: string, error: any): void {
+        this.controller.error(error?.toString());
+    }
 }

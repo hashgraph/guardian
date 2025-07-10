@@ -57,7 +57,8 @@ export function CatchErrors() {
                             }
 
                             case BlockErrorActions.DEBUG: {
-                                throw error;
+                                thisArg.debugError(error);
+                                return;
                             }
 
                             default:

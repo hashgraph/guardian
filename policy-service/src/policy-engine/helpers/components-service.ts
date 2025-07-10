@@ -450,4 +450,13 @@ export class ComponentsService {
         });
         return context;
     }
+
+    /**
+     * Save debug error
+     * @param context
+     * @protected
+     */
+    public debugError(tag: string, error: any): void {
+        return;
+    }
 }
