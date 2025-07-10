@@ -4,10 +4,10 @@ import * as Authorization from "../../../support/authorization";
 
 
 context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
-    const Installer = Cypress.env('Installer');
+    const SR3Username = Cypress.env('SR3User');
 
     it('Set Hedera credentials for the Installer', () => {
-        Authorization.getAccessToken(Installer).then((authorization) => {
+        Authorization.getAccessToken(SR3Username).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + 'accounts/standard-registries/aggregated',
@@ -27,7 +27,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
                     cy.wait(3000)
                     cy.request({
                         method: 'PUT',
-                        url: API.ApiServer + 'profiles/' + Installer,
+                        url: API.ApiServer + 'profiles/' + SR3Username,
                         body: {
                             hederaAccountId: hederaAccountId,
                             hederaAccountKey: hederaAccountKey,
