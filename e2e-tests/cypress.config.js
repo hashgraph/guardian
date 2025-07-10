@@ -6,6 +6,7 @@ module.exports = defineConfig({
     watchForFileChanges: false,
     defaultCommandTimeout: 10000,
     e2e: {
+        experimentalRunAllSpecs: true,
         //described to fix spec order via CI
         specPattern: [
             "cypress/e2e/api-tests/000_accounts_creating/*.cy.js",

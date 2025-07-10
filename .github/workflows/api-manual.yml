@@ -142,7 +142,7 @@ jobs:
           SERVICE_JWT_SECRET_KEY_ALL: ${{ secrets.CI_JWT_PRIVATE_KEY }}
           IPFS_NODE_ADDRESS: http://localhost:5001
           IPFS_PROVIDER: web3storage
-          IPFS_PUBLIC_GATEWAY: https://dweb.link/ipfs/${cid}
+          IPFS_PUBLIC_GATEWAY: https://ipfs.io/ipfs/${cid}
           IPFS_STORAGE_KEY: "${{ secrets.E2E_IPFS_STORAGE_KEY }}"
           IPFS_STORAGE_PROOF: "${{ secrets.E2E_IPFS_STORAGE_PROOF }}"
           ACCESS_TOKEN_UPDATE_INTERVAL: 600000
@@ -152,20 +152,7 @@ jobs:
       - name: Build Cypress Docker image
         run: docker build -t cypress-runner ./e2e-tests
 
-      - name: Run All Cypress API Tests in Docker
-        if: "${{ inputs.tags == 'all' }}"
-        run: |
-          docker run --network host --name cypress-test-run \
-            -e CYPRESS_portApi=3002 \
-            -e CYPRESS_operatorId=${{ secrets.CI_HEDERA_ACCOUNT }} \
-            -e CYPRESS_operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }} \
-            -e CYPRESS_grepTags="all" \
-            -e CYPRESS_grepFilterSpecs=true \
-            cypress-runner \
-            --browser chrome
-
       - name: Run Cypress API Tests in Docker
-        if: "${{ inputs.tags != 'all' }}"
         run: |
           docker run --network host --name cypress-test-run \
             -e CYPRESS_portApi=3002 \
@@ -174,7 +161,6 @@ jobs:
             -e CYPRESS_grepTags="preparing ${{ inputs.tags }}" \
             -e CYPRESS_grepFilterSpecs=true \
             cypress-runner \
-            --spec "cypress/e2e/api-tests/**/*.cy.js" \
             --browser chrome
 
       - name: Copy test results from Docker container
