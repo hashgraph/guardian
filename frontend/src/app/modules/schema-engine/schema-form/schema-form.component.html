@@ -60,7 +60,7 @@
                                     </p-progressSpinner>
 
                                     <button mat-icon-button *ngSwitchCase="false" class="upload-btn"
-                                            (click)="uploadFile(item)">
+                                            (click)="uploadFile(item, isFile(item))">
                                         <i class="pi pi-paperclip"></i>
                                     </button>
                                 </ng-container>
@@ -204,7 +204,7 @@
                                                 [style]="{ width: '38px', height: '38px' }">
                                             </p-progressSpinner>
                                             <button *ngSwitchCase="false" class="upload-btn"
-                                                    (click)="uploadFile(listItem)">
+                                                    (click)="uploadFile(listItem, isFile(item))">
                                                 <i class="pi pi-paperclip"></i>
                                             </button>
                                         </ng-container>
