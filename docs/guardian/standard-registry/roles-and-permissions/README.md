@@ -1,4 +1,4 @@
-# 🙍 Roles & Permissions
+# Roles & Permissions
 
 The Guardian Project's roles and permissions system provides a structured way to manage user access and actions within the platform. Here's an overview of the key components:
 

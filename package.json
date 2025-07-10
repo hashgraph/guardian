@@ -7,7 +7,7 @@
     "private": true,
     "resolutions": {
         "@azure/core-rest-pipeline": "1.12.1",
-        "@azure/msal-node": "2.5.1",
+        "@azure/msal-node": "2.9.0",
         "image-size": "1.0.2"
     },
     "scripts": {

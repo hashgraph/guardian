@@ -7,7 +7,7 @@ import {
     HostListener,
 } from '@angular/core';
 import { SchemaService } from 'src/app/services/schema.service';
-import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 @Component({
     selector: 'app-schema-tree',
@@ -31,23 +31,24 @@ export class SchemaTreeComponent implements OnInit {
     private _fontSize: number = 14;
     private _minRectHeight: number = 50;
 
-    loading = false;
-    isMoving: boolean = false;
-
-    schema: { id: string; name: string }
+    public loading = false;
+    public isMoving: boolean = false;
+    public header: string;
+    public schema: { id: string; name: string }
 
     constructor(
         public dialogRef: DynamicDialogRef,
         public config: DynamicDialogConfig,
         private schemaService: SchemaService
     ) {
+        this.header = this.config.header || '';
         this.schema = this.config.data;
     }
 
     ngOnInit(): void {
         this._ctx = this.canvas.nativeElement.getContext('2d') as any;
         this.loading = true;
-        console.log('this.schema',this.schema)
+        console.log('this.schema', this.schema)
         this.schemaService
             .getSchemaTree(this.schema.id)
             .subscribe((result: any) => {
@@ -57,7 +58,15 @@ export class SchemaTreeComponent implements OnInit {
             });
     }
 
-    covertTree(root: { name: string; children: any[] }) {
+    public getHeader(): string {
+        return this.schema?.name || this.header;
+    }
+
+    public onClose() {
+        this.dialogRef.close(null);
+    }
+
+    private covertTree(root: { name: string; children: any[] }) {
         const stack: any = [
             {
                 node: root,
@@ -85,7 +94,7 @@ export class SchemaTreeComponent implements OnInit {
         return result;
     }
 
-    splitSchemaName(name: string) {
+    private splitSchemaName(name: string) {
         const result = [];
         while (name.length > 0) {
             result.push(name.substring(0, 20));
@@ -94,11 +103,11 @@ export class SchemaTreeComponent implements OnInit {
         return result;
     }
 
-    getOffset(count: number) {
+    private getOffset(count: number) {
         return (count * this._rectWidth + (count - 1) * this._rectWidthGap) / 2;
     }
 
-    maxHeightOnLvl(nodes: any[]) {
+    private maxHeightOnLvl(nodes: any[]) {
         const maxStringOnLvl = Math.max(
             ...nodes.map((item) => item.name.length, 0)
         );
@@ -109,7 +118,7 @@ export class SchemaTreeComponent implements OnInit {
             : this._minRectHeight;
     }
 
-    setBackground(
+    private setBackground(
         ctx: CanvasRenderingContext2D,
         width: number,
         height: number,
@@ -119,7 +128,7 @@ export class SchemaTreeComponent implements OnInit {
         ctx.fillRect(0, 0, width, height);
     }
 
-    drawSchemaLine(
+    private drawSchemaLine(
         ctx: CanvasRenderingContext2D,
         parent: { x: number; y: number; color: string },
         current: { x: number; y: number }
@@ -132,7 +141,7 @@ export class SchemaTreeComponent implements OnInit {
         ctx.closePath();
     }
 
-    drawSchema(
+    private drawSchema(
         ctx: any,
         schema: {
             name: string;
@@ -158,8 +167,8 @@ export class SchemaTreeComponent implements OnInit {
                 text,
                 offset.x + this._rectWidth / 2,
                 offset.y +
-                    height / 2 +
-                    (i - splitTest.length / 2) * this._fontSize
+                height / 2 +
+                (i - splitTest.length / 2) * this._fontSize
             );
         }
 
@@ -172,7 +181,7 @@ export class SchemaTreeComponent implements OnInit {
         schema.color = ctx.strokeStyle as any;
     }
 
-    drawSchemas(flatTree: any[][]) {
+    private drawSchemas(flatTree: any[][]) {
         const maxCountOnLvl = Math.max(
             ...flatTree.map((item) => item.length, 0)
         );
@@ -191,7 +200,7 @@ export class SchemaTreeComponent implements OnInit {
 
         this.canvas.nativeElement.width =
             this.main.nativeElement.offsetWidth >
-            this.canvas.nativeElement.width
+                this.canvas.nativeElement.width
                 ? this.main.nativeElement.offsetWidth
                 : this.canvas.nativeElement.width;
         this.setBackground(
@@ -227,7 +236,7 @@ export class SchemaTreeComponent implements OnInit {
         }
     }
 
-    stringToHex(str: string): any {
+    private stringToHex(str: string): any {
         let hash = 0;
         str.split('').forEach((char) => {
             hash = char.charCodeAt(0) + ((hash << 5) - hash);
@@ -240,7 +249,7 @@ export class SchemaTreeComponent implements OnInit {
         return color;
     }
 
-    download() {
+    public download() {
         var image = this.canvas.nativeElement
             .toDataURL('image/png')
             .replace('image/png', 'image/octet-stream');
@@ -250,7 +259,7 @@ export class SchemaTreeComponent implements OnInit {
         element.click();
     }
 
-    startMove() {
+    public startMove() {
         this.isMoving = true;
         document.body.classList.add('inherit-cursor');
         document.body.style.cursor = 'grabbing';

@@ -15704,6 +15704,13 @@ paths:
           schema:
             example: 20
             type: number
+        - name: status
+          required: false
+          in: query
+          description: Status
+          schema:
+            example: NEW
+            type: string
       responses:
         '200':
           description: Successful operation. Returns notifications and count.

@@ -1,2 +1,2 @@
-# ⚙ Tagging APIs
+# Tagging APIs
 

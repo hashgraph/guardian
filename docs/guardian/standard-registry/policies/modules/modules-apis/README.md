@@ -1,2 +1,2 @@
-# ⚙ Modules APIs
+# Modules APIs
 

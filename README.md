@@ -227,6 +227,7 @@ For each service, you must add its secret key `SERVICE_JWT_SECRET_KEY` and a lis
 - `SERVICE_JWT_PUBLIC_KEY_AUTH_SERVICE`
 - `SERVICE_JWT_PUBLIC_KEY_API_GATEWAY_SERVICE`
 - `SERVICE_JWT_PUBLIC_KEY_AI_SERVICE`
+- `SERVICE_JWT_PUBLIC_KEY_ANALYTICS_SERVICE`
 
 Alternatively, you can create a single key pair and, instead of adding the public keys for each individual service, you can add `SERVICE_JWT_SECRET_KEY_ALL` and `SERVICE_JWT_PUBLIC_KEY_ALL` to use the same keys for all services. However, it is recommended to generate a separate key pair for each service.
 

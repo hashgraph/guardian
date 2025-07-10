@@ -313,6 +313,23 @@ export class XlsxToJson {
                     isPrivate: undefined,
                     property: undefined,
                 });
+                fields.push({
+                    name: 'guardianVersion',
+                    title: 'Guardian Version',
+                    description: 'Guardian Version',
+                    required: true,
+                    isArray: false,
+                    isRef: false,
+                    type: 'string',
+                    format: undefined,
+                    pattern: undefined,
+                    unit: undefined,
+                    unitSystem: undefined,
+                    customType: undefined,
+                    readOnly: true,
+                    isPrivate: undefined,
+                    property: undefined,
+                });
             }
             const conditions = conditionCache.map(c => c.toJson());
             schema.update(fields, conditions, expressions);
@@ -717,31 +734,36 @@ export class XlsxToJson {
             value: any,
             invert: boolean
         } => {
+            const fnNode = tree as mathjs.FunctionNode;
+
             if (tree.type === 'FunctionNode') {
-                if (tree.fn.name === 'EXACT' && tree.args.length === 2) {
+                if (fnNode.fn.name === 'EXACT' && fnNode.args.length === 2) {
+                    const firstNode = fnNode.args[0] as mathjs.SymbolNode | mathjs.ConstantNode;
+                    const secondNode = fnNode.args[1] as mathjs.SymbolNode | mathjs.ConstantNode;
+
                     if (
-                        tree.args[0].type === 'SymbolNode' &&
-                        tree.args[1].type === 'ConstantNode'
+                        firstNode.type === 'SymbolNode' &&
+                        secondNode.type === 'ConstantNode'
                     ) {
                         return {
-                            fieldPath: tree.args[0].name,
-                            value: tree.args[1].value,
+                            fieldPath: firstNode.name,
+                            value: secondNode.value,
                             invert
                         };
                     }
                     if (
-                        tree.args[0].type === 'ConstantNode' &&
-                        tree.args[1].type === 'SymbolNode'
+                        firstNode.type === 'ConstantNode' &&
+                        secondNode.type === 'SymbolNode'
                     ) {
                         return {
-                            value: tree.args[0].value,
-                            fieldPath: tree.args[1].name,
+                            value: firstNode.value,
+                            fieldPath: secondNode.name,
                             invert
                         };
                     }
                 }
-                if (tree.fn.name === 'NOT' && tree.args.length === 1) {
-                    return parsFn(tree.args[0], true);
+                if (fnNode.fn.name === 'NOT' && fnNode.args.length === 1) {
+                    return parsFn(fnNode.args[0], true);
                 }
             }
             return null;

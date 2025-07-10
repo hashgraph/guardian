@@ -1,4 +1,4 @@
-# 📂 Schema Tree
+# Schema Tree
 
 The Guardian platform is designed to facilitate the creation, management, and tracking of digital environmental assets with a focus on emissions reporting, carbon offset, and renewable energy credit creation. At the heart of the Guardian's functionality is the "Schema Tree," a structured framework that organizes and standardizes the data models used within the platform.
 

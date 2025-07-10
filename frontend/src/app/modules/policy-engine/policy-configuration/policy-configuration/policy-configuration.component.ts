@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ContractType, IContract, PolicyAvailability, PolicyCategoryType, Schema, SchemaHelper, Token, UserPermissions } from '@guardian/interfaces';
 import * as yaml from 'js-yaml';
 import { DialogService } from 'primeng/dynamicdialog';
-import { forkJoin, Observable } from 'rxjs';
+import { forkJoin, Observable, Subject } from 'rxjs';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { ContractService } from 'src/app/services/contract.service';
@@ -29,8 +29,10 @@ import { OrderOption } from '../../structures/interfaces/order-option.interface'
 import { PolicyFolder, PolicyItem, PolicyRoot } from '../../structures/policy-models/interfaces/types';
 import { PolicyPropertiesComponent } from '../policy-properties/policy-properties.component';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
+import {takeUntil} from 'rxjs/operators';
 import { TestCodeDialog } from '../../dialogs/test-code-dialog/test-code-dialog.component';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 
 /**
  * The page for editing the policy and blocks.
@@ -133,6 +135,8 @@ export class PolicyConfigurationComponent implements OnInit {
         body: null
     }
 
+    private _destroy$ = new Subject<void>();
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -153,10 +157,11 @@ export class PolicyConfigurationComponent implements OnInit {
         private profileService: ProfileService,
         private contractService: ContractService,
         @Inject(CONFIGURATION_ERRORS)
-        private _configurationErrors: Map<string, any>
+        private _configurationErrors: Map<string, any>,
+        storage: IndexedDbRegistryService
     ) {
         this.options = new Options();
-        this.storage = new PolicyStorage(localStorage);
+        this.storage = new PolicyStorage(storage);
 
         this.policyTemplate = new PolicyTemplate();
         this.openFolder = this.policyTemplate;
@@ -261,7 +266,7 @@ export class PolicyConfigurationComponent implements OnInit {
         forkJoin([
             this.profileService.getProfile(),
             this.policyEngineService.policy(this.policyId)
-        ]).subscribe(([user, policy]) => {
+        ]).pipe(takeUntil(this._destroy$)).subscribe(([user, policy]) => {
             this.user = new UserPermissions(user);
 
             if (!policy) {
@@ -286,7 +291,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.toolsService.menuList(),
                 this.policyEngineService.getPolicyCategories(),
                 this.contractService.getContracts({ type: ContractType.WIPE }),
-            ]).subscribe((data) => {
+            ]).pipe(takeUntil(this._destroy$)).subscribe( async (data) => {
                 const tokens = data[0] || [];
                 const blockInformation = data[1] || {};
                 const schemas = data[2] || [];
@@ -304,7 +309,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.policyTemplate.setTokens(this.tokens);
                 this.policyTemplate.setSchemas(this.schemas);
                 this.policyTemplate.setTools(this.tools.items);
-                this.finishedLoad(this.policyTemplate);
+                await this.finishedLoad(this.policyTemplate);
 
                 this.categories.forEach((item: IPolicyCategory) => {
                     switch (item.type) {
@@ -352,7 +357,7 @@ export class PolicyConfigurationComponent implements OnInit {
         forkJoin([
             this.profileService.getProfile(),
             this.modulesService.getById(this.moduleId)
-        ]).subscribe(([user, module]) => {
+        ]).pipe(takeUntil(this._destroy$)).subscribe(([user, module]) => {
             this.user = new UserPermissions(user);
 
             if (!module) {
@@ -374,7 +379,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.schemaService.getSchemas(this.moduleTemplate.topicId),
                 this.modulesService.menuList(),
                 this.toolsService.menuList()
-            ]).subscribe((data) => {
+            ]).pipe(takeUntil(this._destroy$)).subscribe((data) => {
                 const blockInformation = data[0] || {};
                 const schemas = data[1] || [];
                 const modules = data[2] || [];
@@ -403,7 +408,7 @@ export class PolicyConfigurationComponent implements OnInit {
         forkJoin([
             this.profileService.getProfile(),
             this.toolsService.getById(this.toolId)
-        ]).subscribe(([user, tool]) => {
+        ]).pipe(takeUntil(this._destroy$)).subscribe(([user, tool]) => {
             this.user = new UserPermissions(user);
 
             if (!tool) {
@@ -426,7 +431,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.schemaService.getSchemas(this.toolTemplate.topicId),
                 this.modulesService.menuList(),
                 this.toolsService.menuList()
-            ]).subscribe((data) => {
+            ]).pipe(takeUntil(this._destroy$)).subscribe((data) => {
                 const blockInformation = data[0] || {};
                 const tokens = data[1] || [];
                 const schemas = data[2] || [];
@@ -454,11 +459,15 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
-    private finishedLoad(root: PolicyRoot): void {
+    private async finishedLoad(root: PolicyRoot): Promise<void> {
         this.readonly = root.readonly;
         this.codeMirrorOptions.readOnly = this.readonly;
 
-        this.storage.load(root.id);
+        await this.storage.load(root.id, {
+            view: 'blocks',
+                value: this.objectToJson(root.getJSON())
+        });
+
         this.checkState();
 
         root.subscribe(this.onConfigChange.bind(this));
@@ -525,7 +534,7 @@ export class PolicyConfigurationComponent implements OnInit {
                         currentBlock
                     )[0]
                 )
-                .subscribe((result) => {
+                .pipe(takeUntil(this._destroy$)).subscribe((result) => {
                     if (this.currentBlock !== currentBlock) {
                         return;
                     }
@@ -632,9 +641,10 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     private checkState() {
-        if (!this.rootTemplate || this.readonly) {
+        if (!this.rootTemplate || this.readonly || !this.storage.current) {
             return;
         }
+
         if (this.compareState(this.rootTemplate.getJSON(), this.storage.current)) {
             this.rewriteState();
         } else {
@@ -654,11 +664,13 @@ export class PolicyConfigurationComponent implements OnInit {
                     }]
                 },
             });
-            dialogRef.onClose.subscribe((result: string) => {
+            dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result: string) => {
                 if (result === 'Confirm') {
                     this.loadState(this.storage.current);
                 } else {
                     this.rewriteState();
+
+                    await this.storage.deleteById(this.policyId)
                 }
             });
         }
@@ -888,7 +900,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
     private publishPolicy(options: { policyVersion: string, policyAvailability: PolicyAvailability }) {
         this.loading = true;
-        this.policyEngineService.pushPublish(this.policyId, options).subscribe((result) => {
+        this.policyEngineService.pushPublish(this.policyId, options).pipe(takeUntil(this._destroy$)).subscribe((result) => {
             const { taskId, expectation } = result;
             this.router.navigate(['task', taskId], {
                 queryParams: {
@@ -903,7 +915,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
     private dryRunPolicy() {
         this.loading = true;
-        this.policyEngineService.dryRun(this.policyId).subscribe((data: any) => {
+        this.policyEngineService.dryRun(this.policyId).pipe(takeUntil(this._destroy$)).subscribe((data: any) => {
             const { policies, isValid, errors } = data;
             if (isValid) {
                 this.clearState();
@@ -940,7 +952,7 @@ export class PolicyConfigurationComponent implements OnInit {
             const root = this.policyTemplate.getJSON();
             if (root) {
                 this.loading = true;
-                this.policyEngineService.update(this.policyId, root).subscribe((policy: any) => {
+                this.policyEngineService.update(this.policyId, root).pipe(takeUntil(this._destroy$)).subscribe((policy: any) => {
                     if (policy) {
                         this.updatePolicyTemplate(policy);
 
@@ -1010,11 +1022,11 @@ export class PolicyConfigurationComponent implements OnInit {
         this.loading = true;
         this.options.load();
         this.theme = this.themeService.getCurrent();
-        this.route.queryParams.subscribe(queryParams => {
+        this.route.queryParams.pipe(takeUntil(this._destroy$)).subscribe(queryParams => {
             this.loadData();
         });
 
-        this.themeService.load().subscribe((themes: any) => {
+        this.themeService.load().pipe(takeUntil(this._destroy$)).subscribe((themes: any) => {
             this.themeService.setThemes(themes);
             this.themes = this.themeService.getThemes();
             this.theme = this.themeService.getCurrent();
@@ -1024,15 +1036,35 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
-    public ngOnDestroy(): void {
+    public async ngOnDestroy(): Promise<void> {
+
         this.storage.destroy();
+
+        this._destroy$.next();
+        this._destroy$.complete();
+
+        this.policyTemplate = undefined as any;
+
+        this.changeDetector.detach();
+
+        this.policyTemplate = undefined as any;
+        this.treeOverview = undefined as any;
+        this.currentBlock = undefined as any;
+        this.openFolder = undefined as any;
+        this.rootTemplate = undefined as any;
+
+        if (this._lastUpdate) {
+            clearTimeout(this._lastUpdate);
+        }
+
+        this.currentCMStyles?.remove()
     }
 
     public onConfigChange() {
         if (this._lastUpdate) {
             clearTimeout(this._lastUpdate);
         }
-        this._lastUpdate = setTimeout(() => {
+        this._lastUpdate = setTimeout( async () => {
             this._lastUpdate = null;
             this.changeDetector.detectChanges();
             this.saveState();
@@ -1226,7 +1258,7 @@ export class PolicyConfigurationComponent implements OnInit {
             width: '1200px',
             styleClass: 'guardian-dialog',
             data: {
-                block: block,
+                block,
                 folder: this.openFolder,
                 readonly: this.readonly,
                 policyId: this.policyId
@@ -1303,13 +1335,13 @@ export class PolicyConfigurationComponent implements OnInit {
         this.changeDetector.detectChanges();
     }
 
-    public undoPolicy() {
-        const item = this.storage.undo();
+    public async undoPolicy() {
+        const item = await this.storage.undo();
         this.loadState(item);
     }
 
-    public redoPolicy() {
-        const item = this.storage.redo();
+    public async redoPolicy() {
+        const item = await this.storage.redo();
         this.loadState(item);
     }
 
@@ -1391,7 +1423,7 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public savePolicy() {
-        this.asyncUpdatePolicy().subscribe();
+        this.asyncUpdatePolicy().pipe(takeUntil(this._destroy$)).subscribe();
     }
 
     public saveAsPolicy() {
@@ -1406,7 +1438,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     : null
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (result && this.policyTemplate) {
                 this.loading = true;
                 const json = this.policyTemplate.getJSON();
@@ -1419,7 +1451,7 @@ export class PolicyConfigurationComponent implements OnInit {
                         name: policy.name,
                         topicDescription: policy.topicDescription,
                         description: policy.description
-                    }).subscribe((result) => {
+                    }).pipe(takeUntil(this._destroy$)).subscribe((result) => {
                         const { taskId, expectation } = result;
                         this.router.navigate(['task', taskId], {
                             queryParams: {
@@ -1436,7 +1468,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     delete policy.owner;
                     delete policy.version;
                     policy.previousVersion = json.version;
-                    this.policyEngineService.pushCreate(policy).subscribe((result) => {
+                    this.policyEngineService.pushCreate(policy).pipe(takeUntil(this._destroy$)).subscribe((result) => {
                         const { taskId, expectation } = result;
                         this.router.navigate(['task', taskId], {
                             queryParams: {
@@ -1463,7 +1495,7 @@ export class PolicyConfigurationComponent implements OnInit {
             categories: json?.categories,
             config: json?.config
         }
-        this.policyEngineService.validate(object).subscribe((data: any) => {
+        this.policyEngineService.validate(object).pipe(takeUntil(this._destroy$)).subscribe((data: any) => {
             const { policy, results } = data;
             const config = policy.config;
             this.policyTemplate.rebuild(config);
@@ -1485,7 +1517,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 policy: this.policyTemplate
             }
         });
-        dialogRef.onClose.subscribe(async (options) => {
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => {
             if (options) {
                 this.publishPolicy(options);
             }
@@ -1494,7 +1526,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public draftPolicy() {
         this.loading = true;
-        this.policyEngineService.draft(this.policyId).subscribe((data: any) => {
+        this.policyEngineService.draft(this.policyId).pipe(takeUntil(this._destroy$)).subscribe((data: any) => {
             const { policies, isValid, errors } = data;
             this.clearState();
             this.loadData();
@@ -1503,16 +1535,18 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
-    public tryPublishPolicy() {
-        if (this.hasChanges) {
+    public async tryPublishPolicy() {
+        const isPolicyStorage = await this.storage.getPolicyById(this.policyId)
+
+        if (!!isPolicyStorage) {
             const dialogRef = this.dialog.open(SaveBeforeDialogComponent, {
                 width: '500px',
                 modal: true,
                 closable: false,
             });
-            dialogRef.onClose.subscribe((result) => {
+            dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
                 if (result) {
-                    this.asyncUpdatePolicy().subscribe(() => {
+                    this.asyncUpdatePolicy().pipe(takeUntil(this._destroy$)).subscribe(() => {
                         this.setVersion();
                     });
                 }
@@ -1522,16 +1556,18 @@ export class PolicyConfigurationComponent implements OnInit {
         }
     }
 
-    public tryRunPolicy() {
-        if (this.hasChanges) {
+    public async tryRunPolicy() {
+        const isPolicyStorage = await this.storage.getPolicyById(this.policyId)
+
+        if (!!isPolicyStorage) {
             const dialogRef = this.dialog.open(SaveBeforeDialogComponent, {
                 width: '500px',
                 modal: true,
                 closable: false,
             });
-            dialogRef.onClose.subscribe((result) => {
+            dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
                 if (result) {
-                    this.asyncUpdatePolicy().subscribe(() => {
+                    this.asyncUpdatePolicy().pipe(takeUntil(this._destroy$)).subscribe(() => {
                         this.dryRunPolicy();
                     });
                 }
@@ -1547,7 +1583,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.tokenService.getTokens(),
             this.schemaService.getSchemas(),
             this.policyEngineService.all(),
-        ]).subscribe((result) => {
+        ]).pipe(takeUntil(this._destroy$)).subscribe((result) => {
             const tokens = result[0].map((token) => new Token(token));
             const schemas = result[1].map((schema) => new Schema(schema));
             const policies = result[2];
@@ -1558,7 +1594,7 @@ export class PolicyConfigurationComponent implements OnInit {
                         this.loading = true;
                         this.wizardService
                             .getPolicyConfig(this.policyId, value.config)
-                            .subscribe((result) => {
+                            .pipe(takeUntil(this._destroy$)).subscribe((result) => {
                                 this.loading = false;
                                 this.policyTemplate.setPolicyInfo(
                                     value.config.policy
@@ -1612,14 +1648,14 @@ export class PolicyConfigurationComponent implements OnInit {
             }
             // data: module
         });
-        dialogRef.onClose.subscribe(async (result) => {
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (!result) {
                 return;
             }
             module.name = result.name;
             module.description = result.description;
             this.loading = true;
-            this.modulesService.create(module).subscribe((result) => {
+            this.modulesService.create(module).pipe(takeUntil(this._destroy$)).subscribe((result) => {
                 this.router.navigate(['/module-configuration'], {
                     queryParams: { moduleId: result.uuid }
                 });
@@ -1650,14 +1686,14 @@ export class PolicyConfigurationComponent implements OnInit {
                     type: 'module'
                 }
             });
-            dialogRef.onClose.subscribe(async (result) => {
+            dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
                 if (!result) {
                     return;
                 }
                 module.name = result.name;
                 module.description = result.description;
                 this.loading = true;
-                this.modulesService.create(module).subscribe((result) => {
+                this.modulesService.create(module).pipe(takeUntil(this._destroy$)).subscribe((result) => {
                     this.modules.push(result);
                     this.updateModules();
                     this.changeDetector.detectChanges()
@@ -1675,7 +1711,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.changeView('blocks');
         const module = this.moduleTemplate.getJSON();
         this.loading = true;
-        this.modulesService.update(this.moduleId, module).subscribe((result) => {
+        this.modulesService.update(this.moduleId, module).pipe(takeUntil(this._destroy$)).subscribe((result) => {
             this.clearState();
             this.loadData();
         }, (e) => {
@@ -1686,7 +1722,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public tryPublishModule() {
         this.loading = true;
-        this.modulesService.publish(this.moduleId).subscribe((result) => {
+        this.modulesService.publish(this.moduleId).pipe(takeUntil(this._destroy$)).subscribe((result) => {
             this.loadData();
         }, (e) => {
             console.error(e.error);
@@ -1697,7 +1733,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public validationModule() {
         this.loading = true;
         const module = this.moduleTemplate.getJSON();
-        this.modulesService.validate(module).subscribe((data: any) => {
+        this.modulesService.validate(module).pipe(takeUntil(this._destroy$)).subscribe((data: any) => {
             const { module, results } = data;
             this.moduleTemplate.rebuild(module);
             this.setErrors(results, 'module');
@@ -1723,14 +1759,14 @@ export class PolicyConfigurationComponent implements OnInit {
             }
             // data: { ...tool, type: 'tool' }
         });
-        dialogRef.onClose.subscribe(async (result) => {
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (!result) {
                 return;
             }
             tool.name = result.name;
             tool.description = result.description;
             this.loading = true;
-            this.toolsService.create(tool).subscribe((result) => {
+            this.toolsService.create(tool).pipe(takeUntil(this._destroy$)).subscribe((result) => {
                 this.router.navigate(['/tool-configuration'], {
                     queryParams: { toolId: result.id }
                 });
@@ -1744,7 +1780,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.changeView('blocks');
         const tool = this.toolTemplate.getJSON();
         this.loading = true;
-        this.toolsService.update(this.toolId, tool).subscribe((result) => {
+        this.toolsService.update(this.toolId, tool).pipe(takeUntil(this._destroy$)).subscribe((result) => {
             this.clearState();
             this.loadData();
         }, (e) => {
@@ -1755,7 +1791,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public tryPublishTool() {
         this.loading = true;
-        this.toolsService.pushPublish(this.toolId).subscribe((result) => {
+        this.toolsService.pushPublish(this.toolId).pipe(takeUntil(this._destroy$)).subscribe((result) => {
             const { taskId, expectation } = result;
             this.router.navigate(['task', taskId], {
                 queryParams: {
@@ -1771,7 +1807,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public validationTool() {
         this.loading = true;
         const tool = this.toolTemplate.getJSON();
-        this.toolsService.validate(tool).subscribe((data: any) => {
+        this.toolsService.validate(tool).pipe(takeUntil(this._destroy$)).subscribe((data: any) => {
             const { tool, results } = data;
             this.toolTemplate.rebuild(tool);
             this.setErrors(results, 'tool');
@@ -1801,7 +1837,7 @@ export class PolicyConfigurationComponent implements OnInit {
             id: block?.id
         }
         this.loading = true;
-        this.analyticsService.searchBlocks(option).subscribe((data: any) => {
+        this.analyticsService.searchBlocks(option).pipe(takeUntil(this._destroy$)).subscribe((data: any) => {
             this.blockSearchData = { source: block, data };
             this.loading = false;
         }, (e) => {

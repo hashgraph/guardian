@@ -1,4 +1,4 @@
-# ❓ FAQs
+# FAQs
 
 **1.How can I get started with the Guardian?**
 

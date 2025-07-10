@@ -1,5 +1,5 @@
-import { HederaDidDocument, IAuthUser, KeyType, NotificationHelper, Schema as SchemaCollection, Token, Topic, TopicConfig, TopicHelper, Users, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcDocumentDefinition as HVcDocument, VcSubject, VpDocumentDefinition as VpDocument, Wallet, Workers, EncryptVcHelper } from '@guardian/common';
-import { DidDocumentStatus, DocumentSignature, DocumentStatus, Schema, SchemaEntity, SignatureType, TopicType, WorkerTaskType } from '@guardian/interfaces';
+import { HederaDidDocument, IAuthUser, KeyType, NotificationHelper, Schema as SchemaCollection, Token, Topic, TopicConfig, TopicHelper, Users, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcDocumentDefinition as HVcDocument, VcSubject, VpDocumentDefinition as VpDocument, Wallet, Workers, EncryptVcHelper, SchemaConverterUtils } from '@guardian/common';
+import { DidDocumentStatus, DocumentSignature, DocumentStatus, ISchema, Schema, SchemaEntity, SchemaField, SignatureType, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { TokenId, TopicId } from '@hashgraph/sdk';
 import { FilterQuery } from '@mikro-orm/core';
 import * as mathjs from 'mathjs';
@@ -7,6 +7,7 @@ import { DocumentType } from '../interfaces/document.type.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
 import { IHederaCredentials, PolicyUser, UserCredentials } from '../policy-user.js';
+import { guardianVersion } from '../../version.js';
 
 export enum QueryType {
     eq = 'equal',
@@ -1430,7 +1431,7 @@ export class PolicyUtils {
      * @param ref
      * @param type
      */
-    public static async loadSchemaByID(ref: AnyBlockType, id: SchemaEntity): Promise<SchemaCollection> {
+    public static async loadSchemaByID(ref: AnyBlockType, id: string): Promise<SchemaCollection> {
         return await ref.components.loadSchemaByID(id);
     }
 
@@ -1667,6 +1668,50 @@ export class PolicyUtils {
                 return { $regex: value }
             default:
                 return null;
+        }
+    }
+
+    /**
+     * Add Guardian version to Credential Subject
+     * @param credentialSubject
+     * @param schema
+     */
+    public static setGuardianVersion(credentialSubject: any, schema: ISchema): void {
+        if (SchemaConverterUtils.versionCompare(schema.codeVersion, '1.1.0') > 0) {
+            credentialSubject.guardianVersion = guardianVersion;
+        }
+    }
+
+    public static setAutoCalculateFields(schema: Schema, document: any): void {
+        PolicyUtils.autoCalculateFields(schema.fields, document);
+    }
+
+    private static autoCalculateFields(fields: SchemaField[], document: any): any {
+        if (!document || typeof document !== 'object' || Array.isArray(document)) {
+            return;
+        }
+        for (const field of fields) {
+            if (field.isRef) {
+                if (Array.isArray(document[field.name])) {
+                    for (const element of document[field.name]) {
+                        PolicyUtils.autoCalculateFields(field.fields, element);
+                    }
+                } else if (typeof document[field.name] === 'object') {
+                    PolicyUtils.autoCalculateFields(field.fields, document[field.name]);
+                }
+            } else if (field.autocalculate) {
+                document[field.name] = PolicyUtils.autoCalculateField(field, document);
+            }
+        }
+    }
+
+    private static autoCalculateField(field: SchemaField, document: any): any {
+        try {
+            const func = Function(`with (this) { return ${field.expression} }`);
+            const calcValue = func.apply(document);
+            return calcValue;
+        } catch (error) {
+            throw Error(`Invalid expression: ${field.path}`);
         }
     }
 }

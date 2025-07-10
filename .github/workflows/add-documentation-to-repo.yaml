@@ -92,6 +92,8 @@ jobs:
           yarn start &
           popd
           sleep 30
+        env:
+          QM_VERIFICATION: false
 
       - name: Download file
         run: |

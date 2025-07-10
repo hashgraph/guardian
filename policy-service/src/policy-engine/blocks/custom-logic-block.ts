@@ -5,7 +5,7 @@ import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyAddonBlock, IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { VcHelper } from '@guardian/common';
-import { ArtifactType, LocationType, SchemaHelper } from '@guardian/interfaces';
+import { ArtifactType, LocationType, SchemaHelper, ScriptLanguageOption } from '@guardian/interfaces';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
@@ -13,6 +13,7 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { fileURLToPath } from 'url';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
+import { BlockActionError } from '../errors/index.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -62,6 +63,23 @@ interface IMetadata {
                 label: 'Pass original',
                 title: 'Pass original document',
                 type: PropertyType.Checkbox
+            },
+            {
+                name: 'selectedScriptLanguage',
+                label: 'Script Language',
+                title: 'Select script language',
+                type: PropertyType.Select,
+                items: [
+                    {
+                        label: 'JavaScript',
+                        value: ScriptLanguageOption.JAVASCRIPT
+                    },
+                    {
+                        label: 'Python',
+                        value: ScriptLanguageOption.PYTHON
+                    }
+                ],
+                default: 'javascript'
             }
         ]
     },
@@ -154,6 +172,9 @@ export class CustomLogicBlock {
                 } else {
                     documents = [state.data];
                 }
+                if (!documents || !documents.length) {
+                    throw new BlockActionError('Invalid input VC', ref.blockType, ref.uuid);
+                }
 
                 let metadata: IMetadata;
                 if (ref.options.unsigned) {
@@ -202,7 +223,7 @@ export class CustomLogicBlock {
                 const files = Array.isArray(ref.options.artifacts) ? ref.options.artifacts : [];
                 const execCodeArtifacts = files.filter((file: any) => file.type === ArtifactType.EXECUTABLE_CODE);
                 let execCode = '';
-                for (const execCodeArtifact of execCodeArtifacts) {
+                for (const execCodeArtifact of execCodeArtifacts) { // todo for python???
                     const artifactFile = await PolicyUtils.getArtifactFile(ref, execCodeArtifact.uuid);
                     execCode += artifactFile;
                 }
@@ -216,34 +237,69 @@ export class CustomLogicBlock {
 
                 const sources: IPolicyDocument[] = await this.getSources(user);
 
-                const context = await ref.debugContext({ documents, sources });
+                if (ref.options.selectedScriptLanguage === ScriptLanguageOption.PYTHON) {
+                    const context = await ref.debugContext({ documents, sources });
 
-                const expression = ref.options.expression || '';
-                const worker = new Worker(path.join(path.dirname(filename), '..', 'helpers', 'custom-logic-worker.js'), {
-                    workerData: {
-                        execFunc: `${execCode}${expression}`,
-                        user,
-                        artifacts,
-                        documents: context.documents,
-                        sources: context.sources
-                    },
-                });
+                    const expression = ref.options.expression || '';
+                    const worker = new Worker(path.join(path.dirname(filename), '..', 'helpers', 'custom-logic-python-worker.js'), {
+                        workerData: {
+                            execFunc: `${execCode}${expression}`,
+                            user,
+                            artifacts,
+                            documents: context.documents,
+                            sources: context.sources
+                        },
+                    });
 
-                worker.on('error', (error) => {
-                    reject(error);
-                });
-                worker.on('message', async (data) => {
-                    try {
-                        if (data?.type === 'done') {
-                            await done(data.result, data.final);
-                        }
-                        if (data?.type === 'debug') {
-                            ref.debug(data.message);
-                        }
-                    } catch (error) {
+                    worker.on('error', (error) => {
                         reject(error);
-                    }
-                });
+                    });
+                    worker.on('message', async (data) => {
+                        if (data.error) {
+                            reject(new Error(data.error));
+                            return;
+                        }
+                        try {
+                            if (data?.type === 'done') {
+                                await done(data.result, data.final);
+                            }
+                            if (data?.type === 'debug') {
+                                ref.debug(data.message);
+                            }
+                        } catch (error) {
+                            reject(error);
+                        }
+                    });
+                } else {
+                    const context = await ref.debugContext({ documents, sources });
+
+                    const expression = ref.options.expression || '';
+                    const worker = new Worker(path.join(path.dirname(filename), '..', 'helpers', 'custom-logic-worker.js'), {
+                        workerData: {
+                            execFunc: `${execCode}${expression}`,
+                            user,
+                            artifacts,
+                            documents: context.documents,
+                            sources: context.sources
+                        },
+                    });
+
+                    worker.on('error', (error) => {
+                        reject(error);
+                    });
+                    worker.on('message', async (data) => {
+                        try {
+                            if (data?.type === 'done') {
+                                await done(data.result, data.final);
+                            }
+                            if (data?.type === 'debug') {
+                                ref.debug(data.message);
+                            }
+                        } catch (error) {
+                            reject(error);
+                        }
+                    });
+                }
             } catch (error) {
                 reject(error);
             }
@@ -355,6 +411,9 @@ export class CustomLogicBlock {
         }
         vcSubject.policyId = ref.policyId;
         vcSubject.id = id;
+
+        PolicyUtils.setGuardianVersion(vcSubject, outputSchema);
+
         if (reference) {
             vcSubject.ref = reference;
         }

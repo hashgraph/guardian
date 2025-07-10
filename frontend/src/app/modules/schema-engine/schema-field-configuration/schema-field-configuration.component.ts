@@ -8,17 +8,17 @@ import {
     Output,
     SimpleChanges
 } from '@angular/core';
-import {AbstractControl, UntypedFormControl, UntypedFormGroup, Validators,} from '@angular/forms';
-import {SchemaField, UnitSystem} from '@guardian/interfaces';
-import {ToastrService} from 'ngx-toastr';
-import {IPFS_SCHEMA} from 'src/app/services/api';
-import {IPFSService} from 'src/app/services/ipfs.service';
-import {EnumEditorDialog} from '../enum-editor-dialog/enum-editor-dialog.component';
-import {FieldControl} from '../field-control';
-import {DialogService} from 'primeng/dynamicdialog';
-import {Subject, Subscription} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
-import {CodeEditorDialogComponent} from '../../policy-engine/dialogs/code-editor-dialog/code-editor-dialog.component';
+import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
+import { SchemaField, UnitSystem } from '@guardian/interfaces';
+import { ToastrService } from 'ngx-toastr';
+import { IPFS_SCHEMA } from 'src/app/services/api';
+import { IPFSService } from 'src/app/services/ipfs.service';
+import { EnumEditorDialog } from '../enum-editor-dialog/enum-editor-dialog.component';
+import { FieldControl } from '../field-control';
+import { DialogService } from 'primeng/dynamicdialog';
+import { Subject, Subscription } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { CodeEditorDialogComponent } from '../../policy-engine/dialogs/code-editor-dialog/code-editor-dialog.component';
 
 /**
  * Schemas constructor
@@ -56,26 +56,12 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     public isString: boolean = false;
     public fieldType: UntypedFormControl;
     public property: UntypedFormControl;
-    public groupedFieldTypes: any = [
-        {
-            label: 'Units of measure',
-            value: 'uom',
-            items: [
-                {label: 'Prefix', value: 'prefix'},
-                {label: 'Postfix', value: 'postfix'},
-            ],
-        },
-        {
-            label: 'Hedera',
-            value: 'h',
-            items: [{label: 'Account', value: 'hederaAccount'}],
-        },
-    ];
+    public groupedFieldTypes: any[] = this.createFieldTypes();
     public fieldTypes: any = [
-        {label: 'None', value: 'none'},
-        {label: 'Hidden', value: 'hidden'},
-        {label: 'Required', value: 'required'},
-        {label: 'Auto Calculate', value: 'autocalculate'},
+        { label: 'None', value: 'none' },
+        { label: 'Hidden', value: 'hidden' },
+        { label: 'Required', value: 'required' },
+        { label: 'Auto Calculate', value: 'autocalculate' },
 
     ];
     public error: any;
@@ -99,6 +85,34 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     ) {
         this.fieldType = new UntypedFormControl();
         this.property = new UntypedFormControl();
+    }
+
+    private createFieldTypes() {
+        return [
+            {
+                label: 'Simple Types',
+                value: 'st',
+                items: [],
+            },
+            {
+                label: 'Units of measure',
+                value: 'uom',
+                items: [
+                    { label: 'Prefix', value: UnitSystem.Prefix },
+                    { label: 'Postfix', value: UnitSystem.Postfix },
+                ],
+            },
+            {
+                label: 'Hedera',
+                value: 'h',
+                items: [{ label: 'Account', value: 'hederaAccount' }],
+            },
+            {
+                label: 'Schema defined',
+                value: 'sd',
+                items: [],
+            }
+        ];
     }
 
     ngOnInit(): void {
@@ -173,7 +187,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                 ) {
                     this.presetValues =
                         JSON.stringify(newField?.controlEnum) !==
-                        JSON.stringify(oldField?.controlEnum)
+                            JSON.stringify(oldField?.controlEnum)
                             ? (this.defaultValues?.value || {})
                             : {};
 
@@ -249,43 +263,22 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes?.types?.firstChange && this.types) {
-            const newSimpleTypes = this.types.map((type: any) => {
-                return {label: type.name, value: type.value};
-            });
-            this.groupedFieldTypes.unshift({
-                label: 'Simple Types',
-                value: 'st',
-                items: newSimpleTypes,
+        this.groupedFieldTypes = this.createFieldTypes();
+        if (this.types) {
+            this.groupedFieldTypes[0].items = this.types.map((type: any) => {
+                return { label: type.name, value: type.value };
             });
         }
         if (this.schemaTypes) {
-            if (changes?.schemaTypes?.firstChange) {
-                const newSchemasTypes = this.schemaTypes.map((schemaType: any) => {
-                    return {
-                        ...schemaType,
-                        label: schemaType.name,
-                        value: schemaType.value
-                    };
-                });
-                this._sd = {
-                    label: 'Schema defined',
-                    value: 'sd',
-                    items: newSchemasTypes,
+            this.groupedFieldTypes[3].items = this.schemaTypes.map((schemaType: any) => {
+                return {
+                    ...schemaType,
+                    label: schemaType.name,
+                    value: schemaType.value
                 };
-                this.groupedFieldTypes.push(this._sd);
-            } else if (changes?.schemaTypes?.firstChange === false) {
-                const newSchemasTypes = this.schemaTypes.map((schemaType: any) => {
-                    return {
-                        ...schemaType,
-                        label: schemaType.name,
-                        value: schemaType.value
-                    };
-                });
-                this._sd.items = newSchemasTypes;
-                this.cdr.detectChanges();
-            }
+            });
         }
+        // this.cdr.detectChanges();
         if (changes.extended && Object.keys(changes).length === 1) {
             return;
         }
@@ -343,100 +336,65 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     }
 
     onTypeChange(event: any) {
-        const item = this.types.find((e) => e.value == event.value);
-        if (item && item.name == 'Boolean') {
-            this.field.controlArray.setValue(false);
-            this.field.controlArray.disable();
-        } else {
-            this.field.controlArray.enable();
-        }
-
-        this.unit =
-            event.value == UnitSystem.Prefix ||
-            event.value == UnitSystem.Postfix;
-
+        const typeName = event.value;
+        const item = this.types.find((e) => e.value == typeName);
+        this.field.setType(((item && item.name) || typeName));
+        this.unit = typeName == UnitSystem.Prefix || typeName == UnitSystem.Postfix;
         this.isString = (item && item.name === 'String') || false;
-        if (!this.isString) {
-            this.field.controlPattern.disable();
-        } else {
-            this.field.controlPattern.enable();
-        }
-
         this.helpText = (item && item.name === 'Help Text') || false;
-        if (!this.helpText) {
-            this.field.controlColor.disable();
-            this.field.controlSize.disable();
-            this.field.controlBold.disable();
-        } else {
-            this.field.controlColor.enable();
-            this.field.controlSize.enable();
-            this.field.controlBold.enable();
-        }
-
-        this.enum = ((item && item.name) || event.value) === 'Enum';
-        if (this.enum) {
-            this.field.controlEnum.setValidators([Validators.required]);
-        } else {
-            this.field.controlEnum.clearValidators();
-        }
-        this.field.controlEnum.updateValueAndValidity();
+        this.enum = ((item && item.name) || typeName) === 'Enum';
     }
 
     onEditEnum() {
         const dialogRef = this.dialogService.open(EnumEditorDialog, {
             header: 'Enum data',
             width: '700px',
-            styleClass: 'custom-dialog',
+            showHeader: false,
+            styleClass: 'guardian-dialog',
             data: {
                 enumValue: this.field.controlEnum.value,
                 errorHandler: this.errorHandler.bind(this),
             },
         });
-        dialogRef
-            .onClose
-            .subscribe((res: { enumValue: string; loadToIpfs: boolean }) => {
-                if (!res) {
-                    return;
-                }
-                this.field.controlRemoteLink.patchValue('');
+        dialogRef.onClose.subscribe((res: { enumValue: string; loadToIpfs: boolean }) => {
+            if (!res) {
+                return;
+            }
 
-                const uniqueTrimmedEnumValues: string[] = [
-                    ...new Set(
-                        res.enumValue.split('\n').map((item) => item.trim())
-                    ),
-                ] as string[];
+            this.field.controlRemoteLink.patchValue('');
 
-                if (res.loadToIpfs && uniqueTrimmedEnumValues.length > 5) {
-                    this.field.controlEnum.clear();
-                    this.loading = true;
-                    this.ipfs
-                        .addFile(
-                            new Blob([
-                                JSON.stringify({
-                                    enum: uniqueTrimmedEnumValues,
-                                }),
-                            ])
-                        )
-                        .subscribe(
-                            (cid) => {
-                                this.loading = false;
-                                const link = IPFS_SCHEMA + cid;
-                                this.field.controlRemoteLink.patchValue(link);
-                                this.loadRemoteEnumData(link);
-                            },
-                            (err) => {
-                                this.loading = false;
-                                this.errorHandler(
-                                    err.message,
-                                    'Enum data can not be loaded to IPFS'
-                                );
-                                this.updateControlEnum(uniqueTrimmedEnumValues);
-                            }
+            const uniqueTrimmedEnumValues: string[] = [
+                ...new Set(res.enumValue.split('\n').map((item) => item.trim())),
+            ] as string[];
+
+            if (res.loadToIpfs && uniqueTrimmedEnumValues.length > 5) {
+                this.field.controlEnum.clear();
+                this.loading = true;
+                this.ipfs
+                    .addFile(
+                        new Blob([
+                            JSON.stringify({
+                                enum: uniqueTrimmedEnumValues,
+                            }),
+                        ])
+                    )
+                    .subscribe((cid) => {
+                        this.loading = false;
+                        const link = IPFS_SCHEMA + cid;
+                        this.field.controlRemoteLink.patchValue(link);
+                        this.loadRemoteEnumData(link);
+                    }, (err) => {
+                        this.loading = false;
+                        this.errorHandler(
+                            err.message,
+                            'Enum data can not be loaded to IPFS'
                         );
-                } else {
-                    this.updateControlEnum(uniqueTrimmedEnumValues);
-                }
-            });
+                        this.updateControlEnum(uniqueTrimmedEnumValues);
+                    });
+            } else {
+                this.updateControlEnum(uniqueTrimmedEnumValues);
+            }
+        });
     }
 
     onHepTextReset() {

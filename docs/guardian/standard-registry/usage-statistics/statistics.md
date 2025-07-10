@@ -1,4 +1,4 @@
-# 💻 Statistics
+# Statistics
 
 1. [Step By Step Process](statistics.md#id-1.-step-by-step-process)
 2. [Demo Video](statistics.md#id-2.-demo-video)
@@ -51,4 +51,4 @@ The latest statistical refers can be exported in the format of the Excel file by
 
 ## 2. Demo Video
 
-[Youtube](https://youtu.be/e6U68FtEbG8?si=vmIw7XY8Box\_G3o4\&t=330)
+[Youtube](https://youtu.be/e6U68FtEbG8?si=vmIw7XY8Box_G3o4\&t=330)

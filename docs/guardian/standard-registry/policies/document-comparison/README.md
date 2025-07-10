@@ -1,4 +1,4 @@
-# 📂 Document Comparison
+# Document Comparison
 
 In the pursuit of sustainability, the ability to meticulously compare and validate environmental documents becomes imperative. Guardian offers a robust mechanism for this purpose, enhancing transparency, accountability, and efficiency in the management of digital environmental assets. This functionality is particularly relevant for users and administrators involved in the lifecycle of environmental policies, methodologies, and reporting.&#x20;
 

@@ -1,2 +1,2 @@
-# 📁 Auto Testing of the Policies
+# Auto Testing of the Policies
 
