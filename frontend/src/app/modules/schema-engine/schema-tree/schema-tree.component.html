@@ -1,21 +1,32 @@
-<div #main>
-    <div mat-dialog-title class="dialog-header">
-        <h1>{{ schema.name }}</h1>
-        <div class="dialog-actions">
-            <p-button
-                icon="pi pi-download"
-                class="custom-download-button"
-                (onClick)="download()"
-            >
-            </p-button>
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{getHeader()}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div #main class="dialog-body">
+    <div #content class="content" (mousedown)="startMove()">
+        <canvas #canvas [style.display]="loading ? 'none' : 'block'"></canvas>
+        <div *ngIf="loading" class="loading">
+            <p-progressSpinner></p-progressSpinner>
         </div>
     </div>
-    <div mat-dialog-content>
-        <div #content class="content" (mousedown)="startMove()">
-            <canvas #canvas [style.display]="loading ? 'none' : 'block'"></canvas>
-            <div *ngIf="loading" class="loading">
-                <p-progressSpinner></p-progressSpinner>
-            </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary"
+            >Cancel</button>
+        </div>
+        <div>
+            <button 
+                (click)="download()" 
+                class="guardian-button guardian-button-primary"
+            >Download</button>
         </div>
     </div>
 </div>

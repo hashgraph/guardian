@@ -202,7 +202,7 @@ export class RequestVcDocumentBlock {
     private async setBlockData(user: PolicyUser, _data: IPolicyDocument, ref: IPolicyRequestBlock) {
         try {
             const document = _data.document;
-            this.autoCalculate(document);
+            PolicyUtils.setAutoCalculateFields(this._schema, document);
             const documentRef = await this.getRelationships(ref, _data.ref);
             const presetCheck = await this.checkPreset(ref, document, documentRef)
             if (!presetCheck.valid) {

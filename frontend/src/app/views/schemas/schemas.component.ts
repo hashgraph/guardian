@@ -966,9 +966,10 @@ export class SchemaConfigComponent implements OnInit {
         }
 
         const dialogRef = this.dialogService.open(SchemaDialog, {
+            showHeader: false,
             header: 'New Schema',
             width: '950px',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
             data: {
                 type: 'new',
                 schemaType: this.type,
@@ -991,11 +992,15 @@ export class SchemaConfigComponent implements OnInit {
 
     public onOpenForm(schema: Schema, example: boolean): void {
         const dialogRef = this.dialog.open(SchemaFormDialog, {
+            showHeader: false,
+            header: 'Example',
             width: '950px',
-            data: { schema, example, category: this.getCategory() },
-            styleClass: 'g-dialog',
-            modal: true,
-            closable: false,
+            styleClass: 'guardian-dialog',
+            data: {
+                schema,
+                example,
+                category: this.getCategory()
+            },
         });
         dialogRef.onClose.subscribe(async ({ exampleDate, currentSchema }: {
             exampleDate: any,
@@ -1047,9 +1052,10 @@ export class SchemaConfigComponent implements OnInit {
 
     private onEditDocument(element: ISchema): void {
         const dialogRef = this.dialogService.open(SchemaDialog, {
+            showHeader: false,
             header: 'Edit Schema',
             width: '950px',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
             data: {
                 type: 'edit',
                 schemaType: this.type,
@@ -1123,9 +1129,10 @@ export class SchemaConfigComponent implements OnInit {
 
     private onNewVersion(element: Schema): void {
         const dialogRef = this.dialogService.open(SchemaDialog, {
+            showHeader: false,
             header: 'New Version',
             width: '950px',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
             data: {
                 type: 'version',
                 topicId: this.currentTopic,
@@ -1153,9 +1160,10 @@ export class SchemaConfigComponent implements OnInit {
         delete newDocument.version;
         delete newDocument.previousVersion;
         const dialogRef = this.dialogService.open(SchemaDialog, {
+            showHeader: false,
             header: 'New Version',
             width: '950px',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
             data: {
                 type: 'version',
                 topicId: this.currentTopic,
@@ -1344,6 +1352,10 @@ export class SchemaConfigComponent implements OnInit {
 
     public onViewSchemaTree(element: Schema): void {
         this.dialog.open(SchemaTreeComponent, {
+            showHeader: false,
+            header: 'Tree',
+            width: '650px',
+            styleClass: 'guardian-dialog',
             data: element,
             // autoFocus: false
         })
