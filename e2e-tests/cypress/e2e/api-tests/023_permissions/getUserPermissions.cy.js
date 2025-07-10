@@ -26,7 +26,7 @@ context("Get user's permissions", { tags: ['permissions', 'firstPool', 'all'] },
                 expect(response.body).to.have.property("role");
                 expect(response.body).to.have.property("username");
                 expect(response.body.role).eql("USER");
-                expect(response.body.username).eql("User");
+                expect(response.body.username).eql(UserUsername);
                 expect(response.body.permissionsGroup.at(0)).to.have.property("owner");
                 expect(response.body.permissionsGroup.at(0)).to.have.property("roleId");
                 expect(response.body.permissionsGroup.at(0)).to.have.property("roleName");

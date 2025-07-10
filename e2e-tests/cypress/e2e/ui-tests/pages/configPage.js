@@ -42,7 +42,6 @@ export class ConfigPage {
 	hederaSRRegistration(hederaId = "random", hederaKey) {
 		if (hederaId == "random") {
 			cy.contains(ConfigPageLocators.generateButton).click();
-			cy.screenshot();
 			Checks.waitForElement(ConfigPageLocators.hederaIDInput);
 		}
 		else {
@@ -55,7 +54,6 @@ export class ConfigPage {
 		cy.contains(ConfigPageLocators.tagsLabel).parent().find(CommonElements.Input).type("B");
 		cy.contains(ConfigPageLocators.websiteLabel).parent().find(CommonElements.Input).type("C");
 		cy.contains(ConfigPageLocators.connectButton).click();
-		cy.screenshot();
 		Checks.waitForElement(ConfigPageLocators.PasswordChangeButton, 75, 5000);
 		cy.contains(ConfigPageLocators.did).should('not.be.null');
 	}
