@@ -96,6 +96,14 @@ export class FieldTypesDictionary {
             isRef: false
         },
         {
+            name: 'File',
+            type: 'string',
+            format: undefined,
+            pattern: '^ipfs:\/\/.+',
+            isRef: false,
+            customType: 'file'
+        },
+        {
             name: 'Enum',
             type: 'string',
             format: undefined,
