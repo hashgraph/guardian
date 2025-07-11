@@ -237,10 +237,9 @@ export class CustomLogicBlock {
 
                 const sources: IPolicyDocument[] = await this.getSources(user);
 
+                const context = await ref.debugContext({ documents, sources });
+                const expression = ref.options.expression || '';
                 if (ref.options.selectedScriptLanguage === ScriptLanguageOption.PYTHON) {
-                    const context = await ref.debugContext({ documents, sources });
-
-                    const expression = ref.options.expression || '';
                     const worker = new Worker(path.join(path.dirname(filename), '..', 'helpers', 'custom-logic-python-worker.js'), {
                         workerData: {
                             execFunc: `${execCode}${expression}`,
@@ -250,12 +249,11 @@ export class CustomLogicBlock {
                             sources: context.sources
                         },
                     });
-
                     worker.on('error', (error) => {
                         reject(error);
                     });
                     worker.on('message', async (data) => {
-                        if (data.error) {
+                        if (data?.error) {
                             reject(new Error(data.error));
                             return;
                         }
@@ -271,9 +269,6 @@ export class CustomLogicBlock {
                         }
                     });
                 } else {
-                    const context = await ref.debugContext({ documents, sources });
-
-                    const expression = ref.options.expression || '';
                     const worker = new Worker(path.join(path.dirname(filename), '..', 'helpers', 'custom-logic-worker.js'), {
                         workerData: {
                             execFunc: `${execCode}${expression}`,
@@ -283,7 +278,6 @@ export class CustomLogicBlock {
                             sources: context.sources
                         },
                     });
-
                     worker.on('error', (error) => {
                         reject(error);
                     });

@@ -1,6 +1,6 @@
-import { DocumentSignature, DocumentStatus, PolicyStatus } from '@guardian/interfaces';
+import { BlockErrorActions, DocumentSignature, DocumentStatus, PolicyStatus } from '@guardian/interfaces';
 import { DatabaseServer } from '@guardian/common';
-import { BlockData, BlockResult } from './block-result.js';
+import { BlockData, BlockResult, IDebugContext } from './block-result.js';
 import { IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { EventActor, IPolicyEvent, PolicyLink } from '../interfaces/index.js';
@@ -21,7 +21,9 @@ export class BlockEngine {
     constructor(policyId: string) {
         this.policyId = policyId;
         this.result = {
-            input: [],
+            input: {
+                documents: []
+            },
             output: [],
             errors: [],
             logs: []
@@ -29,18 +31,18 @@ export class BlockEngine {
     }
 
     public addLog(message: string) {
-        this.result.logs.push(message);
+        this.result.logs.push(String(message));
     }
 
     public addError(message: string) {
         this.result.errors.push(message);
     }
 
-    public setInput(doc: any) {
+    public setInput(doc: IDebugContext) {
         this.result.input = doc;
     }
 
-    public getInput(): any {
+    public getInput(): IDebugContext {
         return this.result.input;
     }
 
@@ -56,26 +58,51 @@ export class BlockEngine {
         this.outputObject?.resolve();
     }
 
+    public error(error?: string) {
+        this.outputObject?.reject(error);
+    }
+
+    private async getBlockRoot(id: string) {
+        const policy = await DatabaseServer.getPolicyById(id);
+        if (policy) {
+            return policy;
+        }
+        const tool = await DatabaseServer.getToolById(id);
+        if (tool) {
+            return tool;
+        }
+        const module = await DatabaseServer.getModuleById(id);
+        return module;
+    }
+
     public async build(config: any): Promise<IPolicyBlock> {
         this.addLog('Building...')
         try {
-            const policy = await DatabaseServer.getPolicyById(this.policyId);
-            const { tools } = await PolicyComponentsUtils.RegeneratePolicy(policy);
-            policy.status = PolicyStatus.DRY_RUN;
 
-            const components = new DebugComponentsService(policy, this.policyId, this);
-            await components.registerPolicy(policy);
+            const parent = await this.getBlockRoot(this.policyId);
+            const { tools } = await PolicyComponentsUtils.RegeneratePolicy(parent);
+            parent.status = PolicyStatus.DRY_RUN;
+
+            const components = new DebugComponentsService(parent, this.policyId, this);
+            await components.registerPolicy(parent);
             for (const tool of tools) {
                 await components.registerTool(tool);
             }
             this.instance = await PolicyComponentsUtils.BuildInstance(
-                policy,
+                parent,
                 this.policyId,
                 config,
                 null,
                 components,
                 []
             )
+            if (this.instance) {
+                if (this.instance.options) {
+                    this.instance.options.onErrorAction = BlockErrorActions.DEBUG;
+                } else {
+                    this.instance.options = { onErrorAction: BlockErrorActions.DEBUG };
+                }
+            }
 
             this.inputEvents = new Map<string, Function>();
             this.outputEvents = new Set<string>();
@@ -103,7 +130,15 @@ export class BlockEngine {
                 throw new Error('Invalid data.');
             }
             const inputData = await this._getInputData(user, data);
-            await this._run(user, data, inputData);
+            const timeoutPromise = new Promise<any>((_, reject) => {
+                setTimeout(() => {
+                    reject(new Error(`Timeout exceed.`));
+                }, 25 * 1000);
+            });
+            await Promise.race([
+                this._run(user, data, inputData),
+                timeoutPromise
+            ]);
         } catch (error) {
             this.addError(error?.toString());
         }
@@ -122,7 +157,7 @@ export class BlockEngine {
             }
         } else {
             const docs: IPolicyDocument[] = this._getDocuments(user, data);
-            this.setInput(docs);
+            this.setInput({ documents: docs });
             return docs;
         }
     }

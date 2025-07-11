@@ -1,16 +1,20 @@
-import { Policy as PolicyCollection } from '@guardian/common';
+import {
+    Policy as PolicyCollection,
+    PolicyTool as PolicyToolCollection
+} from '@guardian/common';
 import { ComponentsService } from '../helpers/components-service.js';
 import { BlockEngine } from './block-engine.js';
+import { IDebugContext } from './block-result.js';
 
 export class DebugComponentsService extends ComponentsService {
     private readonly controller: BlockEngine;
 
     constructor(
-        policy: PolicyCollection,
+        policy: PolicyCollection | PolicyToolCollection,
         policyId: string,
         controller: BlockEngine
     ) {
-        super(policy, policyId);
+        super(policy as PolicyCollection, policyId);
         this.controller = controller;
     }
 
@@ -61,7 +65,16 @@ export class DebugComponentsService extends ComponentsService {
      * Save and update debug context
      * @param context
      */
-    public override async debugContext(tag: string, context: any): Promise<any> {
+    public override async debugContext(tag: string, context: IDebugContext): Promise<IDebugContext> {
         return this.controller.getInput();
+    }
+
+    /**
+     * Save debug error
+     * @param context
+     * @protected
+     */
+    public override debugError(tag: string, error: any): void {
+        this.controller.error(error?.toString());
     }
 }

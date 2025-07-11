@@ -3,6 +3,7 @@ import { DatabaseServer, Policy } from '@guardian/common';
 import { PolicyUser, UserCredentials } from './policy-user.js';
 import { ComponentsService } from './helpers/components-service.js';
 import { LocationType, PolicyAvailability, PolicyStatus } from '@guardian/interfaces';
+import { IDebugContext } from './block-engine/block-result.js';
 
 /**
  * Policy roles interface
@@ -305,7 +306,7 @@ export interface IPolicyBlock {
      * Save and update debug context
      * @param context
      */
-    debugContext(context: any): Promise<any>;
+    debugContext(context: IDebugContext): Promise<IDebugContext>;
 
     /**
      * Trigger events

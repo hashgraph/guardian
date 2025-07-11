@@ -3243,7 +3243,6 @@ export class PolicyApi {
     ) {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
-        await engineService.accessPolicy(policyId, owner, 'read');
         try {
             return await engineService.runBlock(policyId, body, owner);
         } catch (error) {
