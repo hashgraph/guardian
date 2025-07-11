@@ -496,7 +496,14 @@ export class RestoreDataFromHedera {
         topicAdminKey: string,
         topicSubmitKey: string
     ): Promise<void> {
-        await new DatabaseServer().save(Topic, topic);
+        const db = new DatabaseServer();
+        const existing = await db.findOne(Topic, { topicId: topic.topicId });
+        if (existing) {
+            console.log(`Topic already exists: ${topic.topicId}.`);
+            return;
+        }
+        await db.save(Topic, topic);
+
         await Promise.all([
             this.wallet.setKey(
                 user.walletToken,
@@ -683,6 +690,9 @@ export class RestoreDataFromHedera {
 
         // Restore policies
         for (const policyMessage of allPolicies) {
+            if (!policyMessage.policyTopicId) {
+                continue
+            }
             await this.restorePolicy(
                 policyMessage.policyTopicId,
                 did,

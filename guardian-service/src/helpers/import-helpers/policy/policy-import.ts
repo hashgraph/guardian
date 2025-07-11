@@ -180,18 +180,6 @@ export class PolicyImport {
                 );
                 this.notifier.completedAndStart('Skip publishing policy in Hedera');
             } else {
-                this.notifier.completedAndStart('Publish Policy in Hedera');
-                const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
-                message.setDocument(policy);
-                const createPolicyMessage = await this.messageServer
-                    .setTopicObject(this.parentTopic)
-                    .sendMessage(message, {
-                        sendToIPFS: true,
-                        memo: null,
-                        interception: null,
-                        userId
-                    });
-
                 this.notifier.completedAndStart('Create policy topic');
                 this.topicRow = await this.topicHelper.create({
                     type: TopicType.PolicyTopic,
@@ -203,6 +191,20 @@ export class PolicyImport {
                 }, userId);
                 await this.topicRow.saveKeys(userId);
                 await DatabaseServer.saveTopic(this.topicRow.toObject());
+
+                policy.topicId = this.topicRow.topicId;
+
+                this.notifier.completedAndStart('Publish Policy in Hedera');
+                const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
+                message.setDocument(policy);
+                const createPolicyMessage = await this.messageServer
+                    .setTopicObject(this.parentTopic)
+                    .sendMessage(message, {
+                        sendToIPFS: true,
+                        memo: null,
+                        interception: null,
+                        userId
+                    });
 
                 this.notifier.completedAndStart('Link topic and policy');
                 await this.topicHelper.twoWayLink(
