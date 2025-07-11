@@ -522,7 +522,7 @@
 }
 
 .report-item:hover {
-    background-color: rgb(229 229 229 / 50%);
+    background: linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, rgb(229 229 229 / 50%) 30px);
     box-shadow: 0px 11px 0px 0px rgb(229 229 229 / 50%);
 }
 
@@ -605,24 +605,30 @@
 }
 
 ::ng-deep [type="FULL"]:not([rate="100%"]) {
-    background: #fffada;
+    // background: #fffada;
+    background: linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, #fffada 30px);
 }
 
 ::ng-deep [type="FULL"] {
-    background: #d0ffd6;
+    // background: #d0ffd6;
+    background: linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, #d0ffd6 30px);
 }
 
 ::ng-deep [type="PARTLY"] {
-    background: #fffada;
+    // background: #fffada;
+    background: linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, #fffada 30px);
 }
 
 ::ng-deep [type="LEFT"],
 ::ng-deep [type="RIGHT"] {
-    background: #ffc5c6;
+    // background: #ffc5c6;
+    background: linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, #ffc5c6 30px);
 }
 
 ::ng-deep [type="PARTLY"][rate="100%"] {
-    background: linear-gradient(45deg, #d0ffd6 48%, #fffada 52%);
+    background:
+        linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, transparent 30px),
+        linear-gradient(45deg, #d0ffd6 48%, #fffada 52%);
 }
 
 
