@@ -1,4 +1,4 @@
-import { ApplicationState, JwtServicesValidator, COMMON_CONNECTION_CONFIG, DatabaseServer, entities, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization, Users, Wallet } from '@guardian/common';
+import { ApplicationState, JwtServicesValidator, COMMON_CONNECTION_CONFIG, DatabaseServer, entities, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization, Users, Wallet, OldSecretManager } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { PolicyContainer } from './helpers/policy-container.js';
 import { BlockService } from './helpers/block-service.js';
@@ -31,6 +31,9 @@ Promise.all([
     JwtServicesValidator.setServiceName(jwtServiceName);
 
     const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
+
+    //Debug mode
+    await new OldSecretManager().setConnection(cn).init();
 
     const state = new ApplicationState();
     await state.setServiceName('POLICY_SERVICE').setConnection(cn).init();
