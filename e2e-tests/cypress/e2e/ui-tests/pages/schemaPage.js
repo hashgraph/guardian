@@ -7,7 +7,7 @@ const SchemaPageLocators = {
 
     //Buttons
     schemaCreateButton: 'p-button[ng-reflect-content="Create a Schema"]',
-    dialogSaveButton: 'button[label="Save"]',
+    dialogSaveButton: 'button:contains("Save")',
     importIPFSButton: ' Import from IPFS ',
     importFileButton: ' Import from File ',
     exportFileButton: 'Save to file',
@@ -151,7 +151,7 @@ export class SchemaPage {
         cy.contains(name).parent().find(SchemaPageLocators.schemaEditBtn).click();
         Checks.waitForLoading();
         cy.get(SchemaPageLocators.schemaNameInput).clear().type(name + " updated");
-        cy.get(SchemaPageLocators.saveBtn).click({ force: true });
+        cy.get(SchemaPageLocators.dialogSaveButton).click({ force: true });
         Checks.waitForLoading();
         cy.contains(name + " updated").should('exist');
     }
