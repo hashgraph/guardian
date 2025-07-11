@@ -156,7 +156,7 @@ export class SchemaFormViewComponent implements OnInit {
                     || this.values[item.name] === undefined
                     ? ""
                     : this.values[item.name];
-                if (this.isIPFS(field)) {
+                if (this.isIPFS(field) && field.customType !== 'file') {
                     this.loadImg(item)
                 }
             }
@@ -188,7 +188,7 @@ export class SchemaFormViewComponent implements OnInit {
                         }]
                         item.isInvalidType = true;
                     }
-                    if (this.isIPFS(field)) {
+                    if (this.isIPFS(field) && field.customType !== 'file') {
                         this.loadImgs(value);
                     }
                 }

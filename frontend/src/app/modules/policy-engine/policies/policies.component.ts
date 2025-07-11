@@ -615,6 +615,11 @@ export class PoliciesComponent implements OnInit {
         this.pageIndex = 0;
         this.pageSize = 10;
         this.policiesCount = 0;
+
+        this.indexedDb.registerStore(DB_NAME.GUARDIAN, {
+            name: STORES_NAME.POLICY_STORAGE,
+            options: { keyPath: 'policyId' }
+        });
     }
 
     ngOnInit() {

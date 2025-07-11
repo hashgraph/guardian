@@ -85,6 +85,7 @@ interface IFieldIndexControl<T extends UntypedFormControl | UntypedFormGroup> {
     open: boolean
 }
 
+const FILE_EXTENSIONS = '.txt, .pdf, .doc, .docx, .xls, .csv, .kml, .geoJSON';
 /**
  * Form built by schema
  */
@@ -407,13 +408,13 @@ export class SchemaFormComponent implements OnInit {
         );
     }
 
-    uploadFile(item: any): void {
+    uploadFile(item: any, isFile: boolean): void {
         const input = document.createElement('input');
 
         const control = item.control;
 
         input.type = 'file';
-        input.accept = 'image/*';
+        input.accept = isFile ? FILE_EXTENSIONS : 'image/*' ;
         input.onchange = (event) => {
             const file = input.files ? input.files[0] : undefined;
             if (!file) {
@@ -731,6 +732,10 @@ export class SchemaFormComponent implements OnInit {
     public isIPFS(item: SchemaField): boolean {
         return item.pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+'
             || item.pattern === '^ipfs:\/\/.+';
+    }
+
+    public isFile(item: SchemaField): boolean {
+        return item.customType === 'file';
     }
 
     private postFormat(item: any, control: UntypedFormControl): any {
