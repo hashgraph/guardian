@@ -130,7 +130,15 @@ export class BlockEngine {
                 throw new Error('Invalid data.');
             }
             const inputData = await this._getInputData(user, data);
-            await this._run(user, data, inputData);
+            const timeoutPromise = new Promise<any>((_, reject) => {
+                setTimeout(() => {
+                    reject(new Error(`Timeout exceed.`));
+                }, 25 * 1000);
+            });
+            await Promise.race([
+                this._run(user, data, inputData),
+                timeoutPromise
+            ]);
         } catch (error) {
             this.addError(error?.toString());
         }

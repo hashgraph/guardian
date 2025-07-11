@@ -135,6 +135,7 @@
             </div>
 
             <div class="type-container">
+                <div *ngIf="error" class="error-message">{{error}}</div>
                 <ng-container *ngIf="dataType==='schema'">
                     <div class="select-schema">
                         <select-schema

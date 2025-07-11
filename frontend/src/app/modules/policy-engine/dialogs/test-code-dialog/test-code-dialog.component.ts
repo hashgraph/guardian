@@ -73,6 +73,7 @@ export class TestCodeDialog {
     public blockType: string;
     public isPolicy: boolean;
     public _value: any;
+    public error: any;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -188,7 +189,14 @@ export class TestCodeDialog {
     }
 
     public onStep(step: string) {
-        this._value = this.getJsonValue();
+        this.error = null;
+        try {
+            this._value = this.getJsonValue();
+        } catch (error) {
+            console.error(error);
+            this.error = error?.toString();
+            return;
+        }
         this.step = step;
         this.setValue(this._value);
         if (this.step === 'result' || this.step === 'code') {
@@ -240,13 +248,9 @@ export class TestCodeDialog {
             case 'schema':
                 return this.schemaValue.value;
             case 'json':
-                try {
-                    const json = JSON.parse(this.jsonValue);
-                    return json;
-                } catch (error) {
-                    console.error(error)
-                    return this._value;
-                }
+
+                const json = JSON.parse(this.jsonValue);
+                return json;
             case 'file':
                 return this.fileValue;
             case 'history':

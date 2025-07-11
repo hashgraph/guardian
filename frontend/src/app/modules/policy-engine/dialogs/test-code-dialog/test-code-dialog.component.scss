@@ -341,3 +341,12 @@
     margin-top: 32px !important;
     height: calc(100% - 262px) !important;
 }
+
+.error-message {
+    background: #FFEAEA;
+    color: #FF432A;
+    border: 1px solid #FF432A;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+}
