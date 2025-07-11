@@ -48,6 +48,7 @@ module.exports = defineConfig({
             "cypress/e2e/ui-tests/specs/08_tag_schemas/*.cy.js",
             "cypress/e2e/ui-tests/specs/09_tokens/*.cy.js",
             "cypress/e2e/ui-tests/specs/10_schema_validation/*.cy.js",
+            "**/*.cy.js",
         ],
         reporter: 'cypress-multi-reporters',
         reporterOptions: {

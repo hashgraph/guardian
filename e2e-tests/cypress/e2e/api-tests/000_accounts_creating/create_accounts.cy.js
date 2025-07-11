@@ -2,7 +2,7 @@ import { METHOD } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("Prepare accounts for future tests", { tags: ['preparing', 'smoke', 'all'] }, () => {
+context("Prepare accounts for future tests", { tags: ['preparing', 'smoke', 'all', 'ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const SR2Username = Cypress.env('SR2User');
