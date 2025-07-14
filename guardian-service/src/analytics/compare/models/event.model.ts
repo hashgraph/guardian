@@ -2,6 +2,7 @@
 import { BlockModel } from './block.model.js';
 import { CompareOptions, IEventsLvl, IKeyMap, IWeightItem, IBlockEventRawData } from '../interfaces/index.js';
 import { Hash3 } from '../hash/utils.js';
+import { WeightType } from '../types/weight.type.js';
 
 /**
  * Event Model
@@ -103,12 +104,12 @@ export class EventModel {
             const source: BlockModel = map[this.source];
             const target: BlockModel = map[this.target];
             if (source) {
-                this._start = source.getWeight();
+                this._start = source.getWeight(WeightType.PROP_LVL_3);
             } else {
                 this._start = 'undefined';
             }
             if (target) {
-                this._end = target.getWeight();
+                this._end = target.getWeight(WeightType.PROP_LVL_3);
             } else {
                 this._end = 'undefined';
             }
