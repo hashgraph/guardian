@@ -96,7 +96,7 @@ jobs:
             -p 127.0.0.1:8080:8080 \
             -p 127.0.0.1:5001:5001 \
             ipfs/kubo:latest
-          docker exec ipfs_host sh ipfs config "Peering.Peers" --json '[{"ID": "bafzbeibhqavlasjc7dvbiopygwncnrtvjd2xmryk5laib7zyjor6kf3avm","Addrs": ["/dnsaddr/elastic.dag.house"]}]'
+          docker exec ipfs_host ipfs config "Peering.Peers" --json '[{"ID": "bafzbeibhqavlasjc7dvbiopygwncnrtvjd2xmryk5laib7zyjor6kf3avm","Addrs": ["/dnsaddr/elastic.dag.house"]}]'
           docker restart ipfs_host
 
       - name: Run Guardian
