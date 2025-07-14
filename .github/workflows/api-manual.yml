@@ -101,7 +101,6 @@ jobs:
           docker exec ipfs_host ipfs config "Peering.Peers" --json '[{"ID": "bafzbeibhqavlasjc7dvbiopygwncnrtvjd2xmryk5laib7zyjor6kf3avm","Addrs": ["/dnsaddr/elastic.dag.house"]}]'
           exit
           docker restart ipfs_host
-          docker exec ipfs_host ipfs config "Peering.Peers"
 
       - name: Run Guardian
         run: |
@@ -169,6 +168,7 @@ jobs:
 
       - name: Run Cypress API Tests in Docker
         run: |
+          docker exec ipfs_host ipfs config "Peering.Peers"
           docker run --network host --name cypress-test-run \
             -e CYPRESS_portApi=3002 \
             -e CYPRESS_operatorId=${{ secrets.CI_HEDERA_ACCOUNT }} \
