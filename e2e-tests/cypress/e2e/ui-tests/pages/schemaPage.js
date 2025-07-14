@@ -32,6 +32,7 @@ const SchemaPageLocators = {
     createButton: "[ng-reflect-label='Create']",
     createTagButton: ' Create a Tag ',
     activateButton: 'div.btn-approve',
+    systemSchemaEntity: 'p-dropdown[formcontrolname="entity"]',
 
     //Inputs
     schemaNameInput: "input[formcontrolname='name']",
@@ -92,6 +93,15 @@ export class SchemaPage {
         Checks.waitForTaskComplete();
         cy.contains(schemaName).should("exist");
     }
+
+    createSystemSchema(){
+        cy.get(SchemaPageLocators.schemaCreateButton).click();
+        cy.get(SchemaPageLocators.schemaNameInput).type(schemaName);
+        cy.get(SchemaPageLocators.systemSchemaEntity).click();
+        cy.get(CommonElements.dropdownOption).first().click();
+        cy.get(SchemaPageLocators.dialogSaveButton).click();
+        Checks.waitForTaskComplete();
+        cy.contains(schemaName).should("exist");}
 
     importPolicySchemaIPFS(schemaMessageId, schemaName) {
         cy.get(SchemaPageLocators.schemaImportButton).click();
