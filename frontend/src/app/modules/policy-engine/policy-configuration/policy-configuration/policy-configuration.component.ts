@@ -468,7 +468,10 @@ export class PolicyConfigurationComponent implements OnInit {
                 value: this.objectToJson(root.getJSON())
         });
 
-        this.checkState();
+        const existing = await this.storage.getPolicyById(root.id);
+        if (existing) {
+            this.checkState();
+        }
 
         root.subscribe(this.onConfigChange.bind(this));
 
@@ -1261,7 +1264,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 block,
                 folder: this.openFolder,
                 readonly: this.readonly,
-                policyId: this.policyId
+                policyId: this.rootId
             }
         });
         dialogRef.onClose.subscribe(async (result) => { });

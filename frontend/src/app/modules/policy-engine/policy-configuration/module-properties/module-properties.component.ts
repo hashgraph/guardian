@@ -51,7 +51,6 @@ export class ModulePropertiesComponent implements OnInit {
         this.outputs = this.module.outputEvents;
         this.variables = this.module.variables;
         const baseSchemas: any[] = this.module.getSchemas() || [];
-        console.log(baseSchemas)
         this.baseSchemas = baseSchemas.map(s => new SchemaVariables(s));
     }
 
