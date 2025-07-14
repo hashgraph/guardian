@@ -6,7 +6,7 @@ import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyGetData, IPoli
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { EventBlock } from '../helpers/decorators/event-block.js';
-import { VcDocument as VcDocumentCollection, VcHelper, } from '@guardian/common';
+import { DataBaseHelper, DocumentDraft, VcDocument as VcDocumentCollection, VcHelper, } from '@guardian/common';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
@@ -133,6 +133,14 @@ export class RequestVcDocumentBlock {
         const sources = await ref.getSources(user);
         const restoreData = this.state[user.id] && this.state[user.id].restoreData;
 
+        const collection = DataBaseHelper.orm.em.getCollection('DocumentDraft');
+
+        const draftDocument = await collection.findOne<any>({
+            policyId: ref.policyId,
+            blockId: ref.uuid,
+            user: user.id
+        });
+
         return {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -147,7 +155,8 @@ export class RequestVcDocumentBlock {
             uiMetaData: options.uiMetaData || {},
             hideFields: options.hideFields || [],
             data: sources && sources.length && sources[0] || null,
-            restoreData
+            restoreData,
+            draftDocument
         };
     }
 
@@ -183,7 +192,14 @@ export class RequestVcDocumentBlock {
         if (!user.did) {
             throw new BlockActionError('User have no any did.', ref.blockType, ref.uuid);
         }
+        if (_data.draft) {
+            this.saveDraftData(user, _data, ref);
+        } else {
+            this.setBlockData(user, _data, ref);
+        }
+    }
 
+    private async setBlockData(user: PolicyUser, _data: IPolicyDocument, ref: IPolicyRequestBlock) {
         try {
             const document = _data.document;
             PolicyUtils.setAutoCalculateFields(this._schema, document);
@@ -261,6 +277,49 @@ export class RequestVcDocumentBlock {
         } catch (error) {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
+        }
+    }
+
+    private async saveDraftData(user: PolicyUser, _data: IPolicyDocument, ref: IPolicyRequestBlock) {
+        const collection = DataBaseHelper.orm.em.getCollection<DocumentDraft>('DocumentDraft');
+        const foundDraft = await collection.findOne<any>({
+            policyId: ref.policyId,
+            blockId: ref.uuid,
+            user: user.id
+        });
+
+        if (foundDraft) {
+            await collection.updateOne({ _id: foundDraft._id }, { $set: { data: _data.document } });
+        } else {
+            const row: any = {
+                policyId: ref.policyId,
+                blockId: ref.uuid,
+                blockTag: ref.tag,
+                user: user.id,
+                data: _data.document
+            };
+
+            await collection.insertOne(row);
+        }
+    }
+
+    private autoCalculate(document: any): void {
+        for (const key in this._schema.document.properties) {
+            if (!this._schema.document.properties.hasOwnProperty(key)) {
+                continue;
+            }
+            const value = this._schema.document.properties[key];
+            if (!value.$comment) {
+                continue;
+            }
+            const { autocalculate, expression } = JSON.parse(value.$comment);
+            if (!autocalculate) {
+                continue;
+            }
+            const func = Function(`with (this) { return ${expression} }`);
+            const calcValue = func.apply(document);
+            document[value.title] = calcValue;
+
         }
     }
 
