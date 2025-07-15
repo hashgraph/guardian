@@ -277,7 +277,10 @@ export class ArtifactApi {
         type: InternalServerErrorDTO
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
-    @UseInterceptors(AnyFilesInterceptor())
+    @UseInterceptors(AnyFilesInterceptor({
+        allowedFields: ['artifacts'],
+        requiredFields: ['artifacts']
+    }))
     @HttpCode(HttpStatus.CREATED)
     async uploadArtifacts(
         @AuthUser() user: IAuthUser,

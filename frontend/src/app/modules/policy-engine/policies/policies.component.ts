@@ -49,6 +49,8 @@ import {
 import { SearchExternalPolicyDialog } from '../dialogs/search-external-policy-dialog/search-external-policy-dialog.component';
 import {OverlayPanel} from 'primeng/overlaypanel';
 import {takeUntil} from 'rxjs/operators';
+import {IndexedDbRegistryService} from 'src/app/services/indexed-db-registry.service';
+import {DB_NAME, STORES_NAME} from 'src/app/constants';
 
 class MenuButton {
     public readonly visible: boolean;
@@ -607,11 +609,17 @@ export class PoliciesComponent implements OnInit {
         @Inject(CONFIGURATION_ERRORS)
         private _configurationErrors: Map<string, any>,
         private cdRef: ChangeDetectorRef,
+        private indexedDb: IndexedDbRegistryService,
     ) {
         this.policies = null;
         this.pageIndex = 0;
         this.pageSize = 10;
         this.policiesCount = 0;
+
+        this.indexedDb.registerStore(DB_NAME.GUARDIAN, {
+            name: STORES_NAME.POLICY_STORAGE,
+            options: { keyPath: 'policyId' }
+        });
     }
 
     ngOnInit() {
@@ -870,7 +878,9 @@ export class PoliciesComponent implements OnInit {
 
             this.loading = true;
             this.policyEngineService.pushDelete(policy?.id).pipe(takeUntil(this._destroy$)).subscribe(
-                (result) => {
+                async (result) => {
+                    await this.indexedDb.delete(DB_NAME.GUARDIAN, STORES_NAME.POLICY_STORAGE, policy?.id);
+
                     const { taskId, expectation } = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {

@@ -176,6 +176,7 @@ export class RequestVcDocumentBlockAddon {
                     );
                 }
                 const document = _data.document;
+                PolicyUtils.setAutoCalculateFields(this._schema, document);
                 const presetCheck = await this.checkPreset(
                     ref,
                     document,

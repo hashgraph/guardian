@@ -64,11 +64,25 @@ form {
     .dialog-button[id="submit"] {
         display: block;
     }
+    .dialog-button[id="save"] {
+        display: block;
+        margin-right: auto;
+
+        button {
+            display: flex;
+            gap: 8px;
+        }
+    }
 }
 
 .close-icon-color {
     fill: #848FA9;
     color: #848FA9;
+}
+
+.save-icon-color {
+    fill: var(--color-primary);
+    color: var(--color-primary);
 }
 
 @media (max-width: 810px) {

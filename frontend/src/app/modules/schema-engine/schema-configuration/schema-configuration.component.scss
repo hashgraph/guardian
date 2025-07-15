@@ -231,30 +231,11 @@ form {
     border-top: 2px solid var(--color-grey-4);
 }
 
+.rmv-btn,
 .add-btn {
-    color: var(--color-primary);
-    border: 1px solid #cdddfd;
-}
-
-.rmv-btn {
-    border: 1px solid #f5d7d7;
-    color: #ff432a;
-}
-
-.add-btn,
-.rmv-btn {
-    background: #fff;
-    margin-bottom: 48px;
     height: 40px;
     width: 100%;
-    border-radius: 8px;
-    box-sizing: border-box;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 15px;
-    text-align: center;
+    margin-bottom: 48px;
 }
 
 *[disabled="true"] {
@@ -271,8 +252,13 @@ form {
 }
 
 .equal-label {
-    margin-left: 24px;
-    margin-right: 24px;
+    height: 60px;
+    width: 50px;
+    min-width: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 16px;
 }
 
 .condition-if-container {
@@ -375,8 +361,9 @@ form {
 .if-dropdown-field {
     display: flex;
     flex-direction: column;
-    width: 68%;
-    max-width: 68%;
+    width: calc(50% - 25px);
+    max-width: calc(50% - 25px);
+    min-width: calc(50% - 25px);
 
     ::ng-deep {
         .p-dropdown {
@@ -405,4 +392,15 @@ form {
     font-style: normal;
     font-weight: 400;
     line-height: 16px;
+}
+
+.radio-button-container {
+    display: flex;
+    align-items: center;
+    height: 60px;
+    padding-top: 16px;
+}
+
+*[disabled-dropdown="true"] {
+    pointer-events: none !important;
 }

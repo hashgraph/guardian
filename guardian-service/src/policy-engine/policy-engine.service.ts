@@ -176,6 +176,19 @@ export class PolicyEngineService {
         }
     }
 
+    private async getBlockRoot(id: string) {
+        const policy = await DatabaseServer.getPolicyById(id);
+        if (policy) {
+            return policy;
+        }
+        const tool = await DatabaseServer.getToolById(id);
+        if (tool) {
+            return tool;
+        }
+        const module = await DatabaseServer.getModuleById(id);
+        return module;
+    }
+
     /**
      * Init
      */
@@ -1811,10 +1824,10 @@ export class PolicyEngineService {
             async (msg: { policyId: string, tag: string, owner: IOwner }) => {
                 try {
                     const { policyId, tag, owner } = msg;
-                    const policy = await DatabaseServer.getPolicyById(policyId);
-                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+                    const policy = await this.getBlockRoot(policyId);
+                    await this.policyEngine.accessPolicy(policy as any, owner, 'read');
                     if (!(policy.status === PolicyStatus.DRAFT || policy.status === PolicyStatus.DRY_RUN)) {
-                        throw new Error(`Policy is not in Dry Run or Draft`);
+                        throw new Error(`Entity is not in Dry Run or Draft`);
                     }
                     const result = await DatabaseServer.getDebugContexts(policyId, tag);
                     return new MessageResponse(result);
@@ -1832,10 +1845,10 @@ export class PolicyEngineService {
             }): Promise<IMessageResponse<any>> => {
                 try {
                     const { policyId, config, owner } = msg;
-                    const policy = await DatabaseServer.getPolicyById(policyId);
-                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+                    const policy = await this.getBlockRoot(policyId);
+                    await this.policyEngine.accessPolicy(policy as any, owner, 'read');
                     if (!(policy.status === PolicyStatus.DRAFT || policy.status === PolicyStatus.DRY_RUN)) {
-                        throw new Error(`Policy is not in Dry Run or Draft`);
+                        throw new Error(`Entity is not in Dry Run or Draft`);
                     }
                     const user = await (new Users()).getUser(owner.username, owner.id);
                     config.policyId = policyId;
