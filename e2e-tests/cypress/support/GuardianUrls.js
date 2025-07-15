@@ -1,4 +1,4 @@
-const PORT = 4200;
+const PORT = Cypress.env("portWeb") || 4200;
 
 const URL = {
 	// Web

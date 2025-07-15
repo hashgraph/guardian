@@ -131,7 +131,7 @@ context("Artifacts", { tags: ['artifacts', 'secondPool', 'all'] }, () => {
                             body: formdata,
                             failOnStatusCode: false,
                         }).then((response) => {
-                            expect(response.status).to.eq(STATUS_CODE.ERROR);
+                            expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
                             // expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
                             // expect(response.body.message).to.eq("There is no appropriate policy or policy is not in DRAFT status");
                         });

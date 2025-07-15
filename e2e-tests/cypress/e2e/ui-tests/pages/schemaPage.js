@@ -7,7 +7,7 @@ const SchemaPageLocators = {
 
     //Buttons
     schemaCreateButton: 'p-button[ng-reflect-content="Create a Schema"]',
-    dialogSaveButton: 'button[label="Save"]',
+    dialogSaveButton: 'button:contains("Save")',
     importIPFSButton: ' Import from IPFS ',
     importFileButton: ' Import from File ',
     exportFileButton: 'Save to file',
@@ -20,7 +20,7 @@ const SchemaPageLocators = {
     deleteSchemaButton: 'button.accent-color-red',
     menuSchemaButton: 'div[ptooltip="Menu"]',
     dialogPublishButton: 'button[ng-reflect-label="Ok"]',
-    confirmDeleteButton: 'p-button[ng-reflect-label="Confirm"]',
+    confirmDeleteButton: 'button.guardian-button-delete',
     documentSchemaButton: 'p-button[ng-reflect-content="View schema details"]',
     schemaEditBtn: "div[ptooltip='Edit']",
     saveBtn: 'button[ng-reflect-label="Save"]',
@@ -32,6 +32,7 @@ const SchemaPageLocators = {
     createButton: "[ng-reflect-label='Create']",
     createTagButton: ' Create a Tag ',
     activateButton: 'div.btn-approve',
+    systemSchemaEntity: 'p-dropdown[formcontrolname="entity"]',
 
     //Inputs
     schemaNameInput: "input[formcontrolname='name']",
@@ -93,6 +94,15 @@ export class SchemaPage {
         cy.contains(schemaName).should("exist");
     }
 
+    createSystemSchema(){
+        cy.get(SchemaPageLocators.schemaCreateButton).click();
+        cy.get(SchemaPageLocators.schemaNameInput).type(schemaName);
+        cy.get(SchemaPageLocators.systemSchemaEntity).click();
+        cy.get(CommonElements.dropdownOption).first().click();
+        cy.get(SchemaPageLocators.dialogSaveButton).click();
+        Checks.waitForTaskComplete();
+        cy.contains(schemaName).should("exist");}
+
     importPolicySchemaIPFS(schemaMessageId, schemaName) {
         cy.get(SchemaPageLocators.schemaImportButton).click();
         cy.contains(SchemaPageLocators.importIPFSButton).click();
@@ -100,10 +110,7 @@ export class SchemaPage {
         cy.get(SchemaPageLocators.schemaFinalImportButton).click();
         Checks.waitForElement("div:contains('Description')");
         cy.get(CommonElements.dialogWindow).last().find(CommonElements.dropdown).click();
-        cy.screenshot();
-        cy.get(CommonElements.dropdownOption).eq(1).focus();
-        cy.screenshot();
-        cy.get(CommonElements.dropdownOption).eq(1).realClick();
+        cy.get(CommonElements.dropdownOption).eq(1).click();
         cy.get(SchemaPageLocators.oneMoreImportButton).click();
         Checks.waitForTaskComplete();
         cy.contains(schemaName).should("exist");
@@ -154,7 +161,7 @@ export class SchemaPage {
         cy.contains(name).parent().find(SchemaPageLocators.schemaEditBtn).click();
         Checks.waitForLoading();
         cy.get(SchemaPageLocators.schemaNameInput).clear().type(name + " updated");
-        cy.get(SchemaPageLocators.saveBtn).click({ force: true });
+        cy.get(SchemaPageLocators.dialogSaveButton).click({ force: true });
         Checks.waitForLoading();
         cy.contains(name + " updated").should('exist');
     }
@@ -188,6 +195,7 @@ export class SchemaPage {
         cy.get(CommonElements.dropdownOption).eq(0).click();
         cy.get(SchemaPageLocators.filterDropdownCompareSchema).last().click();
         cy.get(CommonElements.dropdownOption).eq(0).click();
+        cy.screenshot();
         cy.get(SchemaPageLocators.compareFinalBtn).click();
         Checks.waitForLoading();
         cy.contains(SchemaPageLocators.compareSchemaName, schemaPolicy1).should('exist');
