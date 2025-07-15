@@ -190,6 +190,14 @@
             width: 180px;
         }
 
+        .page-btns > :nth-child(2) {
+            margin-left: auto;
+        }
+
+        .page-btns > :nth-child(3) {
+            margin-left: 16px;
+        }
+
         #cancel-btn,
         #previous-btn {
             height: 40px;
