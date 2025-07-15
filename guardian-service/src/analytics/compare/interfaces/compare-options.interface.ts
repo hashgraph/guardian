@@ -12,7 +12,7 @@ export enum IPropertiesLvl {
  */
 export enum IEventsLvl {
     None = 'None', //Don't compare
-    Simple = 'Simple', //Lose comparison
+    Simple = 'Simple', //Loose comparison
     All = 'All' //All events
 }
 

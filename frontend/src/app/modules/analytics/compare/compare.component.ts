@@ -19,19 +19,19 @@ enum ItemType {
 export class CompareComponent implements OnInit {
     public eventOptions = [
         { label: 'Exclude events', value: '0' },
-        { label: 'Lose comparison', value: '1' },
+        { label: 'Loose comparison', value: '1' },
         { label: 'Strict comparison', value: '2' }
     ];
 
     public propertyOptions = [
         { label: 'Exclude properties', value: '0' },
-        { label: 'Lose comparison', value: '1' },
+        { label: 'Loose comparison', value: '1' },
         { label: 'Strict comparison', value: '2' }
     ];
 
     public childrenOptions = [
         { label: 'Exclude child blocks', value: '0' },
-        { label: 'Lose comparison', value: '1' },
+        { label: 'Loose comparison', value: '1' },
         { label: 'Strict comparison', value: '2' }
     ];
 
