@@ -12,13 +12,6 @@ context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
     let thirdRandom = Math.floor(Math.random() * 99999);
 
     it("Add file to ipfs", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: 'http://bafybeifx7yeb55armcsxwwitkymga5xf53dxiarykms3ygqic223w5sk3m.ipfs.localhost:8080/',
-            timeout: 200000
-        }).then((response) => {
-            cy.log(response.body);
-        });
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
