@@ -303,26 +303,6 @@ export class RequestVcDocumentBlock {
         }
     }
 
-    private autoCalculate(document: any): void {
-        for (const key in this._schema.document.properties) {
-            if (!this._schema.document.properties.hasOwnProperty(key)) {
-                continue;
-            }
-            const value = this._schema.document.properties[key];
-            if (!value.$comment) {
-                continue;
-            }
-            const { autocalculate, expression } = JSON.parse(value.$comment);
-            if (!autocalculate) {
-                continue;
-            }
-            const func = Function(`with (this) { return ${expression} }`);
-            const calcValue = func.apply(document);
-            document[value.title] = calcValue;
-
-        }
-    }
-
     /**
      * Save data to restore
      * @param event Event
