@@ -36,6 +36,18 @@ export class VPMessage extends Message {
      * User Role
      */
     public userMessageId: string;
+    /**
+     * Tag
+     */
+    public tag: string;
+    /**
+     * Entity Type
+     */
+    public entityType: string;
+    /**
+     * Option
+     */
+    public option: any;
 
     constructor(action: MessageAction) {
         super(action, MessageType.VPDocument);
@@ -87,6 +99,37 @@ export class VPMessage extends Message {
     }
 
     /**
+     * Set tag
+     * @param ids
+     */
+    public setTag(document: any): void {
+        this.tag = document?.tag;
+    }
+
+    /**
+     * Set entity type
+     * @param ids
+     */
+    public setEntityType(document: any): void {
+        if (document?.options?.entityType) {
+            this.entityType = document.options.entityType;
+        }
+    }
+
+    /**
+     * Set option
+     * @param ids
+     */
+    public setOption(document: any): void {
+        this.option = {};
+        if (document?.options?.options) {
+            for (const option of document.options.options) {
+                this.option[option.name] = option.value;
+            }
+        }
+    }
+
+    /**
      * Get document
      */
     public getDocument(): any {
@@ -105,6 +148,9 @@ export class VPMessage extends Message {
             lang: this.lang,
             issuer: this.issuer,
             relationships: this.relationships,
+            tag: this.tag,
+            entityType: this.entityType,
+            option: this.option,
             cid: this.getDocumentUrl(UrlType.cid),
             uri: this.getDocumentUrl(UrlType.url),
         };
@@ -177,6 +223,9 @@ export class VPMessage extends Message {
         message._status = json.status;
         message.issuer = json.issuer;
         message.relationships = json.relationships;
+        message.tag = json.tag;
+        message.entityType = json.entityType;
+        message.option = json.option;
         const urls = [{
             cid: json.cid,
             url: IPFS.IPFS_PROTOCOL + json.cid
@@ -218,6 +267,9 @@ export class VPMessage extends Message {
             lang: this.lang,
             issuer: this.issuer,
             relationships: this.relationships,
+            tag: this.tag,
+            entityType: this.entityType,
+            option: this.option,
             hash: this.hash
         }
         const json: string = JSON.stringify(map);
@@ -240,6 +292,9 @@ export class VPMessage extends Message {
         result.issuer = this.issuer;
         result.hash = this.hash;
         result.relationships = this.relationships;
+        result.tag = this.tag;
+        result.entityType = this.entityType;
+        result.option = this.option;
         result.document = this.document;
         return result;
     }
@@ -252,6 +307,9 @@ export class VPMessage extends Message {
         result.issuer = json.issuer;
         result.hash = json.hash;
         result.relationships = json.relationships;
+        result.tag = json.tag;
+        result.entityType = json.entityType;
+        result.option = json.option;
         result.document = json.document;
         return result;
     }

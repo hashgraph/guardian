@@ -56,6 +56,18 @@ export class VCMessage extends Message {
      * Guardian Version
      */
     public guardianVersion: string;
+    /**
+     * Tag
+     */
+    public tag: string;
+    /**
+     * Entity Type
+     */
+    public entityType: string;
+    /**
+     * Option
+     */
+    public option: any;
 
     constructor(
         action: MessageAction,
@@ -141,6 +153,37 @@ export class VCMessage extends Message {
     }
 
     /**
+     * Set tag
+     * @param ids
+     */
+    public setTag(document: any): void {
+        this.tag = document?.tag;
+    }
+
+    /**
+     * Set entity type
+     * @param ids
+     */
+    public setEntityType(document: any): void {
+        if (document?.options?.entityType) {
+            this.entityType = document.options.entityType;
+        }
+    }
+
+    /**
+     * Set option
+     * @param ids
+     */
+    public setOption(document: any): void {
+        this.option = {};
+        if (document?.options?.options) {
+            for (const option of document.options.options) {
+                this.option[option.name] = option.value;
+            }
+        }
+    }
+
+    /**
      * Get documents
      */
     public getDocument(): any {
@@ -162,6 +205,9 @@ export class VCMessage extends Message {
             encodedData: this.encodedData,
             documentStatus: this.documentStatus,
             guardianVersion: this.guardianVersion,
+            tag: this.tag,
+            entityType: this.entityType,
+            option: this.option,
             cid: this.getDocumentUrl(UrlType.cid),
             uri: this.getDocumentUrl(UrlType.url),
         };
@@ -251,6 +297,9 @@ export class VCMessage extends Message {
         _message.documentStatus = json.documentStatus;
         _message.encodedData = json.encodedData || json.type === MessageType.EVCDocument;
         _message.guardianVersion = json.guardianVersion;
+        _message.tag = json.tag;
+        _message.entityType = json.entityType;
+        _message.option = json.option;
         const urls = [
             {
                 cid: json.cid,
@@ -296,7 +345,10 @@ export class VCMessage extends Message {
             relationships: this.relationships,
             hash: this.hash,
             encodedData: this.encodedData,
-            guardianVersion: this.guardianVersion
+            guardianVersion: this.guardianVersion,
+            tag: this.tag,
+            entityType: this.entityType,
+            option: this.option,
         }
         const json: string = JSON.stringify(map);
         const hash: Uint8Array = Hashing.sha256.digest(json);
@@ -322,6 +374,9 @@ export class VCMessage extends Message {
         result.documentStatus = this.documentStatus;
         result.encodedData = this.encodedData;
         result.guardianVersion = this.guardianVersion;
+        result.tag = this.tag;
+        result.entityType = this.entityType;
+        result.option = this.option;
         return result;
     }
 
@@ -338,6 +393,9 @@ export class VCMessage extends Message {
         result.documentStatus = json.documentStatus;
         result.encodedData = json.encodedData;
         result.guardianVersion = json.guardianVersion;
+        result.tag = json.tag;
+        result.entityType = json.entityType;
+        result.option = json.option;
         return result;
     }
 

@@ -246,7 +246,11 @@ export class RestoreDataFromHedera {
                         policyId,
                         topicId: message.topicId,
                         document: vcDoc.toJsonTree(),
-                        type: undefined,
+                        type: message.entityType || `#${vcDoc.getSubjectType()}`,
+                        schema: `#${vcDoc.getSubjectType()}`,
+                        tag: message.tag,
+                        relationship: message.relationships,
+                        option: message.option,
                     });
 
                     break;

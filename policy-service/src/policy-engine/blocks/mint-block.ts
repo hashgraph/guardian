@@ -316,6 +316,9 @@ export class MintBlock {
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(mintVC);
         vcMessage.setRelationships(messages);
+        vcMessage.setTag(mintVC);
+        vcMessage.setEntityType(mintVC);
+        vcMessage.setOption(mintVC);
         vcMessage.setUser(null);
         const vcMessageResult = await messageServer
             .setTopicObject(topic)
@@ -343,6 +346,9 @@ export class MintBlock {
         const vpMessage = new VPMessage(MessageAction.CreateVP);
         vpMessage.setDocument(vp);
         vpMessage.setRelationships(messages);
+        vpMessage.setTag(vp);
+        vpMessage.setEntityType(vp);
+        vpMessage.setOption(vp);
         vpMessage.setUser(null);
 
         const vpMessageResult = await messageServer
