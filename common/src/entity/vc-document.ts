@@ -205,30 +205,67 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     documentFields?: string[];
 
     /**
+     * old file id
+     */
+    @Property({ persist: false, nullable: true })
+    _documentFileId?: ObjectId;
+
+    /**
+     * old file id
+     */
+    @Property({ persist: false, nullable: true })
+    _encryptedDocumentFileId?: ObjectId;
+
+    /**
      * Document defaults
      */
     @BeforeCreate()
-    setDefaults() {
+    async setDefaults() {
         this.hederaStatus = this.hederaStatus || DocumentStatus.NEW;
         this.signature = this.signature || DocumentSignature.NEW;
         this.option = this.option || {};
         this.option.status = this.option.status || ApproveStatus.NEW;
+
+        if (this.document) {
+            const document = JSON.stringify(this.document);
+            this.documentFileId = await this.createFile(document);
+            this.document = this._createFieldCache(this.document, this.documentFields);
+            if (!this.document) {
+                delete this.document;
+            }
+            this._updateDocHash(document);
+        } else {
+            this._updateDocHash('');
+        }
+        if (this.encryptedDocument) {
+            this.encryptedDocumentFileId = await this.createFile(this.encryptedDocument);
+            delete this.encryptedDocument;
+        }
+
+        this._updatePropHash(this._createProp());
     }
 
-    private _createDocument(field: string, document: string): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
+    /**
+     * Create File
+     */
+    private createFile(json: string) {
+        return new Promise<ObjectId>((resolve, reject) => {
             try {
-                const fileStream = DataBaseHelper.gridFS.openUploadStream(GenerateUUIDv4());
-                this[field] = fileStream.id;
-                fileStream.write(document);
-                fileStream.end(() => resolve());
+                const fileName = `VcDocument_${this._id?.toString()}_${GenerateUUIDv4()}`;
+                const fileStream = DataBaseHelper.gridFS.openUploadStream(fileName);
+                const fileId = fileStream.id;
+                fileStream.write(json);
+                fileStream.end(() => resolve(fileId));
             } catch (error) {
                 reject(error)
             }
         });
     }
 
-    private async _loadDocument(fileId: ObjectId): Promise<string> {
+    /**
+     * Load File
+     */
+    private async loadFile(fileId: ObjectId) {
         const fileStream = DataBaseHelper.gridFS.openDownloadStream(fileId);
         const bufferArray = [];
         for await (const data of fileStream) {
@@ -238,11 +275,11 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
         return buffer.toString();
     }
 
-    private _createFieldCache(fields?: string[]): any {
+    private _createFieldCache(document: any, fields?: string[]): any {
         if (fields) {
             const newDocument: any = {};
             for (const field of fields) {
-                const fieldValue = ObjGet(this.document, field)
+                const fieldValue = ObjGet(document, field)
                 if (
                     typeof fieldValue === 'number' ||
                     (
@@ -286,54 +323,6 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     }
 
     /**
-     * Create document
-     */
-    @BeforeCreate()
-    async createDocument() {
-        if (this.document) {
-            const document = JSON.stringify(this.document);
-            await this._createDocument('documentFileId', document);
-            this.document = this._createFieldCache(this.documentFields);
-            if (!this.document) {
-                delete this.document;
-            }
-            this._updateDocHash(document);
-        } else {
-            this._updateDocHash('');
-        }
-        if (this.encryptedDocument) {
-            await this._createDocument('encryptedDocumentFileId', this.encryptedDocument);
-            delete this.encryptedDocument;
-        }
-
-        this._updatePropHash(this._createProp());
-    }
-
-    /**
-     * Update document
-     */
-    @BeforeUpdate()
-    async updateDocument() {
-        if (this.document && this.documentFileId) {
-            DataBaseHelper.gridFS
-                .delete(this.documentFileId)
-                .catch((reason) => {
-                    console.error(`BeforeUpdate: VcDocument, ${this._id}, documentFileId`)
-                    console.error(reason)
-                });
-        }
-        if (this.encryptedDocument && this.encryptedDocumentFileId) {
-            DataBaseHelper.gridFS
-                .delete(this.encryptedDocumentFileId)
-                .catch((reason) => {
-                    console.error(`BeforeUpdate: VcDocument, ${this._id}, encryptedDocumentFileId`)
-                    console.error(reason)
-                });
-        }
-        await this.createDocument();
-    }
-
-    /**
      * Load document
      */
     @OnLoad()
@@ -341,12 +330,59 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     @AfterCreate()
     async loadDocument() {
         if (this.documentFileId) {
-            const buffer = await this._loadDocument(this.documentFileId)
+            const buffer = await this.loadFile(this.documentFileId)
             this.document = JSON.parse(buffer);
         }
         if (this.encryptedDocumentFileId) {
-            const buffer = await this._loadDocument(this.encryptedDocumentFileId)
+            const buffer = await this.loadFile(this.encryptedDocumentFileId)
             this.encryptedDocument = buffer;
+        }
+    }
+
+    /**
+     * Update document
+     */
+    @BeforeUpdate()
+    async updateDocument() {
+        if (this.document) {
+            const document = JSON.stringify(this.document);
+            const documentFileId = await this.createFile(document);
+            if (documentFileId) {
+                this._documentFileId = this.documentFileId;
+                this.documentFileId = documentFileId;
+            }
+        }
+        if (this.encryptedDocument) {
+            const encryptedDocumentFileId = await this.createFile(this.encryptedDocument);
+            if (encryptedDocumentFileId) {
+                this._encryptedDocumentFileId = this.encryptedDocumentFileId;
+                this.encryptedDocumentFileId = encryptedDocumentFileId;
+            }
+        }
+    }
+
+    /**
+     * Delete File
+     */
+    @AfterUpdate()
+    postUpdateFiles() {
+        if (this._documentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this._documentFileId)
+                .catch((reason) => {
+                    console.error(`AfterUpdate: VcDocument, ${this._id}, _documentFileId`)
+                    console.error(reason)
+                });
+            delete this._documentFileId;
+        }
+        if (this._encryptedDocumentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this._encryptedDocumentFileId)
+                .catch((reason) => {
+                    console.error(`AfterUpdate: VcDocument, ${this._id}, _encryptedDocumentFileId`)
+                    console.error(reason)
+                });
+            delete this._encryptedDocumentFileId;
         }
     }
 
