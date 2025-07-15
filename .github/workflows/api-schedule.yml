@@ -131,6 +131,7 @@ jobs:
           sleep 60
         env:
           CI: true
+          NODE_OPTIONS: '--openssl-legacy-provider'
           OPERATOR_ID: ${{ secrets.CI_HEDERA_ACCOUNT }}
           OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
           JWT_PRIVATE_KEY: ${{ secrets.CI_JWT_PRIVATE_KEY }}
@@ -155,8 +156,8 @@ jobs:
             -e CYPRESS_portApi=3002 \
             -e CYPRESS_operatorId=${{ secrets.CI_HEDERA_ACCOUNT }} \
             -e CYPRESS_operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }} \
+            -e CYPRESS_grepTags=all \
             cypress-runner \
-            --spec "cypress/e2e/api-tests/**/*.cy.js" \
             --browser chrome
 
       - name: Copy test results from Docker container
