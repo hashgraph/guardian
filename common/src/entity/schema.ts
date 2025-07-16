@@ -202,44 +202,14 @@ export class Schema extends BaseEntity implements ISchema {
                 this.defs = Object.keys(this.document.$defs);
             }
             const document = JSON.stringify(this.document);
-            this.documentFileId = await this.createFile(document);
+            this.documentFileId = await this._createFile(document, 'Schema');
             delete this.document;
         }
         if (this.context) {
             const context = JSON.stringify(this.context);
-            this.contextFileId = await this.createFile(context);
+            this.contextFileId = await this._createFile(context, 'Schema');
             delete this.context;
         }
-    }
-
-    /**
-     * Create File
-     */
-    private createFile(json: string) {
-        return new Promise<ObjectId>((resolve, reject) => {
-            try {
-                const fileName = `Schema_${this._id?.toString()}_${GenerateUUIDv4()}`;
-                const fileStream = DataBaseHelper.gridFS.openUploadStream(fileName);
-                const fileId = fileStream.id;
-                fileStream.write(json);
-                fileStream.end(() => resolve(fileId));
-            } catch (error) {
-                reject(error)
-            }
-        });
-    }
-
-    /**
-     * Load File
-     */
-    private async loadFile(fileId: ObjectId) {
-        const fileStream = DataBaseHelper.gridFS.openDownloadStream(fileId);
-        const bufferArray = [];
-        for await (const data of fileStream) {
-            bufferArray.push(data);
-        }
-        const buffer = Buffer.concat(bufferArray);
-        return buffer.toString();
     }
 
     /**
@@ -248,17 +218,17 @@ export class Schema extends BaseEntity implements ISchema {
     @OnLoad()
     @AfterUpdate()
     @AfterCreate()
-    async loadDocument() {
+    async loadFiles() {
         if (!this.category) {
             this.category = this.readonly ? SchemaCategory.SYSTEM : SchemaCategory.POLICY;
         }
         if (this.documentFileId) {
-            const buffer = await this.loadFile(this.documentFileId)
-            this.document = JSON.parse(buffer);
+            const buffer = await this._loadFile(this.documentFileId)
+            this.document = JSON.parse(buffer.toString());
         }
         if (this.contextFileId) {
-            const buffer = await this.loadFile(this.contextFileId)
-            this.context = JSON.parse(buffer);
+            const buffer = await this._loadFile(this.contextFileId)
+            this.context = JSON.parse(buffer.toString());
         }
     }
 
@@ -266,13 +236,13 @@ export class Schema extends BaseEntity implements ISchema {
      * Update document
      */
     @BeforeUpdate()
-    async updateDocument() {
+    async updateFiles() {
         if (this.document) {
             if (this.document.$defs) {
                 this.defs = Object.keys(this.document.$defs);
             }
             const document = JSON.stringify(this.document);
-            const documentFileId = await this.createFile(document);
+            const documentFileId = await this._createFile(document, 'Schema');
             if (documentFileId) {
                 this._documentFileId = this.documentFileId;
                 this.documentFileId = documentFileId;
@@ -281,7 +251,7 @@ export class Schema extends BaseEntity implements ISchema {
         }
         if (this.context) {
             const context = JSON.stringify(this.context);
-            const contextFileId = await this.createFile(context);
+            const contextFileId = await this._createFile(context, 'Schema');
             if (contextFileId) {
                 this._contextFileId = this.contextFileId;
                 this.contextFileId = contextFileId;
@@ -319,7 +289,7 @@ export class Schema extends BaseEntity implements ISchema {
      * Delete document
      */
     @AfterDelete()
-    deleteDocument() {
+    deleteFiles() {
         if (this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)

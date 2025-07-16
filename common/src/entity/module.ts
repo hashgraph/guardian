@@ -105,39 +105,9 @@ export class PolicyModule extends BaseEntity {
         this.type = this.type || 'CUSTOM';
         if (this.config) {
             const config = JSON.stringify(this.config);
-            this.configFileId = await this.createFile(config);
+            this.configFileId = await this._createFile(config, 'PolicyModule');
             delete this.config;
         }
-    }
-
-    /**
-     * Create File
-     */
-    private createFile(json: string) {
-        return new Promise<ObjectId>((resolve, reject) => {
-            try {
-                const fileName = `PolicyModule_${this._id?.toString()}_${GenerateUUIDv4()}`;
-                const fileStream = DataBaseHelper.gridFS.openUploadStream(fileName);
-                const fileId = fileStream.id;
-                fileStream.write(json);
-                fileStream.end(() => resolve(fileId));
-            } catch (error) {
-                reject(error)
-            }
-        });
-    }
-
-    /**
-     * Load File
-     */
-    private async loadFile(fileId: ObjectId) {
-        const fileStream = DataBaseHelper.gridFS.openDownloadStream(fileId);
-        const bufferArray = [];
-        for await (const data of fileStream) {
-            bufferArray.push(data);
-        }
-        const buffer = Buffer.concat(bufferArray);
-        return buffer.toString();
     }
 
     /**
@@ -148,8 +118,8 @@ export class PolicyModule extends BaseEntity {
     @AfterCreate()
     async loadFiles() {
         if (this.configFileId) {
-            const buffer = await this.loadFile(this.configFileId);
-            this.config = JSON.parse(buffer);
+            const buffer = await this._loadFile(this.configFileId);
+            this.config = JSON.parse(buffer.toString());
         }
     }
 
@@ -157,10 +127,10 @@ export class PolicyModule extends BaseEntity {
      * Update document
      */
     @BeforeUpdate()
-    async updateDocument() {
+    async updateFiles() {
         if (this.config) {
             const config = JSON.stringify(this.config);
-            const configFileId = await this.createFile(config);
+            const configFileId = await this._createFile(config, 'PolicyModule');
             if (configFileId) {
                 this._configFileId = this.configFileId;
                 this.configFileId = configFileId;
@@ -189,7 +159,7 @@ export class PolicyModule extends BaseEntity {
      * Delete context
      */
     @AfterDelete()
-    deleteDocument() {
+    deleteFiles() {
         if (this.configFileId) {
             DataBaseHelper.gridFS
                 .delete(this.configFileId)

@@ -78,39 +78,9 @@ export class BlockCache extends BaseEntity {
     async setDefaults() {
         if (this.isLongValue && this.value) {
             const value = JSON.stringify(this.value);
-            this.fileId = await this.createFile(value);
+            this.fileId = await this._createFile(value, 'BlockCache');
             delete this.value;
         }
-    }
-
-    /**
-     * Create File
-     */
-    private createFile(json: string) {
-        return new Promise<ObjectId>((resolve, reject) => {
-            try {
-                const fileName = `BlockCache_${this._id?.toString()}_${GenerateUUIDv4()}`;
-                const fileStream = DataBaseHelper.gridFS.openUploadStream(fileName);
-                const fileId = fileStream.id;
-                fileStream.write(json);
-                fileStream.end(() => resolve(fileId));
-            } catch (error) {
-                reject(error)
-            }
-        });
-    }
-
-    /**
-     * Load File
-     */
-    private async loadFile(fileId: ObjectId) {
-        const fileStream = DataBaseHelper.gridFS.openDownloadStream(fileId);
-        const bufferArray = [];
-        for await (const data of fileStream) {
-            bufferArray.push(data);
-        }
-        const buffer = Buffer.concat(bufferArray);
-        return buffer.toString();
     }
 
     /**
@@ -121,8 +91,8 @@ export class BlockCache extends BaseEntity {
     @AfterCreate()
     async loadFiles() {
         if (this.fileId && !this.value) {
-            const buffer = await this.loadFile(this.fileId);
-            this.value = JSON.parse(buffer);
+            const buffer = await this._loadFile(this.fileId);
+            this.value = JSON.parse(buffer.toString());
         }
     }
 
@@ -130,11 +100,11 @@ export class BlockCache extends BaseEntity {
      * Update document
      */
     @BeforeUpdate()
-    async updateDocument() {
+    async updateFiles() {
         if (this.value) {
             if (this.isLongValue) {
                 const value = JSON.stringify(this.value);
-                const fileId = await this.createFile(value);
+                const fileId = await this._createFile(value, 'BlockCache');
                 if (fileId) {
                     this._fileId = this.fileId;
                     this.fileId = fileId;
@@ -166,7 +136,7 @@ export class BlockCache extends BaseEntity {
      * Delete context
      */
     @AfterDelete()
-    deleteDocument() {
+    deleteFiles() {
         if (this.fileId) {
             DataBaseHelper.gridFS
                 .delete(this.fileId)

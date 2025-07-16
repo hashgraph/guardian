@@ -201,62 +201,11 @@ export class AggregateVC extends BaseEntity {
     async setDefaults() {
         if (this.document) {
             const document = JSON.stringify(this.document);
-            this.documentFileId = await this.createFile(document);
-            this.document = this.createFieldCache(this.document, this.documentFields);
+            this.documentFileId = await this._createFile(document, 'AggregateVC');
+            this.document = this._createFieldCache(this.document, this.documentFields);
             if (!this.document) {
                 delete this.document;
             }
-        }
-    }
-
-    /**
-     * Create File
-     */
-    private createFile(json: string) {
-        return new Promise<ObjectId>((resolve, reject) => {
-            try {
-                const fileName = `AggregateVC_${this._id?.toString()}_${GenerateUUIDv4()}`;
-                const fileStream = DataBaseHelper.gridFS.openUploadStream(fileName);
-                const fileId = fileStream.id;
-                fileStream.write(json);
-                fileStream.end(() => resolve(fileId));
-            } catch (error) {
-                reject(error)
-            }
-        });
-    }
-
-    /**
-     * Load File
-     */
-    private async loadFile(fileId: ObjectId) {
-        const fileStream = DataBaseHelper.gridFS.openDownloadStream(fileId);
-        const bufferArray = [];
-        for await (const data of fileStream) {
-            bufferArray.push(data);
-        }
-        const buffer = Buffer.concat(bufferArray);
-        return buffer.toString();
-    }
-
-    private createFieldCache(document: any, fields?: string[]): any {
-        if (fields) {
-            const newDocument: any = {};
-            for (const field of fields) {
-                const fieldValue = ObjGet(document, field)
-                if (
-                    typeof fieldValue === 'number' ||
-                    (
-                        typeof fieldValue === 'string' &&
-                        fieldValue.length < (+process.env.DOCUMENT_CACHE_FIELD_LIMIT || 100)
-                    )
-                ) {
-                    ObjSet(newDocument, field, fieldValue);
-                }
-            }
-            return newDocument;
-        } else {
-            return null;
         }
     }
 
@@ -268,8 +217,8 @@ export class AggregateVC extends BaseEntity {
     @AfterCreate()
     async loadFiles() {
         if (this.documentFileId) {
-            const buffer = await this.loadFile(this.documentFileId);
-            this.document = JSON.parse(buffer);
+            const buffer = await this._loadFile(this.documentFileId);
+            this.document = JSON.parse(buffer.toString());
         }
     }
 
@@ -277,15 +226,15 @@ export class AggregateVC extends BaseEntity {
      * Update document
      */
     @BeforeUpdate()
-    async updateDocument() {
+    async updateFiles() {
         if (this.document) {
             const document = JSON.stringify(this.document);
-            const documentFileId = await this.createFile(document);
+            const documentFileId = await this._createFile(document, 'AggregateVC');
             if (documentFileId) {
                 this._documentFileId = this.documentFileId;
                 this.documentFileId = documentFileId;
             }
-            this.document = this.createFieldCache(this.document, this.documentFields);
+            this.document = this._createFieldCache(this.document, this.documentFields);
             if (!this.document) {
                 delete this.document;
             }
@@ -312,7 +261,7 @@ export class AggregateVC extends BaseEntity {
      * Delete context
      */
     @AfterDelete()
-    deleteDocument() {
+    deleteFiles() {
         if (this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)

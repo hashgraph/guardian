@@ -100,7 +100,7 @@ export class PolicyTool extends BaseEntity {
     _configFileId?: ObjectId;
 
     /**
-     * Set policy defaults
+     * Set defaults
      */
     @BeforeCreate()
     async setDefaults() {
@@ -109,38 +109,10 @@ export class PolicyTool extends BaseEntity {
         this.codeVersion = this.codeVersion || '1.0.0';
 
         if (this.config) {
-            this.configFileId = await this.createFile(this.config);
+            const config = JSON.stringify(this.config);
+            this.configFileId = await this._createFile(config, 'PolicyTool');
+            delete this.config;
         }
-    }
-
-    /**
-     * Create File
-     */
-    private createFile(json: string) {
-        return new Promise<ObjectId>((resolve, reject) => {
-            try {
-                const fileName = `Tool_${this._id?.toString()}_${GenerateUUIDv4()}`;
-                const fileStream = DataBaseHelper.gridFS.openUploadStream(fileName);
-                const fileId = fileStream.id;
-                fileStream.write(json);
-                fileStream.end(() => resolve(fileId));
-            } catch (error) {
-                reject(error)
-            }
-        });
-    }
-
-    /**
-     * Load File
-     */
-    private async loadFile(fileId: ObjectId) {
-        const fileStream = DataBaseHelper.gridFS.openDownloadStream(fileId);
-        const bufferArray = [];
-        for await (const data of fileStream) {
-            bufferArray.push(data);
-        }
-        const buffer = Buffer.concat(bufferArray);
-        return buffer.toString();
     }
 
     /**
@@ -149,9 +121,10 @@ export class PolicyTool extends BaseEntity {
     @OnLoad()
     @AfterUpdate()
     @AfterCreate()
-    async loadConfig() {
+    async loadFiles() {
         if (this.configFileId && !this.config) {
-            this.config = await this.loadFile(this.configFileId);
+            const buffer = await this._loadFile(this.configFileId);
+            this.config = JSON.parse(buffer.toString());
         }
     }
 
@@ -159,9 +132,10 @@ export class PolicyTool extends BaseEntity {
      * Update config
      */
     @BeforeUpdate()
-    async updateConfig() {
+    async updateFiles() {
         if (this.config) {
-            const configFileId = await this.createFile(this.config);
+            const config = JSON.stringify(this.config);
+            const configFileId = await this._createFile(config, 'PolicyTool');
             if (configFileId) {
                 this._configFileId = this.configFileId;
                 this.configFileId = configFileId;
@@ -190,7 +164,7 @@ export class PolicyTool extends BaseEntity {
      * Delete context
      */
     @AfterDelete()
-    deleteConfig() {
+    deleteFiles() {
         if (this.configFileId) {
             DataBaseHelper.gridFS
                 .delete(this.configFileId)
