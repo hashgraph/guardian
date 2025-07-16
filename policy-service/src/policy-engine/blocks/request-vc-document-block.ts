@@ -193,9 +193,9 @@ export class RequestVcDocumentBlock {
             throw new BlockActionError('User have no any did.', ref.blockType, ref.uuid);
         }
         if (_data.draft) {
-            this.saveDraftData(user, _data, ref);
+            return await this.saveDraftData(user, _data, ref);
         } else {
-            this.setBlockData(user, _data, ref);
+            return await this.setBlockData(user, _data, ref);
         }
     }
 
