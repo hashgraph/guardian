@@ -51,7 +51,7 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
         })
     });
 
-    it("Compare equal policies", { tags: ['smoke'] }, () => {
+    it("Compare equal policies", () => {
         Authorization.getAccessTokenByRefreshToken().then((authorization) => {
             cy.request({
                 method: METHOD.POST,
