@@ -112,32 +112,83 @@ export class ApprovalDocument extends RestoreEntity implements IApprovalDocument
     messageIds?: string[];
 
     /**
-     * Default document values
+     * old file id
+     */
+    @Property({ persist: false, nullable: true })
+    _documentFileId?: ObjectId;
+
+    /**
+     * Set defaults
      */
     @BeforeCreate()
-    setDefaults() {
+    async setDefaults() {
         this.option = this.option || {};
         this.option.status = this.option.status || ApproveStatus.NEW;
+        if (this.document) {
+            const document = JSON.stringify(this.document);
+            this.documentFileId = await this.createFile(document);
+            this.document = this.createFieldCache(this.document, this.documentFields);
+            if (!this.document) {
+                delete this.document;
+            }
+            this._updateDocHash(document);
+        } else {
+            this._updateDocHash('');
+        }
+        this._updatePropHash(this.createProp());
     }
 
-    private _createDocument(document: string): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
+    /**
+     * Create File
+     */
+    private createFile(json: string) {
+        return new Promise<ObjectId>((resolve, reject) => {
             try {
-                const fileStream = DataBaseHelper.gridFS.openUploadStream(GenerateUUIDv4());
-                this.documentFileId = fileStream.id;
-                fileStream.write(document);
-                fileStream.end(() => resolve());
+                const fileName = `ApprovalDocument_${this._id?.toString()}_${GenerateUUIDv4()}`;
+                const fileStream = DataBaseHelper.gridFS.openUploadStream(fileName);
+                const fileId = fileStream.id;
+                fileStream.write(json);
+                fileStream.end(() => resolve(fileId));
             } catch (error) {
                 reject(error)
             }
         });
     }
 
-    private _createFieldCache(fields?: string[]): any {
+    /**
+     * Load File
+     */
+    private async loadFile(fileId: ObjectId) {
+        const fileStream = DataBaseHelper.gridFS.openDownloadStream(fileId);
+        const bufferArray = [];
+        for await (const data of fileStream) {
+            bufferArray.push(data);
+        }
+        const buffer = Buffer.concat(bufferArray);
+        return buffer.toString();
+    }
+
+    private createProp(): any {
+        const prop: any = {};
+        prop.owner = this.owner;
+        prop.approver = this.approver;
+        prop.documentFields = this.documentFields;
+        prop.policyId = this.policyId;
+        prop.type = this.type;
+        prop.tag = this.tag;
+        prop.option = this.option;
+        prop.schema = this.schema;
+        prop.group = this.group;
+        prop.messageHash = this.messageHash;
+        prop.messageIds = this.messageIds;
+        return prop;
+    }
+
+    private createFieldCache(document: IVC, fields?: string[]): any {
         if (fields) {
             const newDocument: any = {};
             for (const field of fields) {
-                const fieldValue = ObjGet(this.document, field)
+                const fieldValue = ObjGet(document, field)
                 if (
                     typeof fieldValue === 'number' ||
                     (
@@ -155,34 +206,16 @@ export class ApprovalDocument extends RestoreEntity implements IApprovalDocument
     }
 
     /**
-     * Create document
+     * Load File
      */
-    @BeforeCreate()
-    async createDocument() {
-        if (this.document) {
-            const document = JSON.stringify(this.document);
-            await this._createDocument(document);
-            this.document = this._createFieldCache(this.documentFields);
-            if (!this.document) {
-                delete this.document;
-            }
-            this._updateDocHash(document);
-        } else {
-            this._updateDocHash('');
+    @OnLoad()
+    @AfterUpdate()
+    @AfterCreate()
+    async loadFiles() {
+        if (this.documentFileId) {
+            const buffer = await this.loadFile(this.documentFileId);
+            this.document = JSON.parse(buffer);
         }
-        const prop: any = {};
-        prop.owner = this.owner;
-        prop.approver = this.approver;
-        prop.documentFields = this.documentFields;
-        prop.policyId = this.policyId;
-        prop.type = this.type;
-        prop.tag = this.tag;
-        prop.option = this.option;
-        prop.schema = this.schema;
-        prop.group = this.group;
-        prop.messageHash = this.messageHash;
-        prop.messageIds = this.messageIds;
-        this._updatePropHash(prop);
     }
 
     /**
@@ -190,39 +223,40 @@ export class ApprovalDocument extends RestoreEntity implements IApprovalDocument
      */
     @BeforeUpdate()
     async updateDocument() {
-        if (this.document && this.documentFileId) {
+        if (this.document) {
+            const document = JSON.stringify(this.document);
+            const documentFileId = await this.createFile(document);
+            if (documentFileId) {
+                this._documentFileId = this.documentFileId;
+                this.documentFileId = documentFileId;
+            }
+
+            this.document = this.createFieldCache(this.document, this.documentFields);
+            if (!this.document) {
+                delete this.document;
+            }
+            this._updateDocHash(document);
+        }
+    }
+
+    /**
+     * Delete File
+     */
+    @AfterUpdate()
+    postUpdateFiles() {
+        if (this._documentFileId) {
             DataBaseHelper.gridFS
-                .delete(this.documentFileId)
+                .delete(this._documentFileId)
                 .catch((reason) => {
-                    console.error(`BeforeUpdate: ApprovalDocument, ${this._id}, documentFileId`)
+                    console.error(`AfterUpdate: ApprovalDocument, ${this._id}, _documentFileId`)
                     console.error(reason)
                 });
-        }
-        await this.createDocument();
-    }
-
-    /**
-     * Load document
-     */
-    @OnLoad()
-    @AfterUpdate()
-    @AfterCreate()
-    async loadDocument() {
-        if (this.documentFileId) {
-            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
-                this.documentFileId
-            );
-            const bufferArray = [];
-            for await (const data of fileStream) {
-                bufferArray.push(data);
-            }
-            const buffer = Buffer.concat(bufferArray);
-            this.document = JSON.parse(buffer.toString());
+            delete this._documentFileId;
         }
     }
 
     /**
-     * Delete document
+     * Delete context
      */
     @AfterDelete()
     deleteDocument() {

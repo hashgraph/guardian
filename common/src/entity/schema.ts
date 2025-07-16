@@ -1,5 +1,5 @@
 import { GenerateUUIDv4, ISchema, ISchemaDocument, SchemaCategory, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
-import { AfterDelete, BeforeCreate, BeforeUpdate, Entity, Enum, OnLoad, Property } from '@mikro-orm/core';
+import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, Enum, OnLoad, Property } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper, SchemaConverterUtils } from '../helpers/index.js';
 import { BaseEntity } from '../models/index.js';
@@ -166,10 +166,22 @@ export class Schema extends BaseEntity implements ISchema {
     errors?: any[]
 
     /**
+     * old file id
+     */
+    @Property({ persist: false, nullable: true })
+    _documentFileId?: ObjectId;
+
+    /**
+     * old file id
+     */
+    @Property({ persist: false, nullable: true })
+    _contextFileId?: ObjectId;
+
+    /**
      * Schema defaults
      */
     @BeforeCreate()
-    setDefaults() {
+    async setDefaults() {
         this.entity = this.entity || SchemaEntity.NONE;
         this.status = this.status || SchemaStatus.DRAFT;
         this.readonly = !!this.readonly;
@@ -182,48 +194,72 @@ export class Schema extends BaseEntity implements ISchema {
         this.active = this.active || false;
         this.codeVersion = this.codeVersion || SchemaConverterUtils.VERSION;
         if (!this.category) {
-            this.category = this.readonly
-                ? SchemaCategory.SYSTEM
-                : SchemaCategory.POLICY;
+            this.category = this.readonly ? SchemaCategory.SYSTEM : SchemaCategory.POLICY;
+        }
+
+        if (this.document) {
+            if (this.document.$defs) {
+                this.defs = Object.keys(this.document.$defs);
+            }
+            const document = JSON.stringify(this.document);
+            this.documentFileId = await this.createFile(document);
+            delete this.document;
+        }
+        if (this.context) {
+            const context = JSON.stringify(this.context);
+            this.contextFileId = await this.createFile(context);
+            delete this.context;
         }
     }
 
     /**
-     * Set schema category
+     * Create File
      */
-    @OnLoad()
-    defineLabel() {
-        if (!this.category) {
-            this.category = this.readonly
-                ? SchemaCategory.SYSTEM
-                : SchemaCategory.POLICY;
-        }
-    }
-
-    /**
-     * Create document
-     */
-    @BeforeCreate()
-    async createDocument() {
-        await new Promise<void>((resolve, reject) => {
+    private createFile(json: string) {
+        return new Promise<ObjectId>((resolve, reject) => {
             try {
-                if (this.document) {
-                    if (this.document.$defs) {
-                        this.defs = Object.keys(this.document.$defs);
-                    }
-                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                        GenerateUUIDv4()
-                    );
-                    this.documentFileId = fileStream.id;
-                    fileStream.write(JSON.stringify(this.document));
-                    fileStream.end(() => resolve());
-                } else {
-                    resolve();
-                }
+                const fileName = `Schema_${this._id?.toString()}_${GenerateUUIDv4()}`;
+                const fileStream = DataBaseHelper.gridFS.openUploadStream(fileName);
+                const fileId = fileStream.id;
+                fileStream.write(json);
+                fileStream.end(() => resolve(fileId));
             } catch (error) {
                 reject(error)
             }
         });
+    }
+
+    /**
+     * Load File
+     */
+    private async loadFile(fileId: ObjectId) {
+        const fileStream = DataBaseHelper.gridFS.openDownloadStream(fileId);
+        const bufferArray = [];
+        for await (const data of fileStream) {
+            bufferArray.push(data);
+        }
+        const buffer = Buffer.concat(bufferArray);
+        return buffer.toString();
+    }
+
+    /**
+     * Load document
+     */
+    @OnLoad()
+    @AfterUpdate()
+    @AfterCreate()
+    async loadDocument() {
+        if (!this.category) {
+            this.category = this.readonly ? SchemaCategory.SYSTEM : SchemaCategory.POLICY;
+        }
+        if (this.documentFileId) {
+            const buffer = await this.loadFile(this.documentFileId)
+            this.document = JSON.parse(buffer);
+        }
+        if (this.contextFileId) {
+            const buffer = await this.loadFile(this.contextFileId)
+            this.context = JSON.parse(buffer);
+        }
     }
 
     /**
@@ -235,33 +271,47 @@ export class Schema extends BaseEntity implements ISchema {
             if (this.document.$defs) {
                 this.defs = Object.keys(this.document.$defs);
             }
-            if (this.documentFileId) {
-                DataBaseHelper.gridFS
-                    .delete(this.documentFileId)
-                    .catch((reason) => {
-                        console.error(`BeforeUpdate: Schema, ${this._id}, documentFileId`)
-                        console.error(reason)
-                    });
+            const document = JSON.stringify(this.document);
+            const documentFileId = await this.createFile(document);
+            if (documentFileId) {
+                this._documentFileId = this.documentFileId;
+                this.documentFileId = documentFileId;
             }
-            await this.createDocument();
+            delete this.document;
+        }
+        if (this.context) {
+            const context = JSON.stringify(this.context);
+            const contextFileId = await this.createFile(context);
+            if (contextFileId) {
+                this._contextFileId = this.contextFileId;
+                this.contextFileId = contextFileId;
+            }
+            delete this.context;
         }
     }
 
     /**
-     * Load document
+     * Delete File
      */
-    @OnLoad()
-    async loadDocument() {
-        if (this.documentFileId) {
-            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
-                this.documentFileId
-            );
-            const bufferArray = [];
-            for await (const data of fileStream) {
-                bufferArray.push(data);
-            }
-            const buffer = Buffer.concat(bufferArray);
-            this.document = JSON.parse(buffer.toString());
+    @AfterUpdate()
+    postUpdateFiles() {
+        if (this._documentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this._documentFileId)
+                .catch((reason) => {
+                    console.error(`AfterUpdate: Schema, ${this._id}, _documentFileId`)
+                    console.error(reason)
+                });
+            delete this._documentFileId;
+        }
+        if (this._contextFileId) {
+            DataBaseHelper.gridFS
+                .delete(this._contextFileId)
+                .catch((reason) => {
+                    console.error(`AfterUpdate: Schema, ${this._id}, _contextFileId`)
+                    console.error(reason)
+                });
+            delete this._contextFileId;
         }
     }
 
@@ -278,72 +328,6 @@ export class Schema extends BaseEntity implements ISchema {
                     console.error(reason)
                 });
         }
-    }
-
-    /**
-     * Create context
-     */
-    @BeforeCreate()
-    async createContext() {
-        await new Promise<void>((resolve, reject) => {
-            try {
-                if (this.context) {
-                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                        GenerateUUIDv4()
-                    );
-                    this.contextFileId = fileStream.id;
-                    fileStream.write(JSON.stringify(this.context));
-                    fileStream.end(() => resolve());
-                } else {
-                    resolve();
-                }
-            } catch (error) {
-                reject(error)
-            }
-        });
-    }
-
-    /**
-     * Update context
-     */
-    @BeforeUpdate()
-    async updateContext() {
-        if (this.context) {
-            if (this.contextFileId) {
-                DataBaseHelper.gridFS
-                    .delete(this.contextFileId)
-                    .catch((reason) => {
-                        console.error(`BeforeUpdate: Schema, ${this._id}, contextFileId`)
-                        console.error(reason)
-                    });
-            }
-            await this.createContext();
-        }
-    }
-
-    /**
-     * Load context
-     */
-    @OnLoad()
-    async loadContext() {
-        if (this.contextFileId && !this.context) {
-            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
-                this.contextFileId
-            );
-            const bufferArray = [];
-            for await (const data of fileStream) {
-                bufferArray.push(data);
-            }
-            const buffer = Buffer.concat(bufferArray);
-            this.context = JSON.parse(buffer.toString());
-        }
-    }
-
-    /**
-     * Delete context
-     */
-    @AfterDelete()
-    deleteContext() {
         if (this.contextFileId) {
             DataBaseHelper.gridFS
                 .delete(this.contextFileId)

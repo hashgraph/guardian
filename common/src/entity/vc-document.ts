@@ -229,7 +229,7 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
         if (this.document) {
             const document = JSON.stringify(this.document);
             this.documentFileId = await this.createFile(document);
-            this.document = this._createFieldCache(this.document, this.documentFields);
+            this.document = this.createFieldCache(this.document, this.documentFields);
             if (!this.document) {
                 delete this.document;
             }
@@ -242,7 +242,7 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
             delete this.encryptedDocument;
         }
 
-        this._updatePropHash(this._createProp());
+        this._updatePropHash(this.createProp());
     }
 
     /**
@@ -275,7 +275,7 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
         return buffer.toString();
     }
 
-    private _createFieldCache(document: any, fields?: string[]): any {
+    private createFieldCache(document: any, fields?: string[]): any {
         if (fields) {
             const newDocument: any = {};
             for (const field of fields) {
@@ -296,7 +296,7 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
         }
     }
 
-    private _createProp(): any {
+    private createProp(): any {
         const prop: any = {};
         prop.accounts = this.accounts;
         prop.assignedTo = this.assignedTo;
@@ -351,6 +351,12 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
                 this._documentFileId = this.documentFileId;
                 this.documentFileId = documentFileId;
             }
+
+            this.document = this.createFieldCache(this.document, this.documentFields);
+            if (!this.document) {
+                delete this.document;
+            }
+            this._updateDocHash(document);
         }
         if (this.encryptedDocument) {
             const encryptedDocumentFileId = await this.createFile(this.encryptedDocument);
@@ -358,6 +364,7 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
                 this._encryptedDocumentFileId = this.encryptedDocumentFileId;
                 this.encryptedDocumentFileId = encryptedDocumentFileId;
             }
+            delete this.encryptedDocument;
         }
     }
 

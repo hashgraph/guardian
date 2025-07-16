@@ -9,6 +9,8 @@ import {
     OnLoad,
     BeforeUpdate,
     AfterDelete,
+    AfterUpdate,
+    AfterCreate,
 } from '@mikro-orm/core';
 import { DataBaseHelper } from '../helpers/index.js';
 
@@ -64,22 +66,34 @@ export class BlockCache extends BaseEntity {
     fileId?: ObjectId;
 
     /**
-     * Create row
+     * old file id
+     */
+    @Property({ persist: false, nullable: true })
+    _fileId?: ObjectId;
+
+    /**
+     * Set defaults
      */
     @BeforeCreate()
-    async createRow() {
-        await new Promise<void>((resolve, reject) => {
+    async setDefaults() {
+        if (this.isLongValue && this.value) {
+            const value = JSON.stringify(this.value);
+            this.fileId = await this.createFile(value);
+            delete this.value;
+        }
+    }
+
+    /**
+     * Create File
+     */
+    private createFile(json: string) {
+        return new Promise<ObjectId>((resolve, reject) => {
             try {
-                if (this.isLongValue && this.value) {
-                    const fileStream = DataBaseHelper.gridFS.openUploadStream(GenerateUUIDv4());
-                    this.fileId = fileStream.id;
-                    const file = JSON.stringify(this.value);
-                    this.value = null;
-                    fileStream.write(file);
-                    fileStream.end(() => resolve());
-                } else {
-                    resolve();
-                }
+                const fileName = `BlockCache_${this._id?.toString()}_${GenerateUUIDv4()}`;
+                const fileStream = DataBaseHelper.gridFS.openUploadStream(fileName);
+                const fileId = fileStream.id;
+                fileStream.write(json);
+                fileStream.end(() => resolve(fileId));
             } catch (error) {
                 reject(error)
             }
@@ -87,53 +101,79 @@ export class BlockCache extends BaseEntity {
     }
 
     /**
-     * Update row
+     * Load File
      */
-    @BeforeUpdate()
-    async updateRow() {
-        if (this.fileId) {
-            DataBaseHelper.gridFS
-                .delete(this.fileId)
-                .catch((reason) => {
-                    console.error(`BeforeUpdate: BlockCache, ${this._id}, documentFileId`)
-                    console.error(reason)
-                });
-            this.fileId = null;
+    private async loadFile(fileId: ObjectId) {
+        const fileStream = DataBaseHelper.gridFS.openDownloadStream(fileId);
+        const bufferArray = [];
+        for await (const data of fileStream) {
+            bufferArray.push(data);
         }
-        if (this.isLongValue && this.value) {
-            await this.createRow();
-        }
+        const buffer = Buffer.concat(bufferArray);
+        return buffer.toString();
     }
 
     /**
-     * Load row
+     * Load File
      */
     @OnLoad()
-    async loadRow() {
+    @AfterUpdate()
+    @AfterCreate()
+    async loadFiles() {
         if (this.fileId && !this.value) {
-            const fileStream = DataBaseHelper.gridFS.openDownloadStream(this.fileId);
-            const bufferArray = [];
-            for await (const data of fileStream) {
-                bufferArray.push(data);
-            }
-            const buffer = Buffer.concat(bufferArray);
-            this.value = JSON.parse(buffer.toString());
+            const buffer = await this.loadFile(this.fileId);
+            this.value = JSON.parse(buffer);
         }
     }
 
     /**
-     * Delete row
+     * Update document
+     */
+    @BeforeUpdate()
+    async updateDocument() {
+        if (this.value) {
+            if (this.isLongValue) {
+                const value = JSON.stringify(this.value);
+                const fileId = await this.createFile(value);
+                if (fileId) {
+                    this._fileId = this.fileId;
+                    this.fileId = fileId;
+                }
+                delete this.value;
+            } else {
+                this._fileId = this.fileId;
+            }
+        }
+    }
+
+    /**
+     * Delete File
+     */
+    @AfterUpdate()
+    postUpdateFiles() {
+        if (this._fileId) {
+            DataBaseHelper.gridFS
+                .delete(this._fileId)
+                .catch((reason) => {
+                    console.error(`AfterUpdate: BlockCache, ${this._id}, _fileId`)
+                    console.error(reason)
+                });
+            delete this._fileId;
+        }
+    }
+
+    /**
+     * Delete context
      */
     @AfterDelete()
-    deleteRow() {
+    deleteDocument() {
         if (this.fileId) {
             DataBaseHelper.gridFS
                 .delete(this.fileId)
                 .catch((reason) => {
-                    console.error(`AfterDelete: BlockCache, ${this._id}, documentFileId`)
+                    console.error(`AfterDelete: BlockCache, ${this._id}, fileId`)
                     console.error(reason)
                 });
-            this.fileId = null;
         }
     }
 }

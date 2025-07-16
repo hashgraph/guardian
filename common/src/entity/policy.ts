@@ -261,7 +261,6 @@ export class Policy extends BaseEntity {
     @Property({ persist: false, nullable: true })
     _configFileId?: ObjectId;
 
-
     /**
      * old file id
      */
@@ -281,23 +280,25 @@ export class Policy extends BaseEntity {
         delete this.registeredUsers;
 
         if (this.config) {
-            this.configFileId = await this.createFile(this.config);
+            const config = JSON.stringify(this.config);
+            this.configFileId = await this.createFile(config);
         }
         if (this.hashMap) {
-            this.hashMapFileId = await this.createFile(this.hashMap);
+            const hashMap = JSON.stringify(this.hashMap);
+            this.hashMapFileId = await this.createFile(hashMap);
         }
     }
 
     /**
      * Create File
      */
-    private createFile(json: any) {
+    private createFile(json: string) {
         return new Promise<ObjectId>((resolve, reject) => {
             try {
                 const fileName = `Policy_${this._id?.toString()}_${GenerateUUIDv4()}`;
                 const fileStream = DataBaseHelper.gridFS.openUploadStream(fileName);
                 const fileId = fileStream.id;
-                fileStream.write(JSON.stringify(json));
+                fileStream.write(json);
                 fileStream.end(() => resolve(fileId));
             } catch (error) {
                 reject(error)
@@ -315,7 +316,7 @@ export class Policy extends BaseEntity {
             bufferArray.push(data);
         }
         const buffer = Buffer.concat(bufferArray);
-        return JSON.parse(buffer.toString());
+        return buffer.toString();
     }
 
     /**
@@ -326,10 +327,12 @@ export class Policy extends BaseEntity {
     @AfterCreate()
     async loadFiles() {
         if (this.configFileId && !this.config) {
-            this.config = await this.loadFile(this.configFileId);
+            const buffer = await this.loadFile(this.configFileId);
+            this.config = JSON.parse(buffer);
         }
         if (this.hashMapFileId && !this.hashMap) {
-            this.hashMap = await this.loadFile(this.hashMapFileId);
+            const buffer = await this.loadFile(this.hashMapFileId);
+            this.hashMap = JSON.parse(buffer);
         }
     }
 
@@ -339,18 +342,22 @@ export class Policy extends BaseEntity {
     @BeforeUpdate()
     async updateFiles() {
         if (this.config) {
-            const configFileId = await this.createFile(this.config);
+            const config = JSON.stringify(this.config);
+            const configFileId = await this.createFile(config);
             if (configFileId) {
                 this._configFileId = this.configFileId;
                 this.configFileId = configFileId;
             }
+            delete this.config;
         }
         if (this.hashMap) {
-            const hashMapFileId = await this.createFile(this.hashMap);
+            const hashMap = JSON.stringify(this.hashMap);
+            const hashMapFileId = await this.createFile(hashMap);
             if (hashMapFileId) {
                 this._hashMapFileId = this.hashMapFileId;
                 this.hashMapFileId = hashMapFileId;
             }
+            delete this.hashMap;
         }
     }
 

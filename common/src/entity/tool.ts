@@ -1,6 +1,6 @@
 import { BaseEntity } from '../models/index.js';
 import { GenerateUUIDv4, ModuleStatus } from '@guardian/interfaces';
-import { AfterDelete, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property } from '@mikro-orm/core';
+import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers/index.js';
 
@@ -94,36 +94,65 @@ export class PolicyTool extends BaseEntity {
     tools?: any;
 
     /**
+     * old file id
+     */
+    @Property({ persist: false, nullable: true })
+    _configFileId?: ObjectId;
+
+    /**
      * Set policy defaults
      */
     @BeforeCreate()
-    setDefaults() {
+    async setDefaults() {
         this.status = this.status || ModuleStatus.DRAFT;
         this.uuid = this.uuid || GenerateUUIDv4();
         this.codeVersion = this.codeVersion || '1.0.0';
+
+        if (this.config) {
+            this.configFileId = await this.createFile(this.config);
+        }
     }
 
     /**
-     * Create config
+     * Create File
      */
-    @BeforeCreate()
-    async createConfig() {
-        await new Promise<void>((resolve, reject) => {
+    private createFile(json: string) {
+        return new Promise<ObjectId>((resolve, reject) => {
             try {
-                if (this.config) {
-                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                        GenerateUUIDv4()
-                    );
-                    this.configFileId = fileStream.id;
-                    fileStream.write(JSON.stringify(this.config));
-                    fileStream.end(() => resolve());
-                } else {
-                    resolve();
-                }
+                const fileName = `Tool_${this._id?.toString()}_${GenerateUUIDv4()}`;
+                const fileStream = DataBaseHelper.gridFS.openUploadStream(fileName);
+                const fileId = fileStream.id;
+                fileStream.write(json);
+                fileStream.end(() => resolve(fileId));
             } catch (error) {
                 reject(error)
             }
         });
+    }
+
+    /**
+     * Load File
+     */
+    private async loadFile(fileId: ObjectId) {
+        const fileStream = DataBaseHelper.gridFS.openDownloadStream(fileId);
+        const bufferArray = [];
+        for await (const data of fileStream) {
+            bufferArray.push(data);
+        }
+        const buffer = Buffer.concat(bufferArray);
+        return buffer.toString();
+    }
+
+    /**
+     * Load config
+     */
+    @OnLoad()
+    @AfterUpdate()
+    @AfterCreate()
+    async loadConfig() {
+        if (this.configFileId && !this.config) {
+            this.config = await this.loadFile(this.configFileId);
+        }
     }
 
     /**
@@ -132,33 +161,28 @@ export class PolicyTool extends BaseEntity {
     @BeforeUpdate()
     async updateConfig() {
         if (this.config) {
-            if (this.configFileId) {
-                DataBaseHelper.gridFS
-                    .delete(this.configFileId)
-                    .catch((reason) => {
-                        console.error(`BeforeUpdate: PolicyTool, ${this._id}, configFileId`)
-                        console.error(reason)
-                    });
+            const configFileId = await this.createFile(this.config);
+            if (configFileId) {
+                this._configFileId = this.configFileId;
+                this.configFileId = configFileId;
             }
-            await this.createConfig();
+            delete this.config;
         }
     }
 
     /**
-     * Load config
+     * Delete File
      */
-    @OnLoad()
-    async loadConfig() {
-        if (this.configFileId && !this.config) {
-            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
-                this.configFileId
-            );
-            const bufferArray = [];
-            for await (const data of fileStream) {
-                bufferArray.push(data);
-            }
-            const buffer = Buffer.concat(bufferArray);
-            this.config = JSON.parse(buffer.toString());
+    @AfterUpdate()
+    postUpdateFiles() {
+        if (this._configFileId) {
+            DataBaseHelper.gridFS
+                .delete(this._configFileId)
+                .catch((reason) => {
+                    console.error(`AfterUpdate: PolicyTool, ${this._id}, _configFileId`)
+                    console.error(reason)
+                });
+            delete this._configFileId;
         }
     }
 

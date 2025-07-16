@@ -1,6 +1,6 @@
 import { BaseEntity } from '../models/index.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { AfterDelete, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property } from '@mikro-orm/core';
+import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers/index.js';
 
@@ -70,25 +70,64 @@ export class Record extends BaseEntity {
     documentFileId?: ObjectId;
 
     /**
-     * Create document
+     * old file id
+     */
+    @Property({ persist: false, nullable: true })
+    _documentFileId?: ObjectId;
+
+    /**
+     * Set defaults
      */
     @BeforeCreate()
-    async createDocument() {
-        await new Promise<void>((resolve, reject) => {
+    async setDefaults() {
+        if (this.document) {
+            const document = JSON.stringify(this.document);
+            this.documentFileId = await this.createFile(document);
+            delete this.document;
+        }
+    }
+
+    /**
+     * Create File
+     */
+    private createFile(json: string) {
+        return new Promise<ObjectId>((resolve, reject) => {
             try {
-                if (this.document) {
-                    const uuid = GenerateUUIDv4();
-                    const fileStream = DataBaseHelper.gridFS.openUploadStream(uuid);
-                    this.documentFileId = fileStream.id;
-                    fileStream.write(JSON.stringify(this.document));
-                    fileStream.end(() => resolve());
-                } else {
-                    resolve();
-                }
+                const fileName = `Record_${this._id?.toString()}_${GenerateUUIDv4()}`;
+                const fileStream = DataBaseHelper.gridFS.openUploadStream(fileName);
+                const fileId = fileStream.id;
+                fileStream.write(json);
+                fileStream.end(() => resolve(fileId));
             } catch (error) {
                 reject(error)
             }
         });
+    }
+
+    /**
+     * Load File
+     */
+    private async loadFile(fileId: ObjectId) {
+        const fileStream = DataBaseHelper.gridFS.openDownloadStream(fileId);
+        const bufferArray = [];
+        for await (const data of fileStream) {
+            bufferArray.push(data);
+        }
+        const buffer = Buffer.concat(bufferArray);
+        return buffer.toString();
+    }
+
+    /**
+     * Load File
+     */
+    @OnLoad()
+    @AfterUpdate()
+    @AfterCreate()
+    async loadFiles() {
+        if (this.documentFileId) {
+            const buffer = await this.loadFile(this.documentFileId);
+            this.document = JSON.parse(buffer);
+        }
     }
 
     /**
@@ -97,31 +136,29 @@ export class Record extends BaseEntity {
     @BeforeUpdate()
     async updateDocument() {
         if (this.document) {
-            if (this.documentFileId) {
-                DataBaseHelper.gridFS
-                    .delete(this.documentFileId)
-                    .catch((reason) => {
-                        console.error(`BeforeUpdate: Record, ${this._id}, documentFileId`)
-                        console.error(reason)
-                    });
+            const document = JSON.stringify(this.document);
+            const documentFileId = await this.createFile(document);
+            if (documentFileId) {
+                this._documentFileId = this.documentFileId;
+                this.documentFileId = documentFileId;
             }
-            await this.createDocument();
+            delete this.document;
         }
     }
 
     /**
-     * Load document
+     * Delete File
      */
-    @OnLoad()
-    async loadDocument() {
-        if (this.documentFileId && !this.document) {
-            const fileStream = DataBaseHelper.gridFS.openDownloadStream(this.documentFileId);
-            const bufferArray = [];
-            for await (const data of fileStream) {
-                bufferArray.push(data);
-            }
-            const buffer = Buffer.concat(bufferArray);
-            this.document = JSON.parse(buffer.toString());
+    @AfterUpdate()
+    postUpdateFiles() {
+        if (this._documentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this._documentFileId)
+                .catch((reason) => {
+                    console.error(`AfterUpdate: Record, ${this._id}, _documentFileId`)
+                    console.error(reason)
+                });
+            delete this._documentFileId;
         }
     }
 

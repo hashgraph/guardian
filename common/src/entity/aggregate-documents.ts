@@ -189,45 +189,88 @@ export class AggregateVC extends BaseEntity {
     sourceDocumentId?: ObjectId;
 
     /**
-     * Create document
+     * old file id
+     */
+    @Property({ persist: false, nullable: true })
+    _documentFileId?: ObjectId;
+
+    /**
+     * Set defaults
      */
     @BeforeCreate()
-    async createDocument() {
-        await new Promise<void>((resolve, reject) => {
+    async setDefaults() {
+        if (this.document) {
+            const document = JSON.stringify(this.document);
+            this.documentFileId = await this.createFile(document);
+            this.document = this.createFieldCache(this.document, this.documentFields);
+            if (!this.document) {
+                delete this.document;
+            }
+        }
+    }
+
+    /**
+     * Create File
+     */
+    private createFile(json: string) {
+        return new Promise<ObjectId>((resolve, reject) => {
             try {
-                if (this.document) {
-                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                        GenerateUUIDv4()
-                    );
-                    this.documentFileId = fileStream.id;
-                    fileStream.write(JSON.stringify(this.document));
-                    if (this.documentFields) {
-                        const newDocument: any = {};
-                        for (const field of this.documentFields) {
-                            const fieldValue = ObjGet(this.document, field)
-                            if (
-                                (typeof fieldValue === 'string' &&
-                                    fieldValue.length <
-                                    (+process.env
-                                        .DOCUMENT_CACHE_FIELD_LIMIT ||
-                                        100)) ||
-                                typeof fieldValue === 'number'
-                            ) {
-                                ObjSet(newDocument, field, fieldValue);
-                            }
-                        }
-                        this.document = newDocument;
-                    } else {
-                        delete this.document;
-                    }
-                    fileStream.end(() => resolve());
-                } else {
-                    resolve();
-                }
+                const fileName = `AggregateVC_${this._id?.toString()}_${GenerateUUIDv4()}`;
+                const fileStream = DataBaseHelper.gridFS.openUploadStream(fileName);
+                const fileId = fileStream.id;
+                fileStream.write(json);
+                fileStream.end(() => resolve(fileId));
             } catch (error) {
                 reject(error)
             }
         });
+    }
+
+    /**
+     * Load File
+     */
+    private async loadFile(fileId: ObjectId) {
+        const fileStream = DataBaseHelper.gridFS.openDownloadStream(fileId);
+        const bufferArray = [];
+        for await (const data of fileStream) {
+            bufferArray.push(data);
+        }
+        const buffer = Buffer.concat(bufferArray);
+        return buffer.toString();
+    }
+
+    private createFieldCache(document: any, fields?: string[]): any {
+        if (fields) {
+            const newDocument: any = {};
+            for (const field of fields) {
+                const fieldValue = ObjGet(document, field)
+                if (
+                    typeof fieldValue === 'number' ||
+                    (
+                        typeof fieldValue === 'string' &&
+                        fieldValue.length < (+process.env.DOCUMENT_CACHE_FIELD_LIMIT || 100)
+                    )
+                ) {
+                    ObjSet(newDocument, field, fieldValue);
+                }
+            }
+            return newDocument;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Load File
+     */
+    @OnLoad()
+    @AfterUpdate()
+    @AfterCreate()
+    async loadFiles() {
+        if (this.documentFileId) {
+            const buffer = await this.loadFile(this.documentFileId);
+            this.document = JSON.parse(buffer);
+        }
     }
 
     /**
@@ -236,40 +279,37 @@ export class AggregateVC extends BaseEntity {
     @BeforeUpdate()
     async updateDocument() {
         if (this.document) {
-            if (this.documentFileId) {
-                DataBaseHelper.gridFS
-                    .delete(this.documentFileId)
-                    .catch((reason) => {
-                        console.error(`BeforeUpdate: AggregateVC, ${this._id}, documentFileId`)
-                        console.error(reason)
-                    });
+            const document = JSON.stringify(this.document);
+            const documentFileId = await this.createFile(document);
+            if (documentFileId) {
+                this._documentFileId = this.documentFileId;
+                this.documentFileId = documentFileId;
             }
-            await this.createDocument();
+            this.document = this.createFieldCache(this.document, this.documentFields);
+            if (!this.document) {
+                delete this.document;
+            }
         }
     }
 
     /**
-     * Load document
+     * Delete File
      */
-    @OnLoad()
     @AfterUpdate()
-    @AfterCreate()
-    async loadDocument() {
-        if (this.documentFileId) {
-            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
-                this.documentFileId
-            );
-            const bufferArray = [];
-            for await (const data of fileStream) {
-                bufferArray.push(data);
-            }
-            const buffer = Buffer.concat(bufferArray);
-            this.document = JSON.parse(buffer.toString());
+    postUpdateFiles() {
+        if (this._documentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this._documentFileId)
+                .catch((reason) => {
+                    console.error(`AfterUpdate: AggregateVC, ${this._id}, _documentFileId`)
+                    console.error(reason)
+                });
+            delete this._documentFileId;
         }
     }
 
     /**
-     * Delete document
+     * Delete context
      */
     @AfterDelete()
     deleteDocument() {
