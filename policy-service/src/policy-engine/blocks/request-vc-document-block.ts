@@ -193,9 +193,9 @@ export class RequestVcDocumentBlock {
             throw new BlockActionError('User have no any did.', ref.blockType, ref.uuid);
         }
         if (_data.draft) {
-            this.saveDraftData(user, _data, ref);
+            return await this.saveDraftData(user, _data, ref);
         } else {
-            this.setBlockData(user, _data, ref);
+            return await this.setBlockData(user, _data, ref);
         }
     }
 
@@ -300,26 +300,6 @@ export class RequestVcDocumentBlock {
             };
 
             await collection.insertOne(row);
-        }
-    }
-
-    private autoCalculate(document: any): void {
-        for (const key in this._schema.document.properties) {
-            if (!this._schema.document.properties.hasOwnProperty(key)) {
-                continue;
-            }
-            const value = this._schema.document.properties[key];
-            if (!value.$comment) {
-                continue;
-            }
-            const { autocalculate, expression } = JSON.parse(value.$comment);
-            if (!autocalculate) {
-                continue;
-            }
-            const func = Function(`with (this) { return ${expression} }`);
-            const calcValue = func.apply(document);
-            document[value.title] = calcValue;
-
         }
     }
 

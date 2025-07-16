@@ -126,13 +126,13 @@ export class UserPoliciesPage {
         }
         if (role == "VVB") {
             Checks.waitForElement(UserPoliciesPageLocators.vvbName);
-            cy.get(UserPoliciesPageLocators.vvbName).find(CommonElements.Input).type("VVBName");
+            cy.get("div.form-field-value").find(CommonElements.Input).type("VVBName");
             cy.get(UserPoliciesPageLocators.submitButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.divTitle);
         }
         if (role == "Project Participant") {
             Checks.waitForElement(UserPoliciesPageLocators.ppName);
-            cy.get(CommonElements.Input).type("PPName");
+            cy.get("div.form-field-value").find(CommonElements.Input).type("PPName");
             cy.get(UserPoliciesPageLocators.submitButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.divTitle);
         }

@@ -257,17 +257,84 @@
     background: #fff6ab;
 }
 
-.report-item[type="PARTLY"] .block-tree {
-    background: #fff6ab;
-}
-
 .report-item[type="LEFT"] .block-tree,
 .report-item[type="RIGHT"] .block-tree {
     background: #ffb5b7;
 }
 
+.report-item[type="PARTLY"] .block-tree {
+    background: #fff6ab;
+}
+
+.report-item[type="PARTLY"]:not([rate="100%"]) .block-tree {
+    background: #fff6ab;
+}
+
 .report-item[type="PARTLY"][rate="100%"] .block-tree {
     background: linear-gradient(45deg, #a2ffa5 48%, #fff6ab 52%);
+}
+
+
+// .content::ng-deep *[type="FULL"] {
+//     // background: #d0ffd6;
+//     // background: linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, #d0ffd6 30px);
+//     background: linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, transparent 30px);
+// }
+
+// .content::ng-deep *[type="FULL"]:not([rate="100%"]) {
+//     // background: #fffada;
+//     background: linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, #fffada 30px);
+// }
+
+// .content::ng-deep *[type="PARTLY"] {
+//     // background: #fffada;
+//     background: linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, #fffada 30px);
+// }
+
+// .content::ng-deep *[type="LEFT"],
+// .content::ng-deep *[type="RIGHT"] {
+//     // background: #ffc5c6;
+//     background: linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, #ffc5c6 30px);
+// }
+
+// .content::ng-deep *[type="PARTLY"][rate="100%"] {
+//     background:
+//         linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, transparent 30px),
+//         linear-gradient(45deg, #d0ffd6 48%, #fffada 52%);
+// }
+
+.content::ng-deep .report-item-number[type="FULL"] {
+    background: linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, transparent 30px);
+}
+
+.content::ng-deep .report-item-number[type="FULL"]:not([rate="100%"]) {
+    background: linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, #fffada 30px);
+}
+
+.content::ng-deep .report-item-number[type="PARTLY"] {
+    background: linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, #fffada 30px);
+}
+
+.content::ng-deep .report-item-number[type="LEFT"],
+.content::ng-deep .report-item-number[type="RIGHT"] {
+    background: linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, #ffc5c6 30px);
+}
+
+.content::ng-deep .report-item-number[type="PARTLY"][rate="100%"] {
+    background:
+        linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, transparent 30px),
+        linear-gradient(45deg, #d0ffd6 48%, #fffada 52%);
+}
+
+.report-item-number {
+    padding-left: 30px;
+    grid-template-columns: calc(50% - 33px) 35px calc(50% - 18px);
+    background: linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, transparent 30px);
+}
+
+.report-item-number:hover {
+    background: linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, rgb(229 229 229 / 50%) 30px) !important;
+    box-shadow: 0px 11px 0px 0px rgb(229 229 229 / 50%) !important;
 }
 
 .prop-table-row {
@@ -522,7 +589,7 @@
 }
 
 .report-item:hover {
-    background-color: rgb(229 229 229 / 50%);
+    background: linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, rgb(229 229 229 / 50%) 30px);
     box-shadow: 0px 11px 0px 0px rgb(229 229 229 / 50%);
 }
 
@@ -552,12 +619,6 @@
     color: #898989;
     overflow: hidden;
     pointer-events: none;
-}
-
-.report-item-number {
-    padding-left: 30px;
-    grid-template-columns: calc(50% - 33px) 35px calc(50% - 18px);
-    background: linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, transparent 30px);
 }
 
 .report-collapse {
@@ -603,28 +664,6 @@
 .report-collapse[collapse="2"] .collapse-icon {
     display: block;
 }
-
-::ng-deep [type="FULL"]:not([rate="100%"]) {
-    background: #fffada;
-}
-
-::ng-deep [type="FULL"] {
-    background: #d0ffd6;
-}
-
-::ng-deep [type="PARTLY"] {
-    background: #fffada;
-}
-
-::ng-deep [type="LEFT"],
-::ng-deep [type="RIGHT"] {
-    background: #ffc5c6;
-}
-
-::ng-deep [type="PARTLY"][rate="100%"] {
-    background: linear-gradient(45deg, #d0ffd6 48%, #fffada 52%);
-}
-
 
 .cdk-column-lvl {
     max-width: 60px;

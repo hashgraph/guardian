@@ -109,9 +109,9 @@ export class PoliciesPage {
         cy.get(CommonElements.navBar).should('exist')
         cy.get("body").then(($body) => {
             if ($body.find(`span:contains(${CommonElements.policiesTab})`).length == 0)
-                cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).click();
+                cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).should('exist').click();
         })
-        cy.get(CommonElements.navBar).contains(CommonElements.policiesTab).realClick();
+        cy.get(CommonElements.navBar).contains(CommonElements.policiesTab).should('exist').click();
         Checks.waitForLoading();
     }
 
@@ -206,8 +206,9 @@ export class PoliciesPage {
 
     importPolicyFromIPFS(messageId) {
         cy.get(PoliciesPageLocators.importPolicyButton).click();
-        cy.contains(PoliciesPageLocators.importIPFSOption).click();
+        cy.contains(PoliciesPageLocators.importIPFSOption).should('be.visible').click();
         cy.get(CommonElements.dialogWindow).find(CommonElements.Input).type(messageId);
+        cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).should("have.not.attr", "disabled");
         cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).click();
         Checks.waitForElement(PoliciesPageLocators.asNewPolicyRadioButton);
         cy.get(CommonElements.dialogWindow).last().find(PoliciesPageLocators.importButton).click();
@@ -430,12 +431,14 @@ export class PoliciesPage {
 
     openDryRunUser(user = "1") {
         if (user == "Administrator") {
-            cy.contains('Users').click();
+            cy.contains('Users').realClick();
+            cy.get(CommonElements.Loading).should('not.exist');
             cy.contains(user).click();
             Checks.waitForLoading();
         }
         else {
-            cy.contains('Users').click();
+            cy.contains('Users').realClick();
+            cy.get(CommonElements.Loading).should('not.exist');
             cy.contains(`Virtual User ${user}`).click();
             Checks.waitForLoading();
         }

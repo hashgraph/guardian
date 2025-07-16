@@ -123,7 +123,7 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
                 method: METHOD.POST,
                 url: API.ApiServer + API.ModuleCompare,
                 body: {
-                    moduleId1: moduleId2,
+                    moduleId1: moduleId,
                     moduleId2: moduleIdClone,
                     eventsLvl: 1,
                     propLvl: 2,
@@ -136,9 +136,9 @@ context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
 
-                expect(response.body.left.id).to.eq(moduleId2);
+                expect(response.body.left.id).to.eq(moduleId);
                 expect(response.body.left.description).to.eq(moduleName + " desc");
-                expect(response.body.left.name).to.match(new RegExp("^" + moduleName + "_\\d+$", "g"));
+                expect(response.body.left.name).to.match(new RegExp("^" + moduleName, "g"));
 
                 expect(response.body.right.id).to.eq(moduleIdClone);
                 expect(response.body.right.description).to.eq(moduleName + " desc");

@@ -3,32 +3,33 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
-    
+
     const SRUsername = Cypress.env('SRUser');
-    
+
     let cid;
+    let firstRandom = Math.floor(Math.random() * 99999);
+    let secondRandom = Math.floor(Math.random() * 99999);
+    let thirdRandom = Math.floor(Math.random() * 99999);
 
     it("Add file to ipfs", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.fixture("testJson.json")
-                .then((file) => {
-                    cy.request({
-                        method: METHOD.POST,
-                        url: API.ApiServer + API.IPFSFile,
-                        body: file,
-                        headers: {
-                            "content-type": "binary/octet-stream",
-                            authorization,
-                        },
-                        timeout: 200000
-                    }).then((response) => {
-                        expect(response.status).eql(STATUS_CODE.SUCCESS);
-                        cy.writeFile(
-                            "cypress/fixtures/testJsonCid",
-                            response.body
-                        );
-                    });
-                });
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.IPFSFile,
+                body: {
+                    randTest1: firstRandom,
+                    randTest2: secondRandom,
+                    randTest3: thirdRandom
+                },
+                headers: {
+                    "content-type": "binary/octet-stream",
+                    authorization,
+                },
+                timeout: 200000
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.SUCCESS);
+                cid = response.body;
+            });
         })
     });
 
@@ -71,25 +72,22 @@ context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
 
     it("Get file from ipfs", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.fixture("testJsonCid")
-                .then((cid) => {
-                    cid = cid
-                    cy.request({
-                        method: METHOD.GET,
-                        url: API.ApiServer + API.IPFSFile + cid,
-                        headers: {
-                            authorization,
-                        }
-                    }).then((response) => {
-                        expect(response.status).eql(STATUS_CODE.OK);
-                        let body = JSON.parse(response.body)
-                        expect(body.yellow).eql("sun");
-                        expect(body.green).eql("grass");
-                    });
-                })
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.IPFSFile + cid,
+                headers: {
+                    authorization,
+                },
+                timeout: 240000,
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.OK);
+                let body = JSON.parse(response.body)
+                expect(body.randTest1).eql(firstRandom);
+                expect(body.randTest2).eql(secondRandom);
+                expect(body.randTest3).eql(thirdRandom);
+            });
         })
-    });
-
+    })
 
     it("Get file from ipfs without auth token - Negative", () => {
         cy.request({
