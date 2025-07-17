@@ -1015,13 +1015,13 @@ export class SchemaConfigComponent implements OnInit {
                 category: this.getCategory()
             },
         });
-        dialogRef.onClose.subscribe(async ({ exampleDate, currentSchema }: {
+        dialogRef.onClose.subscribe(async (result: {
             exampleDate: any,
             currentSchema: Schema
         }) => {
-            if (exampleDate && currentSchema) {
-                schema.setExample(exampleDate);
-                this.updateSchema(currentSchema.id, currentSchema);
+            if (result && result.exampleDate && result.currentSchema) {
+                schema.setExample(result.exampleDate);
+                this.updateSchema(result.currentSchema.id, result.currentSchema);
             }
         });
     }
