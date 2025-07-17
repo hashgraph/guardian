@@ -18,6 +18,6 @@ context("System Schema Creation", { tags: ['ui'] }, () => {
     });
 
     it("create system schema", () => {
-        schemaPage.createSchema(schemaName);
+        schemaPage.createSystemSchema(schemaName);
     });
 });

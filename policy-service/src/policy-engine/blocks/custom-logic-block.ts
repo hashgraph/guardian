@@ -172,14 +172,14 @@ export class CustomLogicBlock {
                 } else {
                     documents = [state.data];
                 }
-                if (!documents || !documents.length) {
-                    throw new BlockActionError('Invalid input VC', ref.blockType, ref.uuid);
-                }
 
                 let metadata: IMetadata;
                 if (ref.options.unsigned) {
                     metadata = null;
                 } else {
+                    if (!documents || !documents.length) {
+                        throw new BlockActionError('Invalid input VC', ref.blockType, ref.uuid);
+                    }
                     metadata = await this.aggregateMetadata(documents, user, ref, userId);
                 }
                 const done = async (result: any | any[], final: boolean) => {

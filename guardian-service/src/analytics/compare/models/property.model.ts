@@ -486,7 +486,8 @@ export class DocumentPropertyModel extends PropertyModel<any> {
                 name === 'ref' ||
                 name === 'tokenId' ||
                 name === 'issuanceDate' ||
-                name === 'issuer'
+                name === 'issuer' ||
+                name === 'guardianVersion'
             ) {
                 return true;
             }
