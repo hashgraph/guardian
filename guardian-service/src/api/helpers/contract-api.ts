@@ -7,8 +7,8 @@ import {
 } from '@guardian/interfaces';
 
 const CONTRACT_GAS_DEFAULT_VALUES = new Map<ContractAPI | string, number>([
-    ['CREATE_RETIRE_CONTRACT_GAS', 3000000],
-    ['CREATE_WIPE_CONTRACT_GAS', 1000000],
+    ['CREATE_RETIRE_CONTRACT_GAS', 6000000],
+    ['CREATE_WIPE_CONTRACT_GAS', 6000000],
     [ContractAPI.SET_RETIRE_POOLS, 1000000],
     [ContractAPI.CONTRACT_PERMISSIONS, 100000],
     [ContractAPI.ENABLE_WIPE_REQUESTS, 1000000],
@@ -115,8 +115,19 @@ export async function createContract(
     type: ContractType,
     hederaAccountId: string,
     hederaAccountKey: string,
-    memo: string
+    memo: string,
+    userId: string
 ) {
+    const constructorParams =
+        type === ContractType.RETIRE
+            ? {
+                RETIRE_SINGLE_CONTRACT_ID: process.env.RETIRE_SINGLE_CONTRACT_ID,
+                RETIRE_DOUBLE_CONTRACT_ID: process.env.RETIRE_DOUBLE_CONTRACT_ID,
+                RETIRE_IMPL_OWNER_ID: process.env.RETIRE_IMPL_OWNER_ID,
+                RETIRE_IMPL_OWNER_KEY: process.env.RETIRE_IMPL_OWNER_KEY,
+            }
+            : undefined;
+
     return await _contractCall(
         event,
         workers,
@@ -131,6 +142,8 @@ export async function createContract(
                 hederaAccountKey,
                 topicKey: hederaAccountKey,
                 memo,
+                constructorParams,
+                userId
             },
         },
         20,

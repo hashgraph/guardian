@@ -30,7 +30,7 @@ export class ContractPublisher {
 
     /**
      * Split contract bytecode
-     * @param bytecode Contract bytecode
+     * @param bytecode Contract bytecodeа
      * @returns Chunks
      */
     private static _splitContractBytecode(bytecode: string) {
@@ -174,6 +174,13 @@ export class ContractPublisher {
             language: 'Solidity',
             sources,
             settings: {
+                optimizer: {
+                    enabled: true,
+                    runs: 200,
+                },
+                metadata: {
+                    bytecodeHash: 'none',
+                },
                 outputSelection: {
                     '*': {
                         '*': ['*'],
