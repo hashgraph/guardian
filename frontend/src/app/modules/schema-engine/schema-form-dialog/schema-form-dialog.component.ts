@@ -46,10 +46,6 @@ export class SchemaFormDialog {
         this.dialogRef.close(null);
     }
 
-    onSave() {
-        this.dialogRef.close({ exampleDate: this.dataForm?.value, currentSchema: this.schema });
-    }
-
     getSubSchemes() {
         const { topicId, id } = this.schema ?? {};
 
