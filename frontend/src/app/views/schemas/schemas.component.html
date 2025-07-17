@@ -15,7 +15,7 @@
 
         <div class="actions-controls-container">
             <div class="policy-dropdown-container">
-                <ng-container *ngIf="isPolicy">
+                <div *ngIf="isPolicy" class="topic-search">
                     <p-dropdown
                         (onChange)="onFilter($event)"
                         [(ngModel)]="currentTopic"
@@ -27,8 +27,8 @@
                         placeholder="Policy"
                         [appendTo]="'body'"
                     ></p-dropdown>
-                </ng-container>
-                <ng-container *ngIf="isTool">
+                </div>
+                <div *ngIf="isTool" class="topic-search">
                     <p-dropdown
                         (onChange)="onFilter($event)"
                         [(ngModel)]="currentTopic"
@@ -40,7 +40,16 @@
                         placeholder="Tool"
                         [appendTo]="'body'"
                     ></p-dropdown>
-                </ng-container>
+                </div>
+                <div *ngIf="isPolicy || isTool || isModule" class="guardian-input-container text-search">
+                    <input
+                        (change)="onFilter()"
+                        [(ngModel)]="textSearch"
+                        pInputText
+                        type="text"
+                        placeholder="Search"
+                    />
+                </div>
             </div>
             <div class="schema-actions-buttons-container">
                 <p-button
@@ -467,6 +476,7 @@
         [pageIndex]="pageIndex"
         [pageSize]="pageSize"
         [length]="count"
+        [options]="[10, 25, 50, 100, 500]"
         (page)="onPage($event)"
     ></app-paginator>
 
