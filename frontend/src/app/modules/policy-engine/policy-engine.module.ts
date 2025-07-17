@@ -153,6 +153,7 @@ import { SearchExternalPolicyDialog } from './dialogs/search-external-policy-dia
 import { PolicyRequestsComponent } from './requests/requests.component';
 import { TestCodeDialog } from './dialogs/test-code-dialog/test-code-dialog.component';
 import { ProjectDataExportComponent } from './project-data-export/project-data-export.component';
+import { TransformationButtonBlockComponent } from './policy-viewer/blocks/transformation-button-block/transformation-button-block.component';
 
 @NgModule({
     declarations: [
@@ -206,6 +207,7 @@ import { ProjectDataExportComponent } from './project-data-export/project-data-e
         RevokeConfigComponent,
         ButtonConfigComponent,
         ButtonBlockComponent,
+        TransformationButtonBlockComponent,
         TokenActionConfigComponent,
         DocumentValidatorConfigComponent,
         TokenConfirmationConfigComponent,

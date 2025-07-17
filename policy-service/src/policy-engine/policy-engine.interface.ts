@@ -321,6 +321,19 @@ export interface IPolicyBlock {
     ): void;
 
     /**
+     * Trigger event sync
+     * @param eventType
+     * @param user
+     * @param data
+     */
+    triggerEventSync<T>(
+        eventType: PolicyOutputEventType | string,
+        user: PolicyUser,
+        data: T
+    ): Promise<any>;
+
+
+    /**
      * Trigger event
      * @param event
      * @param user

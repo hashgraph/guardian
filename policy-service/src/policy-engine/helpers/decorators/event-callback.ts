@@ -27,7 +27,7 @@ export function ActionCallback(config: {
                 config.type,
                 new Proxy(target[propertyKey], {
                     async apply(_target: any, thisArg: any, argArray: any[]): Promise<any> {
-                        descriptor.value.apply(thisArg, argArray);
+                        return await descriptor.value.apply(thisArg, argArray);
                     }
                 })
             ]);
