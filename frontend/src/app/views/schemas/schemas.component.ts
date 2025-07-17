@@ -126,10 +126,10 @@ export class SchemaConfigComponent implements OnInit {
     public properties: any[] = [];
     public schemasTypes: { label: string; value: SchemaType }[] = [
         { label: 'Policy Schemas', value: SchemaType.Policy },
+        { label: 'Tool Schemas', value: SchemaType.Tool },
         { label: 'Module Schemas', value: SchemaType.Module },
         { label: 'Tag Schemas', value: SchemaType.Tag },
-        { label: 'System Schemas', value: SchemaType.System },
-        { label: 'Tool Schemas', value: SchemaType.Tool },
+        { label: 'System Schemas', value: SchemaType.System }
     ];
     public textSearch: any;
 
