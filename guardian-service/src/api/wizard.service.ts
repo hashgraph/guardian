@@ -35,7 +35,7 @@ async function createExistingPolicySchemas(
         user,
         {
             category: SchemaCategory.POLICY,
-            topicId: policyTopicId
+            topicId: policyTopicId || 'draft'
         },
         emptyNotifier(),
         userId
