@@ -7,7 +7,7 @@ import {
 } from '@guardian/interfaces';
 
 const CONTRACT_GAS_DEFAULT_VALUES = new Map<ContractAPI | string, number>([
-    ['CREATE_RETIRE_CONTRACT_GAS', 6000000],
+    ['CREATE_RETIRE_CONTRACT_GAS', 15000000],
     ['CREATE_WIPE_CONTRACT_GAS', 6000000],
     [ContractAPI.SET_RETIRE_POOLS, 1000000],
     [ContractAPI.CONTRACT_PERMISSIONS, 100000],
@@ -121,10 +121,8 @@ export async function createContract(
     const constructorParams =
         type === ContractType.RETIRE
             ? {
-                RETIRE_SINGLE_CONTRACT_ID: process.env.RETIRE_SINGLE_CONTRACT_ID,
-                RETIRE_DOUBLE_CONTRACT_ID: process.env.RETIRE_DOUBLE_CONTRACT_ID,
-                RETIRE_IMPL_OWNER_ID: process.env.RETIRE_IMPL_OWNER_ID,
-                RETIRE_IMPL_OWNER_KEY: process.env.RETIRE_IMPL_OWNER_KEY,
+                RETIRE_SINGLE_FILE_ID: process.env.RETIRE_SINGLE_FILE_ID,
+                RETIRE_DOUBLE_FILE_ID: process.env.RETIRE_DOUBLE_FILE_ID,
             }
             : undefined;
 

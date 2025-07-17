@@ -8,6 +8,7 @@ import {
     Users
 } from '@guardian/common';
 import {
+    ContractParamType,
     ExternalMessageEvents,
     GenerateUUIDv4,
     ISignOptions,
@@ -856,21 +857,6 @@ export class Worker extends NatsService {
                         userId
                     } = task.data;
                     const contractMemo = memo || '';
-                    let constructor: ContractFunctionParameters;
-
-                    if (constructorParams) {
-                        const hederaSingle = constructorParams.RETIRE_SINGLE_CONTRACT_ID;
-                        const hederaDouble = constructorParams.RETIRE_DOUBLE_CONTRACT_ID;
-
-                        const evmSingle = ContractId.fromString(hederaSingle).toSolidityAddress();
-                        const evmDouble = ContractId.fromString(hederaDouble).toSolidityAddress();
-
-                        constructor = new ContractFunctionParameters()
-                            .addAddress(evmSingle)
-                            .addAddress(evmDouble);
-                    } else {
-                        constructor = new ContractFunctionParameters().addString(topicKey);
-                    }
 
                     client = new HederaSDKHelper(
                         hederaAccountId,
@@ -878,50 +864,69 @@ export class Worker extends NatsService {
                         null,
                         networkOptions
                     );
-                    const [newContractId, logInfo] = await client.createContract(
-                        bytecodeFileId,
-                        constructor,
+                    if(!constructorParams) {
+                        result.data = await client.createContract(
+                            bytecodeFileId,
+                            new ContractFunctionParameters().addString(topicKey),
+                            gas,
+                            contractMemo
+                        );
+
+                        break
+                    }
+
+                    const [singleContractId] = await client.createContract(
+                        constructorParams.RETIRE_SINGLE_FILE_ID,
+                        new ContractFunctionParameters(),
                         gas,
                         contractMemo
                     );
 
-                    result.data = [newContractId, logInfo];
+                    const [doubleContractId] = await client.createContract(
+                        constructorParams.RETIRE_DOUBLE_FILE_ID,
+                        new ContractFunctionParameters(),
+                        gas,
+                        contractMemo
+                    );
 
-                    if (constructorParams) {
-                        const routerAddr = ContractId.fromString(newContractId).toSolidityAddress();
+                    const routerConstructor = new ContractFunctionParameters()
+                        .addAddress(ContractId.fromString(singleContractId).toSolidityAddress())
+                        .addAddress(ContractId.fromString(doubleContractId).toSolidityAddress());
 
-                        const implOwnerId  = constructorParams.RETIRE_IMPL_OWNER_ID;
-                        const implOwnerKey = constructorParams.RETIRE_IMPL_OWNER_KEY;
+                    const [routerContractId, logInfo] = await client.createContract(
+                        bytecodeFileId,
+                        routerConstructor,
+                        gas,
+                        contractMemo
+                    );
 
-                        const sdkClient = HederaSDKHelper.client(implOwnerId, implOwnerKey);
+                    result.data = [routerContractId, logInfo];
 
-                        const implIds = [
-                            constructorParams.RETIRE_SINGLE_CONTRACT_ID,
-                            constructorParams.RETIRE_DOUBLE_CONTRACT_ID,
-                        ];
+                    const routerAddr = ContractId.fromString(routerContractId).toSolidityAddress();
+                    const implIds = [singleContractId, doubleContractId];
 
-                        for (const implId of implIds) {
-                            try {
-                                const txResponse = await new ContractExecuteTransaction()
-                                    .setContractId(implId)
-                                    .setGas(300_000)
-                                    .setFunction(
-                                        'addAdmin',
-                                        new ContractFunctionParameters().addAddress(routerAddr)
-                                    )
-                                    .execute(sdkClient);
-
-                                const rx = await txResponse.getReceipt(sdkClient);
-                                await this.logger.info(
-                                    `[CREATE_CONTRACT bootstrap] addAdmin(${implId}) -> ${rx.status.toString()}`, ['WORKER'], userId);
-                            } catch (e) {
-                                await this.logger.warn(
-                                    `[CREATE_CONTRACT bootstrap] addAdmin(${implId}) failed: ${(e as Error).message}`, ['WORKER'], userId
-                                );
-                            }
+                    for (const implId of implIds) {
+                        try {
+                            await client.contractCall(
+                                implId,
+                                300_000,
+                                'addAdmin',
+                                [
+                                    { type: ContractParamType.ADDRESS, value: routerAddr }
+                                ]
+                            );
+                            await this.logger.info(
+                                `[CREATE_CONTRACT bootstrap] addAdmin(${implId}) -> SUCCESS`,
+                                ['WORKER'],
+                                userId
+                            );
+                        } catch (e) {
+                            await this.logger.warn(
+                                `[CREATE_CONTRACT bootstrap] addAdmin(${implId}) failed: ${(e as Error).message}`,
+                                ['WORKER'],
+                                userId
+                            )
                         }
-
-                        sdkClient.close();
                     }
 
                     break;

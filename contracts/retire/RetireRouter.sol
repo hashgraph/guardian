@@ -24,12 +24,10 @@ contract RetireRouter is Version, RetireCommon {
         implementations[1] = RetireImplementation(impl1);
         implementations[2] = RetireImplementation(impl2);
 
-        address bootstrap = tx.origin;
-        _setRole(bootstrap, OWNER);
-        _setRole(bootstrap, ADMIN);
-
-        emit OwnerAdded(bootstrap);
-        emit AdminAdded(bootstrap);
+        _setRole(msg.sender, OWNER);
+        _setRole(msg.sender, ADMIN);
+        emit OwnerAdded(msg.sender);
+        emit AdminAdded(msg.sender);
     }
 
     function clearPools(uint8 tc) public override role(OWNER) {
