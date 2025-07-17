@@ -66,7 +66,8 @@ export class TransformationButtonBlock {
             ),
             type: ref.options.type,
             uiMetaData: ref.options.uiMetaData,
-            user: ref.options.user
+            user: ref.options.user,
+            buttonName: ref.options.buttonName
         }
         return data;
     }

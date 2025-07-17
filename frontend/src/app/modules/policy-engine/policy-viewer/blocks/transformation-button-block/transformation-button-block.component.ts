@@ -3,6 +3,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import axios from 'axios';
+import { ToastrService } from 'ngx-toastr';
 
 /**
  * Component for display block of 'Transformation Button Block' type.
@@ -30,7 +31,8 @@ export class TransformationButtonBlockComponent implements OnInit {
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
-        private cdref: ChangeDetectorRef
+        private cdref: ChangeDetectorRef,
+        private toastr: ToastrService
     ) {
     }
 
@@ -100,6 +102,7 @@ export class TransformationButtonBlockComponent implements OnInit {
     }
 
     onClick() {
+        this.loading = true;
         this.commonVisible = false;
         this.policyEngineService.setBlockData(this.id, this.policyId, this.data).subscribe(
             (data) => {
@@ -114,9 +117,24 @@ export class TransformationButtonBlockComponent implements OnInit {
                             'Content-Type': 'application/json'
                         }
                     }).then(response => {
-                        console.log(response.data);
+                        this.toastr.success(`The data was sent to ${data.url}`, '', {
+                            timeOut: 3000,
+                            closeButton: true,
+                            positionClass: 'toast-bottom-right',
+                            enableHtml: true,
+                        });
+                    }).catch(error => {
+                        console.log(error);
+                        this.toastr.error(`An error occurred while sending the data to ${data.url}`, '', {
+                            timeOut: 3000,
+                            closeButton: true,
+                            positionClass: 'toast-bottom-right',
+                            enableHtml: true,
+                        });
                     })
                 }
+
+                this.cdref.detectChanges();
             },
             (e) => {
                 this.commonVisible = true;
