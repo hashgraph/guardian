@@ -488,7 +488,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                             if (!global) {
                                 delete s.document.$defs;
                             }
-                            const text = JSON.stringify(s.document);
+                            const text = JSON.stringify(s.document).toLowerCase();
                             return text.indexOf(search) > -1;
                         } else {
                             return false;
