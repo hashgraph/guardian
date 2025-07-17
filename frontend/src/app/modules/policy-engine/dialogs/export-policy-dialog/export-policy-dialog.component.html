@@ -12,15 +12,17 @@
     </div>
 
     <div *ngIf="policy" class="policy">
-        <div class="field-name">Policy Name</div>
-        <div class="field-value">{{ policy.name }}</div>
+        <div class="field">
+            <div class="field-name">Policy Name</div>
+            <div class="field-value">{{ policy.name }}</div>
+        </div>
 
-        <div *ngIf="policy.description">
+        <div *ngIf="policy.description" class="field">
             <div class="field-name">Description</div>
             <div class="field-value">{{ policy.description }}</div>
         </div>
 
-        <div *ngIf="policy.version">
+        <div *ngIf="policy.version" class="field">
             <div class="field-name">Version</div>
             <div class="field-value">{{ policy.version }}</div>
         </div>
@@ -32,10 +34,12 @@
     </div>
 
     <div *ngIf="module" class="policy">
-        <div class="field-name">Module Name</div>
-        <div class="field-value">{{ module.name }}</div>
+        <div class="field">
+            <div class="field-name">Name</div>
+            <div class="field-value">{{ module.name }}</div>
+        </div>
 
-        <div *ngIf="module.description">
+        <div *ngIf="module.description" class="field">
             <div class="field-name">Description</div>
             <div class="field-value">{{ module.description }}</div>
         </div>
@@ -47,11 +51,12 @@
     </div>
 
     <div *ngIf="tool" class="policy">
-        <div class="policy-header">{{ tool.name }}</div>
+        <div class="field">
+            <div class="field-name">Name</div>
+            <div class="field-value">{{ tool.name }}</div>
+        </div>
 
-        <div class="delimiter"></div>
-
-        <div *ngIf="tool.description">
+        <div *ngIf="tool.description" class="field">
             <div class="field-name">Description</div>
             <div class="field-value">{{ tool.description }}</div>
         </div>

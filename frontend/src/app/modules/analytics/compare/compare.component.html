@@ -15,15 +15,18 @@
             </div>
         </div>
         <div class="merge-lvl">
-            <div *ngIf="isEventsLvl" class="f1">
+            <div *ngIf="isUUIDLvl" class="f1">
                 <div class="p-fluid">
-                    <label for="eventsDropdown" class="dropdown-border-label">Events:</label>
+                    <label for="uuidDropdown" class="dropdown-border-label">UUID:</label>
                     <p-dropdown
-                        id="eventsDropdown"
-                        [(ngModel)]="eventsLvl.value"
-                        [options]="eventOptions"
+                        id="uuidDropdown"
+                        [(ngModel)]="idLvl"
+                        [options]="uuidOptions"
+                        placeholder="Select UUID Level"
                         (onChange)="onFilterChange()"
                         [appendTo]="'body'"
+                        class="guardian-dropdown"
+                        panelStyleClass="guardian-dropdown-panel"
                     >
                     </p-dropdown>
                 </div>
@@ -33,11 +36,29 @@
                     <label for="propertiesDropdown" class="dropdown-border-label">Properties:</label>
                     <p-dropdown
                         id="propertiesDropdown"
-                        [(ngModel)]="propLvl.value"
+                        [(ngModel)]="propLvl"
                         [options]="propertyOptions"
                         placeholder="Select Property Level"
                         (onChange)="onFilterChange()"
                         [appendTo]="'body'"
+                        class="guardian-dropdown"
+                        panelStyleClass="guardian-dropdown-panel"
+                    >
+                    </p-dropdown>
+                </div>
+            </div>
+            <div *ngIf="isEventsLvl" class="f1">
+                <div class="p-fluid">
+                    <label for="eventsDropdown" class="dropdown-border-label">Events:</label>
+                    <p-dropdown
+                        id="eventsDropdown"
+                        [(ngModel)]="eventsLvl"
+                        [options]="eventOptions"
+                        placeholder="Select Event Level"
+                        (onChange)="onFilterChange()"
+                        [appendTo]="'body'"
+                        class="guardian-dropdown"
+                        panelStyleClass="guardian-dropdown-panel"
                     >
                     </p-dropdown>
                 </div>
@@ -49,43 +70,35 @@
                         id="childrenDropdown"
                         [(ngModel)]="childrenLvl"
                         [options]="childrenOptions"
-                        optionLabel="label"
                         placeholder="Select Children Level"
                         (onChange)="onFilterChange()"
                         [appendTo]="'body'"
-                    >
-                    </p-dropdown>
-                </div>
-            </div>
-            <div *ngIf="isUUIDLvl" class="f1">
-                <div class="p-fluid">
-                    <label for="uuidDropdown" class="dropdown-border-label">UUID:</label>
-                    <p-dropdown
-                        id="uuidDropdown"
-                        [(ngModel)]="idLvl"
-                        [options]="uuidOptions"
-                        optionLabel="label"
-                        placeholder="Select UUID Level"
-                        (onChange)="onFilterChange()"
-                        [appendTo]="'body'"
+                        class="guardian-dropdown"
+                        panelStyleClass="guardian-dropdown-panel"
                     >
                     </p-dropdown>
                 </div>
             </div>
         </div>
         <div class="merge-lvl-apply">
-            <div
-                [attr.need-apple]="needApplyFilters"
+            <button 
                 *ngIf="isApplyBtn"
-                class="merge-lvl-btn"
-                (click)="onApply()">Apply
-            </div>
+                (click)="onApply()" 
+                class="guardian-button guardian-button-primary merge-lvl-btn"
+                [disabled]="!needApplyFilters">Apply</button>
         </div>
         <div>
-            <div class="export-btn" (click)="onExport()">
-                <i class="pi pi-download"></i>
-                Export
-            </div>
+            <button 
+                (click)="onExport()" 
+                class="guardian-button guardian-button-secondary export-btn">
+                <div class="guardian-button-icon">
+                    <svg-icon class="icon-btn svg-icon"
+                        src="/assets/images/icons/export.svg"
+                        svgClass="icon-color-primary">
+                    </svg-icon>
+                </div>
+                <div class="guardian-button-label">Export</div>
+            </button>
         </div>
         <div class="merge-type">
             <div class="f2">
@@ -95,9 +108,11 @@
                         id="typeDropdown"
                         [(ngModel)]="visibleType"
                         [options]="typeOptions"
-                        optionLabel="label"
                         placeholder="Select Type"
-                        [appendTo]="'body'">
+                        [appendTo]="'body'"
+                        class="guardian-dropdown"
+                        panelStyleClass="guardian-dropdown-panel"
+                    >
                     </p-dropdown>
                 </div>
             </div>
@@ -106,63 +121,63 @@
 
     <div *ngIf="isPolicies" class="content-result">
         <app-compare-policy
-            [childrenLvl]="childrenLvl.value"
-            [eventsLvl]="eventsLvl.value"
-            [idLvl]="idLvl.value"
-            [propLvl]="propLvl.value"
-            [type]="visibleType.value"
+            [childrenLvl]="childrenLvl"
+            [eventsLvl]="eventsLvl"
+            [idLvl]="idLvl"
+            [propLvl]="propLvl"
+            [type]="visibleType"
             [value]="result"
             (change)="onChange($event)"></app-compare-policy>
     </div>
 
     <div *ngIf="isSchemas" class="content-result">
         <app-compare-schema
-            [type]="visibleType.value"
+            [type]="visibleType"
             [value]="result"
-            [idLvl]="idLvl.value"
+            [idLvl]="idLvl"
             (change)="onChange($event)"></app-compare-schema>
     </div>
 
     <div *ngIf="isModules" class="content-result">
         <app-compare-module
-            [childrenLvl]="childrenLvl.value"
-            [eventsLvl]="eventsLvl.value"
-            [idLvl]="idLvl.value"
-            [propLvl]="propLvl.value"
-            [type]="visibleType.value"
+            [childrenLvl]="childrenLvl"
+            [eventsLvl]="eventsLvl"
+            [idLvl]="idLvl"
+            [propLvl]="propLvl"
+            [type]="visibleType"
             [value]="result"
             (change)="onChange($event)"></app-compare-module>
     </div>
 
     <div *ngIf="isMultiPolicies" class="content-result">
         <app-multi-compare-policy
-            [childrenLvl]="childrenLvl.value"
-            [eventsLvl]="eventsLvl.value"
-            [idLvl]="idLvl.value"
-            [propLvl]="propLvl.value"
-            [type]="visibleType.value"
+            [childrenLvl]="childrenLvl"
+            [eventsLvl]="eventsLvl"
+            [idLvl]="idLvl"
+            [propLvl]="propLvl"
+            [type]="visibleType"
             [value]="result"
             (change)="onChange($event)"></app-multi-compare-policy>
     </div>
 
     <div *ngIf="isDocuments" class="content-result">
         <app-compare-document
-            [childrenLvl]="childrenLvl.value"
-            [eventsLvl]="eventsLvl.value"
-            [idLvl]="idLvl.value"
-            [propLvl]="propLvl.value"
-            [type]="visibleType.value"
+            [childrenLvl]="childrenLvl"
+            [eventsLvl]="eventsLvl"
+            [idLvl]="idLvl"
+            [propLvl]="propLvl"
+            [type]="visibleType"
             [value]="result"
             (change)="onChange($event)"></app-compare-document>
     </div>
 
     <div *ngIf="isTools" class="content-result">
         <app-compare-tool
-            [childrenLvl]="childrenLvl.value"
-            [eventsLvl]="eventsLvl.value"
-            [idLvl]="idLvl.value"
-            [propLvl]="propLvl.value"
-            [type]="visibleType.value"
+            [childrenLvl]="childrenLvl"
+            [eventsLvl]="eventsLvl"
+            [idLvl]="idLvl"
+            [propLvl]="propLvl"
+            [type]="visibleType"
             [value]="result"
             (change)="onChange($event)"></app-compare-tool>
     </div>
