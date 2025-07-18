@@ -477,13 +477,13 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         global = true;
                         search = search.substring(1);
                     }
-                    let items = await DatabaseServer.getSchemas(filter, {
+                    let schemas = await DatabaseServer.getSchemas(filter, {
                         orderBy: { createDate: 'DESC' },
                         limit: 10000,
                         offset: 0,
                         fields: ['_id', 'documentFileId']
                     });
-                    items = items.filter((s) => {
+                    schemas = schemas.filter((s) => {
                         if (s.document) {
                             if (!global) {
                                 delete s.document.$defs;
@@ -494,7 +494,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                             return false;
                         }
                     })
-                    const ids = items.map((s) => s._id);
+                    const ids = schemas.map((s) => s._id);
                     filter._id = { $in: ids };
                 }
 
