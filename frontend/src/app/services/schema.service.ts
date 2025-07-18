@@ -1,4 +1,4 @@
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ISchema, SchemaCategory, SchemaEntity, SchemaNode } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
@@ -20,6 +20,28 @@ export class SchemaService {
         private http: HttpClient,
         private auth: AuthService,
     ) {
+    }
+
+    public static getOptions(filters?: {
+        pageIndex?: number,
+        pageSize?: number,
+        [key: string]: any
+    }): HttpParams {
+        let params = new HttpParams();
+        if (filters && typeof filters === 'object') {
+            for (const key of Object.keys(filters)) {
+                if (filters[key] !== undefined && filters[key] !== null) {
+                    if (key !== 'pageIndex' && key !== 'pageSize') {
+                        params = params.set(key, filters[key]);
+                    }
+                }
+            }
+            if (Number.isInteger(filters.pageIndex) && Number.isInteger(filters.pageSize)) {
+                params = params.set('pageIndex', String(filters.pageIndex));
+                params = params.set('pageSize', String(filters.pageSize));
+            }
+        }
+        return params;
     }
 
     public create(category: SchemaCategory, schema: ISchema, topicId: any): Observable<ISchema[]> {
@@ -75,23 +97,15 @@ export class SchemaService {
         return this.http.get<ISchema[]>(`${this.url}?policyId=${policyId}&pageIndex=${pageIndex}&pageSize=${pageSize}`);
     }
 
-    public getSchemasByPage(
+    public getSchemasByPage(options?: {
         category?: SchemaCategory,
         topicId?: string,
+        search?: string,
         pageIndex?: number,
         pageSize?: number,
-    ): Observable<HttpResponse<ISchema[]>> {
-        let url = `${this.url}`;
-        if (category) {
-            url += `?category=${category}`;
-        }
-        if (topicId) {
-            url += `&topicId=${topicId}`;
-        }
-        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
-            url += `&pageIndex=${pageIndex}&pageSize=${pageSize}`;
-        }
-        return this.http.get<any>(url, { observe: 'response', headers: headersV2 });
+    }): Observable<HttpResponse<ISchema[]>> {
+        const params = SchemaService.getOptions(options);
+        return this.http.get<any>(`${this.url}`, { observe: 'response', headers: headersV2, params });
     }
 
     public getSchemasByType(type: string): Observable<ISchema> {
@@ -161,13 +175,14 @@ export class SchemaService {
         return this.http.post<any>(`${this.url}/system/${username}`, schema);
     }
 
-    public getSystemSchemas(pageIndex?: number, pageSize?: number): Observable<HttpResponse<ISchema[]>> {
+    public getSystemSchemas(options?: {
+        pageIndex?: number,
+        pageSize?: number
+    }): Observable<HttpResponse<ISchema[]>> {
         const username = encodeURIComponent(this.auth.getUsername());
-        let url = `${this.url}/system/${username}`;
-        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
-            url += `?pageIndex=${pageIndex}&pageSize=${pageSize}`;
-        }
-        return this.http.get<any>(url, { observe: 'response', headers: headersV2 });
+        const url = `${this.url}/system/${username}`;
+        const params = SchemaService.getOptions(options);
+        return this.http.get<any>(url, { observe: 'response', headers: headersV2, params });
     }
 
     public deleteSystemSchema(id: string): Observable<any> {
