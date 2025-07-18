@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { ModulesService } from 'src/app/services/modules.service';
+import { ToolsService } from 'src/app/services/tools.service';
 
 @Component({
     selector: 'compare-modules-dialog',
@@ -23,6 +25,8 @@ export class CompareModulesDialogComponent {
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
+        private modulesService: ModulesService,
+        private toolsService: ToolsService,
     ) {
         this.type = config.data.type || 'Module';
         this.item = config.data.module || config.data.tool;
@@ -33,10 +37,40 @@ export class CompareModulesDialogComponent {
     }
 
     ngOnInit() {
-        this.loading = false;
+        this.loadItems();
         setTimeout(() => {
             this.onChange();
         });
+    }
+
+    loadItems() {
+        this.loading = true;
+        switch (this.type) {
+            case 'Module':
+                this.modulesService.page().subscribe((response) => {
+                    this.items = response.body || [];
+                    setTimeout(() => {
+                        this.loading = false;
+                        this.onChange();
+                    }, 0);
+                }, (e) => {
+                    this.loading = false;
+                });
+                break;
+            case 'Tool':
+                this.toolsService.page().subscribe((response) => {
+                    this.items = response.body || [];
+                    setTimeout(() => {
+                        this.loading = false;
+                        this.onChange();
+                    }, 0);
+                }, (e) => {
+                    this.loading = false;
+                });
+                break;
+            default:
+                break;
+        }
     }
 
     setData(data: any) {
