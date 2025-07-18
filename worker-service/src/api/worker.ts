@@ -875,19 +875,20 @@ export class Worker extends NatsService {
                         break
                     }
 
-                    const [singleContractId] = await client.createContract(
-                        constructorParams.RETIRE_SINGLE_FILE_ID,
-                        new ContractFunctionParameters(),
-                        gas,
-                        contractMemo
-                    );
-
-                    const [doubleContractId] = await client.createContract(
-                        constructorParams.RETIRE_DOUBLE_FILE_ID,
-                        new ContractFunctionParameters(),
-                        gas,
-                        contractMemo
-                    );
+                    const [[singleContractId], [doubleContractId]] = await Promise.all([
+                        client.createContract(
+                            constructorParams.RETIRE_SINGLE_FILE_ID,
+                            new ContractFunctionParameters(),
+                            gas,
+                            contractMemo
+                        ),
+                        client.createContract(
+                            constructorParams.RETIRE_DOUBLE_FILE_ID,
+                            new ContractFunctionParameters(),
+                            gas,
+                            contractMemo
+                        )
+                    ]);
 
                     const routerConstructor = new ContractFunctionParameters()
                         .addAddress(ContractId.fromString(singleContractId).toSolidityAddress())

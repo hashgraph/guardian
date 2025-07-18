@@ -26,8 +26,6 @@ contract RetireRouter is Version, RetireCommon {
 
         _setRole(msg.sender, OWNER);
         _setRole(msg.sender, ADMIN);
-        emit OwnerAdded(msg.sender);
-        emit AdminAdded(msg.sender);
     }
 
     function clearPools(uint8 tc) public override role(OWNER) {
