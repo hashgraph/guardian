@@ -2,7 +2,6 @@ import {
     ApproveStatus,
     DocumentSignature,
     DocumentStatus,
-    GenerateUUIDv4,
     IVC,
     IVCDocument,
 } from '@guardian/interfaces';

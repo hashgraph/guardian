@@ -1,7 +1,6 @@
 import {
     DocumentSignature,
     DocumentStatus,
-    GenerateUUIDv4,
     IVC,
 } from '@guardian/interfaces';
 import {
@@ -18,8 +17,6 @@ import {
 import { BaseEntity } from '../models/index.js';
 import { DataBaseHelper } from '../helpers/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
-import ObjGet from 'lodash.get';
-import ObjSet from 'lodash.set';
 
 /**
  * Documents for aggregate collection

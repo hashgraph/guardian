@@ -1,6 +1,5 @@
 import {
     ApproveStatus,
-    GenerateUUIDv4,
     IApprovalDocument,
     IVC,
 } from '@guardian/interfaces';

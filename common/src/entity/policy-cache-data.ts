@@ -762,8 +762,8 @@ export class PolicyCacheData extends BaseEntity {
     processDate?: any;
 
     /**
-      * old file id
-      */
+     * old file id
+     */
     @Property({ persist: false, nullable: true })
     _documentFileId?: ObjectId;
 

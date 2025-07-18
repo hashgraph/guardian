@@ -1,4 +1,4 @@
-import { DocumentSignature, DocumentStatus, GenerateUUIDv4, IVP, IVPDocument } from '@guardian/interfaces';
+import { DocumentSignature, DocumentStatus, IVP, IVPDocument } from '@guardian/interfaces';
 import { Entity, Property, Enum, BeforeCreate, BeforeUpdate, OnLoad, AfterDelete, AfterUpdate, AfterCreate } from '@mikro-orm/core';
 import { RestoreEntity } from '../models/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
