@@ -21,7 +21,6 @@ import {HederaSDKHelper, NetworkOptions} from './helpers/hedera-sdk-helper.js';
 import {IpfsClientClass} from './ipfs-client-class.js';
 import {
     AccountId,
-    ContractExecuteTransaction,
     ContractFunctionParameters,
     ContractId,
     PrivateKey,
