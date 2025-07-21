@@ -1,4 +1,4 @@
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ISchema } from '@guardian/interfaces';
 import { Observable, Subject } from 'rxjs';
@@ -15,7 +15,29 @@ export class TagsService {
 
     constructor(
         private http: HttpClient
-    ) {}
+    ) { }
+
+    public static getOptions(filters?: {
+        pageIndex?: number,
+        pageSize?: number,
+        [key: string]: any
+    }): HttpParams {
+        let params = new HttpParams();
+        if (filters && typeof filters === 'object') {
+            for (const key of Object.keys(filters)) {
+                if (filters[key] !== undefined && filters[key] !== null) {
+                    if (key !== 'pageIndex' && key !== 'pageSize') {
+                        params = params.set(key, filters[key]);
+                    }
+                }
+            }
+            if (Number.isInteger(filters.pageIndex) && Number.isInteger(filters.pageSize)) {
+                params = params.set('pageIndex', String(filters.pageIndex));
+                params = params.set('pageSize', String(filters.pageSize));
+            }
+        }
+        return params;
+    }
 
     public create(tag: any): Observable<any> {
         return this.http.post<any>(`${this.url}/`, tag);
@@ -33,12 +55,12 @@ export class TagsService {
         return this.http.delete<boolean>(`${this.url}/${uuid}`);
     }
 
-    public getSchemas(pageIndex?: number, pageSize?: number): Observable<HttpResponse<ISchema[]>> {
-        let url = `${this.url}/schemas`;
-        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
-            url += `?pageIndex=${pageIndex}&pageSize=${pageSize}`;
-        }
-        return this.http.get<any>(url, { observe: 'response', headers: headersV2 });
+    public getSchemas(options?: {
+        pageIndex?: number,
+        pageSize?: number
+    }): Observable<HttpResponse<ISchema[]>> {
+        const params = TagsService.getOptions(options);
+        return this.http.get<any>(`${this.url}/schemas`, { observe: 'response', headers: headersV2, params });
     }
 
     public createSchema(schema: ISchema): Observable<ISchema> {

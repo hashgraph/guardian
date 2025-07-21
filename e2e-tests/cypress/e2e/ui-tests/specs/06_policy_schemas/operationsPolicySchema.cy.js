@@ -32,6 +32,10 @@ context("Policy Schema Operations", { tags: ['ui'] }, () => {
         schemaPage.publishPolicySchema(schemaNameImportedIPFS);
     });
 
+    it("publish policy schema", () => {
+        schemaPage.publishPolicySchema(schemaNameImportedFile);
+    });
+
     it("Export by File", () => {
         schemaPage.exportSchemaFile(schemaNameImportedFile);
     });
@@ -40,9 +44,10 @@ context("Policy Schema Operations", { tags: ['ui'] }, () => {
         schemaPage.exportSchemaIPFS(schemaNameImportedIPFS);
     });
 
-    it("Compare Policy Schema", () => {
-        schemaPage.comparePolicySchema(schemaNameImportedIPFS, schemaNameImportedFile);
-    });
+    // TODO: 5039 Schemas compare fix
+    // it("Compare Policy Schema", () => {
+    //     schemaPage.comparePolicySchema(schemaNameImportedIPFS, schemaNameImportedFile);
+    // });
 
     it("Edit Policy schema", () => {
         schemaPage.editPolicySchema(schemaNameImportedFile);

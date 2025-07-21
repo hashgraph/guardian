@@ -1,4 +1,4 @@
-import { ConfigType, EntityStatus, GenerateUUIDv4, IFormula, IOwner, IRootConfig, PolicyTestStatus, PolicyToolMetadata, PolicyStatus, SchemaCategory, TagType, TopicType, LocationType } from '@guardian/interfaces';
+import { ConfigType, EntityStatus, GenerateUUIDv4, IFormula, IOwner, IRootConfig, PolicyTestStatus, PolicyToolMetadata, PolicyStatus, SchemaCategory, TagType, TopicType, LocationType, PolicyAvailability } from '@guardian/interfaces';
 import { DatabaseServer, PinoLogger, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, PolicyTool, RecordImportExport, Schema, Tag, Token, Topic, TopicConfig, TopicHelper, Users, Formula, FormulaImportExport } from '@guardian/common';
 import { ImportMode } from '../common/import.interface.js';
 import { ImportFormulaResult, ImportPolicyError, ImportPolicyOptions, ImportPolicyResult, ImportTestResult } from './policy-import.interface.js';
@@ -88,6 +88,7 @@ export class PolicyImport {
             policy.policyTag = additionalPolicyConfig?.policyTag || 'Tag_' + Date.now();
             policy.status = PolicyStatus.DEMO;
             policy.locationType = LocationType.LOCAL;
+            policy.availability = PolicyAvailability.PRIVATE;
         } else if (this.mode === ImportMode.VIEW) {
             delete policy.createDate;
             policy._id = new ObjectId(policy.id);
@@ -101,6 +102,7 @@ export class PolicyImport {
             policy.status = PolicyStatus.VIEW;
             policy.messageId = (additionalPolicyConfig?.messageId || policy.messageId || '').trim();
             policy.locationType = LocationType.REMOTE;
+            policy.availability = PolicyAvailability.PUBLIC;
         } else {
             delete policy._id;
             delete policy.id;
@@ -119,6 +121,7 @@ export class PolicyImport {
             policy.policyTag = additionalPolicyConfig?.policyTag || 'Tag_' + Date.now();
             policy.status = PolicyStatus.DRAFT;
             policy.locationType = LocationType.LOCAL;
+            policy.availability = PolicyAvailability.PRIVATE;
         }
         return policy;
     }

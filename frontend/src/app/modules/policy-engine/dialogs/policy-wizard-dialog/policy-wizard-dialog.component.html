@@ -1,3 +1,11 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{header}}</div>
+    </div>
+    <div class="header-icon" (click)="onNoClick()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
 <div class="dialog-body">
     <app-separate-stepper
         [(currentNode)]="currentNode"
@@ -5,60 +13,63 @@
     ></app-separate-stepper>
 </div>
 <div class="dialog-footer">
+    {{this.dataForm.errors}}
     <div class="action-buttons">
         <div class="create-policy-button">
-            <p-button
-                (click)="onCreate()"
-                [attr.disabled]="!this.dataForm.valid"
-                label="Create Policy"
-                [outlined]=true
-            >
-            </p-button>
+            <div class="dialog-button">
+                <button 
+                    (click)="onCreate()" 
+                    [disabled]="!this.dataForm.valid"
+                    class="guardian-button guardian-button-secondary">Create Policy</button>
+            </div>
         </div>
         <div class="navigation-buttons">
-            <p-button
-                (click)="handlePrevClick()"
-                *ngIf="matTree?.hasPrevStep"
-                class="prev-button"
-                label="Prev"
-                [outlined]=true
-            ></p-button>
-            <p-button
-                (click)="handleNextClick()"
-                *ngIf="matTree?.hasNextStep"
-                class="next-button"
-                label="Next"
-            ></p-button>
+            <div class="dialog-button">
+                <button 
+                    *ngIf="matTree?.hasPrevStep"
+                    (click)="handlePrevClick()" 
+                    class="prev-button guardian-button guardian-button-secondary">Prev</button>
+            </div>
+            <div class="dialog-button">
+                <button 
+                    *ngIf="matTree?.hasNextStep"
+                    (click)="handleNextClick()" 
+                    class="next-button guardian-button guardian-button-primary">Next</button>
+            </div>
         </div>
     </div>
 </div>
 
 <ng-template #policyDescriptionForm let-control="control">
     <form [formGroup]="control">
-        <div class="form-input-container">
+        <div class="guardian-input-container">
             <label class="form-label" htmlFor="name">* Name</label>
             <input formControlName="name" id="name" pInputText type="text"/>
         </div>
-        <div class="form-input-container">
+        <div class="guardian-input-container">
             <label class="form-label" htmlFor="sectoralScope">Sectoral scope</label>
             <p-dropdown
+                class="guardian-dropdown"
+                panelStyleClass="guardian-dropdown-panel width-825"
                 #operationDropdown
                 [options]="sectoralScopeOptions"
-                formControlName="sectoralScope"
                 id="sectoralScope"
+                formControlName="sectoralScope"
                 optionLabel="name"
                 optionValue="id"
                 placeholder="Not selected"
-                [appendTo]="'body'"
+                appendTo="body"
             >
                 <ng-template pTemplate="selectedItem" let-selectedItem>
                     {{ selectedItem ? selectedItem.name : 'Not selected' }}
                 </ng-template>
             </p-dropdown>
         </div>
-        <div class="form-input-container">
+        <div class="guardian-input-container">
             <label class="form-label" htmlFor="projectScale">Project Scale</label>
             <p-dropdown
+                class="guardian-dropdown"
+                panelStyleClass="guardian-dropdown-panel width-825"
                 #operationDropdown
                 [options]="projectScaleOptions"
                 formControlName="projectScale"
@@ -66,22 +77,22 @@
                 optionLabel="name"
                 optionValue="id"
                 placeholder="Not selected"
-                [appendTo]="'body'"
+                appendTo="body"
             >
                 <ng-template pTemplate="selectedItem" let-selectedItem>
                     {{ selectedItem ? selectedItem.name : 'Not selected' }}
                 </ng-template>
             </p-dropdown>
         </div>
-        <div class="form-input-container">
+        <div class="guardian-input-container">
             <label class="form-label" htmlFor="applicabilityConditions">Conditions for applicability</label>
             <input formControlName="applicabilityConditions" id="applicabilityConditions" pInputText type="text"/>
         </div>
-        <div class="form-input-container">
+        <div class="guardian-input-container">
             <label class="form-label" htmlFor="detailsUrl">URL on policy details page</label>
             <input formControlName="detailsUrl" id="detailsUrl" pInputText type="text"/>
         </div>
-        <div class="form-input-container">
+        <div class="guardian-input-container">
             <label htmlFor="tag">* Tag</label>
             <input
                 formControlName="policyTag"
@@ -90,11 +101,11 @@
                 type="text"
             />
         </div>
-        <div class="form-input-container">
+        <div class="guardian-input-container">
             <label class="form-label" htmlFor="typicalProjects">Typical project(s)</label>
             <input formControlName="typicalProjects" id="typicalProjects" pInputText type="text"/>
         </div>
-        <div class="form-input-container">
+        <div class="guardian-input-container">
             <label class="form-label" htmlFor="topicDescription">Topic Description</label>
             <input
                 formControlName="topicDescription"
@@ -103,7 +114,7 @@
                 type="text"
             />
         </div>
-        <div class="form-input-container">
+        <div class="guardian-input-container">
             <label class="form-label" for="description">Description</label>
             <textarea
                 cols="30"
@@ -115,9 +126,11 @@
         </div>
 
         <h3>Categorization</h3>
-        <div class="form-input-container">
+        <div class="guardian-input-container">
             <label class="form-label" htmlFor="appliedTechnologyType">Applied Technology Type/Measure</label>
             <p-dropdown
+                class="guardian-dropdown"
+                panelStyleClass="guardian-dropdown-panel width-825"
                 #operationDropdown
                 [options]="appliedTechnologyTypeOptions"
                 formControlName="appliedTechnologyType"
@@ -132,12 +145,14 @@
                 </ng-template>
             </p-dropdown>
         </div>
-        <div class="form-input-container">
+        <div class="guardian-input-container">
             <label class="form-label" htmlFor="migrationActivityType">Mitigation Activity Type</label>
             <p-multiSelect
+                class="guardian-multiselect"
+                panelStyleClass="guardian-multiselect-panel"
                 #operationDropdown
                 [options]="migrationActivityTypeOptions"
-                defaultLabel="Not selected"
+                placeholder="Not selected"
                 display="chip"
                 formControlName="migrationActivityType"
                 id="migrationActivityType"
@@ -146,12 +161,14 @@
             >
             </p-multiSelect>
         </div>
-        <div class="form-input-container">
+        <div class="guardian-input-container">
             <label class="form-label" htmlFor="subType">Sub Type</label>
             <p-multiSelect
+                class="guardian-multiselect"
+                panelStyleClass="guardian-multiselect-panel"
                 #operationDropdown
                 [options]="subTypeOptions"
-                defaultLabel="Not selected"
+                placeholder="Not selected"
                 display="chip"
                 formControlName="subType"
                 id="subType"
@@ -162,11 +179,11 @@
         </div>
 
         <h3>Important parameters</h3>
-        <div class="form-input-container">
+        <div class="guardian-input-container">
             <label class="form-label" htmlFor="atValidation">At validation</label>
             <input formControlName="atValidation" id="atValidation" pInputText type="text"/>
         </div>
-        <div class="form-input-container">
+        <div class="guardian-input-container">
             <label class="form-label" htmlFor="monitored">Monitored</label>
             <input formControlName="monitored" id="monitored" pInputText type="text"/>
         </div>
@@ -202,7 +219,7 @@
         </div>
     </div>
     <div class="policy-roles-add-container">
-        <div class="form-input-container">
+        <div class="guardian-input-container">
             <label class="form-label" htmlFor="roleName">Name</label>
             <input
                 #nameInput
@@ -226,12 +243,14 @@
     <div class="policy-schemas-input">
         <label class="form-label">Which schemas will be used in policy?</label>
         <p-multiSelect
+            class="guardian-multiselect"
+            panelStyleClass="guardian-multiselect-panel"
             (onChange)="onSelectedSchemasChange($event.value)"
             [group]="true"
             [ngModel]="selectedSchemas"
             [options]="groupedSchemas"
             appendTo="body"
-            defaultLabel="Select Schema"
+            placeholder="Select Schema"
         >
         </p-multiSelect>
     </div>
@@ -248,6 +267,8 @@
         <div class="policy-schemas-input mb-24">
             <label class="form-label">Which users are able to view?</label>
             <p-multiSelect
+                class="guardian-multiselect"
+                panelStyleClass="guardian-multiselect-panel"
                 (onChange)="
                     onSchemaRolesConfigChange(
                         control,
@@ -260,7 +281,7 @@
                 [ngModel]="options.displayedInRoles"
                 [options]="policyRolesForm.value"
                 appendTo="body"
-                defaultLabel="Select Users"
+                placeholder="Select Users"
             >
             </p-multiSelect>
         </div>
@@ -268,6 +289,8 @@
             <div class="policy-schemas-input">
                 <label class="form-label">Produced schema:</label>
                 <p-dropdown
+                    class="guardian-dropdown"
+                    panelStyleClass="guardian-dropdown-panel width-825"
                     [options]="selectedSchemas"
                     appendTo="body"
                     formControlName="dependencySchemaIri"
@@ -289,6 +312,8 @@
         <div class="policy-schemas-input mb-24">
             <label class="form-label">Relationship schema:</label>
             <p-dropdown
+                class="guardian-dropdown"
+                panelStyleClass="guardian-dropdown-panel width-825"
                 [options]="selectedSchemas"
                 appendTo="body"
                 formControlName="relationshipsSchemaIri"
@@ -301,9 +326,11 @@
             <div class="policy-schemas-input">
                 <label class="form-label">Initial for roles:</label>
                 <p-multiSelect
+                    class="guardian-multiselect"
+                    panelStyleClass="guardian-multiselect-panel"
                     [options]="policyRolesForm.value"
                     appendTo="body"
-                    defaultLabel="Select Role"
+                    placeholder="Select Role"
                     formControlName="initialRolesFor"
                     [appendTo]="'body'"
                 >
@@ -343,6 +370,8 @@
         <div class="policy-schemas-input mb-24">
             <label class="form-label">Token:</label>
             <p-dropdown
+                class="guardian-dropdown"
+                panelStyleClass="guardian-dropdown-panel width-825"
                 [options]="tokens"
                 appendTo="body"
                 formControlName="tokenId"
@@ -354,6 +383,8 @@
         <div class="policy-schemas-input mb-24">
             <label class="form-label">Field:</label>
             <p-dropdown
+                class="guardian-dropdown"
+                panelStyleClass="guardian-dropdown-panel width-825"
                 [options]="mintFields"
                 appendTo="body"
                 formControlName="rule"
@@ -440,7 +471,7 @@
 
             <div class="grid-columns-title">Add Column</div>
             <div class="grid-column-add-container">
-                <div class="form-input-container w-45">
+                <div class="guardian-input-container w-45">
                     <label class="form-label" htmlFor="columnName">* Column name:</label>
                     <input
                         #titleInput
@@ -450,9 +481,11 @@
                         type="text"
                     />
                 </div>
-                <div class="policy-schemas-input w-45">
+                <div class="guardian-input-container policy-schemas-input w-45">
                     <label class="form-label">* Field:</label>
                     <p-dropdown
+                        class="guardian-dropdown"
+                        panelStyleClass="guardian-dropdown-panel width-825"
                         #fieldSelect
                         [options]="fields"
                         appendTo="body"
@@ -476,11 +509,13 @@
     <div class="policy-schemas-input">
         <label class="form-label">Which users are able to view?</label>
         <p-multiSelect
+            class="guardian-multiselect"
+            panelStyleClass="guardian-multiselect-panel"
             (onChange)="onSelectedTrustChainRolesChange($event.value)"
             [ngModel]="selectedTrustChainRoles"
             [options]="policyRolesForm.value"
             appendTo="body"
-            defaultLabel="Select User"
+            placeholder="Select User"
         >
         </p-multiSelect>
     </div>
@@ -491,6 +526,8 @@
         <div class="policy-schemas-input mb-24">
             <label class="form-label">Minting Schema:</label>
             <p-dropdown
+                class="guardian-dropdown"
+                panelStyleClass="guardian-dropdown-panel width-825"
                 [options]="mintedSchemas"
                 appendTo="body"
                 formControlName="mintSchemaIri"

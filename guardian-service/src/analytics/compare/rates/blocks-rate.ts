@@ -1,5 +1,5 @@
 import { BlockModel, EventModel, ArtifactModel, AnyPropertyModel, PropertyModel } from '../models/index.js';
-import { CompareOptions, IRate, IRateMap } from '../interfaces/index.js';
+import { CompareOptions, IEventsLvl, IPropertiesLvl, IRate, IRateMap } from '../interfaces/index.js';
 import { Status } from '../types/index.js';
 import { PropertiesRate } from './properties-rate.js';
 import { EventsRate } from './events-rate.js';
@@ -244,18 +244,19 @@ export class BlocksRate extends Rate<BlockModel> {
         }
 
         this.indexRate = block1.index === block2.index ? 100 : 0;
+
         this.propertiesRate = CompareUtils.calcRate(this.properties);
-        this.eventsRate = CompareUtils.calcRate(this.events);
         this.permissionsRate = CompareUtils.calcRate(this.permissions);
         this.artifactsRate = CompareUtils.calcRate(this.artifacts);
+        this.eventsRate = CompareUtils.calcRate(this.events);
 
         const rates = [];
-        if (options.propLvl) {
+        if (options.propLvl !== IPropertiesLvl.None) {
             rates.push(this.propertiesRate);
             rates.push(this.permissionsRate);
             rates.push(this.artifactsRate);
         }
-        if (options.eventLvl) {
+        if (options.eventLvl !== IEventsLvl.None) {
             rates.push(this.eventsRate);
         }
         this.totalRate = CompareUtils.calcTotalRates(rates);

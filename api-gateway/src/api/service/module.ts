@@ -307,7 +307,10 @@ export class ModulesApi {
 
             const schemas = await guardians.createSchema(newSchema, owner);
 
-            const invalidedCacheTags = [`${PREFIXES.MODULES}schemas`];
+            const invalidedCacheTags = [
+                `${PREFIXES.MODULES}schemas`,
+                `${PREFIXES.SCHEMES}schema-with-sub-schemas`
+            ];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
             return SchemaUtils.toOld(schemas);

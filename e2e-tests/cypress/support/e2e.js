@@ -24,14 +24,14 @@ import "cypress-mochawesome-reporter/register";
 // load and register the grep feature using "require" function
 // https://github.com/cypress-io/cypress-grep
 
-const registerCypressGrep = require('cypress-grep')
+const registerCypressGrep = require('@cypress/grep')
 
 registerCypressGrep()
 
 require('cy-verify-downloads').addCustomCommand();
 
 beforeEach('Time logging', () => {
-    cy.task('log', "Test started on:")
+    cy.task('log', Cypress.currentTest.title + " started on:")
     cy.task('log', new Date(Date.now()))
 })
 
