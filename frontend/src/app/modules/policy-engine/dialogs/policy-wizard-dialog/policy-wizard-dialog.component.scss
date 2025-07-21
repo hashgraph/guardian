@@ -275,15 +275,16 @@ form {
 
 .navigation-buttons {
     margin-left: auto;
+    display: flex;
 }
 
 .create-policy-button {
-    ::ng-deep {
-        .p-button-outlined {
-            border-radius: 8px;
-            border: 1px solid var(--color-primary);
-            color: var(--color-primary);
-        }
+    .dialog-button {
+        margin-left: 0;
+    }
+
+    button {
+        width: 135px;
     }
 }
 
@@ -349,6 +350,7 @@ form {
             color: var(--color-primary);
         }
     }
+    margin-bottom: 24px;
 }
 
 .policy-schemas-input {
@@ -426,4 +428,8 @@ form {
 
 .pi-info-circle ::ng-deep button {
     display: none
+}
+
+.guardian-input-container {
+    margin-bottom: 24px;
 }

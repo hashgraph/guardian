@@ -126,11 +126,12 @@ export class SchemaConfigComponent implements OnInit {
     public properties: any[] = [];
     public schemasTypes: { label: string; value: SchemaType }[] = [
         { label: 'Policy Schemas', value: SchemaType.Policy },
+        { label: 'Tool Schemas', value: SchemaType.Tool },
         { label: 'Module Schemas', value: SchemaType.Module },
         { label: 'Tag Schemas', value: SchemaType.Tag },
-        { label: 'System Schemas', value: SchemaType.System },
-        { label: 'Tool Schemas', value: SchemaType.Tool },
+        { label: 'System Schemas', value: SchemaType.System }
     ];
+    public textSearch: any;
 
     public element: any = {};
 
@@ -574,11 +575,17 @@ export class SchemaConfigComponent implements OnInit {
         let loader: Observable<HttpResponse<ISchema[]>>;
         switch (this.type) {
             case SchemaType.System: {
-                loader = this.schemaService.getSystemSchemas(this.pageIndex, this.pageSize);
+                loader = this.schemaService.getSystemSchemas({
+                    pageIndex: this.pageIndex,
+                    pageSize: this.pageSize
+                });
                 break;
             }
             case SchemaType.Tag: {
-                loader = this.tagsService.getSchemas(this.pageIndex, this.pageSize);
+                loader = this.tagsService.getSchemas({
+                    pageIndex: this.pageIndex,
+                    pageSize: this.pageSize
+                });
                 break;
             }
             case SchemaType.Policy:
@@ -586,7 +593,13 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Tool:
             default: {
                 const category = this.getCategory();
-                loader = this.schemaService.getSchemasByPage(category, this.currentTopic ?? '', this.pageIndex, this.pageSize);
+                loader = this.schemaService.getSchemasByPage({
+                    category: category,
+                    topicId: this.currentTopic || '',
+                    search: this.textSearch,
+                    pageIndex: this.pageIndex,
+                    pageSize: this.pageSize
+                });
                 break;
             }
         }
@@ -625,8 +638,8 @@ export class SchemaConfigComponent implements OnInit {
         }
     }
 
-    public onFilter(event: any) {
-        if (event.value === null) {
+    public onFilter(event?: any) {
+        if (event && event.value === null) {
             this.currentTopic = '';
         }
         this.pageIndex = 0;
@@ -1002,13 +1015,13 @@ export class SchemaConfigComponent implements OnInit {
                 category: this.getCategory()
             },
         });
-        dialogRef.onClose.subscribe(async ({ exampleDate, currentSchema }: {
+        dialogRef.onClose.subscribe(async (result: {
             exampleDate: any,
             currentSchema: Schema
         }) => {
-            if (exampleDate && currentSchema) {
-                schema.setExample(exampleDate);
-                this.updateSchema(currentSchema.id, currentSchema);
+            if (result && result.exampleDate && result.currentSchema) {
+                schema.setExample(result.exampleDate);
+                this.updateSchema(result.currentSchema.id, result.currentSchema);
             }
         });
     }
