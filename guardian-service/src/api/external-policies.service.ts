@@ -15,6 +15,7 @@ import { ExternalPolicyStatus, IOwner, MessageAPI, PolicyAvailability } from '@g
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { PolicyEngine } from '../policy-engine/policy-engine.js';
 import { ImportMode, ImportPolicyOptions, PolicyImportExportHelper } from '../helpers/import-helpers/index.js'
+import { INotificationStep, NewNotifier } from '../helpers/new-notifier.js';
 
 /**
  * Prepare policy for preview by message
@@ -71,33 +72,53 @@ async function addPolicy(
     messageId: string,
     owner: IOwner,
     logger: PinoLogger,
-    notifier: INotifier,
+    notifier: INotificationStep,
     userId: string | null
 ) {
+    notifier.addStep('Resolve Hedera account', 1);
+    notifier.addStep('Load message', 5);
+    notifier.addStep('Import policy', 90);
+    notifier.addStep('Start policy', 4);
+    notifier.start();
+
     const users = new Users();
-    notifier.start('Resolve Hedera account');
+    notifier.getStep('Resolve Hedera account').start();
     const root = await users.getHederaAccount(owner.creator, userId);
-    notifier.completed();
-    const policyToImport = await PolicyImportExportHelper.loadPolicyMessage(messageId, root, notifier, userId);
+    notifier.getStep('Resolve Hedera account').complete();
+
+    notifier.getStep('Load message').start();
+    const policyToImport = await PolicyImportExportHelper.loadPolicyMessage(
+        messageId,
+        root,
+        notifier.getStep('Load message'),
+        userId
+    );
+    notifier.getStep('Load message').complete();
+
+    notifier.getStep('Import policy').start();
     const result = await PolicyImportExportHelper.importPolicy(
         ImportMode.VIEW,
         (new ImportPolicyOptions(logger))
             .setComponents(policyToImport)
             .setUser(owner)
             .setAdditionalPolicy({ messageId }),
-        notifier,
+        notifier.getStep('Import policy'),
         userId
     );
+    notifier.getStep('Import policy').complete();
+
     if (result?.errors?.length) {
         const message = PolicyImportExportHelper.errorsMessage(result.errors);
-        notifier.error(message);
+        notifier.fail(message);
         await logger.warn(message, ['GUARDIAN_SERVICE'], userId);
 
         return result;
     }
 
+    notifier.getStep('Start policy').start();
     const policyEngine = new PolicyEngine(logger);
     await policyEngine.startView(result.policy, owner, logger, notifier);
+    notifier.getStep('Start policy').complete();
 
     return result;
 }
@@ -284,7 +305,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const policy = await DatabaseServer.getPolicy({ messageId });
-                const notifier = await initNotifier(task);
+                const notifier = await NewNotifier.create(task);
                 RunFunctionAsync(async () => {
                     let errors: any[] = [];
                     if (!policy) {
@@ -300,7 +321,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     notifier.result({ id: messageId, errors });
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                    notifier.error(error);
+                    notifier.fail(error);
                 });
 
                 return new MessageResponse(task);
@@ -331,7 +352,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const policy = await DatabaseServer.getPolicy({ messageId });
-                const notifier = emptyNotifier();
+                const notifier = NewNotifier.empty();
 
                 let errors: any[] = [];
                 if (!policy) {

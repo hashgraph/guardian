@@ -1,9 +1,9 @@
 import { ApiResponse } from './helpers/api-response.js';
 import { BinaryMessageResponse, DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyStatistic, PolicyStatisticImportExport, StatisticAssessmentMessage, StatisticMessage, Users } from '@guardian/common';
 import { EntityStatus, IOwner, MessageAPI, PolicyStatus, Schema, SchemaEntity } from '@guardian/interfaces';
-
 import { findRelationships, generateSchema, generateVcDocument, getOrCreateTopic, publishConfig, uniqueDocuments } from './helpers/policy-statistics-helpers.js';
 import { publishSchema } from '../helpers/import-helpers/index.js';
+import { NewNotifier } from '../helpers/new-notifier.js';
 
 /**
  * Connect to the message broker methods of working with statistics.
@@ -304,7 +304,13 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 item.messageId = statMessageResult.getId();
 
                 const schema = await generateSchema(item.topicId, item.config, owner);
-                await publishSchema(schema, owner, messageServer, MessageAction.PublishSchema);
+                await publishSchema(
+                    schema,
+                    owner,
+                    messageServer,
+                    MessageAction.PublishSchema,
+                    NewNotifier.empty()
+                );
                 await DatabaseServer.createAndSaveSchema(schema);
 
                 const result = await DatabaseServer.updateStatistic(item);

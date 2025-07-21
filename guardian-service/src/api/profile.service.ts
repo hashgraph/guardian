@@ -24,6 +24,7 @@ import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { setupUserProfile, validateCommonDid } from './helpers/profile-helper.js';
+import { NewNotifier } from '../helpers/new-notifier.js';
 
 @Controller()
 export class ProfileController {
@@ -126,7 +127,13 @@ export function profileAPI(logger: PinoLogger) {
         }) => {
             try {
                 const { username, profile, user } = msg;
-                const did = await setupUserProfile(username, profile, emptyNotifier(), logger, user.id);
+                const did = await setupUserProfile({
+                    username,
+                    profile,
+                    logger,
+                    notifier: NewNotifier.empty(),
+                    logId: user.id
+                });
                 return new MessageResponse(did);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
@@ -143,14 +150,20 @@ export function profileAPI(logger: PinoLogger) {
             task: any
         }) => {
             const { user, username, profile, task } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
 
             RunFunctionAsync(async () => {
-                const did = await setupUserProfile(username, profile, notifier, logger, user.id);
+                const did = await setupUserProfile({
+                    username,
+                    profile,
+                    logger,
+                    notifier,
+                    logId: user.id
+                });
                 notifier.result(did);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], user.id);
-                notifier.error(error);
+                notifier.fail(error);
             });
 
             return new MessageResponse(task);

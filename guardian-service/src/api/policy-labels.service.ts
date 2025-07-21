@@ -20,18 +20,26 @@ import { EntityStatus, IOwner, LabelValidators, MessageAPI, PolicyStatus, Schema
 import { findRelationships, generateSchema, generateVpDocument, getOrCreateTopic, publishLabelConfig } from './helpers/policy-labels-helpers.js';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { publishSchemas, saveSchemas } from '../helpers/import-helpers/index.js';
+import { INotificationStep, NewNotifier } from '../helpers/new-notifier.js';
 
 async function publishPolicyLabel(
     item: PolicyLabel,
     owner: IOwner,
-    notifier: INotifier,
+    notifier: INotificationStep,
     logger: PinoLogger
 ): Promise<PolicyLabel> {
+    notifier.addStep('Create topic');
+    notifier.addStep('Generate schemas');
+    notifier.addStep('Publish schemas');
+    notifier.addStep('Publish label');
+    notifier.addStep('Save');
+    notifier.start();
+
     item.status = EntityStatus.PUBLISHED;
     item.config = PolicyLabelImportExport.validateConfig(item.config);
     item.config = publishLabelConfig(item.config);
 
-    notifier.start('Create topic');
+    notifier.startStep('Create topic');
     const topic = await getOrCreateTopic(item, owner.id);
     const user = await (new Users()).getHederaAccount(owner.creator, owner.id);
     const messageServer = new MessageServer({
@@ -40,22 +48,31 @@ async function publishPolicyLabel(
         signOptions: user.signOptions
     });
     messageServer.setTopicObject(topic);
+    notifier.completeStep('Create topic');
 
-    notifier.completedAndStart('Generate schemas');
+    notifier.startStep('Generate schemas');
     const schemas = await generateSchema(topic.topicId, item.config, owner);
     const schemaList = new Set<SchemaCollection>();
     for (const { schema } of schemas) {
         schemaList.add(schema);
     }
+    notifier.completeStep('Generate schemas');
 
-    notifier.completedAndStart('Publish schemas');
-    await publishSchemas(schemaList, owner, messageServer, MessageAction.PublishSchema);
+    notifier.startStep('Publish schemas');
+    await publishSchemas(
+        schemaList,
+        owner,
+        messageServer,
+        MessageAction.PublishSchema,
+        notifier.getStep('Publish schemas'),
+    );
     await saveSchemas(schemaList);
     for (const { node, schema } of schemas) {
         node.schemaId = schema.iri;
     }
+    notifier.completeStep('Publish schemas');
 
-    notifier.completedAndStart('Publish label');
+    notifier.startStep('Publish label');
     const zip = await PolicyLabelImportExport.generate(item);
     const buffer = await zip.generateAsync({
         type: 'arraybuffer',
@@ -77,8 +94,12 @@ async function publishPolicyLabel(
 
     item.topicId = topic.topicId;
     item.messageId = statMessageResult.getId();
+    notifier.completeStep('Publish label');
 
+    notifier.startStep('Save');
     const result = await DatabaseServer.updatePolicyLabel(item);
+    notifier.completeStep('Save');
+    notifier.complete();
     return result;
 }
 
@@ -346,7 +367,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError(`Item is already published.`);
                 }
 
-                const result = await publishPolicyLabel(item, owner, emptyNotifier(), logger);
+                const result = await publishPolicyLabel(item, owner, NewNotifier.empty(), logger);
                 return new MessageResponse(result);
 
             } catch (error) {
@@ -379,13 +400,13 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError(`Item is already published.`);
                 }
 
-                const notifier = await initNotifier(task);
+                const notifier = await NewNotifier.create(task);
                 RunFunctionAsync(async () => {
                     const result = await publishPolicyLabel(item, owner, notifier, logger);
                     notifier.result(result);
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], userId);
-                    notifier.error(error);
+                    notifier.fail(error);
                 });
 
                 return new MessageResponse(task);

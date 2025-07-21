@@ -4,12 +4,13 @@ import { ObjectId } from '@mikro-orm/mongodb';
 import { ImportMode } from '../common/import.interface.js';
 import { INotifier } from '../../notifier.js';
 import { ImportArtifactResult } from './artifact-import.interface.js';
+import { INotificationStep } from '../../new-notifier.js';
 
 export class ArtifactImport {
     private readonly mode: ImportMode;
-    private readonly notifier: INotifier;
+    private readonly notifier: INotificationStep;
 
-    constructor(mode: ImportMode, notifier: INotifier) {
+    constructor(mode: ImportMode, notifier: INotificationStep) {
         this.mode = mode;
         this.notifier = notifier;
     }
@@ -18,10 +19,10 @@ export class ArtifactImport {
         artifacts: any[],
         user: IOwner
     ): Promise<ImportArtifactResult> {
-        this.notifier.start('Import artifacts');
+        this.notifier.start();
         const { artifactsMap, artifactsObject, errors } = this.importArtifactsByFiles(artifacts, user);
         const addedArtifacts = await this.saveArtifacts(artifactsObject);
-        this.notifier.completed();
+        this.notifier.complete();
         return {
             artifactsMap,
             artifacts: addedArtifacts,

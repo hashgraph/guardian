@@ -1,6 +1,6 @@
 import { DatabaseServer, Formula, FormulaImportExport, FormulaMessage, MessageAction, MessageServer, TopicConfig, VcDocument, VpDocument } from '@guardian/common';
 import { EntityStatus, IOwner, IRootConfig } from '@guardian/interfaces';
-import { INotifier } from '../../helpers/notifier.js';
+import { INotificationStep } from '../../helpers/new-notifier.js';
 
 type IDocument = VcDocument | VpDocument;
 
@@ -95,19 +95,24 @@ export async function publishFormula(
     item: Formula,
     owner: IOwner,
     root: IRootConfig,
-    notifier: INotifier
+    notifier: INotificationStep,
 ): Promise<Formula> {
     item.status = EntityStatus.PUBLISHED;
 
-    notifier.completedAndStart('Resolve topic');
+    notifier.addStep('Resolve topic', 30);
+    notifier.addStep('Publish formula', 70);
+    notifier.start();
+
+    notifier.startStep('Resolve topic');
     const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.policyTopicId), true, owner.id);
     const messageServer = new MessageServer({
         operatorId: root.hederaAccountId,
         operatorKey: root.hederaAccountKey,
         signOptions: root.signOptions
     }).setTopicObject(topic);
+    notifier.completeStep('Resolve topic');
 
-    notifier.completedAndStart('Publish formula');
+    notifier.startStep('Publish formula');
     const zip = await FormulaImportExport.generate(item);
     const buffer = await zip.generateAsync({
         type: 'arraybuffer',
@@ -130,5 +135,6 @@ export async function publishFormula(
     item.messageId = statMessageResult.getId();
 
     const result = await DatabaseServer.updateFormula(item);
+    notifier.completeStep('Publish formula');
     return result;
 }

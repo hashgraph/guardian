@@ -5,6 +5,7 @@ import { ImportSchemaResult } from './schema-import.interface.js';
 import { SchemaImport } from './schema-import.js';
 import { checkForCircularDependency } from '../common/load-helper.js';
 import { ImportMode } from '../common/import.interface.js';
+import { INotificationStep } from '../../new-notifier.js';
 
 /**
  * Schema import export helper
@@ -142,12 +143,15 @@ export class SchemaImportExportHelper {
             outerSchemas?: { name: string, iri: string }[],
             mode?: ImportMode
         },
-        notifier: INotifier,
+        notifier: INotificationStep,
         userId: string | null
     ): Promise<ImportSchemaResult> {
+        notifier.start();
         const helper = new SchemaImport(options.mode, notifier);
         helper.addExternalSchemas(options.outerSchemas);
-        return helper.import(files, user, options, userId);
+        const result = helper.import(files, user, options, userId);
+        notifier.complete();
+        return result;
     }
     /**
      * Import schemas by messages
@@ -165,12 +169,15 @@ export class SchemaImportExportHelper {
             category: SchemaCategory,
             mode?: ImportMode
         },
-        notifier: INotifier,
         logger: PinoLogger,
+        notifier: INotificationStep,
         userId: string | null
     ): Promise<ImportSchemaResult> {
+        notifier.start();
         const helper = new SchemaImport(options.mode, notifier);
-        return helper.importByMessage(messageIds, user, options, logger, userId);
+        const result = helper.importByMessage(messageIds, user, options, logger, userId);
+        notifier.complete();
+        return result;
     }
 
     /**
@@ -190,10 +197,10 @@ export class SchemaImportExportHelper {
             outerSchemas?: { name: string, iri: string }[],
             mode?: ImportMode
         },
-        notifier: INotifier,
+        step: INotificationStep,
         userId: string | null
     ): Promise<ImportSchemaResult> {
-        const helper = new SchemaImport(options.mode, notifier);
+        const helper = new SchemaImport(options.mode, step);
         helper.addExternalSchemas(options.outerSchemas);
         return helper.importSystem(files, user, options, userId);
     }

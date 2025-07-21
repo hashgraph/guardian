@@ -9,6 +9,7 @@ import { readFile } from 'fs/promises';
 import path from 'path';
 import process from 'process';
 import { FilterObject } from '@mikro-orm/core';
+import { NewNotifier, INotificationStep } from '../helpers/new-notifier.js';
 
 @Controller()
 export class SchemaService { }
@@ -631,7 +632,9 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const { id, version, owner } = msg;
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator, owner.id);
-                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier(), null, owner.id);
+                const item = await findAndPublishSchema(
+                    id, version, owner, root, NewNotifier.empty(), null, owner.id
+                );
                 return new MessageResponse(item);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -648,20 +651,29 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             task: any
         }) => {
             const { id, version, owner, task } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
             RunFunctionAsync(async () => {
                 if (!msg) {
-                    notifier.error('Invalid id');
+                    notifier.fail('Invalid id');
                 }
-
-                notifier.completedAndStart('Resolve Hedera account');
+                notifier.addStep('Resolve Hedera account');
+                notifier.addStep('Publish schemas');
+                notifier.start();
+                notifier.startStep('Resolve Hedera account');
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator, owner.id);
-                const item = await findAndPublishSchema(id, version, owner, root, notifier, null, owner.id);
+                notifier.completeStep('Resolve Hedera account');
+
+                notifier.startStep('Publish schemas');
+                const item = await findAndPublishSchema(
+                    id, version, owner, root, notifier.getStep('Publish schemas'), null, owner.id
+                );
+                notifier.completeStep('Publish schemas');
+
                 notifier.result(item.id);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], owner.id);
-                notifier.error(error);
+                notifier.fail(error);
             });
             return new MessageResponse(task);
         });
@@ -768,8 +780,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         category,
                         topicId
                     },
-                    emptyNotifier(),
                     logger,
+                    NewNotifier.empty(),
                     owner?.id
                 );
                 return new MessageResponse(schemasMap);
@@ -788,13 +800,13 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             task: any
         }) => {
             const { owner, messageIds, topicId, task } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
             RunFunctionAsync(async () => {
                 if (!msg) {
-                    notifier.error('Invalid import schema parameter');
+                    notifier.fail('Invalid import schema parameter');
                 }
                 if (!owner || !messageIds) {
-                    notifier.error('Invalid import schema parameter');
+                    notifier.fail('Invalid import schema parameter');
                 }
 
                 const category = await getSchemaCategory(topicId);
@@ -806,14 +818,14 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         category,
                         topicId
                     },
-                    notifier,
                     logger,
+                    notifier,
                     owner?.id
                 );
                 notifier.result(schemasMap);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                notifier.error(error);
+                notifier.fail(error);
             });
             return new MessageResponse(task);
         });
@@ -840,7 +852,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Invalid import schema parameter');
                 }
                 const { schemas, tags } = files;
-                const notifier = emptyNotifier();
+                const notifier = NewNotifier.empty();
 
                 const category = await getSchemaCategory(topicId);
                 let result = await SchemaImportExportHelper.importSchemaByFiles(
@@ -873,13 +885,13 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             const { owner, files, topicId, task } = msg;
             const { schemas, tags } = files;
 
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
             RunFunctionAsync(async () => {
                 if (!msg) {
-                    notifier.error('Invalid import schema parameter');
+                    notifier.fail('Invalid import schema parameter');
                 }
                 if (!owner || !files) {
-                    notifier.error('Invalid import schema parameter');
+                    notifier.fail('Invalid import schema parameter');
                 }
 
                 const category = await getSchemaCategory(topicId);
@@ -898,7 +910,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 notifier.result(result);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                notifier.error(error);
+                notifier.fail(error);
             });
             return new MessageResponse(task);
         });
@@ -1336,7 +1348,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const { id, version, owner } = msg;
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator, owner?.id);
-                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier(), null, owner?.id);
+                const item = await findAndPublishSchema(id, version, owner, root, NewNotifier.empty(), null, owner?.id);
                 return new MessageResponse(item);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1408,7 +1420,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
         }) => {
             try {
                 const { owner, xlsx, topicId } = msg;
-                const notifier = emptyNotifier();
+                const notifier = NewNotifier.empty();
 
                 if (!xlsx) {
                     throw new Error('file in body is empty');
@@ -1421,7 +1433,13 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator, owner?.id);
                 const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
-                const { tools, errors } = await importSubTools(root, xlsxResult.getToolIds(), owner, notifier, owner.id);
+                const { tools, errors } = await importSubTools(
+                    root,
+                    xlsxResult.getToolIds(),
+                    owner,
+                    notifier,
+                    owner.id
+                );
                 for (const tool of tools) {
                     const subSchemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
                     xlsxResult.updateTool(tool, subSchemas);
@@ -1471,8 +1489,13 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             task: any
         }) => {
             const { owner, xlsx, topicId, task } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
             RunFunctionAsync(async () => {
+                notifier.addStep('File parsing');
+                notifier.addStep('Import tools');
+                notifier.addStep('Import schemas');
+                notifier.start();
+
                 const { category, target } = await getSchemaTarget(topicId);
 
                 if (!xlsx) {
@@ -1485,10 +1508,19 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 await logger.info(`Import policy by xlsx`, ['GUARDIAN_SERVICE'], owner?.id);
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator, owner?.id);
-                notifier.start('File parsing');
 
+                notifier.getStep('File parsing').start();
                 const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
-                const { tools, errors } = await importSubTools(root, xlsxResult.getToolIds(), owner, notifier, owner.id);
+                notifier.getStep('File parsing').complete();
+
+                notifier.getStep('Import tools').start();
+                const { tools, errors } = await importSubTools(
+                    root,
+                    xlsxResult.getToolIds(),
+                    owner,
+                    notifier.getStep('Import tools'),
+                    owner.id
+                );
                 for (const tool of tools) {
                     const subSchemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
                     xlsxResult.updateTool(tool, subSchemas);
@@ -1497,6 +1529,9 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 xlsxResult.updatePolicy(target);
                 xlsxResult.addErrors(errors);
                 GenerateBlocks.generate(xlsxResult);
+                notifier.getStep('Import tools').complete();
+
+                notifier.getStep('Import schemas').start();
                 const result = await SchemaImportExportHelper.importSchemaByFiles(
                     xlsxResult.schemas,
                     owner,
@@ -1505,9 +1540,10 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         topicId,
                         skipGenerateId: true
                     },
-                    notifier,
+                    notifier.getStep('Import schemas'),
                     owner?.id
                 );
+                notifier.getStep('Import schemas').complete();
 
                 if (category === SchemaCategory.TOOL) {
                     await updateToolConfig(target);
@@ -1515,6 +1551,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 } else if (category === SchemaCategory.POLICY) {
                     await PolicyImportExportHelper.updatePolicyComponents(target, logger, owner?.id);
                 }
+                notifier.complete();
 
                 notifier.result({
                     schemas: xlsxResult.schemas,
@@ -1522,7 +1559,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 });
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                notifier.error(error);
+                notifier.fail(error);
             });
             return new MessageResponse(task);
         });

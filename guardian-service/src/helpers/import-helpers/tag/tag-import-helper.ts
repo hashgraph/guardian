@@ -2,6 +2,7 @@ import { DatabaseServer, IPolicyComponents, MessageAction, MessageServer, Messag
 import { GenerateUUIDv4, TagType } from '@guardian/interfaces';
 import { ImportSchemaResult } from '../schema/schema-import.interface.js';
 import { INotifier } from '../../notifier.js';
+import { INotificationStep } from '../../new-notifier.js';
 
 /**
  * Import tags
@@ -63,7 +64,7 @@ export async function importTag(
 export async function importTagsByFiles(
     result: ImportSchemaResult,
     files: Tag[],
-    notifier: INotifier
+    notifier: INotificationStep
 ): Promise<ImportSchemaResult> {
     const { schemasMap } = result;
     const idMap: Map<string, string> = new Map();

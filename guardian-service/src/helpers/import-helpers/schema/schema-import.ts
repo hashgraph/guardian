@@ -32,10 +32,11 @@ import { checkForCircularDependency, loadSchema } from '../common/load-helper.js
 import { SchemaImportExportHelper } from './schema-import-helper.js';
 import { ImportMode } from '../common/import.interface.js';
 import { importTag } from '../tag/tag-import-helper.js';
+import { INotificationStep } from '../../new-notifier.js';
 
 export class SchemaImport {
     private readonly mode: ImportMode;
-    private readonly notifier: INotifier;
+    private readonly notifier: INotificationStep;
     private readonly schemasMapping: ImportSchemaMap[];
     private readonly schemaIdsMapping: Map<string, string>;
     private readonly externalSchemas: Map<string, string>;
@@ -49,7 +50,7 @@ export class SchemaImport {
     private topicRow: TopicConfig;
     private topicId: string;
 
-    constructor(mode: ImportMode, notifier: INotifier) {
+    constructor(mode: ImportMode, notifier: INotificationStep) {
         this.mode = mode;
         this.notifier = notifier;
         this.schemasMapping = [];
@@ -69,8 +70,12 @@ export class SchemaImport {
         }
     }
 
-    private async resolveAccount(user: IOwner, userId: string | null): Promise<IRootConfig> {
-        this.notifier.start('Resolve Hedera account');
+    private async resolveAccount(
+        user: IOwner,
+        step: INotificationStep,
+        userId: string | null
+    ): Promise<IRootConfig> {
+        step.start();
         const users = new Users();
         this.root = await users.getHederaAccount(user.creator, userId);
         this.topicHelper = new TopicHelper(
@@ -84,12 +89,17 @@ export class SchemaImport {
             signOptions: this.root.signOptions
         });
         this.owner = user;
+        step.complete();
         return this.root;
     }
 
-    private async resolveTopic(user: IOwner, topicId: string, userId: string | null) {
-        this.notifier.completedAndStart('Resolve Topics');
-
+    private async resolveTopic(
+        user: IOwner,
+        topicId: string,
+        step: INotificationStep,
+        userId: string | null
+    ) {
+        step.start();
         if (this.mode === ImportMode.DEMO) {
             this.topicRow = new TopicConfig({
                 type: TopicType.SchemaTopic,
@@ -122,11 +132,16 @@ export class SchemaImport {
             }
         }
         this.topicId = this.topicRow?.topicId || 'draft';
+        step.complete();
     }
 
-    private async resolveMessages(messageIds: string[], logger: PinoLogger, userId: string | null): Promise<ISchema[]> {
-        this.notifier.start('Resolve schema messages');
-
+    private async resolveMessages(
+        messageIds: string[],
+        logger: PinoLogger,
+        step: INotificationStep,
+        userId: string | null
+    ): Promise<ISchema[]> {
+        step.start();
         const schemas: ISchema[] = [];
 
         const relationships = new Set<string>();
@@ -145,6 +160,7 @@ export class SchemaImport {
             schemas.push(newSchema);
         }
 
+        step.complete();
         return schemas;
     }
 
@@ -211,9 +227,11 @@ export class SchemaImport {
         category: SchemaCategory,
         schemas: ISchema[],
         user: IOwner,
-        system: boolean
+        system: boolean,
+        step: INotificationStep,
+        userId: string | null
     ) {
-        this.notifier.info(`Found ${schemas.length} schemas`);
+        step.addEstimate(schemas.length);
         for (const file of schemas) {
             this.updateId(file);
             file.category = category;
@@ -290,10 +308,15 @@ export class SchemaImport {
         }
     }
 
-    private async saveSchemas(schemas: ISchema[]): Promise<void> {
+    private async saveSchemas(
+        schemas: ISchema[],
+        step: INotificationStep,
+        userId: string | null
+    ): Promise<void> {
         let index = 0;
         for (const file of schemas) {
-            const label = `Schema ${index + 1} (${file.name || '-'})`;
+            const _step = step.addStep(`${file.name || '-'}`);
+            _step.start();
 
             const schema = this.validatedSchemas.get(file.iri);
             file.document = schema.document;
@@ -325,7 +348,6 @@ export class SchemaImport {
             //     throw new Error('Schema identifier already exist');
             // }
 
-            this.notifier.info(`${label}: Save to IPFS & Hedera`);
             if (this.mode === ImportMode.COMMON) {
                 if (this.topicRow) {
                     const message = new SchemaMessage(MessageAction.CreateSchema);
@@ -341,11 +363,10 @@ export class SchemaImport {
                 }
             }
 
-            this.notifier.info(`${label}: Update schema in DB`);
             const row = await DatabaseServer.saveSchema(schemaObject);
 
             this.schemasMapping[index].newID = row.id.toString();
-            this.notifier.info(`${label}: Created`);
+            _step.complete();
             index++;
         }
     }
@@ -354,8 +375,12 @@ export class SchemaImport {
      * Import tags by files
      * @param files
      */
-    private async importTags(topics: Set<string>, userId: string | null): Promise<void> {
-        this.notifier.start('Load tags');
+    private async importTags(
+        topics: Set<string>,
+        step: INotificationStep,
+        userId: string | null
+    ): Promise<void> {
+        step.start();
         const tags: any[] = [];
         const messageServer = new MessageServer(null);
         for (const id of topics) {
@@ -390,6 +415,7 @@ export class SchemaImport {
             idMap.set(item.oldMessageID, item.newID);
         }
         await importTag(tags, idMap);
+        step.complete();
     }
 
     public async import(
@@ -400,16 +426,41 @@ export class SchemaImport {
     ): Promise<ImportSchemaResult> {
         const { topicId, category } = options;
 
-        this.notifier.start('Import schemas');
+        this.notifier.addStep('Resolve hedera account', 1);
+        this.notifier.addStep('Resolve topics', 1);
+        this.notifier.addStep('Update UUID', 1);
 
-        await this.resolveAccount(user, userId);
-        await this.resolveTopic(user, topicId, userId);
-        await this.dataPreparation(category, components, user, false);
+        this.notifier.start();
+
+        await this.resolveAccount(
+            user,
+            this.notifier.getStep('Resolve hedera account'),
+            userId
+        );
+        await this.resolveTopic(
+            user,
+            topicId,
+            this.notifier.getStep('Resolve topics'),
+            userId
+        );
+
+        await this.dataPreparation(
+            category,
+            components,
+            user,
+            false,
+            this.notifier,
+            userId
+        );
+
+        this.notifier.getStep('Update UUID').start();
         await this.updateUUIDs(components);
         await this.validateDefs(components);
-        await this.saveSchemas(components);
+        this.notifier.getStep('Update UUID').complete();
 
-        this.notifier.completed();
+        await this.saveSchemas(components, this.notifier, userId);
+
+        this.notifier.complete();
 
         return {
             schemasMap: this.schemasMapping,
@@ -425,16 +476,45 @@ export class SchemaImport {
     ): Promise<ImportSchemaResult> {
         const { topicId, category } = options;
 
-        this.notifier.start('Import schemas');
+        this.notifier.addStep('Resolve hedera account', 1);
+        this.notifier.addStep('Resolve topics', 1);
+        this.notifier.addStep('Update UUID', 1);
+        this.notifier.addStep('Import schemas', 20);
+        this.notifier.start();
 
-        await this.resolveAccount(user, userId);
-        await this.resolveTopic(user, topicId, userId);
-        await this.dataPreparation(category, components, user, true);
+        await this.resolveAccount(
+            user,
+            this.notifier.getStep('Resolve hedera account'),
+            userId
+        );
+        await this.resolveTopic(
+            user,
+            topicId,
+            this.notifier.getStep('Resolve topics'),
+            userId
+        );
+
+        await this.dataPreparation(
+            category,
+            components,
+            user,
+            true,
+            this.notifier.getStep('Import schemas'),
+            userId
+        );
+
+        this.notifier.getStep('Update UUID').start();
         await this.updateUUIDs(components);
         await this.updateDefs(components);
-        await this.saveSchemas(components);
+        this.notifier.getStep('Update UUID').complete();
 
-        this.notifier.completed();
+        await this.saveSchemas(
+            components,
+            this.notifier.getStep('Import schemas'),
+            userId
+        );
+
+        this.notifier.complete();
 
         return {
             schemasMap: this.schemasMapping,
@@ -451,19 +531,62 @@ export class SchemaImport {
     ): Promise<ImportSchemaResult> {
         const { topicId, category } = options;
 
-        this.notifier.start('Import schemas');
+        this.notifier.addStep('Resolve hedera account', 1);
+        this.notifier.addStep('Resolve topics', 1);
+        this.notifier.addStep('Resolve messages', 1);
+        this.notifier.addStep('Update UUID', 1);
+        this.notifier.addStep('Import schemas', 20);
+        this.notifier.addStep('Import tags', 1);
+        this.notifier.start();
 
-        await this.resolveAccount(user, userId);
-        await this.resolveTopic(user, topicId, userId);
-        const components = await this.resolveMessages(messageIds, logger, userId);
+        await this.resolveAccount(
+            user,
+            this.notifier.getStep('Resolve hedera account'),
+            userId
+        );
+        await this.resolveTopic(
+            user,
+            topicId,
+            this.notifier.getStep('Resolve topics'),
+            userId
+        );
+        const components = await this.resolveMessages(
+            messageIds,
+            logger,
+            this.notifier.getStep('Resolve messages'),
+            userId
+        );
         const topics = new Set(components.map((s) => s.topicId));
 
-        await this.dataPreparation(category, components, user, false);
+        await this.dataPreparation(
+            category,
+            components,
+            user,
+            false,
+            this.notifier.getStep('Import schemas'),
+            userId
+        );
+
+        this.notifier.getStep('Update UUID').start();
         await this.updateUUIDs(components);
         await this.validateDefs(components);
-        await this.saveSchemas(components);
-        await this.importTags(topics, userId);
-        this.notifier.completed();
+        this.notifier.getStep('Update UUID').complete();
+
+        this.notifier.getStep('Save').start();
+        await this.saveSchemas(
+            components,
+            this.notifier.getStep('Import schemas'),
+            userId
+        );
+        this.notifier.getStep('Save').complete();
+
+        await this.importTags(
+            topics,
+            this.notifier.getStep('Import tags'),
+            userId
+        );
+
+        this.notifier.complete();
 
         return {
             schemasMap: this.schemasMapping,

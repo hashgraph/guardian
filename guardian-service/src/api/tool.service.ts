@@ -8,6 +8,7 @@ import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-co
 import * as crypto from 'crypto';
 import { FilterObject } from '@mikro-orm/core';
 import { deleteSchema, findAndPublishSchema, importToolByFile, importToolByMessage, importToolErrors, incrementSchemaVersion, publishToolTags, updateToolConfig } from '../helpers/import-helpers/index.js'
+import { NewNotifier, INotificationStep } from '../helpers/new-notifier.js';
 
 /**
  * Sha256
@@ -248,7 +249,7 @@ export async function publishSchemas(
             schema.version,
             owner,
             root,
-            emptyNotifier(),
+            NewNotifier.empty(),
             schemaMap,
             userId
         );
@@ -769,7 +770,9 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('file in body is empty');
                 }
                 const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
-                const { tool, errors } = await importToolByFile(owner, preview, emptyNotifier(), metadata, owner.id);
+                const { tool, errors } = await importToolByFile(
+                    owner, preview, metadata, NewNotifier.empty(), owner.id
+                );
                 if (errors?.length) {
                     const message = importToolErrors(errors);
                     await logger.warn(message, ['GUARDIAN_SERVICE'], owner?.id);
@@ -798,11 +801,11 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 if (oldTool) {
                     throw new Error('The tool already exists');
                 }
-                const notifier = emptyNotifier();
+                const notifier = NewNotifier.empty();
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator, owner?.id);
                 const item = await importToolByMessage(root, id, owner, notifier, owner.id);
-                notifier.completed();
+                notifier.complete();
                 return new MessageResponse(item);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -818,16 +821,16 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
             task: any
         }) => {
             const { zip, owner, task, metadata } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
             RunFunctionAsync(async () => {
                 if (!zip) {
                     throw new Error('file in body is empty');
                 }
                 const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
-                const { tool, errors } = await importToolByFile(owner, preview, notifier, metadata, owner.id);
+                const { tool, errors } = await importToolByFile(owner, preview, metadata, notifier, owner.id);
                 if (errors?.length) {
                     const message = importToolErrors(errors);
-                    notifier.error(message);
+                    notifier.fail(message);
                     await logger.warn(message, ['GUARDIAN_SERVICE'], owner?.id);
                 } else {
                     notifier.result({
@@ -836,7 +839,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     });
                 }
             }, async (error) => {
-                notifier.error(error);
+                notifier.fail(error);
             });
             return new MessageResponse(task);
         });
@@ -848,7 +851,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
             task: any
         }) => {
             const { messageId, owner, task } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
             RunFunctionAsync(async () => {
                 if (!messageId || typeof messageId !== 'string') {
                     throw new Error('Message ID in body is empty');
@@ -861,10 +864,10 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator, owner?.id);
                 const { tool, errors } = await importToolByMessage(root, id, owner, notifier, owner.id);
-                notifier.completed();
+                notifier.complete();
                 if (errors?.length) {
                     const message = importToolErrors(errors);
-                    notifier.error(message);
+                    notifier.fail(message);
                     await logger.warn(message, ['GUARDIAN_SERVICE'], owner?.id);
                 } else {
                     notifier.result({
@@ -873,7 +876,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     });
                 }
             }, async (error) => {
-                notifier.error(error);
+                notifier.fail(error);
             });
             return new MessageResponse(task);
         });

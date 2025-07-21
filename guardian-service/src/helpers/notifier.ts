@@ -68,7 +68,7 @@ export function emptyNotifier(): INotifier {
     return empty;
 }
 
-const notificationActionMap = new Map<TaskAction, NotificationAction>([
+export const notificationActionMap = new Map<TaskAction, NotificationAction>([
     [TaskAction.CREATE_POLICY, NotificationAction.POLICY_CONFIGURATION],
     [TaskAction.WIZARD_CREATE_POLICY, NotificationAction.POLICY_CONFIGURATION],
     [TaskAction.PUBLISH_POLICY, NotificationAction.POLICY_CONFIGURATION],
@@ -87,7 +87,7 @@ const notificationActionMap = new Map<TaskAction, NotificationAction>([
     [TaskAction.CLONE_POLICY, NotificationAction.POLICY_CONFIGURATION],
     [TaskAction.PUBLISH_POLICY_LABEL, NotificationAction.POLICY_LABEL_PAGE],
 ]);
-const taskResultTitleMap = new Map<TaskAction, string>([
+export const taskResultTitleMap = new Map<TaskAction, string>([
     [TaskAction.CREATE_POLICY, 'Policy created'],
     [TaskAction.CREATE_TOOL, 'Tool created'],
     [TaskAction.WIZARD_CREATE_POLICY, 'Policy created'],
@@ -118,7 +118,7 @@ const taskResultTitleMap = new Map<TaskAction, string>([
     [TaskAction.PUBLISH_POLICY_LABEL, 'Label published'],
 ]);
 
-function getNotificationResultMessage(action: TaskAction, result: any) {
+export function getNotificationResultMessage(action: TaskAction, result: any) {
     switch (action) {
         case TaskAction.CREATE_POLICY:
             return `Policy ${result} created`;
@@ -155,7 +155,7 @@ function getNotificationResultMessage(action: TaskAction, result: any) {
     }
 }
 
-function getNotificationResultTitle(action: TaskAction, result: any) {
+export function getNotificationResultTitle(action: TaskAction, result: any) {
     switch (action) {
         case TaskAction.PUBLISH_POLICY:
             if (!result.isValid) {
@@ -166,7 +166,7 @@ function getNotificationResultTitle(action: TaskAction, result: any) {
     }
 }
 
-function getNotificationResult(action: TaskAction, result: any) {
+export function getNotificationResult(action: TaskAction, result: any) {
     if (!result) {
         return;
     }
@@ -244,7 +244,7 @@ function getNotificationResult(action: TaskAction, result: any) {
     }
 }
 
-function getTaskResult(action: TaskAction, result: any) {
+export function getTaskResult(action: TaskAction, result: any) {
     switch (action) {
         case TaskAction.ASSOCIATE_TOKEN:
         case TaskAction.DISSOCIATE_TOKEN:

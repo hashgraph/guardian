@@ -32,6 +32,7 @@ import * as ethers from 'ethers';
 import { contractCall, contractQuery, createContract, customContractCall } from './helpers/index.js';
 import { emptyNotifier } from '../helpers/notifier.js';
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
+import { NewNotifier } from '../helpers/new-notifier.js';
 
 const retireAbi = new ethers.Interface([
     'function approveRetire(address, tuple(address, int64, int64[])[])',
@@ -1238,7 +1239,7 @@ async function saveRetireVC(
                 owner,
                 messageServer,
                 MessageAction.PublishSystemSchema,
-                emptyNotifier()
+                NewNotifier.empty()
             );
             await dataBaseServer.save(SchemaCollection, item);
         }

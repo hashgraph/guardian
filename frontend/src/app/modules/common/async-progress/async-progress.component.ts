@@ -12,20 +12,23 @@ import { CONFIGURATION_ERRORS } from '../../policy-engine/injectors/configuratio
 @Component({
     selector: 'async-progress',
     templateUrl: './async-progress.component.html',
-    styleUrls: ['./async-progress.component.css'],
+    styleUrls: ['./async-progress.component.scss'],
 })
 export class AsyncProgressComponent implements OnInit, OnDestroy {
-    progressValue!: number;
-    statusesCount: number = 0;
-    statuses: IStatus[] = [];
-    statusesRefMap: any = {};
-    taskId: string;
-    expected: number;
-    action: TaskAction | string;
-    taskNotFound: boolean = false;
-    userRole?: UserRole;
-    last?: any;
-    redir?: any;
+    public action: TaskAction | string;
+    public progressValue!: number;
+    public statusesCount: number = 0;
+    public statuses: IStatus[] = [];
+    public newProgress: boolean = false;
+    public steps: any[];
+
+    private statusesRefMap: any = {};
+    private taskId: string;
+    private expected: number;
+    private taskNotFound: boolean = false;
+    private userRole?: UserRole;
+    private last?: any;
+    private redir?: boolean;
 
     @Input('taskId') inputTaskId?: string;
     @Output() completed = new EventEmitter<string>();
@@ -34,6 +37,10 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
     @ViewChild('status') statusRef: ElementRef;
 
     private subscription = new Subscription();
+
+    public isInfo(status: IStatus) {
+        return status.type == StatusType.INFO;
+    }
 
     constructor(
         private wsService: WebSocketService,
@@ -49,7 +56,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         const queryParams = this.route?.snapshot?.queryParams;
         this.last = queryParams?.last;
         this.redir = !(queryParams?.redir === 'false' || queryParams?.redir === false);
-
+        this.steps = [];
         try {
             if (this.last) {
                 this.last = atob(this.last);
@@ -60,103 +67,71 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.init(true);
-    }
-
-    init(addSubscription: boolean = false) {
         if (this.inputTaskId) {
             this.taskId = this.inputTaskId;
-            this.taskService.get(this.taskId).subscribe((task) => {
-                this.taskNotFound = !task;
-                if (!task) {
-                    return;
-                }
-                this.expected = task.expectation;
-                this.action = task.action;
-                this.handleStatuses(task.statuses);
-                if (task.result) {
-                    this.progressValue = 100;
-                    this.handleResult(task.result);
-                    return;
-                } else if (task.error) {
-                    this.handleError(task.error);
-                    return;
-                }
-                if (addSubscription) {
-                    this.addWsSubscription();
-                }
-            });
         } else {
             this.taskId = this.route.snapshot.params['id'];
-            forkJoin([
-                this.taskService.get(this.taskId),
-                this.auth.sessions(),
-            ]).subscribe(([task, user]) => {
-                this.userRole = user?.role;
-                this.taskNotFound = !task;
-                if (!task) {
-                    return;
-                }
-                this.expected = task.expectation;
-                this.action = task.action;
-                this.handleStatuses(task.statuses);
-                if (task.result) {
-                    this.progressValue = 100;
-                    this.handleResult(task.result);
-                    return;
-                } else if (task.error) {
-                    this.handleError(task.error);
-                    return;
-                }
-                if (addSubscription) {
-                    this.addWsSubscription();
-                    this.subscription.add(
-                        this.route.params.subscribe(this.init.bind(this, false))
-                    );
-                }
-            });
+            this.subscription.add(this.route.params.subscribe(this.update.bind(this)));
         }
-    }
-
-    addWsSubscription() {
         this.subscription.add(
             this.wsService.taskSubscribe((task) => {
-                const { taskId, statuses, error, result } = task;
+                const { taskId, statuses, error, result, info } = task;
                 if (taskId != this.taskId) {
                     return;
                 }
                 if (result) {
                     this.progressValue = 100;
-                    this.handleResult(result);
-                    return;
+                    this.setResult(result);
                 } else if (error) {
-                    this.handleError(error);
-                    return;
+                    this.setError(error);
+                } else if (info) {
+                    this.setNewProgress(info);
+                } else {
+                    this.setStatuses(statuses);
                 }
-                this.handleStatuses(statuses);
             })
         );
     }
 
-    redirect(urlString: string) {
-        const url = new URL(urlString);
-        const path = [url.pathname];
-        const queryParams: any = {};
-        for (const [key, value] of url.searchParams.entries()) {
-            if (queryParams.hasOwnProperty(key)) {
-                if (Array.isArray(queryParams[key])) {
-                    queryParams[key].push(value);
-                } else {
-                    queryParams[key] = [queryParams[key], value];
-                }
-            } else {
-                queryParams[key] = value;
-            }
-        }
-        this.router.navigate(path, { queryParams });
+    ngOnDestroy() {
+        this.subscription.unsubscribe();
     }
 
-    handleResult(result: any) {
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes.taskId) {
+            this.statusesCount = 0;
+            this.statuses.length = 0;
+            this.progressValue = 0;
+        }
+    }
+
+    private update() {
+        forkJoin([
+            this.taskService.get(this.taskId),
+            this.auth.sessions(),
+        ]).subscribe(([task, user]) => {
+            this.userRole = user?.role;
+            this.taskNotFound = !task;
+            if (!task) {
+                return;
+            }
+            this.expected = task.expectation;
+            this.action = task.action;
+            const { statuses, error, result, info } = task;
+            if (result) {
+                this.progressValue = 100;
+                this.setResult(result);
+            } else if (error) {
+                this.setError(error);
+            } else if (info) {
+                this.setNewProgress(info);
+            } else {
+                this.setStatuses(statuses);
+            }
+        });
+    }
+
+    private setResult(result: any) {
         if (this.inputTaskId) {
             this.completed.emit(result);
             return;
@@ -348,7 +323,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         }
     }
 
-    handleError(error: any) {
+    private setError(error: any) {
         if (this.inputTaskId) {
             this.error.emit(error);
             return;
@@ -397,7 +372,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         }
     }
 
-    handleStatuses(statuses: any) {
+    private setStatuses(statuses: any) {
         if (!statuses || statuses.length < this.statuses.length) {
             return;
         }
@@ -431,20 +406,22 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         this.applyChanges();
     }
 
-    ngOnDestroy() {
-        this.subscription.unsubscribe();
-    }
-
-    ngOnChanges(changes: SimpleChanges): void {
-        if (changes.taskId) {
-            this.statusesCount = 0;
-            this.statuses.length = 0;
-            this.progressValue = 0;
+    private redirect(urlString: string) {
+        const url = new URL(urlString);
+        const path = [url.pathname];
+        const queryParams: any = {};
+        for (const [key, value] of url.searchParams.entries()) {
+            if (queryParams.hasOwnProperty(key)) {
+                if (Array.isArray(queryParams[key])) {
+                    queryParams[key].push(value);
+                } else {
+                    queryParams[key] = [queryParams[key], value];
+                }
+            } else {
+                queryParams[key] = value;
+            }
         }
-    }
-
-    isInfo(status: IStatus) {
-        return status.type == StatusType.INFO;
+        this.router.navigate(path, { queryParams });
     }
 
     private applyChanges() {
@@ -460,5 +437,40 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 this.statusRef.nativeElement.scrollTop = 99999;
             }
         }, 50);
+    }
+
+    private setNewProgress(info: any) {
+        this.newProgress = true;
+        this.progressValue = Math.min(Math.max(info.progress, 0), 100);
+        if (Array.isArray(info.steps)) {
+            this.steps = info.steps;
+        } else {
+            this.steps = [info];
+        }
+        setTimeout(() => {
+            if (this.statusRef?.nativeElement) {
+                this.statusRef.nativeElement.scrollTop = 99999;
+            }
+        }, 50);
+    }
+
+    public isWait(step: any): boolean {
+        return !step.started;
+    }
+
+    public isSkipped(step: any): boolean {
+        return step.skipped && !step.completed && !step.failed;
+    }
+
+    public isCompleted(step: any): boolean {
+        return step.completed && !step.failed && !step.skipped;
+    }
+
+    public isFailed(step: any): boolean {
+        return step.failed;
+    }
+
+    public isStarted(step: any): boolean {
+        return step.started && !step.completed && !step.failed && !step.skipped;
     }
 }

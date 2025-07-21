@@ -24,6 +24,7 @@ import { PolicyConverterUtils } from './policy-converter-utils.js';
 import { INotifier } from '../../notifier.js';
 import { HashComparator, PolicyLoader } from '../../../analytics/index.js';
 import { importPolicyTags } from '../tag/tag-import-helper.js';
+import { NewNotifier, INotificationStep } from '../../new-notifier.js';
 
 /**
  * Policy import export helper
@@ -71,7 +72,7 @@ export class PolicyImportExportHelper {
     public static async importPolicy(
         mode: ImportMode,
         options: ImportPolicyOptions,
-        notifier: INotifier,
+        notifier: INotificationStep,
         userId: string | null
     ): Promise<ImportPolicyResult> {
         const helper = new PolicyImport(mode, notifier);
@@ -242,10 +243,10 @@ export class PolicyImportExportHelper {
     public static async loadPolicyMessage(
         messageId: string,
         hederaAccount: IRootConfig,
-        notifier: INotifier,
+        notifier: INotificationStep,
         userId: string | null
     ): Promise<IPolicyComponents> {
-        notifier.start('Load from IPFS');
+        notifier.start();
         const messageServer = new MessageServer({
             operatorId: hederaAccount.hederaAccountId,
             operatorKey: hederaAccount.hederaAccountKey,
@@ -265,13 +266,11 @@ export class PolicyImportExportHelper {
             throw new Error('File in body is empty');
         }
 
-        notifier.completedAndStart('File parsing');
         const policyToImport = await PolicyImportExport.parseZipFile(message.document, true);
 
-        notifier.completedAndStart('Load tags parsing');
         await importPolicyTags(policyToImport, messageId, message.policyTopicId, messageServer, userId);
 
-        notifier.completed();
+        notifier.complete();
 
         return policyToImport;
     }
