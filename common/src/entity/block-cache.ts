@@ -1,4 +1,3 @@
-import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { BaseEntity } from '../models/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
 import {
@@ -9,6 +8,8 @@ import {
     OnLoad,
     BeforeUpdate,
     AfterDelete,
+    AfterUpdate,
+    AfterCreate,
 } from '@mikro-orm/core';
 import { DataBaseHelper } from '../helpers/index.js';
 
@@ -64,76 +65,84 @@ export class BlockCache extends BaseEntity {
     fileId?: ObjectId;
 
     /**
-     * Create row
+     * old file id
+     */
+    @Property({ persist: false, nullable: true })
+    _fileId?: ObjectId;
+
+    /**
+     * Set defaults
      */
     @BeforeCreate()
-    async createRow() {
-        await new Promise<void>((resolve, reject) => {
-            try {
-                if (this.isLongValue && this.value) {
-                    const fileStream = DataBaseHelper.gridFS.openUploadStream(GenerateUUIDv4());
-                    this.fileId = fileStream.id;
-                    const file = JSON.stringify(this.value);
-                    this.value = null;
-                    fileStream.write(file);
-                    fileStream.end(() => resolve());
-                } else {
-                    resolve();
-                }
-            } catch (error) {
-                reject(error)
-            }
-        });
-    }
-
-    /**
-     * Update row
-     */
-    @BeforeUpdate()
-    async updateRow() {
-        if (this.fileId) {
-            DataBaseHelper.gridFS
-                .delete(this.fileId)
-                .catch((reason) => {
-                    console.error(`BeforeUpdate: BlockCache, ${this._id}, documentFileId`)
-                    console.error(reason)
-                });
-            this.fileId = null;
-        }
+    async setDefaults() {
         if (this.isLongValue && this.value) {
-            await this.createRow();
+            const value = JSON.stringify(this.value);
+            this.fileId = await this._createFile(value, 'BlockCache');
+            delete this.value;
         }
     }
 
     /**
-     * Load row
+     * Load File
      */
     @OnLoad()
-    async loadRow() {
+    @AfterUpdate()
+    @AfterCreate()
+    async loadFiles() {
         if (this.fileId && !this.value) {
-            const fileStream = DataBaseHelper.gridFS.openDownloadStream(this.fileId);
-            const bufferArray = [];
-            for await (const data of fileStream) {
-                bufferArray.push(data);
-            }
-            const buffer = Buffer.concat(bufferArray);
+            const buffer = await this._loadFile(this.fileId);
             this.value = JSON.parse(buffer.toString());
         }
     }
 
     /**
-     * Delete row
+     * Update document
+     */
+    @BeforeUpdate()
+    async updateFiles() {
+        if (this.value) {
+            if (this.isLongValue) {
+                const value = JSON.stringify(this.value);
+                const fileId = await this._createFile(value, 'BlockCache');
+                if (fileId) {
+                    this._fileId = this.fileId;
+                    this.fileId = fileId;
+                }
+                delete this.value;
+            } else {
+                this._fileId = this.fileId;
+            }
+        }
+    }
+
+    /**
+     * Delete File
+     */
+    @AfterUpdate()
+    postUpdateFiles() {
+        if (this._fileId) {
+            DataBaseHelper.gridFS
+                .delete(this._fileId)
+                .catch((reason) => {
+                    console.error(`AfterUpdate: BlockCache, ${this._id}, _fileId`)
+                    console.error(reason)
+                });
+            delete this._fileId;
+        }
+    }
+
+    /**
+     * Delete context
      */
     @AfterDelete()
-    deleteRow() {
+    deleteFiles() {
         if (this.fileId) {
             DataBaseHelper.gridFS
                 .delete(this.fileId)
                 .catch((reason) => {
-                    console.error(`AfterDelete: BlockCache, ${this._id}, documentFileId`)
+                    console.error(`AfterDelete: BlockCache, ${this._id}, fileId`)
                     console.error(reason)
                 });
-            this.fileId = null;
         }
     }
 }

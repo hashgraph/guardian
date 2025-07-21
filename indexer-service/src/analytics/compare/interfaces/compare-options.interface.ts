@@ -12,6 +12,7 @@ export enum IPropertiesLvl {
  */
 export enum IEventsLvl {
     None = 'None', //Don't compare
+    Simple = 'Simple', //Loose comparison
     All = 'All' //All events
 }
 
@@ -96,13 +97,13 @@ export class CompareOptions {
     public readonly owner: string;
 
     constructor(
-        propLvl?: IPropertiesLvl | string | number | null | undefined,
-        childLvl?: IChildrenLvl | string | number | null | undefined,
-        eventLvl?: IEventsLvl | string | number | null | undefined,
-        idLvl?: IIdLvl | string | number | null | undefined,
-        keyLvl?: IKeyLvl | string | number | null | undefined,
-        refLvl?: IRefLvl | string | number | null | undefined,
-        owner?: string | null | undefined,
+        propLvl: IPropertiesLvl | string | number | null | undefined,
+        childLvl: IChildrenLvl | string | number | null | undefined,
+        eventLvl: IEventsLvl | string | number | null | undefined,
+        idLvl: IIdLvl | string | number | null | undefined,
+        keyLvl: IKeyLvl | string | number | null | undefined,
+        refLvl: IRefLvl | string | number | null | undefined,
+        owner: string | null | undefined,
     ) {
         switch (propLvl) {
             case IPropertiesLvl.None:
@@ -159,9 +160,15 @@ export class CompareOptions {
                 this.eventLvl = IEventsLvl.None;
                 break;
             }
-            case IEventsLvl.All:
+            case IEventsLvl.Simple:
             case '1':
             case 1: {
+                this.eventLvl = IEventsLvl.Simple;
+                break;
+            }
+            case IEventsLvl.All:
+            case '2':
+            case 2: {
                 this.eventLvl = IEventsLvl.All;
                 break;
             }
@@ -257,7 +264,15 @@ export class CompareOptions {
         this.owner = owner;
     }
 
-    public static readonly default = new CompareOptions();
+    public static readonly default = new CompareOptions(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined
+    );
 
     /**
      * Create

@@ -91,6 +91,18 @@ export class BlockModel implements IWeightModel {
      */
     private _hash: string;
 
+    /**
+     * Hash
+     * @private
+     */
+    private _hash1: string;
+
+    /**
+     * Hash
+     * @private
+     */
+    private _hash2: string;
+
     constructor(json: IBlockRawData, index: number) {
         this.blockType = json.blockType;
         this.tag = json.tag;
@@ -143,16 +155,11 @@ export class BlockModel implements IWeightModel {
         let _children2 = '0';
         let _tag = '0';
         let _prop = '0';
-        let _hash = '0';
+        let _key = '0';
 
-        if (this._children) {
-            hash3.clear();
-            hash3.add(this.key);
-            for (const child of this._children) {
-                hash3.add(String(child._hash));
-            }
-            _hash = hash3.result();
-        }
+        hash3.clear();
+        hash3.add(this.key);
+        _key = hash3.result();
 
         if (this._children && this._children.length) {
             hash3.clear();
@@ -168,14 +175,6 @@ export class BlockModel implements IWeightModel {
                 hash3.add(child.getWeight(WeightType.CHILD_LVL_2));
             }
             _children2 = hash3.result();
-
-            if (options.childLvl === IChildrenLvl.All) {
-                _children = _children2;
-            } else if (options.childLvl === IChildrenLvl.First) {
-                _children = _children1;
-            } else {
-                _children = '0';
-            }
         }
 
         if (this._prop) {
@@ -201,44 +200,69 @@ export class BlockModel implements IWeightModel {
         - tag + prop
         - tag + prop + children
         */
+        if (options.childLvl === IChildrenLvl.All) {
+            _children = _children2;
+        } else if (options.childLvl === IChildrenLvl.First) {
+            _children = _children1;
+        } else {
+            _children = '0';
+        }
+
+        weightMap[WeightType.CHILD_LVL_1] = _children1;
         weightMap[WeightType.CHILD_LVL_2] = _children2;
+        weightMap[WeightType.PROP_LVL_1] = _tag;
+        weightMap[WeightType.PROP_LVL_2] = _prop;
+        weightMap[WeightType.PROP_LVL_3] = CompareUtils.aggregateHash(_tag, _prop);
+        weightMap[WeightType.PROP_AND_CHILD_1] = CompareUtils.aggregateHash(_tag, _children);
+        weightMap[WeightType.PROP_AND_CHILD_2] = CompareUtils.aggregateHash(_prop, _children);
+        weightMap[WeightType.PROP_AND_CHILD_3] = CompareUtils.aggregateHash(_tag, _prop, _children);
+
+        weights.push(_key);
+
         if (options.childLvl !== IChildrenLvl.None) {
-            weightMap[WeightType.CHILD_LVL_1] = _children;
-            weights.push(weightMap[WeightType.CHILD_LVL_1]);
-        }
-        if (options.propLvl !== IPropertiesLvl.None) {
-            weightMap[WeightType.PROP_LVL_1] = _tag;
-            weights.push(weightMap[WeightType.PROP_LVL_1]);
-        }
-        if (options.propLvl !== IPropertiesLvl.None) {
-            weightMap[WeightType.PROP_LVL_2] = _prop;
-            weights.push(weightMap[WeightType.PROP_LVL_2]);
-        }
-        if (options.propLvl !== IPropertiesLvl.None && options.childLvl !== IChildrenLvl.None) {
-            weightMap[WeightType.PROP_AND_CHILD_1] = CompareUtils.aggregateHash(_tag, _children);
-            weights.push(weightMap[WeightType.PROP_AND_CHILD_1]);
-        }
-        if (options.propLvl !== IPropertiesLvl.None && options.childLvl !== IChildrenLvl.None) {
-            weightMap[WeightType.PROP_AND_CHILD_2] = CompareUtils.aggregateHash(_prop, _children);
-            weights.push(weightMap[WeightType.PROP_AND_CHILD_2]);
-        }
-        if (options.propLvl !== IPropertiesLvl.None) {
-            weightMap[WeightType.PROP_LVL_3] = CompareUtils.aggregateHash(_tag, _prop);
-            weights.push(weightMap[WeightType.PROP_LVL_3]);
-        }
-        if (options.propLvl !== IPropertiesLvl.None && options.childLvl !== IChildrenLvl.None) {
-            weightMap[WeightType.PROP_AND_CHILD_3] = CompareUtils.aggregateHash(_tag, _prop, _children);
-            weights.push(weightMap[WeightType.PROP_AND_CHILD_3]);
+            weights.push(_children);
         }
 
         if (options.propLvl !== IPropertiesLvl.None) {
-            this._hash = CompareUtils.aggregateHash(_hash, _tag, _prop);
-        } else {
-            this._hash = CompareUtils.aggregateHash(_hash, _tag);
+            weights.push(weightMap[WeightType.PROP_LVL_1]);
+            weights.push(weightMap[WeightType.PROP_LVL_2]);
+
+            if (options.childLvl !== IChildrenLvl.None) {
+                weights.push(weightMap[WeightType.PROP_AND_CHILD_1]);
+                weights.push(weightMap[WeightType.PROP_AND_CHILD_2]);
+            }
+
+            weights.push(weightMap[WeightType.PROP_LVL_3]);
+
+            if (options.childLvl !== IChildrenLvl.None) {
+                weights.push(weightMap[WeightType.PROP_AND_CHILD_3]);
+            }
         }
 
         this._weightMap = weightMap;
         this._weight = weights.reverse();
+
+        let _childrenHash = '0';
+        if (this._children) {
+            hash3.clear();
+            hash3.add(this.key);
+            for (const child of this._children) {
+                if (options.childLvl === IChildrenLvl.All) {
+                    hash3.add(String(child._hash2));
+                } else if (options.childLvl === IChildrenLvl.First) {
+                    hash3.add(String(child._hash1));
+                }
+            }
+            _childrenHash = hash3.result();
+        }
+        if (options.propLvl === IPropertiesLvl.None) {
+            this._hash1 = CompareUtils.aggregateHash(_tag);
+            this._hash2 = CompareUtils.aggregateHash(_tag, _childrenHash);
+        } else {
+            this._hash1 = CompareUtils.aggregateHash(_tag, _prop);
+            this._hash2 = CompareUtils.aggregateHash(_tag, _prop, _childrenHash);
+        }
+        this._hash = this._hash2;
     }
 
     /**

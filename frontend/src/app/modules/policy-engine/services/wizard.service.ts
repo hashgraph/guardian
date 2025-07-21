@@ -127,16 +127,17 @@ export class WizardService {
         preset?: any
     ) {
         const dialogRef = this.dialogService.open(PolicyWizardDialogComponent, {
-            header: 'Policy Wizard',
-            styleClass: 'custom-dialog',
+            showHeader: false,
             width: '1100px',
+            styleClass: 'guardian-dialog',
+            header: 'Policy Wizard',
             data: {
                 policy,
                 policies,
                 schemas,
                 tokens,
-                state: preset,
-            },
+                state: preset
+            }
         });
         dialogRef
             .onClose
@@ -204,19 +205,17 @@ export class WizardService {
                 return;
             }
             const selectorDialog = this.dialog.open(SelectorDialogComponent, {
+                showHeader: false,
                 width: '400px',
+                styleClass: 'guardian-dialog',
                 data: {
                     title: 'Restore progress',
                     description: 'Choose policy',
                     label: 'New policy',
-                    options: [
-                        {
-                            name: 'New policy',
-                        },
-                    ].concat(options),
-                },
-                modal: true,
-                closable: false,
+                    options: [{
+                        name: 'New policy',
+                    }].concat(options),
+                }
             });
             selectorDialog.onClose.subscribe((value) => {
                 if (!value?.ok) {

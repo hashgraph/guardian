@@ -1701,6 +1701,9 @@ export class PolicyUtils {
                 }
             } else if (field.autocalculate) {
                 document[field.name] = PolicyUtils.autoCalculateField(field, document);
+                if (document[field.name] === undefined) {
+                    delete document[field.name];
+                }
             }
         }
     }
