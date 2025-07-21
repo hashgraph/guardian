@@ -136,6 +136,10 @@ export class Schema implements ISchema {
      */
     private userDID: string;
     /**
+     * Code version
+     */
+    public codeVersion?: string;
+    /**
      * Schema constructor
      * @param schema
      * @param includeSystemProperties
@@ -195,6 +199,7 @@ export class Schema implements ISchema {
             }
             this.component = (schema as any).component || (schema as any).__component;
             this.errors = schema.errors;
+            this.codeVersion = schema.codeVersion;
         } else {
             this._id = undefined;
             this.id = undefined;
@@ -219,8 +224,22 @@ export class Schema implements ISchema {
             this.contextURL = `schema:${this.uuid}`;
             this.iri = '';
             this.errors = [];
+            this.codeVersion = '';
         }
         if (this.document) {
+            this.parseDocument(includeSystemProperties);
+        }
+    }
+
+    /**
+     * Set user
+     * @param userDID
+     */
+    public setDocument(document: ISchemaDocument, includeSystemProperties: boolean = false): void {
+        this.document = document;
+        if (this.document) {
+            this.name = this.document.title;
+            this.description = this.document.description;
             this.parseDocument(includeSystemProperties);
         }
     }
@@ -363,8 +382,11 @@ export class Schema implements ISchema {
      * @param conditions
      */
     public update(fields?: SchemaField[], conditions?: SchemaCondition[]): void {
-        if (fields) {
+        if (Array.isArray(fields)) {
             this.fields = fields;
+        }
+        if (Array.isArray(conditions)) {
+            this.conditions = conditions;
         }
 
         if (!this.fields) {

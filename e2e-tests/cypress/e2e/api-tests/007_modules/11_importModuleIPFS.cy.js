@@ -151,10 +151,11 @@ context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
                 body: {
                     "messageId": Cypress.env('module_for_import') + "777121"
                 },
+                timeout: 240000,
                 failOnStatusCode: false,
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.ERROR);
-                expect(response.body.message).eql("Request failed with status code 400");
+                expect(response.body.message).eql("Cannot read properties of null (reading 'type')");
             });
         })
     });

@@ -1,64 +1,56 @@
-.text-editor {
-    border: 1px solid #e9e9e9;
-    min-height: 200px;
-    max-height: 200px;
-    overflow-y: scroll;
+.guardian-input-container {
+    margin-bottom: 24px;
+}
+
+.dialog-body {
+    height: 450px;
     position: relative;
-  background: linear-gradient(
-                  to right,
-                  #f7f7f7 29px,
-                  #dddddd 29px 30px,
-                  white 30px 100%
-  );
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    user-select: none;
+
+    &>div {
+        margin-left: 15px;
+        margin-right: 0px;
+    }
+}
+
+.guardian-button {
+    padding: 6px 32px;
+    height: 40px;
 }
 
 .enum-import-container {
     display: flex;
-    justify-content: space-between;
-    gap: 10px;
-}
+    align-items: end;
 
-.enum-input-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.enum-import-url {
-    flex: 1;
-}
-
-.enum-import-button {
-    min-width: 150px;
-}
-
-.loading {
-    background: #fff;
-    z-index: 99;
-    margin: 0 auto;
-}
-
-.g-dialog-actions {
-  padding-top: 24px;
-}
-
-:host .g-dialog-actions-btn {
-    min-width: 170px !important;
-
-  ::ng-deep {
-    .p-button {
-
+    .guardian-input-container {
+        margin-right: 8px;
     }
-  }
+
+    .guardian-button {
+        margin-bottom: 24px;
+        margin-left: 8px;
+    }
+}
+
+.text-editor {
+    border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
+    border-radius: 6px;
+    overflow: auto;
+    position: absolute;
+    left: 0;
+    top: 113px;
+    right: 0;
+    bottom: 52px;
 }
 
 .enum-load-to-ipfs {
-    color: rgb(100 100 100);
-}
-
-.enum-label {
-    color: var(--primary-color);
-    font-size: 20px;
-    font-size: 20px;
-    font-weight: 500;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 16px;
 }

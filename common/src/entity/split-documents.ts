@@ -5,11 +5,12 @@ import {
     OnLoad,
     BeforeUpdate,
     AfterDelete,
+    AfterUpdate,
+    AfterCreate,
 } from '@mikro-orm/core';
 import { BaseEntity } from '../models/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers/index.js';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 /**
  * Block state
@@ -62,43 +63,20 @@ export class SplitDocuments extends BaseEntity {
     documentFileId?: ObjectId;
 
     /**
-     * Create document
+     * old file id
      */
-    @BeforeCreate()
-    async createDocument() {
-        await new Promise<void>((resolve, reject) => {
-            try {
-                if (this.document) {
-                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                        GenerateUUIDv4()
-                    );
-                    this.documentFileId = fileStream.id;
-                    fileStream.write(JSON.stringify(this.document));
-                    fileStream.end(() => resolve());
-                } else {
-                    resolve();
-                }
-            } catch (error) {
-                reject(error)
-            }
-        });
-    }
+    @Property({ persist: false, nullable: true })
+    _documentFileId?: ObjectId
 
     /**
-     * Update document
+     * Document defaults
      */
-    @BeforeUpdate()
-    async updateDocument() {
+    @BeforeCreate()
+    async setDefaults() {
         if (this.document) {
-            if (this.documentFileId) {
-                DataBaseHelper.gridFS
-                    .delete(this.documentFileId)
-                    .catch((reason) => {
-                        console.error(`BeforeUpdate: SplitDocuments, ${this._id}, documentFileId`)
-                        console.error(reason)
-                    });
-            }
-            await this.createDocument();
+            const document = JSON.stringify(this.document);
+            this.documentFileId = await this._createFile(document, 'SplitDocuments');
+            delete this.document;
         }
     }
 
@@ -106,17 +84,44 @@ export class SplitDocuments extends BaseEntity {
      * Load document
      */
     @OnLoad()
-    async loadDocument() {
+    @AfterUpdate()
+    @AfterCreate()
+    async loadFiles() {
         if (this.documentFileId) {
-            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
-                this.documentFileId
-            );
-            const bufferArray = [];
-            for await (const data of fileStream) {
-                bufferArray.push(data);
-            }
-            const buffer = Buffer.concat(bufferArray);
+            const buffer = await this._loadFile(this.documentFileId)
             this.document = JSON.parse(buffer.toString());
+        }
+    }
+
+    /**
+     * Update document
+     */
+    @BeforeUpdate()
+    async updateFiles() {
+        if (this.document) {
+            const document = JSON.stringify(this.document);
+            const documentFileId = await this._createFile(document, 'SplitDocuments');
+            if (documentFileId) {
+                this._documentFileId = this.documentFileId;
+                this.documentFileId = documentFileId;
+            }
+            delete this.document;
+        }
+    }
+
+    /**
+     * Delete File
+     */
+    @AfterUpdate()
+    postUpdateFiles() {
+        if (this._documentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this._documentFileId)
+                .catch((reason) => {
+                    console.error(`AfterUpdate: SplitDocuments, ${this._id}, _documentFileId`)
+                    console.error(reason)
+                });
+            delete this._documentFileId;
         }
     }
 
@@ -124,7 +129,7 @@ export class SplitDocuments extends BaseEntity {
      * Delete document
      */
     @AfterDelete()
-    deleteDocument() {
+    deleteFiles() {
         if (this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)

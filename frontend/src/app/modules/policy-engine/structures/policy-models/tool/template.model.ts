@@ -23,6 +23,7 @@ export class ToolTemplate {
     public readonly isPublished: boolean = false;
     public readonly isPublishError: boolean = false;
     public readonly readonly: boolean = false;
+    public readonly isTest: boolean = false;
 
     private _config!: PolicyTool;
     private _changed: boolean;
@@ -55,6 +56,7 @@ export class ToolTemplate {
         this.isPublished = (this.status === PolicyStatus.PUBLISH) || (this.status === ModuleStatus.PUBLISHED);
         this.isPublishError = this.status === PolicyStatus.PUBLISH_ERROR;
         this.readonly = this.isPublished || this.isPublishError;
+        this.isTest = this.isDraft;
     }
 
     public get name(): string {

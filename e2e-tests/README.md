@@ -32,18 +32,29 @@ To run a specific test from the UI, you can open the Cypress dashboard by runnin
 
 `npx cypress open`
 
-To run all tests sequentially, use:
+To run all API tests sequentially, use:
 
-`npx cypress run`
+`npx cypress run --env "grepTags=all,grepFilterSpecs=true"`
+
+To run all UI tests sequentially, use:
+
+`npx cypress run --env "grepTags=ui,grepFilterSpecs=true"`
 
 For a single test, use:
 
 `npx cypress run --spec "path/to/file.cy.js"`
 
+Note: For major part of E2E tests for the Guardian application needs to:
+- have valid accounts. Test in `e2e-tests\cypress\e2e\api-tests\000_accounts_creating` automatically creates and provide hedera credentinals for accounts which uses in tests.
+- balance for operations. Ensure that you have sufficient balance on your Hedera account.
+- stable connection to Hedera and IPFS.
+
 ### Run By Tag
 To run only the specs that have any tests tagged "tag":
 
-`npx cypress run --env "grepTags=tag,grepFilterSpecs=true"`
+`npx cypress run --env "grepTags=tag,grepFilterSpecs=true"` for one tag,
+`npx cypress run --env "grepTags=tag1 tag2,grepFilterSpecs=true"` for two and more tags
+
 
 where `tag` can be:
 - accounts - all tests for accounts operations
@@ -62,15 +73,31 @@ where `tag` can be:
 - tags - all tests for tags operations
 - tokens - all tests for tokens operations
 - trustchains - all tests for trustchains operations
+- worker - all tests for workers tasks logging operations
+- themes - all tests for operations with themes
+- branding - all tests for operations with branding
+- notifications - all tests for operations with notifications
+- wizard - all tests for operations with policy wizard
+- permissions - all tests for operations with permissions
+- formulas - all tests for operations with formulas
+- policy_labels - all tests for operations with policy labels
+
+There's few tags for general tests runs:
+- all - all API tests for Guardian platform
+- preparing - special test used for generated accounts for tests
+- smoke - all tests for the most important and frequently used functionality
+- ui - all UI tests
+
+Note: E2E tests for the Guardian platform are interdependent, so when running tests using certain tags, additional tests may be executed to ensure a successful test run.
 
 ### UI Tests (Policies)
 
-Only iREC5, iREC7 and Verra3 policies are covered.
+Only iREC3, iRec4, iREC5, iREC7 and CDM-0001 policies are covered.
 
 The following command runs all UI tests in an interactive dashboard that allows you to see the status of the tests while they are running and simultaneously view the application under test.
 
    ```shell
-    npm run ui-only
+    npx cypress run --env "grepTags=ui,grepFilterSpecs=true" 
    ```
 
 To run a UI test for a specific policy, you can open the Cypress dashboard by running the following command from the `/e2e-tests` folder:
@@ -84,7 +111,7 @@ and then select a test under `ui-tests/specs/policies`.
 The following command runs all API tests.
 
    ```shell
-    npm run api-tests
+    npx cypress run --env "grepTags=all,grepFilterSpecs=true" 
    ```
 
 To run a API test for a specific functionality, you can open the Cypress dashboard by running the following command from the `/e2e-tests` folder:
@@ -100,7 +127,7 @@ The pull runs automatically after any commit in the Guardian repository.
 The following command from the `/e2e-tests` directory runs smoke pull locally.
 
    ```shell
-    npm run smoke-pull
+    npx cypress run --env "grepTags=smoke,grepFilterSpecs=true"
    ```
 
 Functionality covered by this pull includes:
@@ -118,6 +145,10 @@ Functionality covered by this pull includes:
 - Compare modules, policies, schemas, and tools
 - Create contracts, create retire pools, approve wipe contract requests, and create retire requests
 - Create contract, module, policy, and schema tags
+
+## Screenshots
+
+After launching the tests, a folder `cypress/screenshots` will be generated. Inside you can find the screenshots for failures of UI tests.
 
 ## Report
 

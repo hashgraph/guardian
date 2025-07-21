@@ -19,6 +19,7 @@ export class UserManagementPage {
     }
 
     assignPolicyToUser(userName, policyName) {
+        cy.get(userManagementPageLocators.userManagementGrid).contains(new RegExp("^" + userName + "$", "g")).should('be.visible');
         cy.get(userManagementPageLocators.userManagementGrid).contains(new RegExp("^" + userName + "$", "g")).siblings().find(userManagementPageLocators.userRoleButton).click();
         cy.contains(userManagementPageLocators.assignedPoliciesTab).click();
         Checks.waitForLoading();

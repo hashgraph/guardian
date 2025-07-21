@@ -176,6 +176,7 @@ export class RequestVcDocumentBlockAddon {
                     );
                 }
                 const document = _data.document;
+                PolicyUtils.setAutoCalculateFields(this._schema, document);
                 const presetCheck = await this.checkPreset(
                     ref,
                     document,
@@ -197,6 +198,8 @@ export class RequestVcDocumentBlockAddon {
 
                 const credentialSubject = document;
                 credentialSubject.policyId = ref.policyId;
+
+                PolicyUtils.setGuardianVersion(credentialSubject, this._schema);
 
                 const newId = await PolicyActionsUtils.generateId(ref, idType, user, user.userId);
                 if (newId) {
