@@ -18,29 +18,29 @@ import { SchemaService } from '../../../../services/schema.service';
 })
 export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
     @ViewChild(SeparateStepperComponent) matTree!: SeparateStepperComponent;
-    @ViewChild('policyDescriptionForm', { read: TemplateRef })
-    policyDescriptionFormTemp: any;
+    @ViewChild('policyDescriptionForm', { read: TemplateRef }) policyDescriptionFormTemp: any;
     @ViewChild('policyRoles', { read: TemplateRef }) policyRoles: any;
     @ViewChild('policySchemas', { read: TemplateRef }) policySchemas: any;
     @ViewChild('schemaConfig', { read: TemplateRef }) schemaConfig: any;
     @ViewChild('schemaRoleConfig', { read: TemplateRef }) schemaRoleConfig: any;
     @ViewChild('trustChainConfig', { read: TemplateRef }) trustChainConfig: any;
-    @ViewChild('trustChainRoleConfig', { read: TemplateRef })
-    trustChainRoleConfig: any;
+    @ViewChild('trustChainRoleConfig', { read: TemplateRef }) trustChainRoleConfig: any;
 
-    tokens!: Token[];
-    schemas!: Schema[];
-    policies!: any[];
-    groupedSchemas: {
+    public loading: boolean = false;
+
+    public header!: string;
+    public tokens!: Token[];
+    private schemas!: Schema[];
+    private policies!: any[];
+    public groupedSchemas: {
         name: string;
         schemas: Schema[];
     }[] = [];
-    selectedSchemas: Schema[] = [];
-    mintedSchemas: Schema[] = [];
-    selectedTrustChainRoles: string[] = [];
-    loading: boolean = false;
+    public selectedSchemas: Schema[] = [];
+    public mintedSchemas: Schema[] = [];
+    public selectedTrustChainRoles: string[] = [];
 
-    policyForm = this.fb.group({
+    private policyForm = this.fb.group({
         name: ['', Validators.required],
         sectoralScope: new UntypedFormControl({
             value: '',
@@ -64,35 +64,34 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
             value: [],
             disabled: this.loading,
         }),
-        subType: new UntypedFormControl({value: [], disabled: this.loading}),
+        subType: new UntypedFormControl({ value: [], disabled: this.loading }),
         atValidation: [''],
         monitored: [''],
     });
-    policyRolesForm = this.fb.control(['OWNER']);
-    policySchemasForm = this.fb.array([]);
-    trustChainForm = this.fb.array([]);
+    public policyRolesForm = this.fb.control(['OWNER']);
+    private policySchemasForm = this.fb.array([]);
+    private trustChainForm = this.fb.array([]);
 
-    dataForm: UntypedFormGroup = this.fb.group({
+    public dataForm: UntypedFormGroup = this.fb.group({
         policy: this.policyForm,
         roles: this.policyRolesForm,
         schemas: this.policySchemasForm,
         trustChain: this.trustChainForm,
     });
 
-    categories: IPolicyCategory[] = [];
+    private categories: IPolicyCategory[] = [];
+    public appliedTechnologyTypeOptions: IPolicyCategory[] = [];
+    public migrationActivityTypeOptions: IPolicyCategory[] = [];
+    public projectScaleOptions: IPolicyCategory[] = [];
+    public sectoralScopeOptions: IPolicyCategory[] = [];
+    public subTypeOptions: IPolicyCategory[] = [];
 
-    appliedTechnologyTypeOptions: IPolicyCategory[] = [];
-    migrationActivityTypeOptions: IPolicyCategory[] = [];
-    projectScaleOptions: IPolicyCategory[] = [];
-    sectoralScopeOptions: IPolicyCategory[] = [];
-    subTypeOptions: IPolicyCategory[] = [];
+    public treeData: any;
+    public currentNode: any;
 
-    treeData: any;
-    currentNode: any;
+    private destroy$: Subject<boolean> = new Subject<boolean>();
 
-    destroy$: Subject<boolean> = new Subject<boolean>();
-
-    preset: any;
+    private preset: any;
     private existingTopicIds: Set<string>;
 
     constructor(
@@ -109,6 +108,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
         private policyEngineService: PolicyEngineService,
         private schemaService: SchemaService,
     ) {
+        this.header = this.config.header || '';
         this.schemas = this.config.data?.schemas || [];
         this.policies = this.config.data?.policies || [];
         this.groupedSchemas = this.mapGroupedSchemas(
@@ -131,30 +131,22 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
         }
 
         if (this.config.data?.policy) {
-            this.policyForm.patchValue(
-                {
-                    name: this.config.data?.policy.name,
-                    sectoralScope: this.config.data?.policy.sectoralScope,
-                    projectScale: this.config.data?.policy.projectScale,
-                    applicabilityConditions: this.config.data?.policy.applicabilityConditions,
-                    detailsUrl: this.config.data?.policy.detailsUrl,
-                    policyTag: this.config.data?.policy.policyTag,
-                    typicalProjects: this.config.data?.policy.typicalProjects,
-                    topicDescription: this.config.data?.policy.topicDescription,
-                    description: this.config.data?.policy.description,
-                    appliedTechnologyType: this.config.data?.policy.appliedTechnologyType,
-                    migrationActivityType: this.config.data?.policy.migrationActivityType,
-                    subType: this.config.data?.policy.subType,
-                    atValidation: this.config.data?.policy.atValidation,
-                    monitored: this.config.data?.policy.monitored,
-                }
-                //     {
-                //     name: this.config.data?.policy.name,
-                //     description: this.config.data?.policy.description,
-                //     policyTag: this.config.data?.policy.policyTag,
-                //     topicDescription: this.config.data?.policy.topicDescription,
-                // }
-            );
+            this.policyForm.patchValue({
+                name: this.config.data?.policy.name,
+                sectoralScope: this.config.data?.policy.sectoralScope,
+                projectScale: this.config.data?.policy.projectScale,
+                applicabilityConditions: this.config.data?.policy.applicabilityConditions,
+                detailsUrl: this.config.data?.policy.detailsUrl,
+                policyTag: this.config.data?.policy.policyTag,
+                typicalProjects: this.config.data?.policy.typicalProjects,
+                topicDescription: this.config.data?.policy.topicDescription,
+                description: this.config.data?.policy.description,
+                appliedTechnologyType: this.config.data?.policy.appliedTechnologyType,
+                migrationActivityType: this.config.data?.policy.migrationActivityType,
+                subType: this.config.data?.policy.subType,
+                atValidation: this.config.data?.policy.atValidation,
+                monitored: this.config.data?.policy.monitored,
+            });
             this.policyForm.get('policyTag')?.disable();
         }
         this.tokens = this.config.data?.tokens || [];
@@ -162,34 +154,34 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
 
         this.loading = true;
         this.policyEngineService.getPolicyCategories().subscribe((data: any[]) => {
-                this.loading = false;
-                this.categories = data;
+            this.loading = false;
+            this.categories = data;
 
-                this.categories.forEach((item: IPolicyCategory) => {
-                    switch (item.type) {
-                        case PolicyCategoryType.APPLIED_TECHNOLOGY_TYPE:
-                            this.appliedTechnologyTypeOptions.push(item);
-                            break;
-                        case PolicyCategoryType.MITIGATION_ACTIVITY_TYPE:
-                            this.migrationActivityTypeOptions.push(item);
-                            break;
-                        case PolicyCategoryType.PROJECT_SCALE:
-                            this.projectScaleOptions.push(item);
-                            break;
-                        case PolicyCategoryType.SECTORAL_SCOPE:
-                            this.sectoralScopeOptions.push(item);
-                            break;
-                        case PolicyCategoryType.SUB_TYPE:
-                            this.subTypeOptions.push(item);
-                            break;
+            this.categories.forEach((item: IPolicyCategory) => {
+                switch (item.type) {
+                    case PolicyCategoryType.APPLIED_TECHNOLOGY_TYPE:
+                        this.appliedTechnologyTypeOptions.push(item);
+                        break;
+                    case PolicyCategoryType.MITIGATION_ACTIVITY_TYPE:
+                        this.migrationActivityTypeOptions.push(item);
+                        break;
+                    case PolicyCategoryType.PROJECT_SCALE:
+                        this.projectScaleOptions.push(item);
+                        break;
+                    case PolicyCategoryType.SECTORAL_SCOPE:
+                        this.sectoralScopeOptions.push(item);
+                        break;
+                    case PolicyCategoryType.SUB_TYPE:
+                        this.subTypeOptions.push(item);
+                        break;
 
-                        default:
-                            break;
-                    }
-                });
-
-                this.updateFormControlState();
+                    default:
+                        break;
+                }
             });
+
+            this.updateFormControlState();
+        });
     }
 
     updateFormControlState() {
@@ -223,23 +215,23 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
     ) {
         const mappedSchemas = policy
             ? [
-                  {
-                      name:
-                          policy.name +
-                          (policy.version ? ' (' + policy.version + ')' : ''),
-                      schemas: groupedSchemasByTopic[policy?.topicId],
-                  },
-                  {
-                      name: 'Draft schemas',
-                      schemas: this.getDraftSchemas(),
-                  },
-              ]
+                {
+                    name:
+                        policy.name +
+                        (policy.version ? ' (' + policy.version + ')' : ''),
+                    schemas: groupedSchemasByTopic[policy?.topicId],
+                },
+                {
+                    name: 'Draft schemas',
+                    schemas: this.getDraftSchemas(),
+                },
+            ]
             : [
-                  {
-                      name: 'Draft schemas',
-                      schemas: this.getDraftSchemas(),
-                  },
-              ];
+                {
+                    name: 'Draft schemas',
+                    schemas: this.getDraftSchemas(),
+                },
+            ];
         for (const group of Object.entries(groupedSchemasByTopic)) {
             if (
                 group[0] &&
@@ -273,10 +265,11 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
     }
 
     ngOnInit() {
-        setTimeout(() =>  {
+        setTimeout(() => {
             this.setParents(this.treeData)
             this.cdRef.detectChanges();
-        }, 50)
+        }, 50);
+        (window as any).__ff = this.dataForm;
     }
 
     ngAfterViewInit() {
