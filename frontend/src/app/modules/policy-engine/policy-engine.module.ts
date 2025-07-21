@@ -86,7 +86,6 @@ import { PreviewPolicyDialog } from './dialogs/preview-policy-dialog/preview-pol
 import { ExportPolicyDialog } from './dialogs/export-policy-dialog/export-policy-dialog.component';
 import { CronConfigDialog } from './dialogs/cron-config-dialog/cron-config-dialog.component';
 import { CodeEditorDialogComponent } from './dialogs/code-editor-dialog/code-editor-dialog.component';
-import { SaveBeforeDialogComponent } from './dialogs/save-before-dialog/save-before-dialog.component';
 import { InviteDialogComponent } from './dialogs/invite-dialog/invite-dialog.component';
 import { DocumentPath } from './helpers/document-path/document-path.component';
 import { SelectBlock } from './helpers/select-block/select-block.component';
@@ -212,7 +211,6 @@ import { TransformationButtonBlockComponent } from './policy-viewer/blocks/trans
         DocumentValidatorConfigComponent,
         TokenConfirmationConfigComponent,
         TokenConfirmationBlockComponent,
-        SaveBeforeDialogComponent,
         GroupManagerConfigComponent,
         GroupManagerBlockComponent,
         InviteDialogComponent,
