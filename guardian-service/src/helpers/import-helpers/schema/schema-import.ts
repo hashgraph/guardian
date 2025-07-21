@@ -429,7 +429,7 @@ export class SchemaImport {
         this.notifier.addStep('Resolve hedera account', 1);
         this.notifier.addStep('Resolve topics', 1);
         this.notifier.addStep('Update UUID', 1);
-
+        this.notifier.addEstimate(components.length);
         this.notifier.start();
 
         await this.resolveAccount(

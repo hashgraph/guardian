@@ -149,7 +149,7 @@ export class SchemaImportExportHelper {
         notifier.start();
         const helper = new SchemaImport(options.mode, notifier);
         helper.addExternalSchemas(options.outerSchemas);
-        const result = helper.import(files, user, options, userId);
+        const result = await helper.import(files, user, options, userId);
         notifier.complete();
         return result;
     }
@@ -175,7 +175,7 @@ export class SchemaImportExportHelper {
     ): Promise<ImportSchemaResult> {
         notifier.start();
         const helper = new SchemaImport(options.mode, notifier);
-        const result = helper.importByMessage(messageIds, user, options, logger, userId);
+        const result = await helper.importByMessage(messageIds, user, options, logger, userId);
         notifier.complete();
         return result;
     }

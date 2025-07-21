@@ -248,8 +248,12 @@ export class NotificationStep implements INotificationStep {
                     if (step.started) {
                         info.message = step.name;
                     }
-                    info.index = info.index + 1;
+                    if (step.started) {
+                        info.index = index;
+                    }
                     completed = completed + Math.round((step.size * step.progress) / 100);
+                } else {
+                    total = total + 1;
                 }
             }
             if (total === 0) {
@@ -563,8 +567,12 @@ export class NewNotifier implements INotificationStep {
                     if (step.started) {
                         info.message = step.name;
                     }
-                    info.index = info.index + 1;
+                    if (step.started) {
+                        info.index = index;
+                    }
                     completed = completed + Math.round((step.size * step.progress) / 100);
+                } else {
+                    total = total + 1;
                 }
             }
             if (total === 0) {

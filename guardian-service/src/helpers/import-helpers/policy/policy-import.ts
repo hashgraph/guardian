@@ -686,10 +686,10 @@ export class PolicyImport {
 
         this.notifier.addStep('Resolve Hedera account', 1);
         this.notifier.addStep('Resolve topic', 1);
-        this.notifier.addStep('Publish system schemas', 15);
+        this.notifier.addStep('Publish system schemas', 40);
         this.notifier.addStep('Import tools', 10);
         this.notifier.addStep('Import tokens', 2);
-        this.notifier.addStep('Import schemas', 50);
+        this.notifier.addStep('Import schemas', 70);
         this.notifier.addStep('Import artifacts', 5);
         this.notifier.addStep('Import tests', 2);
         this.notifier.addStep('Import formulas', 2);

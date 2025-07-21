@@ -79,15 +79,16 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 if (taskId != this.taskId) {
                     return;
                 }
+                if (info) {
+                    this.setNewProgress(info);
+                } else if (statuses) {
+                    this.setStatuses(statuses);
+                }
                 if (result) {
                     this.progressValue = 100;
                     this.setResult(result);
                 } else if (error) {
                     this.setError(error);
-                } else if (info) {
-                    this.setNewProgress(info);
-                } else {
-                    this.setStatuses(statuses);
                 }
             })
         );
@@ -118,15 +119,16 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             this.expected = task.expectation;
             this.action = task.action;
             const { statuses, error, result, info } = task;
+            if (info) {
+                this.setNewProgress(info);
+            } else if (statuses) {
+                this.setStatuses(statuses);
+            }
             if (result) {
                 this.progressValue = 100;
                 this.setResult(result);
             } else if (error) {
                 this.setError(error);
-            } else if (info) {
-                this.setNewProgress(info);
-            } else {
-                this.setStatuses(statuses);
             }
         });
     }
@@ -141,47 +143,59 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.CONNECT_USER:
                 this.wsService.updateProfile();
                 const home = this.auth.home(this.userRole);
-                this.router.navigate([home], {
-                    replaceUrl: true,
-                });
+                setTimeout(() => {
+                    this.router.navigate([home], {
+                        replaceUrl: true,
+                    });
+                }, 500);
                 return;
             case TaskAction.DELETE_TOKEN:
             case TaskAction.UPDATE_TOKEN:
             case TaskAction.CREATE_TOKEN:
-                this.router.navigate(['tokens'], {
-                    replaceUrl: true,
-                });
+                setTimeout(() => {
+                    this.router.navigate(['tokens'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
                 break;
             case TaskAction.CLONE_POLICY:
             case TaskAction.CREATE_POLICY:
-                this.router.navigate(['policy-configuration'], {
-                    queryParams: {
-                        policyId: result,
-                    },
-                    replaceUrl: true,
-                });
+                setTimeout(() => {
+                    this.router.navigate(['policy-configuration'], {
+                        queryParams: {
+                            policyId: result,
+                        },
+                        replaceUrl: true,
+                    });
+                }, 500);
                 break;
             case TaskAction.CREATE_TOOL:
-                this.router.navigate(['tool-configuration'], {
-                    queryParams: {
-                        toolId: result,
-                    },
-                    replaceUrl: true,
-                });
+                setTimeout(() => {
+                    this.router.navigate(['tool-configuration'], {
+                        queryParams: {
+                            toolId: result,
+                        },
+                        replaceUrl: true,
+                    });
+                }, 500);
                 break;
             case TaskAction.IMPORT_POLICY_FILE:
             case TaskAction.IMPORT_POLICY_MESSAGE:
                 if (this.redir) {
-                    this.router.navigate(['policy-configuration'], {
-                        queryParams: {
-                            policyId: result.policyId,
-                        },
-                        replaceUrl: true,
-                    });
+                    setTimeout(() => {
+                        this.router.navigate(['policy-configuration'], {
+                            queryParams: {
+                                policyId: result.policyId,
+                            },
+                            replaceUrl: true,
+                        });
+                    }, 500);
                 } else {
-                    this.router.navigate(['policy-viewer'], {
-                        replaceUrl: true,
-                    });
+                    setTimeout(() => {
+                        this.router.navigate(['policy-viewer'], {
+                            replaceUrl: true,
+                        });
+                    }, 500);
                 }
                 break;
             case TaskAction.WIZARD_CREATE_POLICY:
@@ -191,12 +205,14 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                         data: result.wizardConfig,
                     });
                 }
-                this.router.navigate(['policy-configuration'], {
-                    queryParams: {
-                        policyId,
-                    },
-                    replaceUrl: true,
-                });
+                setTimeout(() => {
+                    this.router.navigate(['policy-configuration'], {
+                        queryParams: {
+                            policyId,
+                        },
+                        replaceUrl: true,
+                    });
+                }, 500);
                 break;
             case TaskAction.PUBLISH_POLICY:
                 if (result) {
@@ -226,12 +242,14 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                         );
                         this._configurationErrors.set(policyId, errors);
                     }
-                    this.router.navigate(['policy-configuration'], {
-                        queryParams: {
-                            policyId,
-                        },
-                        replaceUrl: true,
-                    });
+                    setTimeout(() => {
+                        this.router.navigate(['policy-configuration'], {
+                            queryParams: {
+                                policyId,
+                            },
+                            replaceUrl: true,
+                        });
+                    }, 500);
                 }
                 break;
             case TaskAction.APPROVE_EXTERNAL_POLICY:
@@ -240,12 +258,14 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     if (!isValid) {
                         this._configurationErrors.set(policyId, errors);
                     }
-                    this.router.navigate(['policy-viewer'], {
-                        queryParams: {
-                            tab: 'remote',
-                        },
-                        replaceUrl: true,
-                    });
+                    setTimeout(() => {
+                        this.router.navigate(['policy-viewer'], {
+                            queryParams: {
+                                tab: 'remote',
+                            },
+                            replaceUrl: true,
+                        });
+                    }, 500);
                 }
                 break;
             case TaskAction.PUBLISH_TOOL:
@@ -276,12 +296,14 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                         );
                         this._configurationErrors.set(tool?.id, errors);
                     }
-                    this.router.navigate(['tool-configuration'], {
-                        queryParams: {
-                            toolId: tool?.id
-                        },
-                        replaceUrl: true,
-                    });
+                    setTimeout(() => {
+                        this.router.navigate(['tool-configuration'], {
+                            queryParams: {
+                                toolId: tool?.id
+                            },
+                            replaceUrl: true,
+                        });
+                    }, 500);
                 }
                 break;
             case TaskAction.DELETE_POLICY:
@@ -292,9 +314,11 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                         'Migration warning'
                     );
                 }
-                this.router.navigate(['policy-viewer'], {
-                    replaceUrl: true,
-                });
+                setTimeout(() => {
+                    this.router.navigate(['policy-viewer'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
                 break;
             // @ts-ignore
             case TaskAction.CREATE_SCHEMA:
@@ -307,18 +331,22 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     this.redirect(this.last);
                     return;
                 }
-                this.router.navigate(['schemas'], {
-                    replaceUrl: true,
-                });
+                setTimeout(() => {
+                    this.router.navigate(['schemas'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
                 break;
             case TaskAction.PUBLISH_POLICY_LABEL:
                 if (this.last) {
                     this.redirect(this.last);
                     return;
                 }
-                this.router.navigate(['policy-labels'], {
-                    replaceUrl: true,
-                });
+                setTimeout(() => {
+                    this.router.navigate(['policy-labels'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
                 break;
         }
     }
@@ -338,16 +366,20 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.RESTORE_USER_PROFILE:
             case TaskAction.CONNECT_USER:
                 const home = this.auth.home(this.userRole);
-                this.router.navigate([home], {
-                    replaceUrl: true,
-                });
+                setTimeout(() => {
+                    this.router.navigate([home], {
+                        replaceUrl: true,
+                    });
+                }, 500);
                 break;
             case TaskAction.DELETE_TOKEN:
             case TaskAction.UPDATE_TOKEN:
             case TaskAction.CREATE_TOKEN:
-                this.router.navigate(['tokens'], {
-                    replaceUrl: true,
-                });
+                setTimeout(() => {
+                    this.router.navigate(['tokens'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
                 break;
             case TaskAction.CLONE_POLICY:
             case TaskAction.CREATE_POLICY:
@@ -357,17 +389,21 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.PUBLISH_POLICY:
             case TaskAction.DELETE_POLICY:
             case TaskAction.MIGRATE_DATA:
-                this.router.navigate(['policy-viewer'], {
-                    replaceUrl: true,
-                });
+                setTimeout(() => {
+                    this.router.navigate(['policy-viewer'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
                 break;
             case TaskAction.CREATE_SCHEMA:
             case TaskAction.PUBLISH_SCHEMA:
             case TaskAction.IMPORT_SCHEMA_FILE:
             case TaskAction.IMPORT_SCHEMA_MESSAGE:
-                this.router.navigate(['schemas'], {
-                    replaceUrl: true,
-                });
+                setTimeout(() => {
+                    this.router.navigate(['schemas'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
                 break;
         }
     }
@@ -421,7 +457,10 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 queryParams[key] = value;
             }
         }
-        this.router.navigate(path, { queryParams });
+        setTimeout(() => {
+            this.router.navigate(path, { queryParams });
+        }, 500);
+
     }
 
     private applyChanges() {

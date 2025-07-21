@@ -908,18 +908,18 @@ export class PolicyEngine extends NatsService {
         logger: PinoLogger,
         userId: string | null
     ): Promise<Policy> {
-        notifier.addStep('Resolve Hedera account', 3);
-        notifier.addStep('Resolve topic', 5);
-        notifier.addStep('Publish schemas', 30);
+        notifier.addStep('Resolve Hedera account', 2);
+        notifier.addStep('Resolve topic', 4);
+        notifier.addStep('Publish schemas', 50);
         notifier.addStep('Publish formulas', 5);
         notifier.addStep('Publish Tokens', 5);
-        notifier.addStep('Create instance topic', 5);
-        notifier.addStep('Create synchronization topic', 5);
-        notifier.addStep('Create restore topic', 5);
-        notifier.addStep('Create actions topic', 5);
+        notifier.addStep('Create instance topic', 2);
+        notifier.addStep('Create synchronization topic', 2);
+        notifier.addStep('Create restore topic', 2);
+        notifier.addStep('Create actions topic', 2);
         notifier.addStep('Publish policy', 20);
-        notifier.addStep('Publish message', 5);
-        notifier.addStep('Publish tags', 5);
+        notifier.addStep('Publish message', 4);
+        notifier.addStep('Publish tags', 4);
         notifier.addStep('Save', 2);
         notifier.start();
 
