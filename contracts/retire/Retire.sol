@@ -6,7 +6,7 @@ import "./RetireImplementation.sol";
 import "../version/Version.sol";
 import "../wipe/interfaces/Wipe_1_0_0.sol";
 
-contract RetireRouter is Version, RetireCommon {
+contract Retire is Version, RetireCommon {
     event PoolAdded(RetireTokenPool[], bool);
     event PoolRemoved(address[]);
     event RetireRequestAdded(address, RetireTokenRequest[]);

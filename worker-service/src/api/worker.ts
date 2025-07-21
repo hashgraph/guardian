@@ -877,15 +877,15 @@ export class Worker extends NatsService {
 
                     const [[singleContractId], [doubleContractId]] = await Promise.all([
                         client.createContract(
-                            constructorParams.RETIRE_SINGLE_FILE_ID,
+                            constructorParams.retireSingleFileId,
                             new ContractFunctionParameters(),
-                            gas,
+                            constructorParams.retireSingleContractGas,
                             contractMemo
                         ),
                         client.createContract(
-                            constructorParams.RETIRE_DOUBLE_FILE_ID,
+                            constructorParams.retireDoubleFileId,
                             new ContractFunctionParameters(),
-                            gas,
+                            constructorParams.retireDoubleContractGas,
                             contractMemo
                         )
                     ]);
@@ -910,7 +910,7 @@ export class Worker extends NatsService {
                         try {
                             await client.contractCall(
                                 implId,
-                                300_000,
+                                constructorParams.retireAdminRoleGas,
                                 'addAdmin',
                                 [
                                     { type: ContractParamType.ADDRESS, value: routerAddr }

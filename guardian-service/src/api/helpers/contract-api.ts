@@ -7,8 +7,12 @@ import {
 } from '@guardian/interfaces';
 
 const CONTRACT_GAS_DEFAULT_VALUES = new Map<ContractAPI | string, number>([
-    ['CREATE_RETIRE_CONTRACT_GAS', 7000000],
+    ['CREATE_RETIRE_CONTRACT_GAS', 3000000],
     ['CREATE_WIPE_CONTRACT_GAS', 2000000],
+    [ContractAPI.RETIRE_SINGLE_CONTRACT_GAS, 6000000],
+    [ContractAPI.RETIRE_DOUBLE_CONTRACT_GAS, 7000000],
+    [ContractAPI.RETIRE_ADMIN_ROLE_GAS, 50000],
+    [ContractAPI.CONTRACT_PERMISSIONS, 100000],
     [ContractAPI.SET_RETIRE_POOLS, 1000000],
     [ContractAPI.CONTRACT_PERMISSIONS, 100000],
     [ContractAPI.ENABLE_WIPE_REQUESTS, 1000000],
@@ -121,8 +125,11 @@ export async function createContract(
     const constructorParams =
         type === ContractType.RETIRE
             ? {
-                RETIRE_SINGLE_FILE_ID: process.env.RETIRE_SINGLE_FILE_ID,
-                RETIRE_DOUBLE_FILE_ID: process.env.RETIRE_DOUBLE_FILE_ID,
+                retireSingleFileId: process.env.RETIRE_SINGLE_FILE_ID,
+                retireDoubleFileId: process.env.RETIRE_DOUBLE_FILE_ID,
+                retireSingleContractGas: CONTRACT_GAS_DEFAULT_VALUES.get('RETIRE_SINGLE_CONTRACT_GAS'),
+                retireDoubleContractGas: CONTRACT_GAS_DEFAULT_VALUES.get('RETIRE_DOUBLE_CONTRACT_GAS'),
+                retireAdminRoleGas: CONTRACT_GAS_DEFAULT_VALUES.get('RETIRE_ADMIN_ROLE_GAS')
             }
             : undefined;
 
