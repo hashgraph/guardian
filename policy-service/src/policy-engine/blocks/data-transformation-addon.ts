@@ -100,7 +100,7 @@ export class DataTransformationAddon {
         const { user, data } = event;
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const id = Array.isArray(data.data) ? data.data[0].id : data.data.id;
-        
+
         return await this.getData(user, ref.uuid, { filterByUUID: id });
     }
 }

@@ -134,7 +134,7 @@ export class PolicyLink<T> {
             this.callback.call(this.target, event);
         });
     }
-    
+
     /**
      * Run sync event action
      * @param user

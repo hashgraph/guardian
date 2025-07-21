@@ -50,7 +50,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
     ]
 })
 export class TransformationButtonBlock {
-        /**
+    /**
      * Get block data
      * @param user
      */

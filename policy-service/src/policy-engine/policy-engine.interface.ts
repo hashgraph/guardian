@@ -332,7 +332,6 @@ export interface IPolicyBlock {
         data: T
     ): Promise<any>;
 
-
     /**
      * Trigger event
      * @param event
