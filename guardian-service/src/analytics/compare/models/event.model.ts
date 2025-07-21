@@ -2,6 +2,7 @@
 import { BlockModel } from './block.model.js';
 import { CompareOptions, IEventsLvl, IKeyMap, IWeightItem, IBlockEventRawData } from '../interfaces/index.js';
 import { Hash3 } from '../hash/utils.js';
+import { WeightType } from '../types/weight.type.js';
 
 /**
  * Event Model
@@ -99,25 +100,29 @@ export class EventModel {
      * @public
      */
     public update(map: IKeyMap<BlockModel>, options: CompareOptions): void {
-        const source: BlockModel = map[this.source];
-        const target: BlockModel = map[this.target];
-        if (source) {
-            this._start = source.getWeight();
-        }
-        if (target) {
-            this._end = target.getWeight();
+        if (options.eventLvl === IEventsLvl.All) {
+            const source: BlockModel = map[this.source];
+            const target: BlockModel = map[this.target];
+            if (source) {
+                this._start = source.getWeight(WeightType.PROP_LVL_3);
+            } else {
+                this._start = 'undefined';
+            }
+            if (target) {
+                this._end = target.getWeight(WeightType.PROP_LVL_3);
+            } else {
+                this._end = 'undefined';
+            }
+        } else if (options.eventLvl === IEventsLvl.Simple) {
+            this._start = this.source || 'undefined';
+            this._end = this.target || 'undefined';
+        } else {
+            this._start = 'undefined';
+            this._end = 'undefined';
         }
         const hashState = new Hash3();
-        if (this._start) {
-            hashState.add(`source:${this._start}`);
-        } else {
-            hashState.add(`source:undefined`);
-        }
-        if (this._end) {
-            hashState.add(`target:${this._end}`);
-        } else {
-            hashState.add('target:undefined');
-        }
+        hashState.add(`source:${this._start}`);
+        hashState.add(`target:${this._end}`);
         hashState.add(`actor:${this.actor}`);
         hashState.add(`disabled:${this.disabled}`);
         hashState.add(`input:${this.input}`);

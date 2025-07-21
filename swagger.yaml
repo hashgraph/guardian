@@ -8241,6 +8241,13 @@ paths:
           schema:
             example: 0.0.1
             type: string
+        - name: search
+          required: false
+          in: query
+          description: Search
+          schema:
+            example: text
+            type: string
       responses:
         '200':
           description: Successful operation.

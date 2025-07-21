@@ -12,6 +12,7 @@ import { PrivateKey } from '@hashgraph/sdk';
 import { IPolicyBlock } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
 import { Recording, Running } from '../record/index.js';
+import { IDebugContext } from '../block-engine/block-result.js';
 
 export class ComponentsService {
     /**
@@ -149,10 +150,10 @@ export class ComponentsService {
      * Register Instance
      * @param name
      */
-    public async registerPolicy(policy: PolicyCollection): Promise<void> {
-        this.policyTokens = policy.policyTokens || [];
-        this.policyGroups = policy.policyGroups || [];
-        this.policyRoles = policy.policyRoles || [];
+    public async registerPolicy(policy: PolicyCollection | PolicyToolCollection): Promise<void> {
+        this.policyTokens = (policy as PolicyCollection).policyTokens || [];
+        this.policyGroups = (policy as PolicyCollection).policyGroups || [];
+        this.policyRoles = (policy as PolicyCollection).policyRoles || [];
         if (policy.topicId) {
             const schemas = await DatabaseServer.getSchemas({ topicId: policy.topicId });
             for (const schema of schemas) {
@@ -441,12 +442,21 @@ export class ComponentsService {
      * Save and update debug context
      * @param context
      */
-    public async debugContext(tag: string, context: any): Promise<any> {
+    public async debugContext(tag: string, context: IDebugContext): Promise<IDebugContext> {
         await DatabaseServer.saveDebugContext({
             policyId: this.policyId,
             tag,
             document: context
         });
         return context;
+    }
+
+    /**
+     * Save debug error
+     * @param context
+     * @protected
+     */
+    public debugError(tag: string, error: any): void {
+        return;
     }
 }

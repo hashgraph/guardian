@@ -12,8 +12,8 @@ jobs:
     runs-on: guardian-linux-medium
     strategy:
       matrix:
-        node-version: [ 20.18.1 ]
-        mongodb-version: [ 7.0.5 ]
+        node-version: [ 20.19.3 ]
+        mongodb-version: [ 7.0.21 ]
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0

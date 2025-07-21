@@ -58,6 +58,7 @@
                     <app-schema-form
                         (cancelBtnEvent)="handleCancelBtnEvent($event, this)"
                         (submitBtnEvent)="handleSubmitBtnEvent($event, this)"
+                        (saveBtnEvent)="handleSaveBtnEvent($event, this)"
                         [comesFromDialog]="true"
                         [showButtons]="false"
                         [formGroup]="dataForm"
@@ -70,7 +71,9 @@
                         [rules]="rulesResults"
                         cancelText = "Cancel"
                         submitText = "Create"
+                        saveText = "Save"
                         (buttons)="onChangeButtons($event)"
+                        [saveShown]="true"
                     >
                     </app-schema-form>
                 </div>
@@ -88,7 +91,10 @@
             <button
                 (click)="config.fn()"
                 [disabled]="ifDisabledBtn(config)"
-                class="guardian-button guardian-button-{{config.type}}">{{config.text}}</button>
+                class="guardian-button guardian-button-{{config.type}}">
+                <svg-icon *ngIf="config.iconPath" src="{{config.iconPath}}" svgClass="save-icon-color"></svg-icon>
+
+                {{config.text}}</button>
         </div>
     </div>
 </div>

@@ -1,6 +1,6 @@
 import { BaseEntity } from '../models/index.js';
 import { GenerateUUIDv4, ModuleStatus } from '@guardian/interfaces';
-import { AfterDelete, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property } from '@mikro-orm/core';
+import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers/index.js';
 
@@ -94,53 +94,24 @@ export class PolicyTool extends BaseEntity {
     tools?: any;
 
     /**
-     * Set policy defaults
+     * old file id
+     */
+    @Property({ persist: false, nullable: true })
+    _configFileId?: ObjectId;
+
+    /**
+     * Set defaults
      */
     @BeforeCreate()
-    setDefaults() {
+    async setDefaults() {
         this.status = this.status || ModuleStatus.DRAFT;
         this.uuid = this.uuid || GenerateUUIDv4();
         this.codeVersion = this.codeVersion || '1.0.0';
-    }
 
-    /**
-     * Create config
-     */
-    @BeforeCreate()
-    async createConfig() {
-        await new Promise<void>((resolve, reject) => {
-            try {
-                if (this.config) {
-                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                        GenerateUUIDv4()
-                    );
-                    this.configFileId = fileStream.id;
-                    fileStream.write(JSON.stringify(this.config));
-                    fileStream.end(() => resolve());
-                } else {
-                    resolve();
-                }
-            } catch (error) {
-                reject(error)
-            }
-        });
-    }
-
-    /**
-     * Update config
-     */
-    @BeforeUpdate()
-    async updateConfig() {
         if (this.config) {
-            if (this.configFileId) {
-                DataBaseHelper.gridFS
-                    .delete(this.configFileId)
-                    .catch((reason) => {
-                        console.error(`BeforeUpdate: PolicyTool, ${this._id}, configFileId`)
-                        console.error(reason)
-                    });
-            }
-            await this.createConfig();
+            const config = JSON.stringify(this.config);
+            this.configFileId = await this._createFile(config, 'PolicyTool');
+            delete this.config;
         }
     }
 
@@ -148,17 +119,44 @@ export class PolicyTool extends BaseEntity {
      * Load config
      */
     @OnLoad()
-    async loadConfig() {
+    @AfterUpdate()
+    @AfterCreate()
+    async loadFiles() {
         if (this.configFileId && !this.config) {
-            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
-                this.configFileId
-            );
-            const bufferArray = [];
-            for await (const data of fileStream) {
-                bufferArray.push(data);
-            }
-            const buffer = Buffer.concat(bufferArray);
+            const buffer = await this._loadFile(this.configFileId);
             this.config = JSON.parse(buffer.toString());
+        }
+    }
+
+    /**
+     * Update config
+     */
+    @BeforeUpdate()
+    async updateFiles() {
+        if (this.config) {
+            const config = JSON.stringify(this.config);
+            const configFileId = await this._createFile(config, 'PolicyTool');
+            if (configFileId) {
+                this._configFileId = this.configFileId;
+                this.configFileId = configFileId;
+            }
+            delete this.config;
+        }
+    }
+
+    /**
+     * Delete File
+     */
+    @AfterUpdate()
+    postUpdateFiles() {
+        if (this._configFileId) {
+            DataBaseHelper.gridFS
+                .delete(this._configFileId)
+                .catch((reason) => {
+                    console.error(`AfterUpdate: PolicyTool, ${this._id}, _configFileId`)
+                    console.error(reason)
+                });
+            delete this._configFileId;
         }
     }
 
@@ -166,7 +164,7 @@ export class PolicyTool extends BaseEntity {
      * Delete context
      */
     @AfterDelete()
-    deleteConfig() {
+    deleteFiles() {
         if (this.configFileId) {
             DataBaseHelper.gridFS
                 .delete(this.configFileId)

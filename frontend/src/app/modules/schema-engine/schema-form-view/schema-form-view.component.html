@@ -38,7 +38,8 @@
                                     class="guardian-button guardian-button-secondary">Copy CID</button>
                             </div>
                         </div>
-                        <div class="form-field-img">
+
+                        <div *ngIf="item?.customType !== 'file'" class="form-field-img">
                             <img *ngIf="!item.loading; else loading" class="ipfs-image" [src]="item.imgSrc" [alt]="item.value">
                             <ng-template #loading>
                                 <div class="guardian-loading">
@@ -69,8 +70,8 @@
                     <div
                         *ngIf="isFormulas(item) as formulas"
                         class="form-field-formula">
-                        <button 
-                            class="guardian-icon-button guardian-icon-button-secondary" 
+                        <button
+                            class="guardian-icon-button guardian-icon-button-secondary"
                             (click)="showFormulas(formulas)">
                             <svg-icon
                                 src="/assets/images/icons/function.svg"

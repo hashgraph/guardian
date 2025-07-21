@@ -70,7 +70,9 @@
                     submitText="Create"
                     [rules]="rulesResults"
                     [paginationHidden]="false"
+                    [saveShown]="true"
                     (buttons)="onChangeButtons($event)"
+                    (saveBtnEvent)="handleSaveBtnEvent(dataForm)"
                 >
                 </app-schema-form>
             </div>

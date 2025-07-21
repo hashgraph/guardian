@@ -369,6 +369,13 @@ export class SchemaApi {
         required: false,
         example: Examples.ACCOUNT_ID
     })
+    @ApiQuery({
+        name: 'search',
+        type: String,
+        description: 'Search',
+        required: false,
+        example: 'text'
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -391,6 +398,7 @@ export class SchemaApi {
         @Query('moduleId') moduleId: string,
         @Query('toolId') toolId: string,
         @Query('topicId') topicId: string,
+        @Query('search') search: string,
         @Response() res: any
     ): Promise<SchemaDTO[]> {
         try {
@@ -416,7 +424,9 @@ export class SchemaApi {
             if (toolId) {
                 options.toolId = toolId;
             }
-
+            if (search) {
+                options.search = search;
+            }
             options.fields = Object.values(SCHEMA_REQUIRED_PROPS)
 
             const { items, count } = await guardians.getSchemasByOwnerV2(options, owner);
@@ -2015,7 +2025,7 @@ export class SchemaApi {
         @Response() res: any,
         @Param('username') username: string,
         @Query('pageIndex') pageIndex?: number,
-        @Query('pageSize') pageSize?: number
+        @Query('pageSize') pageSize?: number,
     ): Promise<SchemaDTO[]> {
         try {
             const guardians = new Guardians();

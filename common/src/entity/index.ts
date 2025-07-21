@@ -55,3 +55,4 @@ export * from './dynamic-role.js';
 export * from './external-policy.js';
 export * from './policy-action.js';
 export * from './policy-keys.js';
+export * from './document-draft.js';

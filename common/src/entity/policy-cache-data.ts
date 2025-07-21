@@ -1,4 +1,3 @@
-import { GenerateUUIDv4 } from '@guardian/interfaces';
 import {
     Entity,
     Property,
@@ -12,8 +11,6 @@ import {
 import { ObjectId } from '@mikro-orm/mongodb';
 import { BaseEntity } from '../models/index.js';
 import { DataBaseHelper } from '../helpers/index.js';
-import ObjGet from 'lodash.get';
-import ObjSet from 'lodash.set';
 
 /**
  * Policy cache data
@@ -102,7 +99,7 @@ export class PolicyCacheData extends BaseEntity {
      * Document file id
      */
     @Property({ nullable: true, type: 'unknown' })
-    documentFileId?: any;
+    documentFileId?: ObjectId;
 
     /**
      * Document fields
@@ -336,7 +333,7 @@ export class PolicyCacheData extends BaseEntity {
      * Context file id
      */
     @Property({ nullable: true, type: 'unknown' })
-    contextFileId?: any;
+    contextFileId?: ObjectId;
 
     /**
      * Version
@@ -414,7 +411,7 @@ export class PolicyCacheData extends BaseEntity {
      * Config file id
      */
     @Property({ nullable: true, type: 'unknown' })
-    configFileId?: any;
+    configFileId?: ObjectId;
 
     /**
      * Policy roles
@@ -765,62 +762,45 @@ export class PolicyCacheData extends BaseEntity {
     processDate?: any;
 
     /**
-     * Create document
+     * old file id
      */
-    @BeforeCreate()
-    async createDocument() {
-        await new Promise<void>((resolve, reject) => {
-            try {
-                if (this.document) {
-                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                        GenerateUUIDv4()
-                    );
-                    this.documentFileId = fileStream.id;
-                    fileStream.write(JSON.stringify(this.document));
-                    if (this.documentFields) {
-                        const newDocument: any = {};
-                        for (const field of this.documentFields) {
-                            const fieldValue = ObjGet(this.document, field);
-                            if (
-                                (typeof fieldValue === 'string' &&
-                                    fieldValue.length <
-                                    (+process.env
-                                        .DOCUMENT_CACHE_FIELD_LIMIT ||
-                                        100)) ||
-                                typeof fieldValue === 'number'
-                            ) {
-                                ObjSet(newDocument, field, fieldValue);
-                            }
-                        }
-                        this.document = newDocument;
-                    } else {
-                        delete this.document;
-                    }
-                    fileStream.end(() => resolve());
-                } else {
-                    resolve();
-                }
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
+    @Property({ persist: false, nullable: true })
+    _documentFileId?: ObjectId;
 
     /**
-     * Update document
+     * old file id
      */
-    @BeforeUpdate()
-    async updateDocument() {
+    @Property({ persist: false, nullable: true })
+    _contextFileId?: ObjectId;
+
+    /**
+     * old file id
+     */
+    @Property({ persist: false, nullable: true })
+    _configFileId?: ObjectId;
+
+    /**
+     * Document defaults
+     */
+    @BeforeCreate()
+    async setDefaults() {
         if (this.document) {
-            if (this.documentFileId) {
-                DataBaseHelper.gridFS
-                    .delete(this.documentFileId)
-                    .catch((reason) => {
-                        console.error(`BeforeUpdate: PolicyCacheData, ${this._id}, documentFileId`)
-                        console.error(reason)
-                    });
+            const document = JSON.stringify(this.document);
+            this.documentFileId = await this._createFile(document, 'PolicyCacheData');
+            this.document = this._createFieldCache(this.document, this.documentFields);
+            if (!this.document) {
+                delete this.document;
             }
-            await this.createDocument();
+        }
+        if (this.context) {
+            const context = JSON.stringify(this.context);
+            this.contextFileId = await this._createFile(context, 'PolicyCacheData');
+            delete this.context;
+        }
+        if (this.config) {
+            const config = JSON.stringify(this.config);
+            this.configFileId = await this._createFile(config, 'PolicyCacheData');
+            delete this.config;
         }
     }
 
@@ -830,17 +810,95 @@ export class PolicyCacheData extends BaseEntity {
     @OnLoad()
     @AfterUpdate()
     @AfterCreate()
-    async loadDocument() {
+    async loadFiles() {
         if (this.documentFileId) {
-            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
-                this.documentFileId
-            );
-            const bufferArray = [];
-            for await (const data of fileStream) {
-                bufferArray.push(data);
-            }
-            const buffer = Buffer.concat(bufferArray);
+            const buffer = await this._loadFile(this.documentFileId)
             this.document = JSON.parse(buffer.toString());
+        }
+        if (this.contextFileId) {
+            const buffer = await this._loadFile(this.contextFileId)
+            this.context = JSON.parse(buffer.toString());
+        }
+        if (this.configFileId) {
+            const buffer = await this._loadFile(this.configFileId)
+            this.config = JSON.parse(buffer.toString());
+        }
+        if (this.oldId) {
+            this.newId = this._id;
+            this.id = this.oldId;
+            this._id = ObjectId.createFromHexString(this.oldId);
+        }
+    }
+
+    /**
+     * Update document
+     */
+    @BeforeUpdate()
+    async updateFiles() {
+        if (this.document) {
+            const document = JSON.stringify(this.document);
+            const documentFileId = await this._createFile(document, 'PolicyCacheData');
+            if (documentFileId) {
+                this._documentFileId = this.documentFileId;
+                this.documentFileId = documentFileId;
+            }
+
+            this.document = this._createFieldCache(this.document, this.documentFields);
+            if (!this.document) {
+                delete this.document;
+            }
+        }
+        if (this.context) {
+            const context = JSON.stringify(this.context);
+            const contextFileId = await this._createFile(context, 'PolicyCacheData');
+            if (contextFileId) {
+                this._contextFileId = this.contextFileId;
+                this.contextFileId = contextFileId;
+            }
+            delete this.context;
+        }
+        if (this.config) {
+            const config = JSON.stringify(this.config);
+            const configFileId = await this._createFile(config, 'PolicyCacheData');
+            if (configFileId) {
+                this._configFileId = this.configFileId;
+                this.configFileId = configFileId;
+            }
+            delete this.config;
+        }
+    }
+
+    /**
+     * Delete File
+     */
+    @AfterUpdate()
+    postUpdateFiles() {
+        if (this._documentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this._documentFileId)
+                .catch((reason) => {
+                    console.error(`AfterUpdate: PolicyCacheData, ${this._id}, _documentFileId`)
+                    console.error(reason)
+                });
+            delete this._documentFileId;
+        }
+        if (this._contextFileId) {
+            DataBaseHelper.gridFS
+                .delete(this._contextFileId)
+                .catch((reason) => {
+                    console.error(`AfterUpdate: PolicyCacheData, ${this._id}, _contextFileId`)
+                    console.error(reason)
+                });
+            delete this._contextFileId;
+        }
+        if (this._configFileId) {
+            DataBaseHelper.gridFS
+                .delete(this._configFileId)
+                .catch((reason) => {
+                    console.error(`AfterUpdate: PolicyCacheData, ${this._id}, _configFileId`)
+                    console.error(reason)
+                });
+            delete this._configFileId;
         }
     }
 
@@ -848,7 +906,7 @@ export class PolicyCacheData extends BaseEntity {
      * Delete document
      */
     @AfterDelete()
-    deleteDocument() {
+    deleteFiles() {
         if (this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
@@ -857,72 +915,6 @@ export class PolicyCacheData extends BaseEntity {
                     console.error(reason)
                 });
         }
-    }
-
-    /**
-     * Create context
-     */
-    @BeforeCreate()
-    async createContext() {
-        await new Promise<void>((resolve, reject) => {
-            try {
-                if (this.context) {
-                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                        GenerateUUIDv4()
-                    );
-                    this.contextFileId = fileStream.id;
-                    fileStream.write(JSON.stringify(this.context));
-                    fileStream.end(() => resolve());
-                } else {
-                    resolve();
-                }
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    /**
-     * Update context
-     */
-    @BeforeUpdate()
-    async updateContext() {
-        if (this.context) {
-            if (this.contextFileId) {
-                DataBaseHelper.gridFS
-                    .delete(this.contextFileId)
-                    .catch((reason) => {
-                        console.error(`BeforeUpdate: PolicyCacheData, ${this._id}, contextFileId`)
-                        console.error(reason)
-                    });
-            }
-            await this.createContext();
-        }
-    }
-
-    /**
-     * Load context
-     */
-    @OnLoad()
-    async loadContext() {
-        if (this.contextFileId && !this.context) {
-            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
-                this.contextFileId
-            );
-            const bufferArray = [];
-            for await (const data of fileStream) {
-                bufferArray.push(data);
-            }
-            const buffer = Buffer.concat(bufferArray);
-            this.context = JSON.parse(buffer.toString());
-        }
-    }
-
-    /**
-     * Delete context
-     */
-    @AfterDelete()
-    deleteContext() {
         if (this.contextFileId) {
             DataBaseHelper.gridFS
                 .delete(this.contextFileId)
@@ -931,72 +923,6 @@ export class PolicyCacheData extends BaseEntity {
                     console.error(reason)
                 });
         }
-    }
-
-    /**
-     * Create config
-     */
-    @BeforeCreate()
-    async createConfig() {
-        await new Promise<void>((resolve, reject) => {
-            try {
-                if (this.config) {
-                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                        GenerateUUIDv4()
-                    );
-                    this.configFileId = fileStream.id;
-                    fileStream.write(JSON.stringify(this.config));
-                    fileStream.end(() => resolve());
-                } else {
-                    resolve();
-                }
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    /**
-     * Update config
-     */
-    @BeforeUpdate()
-    async updateConfig() {
-        if (this.config) {
-            if (this.configFileId) {
-                DataBaseHelper.gridFS
-                    .delete(this.configFileId)
-                    .catch((reason) => {
-                        console.error(`BeforeUpdate: PolicyCacheData, ${this._id}, configFileId`)
-                        console.error(reason)
-                    });
-            }
-            await this.createConfig();
-        }
-    }
-
-    /**
-     * Load config
-     */
-    @OnLoad()
-    async loadConfig() {
-        if (this.configFileId && !this.config) {
-            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
-                this.configFileId
-            );
-            const bufferArray = [];
-            for await (const data of fileStream) {
-                bufferArray.push(data);
-            }
-            const buffer = Buffer.concat(bufferArray);
-            this.config = JSON.parse(buffer.toString());
-        }
-    }
-
-    /**
-     * Delete context
-     */
-    @AfterDelete()
-    deleteConfig() {
         if (this.configFileId) {
             DataBaseHelper.gridFS
                 .delete(this.configFileId)
@@ -1004,15 +930,6 @@ export class PolicyCacheData extends BaseEntity {
                     console.error(`AfterDelete: PolicyCacheData, ${this._id}, configFileId`)
                     console.error(reason)
                 });
-        }
-    }
-
-    @OnLoad()
-    replaceIds() {
-        if (this.oldId) {
-            this.newId = this._id;
-            this.id = this.oldId;
-            this._id = ObjectId.createFromHexString(this.oldId);
         }
     }
 }
