@@ -58,6 +58,11 @@ textarea {
     margin: 25px 8px 25px 2px;
 }
 
+.dialog-body {
+    min-height: 100px;
+    position: relative;
+}
+
 .guardian-button {
     padding: 6px 32px;
     height: 40px;

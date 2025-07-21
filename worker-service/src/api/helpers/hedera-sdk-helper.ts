@@ -1843,7 +1843,7 @@ export class HederaSDKHelper {
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get contract info request timeout exceeded')
     public async getContractInfoRest(contractId: string): Promise<any> {
         const res = await axios.get(
-            `${Environment.HEDERA_CONTRACT_API}/${contractId}`,
+            `${Environment.HEDERA_CONTRACT_API}${contractId}`,
             { responseType: 'json' }
         );
         if (!res || !res.data) {
@@ -1890,7 +1890,7 @@ export class HederaSDKHelper {
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get balance request timeout exceeded')
     public static async accountInfo(accountId: string): Promise<any> {
         const res = await axios.get(
-            `${Environment.HEDERA_ACCOUNT_API}/${accountId}/tokens`,
+            `${Environment.HEDERA_ACCOUNT_API}${accountId}/tokens`,
             { responseType: 'json' }
         );
         if (!res || !res.data) {

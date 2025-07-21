@@ -1044,3 +1044,11 @@
 .tabs-nav {
     margin: 24px 0px;
 }
+
+.grid-table-container {
+    ::ng-deep .grid-table {
+        .p-datatable-wrapper {
+            max-height: calc(-330px + 100vh);
+        }
+    }
+}

@@ -1,5 +1,5 @@
-import {Component, Inject, OnInit} from '@angular/core';
-import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
+import { Component, Inject, OnInit } from '@angular/core';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 export interface SelectorDialogOptions {
     name: string;
@@ -9,18 +9,16 @@ export interface SelectorDialogOptions {
 @Component({
     selector: 'app-selector-dialog',
     templateUrl: './selector-dialog.component.html',
-    styleUrls: ['./selector-dialog.component.css'],
+    styleUrls: ['./selector-dialog.component.scss'],
 })
 export class SelectorDialogComponent implements OnInit {
-    title!: string;
-    description!: string;
-    label: string = 'Choose an option';
-    multiple!: boolean;
-    options!: SelectorDialogOptions[];
+    public title!: string;
+    public description!: string;
+    public label: string = 'Choose an option';
+    public multiple!: boolean;
+    public options!: SelectorDialogOptions[];
 
-    result: any;
-
-    isVisible: boolean = true;
+    public result: any;
 
     constructor(
         public dialogRef: DynamicDialogRef,
@@ -41,10 +39,10 @@ export class SelectorDialogComponent implements OnInit {
     }
 
     onConfirm(): void {
-        this.dialogRef.close({ok: true, result: this.result});
+        this.dialogRef.close({ ok: true, result: this.result });
     }
 
     onCancel(): void {
-        this.dialogRef.close({ok: false});
+        this.dialogRef.close({ ok: false });
     }
 }

@@ -7,6 +7,9 @@
     </div>
 </div>
 <div class="dialog-body">
+    <div *ngIf="!started" class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+    </div>
     <div class="context">
         <app-schema-form
             [formGroup]="dataForm"

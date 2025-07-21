@@ -1,6 +1,6 @@
 import { BaseEntity } from '../models/index.js';
 import { GenerateUUIDv4, LocationType, PolicyAvailability, PolicyCategoryExport, PolicyStatus } from '@guardian/interfaces';
-import { AfterDelete, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property, Unique } from '@mikro-orm/core';
+import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property, Unique } from '@mikro-orm/core';
 import { DataBaseHelper } from '../helpers/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
 
@@ -134,9 +134,7 @@ export class Policy extends BaseEntity {
     /**
      * Policy tag
      */
-    @Property({
-        nullable: true
-    })
+    @Property({ nullable: true })
     policyTag?: string;
 
     /**
@@ -258,56 +256,36 @@ export class Policy extends BaseEntity {
     actionsTopicId?: string;
 
     /**
+     * old file id
+     */
+    @Property({ persist: false, nullable: true })
+    _configFileId?: ObjectId;
+
+    /**
+     * old file id
+     */
+    @Property({ persist: false, nullable: true })
+    _hashMapFileId?: ObjectId;
+
+    /**
      * Set policy defaults
      */
     @BeforeCreate()
-    setDefaults() {
+    async setDefaults() {
         this.locationType = this.locationType || LocationType.LOCAL;
         this.status = this.status || PolicyStatus.DRAFT;
         this.availability = this.availability || PolicyAvailability.PRIVATE;
         this.uuid = this.uuid || GenerateUUIDv4();
         this.codeVersion = this.codeVersion || '1.0.0';
         delete this.registeredUsers;
-    }
 
-    /**
-     * Create File
-     */
-    @BeforeCreate()
-    async createConfig() {
-        await new Promise<void>((resolve, reject) => {
-            try {
-                if (this.config) {
-                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                        GenerateUUIDv4()
-                    );
-                    this.configFileId = fileStream.id;
-                    fileStream.write(JSON.stringify(this.config));
-                    fileStream.end(() => resolve());
-                } else {
-                    resolve();
-                }
-            } catch (error) {
-                reject(error)
-            }
-        });
-    }
-
-    /**
-     * Update File
-     */
-    @BeforeUpdate()
-    async updateConfig() {
         if (this.config) {
-            if (this.configFileId) {
-                DataBaseHelper.gridFS
-                    .delete(this.configFileId)
-                    .catch((reason) => {
-                        console.error(`BeforeUpdate: Policy, ${this._id}, configFileId`)
-                        console.error(reason)
-                    });
-            }
-            await this.createConfig();
+            const config = JSON.stringify(this.config);
+            this.configFileId = await this._createFile(config, 'Policy');
+        }
+        if (this.hashMap) {
+            const hashMap = JSON.stringify(this.hashMap);
+            this.hashMapFileId = await this._createFile(hashMap, 'Policy');
         }
     }
 
@@ -315,99 +293,82 @@ export class Policy extends BaseEntity {
      * Load File
      */
     @OnLoad()
-    async loadConfig() {
+    @AfterUpdate()
+    @AfterCreate()
+    async loadFiles() {
         if (this.configFileId && !this.config) {
-            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
-                this.configFileId
-            );
-            const bufferArray = [];
-            for await (const data of fileStream) {
-                bufferArray.push(data);
-            }
-            const buffer = Buffer.concat(bufferArray);
+            const buffer = await this._loadFile(this.configFileId);
             this.config = JSON.parse(buffer.toString());
         }
-    }
-
-    /**
-     * Delete File
-     */
-    @AfterDelete()
-    deleteConfig() {
-        if (this.configFileId) {
-            DataBaseHelper.gridFS
-                .delete(this.configFileId)
-                .catch((reason) => {
-                    console.error(`BeforeUpdate: Policy, ${this._id}, configFileId`)
-                    console.error(reason)
-                });
-        }
-    }
-
-    /**
-     * Create File
-     */
-    @BeforeCreate()
-    async createHashMap() {
-        await new Promise<void>((resolve, reject) => {
-            try {
-                if (this.hashMap) {
-                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                        GenerateUUIDv4()
-                    );
-                    this.hashMapFileId = fileStream.id;
-                    fileStream.write(JSON.stringify(this.hashMap));
-                    fileStream.end(() => resolve());
-                } else {
-                    resolve();
-                }
-            } catch (error) {
-                reject(error)
-            }
-        });
-    }
-
-    /**
-     * Update File
-     */
-    @BeforeUpdate()
-    async updateHashMap() {
-        if (this.hashMap) {
-            if (this.hashMapFileId) {
-                DataBaseHelper.gridFS
-                    .delete(this.hashMapFileId)
-                    .catch((reason) => {
-                        console.error(`BeforeUpdate: Policy, ${this._id}, hasMapFileId`)
-                        console.error(reason)
-                    });
-            }
-            await this.createHashMap();
-        }
-    }
-
-    /**
-     * Load File
-     */
-    @OnLoad()
-    async loadHashMap() {
         if (this.hashMapFileId && !this.hashMap) {
-            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
-                this.hashMapFileId
-            );
-            const bufferArray = [];
-            for await (const data of fileStream) {
-                bufferArray.push(data);
-            }
-            const buffer = Buffer.concat(bufferArray);
+            const buffer = await this._loadFile(this.hashMapFileId);
             this.hashMap = JSON.parse(buffer.toString());
         }
     }
 
     /**
+     * Update File
+     */
+    @BeforeUpdate()
+    async updateFiles() {
+        if (this.config) {
+            const config = JSON.stringify(this.config);
+            const configFileId = await this._createFile(config, 'Policy');
+            if (configFileId) {
+                this._configFileId = this.configFileId;
+                this.configFileId = configFileId;
+            }
+            delete this.config;
+        }
+        if (this.hashMap) {
+            const hashMap = JSON.stringify(this.hashMap);
+            const hashMapFileId = await this._createFile(hashMap, 'Policy');
+            if (hashMapFileId) {
+                this._hashMapFileId = this.hashMapFileId;
+                this.hashMapFileId = hashMapFileId;
+            }
+            delete this.hashMap;
+        }
+    }
+
+    /**
+     * Delete File
+     */
+    @AfterUpdate()
+    postUpdateFiles() {
+        if (this._configFileId) {
+            DataBaseHelper.gridFS
+                .delete(this._configFileId)
+                .catch((reason) => {
+                    console.error(`AfterUpdate: Policy, ${this._id}, _configFileId`)
+                    console.error(reason)
+                });
+            delete this._configFileId;
+        }
+        if (this._hashMapFileId) {
+            DataBaseHelper.gridFS
+                .delete(this._hashMapFileId)
+                .catch((reason) => {
+                    console.error(`AfterUpdate: Policy, ${this._id}, _hashMapFileId`)
+                    console.error(reason)
+                });
+            delete this._hashMapFileId;
+        }
+    }
+
+    /**
      * Delete File
      */
     @AfterDelete()
-    deleteHashMap() {
+    deleteFiles() {
+        if (this.configFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.configFileId)
+                .catch((reason) => {
+                    console.error(`AfterDelete: Policy, ${this._id}, configFileId`)
+                    console.error(reason)
+                });
+        }
         if (this.hashMapFileId) {
             DataBaseHelper.gridFS
                 .delete(this.hashMapFileId)
