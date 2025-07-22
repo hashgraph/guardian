@@ -21,8 +21,20 @@ export class TransformationButtonBlock {
             if(!ref.options.url) {
                 validator.addError('Option "url" is not set');
             }
+            else if(!this.isValidUrl(ref.options.url)) {
+                validator.addError('"Url" is not valid');
+            }
         } catch (error) {
             validator.addError(`Unhandled exception ${validator.getErrorMessage(error)}`);
+        }
+    }
+
+    private static isValidUrl(url) {
+        try {
+            new URL(url);
+            return true;
+        } catch (_) {
+            return false;
         }
     }
 }
