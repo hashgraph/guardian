@@ -374,7 +374,7 @@ export class AccountService extends NatsService {
             async (msg: { username: string, oldPassword: string, newPassword: string, userId: string | null }) => {
                 const { username, oldPassword, newPassword, userId } = msg;
                 try {
-                    const user = await UserUtils.getUser({ username, template: { $ne: true } }, UserProp.RAW);
+                    const user = await UserUtils.getUser({ username, template: { $ne: true }, id: userId }, UserProp.RAW);
                     if (!(await UserPassword.verifyPassword(user, oldPassword))) {
                         return new MessageError('Unauthorized request', 401);
                     }
