@@ -49,8 +49,10 @@
                         class="form-field-input guardian-input-container"
                         [ngClass]="{'ipfs-url' : isIPFS(item)}"
                     >
-                        <input pInputText [formControl]="item.control" [placeholder]="getPlaceholderByFieldType(item)"
-                               type="text"/>
+                        <input pInputText [formControl]="item.control"
+                            (focus)="onFocusField(item.format, item)"
+                            [placeholder]="getPlaceholderByFieldType(item)"
+                            type="text"/>
                         <div *ngIf="isIPFS(item)">
                             <div class="file-upload">
                                 <ng-container [ngSwitch]="item.fileUploading">
@@ -195,7 +197,8 @@
                                 [ngClass]="{'ipfs-url' : isIPFS(item)}"
                             >
                                 <input pInputText [formControl]="listItem.control"
-                                       [placeholder]="getPlaceholderByFieldType(item)" type="text"/>
+                                    (focus)="onFocusField(item.format, listItem)"
+                                    [placeholder]="getPlaceholderByFieldType(item)" type="text"/>
                                 <div *ngIf="isIPFS(item)">
                                     <div class="file-upload">
                                         <ng-container [ngSwitch]="listItem.fileUploading">
@@ -386,6 +389,7 @@
                                         [isChildSchema]="true"
                                         [policyId]="policyId"
                                         [preset]="item.preset"
+                                        [isFormForRequestBlock]="isFormForRequestBlock"
                                         [rules]="rules"
                                     >
                                     </app-schema-form>
@@ -499,6 +503,7 @@
                                                     [policyId]="policyId"
                                                     [preset]="listItem.preset"
                                                     [rules]="rules"
+                                                    [isFormForRequestBlock]="isFormForRequestBlock"
                                                     [paginationHidden]="paginationHidden">
                                                 </app-schema-form>
                                             </ng-container>
@@ -541,6 +546,7 @@
                     [dryRun]="dryRun"
                     [isChildSchema]="true"
                     [policyId]="policyId"
+                    [isFormForRequestBlock]="isFormForRequestBlock"
                     [rules]="rules">
                 </app-schema-form>
                 <ng-template #elseCondition>
@@ -554,6 +560,7 @@
                         [dryRun]="dryRun"
                         [isChildSchema]="true"
                         [policyId]="policyId"
+                        [isFormForRequestBlock]="isFormForRequestBlock"
                         [rules]="rules">
                     </app-schema-form>
                 </ng-template>

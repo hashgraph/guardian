@@ -333,7 +333,7 @@ export class SchemaFormComponent implements OnInit {
 
     private createControl(item: IFieldControl<any>, preset: any): UntypedFormControl | UntypedFormGroup | UntypedFormArray {
         const validators = this.getValidators(item);
-        const value = this.getValueForField(item, preset);
+        const value = (preset === null || preset === undefined) ? undefined : preset;
         return new UntypedFormControl(value, validators);
     }
 
@@ -1206,5 +1206,14 @@ export class SchemaFormComponent implements OnInit {
 
     public isRulesStatus(item: IFieldControl<any>) {
         return this.rules?.[item.fullPath]?.status;
+    }
+
+    public onFocusField(formatType: string, item: any) {
+        if (this.isFormForRequestBlock
+            && formatType === 'url'
+            && !item.control.value
+        ) {
+            item.control.setValue(PresetPrefixByFieldType.URL);
+        }
     }
 }
