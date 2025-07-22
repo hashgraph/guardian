@@ -206,7 +206,9 @@ For setting up AI and Guided Search, we need to set OPENAI\_API\_KEY variable in
 OPENAI_API_KEY="..."
 ```
 
-6. Build and launch with Docker. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
+#### 6. Build and launch with Docker.
+
+Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
 
 ```
 docker-compose up -d --build
@@ -218,8 +220,9 @@ docker-compose up -d --build
 About docker-compose: from the end of June 2023 Compose V1 won’t be supported anymore and will be removed from all Docker Desktop versions. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/
 {% endhint %}
 
-7. Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](../launching-guardian.md)
-8. For increased security remove credentials from `.env` file and enable network access
+Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](../launching-guardian.md)
+
+For increased security remove credentials from `.env` file and enable network access
 
 On first state the credentials from `.env` file are copied into the secure  storage as configured (e.g. Vault). After that Guardian does not use any credentials stored in the .env file, thus they should be removed for security reasons.
 
