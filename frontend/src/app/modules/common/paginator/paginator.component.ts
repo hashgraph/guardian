@@ -9,9 +9,8 @@ export class PaginatorComponent {
     @Input('pageIndex') pageIndex: number = 0;
     @Input('pageSize') pageSize: number = 25;
     @Input('length') length: number = 0;
+    @Input('options') options: number[] = [10, 25, 50, 100];
     @Output('page') page = new EventEmitter<any>();
-
-    public options = [10, 25, 50, 100];
 
     public get pageNumberMin(): number {
         return this.pageIndex * this.pageSize + 1;

@@ -374,7 +374,9 @@ export const BlockAbout = {
         'get': true,
         'children': 'None',
         'control': 'Special',
-        'input': null,
+        'input': [
+            'GetDataEvent'
+        ],
         'output': null,
         'defaultEvent': false,
     },
@@ -652,6 +654,37 @@ export const BlockAbout = {
         ],
         'output': null,
         'defaultEvent': false
+    },
+    'transformationButtonBlock': {
+        'label': 'Transformation button',
+        'title': 'Add \'Transformation button\' Block',
+        'post': true,
+        'get': true,
+        'children': 'Special',
+        'control': 'UI',
+        'input': [
+            'RunEvent'
+        ],
+        'output': [
+            'GetDataEvent'
+        ],
+        'defaultEvent': false,
+        'properties': [
+            {
+                'name': 'buttonName',
+                'label': 'Button name',
+                'title': 'Button name',
+                'type': 'Input',
+                'default': ''
+            },
+            {
+                'name': 'url',
+                'label': 'Url',
+                'title': 'Url',
+                'type': 'Input',
+                'default': ''
+            },
+        ],
     },
     'buttonBlockAddon': {
         'label': 'Button',

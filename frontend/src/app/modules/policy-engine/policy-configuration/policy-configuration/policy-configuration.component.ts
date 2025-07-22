@@ -19,7 +19,6 @@ import { SuggestionsService } from '../../../../services/suggestions.service';
 import { ThemeService } from '../../../../services/theme.service';
 import { NewModuleDialog } from '../../dialogs/new-module-dialog/new-module-dialog.component';
 import { PublishPolicyDialog } from '../../dialogs/publish-policy-dialog/publish-policy-dialog.component';
-import { SaveBeforeDialogComponent } from '../../dialogs/save-before-dialog/save-before-dialog.component';
 import { PolicyAction, SavePolicyDialog } from '../../dialogs/save-policy-dialog/save-policy-dialog.component';
 import { StopResizingEvent } from '../../directives/resizing.directive';
 import { CONFIGURATION_ERRORS } from '../../injectors/configuration.errors.injector';
@@ -1542,13 +1541,24 @@ export class PolicyConfigurationComponent implements OnInit {
         const isPolicyStorage = await this.storage.getPolicyById(this.policyId)
 
         if (!!isPolicyStorage) {
-            const dialogRef = this.dialog.open(SaveBeforeDialogComponent, {
-                width: '500px',
-                modal: true,
-                closable: false,
+            const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+                showHeader: false,
+                width: '640px',
+                styleClass: 'guardian-dialog',
+                data: {
+                    header: 'Save Changes',
+                    text: `You have unsaved changes. Do you want to save them?`,
+                    buttons: [{
+                        name: 'Cancel',
+                        class: 'secondary'
+                    }, {
+                        name: 'Save',
+                        class: 'primary'
+                    }]
+                },
             });
-            dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
-                if (result) {
+            dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: string) => {
+                if (result === 'Save') {
                     this.asyncUpdatePolicy().pipe(takeUntil(this._destroy$)).subscribe(() => {
                         this.setVersion();
                     });
@@ -1563,13 +1573,24 @@ export class PolicyConfigurationComponent implements OnInit {
         const isPolicyStorage = await this.storage.getPolicyById(this.policyId)
 
         if (!!isPolicyStorage) {
-            const dialogRef = this.dialog.open(SaveBeforeDialogComponent, {
-                width: '500px',
-                modal: true,
-                closable: false,
+            const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+                showHeader: false,
+                width: '640px',
+                styleClass: 'guardian-dialog',
+                data: {
+                    header: 'Save Changes',
+                    text: `You have unsaved changes. Do you want to save them?`,
+                    buttons: [{
+                        name: 'Cancel',
+                        class: 'secondary'
+                    }, {
+                        name: 'Save',
+                        class: 'primary'
+                    }]
+                },
             });
-            dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
-                if (result) {
+            dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: string) => {
+                if (result === 'Save') {
                     this.asyncUpdatePolicy().pipe(takeUntil(this._destroy$)).subscribe(() => {
                         this.dryRunPolicy();
                     });

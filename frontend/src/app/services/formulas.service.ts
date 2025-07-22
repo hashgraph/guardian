@@ -33,7 +33,6 @@ export class FormulasService {
         return params;
     }
 
-
     public parsePage(response: HttpResponse<any[]>) {
         const page = response.body || [];
         const count = Number(response.headers.get('X-Total-Count')) || page.length;

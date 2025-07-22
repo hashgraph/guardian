@@ -7,6 +7,9 @@
     </div>
 </div>
 <div class="dialog-body">
+    <div *ngIf="!started" class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+    </div>
     <div class="context">
         <app-schema-form
             [formGroup]="dataForm"
@@ -25,13 +28,6 @@
                 (click)="onClose()" 
                 class="guardian-button guardian-button-secondary"
             >Cancel</button>
-        </div>
-        <div>
-            <button 
-                *ngIf="example"
-                (click)="onSave()" 
-                class="guardian-button guardian-button-primary"
-            >Save</button>
         </div>
     </div>
 </div>

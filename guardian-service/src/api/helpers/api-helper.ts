@@ -3,20 +3,25 @@
  * @param msg
  * @param options
  */
-export function getPageOptions(msg: any, options?: any): any {
+export function getPageOptions(msg: {
+    pageIndex?: number | string,
+    pageSize?: number | string,
+    fields?: string[],
+}, options?: any): any {
     const otherOptions: any = options || {};
-    const _pageSize = parseInt(msg.pageSize, 10);
-    const _pageIndex = parseInt(msg.pageIndex, 10);
+    const _pageSize = parseInt(String(msg.pageSize), 10);
+    const _pageIndex = parseInt(String(msg.pageIndex), 10);
     if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
         otherOptions.orderBy = { createDate: 'DESC' };
         otherOptions.limit = Math.min(1000, _pageSize);
         otherOptions.offset = _pageIndex * _pageSize;
     } else {
         otherOptions.orderBy = { createDate: 'DESC' };
-        otherOptions.limit = 200;
+        otherOptions.limit = 1000;
+        otherOptions.offset = 0
     }
 
-    if(msg.fields) {
+    if (msg.fields) {
         otherOptions.fields = msg.fields;
     }
 

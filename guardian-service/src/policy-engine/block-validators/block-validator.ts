@@ -55,11 +55,13 @@ import { ButtonBlockAddon } from './blocks/button-block-addon.js';
 import { DropdownBlockAddon } from './blocks/dropdown-block-addon.js';
 import { RequestVcDocumentBlockAddon } from './blocks/request-vc-document-block-addon.js';
 import { DataTransformationAddon } from './blocks/data-transformation-addon.js';
+import { TransformationButtonBlock } from './blocks/transformation-button-block.js';
 
 export const validators = [
     InterfaceDocumentActionBlock,
     AggregateBlock,
     ButtonBlock,
+    TransformationButtonBlock,
     CalculateContainerBlock,
     CalculateMathAddon,
     CalculateMathVariables,

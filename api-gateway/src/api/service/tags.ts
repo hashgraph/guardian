@@ -457,7 +457,10 @@ export class TagsApi {
             SchemaUtils.clearIds(newSchema);
             SchemaHelper.updateOwner(newSchema, owner);
 
-            const invalidedCacheTags = [`${PREFIXES.TAGS}schemas`];
+            const invalidedCacheTags = [
+                `${PREFIXES.TAGS}schemas`,
+                `${PREFIXES.SCHEMES}schema-with-sub-schemas`
+            ];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
             const schemas = await guardians.createTagSchema(newSchema, owner);
@@ -512,7 +515,10 @@ export class TagsApi {
             }
             await guardians.deleteSchema(schemaId, owner);
 
-            const invalidedCacheTags = [`${PREFIXES.TAGS}schemas`];
+            const invalidedCacheTags = [
+                `${PREFIXES.TAGS}schemas`,
+                `${PREFIXES.SCHEMES}schema-with-sub-schemas`
+            ];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
             return true;
@@ -573,7 +579,10 @@ export class TagsApi {
             SchemaHelper.checkSchemaKey(newSchema);
             SchemaHelper.updateOwner(newSchema, owner);
 
-            const invalidedCacheTags = [`${PREFIXES.TAGS}schemas`];
+            const invalidedCacheTags = [
+                `${PREFIXES.TAGS}schemas`,
+                `${PREFIXES.SCHEMES}schema-with-sub-schemas`
+            ];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
             return await guardians.updateSchema(newSchema, owner);
@@ -627,7 +636,10 @@ export class TagsApi {
             }
             const version = '1.0.0';
 
-            const invalidedCacheTags = [`${PREFIXES.TAGS}schemas`];
+            const invalidedCacheTags = [
+                `${PREFIXES.TAGS}schemas`,
+                `${PREFIXES.SCHEMES}schema-with-sub-schemas`
+            ];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
             return await guardians.publishTagSchema(schemaId, version, owner);
