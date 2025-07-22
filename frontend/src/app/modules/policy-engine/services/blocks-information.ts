@@ -52,6 +52,7 @@ import { BlockGroup, BlockHeaders, IBlockSetting, PolicyBlock } from '../structu
 import { BlockType } from '@guardian/interfaces';
 import BlockIcons from './block-icons';
 import { DataTransformationConfigComponent } from '../policy-configuration/blocks/calculate/data-transformation-config/data-transformation-config.component';
+import { TransformationButtonBlockComponent } from '../policy-viewer/blocks/transformation-button-block/transformation-button-block.component';
 
 const Container: IBlockSetting = {
     type: BlockType.Container,
@@ -86,6 +87,7 @@ const Container: IBlockSetting = {
         { type: BlockType.RevocationBlock },
         { type: BlockType.SetRelationshipsBlock },
         { type: BlockType.ButtonBlock },
+        { type: BlockType.TransformationButtonBlock },
         { type: BlockType.TokenActionBlock },
         { type: BlockType.TokenConfirmationBlock },
         { type: BlockType.DocumentValidatorBlock },
@@ -132,6 +134,7 @@ const Step: IBlockSetting = {
         { type: BlockType.RevocationBlock },
         { type: BlockType.SetRelationshipsBlock },
         { type: BlockType.ButtonBlock },
+        { type: BlockType.TransformationButtonBlock },
         { type: BlockType.TokenActionBlock },
         { type: BlockType.TokenConfirmationBlock },
         { type: BlockType.DocumentValidatorBlock },
@@ -225,6 +228,16 @@ const ButtonBlock: IBlockSetting = {
         }
     }
 }
+
+const TransformationButtonBlock: IBlockSetting = {
+    type: BlockType.TransformationButtonBlock,
+    icon: BlockIcons[BlockType.TransformationButtonBlock],
+    group: BlockGroup.Main,
+    header: BlockHeaders.UIComponents,
+    factory: TransformationButtonBlockComponent,
+    property: null,
+}
+
 
 const ButtonBlockAddon: IBlockSetting = {
     type: BlockType.ButtonBlockAddon,
@@ -770,5 +783,6 @@ export default [
     ButtonBlockAddon,
     DropdownBlockAddon,
     RequestBlockAddon,
-    DataTransformationAddon
+    DataTransformationAddon,
+    TransformationButtonBlock
 ];
