@@ -6,6 +6,11 @@ import "../RetireImplementation.sol";
 import "./RetireDoubleTokenStorageManager.sol";
 
 contract RetireDoubleToken is RetireImplementation(new RetireDoubleTokenStorageManager()) {
+    constructor() {
+        _setRole(msg.sender, OWNER);
+        _setRole(msg.sender, ADMIN);
+    }
+
     modifier tokenCount(uint8 tc) override {
         require(tc == 2);
         _;

@@ -6,6 +6,11 @@ import "../RetireImplementation.sol";
 import "./RetireSingleTokenStorageManager.sol";
 
 contract RetireSingleToken is RetireImplementation(new RetireSingleTokenStorageManager()) {
+    constructor() {
+        _setRole(msg.sender, OWNER);
+        _setRole(msg.sender, ADMIN);
+    }
+
     modifier tokenCount(uint8 tc) override {
         require(tc == 1);
         _;

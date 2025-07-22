@@ -3,8 +3,6 @@ pragma solidity ^0.8.11;
 pragma experimental ABIEncoderV2;
 
 import "./RetireImplementation.sol";
-import "./retire-single-token/RetireSingleToken.sol";
-import "./retire-double-token/RetireDoubleToken.sol";
 import "../version/Version.sol";
 import "../wipe/interfaces/Wipe_1_0_0.sol";
 
@@ -22,9 +20,12 @@ contract Retire is Version, RetireCommon {
 
     mapping(uint8 => RetireImplementation) implementations;
 
-    constructor() {
-        implementations[1] = new RetireSingleToken();
-        implementations[2] = new RetireDoubleToken();
+    constructor(address impl1, address impl2) {
+        implementations[1] = RetireImplementation(impl1);
+        implementations[2] = RetireImplementation(impl2);
+
+        _setRole(msg.sender, OWNER);
+        _setRole(msg.sender, ADMIN);
     }
 
     function clearPools(uint8 tc) public override role(OWNER) {

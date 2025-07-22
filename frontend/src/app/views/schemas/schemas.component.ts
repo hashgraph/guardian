@@ -1004,7 +1004,7 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     public onOpenForm(schema: Schema, example: boolean): void {
-        const dialogRef = this.dialog.open(SchemaFormDialog, {
+        this.dialog.open(SchemaFormDialog, {
             showHeader: false,
             header: 'Example',
             width: '950px',
@@ -1014,15 +1014,6 @@ export class SchemaConfigComponent implements OnInit {
                 example,
                 category: this.getCategory()
             },
-        });
-        dialogRef.onClose.subscribe(async (result: {
-            exampleDate: any,
-            currentSchema: Schema
-        }) => {
-            if (result && result.exampleDate && result.currentSchema) {
-                schema.setExample(result.exampleDate);
-                this.updateSchema(result.currentSchema.id, result.currentSchema);
-            }
         });
     }
 
