@@ -9,13 +9,14 @@ import {
     MessageServer,
     MessageType,
     PolicyMessage,
-    PolicyImportExport
+    PolicyImportExport,
+    INotificationStep,
+    NewNotifier
 } from '@guardian/common';
 import { ExternalPolicyStatus, IOwner, MessageAPI, PolicyAvailability } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { PolicyEngine } from '../policy-engine/policy-engine.js';
 import { ImportMode, ImportPolicyOptions, PolicyImportExportHelper } from '../helpers/import-helpers/index.js'
-import { INotificationStep, NewNotifier } from '../helpers/new-notifier.js';
 
 /**
  * Prepare policy for preview by message

@@ -24,6 +24,7 @@ import {
     HederaBBSMethod,
     HederaEd25519Method,
     IAuthUser,
+    INotificationStep,
     KeyType,
     MessageAction,
     MessageError,
@@ -42,11 +43,9 @@ import {
     Wallet,
     Workers,
 } from '@guardian/common';
-import { INotifier } from '../../helpers/notifier.js';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { serDefaultRole } from '../permission.service.js';
 import { publishSystemSchema } from '../../helpers/import-helpers/index.js';
-import { INotificationStep } from '../../helpers/new-notifier.js';
 
 export interface IFireblocksConfig {
     fireBlocksVaultId: string;

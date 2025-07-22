@@ -98,11 +98,10 @@ export class TaskManager {
         this.channel.subscribe(MessageAPI.UPDATE_TASK_STATUS, async (msg) => {
             const { taskId, statuses, result, error, info } = msg;
             if (taskId) {
-                if (statuses) {
-                    this.addStatuses(taskId, statuses);
-                }
                 if (info) {
-                    this.addInfo(taskId, info);
+                    this.addInfo(taskId, info, statuses);
+                } else if (statuses) {
+                    this.addStatuses(taskId, statuses);
                 }
                 if (error) {
                     this.addError(taskId, error);
@@ -179,11 +178,20 @@ export class TaskManager {
     public addInfo(
         taskId: string,
         info: any,
+        statuses: IStatus[],
+        skipIfNotFound: boolean = true
     ): void {
         const task = this.tasks[taskId];
         if (task) {
             task.info = info;
+            if (statuses) {
+                task.statuses.push(...statuses);
+            }
             this.wsService.notifyTaskProgress(task);
+        } else if (skipIfNotFound) {
+            return;
+        } else {
+            throw new Error(`Task ${taskId} not found.`);
         }
     }
 

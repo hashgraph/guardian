@@ -1,6 +1,5 @@
-import { DatabaseServer, Formula, FormulaImportExport, FormulaMessage, MessageAction, MessageServer, TopicConfig, VcDocument, VpDocument } from '@guardian/common';
+import { DatabaseServer, Formula, FormulaImportExport, FormulaMessage, INotificationStep, MessageAction, MessageServer, TopicConfig, VcDocument, VpDocument } from '@guardian/common';
 import { EntityStatus, IOwner, IRootConfig } from '@guardian/interfaces';
-import { INotificationStep } from '../../helpers/new-notifier.js';
 
 type IDocument = VcDocument | VpDocument;
 

@@ -11,6 +11,7 @@ import {
     KeyType,
     MessageError,
     MessageResponse,
+    NewNotifier,
     PinoLogger,
     RunFunctionAsync,
     Users,
@@ -18,13 +19,12 @@ import {
     Wallet,
     Workers,
 } from '@guardian/common';
-import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
+import { initNotifier } from '../helpers/notifier.js';
 import { RestoreDataFromHedera } from '../helpers/restore-data-from-hedera.js';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { setupUserProfile, validateCommonDid } from './helpers/profile-helper.js';
-import { NewNotifier } from '../helpers/new-notifier.js';
 
 @Controller()
 export class ProfileController {

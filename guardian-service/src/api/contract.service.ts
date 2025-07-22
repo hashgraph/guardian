@@ -8,6 +8,7 @@ import {
     MessageError,
     MessageResponse,
     MessageServer,
+    NewNotifier,
     NotificationHelper,
     PinoLogger,
     RetirePool,
@@ -30,9 +31,8 @@ import { AccountId, TokenId } from '@hashgraph/sdk';
 import { proto } from '@hashgraph/proto';
 import * as ethers from 'ethers';
 import { contractCall, contractQuery, createContract, customContractCall } from './helpers/index.js';
-import { emptyNotifier } from '../helpers/notifier.js';
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
-import { NewNotifier } from '../helpers/new-notifier.js';
+
 
 const retireAbi = new ethers.Interface([
     'function approveRetire(address, tuple(address, int64, int64[])[])',

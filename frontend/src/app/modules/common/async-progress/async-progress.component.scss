@@ -177,3 +177,12 @@
 .step-container {
     width: 100%;
 }
+
+.scroller::ng-deep * {
+    overflow-anchor: none !important;
+}
+
+.scroller .scroller-anchor {
+    overflow-anchor: auto !important;
+    height: 3px;
+}

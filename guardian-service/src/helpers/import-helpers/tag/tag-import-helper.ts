@@ -1,8 +1,6 @@
-import { DatabaseServer, IPolicyComponents, MessageAction, MessageServer, MessageType, Tag, TagMessage } from '@guardian/common';
+import { DatabaseServer, INotificationStep, IPolicyComponents, MessageAction, MessageServer, MessageType, Tag, TagMessage } from '@guardian/common';
 import { GenerateUUIDv4, TagType } from '@guardian/interfaces';
 import { ImportSchemaResult } from '../schema/schema-import.interface.js';
-import { INotifier } from '../../notifier.js';
-import { INotificationStep } from '../../new-notifier.js';
 
 /**
  * Import tags

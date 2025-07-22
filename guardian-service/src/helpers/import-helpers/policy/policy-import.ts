@@ -32,7 +32,8 @@ import {
     TopicHelper,
     Users,
     Formula,
-    FormulaImportExport
+    FormulaImportExport,
+    INotificationStep
 } from '@guardian/common';
 import { ImportMode } from '../common/import.interface.js';
 import { ImportFormulaResult, ImportPolicyError, ImportPolicyOptions, ImportPolicyResult, ImportTestResult } from './policy-import.interface.js';
@@ -48,8 +49,6 @@ import { importTokensByFiles } from '../token/token-import-helper.js';
 import { importArtifactsByFiles } from '../artifact/artifact-import-helper.js';
 import { publishSystemSchemas } from '../schema/schema-publish-helper.js';
 import { ObjectId } from '@mikro-orm/mongodb';
-import { INotificationStep } from '../../new-notifier.js';
-// import { INotifier } from '../../notifier.js';
 
 export class PolicyImport {
     private readonly mode: ImportMode;

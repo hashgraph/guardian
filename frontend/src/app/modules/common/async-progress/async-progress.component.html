@@ -6,7 +6,7 @@
                 <div class="progress-bar-value" [style.width.%]="progressValue"></div>
             </div>
         </div>
-        <div #status class="status-items">
+        <div #status class="status-items scroller">
             <ng-container *ngIf="newProgress">
                 <div class="step-children root-steps">
                     <ng-container *ngFor="let step of steps">
@@ -24,6 +24,7 @@
                         {{ status.message }} <span>{{ status.type }}</span></div>
                 </ng-container>
             </ng-container>
+            <div class="scroller-anchor"></div>
         </div>
     </div>
 </div>

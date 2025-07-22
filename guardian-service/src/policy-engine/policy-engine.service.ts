@@ -14,6 +14,7 @@ import {
     MessageServer,
     MessageType,
     NatsService,
+    NewNotifier,
     PinoLogger,
     Policy,
     PolicyAction,
@@ -44,7 +45,6 @@ import { PolicyComponentsUtils } from './policy-components-utils.js';
 import { PolicyAccessCode, PolicyEngine } from './policy-engine.js';
 import { IPolicyUser } from './policy-user.js';
 import { getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage, SchemaImportExportHelper } from '../helpers/import-helpers/index.js';
-import { NewNotifier, INotificationStep } from '../helpers/new-notifier.js';
 
 /**
  * PolicyEngineChannel

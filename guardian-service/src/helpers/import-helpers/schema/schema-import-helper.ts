@@ -1,11 +1,9 @@
 import { IOwner, ISchema, ISchemaDocument, Schema, SchemaCategory } from '@guardian/interfaces';
-import { DatabaseServer, PinoLogger, Schema as SchemaCollection } from '@guardian/common';
-import { INotifier } from '../../notifier.js';
+import { DatabaseServer, INotificationStep, PinoLogger, Schema as SchemaCollection } from '@guardian/common';
 import { ImportSchemaResult } from './schema-import.interface.js';
 import { SchemaImport } from './schema-import.js';
 import { checkForCircularDependency } from '../common/load-helper.js';
 import { ImportMode } from '../common/import.interface.js';
-import { INotificationStep } from '../../new-notifier.js';
 
 /**
  * Schema import export helper

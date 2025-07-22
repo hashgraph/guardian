@@ -24,6 +24,7 @@ import {
     findAllEntities,
     FormulaImportExport,
     getArtifactType,
+    INotificationStep,
     IPolicyComponents,
     MessageAction,
     MessageServer,
@@ -64,7 +65,7 @@ import {
     sendSchemaMessage
 } from '../helpers/import-helpers/index.js';
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
-import { emptyNotifier, INotifier } from '../helpers/notifier.js';
+import { INotifier } from '../helpers/notifier.js';
 import { ISerializedErrors } from './policy-validation-results-container.js';
 import { PolicyServiceChannelsContainer } from '../helpers/policy-service-channels-container.js';
 import { PolicyValidator } from '../policy-engine/block-validators/index.js';
@@ -73,7 +74,6 @@ import { GuardiansService } from '../helpers/guardians.js';
 import { AISuggestionsService } from '../helpers/ai-suggestions.js';
 import { publishFormula } from '../api/helpers/formulas-helpers.js';
 import { FilterObject } from '@mikro-orm/core';
-import { INotificationStep, NewNotifier } from '../helpers/new-notifier.js';
 
 /**
  * Result of publishing

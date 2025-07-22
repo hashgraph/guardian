@@ -1,7 +1,7 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { Controller } from '@nestjs/common';
-import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, IAuthUser, JsonToXlsx, MessageError, MessageResponse, PinoLogger, RunFunctionAsync, Schema as SchemaCollection, Users, XlsxToJson } from '@guardian/common';
+import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, IAuthUser, JsonToXlsx, MessageError, MessageResponse, NewNotifier, PinoLogger, RunFunctionAsync, Schema as SchemaCollection, Users, XlsxToJson } from '@guardian/common';
 import { IOwner, ISchema, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
 import { checkForCircularDependency, copySchemaAsync, createSchemaAndArtifacts, deleteSchema, findAndPublishSchema, getSchemaCategory, getSchemaTarget, importSubTools, importTagsByFiles, PolicyImportExportHelper, prepareSchemaPreview, previewToolByMessage, SchemaImportExportHelper, updateSchemaDefs, updateToolConfig } from '../helpers/import-helpers/index.js'
 import { getPageOptions } from './helpers/index.js';
@@ -9,7 +9,6 @@ import { readFile } from 'fs/promises';
 import path from 'path';
 import process from 'process';
 import { FilterObject } from '@mikro-orm/core';
-import { NewNotifier, INotificationStep } from '../helpers/new-notifier.js';
 
 @Controller()
 export class SchemaService { }

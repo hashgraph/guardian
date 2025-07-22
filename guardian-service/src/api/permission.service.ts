@@ -18,11 +18,10 @@ import {
     KEY_TYPE_KEY_ENTITY,
     KeyEntity,
     Token, DatabaseServer,
+    NewNotifier,
 } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, MessageAPI, Schema, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
-import { emptyNotifier } from '../helpers/notifier.js';
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
-import { NewNotifier } from '../helpers/new-notifier.js';
 
 async function getSchema(
     entity: SchemaEntity,

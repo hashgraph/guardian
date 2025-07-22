@@ -22,9 +22,9 @@ import {
     TagMessage,
     TopicConfig,
     TopicHelper,
-    Users
+    Users,
+    INotificationStep
 } from '@guardian/common';
-import { INotifier } from '../../notifier.js';
 import { ImportSchemaError, ImportSchemaMap, ImportSchemaOptions, ImportSchemaResult } from './schema-import.interface.js';
 import geoJson from '@guardian/interfaces/dist/helpers/geojson-schema/geo-json.js';
 import sentinelHub from '@guardian/interfaces/dist/helpers/sentinel-hub/sentinel-hub-schema.js';
@@ -32,7 +32,6 @@ import { checkForCircularDependency, loadSchema } from '../common/load-helper.js
 import { SchemaImportExportHelper } from './schema-import-helper.js';
 import { ImportMode } from '../common/import.interface.js';
 import { importTag } from '../tag/tag-import-helper.js';
-import { INotificationStep } from '../../new-notifier.js';
 
 export class SchemaImport {
     private readonly mode: ImportMode;
@@ -358,7 +357,8 @@ export class SchemaImport {
                             sendToIPFS: true,
                             memo: null,
                             userId: this.owner.id,
-                            interception: this.owner.id
+                            interception: this.owner.id,
+                            notifier: _step.minimize(true)
                         });
                 }
             }

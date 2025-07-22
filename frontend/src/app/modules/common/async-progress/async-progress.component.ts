@@ -478,7 +478,45 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         }, 50);
     }
 
+    private needScroll() {
+        try {
+            if (this.statusRef?.nativeElement) {
+                const div = this.statusRef.nativeElement;
+                const height = div.getBoundingClientRect().height;
+                const scrollTop = div.scrollHeight - height;
+                if (scrollTop > 0) {
+                    const diff = scrollTop - div.scrollTop;
+                    return diff < 30;
+                }
+            }
+            return true;
+        } catch (error) {
+            return true;
+        }
+    }
+
+    private toScroll(needScroll: boolean) {
+        try {
+            if (needScroll) {
+                setTimeout(() => {
+                    if (this.statusRef?.nativeElement) {
+                        this.statusRef.nativeElement.scrollTop = 99999;
+                    }
+                }, 0);
+                setTimeout(() => {
+                    if (this.statusRef?.nativeElement) {
+                        this.statusRef.nativeElement.scrollTop = 99999;
+                    }
+                }, 50);
+            }
+        } catch (error) {
+            return;
+        }
+    }
+
     private setNewProgress(info: any) {
+        console.log('update');
+        const needScroll = this.needScroll();
         this.newProgress = true;
         this.progressValue = Math.min(Math.max(info.progress, 0), 100);
         if (Array.isArray(info.steps)) {
@@ -486,11 +524,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         } else {
             this.steps = [info];
         }
-        setTimeout(() => {
-            if (this.statusRef?.nativeElement) {
-                this.statusRef.nativeElement.scrollTop = 99999;
-            }
-        }, 50);
+        this.toScroll(needScroll);
     }
 
     public isWait(step: any): boolean {

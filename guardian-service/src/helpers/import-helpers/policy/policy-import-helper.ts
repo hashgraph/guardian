@@ -14,17 +14,16 @@ import {
     PolicyImportExport,
     MessageType,
     PolicyMessage,
-    MessageServer
+    MessageServer,
+    INotificationStep
 } from '@guardian/common';
 import { ImportMode } from '../common/import.interface.js';
 import { ImportPolicyError, ImportPolicyOptions, ImportPolicyResult } from './policy-import.interface.js';
 import { PolicyImport } from './policy-import.js';
 import { ImportSchemaMap } from '../schema/schema-import.interface.js';
 import { PolicyConverterUtils } from './policy-converter-utils.js';
-import { INotifier } from '../../notifier.js';
 import { HashComparator, PolicyLoader } from '../../../analytics/index.js';
 import { importPolicyTags } from '../tag/tag-import-helper.js';
-import { NewNotifier, INotificationStep } from '../../new-notifier.js';
 
 /**
  * Policy import export helper

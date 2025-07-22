@@ -15,12 +15,12 @@ import {
     Users,
     Schema as SchemaCollection,
     RunFunctionAsync,
+    INotificationStep,
+    NewNotifier,
 } from '@guardian/common';
 import { EntityStatus, IOwner, LabelValidators, MessageAPI, PolicyStatus, Schema, SchemaStatus } from '@guardian/interfaces';
 import { findRelationships, generateSchema, generateVpDocument, getOrCreateTopic, publishLabelConfig } from './helpers/policy-labels-helpers.js';
-import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { publishSchemas, saveSchemas } from '../helpers/import-helpers/index.js';
-import { INotificationStep, NewNotifier } from '../helpers/new-notifier.js';
 
 async function publishPolicyLabel(
     item: PolicyLabel,

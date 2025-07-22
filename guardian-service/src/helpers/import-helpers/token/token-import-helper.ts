@@ -1,10 +1,8 @@
-import { Token } from '@guardian/common';
+import { INotificationStep, Token } from '@guardian/common';
 import { IOwner } from '@guardian/interfaces';
-import { INotifier } from '../../notifier.js';
 import { ImportTokenResult } from './token-import.interface.js';
 import { TokenImport } from './token-import.js';
 import { ImportMode } from '../common/import.interface.js';
-import { INotificationStep } from '../../new-notifier.js';
 
 /**
  * Import tokens by files

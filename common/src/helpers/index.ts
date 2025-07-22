@@ -8,8 +8,6 @@ export * from './ipfs.js';
 export * from './logger.module.js';
 export * from './logger.js';
 export * from './migration.js';
-export * from './notification.service.js';
-export * from './notification.helper.js';
 export * from './run-function-async.js';
 export * from './schema-converter-utils.js';
 export * from './schemas-to-context.js';

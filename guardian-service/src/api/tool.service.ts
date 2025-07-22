@@ -1,5 +1,5 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { BinaryMessageResponse, DatabaseServer, Hashing, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, PinoLogger, PolicyTool, replaceAllEntities, replaceAllVariables, RunFunctionAsync, SchemaFields, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { BinaryMessageResponse, DatabaseServer, Hashing, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, NewNotifier, PinoLogger, PolicyTool, replaceAllEntities, replaceAllVariables, RunFunctionAsync, SchemaFields, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { IOwner, IRootConfig, MessageAPI, ModuleStatus, SchemaStatus, TopicType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
@@ -8,7 +8,6 @@ import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-co
 import * as crypto from 'crypto';
 import { FilterObject } from '@mikro-orm/core';
 import { deleteSchema, findAndPublishSchema, importToolByFile, importToolByMessage, importToolErrors, incrementSchemaVersion, publishToolTags, updateToolConfig } from '../helpers/import-helpers/index.js'
-import { NewNotifier, INotificationStep } from '../helpers/new-notifier.js';
 
 /**
  * Sha256

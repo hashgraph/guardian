@@ -1,11 +1,9 @@
 import { GeoJsonContext, IOwner, IRootConfig, SchemaHelper, SchemaStatus, SentinelHubContext } from '@guardian/interfaces';
-import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaMessage, schemasToContext, TopicConfig, UrlType } from '@guardian/common';
+import { DatabaseServer, INotificationStep, MessageAction, MessageServer, Schema as SchemaCollection, SchemaMessage, schemasToContext, TopicConfig, UrlType } from '@guardian/common';
 import { checkForCircularDependency } from '../common/load-helper.js';
 import { incrementSchemaVersion, updateSchemaDefs, updateSchemaDocument } from './schema-helper.js';
 import { publishSchemaTags } from '../tag/tag-publish-helper.js';
 import { SchemaImportExportHelper } from './schema-import-helper.js';
-import { emptyNotifier, INotifier } from '../../notifier.js';
-import { INotificationStep } from '../../new-notifier.js';
 
 /**
  * Check access
@@ -98,7 +96,8 @@ export async function publishSchema(
             sendToIPFS: true,
             memo: null,
             userId: user.id,
-            interception: user.id
+            interception: user.id,
+            notifier: notifier.minimize(true)
         });
 
     const messageId = result.getId();

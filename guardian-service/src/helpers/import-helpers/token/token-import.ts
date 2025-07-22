@@ -1,10 +1,8 @@
-import { DatabaseServer, Token } from '@guardian/common';
+import { DatabaseServer, INotificationStep, Token } from '@guardian/common';
 import { GenerateUUIDv4, IOwner } from '@guardian/interfaces';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { ImportMode } from '../common/import.interface.js';
-import { INotifier } from '../../notifier.js';
 import { ImportTokenMap, ImportTokenResult } from './token-import.interface.js';
-import { INotificationStep } from '../../new-notifier.js';
 
 export class TokenImport {
     private readonly mode: ImportMode;
