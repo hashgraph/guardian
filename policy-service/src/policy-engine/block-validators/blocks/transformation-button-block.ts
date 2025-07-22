@@ -18,10 +18,10 @@ export class TransformationButtonBlock {
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
             await CommonBlock.validate(validator, ref);
-            if(!ref.options.url) {
+            if (!ref.options.url) {
                 validator.addError('Option "url" is not set');
             }
-            else if(!TransformationButtonBlock.isValidUrl(ref.options.url)) {
+            else if (!TransformationButtonBlock.isValidUrl(ref.options.url)) {
                 validator.addError('"Url" is not valid');
             }
         } catch (error) {
@@ -29,7 +29,7 @@ export class TransformationButtonBlock {
         }
     }
 
-    private static isValidUrl(url) {
+    private static isValidUrl(url: any) {
         try {
             // tslint:disable-next-line:no-unused-expression
             new URL(url);
