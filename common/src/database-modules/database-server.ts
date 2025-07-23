@@ -1714,14 +1714,16 @@ export class DatabaseServer extends AbstractDatabaseServer {
         blockId: string,
         blockTag: string
     ): Promise<BlockState | null> {
+        
+        const conditions: any[] = [{ blockId }];
+
+        if (blockTag !== null && blockTag !== undefined) {
+            conditions.push({ blockTag });
+        }
+        
         return await this.findOne(BlockState, {
             policyId,
-            $or: [{
-                blockId
-            }, {
-                blockTag
-            }]
-
+            $or: conditions
         });
     }
 
@@ -1742,8 +1744,12 @@ export class DatabaseServer extends AbstractDatabaseServer {
     ): Promise<void> {
         let stateEntity = await this.getBlockState(policyId, blockId, blockTag);
         if (!stateEntity) {
+            console.log(333);
             stateEntity = this.create(BlockState, { policyId, blockId, blockTag });
         }
+            console.log(232313);
+            console.log(policyId, blockId);
+            console.log(stateEntity);
         stateEntity.blockState = JSON.stringify(state);
         await this.save(BlockState, stateEntity);
     }
