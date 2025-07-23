@@ -1216,4 +1216,13 @@ export class SchemaFormComponent implements OnInit {
             item.control.setValue(PresetPrefixByFieldType.URL);
         }
     }
+
+    public onUnfocusField(formatType: string, item: any) {
+        if (this.isFormForRequestBlock
+            && formatType === 'url'
+            && item.control.value === PresetPrefixByFieldType.URL
+        ) {
+            item.control.setValue('');
+        }
+    }
 }
