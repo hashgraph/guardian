@@ -1,7 +1,10 @@
 import { Component } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-
+import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { ToolsService } from 'src/app/services/tools.service';
+import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { SearchToolDialog } from '../search-tool-dialog/search-tool-dialog.component';
 /**
  * Dialog for export/import policy.
  */
@@ -31,16 +34,24 @@ export class PreviewPolicyDialog {
     public mode: string = 'new';
     public formulas!: string;
     public title!: string;
+    public validTool: {
+        [messageId: string]: 'load' | 'valid' | 'invalid'
+    } = {};
+    public validTools: boolean = true;
+    private _destroy$ = new Subject<void>();
 
     public get inValid(): boolean {
-        if(!(this.policy || this.module || this.tool || this.xlsx)) {
+        if (!(this.policy || this.module || this.tool || this.xlsx)) {
             return true;
         }
-        if(!this.toolForm.valid) {
+        if (!this.toolForm.valid) {
             return true;
         }
-        if(this.mode === 'version') {
-            if(!this.versionOfTopicId) {
+        if (!this.validTools) {
+            return true;
+        }
+        if (this.mode === 'version') {
+            if (!this.versionOfTopicId) {
                 return true;
             }
         }
@@ -49,8 +60,12 @@ export class PreviewPolicyDialog {
 
     constructor(
         public ref: DynamicDialogRef,
+        private toolsService: ToolsService,
+        private dialogService: DialogService,
         public config: DynamicDialogConfig
     ) {
+        this.validTool = {};
+        this.validTools = true;
         this.toolForm = new UntypedFormGroup({});
         this.title = this.config.data.title || 'Preview'
         if (this.config.data.policy) {
@@ -99,6 +114,8 @@ export class PreviewPolicyDialog {
                         Validators.pattern(/^[0-9]{10}\.[0-9]{9}$/),
                     ])
                 );
+                this.validTool[toolConfigs.messageId] = 'load';
+                this.checkTool(toolConfigs.messageId, toolConfigs.messageId);
             }
         }
 
@@ -119,6 +136,8 @@ export class PreviewPolicyDialog {
                             Validators.pattern(/^[0-9]{10}\.[0-9]{9}$/),
                         ])
                     );
+                    this.validTool[toolConfigs.messageId] = 'load';
+                    this.checkTool(toolConfigs.messageId, toolConfigs.messageId);
                 }
             }
             this.tools = this.toolConfigs.map((tool) => tool.name).join(', ');
@@ -159,8 +178,41 @@ export class PreviewPolicyDialog {
         this.policies = this.config.data.policies || [];
     }
 
+    public onFilters(messageId: string, $event: any) {
+        const value = $event.target.value;
+        this.checkTool(messageId, value);
+    }
+
+    private checkTool(messageId: string, value: string) {
+        this.validTool[messageId] = 'load';
+        this.updateToolStatus();
+        this.toolsService
+            .checkMessage(value)
+            .pipe(takeUntil(this._destroy$))
+            .subscribe((valid) => {
+                this.validTool[messageId] = valid ? 'valid' : 'invalid';
+                this.updateToolStatus();
+            }, () => {
+                this.validTool[messageId] = 'invalid';
+                this.updateToolStatus();
+            });
+    }
+
+    private updateToolStatus() {
+        const messageIds = Object.keys(this.validTool);
+        this.validTools = true;
+        for (const messageId of messageIds) {
+            this.validTools = this.validTools && this.validTool[messageId] === 'valid';
+        }
+    }
+
     ngOnInit() {
         this.loading = false;
+    }
+
+    ngOnDestroy(): void {
+        this._destroy$.next();
+        this._destroy$.complete();
     }
 
     setData(data: any) {
@@ -189,7 +241,24 @@ export class PreviewPolicyDialog {
 
     }
 
-    onSelectMode(mode:string) {
+    onSelectMode(mode: string) {
         this.mode = mode;
+    }
+
+    public onToolSearch(toolConfig: any) {
+        const dialogRef = this.dialogService.open(SearchToolDialog, {
+            showHeader: false,
+            width: '900px',
+            styleClass: 'guardian-dialog',
+            data: {
+                name: toolConfig.name
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result) {
+                this.toolForm.controls[toolConfig.messageId]?.setValue(result);
+                this.checkTool(toolConfig.messageId, result);
+            }
+        });
     }
 }
