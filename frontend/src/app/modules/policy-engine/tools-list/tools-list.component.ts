@@ -219,8 +219,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             styleClass: 'custom-dialog',
             closable: true,
             data: {
-                type: 'Tool',
-                tools: this.tools,
+                type: 'Tool'
             }
         });
         dialogRef.onClose.subscribe(async (result) => {

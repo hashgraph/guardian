@@ -1,6 +1,7 @@
 import { ContractType, Permissions } from '@guardian/interfaces';
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import {
+    BadRequestException,
     Body,
     Controller,
     Delete,
@@ -12,7 +13,8 @@ import {
     Query,
     Req,
     Response,
-    Version
+    Version,
+    ValidationPipe
 } from '@nestjs/common';
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiCreatedResponse, ApiOperation, ApiExtraModels, ApiTags, ApiBody, ApiQuery, ApiParam, } from '@nestjs/swagger';
 import { ContractConfigDTO, ContractDTO, RetirePoolDTO, RetirePoolTokenDTO, RetireRequestDTO, RetireRequestTokenDTO, WiperRequestDTO, InternalServerErrorDTO, pageHeader } from '#middlewares';
@@ -1495,7 +1497,7 @@ export class ContractsApi {
         description: 'Retire tokens.',
     })
     @ApiBody({
-        type: RetireRequestTokenDTO,
+        type:[RetireRequestTokenDTO],
     })
     @ApiParam({
         name: 'poolId',
@@ -1517,9 +1519,14 @@ export class ContractsApi {
     async retire(
         @AuthUser() user: IAuthUser,
         @Param('poolId') poolId: string,
-        @Body() body: any
+        @Body(new ValidationPipe({ transform: true, whitelist: true }))
+        body: RetireRequestTokenDTO[]
     ): Promise<boolean> {
         try {
+            if (!Array.isArray(body)) {
+                throw new BadRequestException('Request body must be an array');
+            }
+
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
 
