@@ -1,5 +1,5 @@
 import { Hash3 } from '../hash/utils.js';
-import { IBlockArtifactRawData, IWeightItem, CompareOptions, IEventsLvl } from '../interfaces/index.js';
+import { IBlockArtifactRawData, IWeightItem, CompareOptions, IPropertiesLvl } from '../interfaces/index.js';
 
 /**
  * Artifact Model
@@ -64,7 +64,7 @@ export class ArtifactModel {
         hashState.add(this.extension);
         hashState.add(data);
         const weight = String(hashState.result());
-        if (options.eventLvl === IEventsLvl.All) {
+        if (options.propLvl === IPropertiesLvl.All) {
             this._weight = weight;
         } else {
             this._weight = '';

@@ -110,71 +110,66 @@ export class PolicyLabelDocument extends BaseEntity implements IStatistic {
     documentFileId?: ObjectId;
 
     /**
+     * old file id
+     */
+    @Property({ persist: false, nullable: true })
+    _documentFileId?: ObjectId;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()
-    setDefaults() {
+    async setDefaults() {
         this.uuid = this.uuid || GenerateUUIDv4();
+        if (this.document) {
+            const document = JSON.stringify(this.document);
+            this.documentFileId = await this._createFile(document, 'PolicyLabelDocument');
+            delete this.document;
+        }
     }
 
     /**
-     * Create document
+     * Load File
      */
-    @BeforeCreate()
-    async createDocument() {
-        await new Promise<void>((resolve, reject) => {
-            try {
-                if (this.document) {
-                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                        GenerateUUIDv4()
-                    );
-                    this.documentFileId = fileStream.id;
-                    fileStream.write(JSON.stringify(this.document));
-                    fileStream.end(() => resolve());
-                } else {
-                    resolve();
-                }
-            } catch (error) {
-                reject(error)
-            }
-        });
+    @OnLoad()
+    @AfterUpdate()
+    @AfterCreate()
+    async loadFiles() {
+        if (this.documentFileId) {
+            const buffer = await this._loadFile(this.documentFileId);
+            this.document = JSON.parse(buffer.toString());
+        }
     }
 
     /**
      * Update document
      */
     @BeforeUpdate()
-    async updateDocument() {
+    async updateFiles() {
         if (this.document) {
-            if (this.documentFileId) {
-                DataBaseHelper.gridFS
-                    .delete(this.documentFileId)
-                    .catch((reason) => {
-                        console.error(`BeforeUpdate: PolicyLabelDocument, ${this._id}, documentFileId`)
-                        console.error(reason)
-                    });
+            const document = JSON.stringify(this.document);
+            const documentFileId = await this._createFile(document, 'PolicyLabelDocument');
+            if (documentFileId) {
+                this._documentFileId = this.documentFileId;
+                this.documentFileId = documentFileId;
             }
-            await this.createDocument();
+            delete this.document;
         }
     }
 
     /**
-     * Load document
+     * Delete File
      */
-    @OnLoad()
     @AfterUpdate()
-    @AfterCreate()
-    async loadDocument() {
-        if (this.documentFileId) {
-            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
-                this.documentFileId
-            );
-            const bufferArray = [];
-            for await (const data of fileStream) {
-                bufferArray.push(data);
-            }
-            const buffer = Buffer.concat(bufferArray);
-            this.document = JSON.parse(buffer.toString());
+    postUpdateFiles() {
+        if (this._documentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this._documentFileId)
+                .catch((reason) => {
+                    console.error(`AfterUpdate: PolicyLabelDocument, ${this._id}, _documentFileId`)
+                    console.error(reason)
+                });
+            delete this._documentFileId;
         }
     }
 
@@ -182,7 +177,7 @@ export class PolicyLabelDocument extends BaseEntity implements IStatistic {
      * Delete document
      */
     @AfterDelete()
-    deleteDocument() {
+    deleteFiles() {
         if (this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)

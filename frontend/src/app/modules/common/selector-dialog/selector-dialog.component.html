@@ -1,27 +1,39 @@
-<p-dialog [(visible)]="isVisible" [modal]="true" [closable]="false" (onHide)="onCancel()"
-          [draggable]="false" class="p-dialog dialog">
-    <div class="dialog-content">
-        <h2 class="title">{{ title }}</h2>
-
-        <div class="description">{{ description }}</div>
-
-        <div class="options-form-field">
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{title}}</div>
+    </div>
+    <div class="header-icon" (click)="onCancel()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div class="context">
+        <div class="guardian-input-container">
+            <label class="form-label">{{ description }}</label>
             <p-dropdown
+                class="guardian-dropdown"
+                panelStyleClass="guardian-dropdown-panel width-825"
                 [options]="options"
                 [(ngModel)]="result"
                 optionLabel="name"
                 optionValue="value"
+                appendTo="body"
                 placeholder="Select an option"
-                [appendTo]="'body'"
-            >
-            </p-dropdown>
-        </div>
-
-        <div class="dialog-actions mat-dialog-actions">
-            <p-button label="Cancel" icon="pi pi-times" (onClick)="onCancel()"
-                      styleClass="p-button-text p-button-cancel"></p-button>
-            <p-button label="OK" icon="pi pi-check" (onClick)="onConfirm()"
-                      styleClass="p-button-raised p-button-primary p-button-ok"></p-button>
+            ></p-dropdown>
         </div>
     </div>
-</p-dialog>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button 
+                (click)="onCancel()" 
+                class="guardian-button guardian-button-secondary">Cancel</button>
+        </div>
+        <div class="dialog-button">
+            <button 
+                (click)="onConfirm()" 
+                class="guardian-button guardian-button-primary">OK</button>
+        </div>
+    </div>
+</div>

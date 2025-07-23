@@ -65,7 +65,7 @@ export class EntityOwner implements IOwner {
             creator: did,
             owner: did,
             username: null,
-            access: AccessType.NONE,
+            access: AccessType.ALL,
             location: LocationType.LOCAL
         }
     }
