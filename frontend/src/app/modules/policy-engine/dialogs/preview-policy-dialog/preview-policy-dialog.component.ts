@@ -184,6 +184,10 @@ export class PreviewPolicyDialog {
     }
 
     private checkTool(messageId: string, value: string) {
+        if (typeof value !== 'string' || !(/^[0-9]{10}\.[0-9]{9}$/.test(value))) {
+            this.validTool[messageId] = 'invalid';
+            return;
+        }
         this.validTool[messageId] = 'load';
         this.updateToolStatus();
         this.toolsService
