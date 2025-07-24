@@ -219,7 +219,11 @@ export class RestoreDataFromHedera {
         const vpDocumentObjects = []
 
         for (const row of topicMessages) {
+            if (row.isRevoked()) {
+                continue;
+            }
             await this.loadIPFS(row);
+            
             switch (row.constructor) {
                 case DIDMessage: {
                     const message = row as DIDMessage;
