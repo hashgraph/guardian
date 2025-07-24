@@ -136,6 +136,28 @@ export class PolicyLink<T> {
     }
 
     /**
+     * Run sync event action
+     * @param user
+     * @param data
+     */
+    public async runSync(user: PolicyUser, data: T): Promise<any> {
+        const _user = await this.getUser(user, data);
+        const event: IPolicyEvent<T> = {
+            type: this.type,
+            inputType: this.inputType,
+            outputType: this.outputType,
+            policyId: this.policyId,
+            source: this.source.tag,
+            sourceId: this.source.uuid,
+            target: this.target.tag,
+            targetId: this.target.uuid,
+            user: _user,
+            data
+        };
+
+        return await this.callback.bind(this.target)(event);
+    }
+    /**
      * Get owner
      * @param user
      * @param data

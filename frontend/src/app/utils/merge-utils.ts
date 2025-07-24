@@ -6,8 +6,10 @@ export class MergeUtils {
       const sourceValue = source[key];
       const targetValue = (target as any)[key];
 
-      if (
-        sourceValue &&
+      if(!sourceValue) {
+        output[key] = targetValue;
+      }
+      else if (
         typeof sourceValue === 'object' &&
         !Array.isArray(sourceValue)
       ) {
