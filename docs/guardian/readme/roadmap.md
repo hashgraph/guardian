@@ -4,126 +4,6 @@
 
 {% tabs %}
 {% tab title="Upcoming Releases" %}
-### ---- May 2025----
-
-#### Server-Side Request Forgery (SSRF) in Request Data module
-
-If the functionality is important enough to keep despite the risk, then all URLs should be requested through a secure proxy server. This is a significant effort, and to be secure the proxy must ensure that:
-
-1. The URL does not resolve to a private or local IP address 2. Redirects are not followed
-2. Only HTTP(S) protocol schemes are supported\
-   Additionally, the application server should define and enforce rate limits to discourage abuse of the functionality as a web scanner.\
-   If the application is hosted on AWS servers, enforce usage of AWS “Instance Metadata Service Version 2” with token usage required. This is a new AWS metadata API which severely curtails the ability of attackers to abuse SSRF to access the AWS metadata API. However, this will not prevent attacks against other internal services.
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4110](https://github.com/hashgraph/guardian/issues/4110)
-
-#### Exporting Project Data in CSV format
-
-1. We should be able to export the complete project data of any policy in CSV format through Guardian.
-2. We should also be able to apply filters to the project data, which should be included in the export file.
-3. When we export the data in csv format, it should follow proper naming convention such as saving the exported file by its respective policy name\_version.csv
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/3680](https://github.com/hashgraph/guardian/issues/3680)
-
-Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/exporting-project-data-in-csv](https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/exporting-project-data-in-csv)
-
-#### Missing Authentication between Services
-
-It is recommended to implement mutual authentication for all internal microservice communications to ensure that each service can verify the identity of the other. It is recommended to ensure that each service is properly authenticated, using authorization roles and permissions to ensure that each service can only publish or consume messages in the queues relevant to its designated function. Moreover, messages could be digitally signed, ensuring they originate from the correct service. At each step in the process, the signatures can be verified to ensure that the message has not been tampered with. Where applicable, integrate these recommendations into the security hardening guide to ensure organizations deploying the application can implement these best practices effectively.
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4107](https://github.com/hashgraph/guardian/issues/4107)
-
-Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker#id-3.2-setting-up-jwt-keys-in-.env-file](https://docs.hedera.com/guardian-dev-1/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker#id-3.2-setting-up-jwt-keys-in-.env-file)
-
-#### No Password Policy
-
-It is recommended to create a password policy, that can be configured by the organizations using the application. It should also be noted that recent guidance from NCSC promotes password policies which are designed to decrease the burden on the user. This can include relaxing controls requiring users to change their passwords at regular intervals in favor of the use of suitably complex passwords. The NCSC password guidance21 should be reviewed to determine if this new guidance can be applied to the environment reviewed.
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4057](https://github.com/hashgraph/guardian/issues/4057)
-
-Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/password-management/password-policy](https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/password-management/password-policy)
-
-### ---- June 2025----
-
-#### Development of VM0033
-
-1. Creating Schema Design.
-2. Review the design
-3. Development of the methodology
-4. Testing the methodology
-5. Documenting the methodology user guide.
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4877](https://github.com/hashgraph/guardian/issues/4877)
-
-Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/demo-guide/carbon-offsets/vm0033-methodology-for-tidal-wetland-and-seagrass-restoration](https://docs.hedera.com/guardian-dev-1/guardian/demo-guide/carbon-offsets/vm0033-methodology-for-tidal-wetland-and-seagrass-restoration)
-
-#### Detailed Research on Indexer Enhancements
-
-Identify and implement indexer enhancements based on example use cases and community feedback.
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4561](https://github.com/hashgraph/guardian/issues/4561)
-
-#### Guardian policy embedded code testing/debugging facility for Custom Logic, Calculate, etc blocks
-
-* Introduce the 'Test' button to all places where **source** or **math** code can be inputted in Guardian policy which would trigger the 'in place' execution of the code based on the execution context and defined inputs/outputs of the block. This tool could prompt the user for input data when required.
-* Add ability to 'print' (i.e. log) data and variable values somewhere when test-running policy (e.g. in Dry-run mode). This way policy authors would be able to examine the data structures passed into the functions and identify unexpected behaviour in this area.
-* Add recommendations to the documentation wrt running this code in an separate developer environment, i.e. all the needed execution context such as imported libraries etc so those developers who prefer to use their code editors can replicate the execution of the code there.
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4304](https://github.com/hashgraph/guardian/issues/4304)
-
-Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/testing-debugging-code/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui](https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/testing-debugging-code/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui)
-
-#### Outdated Software/Libraries
-
-Ensure the Guardian code is covered by an effective patching policy that allows the latest server software upgrades, updates, or patches to be tested and applied within a short time frame following their release by the vendor.
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4056](https://github.com/hashgraph/guardian/issues/4056)
-
-#### Substitute Google maps API in Guardian UI with an OSS alternative
-
-Substitute currently used Google Maps for the same open maps as used in the Indexer.
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/3959](https://github.com/hashgraph/guardian/issues/3959)
-
-Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/global-indexer/indexer-user-guide](https://docs.hedera.com/guardian-dev-1/guardian/global-indexer/indexer-user-guide)
-
-### ---- July 2025----
-
-#### VM0049 Carbon Capture and Storage, v1.0
-
-1. Design the Schema design for the methodology.
-2. Develop the methodology
-3. Testing the development completely
-4. Documenting the step by step process
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4804](https://github.com/hashgraph/guardian/issues/4804)
-
-#### Identifying, Implementing and Integrating 3rd Party data resources
-
-* Identify and shortlist 2-3 key Environmental-related data sources to be used as reference data and/or
-* Implement integration with these 3rd party data providers (may be similar to IPFS/Hedera integration), such as:
-* policy can easily add such 'integration' to their policy - potentially using the new policy modules functionality [Linkable policy modules for constructing end-to-end Policy workflows #1657](https://github.com/hashgraph/guardian/issues/1657)
-* the data can be defined as mandatory or optional (by the policy author)
-* data imported into Policy artifacts is stored and displayed in its native format, preserving 'mime type' and/or any other indication of the nature of the data as well as the identity/credentials of the source, time/date and other identifying information as appropriate
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/1690](https://github.com/hashgraph/guardian/issues/1690)
-
-#### Authorization Headers Potentially Leaked through IPFS in Request Data Module
-
-Implement a secure method to handle secrets in the Request Data module that ensures sensitive information, such as authorization headers, is not published with the policy. A possibility may be to include encrypted headers with the public key that only the private key of the policy owner can decrypt. Other possibility may be to store the secrets headers in the vault and fetch them at runtime using appropriate access controls. Update the documentation to explicitly warn policy creators about the risks of including sensitive information in the policies and recommend using the module only for public HTTP methods. Provide guidelines on securely configuring policies to avoid the leakage of sensitive data.
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/4049](https://github.com/hashgraph/guardian/issues/4049)
-
-#### Facilities to use specialist math tooling (such as R language) for calculations in Guardian Policies
-
-1. Introduce support for Python language **in** Policies such that Python code can be embedded into Policies and enable them to perform complex calculations in the course their execution by users
-2. Bundle Python interpreter and a standard (curated) set of libraries into Guardian distros
-3. Add 'Guardian version' parameter to the documents so any complex calculations can be replicated by knowing versions of libraries and interpreters used by the Policy at the document production time.
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/3573](https://github.com/hashgraph/guardian/issues/3573)
-
-Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/python-implementation-in-guardian](https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/python-implementation-in-guardian)
-
 ### --— August 2025 ----
 
 #### Payload Shapefile Ingestion
@@ -1232,6 +1112,117 @@ A Guardian user should be able to access a policy published by another Guardian 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3951](https://github.com/hashgraph/guardian/issues/3951)
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/decentralized-guardian/remote-policy-ui](https://docs.hedera.com/guardian/guardian/standard-registry/decentralized-guardian/remote-policy-ui)
+
+### ---- May 2025----
+
+#### Server-Side Request Forgery (SSRF) in Request Data module
+
+If the functionality is important enough to keep despite the risk, then all URLs should be requested through a secure proxy server. This is a significant effort, and to be secure the proxy must ensure that:
+
+1. The URL does not resolve to a private or local IP address 2. Redirects are not followed
+2. Only HTTP(S) protocol schemes are supported\
+   Additionally, the application server should define and enforce rate limits to discourage abuse of the functionality as a web scanner.\
+   If the application is hosted on AWS servers, enforce usage of AWS “Instance Metadata Service Version 2” with token usage required. This is a new AWS metadata API which severely curtails the ability of attackers to abuse SSRF to access the AWS metadata API. However, this will not prevent attacks against other internal services.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4110](https://github.com/hashgraph/guardian/issues/4110)
+
+#### Exporting Project Data in CSV format
+
+1. We should be able to export the complete project data of any policy in CSV format through Guardian.
+2. We should also be able to apply filters to the project data, which should be included in the export file.
+3. When we export the data in csv format, it should follow proper naming convention such as saving the exported file by its respective policy name\_version.csv
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3680](https://github.com/hashgraph/guardian/issues/3680)
+
+Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/exporting-project-data-in-csv](https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/exporting-project-data-in-csv)
+
+#### Missing Authentication between Services
+
+It is recommended to implement mutual authentication for all internal microservice communications to ensure that each service can verify the identity of the other. It is recommended to ensure that each service is properly authenticated, using authorization roles and permissions to ensure that each service can only publish or consume messages in the queues relevant to its designated function. Moreover, messages could be digitally signed, ensuring they originate from the correct service. At each step in the process, the signatures can be verified to ensure that the message has not been tampered with. Where applicable, integrate these recommendations into the security hardening guide to ensure organizations deploying the application can implement these best practices effectively.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4107](https://github.com/hashgraph/guardian/issues/4107)
+
+Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker#id-3.2-setting-up-jwt-keys-in-.env-file](https://docs.hedera.com/guardian-dev-1/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker#id-3.2-setting-up-jwt-keys-in-.env-file)
+
+#### No Password Policy
+
+It is recommended to create a password policy, that can be configured by the organizations using the application. It should also be noted that recent guidance from NCSC promotes password policies which are designed to decrease the burden on the user. This can include relaxing controls requiring users to change their passwords at regular intervals in favor of the use of suitably complex passwords. The NCSC password guidance21 should be reviewed to determine if this new guidance can be applied to the environment reviewed.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4057](https://github.com/hashgraph/guardian/issues/4057)
+
+Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/password-management/password-policy](https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/password-management/password-policy)
+
+### ---- June 2025----
+
+#### Development of VM0033
+
+1. Creating Schema Design.
+2. Review the design
+3. Development of the methodology
+4. Testing the methodology
+5. Documenting the methodology user guide.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4877](https://github.com/hashgraph/guardian/issues/4877)
+
+Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/demo-guide/carbon-offsets/vm0033-methodology-for-tidal-wetland-and-seagrass-restoration](https://docs.hedera.com/guardian-dev-1/guardian/demo-guide/carbon-offsets/vm0033-methodology-for-tidal-wetland-and-seagrass-restoration)
+
+#### Detailed Research on Indexer Enhancements
+
+Identify and implement indexer enhancements based on example use cases and community feedback.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4561](https://github.com/hashgraph/guardian/issues/4561)
+
+#### Guardian policy embedded code testing/debugging facility for Custom Logic, Calculate, etc blocks
+
+* Introduce the 'Test' button to all places where **source** or **math** code can be inputted in Guardian policy which would trigger the 'in place' execution of the code based on the execution context and defined inputs/outputs of the block. This tool could prompt the user for input data when required.
+* Add ability to 'print' (i.e. log) data and variable values somewhere when test-running policy (e.g. in Dry-run mode). This way policy authors would be able to examine the data structures passed into the functions and identify unexpected behaviour in this area.
+* Add recommendations to the documentation wrt running this code in an separate developer environment, i.e. all the needed execution context such as imported libraries etc so those developers who prefer to use their code editors can replicate the execution of the code there.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4304](https://github.com/hashgraph/guardian/issues/4304)
+
+Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/testing-debugging-code/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui](https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/testing-debugging-code/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui)
+
+#### Outdated Software/Libraries
+
+Ensure the Guardian code is covered by an effective patching policy that allows the latest server software upgrades, updates, or patches to be tested and applied within a short time frame following their release by the vendor.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4056](https://github.com/hashgraph/guardian/issues/4056)
+
+#### Substitute Google maps API in Guardian UI with an OSS alternative
+
+Substitute currently used Google Maps for the same open maps as used in the Indexer.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3959](https://github.com/hashgraph/guardian/issues/3959)
+
+Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/global-indexer/indexer-user-guide](https://docs.hedera.com/guardian-dev-1/guardian/global-indexer/indexer-user-guide)
+
+### ---- July 2025----raa
+
+#### Identifying, Implementing and Integrating 3rd Party data resources
+
+* Identify and shortlist 2-3 key Environmental-related data sources to be used as reference data and/or
+* Implement integration with these 3rd party data providers (may be similar to IPFS/Hedera integration), such as:
+* policy can easily add such 'integration' to their policy - potentially using the new policy modules functionality [Linkable policy modules for constructing end-to-end Policy workflows #1657](https://github.com/hashgraph/guardian/issues/1657)
+* the data can be defined as mandatory or optional (by the policy author)
+* data imported into Policy artifacts is stored and displayed in its native format, preserving 'mime type' and/or any other indication of the nature of the data as well as the identity/credentials of the source, time/date and other identifying information as appropriate
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/1690](https://github.com/hashgraph/guardian/issues/1690)
+
+#### Authorization Headers Potentially Leaked through IPFS in Request Data Module
+
+Implement a secure method to handle secrets in the Request Data module that ensures sensitive information, such as authorization headers, is not published with the policy. A possibility may be to include encrypted headers with the public key that only the private key of the policy owner can decrypt. Other possibility may be to store the secrets headers in the vault and fetch them at runtime using appropriate access controls. Update the documentation to explicitly warn policy creators about the risks of including sensitive information in the policies and recommend using the module only for public HTTP methods. Provide guidelines on securely configuring policies to avoid the leakage of sensitive data.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4049](https://github.com/hashgraph/guardian/issues/4049)
+
+#### Facilities to use specialist math tooling (such as R language) for calculations in Guardian Policies
+
+1. Introduce support for Python language **in** Policies such that Python code can be embedded into Policies and enable them to perform complex calculations in the course their execution by users
+2. Bundle Python interpreter and a standard (curated) set of libraries into Guardian distros
+3. Add 'Guardian version' parameter to the documents so any complex calculations can be replicated by knowing versions of libraries and interpreters used by the Policy at the document production time.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3573](https://github.com/hashgraph/guardian/issues/3573)
+
+Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/python-implementation-in-guardian](https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/python-implementation-in-guardian)
 {% endtab %}
 {% endtabs %}
 
