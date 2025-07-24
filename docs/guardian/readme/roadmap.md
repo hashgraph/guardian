@@ -192,14 +192,47 @@ Add backend logs/metrics to measure:
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5120](https://github.com/hashgraph/guardian/issues/5120)
 
-\--— September ----
+### --— September ----
 
 #### Validation for project data submission
 
+Validation Rules Enhancement\
+Implement robust validation for schema fields in both UI-level form inputs and backend processing logic for key field types:
 
+* GeoJSON: Ensure that the data is a valid FeatureCollection or Geometry object following RFC 7946 standards.
+* IPFS Links: Ensure that the link is not empty and follows proper CID or ipfs:// format.
 
-\
+Error Handling and Feedback
 
+* Inform the user with clear error messages during submission if data fails validation.
+* Prevent submission if any required or format-sensitive fields are invalid.
+
+Backward Compatibility Handling
+
+* Optionally, mark or flag previously submitted documents with invalid data for review or correction.
+
+Unit and Integration Tests
+
+* Add test cases to ensure all validations work across various scenarios and edge cases
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/5060](https://github.com/hashgraph/guardian/issues/5060)
+
+#### Guardian Form UI Improvements
+
+These four can be made into their individual issues as well. Let me know, I'd be happy to submit four separate ones.
+
+1. Support a table input(and csv import) field for multi-year data fields. Often methodologies require multi-year inputs(think 10 or 100 year) and it's not the easiest to visualize or input them with a typical form UI. It'd be good to have a way to have tabular inputs and a way to specify how they will be read within calculations code.
+2. Support attachments to a field (justifications, report). Corresponding to a submitted field, a VVB or SR may ask for justification report which is usually a file. A similar issue is already there - [Manual input of additional data for inclusion into the VC document #2076](https://github.com/hashgraph/guardian/issues/2076)
+3. For large documents for example PDD, it'd be good to divide them into sections when user is submitting. We must allow draft saves and make dry-run testing feasible. Such a feature already exists(tabbed/navigation UI), but if document is too big, policy developer needs to click test data button multiple times to fill the entire form.
+4. GeoJSON/Shapefiles rendering - Allow file uploads of such types and they should be rendered with maps in best way in form UI.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/5042](https://github.com/hashgraph/guardian/issues/5042)
+
+#### Make testing easier for subflows
+
+There should be a way to test the sub-flows similar to unit test paradigm we have in programming. Each unit should be individually runnable and testable. Following the entire workflow for testing takes up \~50-60% of time of policy development.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/5045](https://github.com/hashgraph/guardian/issues/5045)
 {% endtab %}
 
 {% tab title="Previous Releases" %}
