@@ -643,9 +643,11 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                     .filter((token: Token) => !token.draftToken);
                 const dialogRef = this.dialog.open(SetPoolDialogComponent, {
                     width: '750px',
-                    styleClass: 'g-dialog',
+                    styleClass: 'set-pool-dialog',
                     modal: true,
                     closable: false,
+                    showHeader: false,
+                    height: '450px'
                 });
                 dialogRef.onClose.subscribe(async (result) => {
                     if (result) {
