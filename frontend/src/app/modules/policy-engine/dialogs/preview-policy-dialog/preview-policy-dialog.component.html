@@ -62,7 +62,8 @@
                         [(ngModel)]="versionOfTopicId"
                         [options]="policies"
                         appendTo="body"
-                        class="version-of-dropdown"
+                        class="version-of-dropdown guardian-dropdown"
+                        panelStyleClass="guardian-dropdown-panel"
                         id="versionOf"
                         optionLabel="name"
                         optionValue="topicId"
@@ -131,6 +132,7 @@
                             (change)="onFilters(toolConfig.messageId, $event)"
                             [attr.status]="validTool[toolConfig.messageId]"
                             maxlength="20"
+                            tabindex="-1"
                             (input)="enforceMask(toolConfig.messageId, $event)">
                         <div class="tool-search">
                             <div class="guardian-icon-button" (click)="onToolSearch(toolConfig)">
@@ -217,6 +219,7 @@
                             (change)="onFilters(toolConfig.messageId, $event)"
                             [attr.status]="validTool[toolConfig.messageId]"
                             maxlength="20"
+                            tabindex="-1"
                             (input)="enforceMask(toolConfig.messageId, $event)">
                         <div class="tool-search">
                             <div class="guardian-icon-button" (click)="onToolSearch(toolConfig)">
