@@ -1,6 +1,8 @@
 const API = {
     ApiServer: `http://localhost:${Cypress.env("portApi")}/`,
     ApiIndexer: `http://localhost:${Cypress.env("portIndexer")}/`,
+    ApiMGS: `https://dev.guardianservice.app/api/v1/`,
+
 
     //Accounts
     Accounts: "accounts/",
@@ -25,6 +27,7 @@ const API = {
 
     //Profiles
     Profiles: "profiles/",
+    Key: "keys/",
 
     //Tokens
     ListOfTokens: "tokens/",
@@ -172,6 +175,7 @@ const API = {
     Default: "default/",
     Relationships: "relationships/",
     Documents: "documents/",
+    Import: "import/",
 
     //Indexer
     IndexerRegistries: "entities/registries/",
@@ -224,5 +228,19 @@ const API = {
 
     //Policy Labels
     PolicyLabels: "policy-labels/",
+
+    //External policies
+    ExternalPolicy: "external-policies/",
+    ExternalPolicyRequests: "external-policies/requests/",
+
+    //Permissions
+    UsersPermissions: "permissions/users/",
+
+    //MGS
+    //Tenants
+    TenantsUser: "tenants/user",
+    TenantsInvite: "tenants/invite",
+    TermsAgree: "accounts/terms/agree"
+    
 };
 export default API;
