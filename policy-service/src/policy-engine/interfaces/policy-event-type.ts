@@ -14,6 +14,7 @@ export enum PolicyInputEventType {
     ModuleEvent = 'ModuleEvent',
     ToolEvent = 'ToolEvent',
     RetryMintEvent = 'RetryMintEvent',
+    GetDataEvent = 'GetDataEvent',
 }
 
 /**
@@ -30,7 +31,8 @@ export enum PolicyOutputEventType {
     SignatureQuorumReachedEvent = 'SignatureQuorumReachedEvent',
     SignatureSetInsufficientEvent = 'SignatureSetInsufficientEvent',
     ErrorEvent = 'ErrorEvent',
-    ReleaseEvent = 'ReleaseEvent'
+    ReleaseEvent = 'ReleaseEvent',
+    GetDataEvent = 'GetDataEvent'
 }
 
 /**

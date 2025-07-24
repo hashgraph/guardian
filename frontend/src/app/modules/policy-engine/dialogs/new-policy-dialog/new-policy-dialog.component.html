@@ -25,6 +25,12 @@
                 placeholder="Not selected"
                 appendTo="body"
             >
+                <ng-template let-option pTemplate="item">
+                    {{ option.name }}
+                </ng-template>
+                <ng-template let-option pTemplate="selectedItem">
+                    {{ option.name }}
+                </ng-template>
             </p-dropdown>
         </div>
         <div class="guardian-input-container">
@@ -40,6 +46,12 @@
                 appendTo="body"
                 placeholder="Not selected"
             >
+                <ng-template let-option pTemplate="item">
+                    {{ option.name }}
+                </ng-template>
+                <ng-template let-option pTemplate="selectedItem">
+                    {{ option.name }}
+                </ng-template>
             </p-dropdown>
         </div>
         <div class="guardian-input-container">
@@ -87,6 +99,12 @@
                 placeholder="Not selected"
                 appendTo="body"
             >
+                <ng-template let-option pTemplate="item">
+                    {{ option.name }}
+                </ng-template>
+                <ng-template let-option pTemplate="selectedItem">
+                    {{ option.name }}
+                </ng-template>
             </p-dropdown>
         </div>
         <div class="guardian-input-container">

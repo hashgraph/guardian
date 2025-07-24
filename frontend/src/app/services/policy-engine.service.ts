@@ -484,4 +484,13 @@ export class PolicyEngineService {
         }
         return params;
     }
+
+    public sendData(url: string, data: any, token: string): Observable<any> {
+        return this.http.post<string>(url, data, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+        });
+    }
 }

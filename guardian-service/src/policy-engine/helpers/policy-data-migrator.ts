@@ -784,7 +784,8 @@ export class PolicyDataMigrator {
             ContractType.WIPE,
             this._root.hederaAccountId,
             this._rootKey,
-            topic.topicId
+            topic.topicId,
+            userId
         );
 
         await topic.saveKeys(userId);
