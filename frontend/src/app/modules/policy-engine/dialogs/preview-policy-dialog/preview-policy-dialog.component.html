@@ -130,7 +130,8 @@
                             [formControlName]="toolConfig.messageId"
                             (change)="onFilters(toolConfig.messageId, $event)"
                             [attr.status]="validTool[toolConfig.messageId]"
-                            tabindex="-1">
+                            maxlength="20"
+                            (input)="enforceMask(toolConfig.messageId, $event)">
                         <div class="tool-search">
                             <div class="guardian-icon-button" (click)="onToolSearch(toolConfig)">
                                 <svg-icon 
@@ -215,7 +216,8 @@
                             [formControlName]="toolConfig.messageId"
                             (change)="onFilters(toolConfig.messageId, $event)"
                             [attr.status]="validTool[toolConfig.messageId]"
-                            tabindex="-1">
+                            maxlength="20"
+                            (input)="enforceMask(toolConfig.messageId, $event)">
                         <div class="tool-search">
                             <div class="guardian-icon-button" (click)="onToolSearch(toolConfig)">
                                 <svg-icon 

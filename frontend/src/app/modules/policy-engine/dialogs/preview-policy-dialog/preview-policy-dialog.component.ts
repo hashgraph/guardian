@@ -35,10 +35,12 @@ export class PreviewPolicyDialog {
     public formulas!: string;
     public title!: string;
     public validTool: {
-        [messageId: string]: 'load' | 'valid' | 'invalid'
+        [messageId: string]: '' | 'load' | 'valid' | 'invalid'
     } = {};
     public validTools: boolean = true;
     private _destroy$ = new Subject<void>();
+    private _destroyMap: any = {};
+    private _map = new Map<string, boolean>();
 
     public get inValid(): boolean {
         if (!(this.policy || this.module || this.tool || this.xlsx)) {
@@ -190,14 +192,20 @@ export class PreviewPolicyDialog {
         }
         this.validTool[messageId] = 'load';
         this.updateToolStatus();
-        this.toolsService
+        if (this._destroyMap[messageId]) {
+            this._destroyMap[messageId].unsubscribe();
+            this._destroyMap[messageId] = null;
+        }
+        this._destroyMap[messageId] = this.toolsService
             .checkMessage(value)
             .pipe(takeUntil(this._destroy$))
             .subscribe((valid) => {
                 this.validTool[messageId] = valid ? 'valid' : 'invalid';
+                this._map.set(value, !!valid);
                 this.updateToolStatus();
             }, () => {
                 this.validTool[messageId] = 'invalid';
+                this._map.set(value, false);
                 this.updateToolStatus();
             });
     }
@@ -264,5 +272,36 @@ export class PreviewPolicyDialog {
                 this.checkTool(toolConfig.messageId, result);
             }
         });
+    }
+
+    public enforceMask(messageId: string, event: any): void {
+        const input = event.target as HTMLInputElement;
+        let value = input.value;
+
+        value = value.replace(/[^0-9.]/g, '');
+
+        if (value.length > 10 && !value.includes('.')) {
+            value = `${value.substring(0, 10)}.${value.substring(10)}`;
+        }
+
+        const parts = value.split('.');
+
+        if (parts[0].length > 10) {
+            parts[0] = parts[0].substring(0, 10);
+        }
+        if (parts[1] && parts[1].length > 9) {
+            parts[1] = parts[1].substring(0, 9);
+        }
+
+        input.value = parts.join('.');
+
+        if (this._map.has(input.value)) {
+            this.validTool[messageId] = this._map.get(input.value) ? 'valid' : 'invalid';
+            this.updateToolStatus();
+        } else {
+            this.validTool[messageId] = '';
+            this.updateToolStatus();
+        }
+
     }
 }
