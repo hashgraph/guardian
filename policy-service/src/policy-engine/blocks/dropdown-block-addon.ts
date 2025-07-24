@@ -40,7 +40,6 @@ import { LocationType } from '@guardian/interfaces';
                 title: 'Option Name',
                 type: PropertyType.Path,
                 required: true,
-                visible
             },
             {
                 name: 'optionValue',
