@@ -146,7 +146,17 @@ export class PropertiesRate implements IRate<PropertyModel<any>> {
         this.properties = this.compareProp(this.left, this.right, options);
 
         if (!this.left || !this.right) {
-            return;
+            if (this.left && this.left.ignore(options)) {
+                this.totalRate = 100;
+                this.propertiesRate = 100;
+                return;
+            } else if (this.right && this.right.ignore(options)) {
+                this.totalRate = 100;
+                this.propertiesRate = 100;
+                return;
+            } else {
+                return;
+            }
         }
 
         if (this.left.equal(this.right, options)) {
