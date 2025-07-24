@@ -158,6 +158,7 @@ jobs:
             -e CYPRESS_portApi=3002 \
             -e CYPRESS_operatorId=${{ secrets.CI_HEDERA_ACCOUNT }} \
             -e CYPRESS_operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }} \
+            -e CYPRESS_MGSAdmin=${{ secrets.MGS_TENANT_NAME }} \
             -e CYPRESS_grepTags="preparing ${{ inputs.tags }}" \
             -e CYPRESS_grepFilterSpecs=true \
             cypress-runner \
