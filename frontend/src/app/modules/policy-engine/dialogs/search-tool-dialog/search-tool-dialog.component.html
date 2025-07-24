@@ -18,15 +18,16 @@
 
         <form [formGroup]="filtersForm" class="filters">
             <div class="filter-row">
-                <span class="p-input-icon-right">
+                <div class="p-input-icon-right guardian-input-container">
                     <input
                         class="search-policy-input"
                         formControlName="name"
                         pInputText
                         placeholder="Search by keyword"
-                        type="text" />
+                        type="text" 
+                        (change)="onFilters()" />
                     <i class="pi pi-search search-icon"></i>
-                </span>
+                </div>
             </div>
         </form>
         <div *ngIf="list && list.length" class="grid-container">
