@@ -233,6 +233,108 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/5042](https://githu
 There should be a way to test the sub-flows similar to unit test paradigm we have in programming. Each unit should be individually runnable and testable. Following the entire workflow for testing takes up \~50-60% of time of policy development.
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5045](https://github.com/hashgraph/guardian/issues/5045)
+
+### --— October ----
+
+#### Complex iterative review and approval workflows​
+
+Introduce `reviewVcDocumentBlock` as a complement to the `requestVcDocumentBlock` into Policy definition language and corresponding Guardian UI tools which would facilitate complex iterative document review workflows supporting rich communications, namely the ability to:
+
+* send messages/descriptions associated with actions
+* conduct stand-alone (not action-linked) message exchanges (questions, responses, general comms)
+* send requests for providing additional documents/evidence, and provide facilities to upload/receive them
+* ability to edit/correct previously submitted (but rejected) document and resubmit again
+* forward messages to another user
+* involve other users into 'conversations'
+
+These actions, steps, message exchanges have to be verifiably traceable, i.e. recorded and published as VC/VP documents alongside the usual data-containing documents produce by the policy workflows.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4548](https://github.com/hashgraph/guardian/issues/4548)
+
+#### Policy warnings
+
+* Introduce the generic capability to highlight blocks, elements within them, and groups of blocks
+* Introduce the generic capability to produce and display warning/error/info messages, their numbers and ability to disable/resolve:
+  * ignore (this one)
+  * ignore all like this
+* Add the corresponding API capability to access and manage the warnings etc via API
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/2230](https://github.com/hashgraph/guardian/issues/2230)
+
+#### Schema deletion with child schemas
+
+Implement a safe way to delete all schemas embedded into the parent schema in one operation such that:
+
+* the system check whether the schemas embedded into the parent schema being deleted are used anywhere else, and if so prevents the delete operation
+* users can select whether to delete all embedded schema together with the parent one or not before the deletion
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/2692](https://github.com/hashgraph/guardian/issues/2692)
+
+#### Implementing Artifacts such as Schemas/Policies/tokens Deletion all at once​
+
+1. Create a checkbox at the top of the schema/policy/token table, which will allow to select all the artifacts.
+2. Once, all the schemas/policies/tokens are selected, and clicked on delete, we should be able to delete all the schemas/policies/tokens at once
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3375](https://github.com/hashgraph/guardian/issues/3375)
+
+#### Option to delete all schemas for a particular policy in Draft stage​
+
+There may be another solution/improvement to the excel where it checks for duplicates and provides with an option to replace. Similar to the file system in macOS for example where it doesnt allow 2 folders with the same name at a particular destination. Issue for that created here: [#4754](https://github.com/hashgraph/guardian/issues/4754)
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4753](https://github.com/hashgraph/guardian/issues/4753)
+
+#### Import Excel to check for duplicates by schema name​
+
+But I believe there is one more check which the guardian can do when the excel is imported and that is to check for duplicates and provide the user with an option to either replace the schema or keep both the files.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4754](https://github.com/hashgraph/guardian/issues/4754)
+
+#### Deterministic compression​
+
+Implement deterministic compression for all cases in which compression is applied by Guardian.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4931](https://github.com/hashgraph/guardian/issues/4931)
+
+#### Project Account Wallet (ex:Project Developer or Accountable Impact Organisation)
+
+* Each new Project must have a unique wallet address generated/associated upon creation.
+* The Project wallet must support:
+  * Receiving funds (Hedera tokens/HBAR)
+  * Sending funds (to users, vendors, or community members)
+  * Holding and managing tokens (if applicable)
+  * Transactions must be traceable back to the Project wallet for reporting/financial audit.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/5044](https://github.com/hashgraph/guardian/issues/5044)
+
+#### Need to implement best practices on Schema Cycle
+
+We need to implement and document best practices covering the following aspects of the schema lifecycle:
+
+Schema Design & Format Guidance
+
+* Explain how to design schemas that align with Guardian requirements.
+* Describe valid formats and structure (e.g., JSON Schema).
+* Outline file format expectations for importing into Guardian.
+
+Manual Schema Creation in Guardian
+
+* Step-by-step process to create schemas directly in the Guardian UI.
+* Include tips for defining required fields, types, and constraints.
+* Emphasize validation logic to reduce submission errors.
+
+Schema Mapping
+
+* When and why to map schemas.
+* Best practices for setting up mapping relationships (if applicable).
+* Examples of mapped vs. unmapped use cases.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/5062](https://github.com/hashgraph/guardian/issues/5062)
+
+#### Update Walkthroughs in Documentation
+
+A clear and concise description of what you expected to happen.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4507](https://github.com/hashgraph/guardian/issues/4507)
 {% endtab %}
 
 {% tab title="Previous Releases" %}
@@ -1132,4 +1234,10 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/3951](https://githu
 Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/decentralized-guardian/remote-policy-ui](https://docs.hedera.com/guardian/guardian/standard-registry/decentralized-guardian/remote-policy-ui)
 {% endtab %}
 {% endtabs %}
+
+
+
+
+
+
 
