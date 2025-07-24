@@ -56,7 +56,7 @@ export class PolicyGuidedSearchComponent implements OnInit {
             this.sectoralScopeOptions = this.categories.filter((item: IPolicyCategory) => item.type === PolicyCategoryType.SECTORAL_SCOPE);
             this.subTypeOptions = this.categories.filter((item: IPolicyCategory) => item.type === PolicyCategoryType.SUB_TYPE);
 
-            // this.loadData();
+            this.loadData();
         })
 
         this.searchFilter.valueChanges.pipe(

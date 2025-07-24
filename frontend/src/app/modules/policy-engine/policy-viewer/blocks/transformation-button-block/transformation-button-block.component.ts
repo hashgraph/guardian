@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, }
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import axios from 'axios';
 import { ToastrService } from 'ngx-toastr';
 
 /**
@@ -108,30 +107,25 @@ export class TransformationButtonBlockComponent implements OnInit {
             (data) => {
                 this.commonVisible = true;
                 this.loading = false;
-
-                if(data) {
-                    const token = localStorage.getItem('accessToken');
-                    axios.post(data.url, data.data, {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    }).then(response => {
-                        this.toastr.success(`The data was sent to ${data.url}`, '', {
-                            timeOut: 3000,
-                            closeButton: true,
-                            positionClass: 'toast-bottom-right',
-                            enableHtml: true,
-                        });
-                    }).catch(error => {
-                        console.log(error);
-                        this.toastr.error(`An error occurred while sending the data to ${data.url}`, '', {
-                            timeOut: 3000,
-                            closeButton: true,
-                            positionClass: 'toast-bottom-right',
-                            enableHtml: true,
-                        });
-                    })
+                if (data) {
+                    const token = localStorage.getItem('accessToken') as string;
+                    this.policyEngineService
+                        .sendData(data.url, data.data, token).subscribe((data) => {
+                            this.toastr.success(`The data was sent to ${data.url}`, '', {
+                                timeOut: 3000,
+                                closeButton: true,
+                                positionClass: 'toast-bottom-right',
+                                enableHtml: true,
+                            });
+                        }, (error) => {
+                            console.log(error);
+                            this.toastr.error(`An error occurred while sending the data to ${data.url}`, '', {
+                                timeOut: 3000,
+                                closeButton: true,
+                                positionClass: 'toast-bottom-right',
+                                enableHtml: true,
+                            });
+                        })
                 }
 
                 this.cdref.detectChanges();
