@@ -45,6 +45,7 @@ import {
     TopicType,
     ISignOptions,
     PolicyHelper,
+    BlockType,
 } from '@guardian/interfaces';
 import { INotifier } from '../../helpers/notifier.js';
 import {
@@ -293,13 +294,20 @@ export class PolicyDataMigrator {
                     throw new Error(`Can't find source policy`);
                 }
                 const srcModelDryRun = PolicyHelper.isDryRunMode(srcModel);
-                policyUsers = await users.getUsersBySrId(owner, userId);
+
+                if (srcModelDryRun) {
+                    policyUsers = await DatabaseServer.getVirtualUsers(srcModel.id)
+                } else {
+                    policyUsers = await users.getUsersBySrId(owner, userId);
+                }
+
                 policyRoles = await new RolesLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
                     srcModelDryRun
                 ).get();
+
                 policyStates = await new BlockStateLoader(
                     srcModel.id,
                     srcModel.topicId,
@@ -474,6 +482,7 @@ export class PolicyDataMigrator {
                 migrateState,
                 migrateRetirePools,
                 userId,
+                srcModel.id,
                 retireContractId
             );
 
@@ -529,6 +538,7 @@ export class PolicyDataMigrator {
         migrateState = false,
         migrateRetirePools = false,
         userId: string | null,
+        srcPolicyId: string,
         retireContractId?: string
     ) {
         const errors = new Array<DocumentError>();
@@ -545,6 +555,49 @@ export class PolicyDataMigrator {
                 errors,
                 userId
             );
+
+            if (states?.length > 0) {
+                const [{ config: srcBlockTree }, { config: blockTree }] = await Promise.all([
+                    DatabaseServer.getPolicyById(srcPolicyId),
+                    DatabaseServer.getPolicyById(this._policyId)
+                ]);
+
+                const srcStepStateMap = new Map<number, string>();
+                const stepStateMap = new Map<string, number>();
+                const stepBlockStates: BlockState[] = [];
+
+                states.forEach(state => {
+                    const srcBlock = this.findBlockById(srcBlockTree, state.blockId);
+                    if (srcBlock && srcBlock.blockType === BlockType.Step && srcBlock.children?.length > 0) {
+                        srcBlock.children.forEach((child, index) => {
+                            srcStepStateMap.set(index, child.tag)
+                        });
+                        stepBlockStates.push(state);
+                    }
+                    const block = this.findBlockByTag(blockTree, srcBlock.tag);
+                    if (block && block.blockType === BlockType.Step && block.children?.length > 0) {
+                        block.children.forEach((child, index) => {
+                            stepStateMap.set(child.tag, index)
+                        });
+                    }
+                });
+                stepBlockStates.forEach(stepState => {
+                    const blockState = JSON.parse(stepState.blockState);
+                    if (blockState && blockState.state) {
+                        const currentState = blockState.state;
+                        for (const key in currentState) {
+                            if (currentState.hasOwnProperty(key)) {
+                                if (currentState[key]?.index && srcStepStateMap.get(currentState[key].index)) {
+                                    const tag = srcStepStateMap.get(currentState[key].index);
+                                    currentState[key].index = stepStateMap.get(tag) || currentState[key];
+                                }
+                            }
+                        }
+                    }
+                    stepState.blockState = JSON.stringify(blockState);
+                });
+            }
+
             await this._migratePolicyStates(states);
         } else {
             this._notifier?.info('Migrate policy state skipped');
@@ -665,6 +718,50 @@ export class PolicyDataMigrator {
         }
 
         return result;
+    }
+
+    /**
+     * Find block in policy config by id
+     * @param policyConfig policy config
+     * @param blockId block id
+     * @returns Policy block or null
+     */
+    private findBlockById(policyConfig: any, blockId: string): any | null {
+        for (const node of policyConfig.children) {
+            if (node.id === blockId) {
+                return node;
+            }
+
+            if (node.children && node.children.length) {
+                const found = this.findBlockById(node, blockId);
+                if (found) {
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Find block in policy config by tag
+     * @param policyConfig policy config
+     * @param blockTag block tag
+     * @returns Policy block or null
+     */
+    private findBlockByTag(tree: any, blockTag: string): any | null {
+        for (const node of tree.children) {
+            if (node.tag === blockTag) {
+                return node;
+            }
+
+            if (node.children && node.children.length) {
+                const found = this.findBlockByTag(node, blockTag);
+                if (found) {
+                    return found;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -978,6 +1075,10 @@ export class PolicyDataMigrator {
         }[]
     ) {
         for (const user of users) {
+            if (user.username === 'Administrator') {
+                continue;
+            }
+
             user.did = await this._replaceDidTopicId(user.did);
             if (user.did === this._owner) {
                 continue;
