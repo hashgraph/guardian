@@ -174,10 +174,12 @@ export class VCMessage extends Message {
      * Set option
      * @param ids
      */
-    public setOption(document: any): void {
+    public setOption(document: any, ref?: any): void {
         this.option = {};
-        if (document?.options?.options) {
-            for (const option of document.options.options) {
+        if (document?.option) {
+            this.option = document?.option;
+        } else if (ref?.options?.options) {
+            for (const option of ref.options.options) {
                 this.option[option.name] = option.value;
             }
         }

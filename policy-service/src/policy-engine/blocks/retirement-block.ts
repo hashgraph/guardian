@@ -138,7 +138,7 @@ export class RetirementBlock {
         vcMessage.setRelationships(relationships);
         vcMessage.setTag(ref);
         vcMessage.setEntityType(ref);
-        vcMessage.setOption(ref);
+        vcMessage.setOption(null, ref);
         vcMessage.setUser(null);
         const vcMessageResult = await messageServer
             .setTopicObject(topic)
@@ -163,8 +163,8 @@ export class RetirementBlock {
         vpMessage.setDocument(vp);
         vpMessage.setRelationships(relationships);
         vpMessage.setTag(ref);
-        vcMessage.setEntityType(ref);
-        vcMessage.setOption(ref);
+        vpMessage.setEntityType(ref);
+        vpMessage.setOption(null, ref);
         vpMessage.setUser(null);
 
         const vpMessageResult = await messageServer

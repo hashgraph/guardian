@@ -218,10 +218,20 @@ export class RestoreDataFromHedera {
         const vcDocumentObjects = []
         const vpDocumentObjects = []
 
+        const revokeDocumentsMap = new Map<string, string>();
+
+        for (const row of topicMessages) {
+            if (row.isRevoked()) {
+                const revokeRow: any = row;
+                revokeDocumentsMap.set(revokeRow.getMessageId(), revokeRow.reason);
+            }
+        }
+
         for (const row of topicMessages) {
             if (row.isRevoked()) {
                 continue;
             }
+
             await this.loadIPFS(row);
 
             switch (row.constructor) {
@@ -243,7 +253,7 @@ export class RestoreDataFromHedera {
                     const message = row as VCMessage;
                     const vcDoc = VcDocument.fromJsonTree(message.document);
 
-                    vcDocumentObjects.push({
+                    const vcDocument = {
                         hash: vcDoc.toCredentialHash(),
                         owner,
                         messageId: message.id,
@@ -255,7 +265,16 @@ export class RestoreDataFromHedera {
                         tag: message.tag,
                         relationship: message.relationships,
                         option: message.option,
-                    });
+                        comment: undefined,
+                    }
+
+                    if (revokeDocumentsMap.has(row.getMessageId())) {
+                        vcDocument.option = vcDocument.option || {};
+                        vcDocument.option.status = 'Revoked';
+                        vcDocument.comment = revokeDocumentsMap.get(row.getMessageId());
+                    }
+
+                    vcDocumentObjects.push(vcDocument);
 
                     break;
                 }

@@ -483,7 +483,7 @@ export class SendToGuardianBlock {
             vcMessage.setRelationships(document.relationships);
             vcMessage.setTag(ref);
             vcMessage.setEntityType(ref);
-            vcMessage.setOption(ref);
+            vcMessage.setOption(document, ref);
             vcMessage.setUser(owner.roleMessage);
             message = vcMessage;
             docObject = vc;
@@ -495,7 +495,7 @@ export class SendToGuardianBlock {
             vpMessage.setRelationships(document.relationships);
             vpMessage.setTag(ref);
             vpMessage.setEntityType(ref);
-            vpMessage.setOption(ref);
+            vpMessage.setOption(document, ref);
             vpMessage.setUser(owner.roleMessage);
             message = vpMessage;
             docObject = vp;

@@ -318,7 +318,7 @@ export class MintBlock {
         vcMessage.setRelationships(messages);
         vcMessage.setTag(mintVC);
         vcMessage.setEntityType(mintVC);
-        vcMessage.setOption(mintVC);
+        vcMessage.setOption(null, ref);
         vcMessage.setUser(null);
         const vcMessageResult = await messageServer
             .setTopicObject(topic)
@@ -348,7 +348,7 @@ export class MintBlock {
         vpMessage.setRelationships(messages);
         vpMessage.setTag(vp);
         vpMessage.setEntityType(vp);
-        vpMessage.setOption(vp);
+        vpMessage.setOption(null, vp);
         vpMessage.setUser(null);
 
         const vpMessageResult = await messageServer
