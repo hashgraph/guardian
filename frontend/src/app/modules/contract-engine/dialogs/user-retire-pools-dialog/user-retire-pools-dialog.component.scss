@@ -66,6 +66,7 @@
     grid-template-columns: 335px 100px 100px auto;
     color: var(--color-grey-5);
     gap: 16px;
+    margin-bottom: 8px;
 }
 
 .pools-head .wipe-permission,
@@ -74,7 +75,7 @@
 }
 
 .table-tokens {
-    max-height: calc(100vh - 550px);
+    max-height: calc(100vh - 540px);
     overflow-y: auto;
     scrollbar-gutter: stable;
 }
@@ -195,7 +196,6 @@
 }
 
 ::ng-deep .g-dialog.pools-dialog .table-paginator {
-    margin-top: 20px;
     box-shadow: none !important;
 }
 
