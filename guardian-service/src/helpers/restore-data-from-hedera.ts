@@ -223,7 +223,7 @@ export class RestoreDataFromHedera {
                 continue;
             }
             await this.loadIPFS(row);
-            
+
             switch (row.constructor) {
                 case DIDMessage: {
                     const message = row as DIDMessage;
