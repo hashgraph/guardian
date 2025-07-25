@@ -114,6 +114,7 @@
             background: #fff1f1;
             padding: 8px;
             border-radius: 6px;
+            word-break: break-all;
         }
     }
 }
@@ -202,4 +203,64 @@
 .policy-version-container {
     display: flex;
     flex-direction: column;
+}
+
+.tool-item {
+    position: relative;
+    padding-right: 92px;
+
+    input {
+        width: 100% !important;
+
+        &[status="valid"] {
+            border-color: var(--guardian-success-color) !important;
+        }
+
+        &[status="invalid"] {
+            border-color: var(--guardian-failure-color) !important;
+        }
+    }
+
+    .tool-status {
+        width: 40px;
+        height: 40px;
+        position: absolute;
+        top: 20px;
+        right: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-top: 2px;
+    }
+
+    .tool-search {
+        width: 40px;
+        height: 40px;
+        position: absolute;
+        top: 20px;
+        right: 0px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .guardian-icon-button {
+            width: 32px;
+            height: 32px;
+        }
+    }
+}
+
+.preloader-image {
+    width: 16px;
+    height: 16px;
+    border-top: 3px solid var(--color-primary);
+    border-left: 3px solid rgba(0, 0, 0, 0);
+    border-right: 3px solid rgba(0, 0, 0, 0);
+    border-bottom: 3px solid rgba(0, 0, 0, 0);
+    border-radius: 100%;
+    filter: brightness(100%);
+    animation-name: preloaderRotationColored;
+    animation-duration: 7.5s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
 }

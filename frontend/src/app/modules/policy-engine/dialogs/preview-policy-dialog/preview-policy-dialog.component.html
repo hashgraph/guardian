@@ -24,7 +24,8 @@
                                 value="new"
                                 id="new-mode"
                                 inputId="new-mode"
-                                name="mode"></p-radioButton>
+                                name="mode"
+                                tabindex="-1"></p-radioButton>
                             <label class="radio-label" for="new-mode">As New Policy</label>
                         </div>
                         <div (click)="onSelectMode('version')" 
@@ -36,7 +37,8 @@
                                 value="version"
                                 id="version-mode"
                                 inputId="version-mode"
-                                name="mode"></p-radioButton>
+                                name="mode"
+                                tabindex="-1"></p-radioButton>
                             <label class="radio-label" for="version-mode">As New Version</label>
                         </div>
                         <div (click)="onSelectMode('demo')">
@@ -46,7 +48,8 @@
                                 value="demo"
                                 id="demo-mode"
                                 inputId="demo-mode"
-                                name="mode"></p-radioButton>
+                                name="mode"
+                                tabindex="-1"></p-radioButton>
                             <label class="radio-label" for="demo-mode">In Demo mode</label>
                         </div>
                     </div>
@@ -59,7 +62,8 @@
                         [(ngModel)]="versionOfTopicId"
                         [options]="policies"
                         appendTo="body"
-                        class="version-of-dropdown"
+                        class="version-of-dropdown guardian-dropdown"
+                        panelStyleClass="guardian-dropdown-panel"
                         id="versionOf"
                         optionLabel="name"
                         optionValue="topicId"
@@ -117,9 +121,51 @@
             <div *ngIf="toolConfigs?.length" class="field-container">
                 <div class="field-header">Tools</div>
                 <form [formGroup]="toolForm">
-                    <div *ngFor="let toolConfig of toolConfigs" class="field-input p-float-label">
-                        <input id="float-input" class="input" type="text" pInputText [formControlName]="toolConfig.messageId">
-                        <label for="float-input">{{toolConfig.name}}</label>
+                    <div class="field-input guardian-input-container tool-item" *ngFor="let toolConfig of toolConfigs" >
+                        <label [for]="toolConfig.messageId">{{toolConfig.name}}</label>
+                        <input 
+                            [id]="toolConfig.messageId" 
+                            class="input" 
+                            type="text" 
+                            pInputText 
+                            [formControlName]="toolConfig.messageId"
+                            (change)="onFilters(toolConfig.messageId, $event)"
+                            [attr.status]="validTool[toolConfig.messageId]"
+                            maxlength="20"
+                            tabindex="-1"
+                            (input)="enforceMask(toolConfig.messageId, $event)">
+                        <div class="tool-search">
+                            <div class="guardian-icon-button" (click)="onToolSearch(toolConfig)">
+                                <svg-icon 
+                                    class="icon-btn svg-icon" 
+                                    src="/assets/images/icons/search.svg" 
+                                    svgClass="icon-color-primary"></svg-icon>
+                            </div>
+                        </div>
+                        <div class="tool-status">
+                            <div *ngIf="validTool[toolConfig.messageId]==='load'">
+                                <div class="preloader-image"></div>
+                            </div>
+                            <div *ngIf="validTool[toolConfig.messageId]==='valid'">
+                                <svg-icon
+                                    class="svg-icon"
+                                    src="/assets/images/icons/check.svg"
+                                    svgClass="icon-color-success">
+                                </svg-icon>
+                            </div>
+                            <div 
+                                *ngIf="validTool[toolConfig.messageId]==='invalid'"
+                                pTooltip="This Tool is inaccessible."
+                                [tooltipOptions]="{showDelay: 300}"
+                                tooltipPosition="top"
+                            >
+                                <svg-icon
+                                    class="svg-icon"
+                                    src="/assets/images/icons/warning.svg"
+                                    svgClass="icon-color-failure">
+                                </svg-icon>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -162,9 +208,51 @@
             <div *ngIf="isFile" class="field-container">
                 <div class="field-header">Tools</div>
                 <form [formGroup]="toolForm!">
-                    <div class="field-input p-float-label" *ngFor="let toolConfig of toolConfigs">
-                        <input id="float-input" class="input" type="text" pInputText [formControlName]="toolConfig.messageId">
-                        <label for="float-input">{{toolConfig.name}}</label>
+                    <div class="field-input guardian-input-container tool-item" *ngFor="let toolConfig of toolConfigs">
+                        <label [for]="toolConfig.messageId">{{toolConfig.name}}</label>
+                        <input 
+                            [id]="toolConfig.messageId" 
+                            class="input" 
+                            type="text" 
+                            pInputText 
+                            [formControlName]="toolConfig.messageId"
+                            (change)="onFilters(toolConfig.messageId, $event)"
+                            [attr.status]="validTool[toolConfig.messageId]"
+                            maxlength="20"
+                            tabindex="-1"
+                            (input)="enforceMask(toolConfig.messageId, $event)">
+                        <div class="tool-search">
+                            <div class="guardian-icon-button" (click)="onToolSearch(toolConfig)">
+                                <svg-icon 
+                                    class="icon-btn svg-icon" 
+                                    src="/assets/images/icons/search.svg" 
+                                    svgClass="icon-color-primary"></svg-icon>
+                            </div>
+                        </div>
+                        <div class="tool-status">
+                            <div *ngIf="validTool[toolConfig.messageId]==='load'">
+                                <div class="preloader-image"></div>
+                            </div>
+                            <div *ngIf="validTool[toolConfig.messageId]==='valid'">
+                                <svg-icon
+                                    class="svg-icon"
+                                    src="/assets/images/icons/check.svg"
+                                    svgClass="icon-color-success">
+                                </svg-icon>
+                            </div>
+                            <div 
+                                *ngIf="validTool[toolConfig.messageId]==='invalid'"
+                                pTooltip="This Tool is inaccessible."
+                                [tooltipOptions]="{showDelay: 300}"
+                                tooltipPosition="top"
+                            >
+                                <svg-icon
+                                    class="svg-icon"
+                                    src="/assets/images/icons/warning.svg"
+                                    svgClass="icon-color-failure">
+                                </svg-icon>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -215,6 +303,10 @@
                 class="guardian-button guardian-button-primary">Skip & Import</button>
             <button
                 *ngSwitchCase="false"
+                pTooltip="This policy references inaccessible Tools. Please provide replacements."
+                [tooltipOptions]="{showDelay: 300}"
+                tooltipPosition="top"
+                [tooltipDisabled]="!inValid"
                 [disabled]="inValid"
                 (click)="onImport()"
                 class="guardian-button guardian-button-primary">Import</button>
