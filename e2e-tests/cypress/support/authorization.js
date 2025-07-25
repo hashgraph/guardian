@@ -25,6 +25,29 @@ export const getAccessToken = (username) => {
     })
 }
 
+export const getAccessTokenWithPass = (username, password) => {
+    return cy.request({
+        method: METHOD.POST,
+        url: API.ApiServer + API.AccountsLogin,
+        body: {
+            username: username,
+            password: password
+        }
+    }).then((response) => {
+        //Get AT
+        refreshToken = response.body.refreshToken
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.AccessToken,
+            body: {
+                refreshToken: response.body.refreshToken
+            }
+        }).then((response) => {
+            return "Bearer " + response.body.accessToken;
+        })
+    })
+}
+
 export const getAccessTokenMGS = (username, tenantId) => {
     return cy.request({
         method: METHOD.POST,
