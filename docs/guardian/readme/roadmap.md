@@ -215,6 +215,26 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/5062](https://githu
 A clear and concise description of what you expected to happen.
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4507](https://github.com/hashgraph/guardian/issues/4507)
+
+#### Graphical View of formula linked definitions
+
+* Add the capability to display dependencies and relationships of data feeding into Formula definitions as a diagram similar to 'schema tree view' or 'statistics'.
+* Color code (or in other way identify) the data points based on:
+  * their values (missing/default/as suggested/not-null)
+  * type (data structure/scalar value)
+  * in the future other criteria (e.g. "outside of 'normal' range")
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4730](https://github.com/hashgraph/guardian/issues/4730)
+
+#### Capture/replay and compare data of published policies
+
+Introduce the capability to record and publish 'runs' of the policy for published policies such that it would be possible to replay these runs locally (in dry-run mode) and compare the results.
+
+Additionally the runs need to be secured as a certified artifact which can be undeniably attributed to an instance of the Guardian and Standard Registry in it. Thus it would provides additional execution environment verification tool for auditors etc potentially other interested parties.
+
+Make the recording of the runs for published policies executions 'on' by default (which can be disabled by the user), with an option to publish the final 'runs' artifact on IPFS which is also 'on' by default.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3008](https://github.com/hashgraph/guardian/issues/3008)
 {% endtab %}
 
 {% tab title="Previous Releases" %}
@@ -1225,6 +1245,8 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/3573](https://githu
 Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/python-implementation-in-guardian](https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/python-implementation-in-guardian)
 {% endtab %}
 {% endtabs %}
+
+
 
 
 
