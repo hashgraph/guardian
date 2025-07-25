@@ -300,7 +300,7 @@ export class PolicyDataMigrator {
                 } else {
                     policyUsers = await users.getUsersBySrId(owner, userId);
                 }
-                
+
                 policyRoles = await new RolesLoader(
                     srcModel.id,
                     srcModel.topicId,
@@ -741,7 +741,7 @@ export class PolicyDataMigrator {
         }
         return null;
     }
-    
+
     /**
      * Find block in policy config by tag
      * @param policyConfig policy config
@@ -1075,8 +1075,9 @@ export class PolicyDataMigrator {
         }[]
     ) {
         for (const user of users) {
-            if (user.username === 'Administrator')
+            if (user.username === 'Administrator') {
                 continue;
+            }
 
             user.did = await this._replaceDidTopicId(user.did);
             if (user.did === this._owner) {
