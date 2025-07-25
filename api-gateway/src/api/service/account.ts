@@ -152,9 +152,7 @@ export class AccountApi {
      * Change password
      */
     @Post('/change-password')
-    @Auth(
-        Permissions.ACCOUNTS_ACCOUNT_READ
-    )
+    @Auth()
     @ApiOperation({
         summary: 'Change user password.',
     })
