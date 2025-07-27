@@ -12,7 +12,7 @@
         "@angular/platform-browser-dynamic": "^18.2.12",
         "@angular/router": "^18.2.12",
         "@ctrl/ngx-codemirror": "^5.1.1",
-        "@formulajs/formulajs": "4.4.6",
+        "@formulajs/formulajs": "4.5.3",
         "@guardian/interfaces": "file:../interfaces",
         "ajv": "^8.17.1",
         "ajv-formats": "^3.0.1",
