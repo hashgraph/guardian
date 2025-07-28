@@ -1,7 +1,6 @@
 import { GenerateUUIDv4, IOwner, IRootConfig, ISchema, ModelHelper, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
-import { DatabaseServer, MessageAction, MessageServer, MessageType, PinoLogger, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { DatabaseServer, INotificationStep, MessageAction, MessageServer, MessageType, PinoLogger, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { FilterObject } from '@mikro-orm/core';
-import { INotifier } from '../../notifier.js';
 import { importTag } from '../tag/tag-import-helper.js';
 import { checkForCircularDependency, loadSchema } from '../common/load-helper.js';
 
@@ -319,7 +318,7 @@ export async function createSchemaAndArtifacts(
     category: SchemaCategory,
     newSchema: ISchema,
     user: IOwner,
-    notifier: INotifier
+    notifier: INotificationStep
 ) {
     let old: SchemaCollection;
     let previousVersion = '';
@@ -366,8 +365,15 @@ export async function createSchemaAndArtifacts(
 export async function createSchema(
     newSchema: ISchema,
     user: IOwner,
-    notifier: INotifier
+    notifier: INotificationStep
 ): Promise<SchemaCollection> {
+    notifier.addStep('Resolve Hedera account');
+    notifier.addStep('Save in DB');
+    notifier.addStep('Resolve Topic');
+    notifier.addStep('Save to IPFS & Hedera');
+    notifier.addStep('Update schema in DB');
+    notifier.start();
+
     if (checkForCircularDependency(newSchema)) {
         throw new Error(`There is circular dependency in schema: ${newSchema.iri}`);
     }
@@ -375,16 +381,19 @@ export async function createSchema(
     delete newSchema.id;
     delete newSchema._id;
     const users = new Users();
-    notifier.start('Resolve Hedera account');
+    notifier.startStep('Resolve Hedera account');
     const root = await users.getHederaAccount(user.creator, user.id);
+    notifier.completeStep('Resolve Hedera account');
 
-    notifier.completedAndStart('Save in DB');
+    notifier.startStep('Save in DB');
     if (newSchema) {
         delete newSchema.status;
     }
 
     const schemaObject = DatabaseServer.createSchema(newSchema);
-    notifier.completedAndStart('Resolve Topic');
+    notifier.completeStep('Save in DB');
+
+    notifier.startStep('Resolve Topic');
     let topic: TopicConfig;
     if (newSchema.topicId) {
         topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(newSchema.topicId), true, user.id);
@@ -404,7 +413,9 @@ export async function createSchema(
         await DatabaseServer.saveTopic(topic.toObject());
         await topicHelper.twoWayLink(topic, null, null, user.id);
     }
+    notifier.completeStep('Resolve Topic');
 
+    notifier.startStep('Save to IPFS & Hedera');
     const errors = SchemaHelper.checkErrors(newSchema as Schema)
     SchemaHelper.updateIRI(schemaObject);
     schemaObject.errors = errors;
@@ -433,7 +444,6 @@ export async function createSchema(
     if (errorsCount > 0) {
         throw new Error('Schema identifier already exist');
     }
-    notifier.completedAndStart('Save to IPFS & Hedera');
     if (topic) {
         await sendSchemaMessage(
             user,
@@ -443,9 +453,13 @@ export async function createSchema(
             schemaObject
         );
     }
-    notifier.completedAndStart('Update schema in DB');
+    notifier.completeStep('Save to IPFS & Hedera');
+
+    notifier.startStep('Update schema in DB');
     const savedSchema = await DatabaseServer.saveSchema(schemaObject);
-    notifier.completed();
+    notifier.completeStep('Update schema in DB');
+
+    notifier.complete();
     return savedSchema;
 }
 
@@ -458,8 +472,10 @@ export async function createSchema(
 export async function deleteSchema(
     schemaId: any,
     owner: IOwner,
-    notifier: INotifier,
+    notifier: INotificationStep,
 ) {
+    notifier.start();
+
     if (!schemaId) {
         return;
     }
@@ -472,7 +488,6 @@ export async function deleteSchema(
         throw new Error('Schema is not in draft status');
     }
 
-    notifier.info(`Delete schema ${item.name}`);
     if (item.topicId) {
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true, owner.id);
         if (topic) {
@@ -488,6 +503,8 @@ export async function deleteSchema(
         }
     }
     await DatabaseServer.deleteSchemas(item.id);
+
+    notifier.complete();
 }
 
 /**
@@ -499,8 +516,10 @@ export async function deleteSchema(
 export async function deleteDemoSchema(
     schemaId: any,
     owner: IOwner,
-    notifier: INotifier,
+    notifier: INotificationStep,
 ) {
+    notifier.start();
+
     if (!schemaId) {
         return;
     }
@@ -510,8 +529,9 @@ export async function deleteDemoSchema(
         throw new Error('Schema not found');
     }
 
-    notifier.info(`Delete schema ${item.name}`);
     await DatabaseServer.deleteSchemas(item.id);
+
+    notifier.complete();
 }
 
 /**
@@ -522,18 +542,24 @@ export async function deleteDemoSchema(
  */
 export async function prepareSchemaPreview(
     messageIds: string[],
-    notifier: INotifier,
+    notifier: INotificationStep,
     logger: PinoLogger,
     userId: string | null
 ): Promise<any[]> {
-    notifier.start('Load schema file');
+    notifier.addStep('Load schema file');
+    notifier.addStep('Parse schema');
+    notifier.addStep('Verifying');
+    notifier.start();
+
+    notifier.startStep('Load schema file');
     const schemas = [];
     for (const messageId of messageIds) {
         const schema = await loadSchema(messageId, logger, userId);
         schemas.push(schema);
     }
+    notifier.completeStep('Load schema file');
 
-    notifier.completedAndStart('Parse schema');
+    notifier.startStep('Parse schema');
     const messageServer = new MessageServer(null);
     const uniqueTopics = schemas.map(res => res.topicId).filter(onlyUnique);
     const anotherSchemas: SchemaMessage[] = [];
@@ -548,8 +574,9 @@ export async function prepareSchemaPreview(
             anotherSchemas.push(ver);
         }
     }
+    notifier.completeStep('Parse schema');
 
-    notifier.completedAndStart('Verifying');
+    notifier.startStep('Verifying');
     for (const schema of schemas) {
         if (!schema.version) {
             continue;
@@ -571,6 +598,8 @@ export async function prepareSchemaPreview(
             schema.newVersions = newVersions.reverse();
         }
     }
-    notifier.completed();
+    notifier.completeStep('Verifying');
+
+    notifier.complete();
     return schemas;
 }

@@ -65,7 +65,6 @@ import {
     sendSchemaMessage
 } from '../helpers/import-helpers/index.js';
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
-import { INotifier } from '../helpers/notifier.js';
 import { ISerializedErrors } from './policy-validation-results-container.js';
 import { PolicyServiceChannelsContainer } from '../helpers/policy-service-channels-container.js';
 import { PolicyValidator } from '../policy-engine/block-validators/index.js';
@@ -645,43 +644,64 @@ export class PolicyEngine extends NatsService {
     public async deleteDemoPolicy(
         policyToDelete: Policy,
         user: IOwner,
-        notifier: INotifier,
+        notifier: INotificationStep,
         logger: PinoLogger
     ): Promise<boolean> {
+        notifier.addStep('Delete policy instance');
+        notifier.addStep('Delete schemas');
+        notifier.addStep('Delete artifacts');
+        notifier.addStep('Delete tests');
+        notifier.addStep('Delete policy from DB');
+        notifier.start();
+
         await logger.info('Delete Policy', ['GUARDIAN_SERVICE'], user.id);
 
         if ((policyToDelete.status !== PolicyStatus.DEMO)) {
             throw new Error('Policy is not in demo status');
         }
 
-        notifier.start('Delete policy instance');
+        notifier.startStep('Delete policy instance');
         await this.destroyModel(policyToDelete.id.toString(), user.id);
         const databaseServer = new DatabaseServer(policyToDelete.id.toString());
         await databaseServer.clear(true);
+        notifier.completeStep('Delete policy instance');
 
-        notifier.start('Delete schemas');
+        notifier.startStep('Delete schemas');
         const schemasToDelete = await DatabaseServer.getSchemas({
             topicId: policyToDelete.topicId
         });
         for (const schema of schemasToDelete) {
-            await deleteDemoSchema(schema.id, user, notifier);
+            const step = notifier.addStep(`Delete schema ${schema.name}`);
+            step.setId(schema.id);
+            step.minimize(true);
         }
+        for (const schema of schemasToDelete) {
+            await deleteDemoSchema(
+                schema.id,
+                user,
+                notifier.getStepById(schema.id)
+            );
+        }
+        notifier.completeStep('Delete schemas');
 
-        notifier.completedAndStart('Delete artifacts');
+        notifier.startStep('Delete artifacts');
         const artifactsToDelete = await new DatabaseServer().find(Artifact, {
             policyId: policyToDelete.id
         });
         for (const artifact of artifactsToDelete) {
             await DatabaseServer.removeArtifact(artifact);
         }
+        notifier.completeStep('Delete artifacts');
 
-        notifier.completedAndStart('Delete tests');
+        notifier.startStep('Delete tests');
         await DatabaseServer.deletePolicyTests(policyToDelete.id);
+        notifier.completeStep('Delete tests');
 
-        notifier.completedAndStart('Delete policy from DB');
+        notifier.startStep('Delete policy from DB');
         await DatabaseServer.deletePolicy(policyToDelete.id);
+        notifier.completeStep('Delete policy from DB');
 
-        notifier.completed();
+        notifier.complete();
         return true;
     }
 
@@ -697,38 +717,59 @@ export class PolicyEngine extends NatsService {
     public async deletePolicy(
         policyToDelete: Policy,
         user: IOwner,
-        notifier: INotifier,
+        notifier: INotificationStep,
         logger: PinoLogger
     ): Promise<boolean> {
+        notifier.addStep('Delete schemas');
+        notifier.addStep('Delete artifacts');
+        notifier.addStep('Delete tests');
+        notifier.addStep('Publishing delete policy message');
+        notifier.addStep('Delete policy from DB');
+        notifier.start();
+
         logger.info('Delete Policy', ['GUARDIAN_SERVICE'], user.id);
 
         if ((policyToDelete.status !== PolicyStatus.DRAFT)) {
             throw new Error('Policy is not in draft status');
         }
 
-        notifier.start('Delete schemas');
+        notifier.startStep('Delete schemas');
         const schemasToDelete = await DatabaseServer.getSchemas({
             topicId: policyToDelete.topicId,
             readonly: false
         });
         for (const schema of schemasToDelete) {
             if (schema.status === SchemaStatus.DRAFT) {
-                await deleteSchema(schema.id, user, notifier);
+                const step = notifier.addStep(`Delete schema ${schema.name}`);
+                step.setId(schema.id);
+                step.minimize(true);
             }
         }
-        notifier.completedAndStart('Delete artifacts');
+        for (const schema of schemasToDelete) {
+            if (schema.status === SchemaStatus.DRAFT) {
+                await deleteSchema(
+                    schema.id,
+                    user,
+                    notifier.getStepById(schema.id)
+                );
+            }
+        }
+        notifier.completeStep('Delete schemas');
 
+        notifier.startStep('Delete artifacts');
         const artifactsToDelete = await new DatabaseServer().find(Artifact, {
             policyId: policyToDelete.id
         });
         for (const artifact of artifactsToDelete) {
             await DatabaseServer.removeArtifact(artifact);
         }
+        notifier.completeStep('Delete artifacts');
 
-        notifier.completedAndStart('Delete tests');
+        notifier.startStep('Delete tests');
         await DatabaseServer.deletePolicyTests(policyToDelete.id);
+        notifier.completeStep('Delete tests');
 
-        notifier.completedAndStart('Publishing delete policy message');
+        notifier.startStep('Publishing delete policy message');
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(policyToDelete.topicId), true, user.id);
         const users = new Users();
         const root = await users.getHederaAccount(user.creator, user.id);
@@ -746,10 +787,13 @@ export class PolicyEngine extends NatsService {
                 userId: user.id,
                 interception: null
             });
+        notifier.completeStep('Publishing delete policy message');
 
-        notifier.completedAndStart('Delete policy from DB');
+        notifier.startStep('Delete policy from DB');
         await DatabaseServer.deletePolicy(policyToDelete.id);
-        notifier.completed();
+        notifier.completeStep('Delete policy from DB');
+
+        notifier.complete();
         return true;
     }
 
@@ -772,7 +816,6 @@ export class PolicyEngine extends NatsService {
         notifier.setEstimate(schemas.length);
 
         let num: number = 0;
-        let skipped: number = 0;
         for (const row of schemas) {
             const step = notifier.addStep(`${row.name || '-'}`);
             step.setId(row.id);
@@ -785,7 +828,6 @@ export class PolicyEngine extends NatsService {
             const schema = await incrementSchemaVersion(row.topicId, row.iri, user);
             if (!schema || schema.status === SchemaStatus.PUBLISHED) {
                 step.skip();
-                skipped++;
                 continue;
             }
 
@@ -1517,11 +1559,17 @@ export class PolicyEngine extends NatsService {
     public async preparePolicyPreviewMessage(
         messageId: string,
         user: IOwner,
-        notifier: INotifier,
+        notifier: INotificationStep,
         logger: PinoLogger,
         userId: string | null
     ): Promise<any> {
-        notifier.start('Resolve Hedera account');
+        notifier.addStep('Resolve Hedera account');
+        notifier.addStep('Load policy files');
+        notifier.addStep('Parse policy files');
+        notifier.start();
+
+
+        notifier.startStep('Resolve Hedera account');
         if (!messageId) {
             throw new Error('Policy ID in body is empty');
         }
@@ -1549,8 +1597,9 @@ export class PolicyEngine extends NatsService {
         if (!message.document) {
             throw new Error('file in body is empty');
         }
+        notifier.completeStep('Resolve Hedera account');
 
-        notifier.completedAndStart('Load policy files');
+        notifier.startStep('Load policy files');
         const newVersions: any = [];
         if (message.version) {
             const anotherVersions = await messageServer.getMessages<PolicyMessage>(
@@ -1565,14 +1614,16 @@ export class PolicyEngine extends NatsService {
                 }
             }
         }
+        notifier.completeStep('Load policy files');
 
-        notifier.completedAndStart('Parse policy files');
+        notifier.startStep('Parse policy files');
         const policyToImport: any = await PolicyImportExport.parseZipFile(message.document, true);
         if (newVersions.length !== 0) {
             policyToImport.newVersions = newVersions.reverse();
         }
+        notifier.completeStep('Parse policy files');
 
-        notifier.completed();
+        notifier.complete();
         return policyToImport;
     }
 

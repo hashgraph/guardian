@@ -1,5 +1,4 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { Controller } from '@nestjs/common';
 import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, IAuthUser, JsonToXlsx, MessageError, MessageResponse, NewNotifier, PinoLogger, RunFunctionAsync, Schema as SchemaCollection, Users, XlsxToJson } from '@guardian/common';
 import { IOwner, ISchema, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
@@ -31,7 +30,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
         }) => {
             try {
                 const { item, owner } = msg;
-                await createSchemaAndArtifacts(item.category, item, owner, emptyNotifier());
+                await createSchemaAndArtifacts(item.category, item, owner, NewNotifier.empty());
                 const schemas = await DatabaseServer.getSchemas({ owner: owner.owner }, { limit: 100 });
                 return new MessageResponse(schemas);
             } catch (error) {
@@ -47,13 +46,13 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             task: any
         }) => {
             const { item, owner, task } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
             RunFunctionAsync(async () => {
                 const schema = await createSchemaAndArtifacts(item.category, item, owner, notifier);
                 notifier.result(schema.id);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                notifier.error(error);
+                notifier.fail(error);
             });
             return new MessageResponse(task);
         });
@@ -68,13 +67,13 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             copyNested: boolean,
         }) => {
             const { iri, topicId, name, owner, task, copyNested } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
             RunFunctionAsync(async () => {
                 const schema = await copySchemaAsync(iri, topicId, name, owner, copyNested);
                 notifier.result(schema.iri);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                notifier.error(error);
+                notifier.fail(error);
             });
             return new MessageResponse(task);
         });
@@ -735,7 +734,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     );
                 }
 
-                await deleteSchema(id, owner, emptyNotifier());
+                await deleteSchema(id, owner, NewNotifier.empty());
 
                 if (needResult) {
                     const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });
@@ -935,7 +934,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Invalid preview schema parameters');
                 }
 
-                const result = await prepareSchemaPreview(messageIds, emptyNotifier(), logger, owner?.id);
+                const result = await prepareSchemaPreview(messageIds, NewNotifier.empty(), logger, owner?.id);
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -958,14 +957,14 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             task: any
         }) => {
             const { owner, messageIds, task } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
             RunFunctionAsync(async () => {
                 if (!msg) {
-                    notifier.error('Invalid preview schema parameters');
+                    notifier.fail('Invalid preview schema parameters');
                     return;
                 }
                 if (!messageIds) {
-                    notifier.error('Invalid preview schema parameters');
+                    notifier.fail('Invalid preview schema parameters');
                     return;
                 }
 
@@ -973,7 +972,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 notifier.result(result);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                notifier.error(error);
+                notifier.fail(error);
             });
 
             return new MessageResponse(task);

@@ -33,6 +33,7 @@ import {
     Wallet,
     Workers,
     findAllEntities, PolicyCache,
+    INotificationStep,
 } from '@guardian/common';
 import {
     ContractAPI,
@@ -47,7 +48,6 @@ import {
     PolicyHelper,
     BlockType,
 } from '@guardian/interfaces';
-import { INotifier } from '../../helpers/notifier.js';
 import {
     BlockStateLoader,
     RolesLoader,
@@ -135,8 +135,8 @@ export class PolicyDataMigrator {
         private readonly _tokensMap: any,
         private readonly _editedVCs: any,
         private readonly _dids: DidDocument[],
-        private readonly _dryRunId?: string,
-        private readonly _notifier?: INotifier
+        private readonly _dryRunId: string,
+        private readonly _notifier: INotificationStep
     ) {
         this._db = new DatabaseServer(_dryRunId);
         this._ms = new MessageServer({
@@ -164,7 +164,7 @@ export class PolicyDataMigrator {
         owner: string,
         migrationConfig: MigrationConfig,
         userId: string | null,
-        notifier?: INotifier
+        notifier: INotificationStep
     ) {
         try {
             const {
@@ -541,8 +541,14 @@ export class PolicyDataMigrator {
         srcPolicyId: string,
         retireContractId?: string
     ) {
+        this._notifier.addStep('Migrate policy state');
+        this._notifier.addStep('Migrate VC documents');
+        this._notifier.addStep('Migrate VP documents');
+        this._notifier.addStep('Migrate Tokens');
+        this._notifier.start();
+
         const errors = new Array<DocumentError>();
-        this._notifier?.start(`Migrate policy state`);
+        this._notifier.startStep('Migrate policy state');
         if (migrateState) {
             if (this._dryRunId) {
                 await this._createVirtualUsers(users);
@@ -599,10 +605,12 @@ export class PolicyDataMigrator {
             }
 
             await this._migratePolicyStates(states);
+            this._notifier.completeStep('Migrate policy state');
         } else {
-            this._notifier?.info('Migrate policy state skipped');
+            this._notifier.skipStep('Migrate policy state');
         }
-        this._notifier?.completedAndStart(`Migrate ${vcs.length} VC documents`);
+
+        this._notifier.startStep('Migrate VC documents');
         await this._migrateDocument(
             vcs,
             (vc: VcDocument) =>
@@ -648,7 +656,9 @@ export class PolicyDataMigrator {
                 userId
             );
         }
-        this._notifier?.completedAndStart(`Migrate ${vps.length} VP documents`);
+        this._notifier.completeStep('Migrate VC documents');
+
+        this._notifier.startStep('Migrate VP documents');
         await this._migrateDocument(
             vps,
             this._migrateVpDocument.bind(this),
@@ -657,10 +667,13 @@ export class PolicyDataMigrator {
             userId
         );
         await this._migrateMintRequests(mintRequests, mintTransactions);
+        this._notifier.completeStep('Migrate VP documents');
 
+        this._notifier.startStep('Migrate Tokens');
         if (migrateRetirePools && migrateState) {
             await this.migrateTokenPools(retireContractId, retirePools, errors, userId);
         }
+        this._notifier.completeStep('Migrate Tokens');
         return errors;
     }
 
@@ -1021,7 +1034,7 @@ export class PolicyDataMigrator {
         if (existingDid) {
             return did;
         }
-        this._notifier?.info(`Migrating DID ${did}`);
+        // this._notifier?.info(`Migrating DID ${did}`);
         await this._db.saveDid(didObj);
         return did;
     }
@@ -1127,7 +1140,7 @@ export class PolicyDataMigrator {
             doc.schema !== schema.iri ||
             this._policyTopicId !== this._oldPolicyTopicId
         ) {
-            this._notifier?.info(`Resigning VC ${doc.id}`);
+            // this._notifier?.info(`Resigning VC ${doc.id}`);
             const _vcHelper = new VcHelper();
             const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
             const credentialSubject = SchemaHelper.updateObjectContext(
@@ -1153,7 +1166,7 @@ export class PolicyDataMigrator {
         doc.policyId = this._policyId;
 
         if (doc.messageId) {
-            this._notifier?.info(`Publishing VC ${doc.id}`);
+            // this._notifier?.info(`Publishing VC ${doc.id}`);
 
             const vcMessage = new RoleMessage(MessageAction.MigrateVC);
             vcMessage.setDocument(vc);
@@ -1327,7 +1340,7 @@ export class PolicyDataMigrator {
 
         let vp;
         if (vpChanged || this._oldPolicyOwner !== this._owner) {
-            this._notifier?.info(`Resigning VP ${doc.id}`);
+            // this._notifier?.info(`Resigning VP ${doc.id}`);
             const _vcHelper = new VcHelper();
             const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
             vp = await _vcHelper.createVerifiablePresentation(
@@ -1344,7 +1357,7 @@ export class PolicyDataMigrator {
 
         doc.policyId = this._policyId;
         if (doc.messageId) {
-            this._notifier?.info(`Publishing VP ${doc.id}`);
+            // this._notifier?.info(`Publishing VP ${doc.id}`);
             const vpMessage = new VPMessage(MessageAction.MigrateVP);
             vpMessage.setDocument(vp);
             vpMessage.setUser(null);
@@ -1505,7 +1518,7 @@ export class PolicyDataMigrator {
             doc.schema !== schema.iri ||
             this._policyTopicId !== this._oldPolicyTopicId
         ) {
-            this._notifier?.info(`Resigning VC ${doc.id}`);
+            // this._notifier?.info(`Resigning VC ${doc.id}`);
 
             const _vcHelper = new VcHelper();
             const didDocument = await _vcHelper.loadDidDocument(this._owner, userId);
@@ -1534,7 +1547,7 @@ export class PolicyDataMigrator {
         doc.policyId = this._policyId;
 
         if (doc.messageId) {
-            this._notifier?.info(`Publishing VC ${doc.id}`);
+            // this._notifier?.info(`Publishing VC ${doc.id}`);
 
             const vcMessage = new VCMessage(MessageAction.MigrateVC);
             vcMessage.setDocument(vc);

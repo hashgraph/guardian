@@ -36,7 +36,6 @@ import { CompareUtils, HashComparator } from '../analytics/index.js';
 import { compareResults, getDetails } from '../api/record.service.js';
 import { Inject } from '../helpers/decorators/inject.js';
 import { GuardiansService } from '../helpers/guardians.js';
-import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { BlockAboutString } from './block-about.js';
 import { PolicyDataMigrator } from './helpers/policy-data-migrator.js';
 import { PolicyDataLoader, VcDocumentLoader, VpDocumentLoader } from './helpers/policy-data/loaders/index.js';
@@ -1009,7 +1008,7 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.DELETE_POLICY_ASYNC,
             async (msg: { policyId: string, owner: IOwner, task: any }): Promise<IMessageResponse<any>> => {
                 const { policyId, owner, task } = msg;
-                const notifier = await initNotifier(task);
+                const notifier = await NewNotifier.create(task);
                 RunFunctionAsync(async () => {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'delete');
@@ -1019,7 +1018,7 @@ export class PolicyEngineService {
                         notifier.result(await this.policyEngine.deletePolicy(policy, owner, notifier, logger));
                     }
                 }, async (error) => {
-                    notifier.error(error);
+                    notifier.fail(error);
                 });
                 return new MessageResponse(task);
             });
@@ -1456,7 +1455,7 @@ export class PolicyEngineService {
                 try {
                     const { messageId, owner } = msg;
                     const policyToImport = await this.policyEngine
-                        .preparePolicyPreviewMessage(messageId, owner, emptyNotifier(), logger, owner?.id);
+                        .preparePolicyPreviewMessage(messageId, owner, NewNotifier.empty(), logger, owner?.id);
                     const hash = await this.createHashByFile(policyToImport, logger, owner?.id);
                     const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
                     const similarPolicies = await DatabaseServer.getListOfPolicies(filters);
@@ -1475,7 +1474,7 @@ export class PolicyEngineService {
                 task: any
             }): Promise<IMessageResponse<any>> => {
                 const { messageId, owner, task } = msg;
-                const notifier = await initNotifier(task);
+                const notifier = await NewNotifier.create(task);
 
                 RunFunctionAsync(async () => {
                     const policyToImport = await this.policyEngine
@@ -1487,7 +1486,7 @@ export class PolicyEngineService {
                     notifier.result(policyToImport);
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                    notifier.error(error);
+                    notifier.fail(error);
                 });
                 return new MessageResponse(task);
             });
@@ -2054,7 +2053,7 @@ export class PolicyEngineService {
                         owner.owner,
                         migrationConfig,
                         owner?.id,
-                        emptyNotifier()
+                        NewNotifier.empty()
                     );
                     await this.policyEngine.regenerateModel(
                         migrationConfig.policies.dst,
@@ -2079,7 +2078,7 @@ export class PolicyEngineService {
             async (msg: { migrationConfig: any, owner: IOwner, task: any }) => {
                 try {
                     const { migrationConfig, owner, task } = msg;
-                    const notifier = await initNotifier(task);
+                    const notifier = await NewNotifier.create(task);
                     RunFunctionAsync(
                         async () => {
                             const migrationErrors =
@@ -2107,7 +2106,7 @@ export class PolicyEngineService {
                             notifier.result(migrationErrors);
                         },
                         async (error) => {
-                            notifier.error(error);
+                            notifier.fail(error);
                         }
                     );
                 } catch (error) {

@@ -14,7 +14,6 @@ import {
     NewNotifier
 } from '@guardian/common';
 import { ExternalPolicyStatus, IOwner, MessageAPI, PolicyAvailability } from '@guardian/interfaces';
-import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { PolicyEngine } from '../policy-engine/policy-engine.js';
 import { ImportMode, ImportPolicyOptions, PolicyImportExportHelper } from '../helpers/import-helpers/index.js'
 
@@ -28,11 +27,15 @@ import { ImportMode, ImportPolicyOptions, PolicyImportExportHelper } from '../he
 async function preparePolicyPreviewMessage(
     messageId: string,
     user: IOwner,
-    notifier: INotifier,
+    notifier: INotificationStep,
     logger: PinoLogger,
     userId: string | null
 ): Promise<any> {
-    notifier.start('Resolve Hedera account');
+    notifier.addStep('Resolve Hedera account');
+    notifier.addStep('Parse policy files');
+    notifier.start();
+
+    notifier.startStep('Resolve Hedera account');
     if (!messageId) {
         throw new Error('Policy ID in body is empty');
     }
@@ -56,16 +59,18 @@ async function preparePolicyPreviewMessage(
     if (!message.document) {
         throw new Error('file in body is empty');
     }
+    notifier.completeStep('Resolve Hedera account');
 
-    notifier.completedAndStart('Parse policy files');
+    notifier.startStep('Parse policy files');
     const policyToImport: any = await PolicyImportExport.parseZipFile(message.document, true);
 
     policyToImport.topicId = message.getTopicId();
     policyToImport.availability = message.availability;
     policyToImport.restoreTopicId = message.restoreTopicId;
     policyToImport.actionsTopicId = message.actionsTopicId;
+    notifier.completeStep('Parse policy files');
 
-    notifier.completed();
+    notifier.complete();
     return policyToImport;
 }
 
@@ -233,7 +238,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
         async (msg: { messageId: string, owner: IOwner }) => {
             try {
                 const { messageId, owner } = msg;
-                const policyToImport = await preparePolicyPreviewMessage(messageId, owner, emptyNotifier(), logger, owner?.id);
+                const policyToImport = await preparePolicyPreviewMessage(messageId, owner, NewNotifier.empty(), logger, owner?.id);
                 return new MessageResponse(policyToImport);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -256,7 +261,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 if (item) {
                     return new MessageError(`Item is already exist.`);
                 }
-                const policyToImport = await preparePolicyPreviewMessage(messageId, owner, emptyNotifier(), logger, owner?.id);
+                const policyToImport = await preparePolicyPreviewMessage(messageId, owner, NewNotifier.empty(), logger, owner?.id);
                 if (policyToImport.availability !== PolicyAvailability.PUBLIC) {
                     return new MessageError(`Policy is private.`);
                 }
@@ -395,7 +400,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
 
-                const notifier = await initNotifier(task);
+                const notifier = await NewNotifier.create(task);
                 RunFunctionAsync(async () => {
                     for (const item of items) {
                         item.status = ExternalPolicyStatus.REJECTED;
@@ -405,7 +410,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     notifier.result({ id: messageId, errors: [] });
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                    notifier.error(error);
+                    notifier.fail(error);
                 });
 
                 return new MessageResponse(task);

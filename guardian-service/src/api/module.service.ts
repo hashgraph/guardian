@@ -1,7 +1,6 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { BinaryMessageResponse, DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, ModuleImportExport, ModuleMessage, PinoLogger, PolicyModule, TagMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { BinaryMessageResponse, DatabaseServer, INotificationStep, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, ModuleImportExport, ModuleMessage, NewNotifier, PinoLogger, PolicyModule, TagMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, MessageAPI, ModuleStatus, SchemaCategory, TagType, TopicType } from '@guardian/interfaces';
-import { emptyNotifier, INotifier } from '../helpers/notifier.js';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
 import { ModuleValidator } from '../policy-engine/block-validators/module-validator.js';
 import { importTag } from '../helpers/import-helpers/index.js';
@@ -34,9 +33,13 @@ export function updateModuleConfig(module: PolicyModule): PolicyModule {
 export async function preparePreviewMessage(
     messageId: string,
     user: IOwner,
-    notifier: INotifier
+    notifier: INotificationStep
 ): Promise<any> {
-    notifier.start('Resolve Hedera account');
+    notifier.addStep('Resolve Hedera account');
+    notifier.addStep('Parse module files');
+    notifier.start();
+
+    notifier.startStep('Resolve Hedera account');
     if (!messageId) {
         throw new Error('Message ID in body is empty');
     }
@@ -62,13 +65,15 @@ export async function preparePreviewMessage(
     if (!message.document) {
         throw new Error('file in body is empty');
     }
+    notifier.completeStep('Resolve Hedera account');
 
-    notifier.completedAndStart('Parse module files');
+    notifier.startStep('Parse module files');
     const result: any = await ModuleImportExport.parseZipFile(message.document);
     result.messageId = messageId;
     result.moduleTopicId = message.moduleTopicId;
+    notifier.completeStep('Parse module files');
 
-    notifier.completed();
+    notifier.complete();
     return result;
 }
 
@@ -83,10 +88,14 @@ export async function preparePreviewMessage(
 export async function validateAndPublish(
     uuid: string,
     user: IOwner,
-    notifier: INotifier,
+    notifier: INotificationStep,
     logger: PinoLogger
 ) {
-    notifier.start('Find and validate module');
+    notifier.addStep('Find and validate module');
+    notifier.addStep('Publish module');
+    notifier.start();
+
+    notifier.startStep('Find and validate module');
     const item = await DatabaseServer.getModuleByUUID(uuid);
     if (!item) {
         throw new Error('Unknown module');
@@ -100,11 +109,22 @@ export async function validateAndPublish(
 
     const errors = await validateModel(item);
     const isValid = !errors.blocks.some(block => !block.isValid);
-    notifier.completed();
+    notifier.completeStep('Find and validate module');
+
     if (isValid) {
-        const newModule = await publishModule(item, user, notifier, logger);
+        notifier.startStep('Publish module');
+        const newModule = await publishModule(
+            item,
+            user,
+            notifier.getStep('Publish module'),
+            logger
+        );
+        notifier.completeStep('Publish module');
+
+        notifier.complete();
         return { item: newModule, isValid, errors };
     } else {
+        notifier.complete();
         return { item, isValid, errors };
     }
 }
@@ -131,15 +151,26 @@ export async function validateModel(module: PolicyModule): Promise<ISerializedEr
 export async function publishModule(
     model: PolicyModule,
     user: IOwner,
-    notifier: INotifier,
+    notifier: INotificationStep,
     logger: PinoLogger
 ): Promise<PolicyModule> {
+    notifier.addStep('Resolve Hedera account');
+    notifier.addStep('Find topic');
+    notifier.addStep('Create module topic');
+    notifier.addStep('Generate file');
+    notifier.addStep('Publish module');
+    notifier.addStep('Link topic and module');
+    notifier.addStep('Save');
+    notifier.start();
+
     logger.info('Publish module', ['GUARDIAN_SERVICE'], user.id);
-    notifier.start('Resolve Hedera account');
+
+    notifier.startStep('Resolve Hedera account');
     const users = new Users();
     const root = await users.getHederaAccount(user.owner, user.id);
-    notifier.completedAndStart('Find topic');
+    notifier.completeStep('Resolve Hedera account');
 
+    notifier.startStep('Find topic');
     const userTopic = await TopicConfig.fromObject(
         await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic),
         true, user.id
@@ -149,8 +180,9 @@ export async function publishModule(
         operatorKey: root.hederaAccountKey,
         signOptions: root.signOptions
     }).setTopicObject(userTopic);
+    notifier.completeStep('Find topic');
 
-    notifier.completedAndStart('Create module topic');
+    notifier.startStep('Create module topic');
     const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
     const rootTopic = await topicHelper.create({
         type: TopicType.ModuleTopic,
@@ -164,9 +196,9 @@ export async function publishModule(
     await DatabaseServer.saveTopic(rootTopic.toObject());
 
     model.topicId = rootTopic.topicId;
+    notifier.completeStep('Create module topic');
 
-    notifier.completedAndStart('Generate file');
-
+    notifier.startStep('Generate file');
     model = updateModuleConfig(model);
     const zip = await ModuleImportExport.generate(model);
     const buffer = await zip.generateAsync({
@@ -176,8 +208,9 @@ export async function publishModule(
             level: 3
         }
     });
+    notifier.completeStep('Generate file');
 
-    notifier.completedAndStart('Publish module');
+    notifier.startStep('Publish module');
     const message = new ModuleMessage(MessageType.Module, MessageAction.PublishModule);
     message.setDocument(model, buffer);
     const result = await messageServer
@@ -189,15 +222,19 @@ export async function publishModule(
         });
     model.messageId = result.getId();
     model.status = ModuleStatus.PUBLISHED;
+    notifier.completeStep('Publish module');
 
-    notifier.completedAndStart('Link topic and module');
+    notifier.startStep('Link topic and module');
     await topicHelper.twoWayLink(rootTopic, userTopic, result.getId(), user.id);
+    notifier.completeStep('Link topic and module');
 
     logger.info('Published module', ['GUARDIAN_SERVICE'], user.id);
 
-    notifier.completedAndStart('Saving in DB');
+    notifier.startStep('Save');
     const retVal = await DatabaseServer.updateModule(model);
-    notifier.completed();
+    notifier.completeStep('Save');
+
+    notifier.complete();
     return retVal
 }
 
@@ -482,7 +519,7 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
             const userId = msg?.userId
             try {
                 const { messageId, owner } = msg;
-                const preview = await preparePreviewMessage(messageId, owner, emptyNotifier());
+                const preview = await preparePreviewMessage(messageId, owner, NewNotifier.empty());
                 return new MessageResponse(preview);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], userId);
@@ -549,7 +586,7 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('Message ID in body is empty');
                 }
 
-                const notifier = emptyNotifier();
+                const notifier = NewNotifier.empty();
                 const preview = await preparePreviewMessage(messageId, owner, notifier);
 
                 const { module, tags, moduleTopicId } = preview;
@@ -611,7 +648,7 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
             const userId = msg?.userId
             try {
                 const { uuid, owner } = msg;
-                const result = await validateAndPublish(uuid, owner, emptyNotifier(), logger);
+                const result = await validateAndPublish(uuid, owner, NewNotifier.empty(), logger);
                 return new MessageResponse({
                     module: result.item,
                     isValid: result.isValid,

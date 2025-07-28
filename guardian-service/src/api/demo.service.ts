@@ -1,7 +1,7 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DatabaseServer, MessageError, MessageResponse, PinoLogger, Policy, RunFunctionAsync, SecretManager, Workers } from '@guardian/common';
+import { DatabaseServer, INotificationStep, MessageError, MessageResponse, NewNotifier, PinoLogger, Policy, RunFunctionAsync, SecretManager, Workers } from '@guardian/common';
 import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
-import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
+
 
 /**
  * Demo key
@@ -23,9 +23,16 @@ interface DemoKey {
  * @param notifier
  * @param userId
  */
-async function generateDemoKey(role: any, notifier: INotifier, userId: string): Promise<DemoKey> {
-    notifier.start('Resolve settings');
+async function generateDemoKey(
+    role: any,
+    notifier: INotificationStep,
+    userId: string
+): Promise<DemoKey> {
+    notifier.addStep('Resolve settings');
+    notifier.addStep('Creating account in Hedera');
+    notifier.start();
 
+    notifier.startStep('Resolve settings');
     const secretManager = SecretManager.New();
     const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator');
     let initialBalance: number = null;
@@ -38,8 +45,9 @@ async function generateDemoKey(role: any, notifier: INotifier, userId: string): 
     } catch (error) {
         initialBalance = null;
     }
-    notifier.completedAndStart('Creating account in Hedera');
+    notifier.completeStep('Resolve settings');
 
+    notifier.startStep('Creating account in Hedera');
     const workers = new Workers();
     const result = await workers.addNonRetryableTask({
         type: WorkerTaskType.CREATE_ACCOUNT,
@@ -56,8 +64,9 @@ async function generateDemoKey(role: any, notifier: INotifier, userId: string): 
         interception: userId,
         registerCallback: true
     });
+    notifier.completeStep('Creating account in Hedera');
 
-    notifier.completed();
+    notifier.complete();
     return result;
 }
 
@@ -76,7 +85,7 @@ export async function demoAPI(
         }) => {
             try {
                 const role = msg?.role;
-                const result = await generateDemoKey(role, emptyNotifier(), null);
+                const result = await generateDemoKey(role, NewNotifier.empty(), null);
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], null);
@@ -90,14 +99,14 @@ export async function demoAPI(
             task: any
         }) => {
             const { role, task } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
 
             RunFunctionAsync(async () => {
                 const result = await generateDemoKey(role, notifier, null);
                 notifier.result(result);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], null);
-                notifier.error(error);
+                notifier.fail(error);
             });
 
             return new MessageResponse(task);

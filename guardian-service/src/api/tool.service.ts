@@ -1,7 +1,6 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { BinaryMessageResponse, DatabaseServer, Hashing, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, NewNotifier, PinoLogger, PolicyTool, replaceAllEntities, replaceAllVariables, RunFunctionAsync, SchemaFields, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { BinaryMessageResponse, DatabaseServer, Hashing, INotificationStep, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, NewNotifier, PinoLogger, PolicyTool, replaceAllEntities, replaceAllVariables, RunFunctionAsync, SchemaFields, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { IOwner, IRootConfig, MessageAPI, ModuleStatus, SchemaStatus, TopicType } from '@guardian/interfaces';
-import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
 import { ToolValidator } from '../policy-engine/block-validators/tool-validator.js';
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
@@ -37,15 +36,23 @@ export function sha256(data: ArrayBuffer): string {
 export async function preparePreviewMessage(
     messageId: string,
     user: IOwner,
-    notifier: INotifier
+    notifier: INotificationStep
 ): Promise<any> {
-    notifier.start('Resolve Hedera account');
+    notifier.addStep('Resolve Hedera account');
+    notifier.addStep('Load file');
+    notifier.addStep('Parse tool files');
+    notifier.start();
+
+    notifier.startStep('Resolve Hedera account');
     if (!messageId) {
         throw new Error('Message ID in body is empty');
     }
 
     const users = new Users();
     const root = await users.getHederaAccount(user.creator, user.id);
+    notifier.completeStep('Resolve Hedera account');
+
+    notifier.startStep('Load file');
     const messageServer = new MessageServer({
         operatorId: root.hederaAccountId,
         operatorKey: root.hederaAccountKey,
@@ -70,13 +77,15 @@ export async function preparePreviewMessage(
     if (!message.document) {
         throw new Error('file in body is empty');
     }
+    notifier.completeStep('Load file');
 
-    notifier.completedAndStart('Parse tool files');
+    notifier.startStep('Parse tool files');
     const result: any = await ToolImportExport.parseZipFile(message.document);
     result.messageId = messageId;
     result.toolTopicId = message.toolTopicId;
+    notifier.completeStep('Parse tool files');
 
-    notifier.completed();
+    notifier.complete();
     return result;
 }
 
@@ -90,10 +99,14 @@ export async function preparePreviewMessage(
 export async function validateAndPublish(
     id: string,
     user: IOwner,
-    notifier: INotifier,
+    notifier: INotificationStep,
     logger: PinoLogger
 ) {
-    notifier.start('Find and validate tool');
+    notifier.addStep('Find and validate tool');
+    notifier.addStep('Publish tool');
+    notifier.start();
+
+    notifier.startStep('Find and validate tool');
     const item = await DatabaseServer.getToolById(id);
     if (!item) {
         throw new Error('Unknown tool');
@@ -107,12 +120,24 @@ export async function validateAndPublish(
 
     const errors = await validateTool(item);
     const isValid = !errors.blocks.some(block => !block.isValid);
-    notifier.completed();
+    notifier.completeStep('Find and validate tool');
 
     if (isValid) {
-        const newTool = await publishTool(item, user, notifier, logger);
+        notifier.startStep('Publish tool');
+        const newTool = await publishTool(
+            item,
+            user,
+            notifier.getStep('Publish tool'),
+            logger
+        );
+        notifier.completeStep('Publish tool');
+        notifier.complete();
+
         return { tool: newTool, isValid, errors };
     } else {
+        notifier.skipStep('Publish tool');
+        notifier.complete();
+
         return { tool: item, isValid, errors };
     }
 }
@@ -138,28 +163,46 @@ export async function validateTool(tool: PolicyTool): Promise<ISerializedErrors>
 export async function publishTool(
     tool: PolicyTool,
     user: IOwner,
-    notifier: INotifier,
+    notifier: INotificationStep,
     logger: PinoLogger
 ): Promise<PolicyTool> {
     try {
+        notifier.addStep('Resolve Hedera account');
+        notifier.addStep('Find topic');
+        notifier.addStep('Publish schemas');
+        notifier.addStep('Create tags topic');
+        notifier.addStep('Generate file');
+        notifier.addStep('Publish tool');
+        notifier.addStep('Publish tags');
+        notifier.addStep('Save');
+        notifier.start();
+
         await logger.info('Publish tool', ['GUARDIAN_SERVICE'], user.id);
 
-        notifier.start('Resolve Hedera account');
+        notifier.startStep('Resolve Hedera account');
         const users = new Users();
         const root = await users.getHederaAccount(user.creator, user.id);
+        notifier.completeStep('Resolve Hedera account');
 
-        notifier.completedAndStart('Find topic');
+        notifier.startStep('Find topic');
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(tool.topicId), true, user.id);
         const messageServer = new MessageServer({
             operatorId: root.hederaAccountId,
             operatorKey: root.hederaAccountKey,
             signOptions: root.signOptions
         }).setTopicObject(topic);
+        notifier.completeStep('Find topic');
 
-        notifier.completedAndStart('Publish schemas');
-        tool = await publishSchemas(tool, user, root, notifier);
+        notifier.startStep('Publish schemas');
+        tool = await publishSchemas(
+            tool,
+            user,
+            root,
+            notifier.getStep('Publish schemas')
+        );
+        notifier.completeStep('Publish schemas');
 
-        notifier.completedAndStart('Create tags topic');
+        notifier.startStep('Create tags topic');
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
         const tagsTopic = await topicHelper.create({
             type: TopicType.TagsTopic,
@@ -172,8 +215,9 @@ export async function publishTool(
         await tagsTopic.saveKeys(user.id);
         await DatabaseServer.saveTopic(tagsTopic.toObject());
         tool.tagsTopicId = tagsTopic.topicId;
+        notifier.completeStep('Create tags topic');
 
-        notifier.completedAndStart('Generate file');
+        notifier.startStep('Generate file');
         tool = await updateToolConfig(tool);
         const zip = await ToolImportExport.generate(tool);
         const buffer = await zip.generateAsync({
@@ -184,8 +228,9 @@ export async function publishTool(
             }
         });
         tool.hash = sha256(buffer);
+        notifier.completeStep('Generate file');
 
-        notifier.completedAndStart('Publish tool');
+        notifier.startStep('Publish tool');
         const message = new ToolMessage(MessageType.Tool, MessageAction.PublishTool);
         message.setDocument(tool, buffer);
         const result = await messageServer
@@ -195,20 +240,23 @@ export async function publishTool(
                 userId: user.id,
                 interception: user.id
             });
+        notifier.completeStep('Publish tool');
 
-        notifier.completedAndStart('Publish tags');
+        notifier.startStep('Publish tags');
         try {
             await publishToolTags(tool, user, root, user.id);
         } catch (error) {
             await logger.error(error, ['GUARDIAN_SERVICE, TAGS'], user.id);
         }
+        notifier.completeStep('Publish tags');
 
-        notifier.completedAndStart('Saving in DB');
+        notifier.startStep('Save');
         tool.messageId = result.getId();
         tool.status = ModuleStatus.PUBLISHED;
         const retVal = await DatabaseServer.updateTool(tool);
+        notifier.completeStep('Save');
 
-        notifier.completed();
+        notifier.complete();
 
         await logger.info('Published tool', ['GUARDIAN_SERVICE'], user.id);
 
@@ -232,28 +280,38 @@ export async function publishSchemas(
     tool: PolicyTool,
     owner: IOwner,
     root: IRootConfig,
-    notifier: INotifier,
+    notifier: INotificationStep,
     userId?: string
 ): Promise<PolicyTool> {
     const schemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
 
-    notifier.info(`Found ${schemas.length} schemas`);
+    notifier.setEstimate(schemas.length);
 
     let num: number = 0;
-    let skipped: number = 0;
+    for (const row of schemas) {
+        const step = notifier.addStep(`${row.name || '-'}`);
+        step.setId(row.id);
+        step.minimize(true);
+        num++;
+    }
+
     const schemaMap = new Map<string, string>();
     for (const row of schemas) {
+        const step = notifier.getStepById(row.id);
+
         const schema = await incrementSchemaVersion(row.topicId, row.iri, owner);
         if (!schema || schema.status === SchemaStatus.PUBLISHED) {
-            skipped++;
+            step.skip();
             continue;
         }
+
+        step.start();
         const newSchema = await findAndPublishSchema(
             schema.id,
             schema.version,
             owner,
             root,
-            NewNotifier.empty(),
+            step,
             schemaMap,
             userId
         );
@@ -264,9 +322,7 @@ export async function publishSchemas(
                 }
             }
         }
-        const name = newSchema.name;
-        num++;
-        notifier.info(`Schema ${num} (${name || '-'}) published`);
+        step.complete();
     }
 
     for (const [oldId, newId] of schemaMap.entries()) {
@@ -274,9 +330,6 @@ export async function publishSchemas(
         replaceAllVariables(tool.config, 'Schema', oldId, newId);
     }
 
-    if (skipped) {
-        notifier.info(`Skip published ${skipped}`);
-    }
     return tool;
 }
 
@@ -291,11 +344,19 @@ export async function publishSchemas(
 export async function createTool(
     json: PolicyTool,
     user: IOwner,
-    notifier: INotifier,
+    notifier: INotificationStep,
     logger: PinoLogger
 ): Promise<PolicyTool> {
+    notifier.addStep('Save in DB');
+    notifier.addStep('Resolve Hedera account');
+    notifier.addStep('Create topic');
+    notifier.addStep('Create tool in Hedera');
+    notifier.addStep('Link topic and tool');
+    notifier.start();
+
     await logger.info('Create Policy', ['GUARDIAN_SERVICE'], user.id);
-    notifier.start('Save in DB');
+
+    notifier.startStep('Save in DB');
     if (json) {
         delete json._id;
         delete json.id;
@@ -310,14 +371,16 @@ export async function createTool(
 
     json = await updateToolConfig(json);
     const tool = await DatabaseServer.createTool(json);
+    notifier.completeStep('Save in DB');
 
     try {
         if (!tool.topicId) {
-            notifier.completedAndStart('Resolve Hedera account');
+            notifier.startStep('Resolve Hedera account');
             const users = new Users();
             const root = await users.getHederaAccount(user.creator, user.id);
+            notifier.completeStep('Resolve Hedera account');
 
-            notifier.completedAndStart('Create topic');
+            notifier.startStep('Create topic');
             await logger.info('Create Tool: Create New Topic', ['GUARDIAN_SERVICE'], user.id);
             const parent = await TopicConfig.fromObject(
                 await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true, user.id
@@ -332,8 +395,9 @@ export async function createTool(
                 targetUUID: tool.uuid
             }, user.id, { admin: true, submit: true });
             await topic.saveKeys(user.id);
+            notifier.completeStep('Create topic');
 
-            notifier.completedAndStart('Create tool in Hedera');
+            notifier.startStep('Create tool in Hedera');
             const messageServer = new MessageServer({
                 operatorId: root.hederaAccountId,
                 operatorKey: root.hederaAccountKey,
@@ -349,18 +413,27 @@ export async function createTool(
                     userId: user.id,
                     interception: null
                 });
+            notifier.completeStep('Create tool in Hedera');
 
-            notifier.completedAndStart('Link topic and tool');
+            notifier.startStep('Link topic and tool');
             await topicHelper.twoWayLink(topic, parent, messageStatus.getId(), user.id);
 
             await DatabaseServer.saveTopic(topic.toObject());
             tool.topicId = topic.topicId;
             await DatabaseServer.updateTool(tool);
-            notifier.completed();
+            notifier.completeStep('Link topic and tool');
+        } else {
+            notifier.skipStep('Resolve Hedera account');
+            notifier.skipStep('Create topic');
+            notifier.skipStep('Create tool in Hedera');
+            notifier.skipStep('Link topic and tool');
         }
+
+        notifier.complete();
 
         return tool;
     } catch (error) {
+        notifier.fail(error);
         await DatabaseServer.removeTool(tool);
         throw error;
     }
@@ -387,7 +460,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('Invalid Params');
                 }
                 const { tool, owner } = msg;
-                const item = await createTool(tool, owner, emptyNotifier(), logger);
+                const item = await createTool(tool, owner, NewNotifier.empty(), logger);
                 return new MessageResponse(item);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -412,12 +485,12 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 throw new Error('Invalid Params');
             }
             const { tool, owner, task } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
             RunFunctionAsync(async () => {
                 const item = await createTool(tool, owner, notifier, logger);
                 notifier.result(item.id);
             }, async (error) => {
-                notifier.error(error);
+                notifier.fail(error);
             });
             return new MessageResponse(task);
         });
@@ -539,7 +612,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 });
                 for (const schema of schemasToDelete) {
                     if (schema.status === SchemaStatus.DRAFT) {
-                        await deleteSchema(schema.id, owner, emptyNotifier());
+                        await deleteSchema(schema.id, owner, NewNotifier.empty());
                     }
                 }
                 return new MessageResponse(true);
@@ -754,7 +827,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
         }) => {
             try {
                 const { messageId, owner } = msg;
-                const preview = await preparePreviewMessage(messageId, owner, emptyNotifier());
+                const preview = await preparePreviewMessage(messageId, owner, NewNotifier.empty());
                 return new MessageResponse(preview);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -893,7 +966,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
         }) => {
             try {
                 const { id, owner } = msg;
-                const result = await validateAndPublish(id, owner, emptyNotifier(), logger);
+                const result = await validateAndPublish(id, owner, NewNotifier.empty(), logger);
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -910,14 +983,14 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
         }) => {
             const { id, owner, task } = msg;
             try {
-                const notifier = await initNotifier(task);
+                const notifier = await NewNotifier.create(task);
 
                 RunFunctionAsync(async () => {
                     const result = await validateAndPublish(id, owner, notifier, logger);
                     notifier.result(result);
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                    notifier.error(error);
+                    notifier.fail(error);
                 });
 
                 return new MessageResponse(task);
@@ -959,7 +1032,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 if (tool) {
                     return new MessageResponse(true);
                 }
-                const preview = await preparePreviewMessage(messageId, owner, emptyNotifier());
+                const preview = await preparePreviewMessage(messageId, owner, NewNotifier.empty());
                 return new MessageResponse(!!preview);
             } catch (error) {
                 return new MessageResponse(false);

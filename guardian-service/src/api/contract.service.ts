@@ -24,9 +24,24 @@ import {
     VCMessage,
     Wallet,
     WiperRequest,
-    Workers,
+    Workers
 } from '@guardian/common';
-import { ContractAPI, ContractParamType, ContractType, EntityOwner, IOwner, RetireTokenPool, RetireTokenRequest, Schema, SchemaEntity, SchemaHelper, TokenType, TopicType, UserRole, WorkerTaskType, } from '@guardian/interfaces';
+import {
+    ContractAPI,
+    ContractParamType,
+    ContractType,
+    EntityOwner,
+    IOwner,
+    RetireTokenPool,
+    RetireTokenRequest,
+    Schema,
+    SchemaEntity,
+    SchemaHelper,
+    TokenType,
+    TopicType,
+    UserRole,
+    WorkerTaskType
+} from '@guardian/interfaces';
 import { AccountId, TokenId } from '@hashgraph/sdk';
 import { proto } from '@hashgraph/proto';
 import * as ethers from 'ethers';

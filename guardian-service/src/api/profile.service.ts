@@ -19,7 +19,6 @@ import {
     Wallet,
     Workers,
 } from '@guardian/common';
-import { initNotifier } from '../helpers/notifier.js';
 import { RestoreDataFromHedera } from '../helpers/restore-data-from-hedera.js';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
@@ -177,11 +176,15 @@ export function profileAPI(logger: PinoLogger) {
             task: any
         }) => {
             const { user, username, profile, task } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
 
             RunFunctionAsync(async () => {
+                notifier.addStep('Restore user profile');
+                notifier.start();
+
+                notifier.startStep('Restore user profile');
                 if (!profile) {
-                    notifier.error('Invalid profile');
+                    notifier.fail('Invalid profile');
                     return;
                 }
                 const {
@@ -218,7 +221,6 @@ export function profileAPI(logger: PinoLogger) {
                     oldDidDocument = await vcHelper.generateNewDid(topicId, hederaAccountKey);
                 }
 
-                notifier.start('Restore user profile');
                 const restore = new RestoreDataFromHedera();
                 await restore.restoreRootAuthority(
                     username,
@@ -229,11 +231,13 @@ export function profileAPI(logger: PinoLogger) {
                     logger,
                     user.id
                 )
-                notifier.completed();
+                notifier.completeStep('Restore user profile');
+
+                notifier.complete();
                 notifier.result(oldDidDocument?.getDid());
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], user.id);
-                notifier.error(error);
+                notifier.fail(error);
             });
 
             return new MessageResponse(task);
@@ -247,9 +251,13 @@ export function profileAPI(logger: PinoLogger) {
             task: any
         }) => {
             const { user, username, profile, task } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
 
             RunFunctionAsync(async () => {
+                notifier.addStep('Finding all user topics');
+                notifier.start();
+
+                notifier.startStep('Finding all user topics');
                 const {
                     hederaAccountId,
                     hederaAccountKey,
@@ -257,11 +265,11 @@ export function profileAPI(logger: PinoLogger) {
                 } = profile;
 
                 if (!hederaAccountId) {
-                    notifier.error('Invalid Hedera Account Id');
+                    notifier.fail('Invalid Hedera Account Id');
                     return;
                 }
                 if (!hederaAccountKey) {
-                    notifier.error('Invalid Hedera Account Key');
+                    notifier.fail('Invalid Hedera Account Key');
                     return;
                 }
 
@@ -276,7 +284,6 @@ export function profileAPI(logger: PinoLogger) {
                     throw new Error('Invalid DID Document.')
                 }
 
-                notifier.start('Finding all user topics');
                 const restore = new RestoreDataFromHedera();
                 const result = await restore.findAllUserTopics(
                     username,
@@ -285,11 +292,13 @@ export function profileAPI(logger: PinoLogger) {
                     did,
                     user.id
                 )
-                notifier.completed();
+                notifier.completeStep('Finding all user topics');
+
+                notifier.complete();
                 notifier.result(result);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
-                notifier.error(error);
+                notifier.fail(error);
             });
 
             return new MessageResponse(task);
