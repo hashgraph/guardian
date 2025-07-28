@@ -37,6 +37,7 @@ import {
 } from '@guardian/common';
 import {
     DidDocumentStatus,
+    DocumentStatus,
     EntityOwner,
     ISchema,
     PolicyStatus,
@@ -254,7 +255,7 @@ export class RestoreDataFromHedera {
                     const vcDoc = VcDocument.fromJsonTree(message.document);
 
                     const documentOptions = message.option || {};
-                    documentOptions.status = message.documentStatus || message.option?.status;
+                    documentOptions.status = (message.documentStatus && message.documentStatus !== DocumentStatus.NEW) ? message.documentStatus : message.option?.status;
 
                     const vcDocument = {
                         hash: vcDoc.toCredentialHash(),
