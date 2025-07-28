@@ -1,3 +1,5 @@
+import { generateConfigForIntegrationBlock } from '@guardian/common'
+
 /**
  * Block About
  * TODO: Create real block about
@@ -686,6 +688,7 @@ export const BlockAbout = {
             },
         ],
     },
+    'integrationButtonBlock': generateConfigForIntegrationBlock(),
     'buttonBlockAddon': {
         'label': 'Button',
         'title': 'Add \'Button\' Block',
