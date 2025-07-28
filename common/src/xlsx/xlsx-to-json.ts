@@ -830,7 +830,7 @@ export class XlsxToJson {
             xlsxResult.addError({
                 type: 'error',
                 text: `Failed to parse field.`,
-                message: `Key ${field.name} is already exists`,
+                message: `Key ${field.name} already exists`,
                 worksheet: worksheet.name,
                 cell: worksheet.getPath(table.getCol(Dictionary.KEY), row),
                 row,
