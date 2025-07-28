@@ -1,5 +1,5 @@
 ::ng-deep .p-dialog.pools-dialog {
-    width: 730px !important;
+    min-width: 840px !important;
     height: 800px;
 }
 
@@ -63,9 +63,9 @@
 
 .pools-head {
     display: grid;
-    grid-template-columns: 335px 100px 100px auto;
+    grid-template-columns: 335px 120px 120px auto;
     color: var(--color-grey-5);
-    gap: 16px;
+    gap: 24px;
     margin-bottom: 8px;
 }
 
@@ -83,14 +83,14 @@
 .pool {
     border: 1px solid var(--color-grey-3);
     display: grid;
-    grid-template-columns: 300px 230px auto;
+    grid-template-columns: 297px 265px auto;
     align-items: center;
     justify-content: space-between;
     border-radius: 12px;
     padding: 16px;
     margin-bottom: 16px;
     background-color: var(--color-grey-white);
-    gap: 12px;
+    gap: 24px;
 }
 
 .tokens {
@@ -126,33 +126,35 @@
 
 .pool-permissions {
     display: grid;
-    grid-template-columns: 100px 120px;
-    gap: 16px;;
+    grid-template-columns: 120px 120px;
+    gap: 24px;
     align-self: start;
 }
 
 .permission.enabled {
-    padding: 4px 8px;
+    padding: 4px 12px;
     background: #eafdf2;
     color: #24d16c;
-    border-radius: 4px;
+    border-radius: 8px;
     font-weight: 600;
     font-size: 13px;
     height: 30px;
     display: grid;
     justify-content: center;
     align-items: center;
+    width: max-content;
 }
 
 .approval {
-    padding: 4px 8px;
-    border-radius: 4px;
+    padding: 4px 12px;
+    border-radius: 8px;
     font-size: 13px;
     font-weight: 600;
     height: 30px;
     display: grid;
     justify-content: center;
     align-items: center;
+    width: max-content;
 
     &.need-approval {
         background: #e7fef0;
@@ -284,4 +286,15 @@
     width: 30px;
     column-gap: 10px;
     color: var(--color-grey-6);
+}
+
+.pools-dialog__retire-btn {
+    min-width: 80px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 16px;
+    color: var(--guardian-primary-color);
+    display: grid;
+    align-self: start;
+    padding: 5px;
 }

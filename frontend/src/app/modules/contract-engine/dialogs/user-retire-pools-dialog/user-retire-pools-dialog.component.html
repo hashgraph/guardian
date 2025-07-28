@@ -64,13 +64,11 @@
                     </div>
                 </div>
                 <button
-                    pTooltip="Retire"
-                    tooltipPosition="top"
-                    appendTo="body"
-                    aria-label="Retire"
-                    (click)="retire(pool)"
-                    class="btn btn--retire">
-                    <i class="pi pi-trash"></i>
+                    type="button"
+                    pButton
+                    label="Retire"
+                    class="p-button-outlined pools-dialog__retire-btn"
+                    (click)="retire(pool)">
                 </button>
             </div>
         </div>
