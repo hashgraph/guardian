@@ -253,6 +253,9 @@ export class RestoreDataFromHedera {
                     const message = row as VCMessage;
                     const vcDoc = VcDocument.fromJsonTree(message.document);
 
+                    const documentOptions = message.option || {};
+                    documentOptions.status = message.documentStatus || message.option?.status;
+
                     const vcDocument = {
                         hash: vcDoc.toCredentialHash(),
                         owner,
@@ -264,7 +267,7 @@ export class RestoreDataFromHedera {
                         schema: `#${vcDoc.getSubjectType()}`,
                         tag: message.tag,
                         relationship: message.relationships,
-                        option: message.option,
+                        option: documentOptions,
                         comment: undefined,
                     }
 
