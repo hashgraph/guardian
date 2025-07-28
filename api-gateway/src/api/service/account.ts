@@ -152,6 +152,7 @@ export class AccountApi {
      * Change password
      */
     @Post('/change-password')
+    @Auth()
     @ApiOperation({
         summary: 'Change user password.',
     })
@@ -170,12 +171,13 @@ export class AccountApi {
     @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async changePassword(
+        @AuthUser() user: IAuthUser,
         @Body() body: ChangePasswordDTO
     ): Promise<AccountsSessionResponseDTO> {
         try {
             const { username, oldPassword, newPassword } = body;
             const users = new Users();
-            return await users.changeUserPassword(username, oldPassword, newPassword);
+            return await users.changeUserPassword(user, username, oldPassword, newPassword);
         } catch (error) {
             await this.logger.warn(error.message, ['API_GATEWAY'], null);
             throw new HttpException(error.message, error.code || HttpStatus.UNAUTHORIZED);

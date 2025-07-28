@@ -1,17 +1,17 @@
-import {Component, OnDestroy, OnInit, Inject} from '@angular/core';
-import {Router} from '@angular/router';
-import {IUser, SchemaHelper, TagType, UserPermissions} from '@guardian/interfaces';
-import {ProfileService} from 'src/app/services/profile.service';
-import {ExportPolicyDialog} from '../dialogs/export-policy-dialog/export-policy-dialog.component';
-import {PreviewPolicyDialog} from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
-import {InformService} from 'src/app/services/inform.service';
-import {ModulesService} from 'src/app/services/modules.service';
-import {NewModuleDialog} from '../dialogs/new-module-dialog/new-module-dialog.component';
-import {TagsService} from 'src/app/services/tag.service';
-import {forkJoin} from 'rxjs';
-import {CompareModulesDialogComponent} from '../dialogs/compare-modules-dialog/compare-modules-dialog.component';
-import {DialogService} from 'primeng/dynamicdialog';
-import {CONFIGURATION_ERRORS} from '../injectors/configuration.errors.injector';
+import { Component, OnDestroy, OnInit, Inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { IUser, SchemaHelper, TagType, UserPermissions } from '@guardian/interfaces';
+import { ProfileService } from 'src/app/services/profile.service';
+import { ExportPolicyDialog } from '../dialogs/export-policy-dialog/export-policy-dialog.component';
+import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
+import { InformService } from 'src/app/services/inform.service';
+import { ModulesService } from 'src/app/services/modules.service';
+import { NewModuleDialog } from '../dialogs/new-module-dialog/new-module-dialog.component';
+import { TagsService } from 'src/app/services/tag.service';
+import { forkJoin } from 'rxjs';
+import { CompareModulesDialogComponent } from '../dialogs/compare-modules-dialog/compare-modules-dialog.component';
+import { DialogService } from 'primeng/dynamicdialog';
+import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
 import {
     IImportEntityResult,
     ImportEntityDialog,
@@ -161,7 +161,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
     }
 
     private importDetails(result: IImportEntityResult) {
-        const {type, data, module} = result;
+        const { type, data, module } = result;
         const dialogRef = this.dialog.open(PreviewPolicyDialog, {
             header: 'Import module',
             width: '720px',
@@ -218,8 +218,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
             width: '650px',
             styleClass: 'custom-dialog',
             data: {
-                type: 'Module',
-                modules: this.modules,
+                type: 'Module'
             }
         });
         dialogRef.onClose.subscribe(async (result) => {
@@ -312,7 +311,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
     public publishModule(element: any) {
         this.loading = true;
         this.modulesService.publish(element.uuid).subscribe((result) => {
-            const {isValid, errors} = result;
+            const { isValid, errors } = result;
             if (!isValid) {
                 let text = [];
                 const blocks = errors.blocks;

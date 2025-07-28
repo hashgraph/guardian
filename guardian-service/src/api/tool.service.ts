@@ -58,6 +58,11 @@ export async function preparePreviewMessage(
             userId: user.id,
             interception: null
         });
+
+    if (!message) {
+        throw new Error('Invalid Message');
+    }
+
     if (message.type !== MessageType.Tool) {
         throw new Error('Invalid Message Type');
     }
@@ -937,6 +942,27 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.CHECK_TOOL,
+        async (msg: {
+            messageId: string,
+            owner: IOwner
+        }) => {
+            try {
+                const { messageId, owner } = msg;
+                const tool = await DatabaseServer.getTool({
+                    messageId,
+                    status: ModuleStatus.PUBLISHED
+                });
+                if (tool) {
+                    return new MessageResponse(true);
+                }
+                const preview = await preparePreviewMessage(messageId, owner, emptyNotifier());
+                return new MessageResponse(!!preview);
+            } catch (error) {
+                return new MessageResponse(false);
             }
         });
 }

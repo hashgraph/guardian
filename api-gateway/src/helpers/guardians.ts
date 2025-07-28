@@ -2119,6 +2119,15 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Check tool
+     * @param owner
+     * @returns tools
+     */
+    public async checkTool(messageId: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.CHECK_TOOL, { messageId, owner });
+    }
+
+    /**
      * Get tool export file
      * @param id
      * @param owner

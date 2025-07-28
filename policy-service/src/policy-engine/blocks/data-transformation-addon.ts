@@ -1,5 +1,5 @@
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { IPolicyAddonBlock, IPolicyCalculateBlock, IPolicyDocument } from '../policy-engine.interface.js';
+import { IPolicyAddonBlock, IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
 import { fileURLToPath } from 'url';
@@ -7,6 +7,9 @@ import { Worker } from 'node:worker_threads';
 import { BasicBlock } from '../helpers/decorators/basic-block.js';
 import path from 'path';
 import { LocationType } from '@guardian/interfaces';
+import { ActionCallback } from '../helpers/decorators/event-callback.js';
+import { PolicyInputEventType } from '../interfaces/policy-event-type.js';
+import { IPolicyEvent } from '@policy-engine/interfaces/policy-event.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -88,5 +91,16 @@ export class DataTransformationAddon {
             }
         }
         return data;
+    }
+
+    @ActionCallback({
+        type: PolicyInputEventType.GetDataEvent
+    })
+    async startAction(event: IPolicyEvent<IPolicyEventState>) {
+        const { user, data } = event;
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const id = Array.isArray(data.data) ? data.data[0].id : data.data.id;
+
+        return await this.getData(user, ref.uuid, { filterByUUID: id });
     }
 }

@@ -31,6 +31,7 @@ export enum BlockType {
     RevocationBlock = 'revocationBlock',
     SetRelationshipsBlock = 'setRelationshipsBlock',
     ButtonBlock = 'buttonBlock',
+    TransformationButtonBlock = 'transformationButtonBlock',
     ButtonBlockAddon = 'buttonBlockAddon',
     DropdownBlockAddon = 'dropdownBlockAddon',
     TokenActionBlock = 'tokenActionBlock',
@@ -52,5 +53,5 @@ export enum BlockType {
     NotificationBlock = 'notificationBlock',
     Tool = 'tool',
     ExtractDataBlock = 'extractDataBlock',
-    DataTransformationAddon = 'dataTransformationAddon',
+    DataTransformationAddon = 'dataTransformationAddon'
 }

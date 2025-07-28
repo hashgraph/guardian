@@ -363,6 +363,26 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             /**
+             * Sync Trigger events
+             * @param output
+             * @param user
+             * @param data
+             */
+            public async triggerEventSync<U>(
+                output: PolicyOutputEventType,
+                user: PolicyUser,
+                data: U
+            ): Promise<any> {
+                for (const link of this.sourceLinks) {
+                    if (link.outputType === output) {
+                        return await link.runSync(user, data);
+                    }
+                }
+
+                return null;
+            }
+
+            /**
              * Trigger event
              * @param event
              * @param user

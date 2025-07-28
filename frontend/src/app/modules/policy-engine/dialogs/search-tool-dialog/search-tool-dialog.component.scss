@@ -1,0 +1,285 @@
+.loading {
+    background: #fff;
+    position: absolute;
+    z-index: 99;
+    border-radius: 16px;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.context {
+    position: relative;
+    overflow-y: auto;
+    padding: 5px 3px 20px 3px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    .icon-btn {
+        position: relative;
+        left: 18px;
+        top: 1px;
+        overflow: visible;
+    }
+
+    .filters {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+
+        .filter-row {
+            height: 40px;
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+        }
+
+        .filter-group {
+            margin-top: 16px;
+            width: 100%;
+            height: 186px;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #C4D0E1;
+            background: #F9FAFC;
+
+            .filter-row {
+                margin-bottom: 16px;
+            }
+        }
+
+        .p-input-icon-right {
+            width: 100%;
+            position: relative;
+
+            .search-icon {
+                position: absolute;
+                position: absolute;
+                right: 14px;
+                top: 20px;
+            }
+        }
+
+        .search-policy-input {
+            width: 100%;
+            height: 40px;
+            border: 1px solid #e1e7ef;
+            border-radius: 8px;
+            padding-left: 16px;
+            position: relative;
+
+            &:hover {
+                border-color: #2196F3;
+            }
+
+            &:focus {
+                outline: 1px solid #2196F3;
+            }
+        }
+
+        .button {
+            width: 150px;
+            min-width: 150px;
+            max-width: 150px;
+            margin-left: 12px;
+            padding: 6px 12px;
+        }
+    }
+
+    .empty-grid {
+        margin-top: 16px;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        overflow: auto;
+        height: 100%;
+        justify-content: center;
+        align-items: center;
+        color: #848FA9;
+
+        .empty-grid-icon {
+            margin-bottom: 2px;
+        }
+
+        .empty-grid-header {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+    }
+
+    .grid-container {
+        margin-top: 16px;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        overflow: auto;
+
+        .col-auto {
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .col-250 {
+            width: 250px;
+            min-width: 250px;
+            max-width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .col-200 {
+            width: 200px;
+            min-width: 200px;
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .col-120 {
+            width: 120px;
+            min-width: 120px;
+            max-width: 120px;
+        }
+
+        .grid-header {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            height: 46px;
+            min-height: 46px;
+            max-height: 46px;
+
+            &>div {
+                font-weight: 500;
+                padding: 12px 4px;
+            }
+        }
+
+        .grid-body {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            border: 1px solid #E1E7EF;
+            border-radius: 6px;
+
+            .grid-row {
+                display: flex;
+                flex-direction: row;
+                width: 100%;
+                height: 64px;
+                min-height: 64px;
+                max-height: 64px;
+                border-bottom: 1px solid #E1E7EF;
+                cursor: pointer;
+
+                &>div {
+                    padding: 22px 6px;
+                }
+
+                &>div.button-col {
+                    padding: 14px 6px;
+                }
+
+                &:hover {
+                    background: #f1f1f1;
+                }
+            }
+        }
+    }
+
+    .checkbox-input {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+    }
+}
+
+.dialog-header {
+    height: 80px;
+    display: flex;
+    width: 100%;
+    position: relative;
+    color: #495057;
+    padding: 1.5rem 0;
+
+    .header-container {
+        width: 100%;
+        position: relative;
+        flex: 1;
+        display: flex;
+        flex-direction: row;
+
+        .header-text {
+            font-weight: 600;
+            font-size: 1.25rem;
+            font-family: Poppins, sans-serif;
+            font-style: normal;
+            padding: 0px 0px;
+        }
+
+        .header-item {
+            padding: 6px 12px;
+            background: #E1E7EF;
+            margin: 0px 16px;
+            border-radius: 6px;
+            color: #6f7279;
+            font-size: 14px;
+        }
+    }
+
+    .header-icon {
+        width: 32px;
+        min-width: 32px;
+        max-width: 32px;
+        position: relative;
+        flex: 32px;
+        padding: 4px;
+        border-radius: 100%;
+        cursor: pointer;
+
+        &:hover {
+            background: #e9ecef;
+        }
+    }
+}
+
+.dialog-body {
+    height: 45vh;
+    overflow-y: auto;
+}
+
+.dialog-footer {
+    border-top: 1px solid #E1E7EF;
+    padding-top: 20px;
+}
+
+.action-buttons {
+    display: flex;
+}
+
+.cancel-button {
+    margin-left: auto;
+    margin-right: 0px;
+}
+
+.empty-icon-color {
+    fill: #AAB7C4;
+    color: #AAB7C4;
+}
+
+.guardian-button {
+    height: 36px;
+    width: 100px;
+}

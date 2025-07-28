@@ -105,6 +105,7 @@ import { SearchBlocksComponent } from './helpers/search-blocks/search-blocks.com
 import { SelectSchema } from './helpers/select-schema/select-schema.component';
 import { PolicyTestResult } from './helpers/policy-test-result/policy-test-result.component';
 import { PublishPolicyDialog } from './dialogs/publish-policy-dialog/publish-policy-dialog.component';
+import { SearchToolDialog } from './dialogs/search-tool-dialog/search-tool-dialog.component';
 //Modules
 import { ModulesListComponent } from './modules-list/modules-list.component';
 import { ToolsListComponent } from './tools-list/tools-list.component';
@@ -152,6 +153,7 @@ import { SearchExternalPolicyDialog } from './dialogs/search-external-policy-dia
 import { PolicyRequestsComponent } from './requests/requests.component';
 import { TestCodeDialog } from './dialogs/test-code-dialog/test-code-dialog.component';
 import { ProjectDataExportComponent } from './project-data-export/project-data-export.component';
+import { TransformationButtonBlockComponent } from './policy-viewer/blocks/transformation-button-block/transformation-button-block.component';
 
 @NgModule({
     declarations: [
@@ -205,6 +207,7 @@ import { ProjectDataExportComponent } from './project-data-export/project-data-e
         RevokeConfigComponent,
         ButtonConfigComponent,
         ButtonBlockComponent,
+        TransformationButtonBlockComponent,
         TokenActionConfigComponent,
         DocumentValidatorConfigComponent,
         TokenConfirmationConfigComponent,
@@ -262,7 +265,8 @@ import { ProjectDataExportComponent } from './project-data-export/project-data-e
         ExternalPolicyComponent,
         PolicyRequestsComponent,
         SearchExternalPolicyDialog,
-        TestCodeDialog
+        TestCodeDialog,
+        SearchToolDialog
     ],
     imports: [
         CommonModule,

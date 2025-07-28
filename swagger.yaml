@@ -94,12 +94,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccountsSessionResponseDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
         '500':
           description: Internal server error.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
       summary: Change user password.
       tags:
         - accounts
@@ -2242,7 +2248,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RetireRequestTokenDTO'
+              type: array
+              items:
+                $ref: '#/components/schemas/RetireRequestTokenDTO'
       responses:
         '200':
           description: Successful operation.
@@ -4339,6 +4347,42 @@ paths:
       security:
         - bearer: []
       summary: Return a list of tools.
+      tags:
+        - tools
+  /tools/check/{messageId}:
+    get:
+      description: >-
+        Checks the availability of the tool. Only users with the Standard
+        Registry role are allowed to make the request.
+      operationId: ToolsApi_checkTool
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Tool message ID
+          schema:
+            example: '0000000000.000000001'
+            type: string
+      responses:
+        '200':
+          description: Availability of the tool.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Checks the availability of the tool.
       tags:
         - tools
   /profiles/{username}:

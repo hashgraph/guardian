@@ -1365,6 +1365,7 @@ export async function contractAPI(
                 KeyType.KEY,
                 owner.creator
             );
+
             const signOptions = await wallet.getUserSignOptions(root);
 
             const topicHelper = new TopicHelper(root.hederaAccountId, rootKey, signOptions);
@@ -1390,7 +1391,8 @@ export async function contractAPI(
                 type,
                 root.hederaAccountId,
                 rootKey,
-                topic.topicId
+                topic.topicId,
+                userId
             );
 
             await topic.saveKeys(userId);
@@ -1399,6 +1401,7 @@ export async function contractAPI(
             const version = await getContractVersion(
                 log
             );
+
             const contract = await dataBaseServer.save(Contract, {
                 contractId,
                 owner: owner.owner,
@@ -1430,11 +1433,14 @@ export async function contractAPI(
                     interception: null,
                     userId
                 });
+
             const userTopic = await TopicConfig.fromObject(
                 await DatabaseServer.getTopicByType(owner.owner, TopicType.UserTopic),
                 true, userId
             );
+
             await topicHelper.twoWayLink(topic, userTopic, contractMessageResult.getId(), userId);
+
             return new MessageResponse(contract);
         } catch (error) {
             await logger.error(error, ['GUARDIAN_SERVICE'], userId);

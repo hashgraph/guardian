@@ -1714,14 +1714,16 @@ export class DatabaseServer extends AbstractDatabaseServer {
         blockId: string,
         blockTag: string
     ): Promise<BlockState | null> {
+
+        const conditions: any[] = [{ blockId }];
+
+        if (blockTag !== null && blockTag !== undefined) {
+            conditions.push({ blockTag });
+        }
+
         return await this.findOne(BlockState, {
             policyId,
-            $or: [{
-                blockId
-            }, {
-                blockTag
-            }]
-
+            $or: conditions
         });
     }
 
