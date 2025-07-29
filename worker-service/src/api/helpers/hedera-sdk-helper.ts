@@ -1463,6 +1463,41 @@ export class HederaSDKHelper {
         gas: number = 1000000,
         contractMemo?: string
     ): Promise<[string, ContractLogInfo]> {
+        const client = this.client;
+        const contractInstantiateTx = new ContractCreateTransaction()
+            .setBytecodeFileId(bytecodeFileId)
+            .setGas(gas)
+            .setConstructorParameters(parameters)
+            .setContractMemo(contractMemo)
+            .setMaxTransactionFee(MAX_FEE);
+        const contractInstantiateSubmit = await contractInstantiateTx.execute(
+            client
+        );
+        const contractInstantiateRx =
+            await contractInstantiateSubmit.getReceipt(client);
+        const contractId = contractInstantiateRx.contractId;
+        const contractRecord =
+            await contractInstantiateSubmit.getRecord(client);
+
+        return [`${contractId}`, contractRecord.contractFunctionResult.logs?.[0]];
+    }
+
+    /**
+     * Create Hedera Smart Contract V2 22.07.2025
+     *
+     * @param {string | FileId} bytecodeFileId - Code File Id
+     * @param {ContractFunctionParameters} parameters - Contract Parameters
+     * @param {string} contractMemo - Memo
+     *
+     * @returns {string} - Contract Id
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract create transaction timeout exceeded')
+    public async createContractV2(
+        bytecodeFileId: string | FileId,
+        parameters: ContractFunctionParameters,
+        gas: number = 1000000,
+        contractMemo?: string
+    ): Promise<[string, ContractLogInfo]> {
         if (typeof bytecodeFileId === 'string') {
             bytecodeFileId = FileId.fromString(bytecodeFileId);
         }
