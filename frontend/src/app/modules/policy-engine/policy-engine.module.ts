@@ -105,6 +105,7 @@ import { SearchBlocksComponent } from './helpers/search-blocks/search-blocks.com
 import { SelectSchema } from './helpers/select-schema/select-schema.component';
 import { PolicyTestResult } from './helpers/policy-test-result/policy-test-result.component';
 import { PublishPolicyDialog } from './dialogs/publish-policy-dialog/publish-policy-dialog.component';
+import { SearchToolDialog } from './dialogs/search-tool-dialog/search-tool-dialog.component';
 //Modules
 import { ModulesListComponent } from './modules-list/modules-list.component';
 import { ToolsListComponent } from './tools-list/tools-list.component';
@@ -264,7 +265,8 @@ import { TransformationButtonBlockComponent } from './policy-viewer/blocks/trans
         ExternalPolicyComponent,
         PolicyRequestsComponent,
         SearchExternalPolicyDialog,
-        TestCodeDialog
+        TestCodeDialog,
+        SearchToolDialog
     ],
     imports: [
         CommonModule,
