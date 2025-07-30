@@ -1,57 +1,80 @@
-<app-dialog-wrapper (cancel)="onNoClick()" [confirmVisible]="retireMod" [syncVisible]="false" [loading]="loading"
-                    [confirmDisabled]="!this.retireForm.valid" [title]="'Retire'" [paginatorVisible]="!retireMod"
-                    [length]="length"
-                    [pageSize]="pageSize" (page)="onPage($event)" (confirm)="confirm()">
+<app-dialog-wrapper
+    (cancel)="onNoClick()"
+    [confirmVisible]="retireMod"
+    [syncVisible]="false"
+    [loading]="loading"
+    [confirmDisabled]="!retireForm.valid"
+    [title]="retireMod ? 'Retire' : 'Pools'"
+    [paginatorVisible]="!retireMod"
+    [length]="length"
+    [pageSize]="pageSize"
+    (page)="onPage($event)"
+    (confirm)="confirm()"
+>
     <ng-container *ngIf="!retireMod; else retireView">
         <div class="action-buttons">
-            <div class="p-fluid">
-                <p-multiSelect
-                    id="tokens"
-                    [(ngModel)]="selectedTokens"
-                    [options]="getTokenOptions()"
-                    optionLabel="label"
-                    optionValue="value"
-                    [showHeader]="false"
-                    defaultLabel="Select Tokens"
-                    [filter]="true"
-                    [appendTo]="'body'"
-                    (onChange)="loadPools()">
-                    <ng-template let-item pTemplate="item">
-                        {{ item.label }}
-                    </ng-template>
-                </p-multiSelect>
-            </div>
+            <label for="tokens" class="action-field__label">Token</label>
+            <p-multiSelect
+                id="tokens"
+                [(ngModel)]="selectedTokens"
+                [options]="getTokenOptions()"
+                optionLabel="label"
+                optionValue="value"
+                [showHeader]="false"
+                defaultLabel="Not selected"
+                [filter]="true"
+                [appendTo]="'body'"
+                (onChange)="loadPools()"
+            >
+                <ng-template let-item pTemplate="item">
+                    {{ item.label }}
+                </ng-template>
+            </p-multiSelect>
         </div>
-        <div *ngIf="pools?.length; else noPools">
-            <div *ngFor="let pool of pools" class="pool">
-                <div class="tokens">
+
+        <div class="pools-head" *ngIf="pools?.length">
+            <div class="ph ph--tokens"></div>
+            <div class="ph wipe-permission">WIPE PERMISSION</div>
+            <div class="ph retire-request">RETIRE REQUEST</div>
+            <div class="ph ph--trash"></div>
+        </div>
+
+        <div *ngIf="pools?.length; else noPools" class="table-tokens">
+            <div class="pool" *ngFor="let pool of pools">
+                <div class="tokens tokens-scroll">
                     <div class="token-card" *ngFor="let token of pool.tokens">
-                        <span class="token-card__token">
-                            <svg-icon src="/assets/images/icons/abc.svg" svgClass="icon-style-abc"></svg-icon>
-                            <span>{{ token.tokenSymbol }}</span>
-                        </span>
-                        <span class="token-card__token">
-                            <svg-icon src="/assets/images/icons/token.svg" svgClass="icon-style-token"></svg-icon>
-                            <span>{{ token.token }}</span>
-                        </span>
-                        <span class="token-card__count">
-                            <svg-icon src="/assets/images/icons/calculate.svg"
-                                      svgClass="icon-style-calculate"></svg-icon>
-                            <span>{{ token.count | tokenCount: token.decimals }}</span>
-                        </span>
+                        <div class="token-card__name">NAME<br>
+                            <div class="token-card_value">{{ token.tokenSymbol }}</div>
+                        </div>
+                        <div class="token-card__token">TOKEN<br>
+                            <div class="token-card_value">{{ token.token }}</div>
+                        </div>
+                        <div class="token-card__count">COUNT<br>
+                            <div class="token-card_value">{{ token.count | tokenCount: token.decimals }}</div>
+                        </div>
                     </div>
                 </div>
-                <div class="approve">
-                    <span class="approve__label--approve" *ngIf="!pool.immediately">Requires approval</span>
-                    <span class="approve__label--no-approve" *ngIf="pool.immediately">Without approval</span>
+                <div class="pool-permissions">
+                    <div class="permission enabled">Enabled</div>
+                    <div class="approval" [ngClass]="{
+                        'need-approval': !pool.immediately,
+                        'no-approval': pool.immediately
+                    }">
+                        {{ pool.immediately ? 'Without approval' : 'Need approval' }}
+                    </div>
                 </div>
-                <div class="pool-actions">
-                    <button (click)="retire(pool)" class="btn btn--retire">Retire</button>
-                </div>
+                <button
+                    type="button"
+                    pButton
+                    label="Retire"
+                    class="p-button-outlined pools-dialog__retire-btn"
+                    (click)="retire(pool)">
+                </button>
             </div>
         </div>
     </ng-container>
 </app-dialog-wrapper>
+
 <ng-template #noPools>
     <div class="no-pools">There are no pools</div>
 </ng-template>
@@ -60,55 +83,49 @@
     <div class="retire">
         <button class="retire__back" mat-icon-button (click)="back()">
             <i class="pi pi-arrow-left"></i>
+            Back
         </button>
         <div class="tokens">
             <div class="token-card" *ngFor="let token of selectedPool.tokens; let i = index">
-                <span class="token-card__token">
-                    <svg-icon src="/assets/images/icons/abc.svg" svgClass="icon-style-abc"></svg-icon>
-                    <span>{{ token.tokenSymbol }}</span>
-                </span>
-                <span class="token-card__token">
-                    <svg-icon src="/assets/images/icons/token.svg" svgClass="icon-style-token"></svg-icon>
-                    <span>{{ token.token }}</span>
-                </span>
-                <span class="token-card__count">
-                    <svg-icon src="/assets/images/icons/calculate.svg" svgClass="icon-style-calculate"></svg-icon>
-                    <span>{{ token.count | tokenCount: token.decimals }}</span>
-                </span>
+                <div class="token-card__name">NAME<br>
+                    <div class="token-card_value">{{ token.tokenSymbol }}</div>
+                </div>
+                <div class="token-card__token">TOKEN<br>
+                    <div class="token-card_value">{{ token.token }}</div>
+                </div>
+                <div class="token-card__count">COUNT<br>
+                    <div class="token-card_value">{{ token.count | tokenCount: token.decimals }}</div>
+                </div>
                 <form [formGroup]="getRetireForm(i)">
-                    <div *ngIf="token.type === 'fungible'" class="p-fluid"
-                         style="transform: scale(0.8) translateY(5px); width: 100px;">
-                        <label for="countInput">Count</label>
-                        <p-inputNumber
-                            id="countInput"
-                            formControlName="count"
-                            [placeholder]="'1'"
-                            mode="decimal"
-                            [showButtons]="true"
-                            [step]="1"
-                            [min]="1">
-                        </p-inputNumber>
+                    <div *ngIf="token.type === 'fungible'" class="p-fluid">
+                        <label>Count</label>
+                        <p-inputNumber formControlName="count" placeholder="1" mode="decimal" [showButtons]="true"
+                                       [step]="1" [min]="1"></p-inputNumber>
                     </div>
-                    <div *ngIf="token.type === 'non-fungible'" class="p-fluid"
-                         style="transform: scale(0.8) translateY(5px); width: 152px;">
-                        <label for="serials">Serials</label>
-                        <p-multiSelect
-                            id="serials"
-                            formControlName="serials"
-                            [options]="getSerialOptions(token.serials)"
-                            optionLabel="label"
-                            optionValue="value"
-                            [appendTo]="'body'"
-                            placeholder="Select Serials">
-                            <ng-template let-item pTemplate="item">
-                                {{ item.label }}
-                            </ng-template>
+                    <div *ngIf="token.type === 'non-fungible'" class="p-fluid">
+                        <label>Serials</label>
+                        <p-multiSelect [styleClass]="'retire-serials-ms'"
+                                       panelStyleClass="retire-serials-ms__panel"
+                                       formControlName="serials"
+                                       [options]="getSerialOptions(token.serials)"
+                                       optionLabel="label"
+                                       optionValue="value"
+                                       [appendTo]="'body'"
+                                       placeholder="Select Serials">
                         </p-multiSelect>
                     </div>
                 </form>
-
             </div>
         </div>
-        <!-- <div>{{errorMessage}}</div> -->
     </div>
 </ng-template>
+
+<div class="pools-dialog__footer" *ngIf="!retireMod">
+    <button
+        type="button"
+        pButton
+        label="Close"
+        class="p-button-outlined pools-dialog__close-btn"
+        (click)="onNoClick()">
+    </button>
+</div>

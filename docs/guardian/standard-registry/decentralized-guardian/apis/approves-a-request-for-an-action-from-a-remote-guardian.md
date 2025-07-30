@@ -17,10 +17,8 @@ Updates schema rule configuration for the specified rule ID.
 
 **Body**
 
-| Name      | Type   | Description                                                                                    |
-| --------- | ------ | ---------------------------------------------------------------------------------------------- |
-| messageId | string | <p></p><pre class="language-yaml"><code class="lang-yaml">Schema Rule Identifier
-</code></pre> |
+<table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td>messageId</td><td>string</td><td><p></p><pre class="language-yaml"><code class="lang-yaml">Schema Rule Identifier
+</code></pre></td></tr></tbody></table>
 
 **Response**
 

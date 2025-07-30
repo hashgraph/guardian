@@ -51,7 +51,7 @@ export class XlsxVariable {
 
     public update(schemas: Schema[]) {
         if (!this.schema) {
-            throw new Error(`${this.fullPath}: Schema not found.`);
+            throw new Error(`${this.fieldPath}: Schema not found.`);
         }
         if (this.lvl) {
             this.field = this.schema.fields.find((f) => f.description === this.fieldDescription);
@@ -59,12 +59,12 @@ export class XlsxVariable {
             this.field = this.schema.fields.find((f) => f.title === this.fieldPath);
         }
         if (!this.field) {
-            throw new Error(`${this.fullPath}: Fields not found.`);
+            throw new Error(`${this.fieldPath}: Fields not found.`);
         }
         if (this.children.length) {
             const subSchema = schemas.find((s) => s.iri === this.field.type);
             if (!subSchema) {
-                throw new Error(`${this.fullPath}: Type not found.`);
+                throw new Error(`${this.fieldPath}: Type not found.`);
             }
             for (const child of this.children) {
                 child.setSchema(subSchema);
