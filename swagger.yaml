@@ -1100,7 +1100,7 @@ paths:
       description: >-
         Create smart-contract. Only users with the Standard Registry role are
         allowed to make the request.
-      operationId: ContractsApi_createContract
+      operationId: ContractsApi_createContractV2
       parameters: []
       requestBody:
         required: true

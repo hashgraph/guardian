@@ -851,6 +851,35 @@ export class Worker extends NatsService {
                         topicKey,
                         bytecodeFileId,
                         memo,
+                        gas
+                    } = task.data;
+                    const contractMemo = memo || '';
+                    client = new HederaSDKHelper(
+                        hederaAccountId,
+                        hederaAccountKey,
+                        null,
+                        networkOptions
+                    );
+                    result.data = await client.createContract(
+                        bytecodeFileId,
+                        new ContractFunctionParameters().addString(topicKey),
+                        gas,
+                        contractMemo
+                    );
+
+                    break;
+                }
+
+                /**
+                 * Create contract V2 22.07.2025
+                 */
+                case WorkerTaskType.CREATE_CONTRACT_V2: {
+                    const {
+                        hederaAccountId,
+                        hederaAccountKey,
+                        topicKey,
+                        bytecodeFileId,
+                        memo,
                         gas,
                         constructorParams,
                         userId
@@ -864,7 +893,7 @@ export class Worker extends NatsService {
                         networkOptions
                     );
                     if(!constructorParams) {
-                        result.data = await client.createContract(
+                        result.data = await client.createContractV2(
                             bytecodeFileId,
                             new ContractFunctionParameters().addString(topicKey),
                             gas,
@@ -875,13 +904,13 @@ export class Worker extends NatsService {
                     }
 
                     const [[singleContractId], [doubleContractId]] = await Promise.all([
-                        client.createContract(
+                        client.createContractV2(
                             constructorParams.retireSingleFileId,
                             new ContractFunctionParameters(),
                             constructorParams.retireSingleContractGas,
                             contractMemo
                         ),
-                        client.createContract(
+                        client.createContractV2(
                             constructorParams.retireDoubleFileId,
                             new ContractFunctionParameters(),
                             constructorParams.retireDoubleContractGas,
@@ -893,7 +922,7 @@ export class Worker extends NatsService {
                         .addAddress(ContractId.fromString(singleContractId).toSolidityAddress())
                         .addAddress(ContractId.fromString(doubleContractId).toSolidityAddress());
 
-                    const [routerContractId, logInfo] = await client.createContract(
+                    const [routerContractId, logInfo] = await client.createContractV2(
                         bytecodeFileId,
                         routerConstructor,
                         gas,
