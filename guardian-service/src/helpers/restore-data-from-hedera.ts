@@ -499,7 +499,6 @@ export class RestoreDataFromHedera {
                     }
                 );
 
-
                 const vpTransactionMap = new Map<string, any[]>();
 
                 for (const transaction of mintTransactions) {
@@ -516,13 +515,13 @@ export class RestoreDataFromHedera {
 
                 for (const [vpMessageId, serials] of vpTransactionMap.entries()) {
                     const request = {
+                        vpMessageId,
+                        tokenId,
+                        decimals,
                         target: token.treasury_account_id,
                         amount: serials.length > 0 ? serials.length : -1,
-                        vpMessageId: vpMessageId,
                         memo: vpMessageId,
-                        tokenId: tokenId,
                         tokenType: serials.length > 0 ? TokenType.NON_FUNGIBLE : TokenType.FUNGIBLE,
-                        decimals: decimals,
                         metadata: vpMessageId,
                         isTransferNeeded: false,
                         wasTransferNeeded: true,
