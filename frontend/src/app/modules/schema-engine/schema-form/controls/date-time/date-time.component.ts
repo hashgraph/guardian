@@ -10,7 +10,7 @@ type InputType = 'default' | 'test' | 'suggest';
     templateUrl: './date-time.component.html',
     styleUrls: ['./date-time.component.scss'],
 })
-export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy{
+export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
     @Input('control') control: UntypedFormControl;
     @Input('showIcon') showIcon: boolean = true;
     @Input('showSeconds') showSeconds: boolean = true;
@@ -50,7 +50,7 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
     ngAfterViewInit() {
         (this.calendar?.el.nativeElement.querySelector('input') as HTMLInputElement).readOnly = true;
         // if (this.isMany) {
-            this.fillField();
+        this.fillField();
         // }
     }
 

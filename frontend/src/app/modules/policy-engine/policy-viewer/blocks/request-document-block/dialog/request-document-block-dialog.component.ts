@@ -63,17 +63,22 @@ export class RequestDocumentBlockDialog {
     ngOnInit() {
         this.loading = true;
         this.loadRules();
+        this.initForm(this.dataForm);
+    }
+
+    ngOnDestroy(): void {
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();
+    }
+
+    public initForm($event: any) {
+        this.dataForm = $event;
         this.dataForm.valueChanges
             .pipe(takeUntil(this.destroy$))
             .pipe(audit(ev => interval(1000)))
             .subscribe(val => {
                 this.validate();
             });
-    }
-
-    ngOnDestroy(): void {
-        this.destroy$.next(true);
-        this.destroy$.unsubscribe();
     }
 
     private loadRules() {
@@ -122,7 +127,7 @@ export class RequestDocumentBlockDialog {
                 .subscribe(() => {
                     setTimeout(() => {
                         this.loading = false;
-                        if(draft && this.parent instanceof RequestDocumentBlockComponent) {
+                        if (draft && this.parent instanceof RequestDocumentBlockComponent) {
                             this.parent.draftDocument = {
                                 policyId: this.parent.policyId,
                                 user: this.parent.user.did,
@@ -155,19 +160,19 @@ export class RequestDocumentBlockDialog {
         this.parent.onRestoreClick();
     }
 
-    public handleCancelBtnEvent(value: any, data: RequestDocumentBlockDialog) {
+    public handleCancelBtnEvent($event: any, data: RequestDocumentBlockDialog) {
         data.onClose();
     }
 
-    public handleSubmitBtnEvent(value: any, data: RequestDocumentBlockDialog) {
+    public handleSubmitBtnEvent($event: any, data: RequestDocumentBlockDialog) {
         if (data.dataForm.valid || !this.loading) {
             data.onSubmit();
         }
     }
 
-    public handleSaveBtnEvent(value: any, data: RequestDocumentBlockDialog) {
+    public handleSaveBtnEvent($event: any, data: RequestDocumentBlockDialog) {
         if (!this.loading) {
-            if(this.parent instanceof RequestDocumentBlockComponent && this.parent.draftDocument) {
+            if (this.parent instanceof RequestDocumentBlockComponent && this.parent.draftDocument) {
                 const dialogOptionRef = this.dialogService.open(CustomConfirmDialogComponent, {
                     showHeader: false,
                     width: '640px',
@@ -186,7 +191,7 @@ export class RequestDocumentBlockDialog {
                 });
 
                 dialogOptionRef.onClose.subscribe((result: string) => {
-                    if(result == 'Save Draft') {
+                    if (result == 'Save Draft') {
                         data.onSubmit(true);
                     }
                 });

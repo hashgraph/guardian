@@ -15,7 +15,7 @@ import { interval, Subject } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { MergeUtils } from 'src/app/utils';
-import {ToastrService} from 'ngx-toastr';
+import { ToastrService } from 'ngx-toastr';
 
 interface IRequestDocumentData {
     readonly: boolean;
@@ -104,18 +104,23 @@ export class RequestDocumentBlockComponent
         (window as any).__requestLast = this;
         (window as any).__request = (window as any).__request || {};
         (window as any).__request[this.id] = this;
-        this.dataForm.valueChanges
-            .pipe(takeUntil(this.destroy$))
-            .pipe(audit(ev => interval(1000)))
-            .subscribe(val => {
-                this.validate();
-            });
+        this.initForm(this.dataForm);
     }
 
     ngOnDestroy(): void {
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
         this.destroy();
+    }
+
+    public initForm($event: any) {
+        this.dataForm = $event;
+        this.dataForm.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .pipe(audit(ev => interval(1000)))
+            .subscribe(val => {
+                this.validate();
+            });
     }
 
     private validate() {
@@ -244,12 +249,12 @@ export class RequestDocumentBlockComponent
         return null;
     }
 
-    public onSubmit(form: UntypedFormGroup, draft?: boolean) {
+    public onSubmit(draft?: boolean) {
         if (this.disabled || this.loading) {
             return;
         }
-        if (form.valid || draft) {
-            const data = form.getRawValue();
+        if (this.dataForm.valid || draft) {
+            const data = this.dataForm.getRawValue();
             this.loading = true;
             prepareVcData(data);
             this.policyEngineService
@@ -261,7 +266,7 @@ export class RequestDocumentBlockComponent
                 .subscribe(() => {
                     setTimeout(() => {
                         this.loading = false;
-                        if(draft) {
+                        if (draft) {
                             this.draftDocument = {
                                 policyId: this.policyId,
                                 user: this.user.did,
@@ -284,9 +289,9 @@ export class RequestDocumentBlockComponent
         }
     }
 
-    public handleSaveBtnEvent(form: UntypedFormGroup) {
+    public handleSaveBtnEvent($event: any) {
         if (!this.loading) {
-            if(this.draftDocument) {
+            if (this.draftDocument) {
                 const dialogOptionRef = this.dialogService.open(CustomConfirmDialogComponent, {
                     showHeader: false,
                     width: '640px',
@@ -305,12 +310,12 @@ export class RequestDocumentBlockComponent
                 });
 
                 dialogOptionRef.onClose.subscribe((result: string) => {
-                    if(result == 'Save Draft') {
-                        this.onSubmit(form, true);
+                    if (result == 'Save Draft') {
+                        this.onSubmit(true);
                     }
                 });
             } else {
-                this.onSubmit(form, true);
+                this.onSubmit(true);
             }
         }
     }
@@ -331,12 +336,11 @@ export class RequestDocumentBlockComponent
             this.presetDocument = null;
         }
 
-        if(this.draftDocument) {
+        if (this.draftDocument) {
             this.showDraftDialog(this.showDocumentDialog);
         } else {
             this.showDocumentDialog();
         }
-
     }
 
     private showDocumentDialog() {
@@ -372,12 +376,12 @@ export class RequestDocumentBlockComponent
         });
 
         dialogOptionRef.onClose.subscribe((result: string) => {
-            if(result != 'Cancel') {
+            if (result != 'Cancel') {
                 if (result === 'Continue with Draft') {
                     this.draftRestore();
                 }
 
-                if(callback) {
+                if (callback) {
                     callback.call(this);
                 }
             }
@@ -386,7 +390,7 @@ export class RequestDocumentBlockComponent
 
     public draftRestore() {
         if (this.draftDocument) {
-            if(this.needPreset && this.rowDocument) {
+            if (this.needPreset && this.rowDocument) {
                 this.preset(MergeUtils.deepMerge(this.draftDocument.data, this.presetDocument))
             } else {
                 this.preset(this.draftDocument.data);
@@ -411,6 +415,15 @@ export class RequestDocumentBlockComponent
             const presetDocument = DocumentGenerator.generateDocument(this.schema, undefined, this.rowDocument);
             this.preset(presetDocument);
         }
+        // console.log('onDryRun');
+        // if (this.schema) {
+        //     console.time('buildForm');
+        //     const form = this.buildForm(this.schema, TEST_DATA);
+        //     console.timeEnd('buildForm');
+        //     // console.log(JSON.stringify(getO(form.value), null, 4));
+        //     // console.log(JSON.stringify(getO(TEST_DATA), null, 4));
+        //     debugger;
+        // }
     }
 
     public onCancelPage(value: boolean) {
@@ -429,3 +442,28 @@ export class RequestDocumentBlockComponent
         }
     }
 }
+
+// function getO(json: any): any {
+//     if (json) {
+//         if (typeof json === 'object') {
+//             if (Array.isArray(json)) {
+//                 const clone: any[] = [];
+//                 for (const e of json) {
+//                     clone.push(getO(e));
+//                 }
+//                 return clone;
+//             } else {
+//                 const clone: any = {};
+//                 const keys = Object.keys(json).sort();
+//                 for (const key of keys) {
+//                     clone[key] = getO(json[key]);
+//                 }
+//                 return clone;
+//             }
+//         } else {
+//             return json;
+//         }
+//     } else {
+//         return json;
+//     }
+// }

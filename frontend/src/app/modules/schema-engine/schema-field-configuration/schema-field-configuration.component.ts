@@ -42,7 +42,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     @Input('private') canBePrivate!: boolean;
     @Input('properties') properties: { title: string; _id: string; value: string }[];
     @Input('errors') errors!: any[];
-    @Input() buildField: (fieldConfig: FieldControl, data: any) => SchemaField;
+    @Input() buildField: (fieldConfig: FieldControl, data: any) => SchemaField | null;
 
     @Output('remove') remove = new EventEmitter<any>();
 
@@ -115,61 +115,59 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         ];
     }
 
+    public initDefaultForm($event: any) {
+        this.defaultValuesSubscription?.unsubscribe();
+        this.defaultValues = $event;
+        this.defaultValuesSubscription = $event.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((value: any) => {
+                const control = this.fieldsForm?.get(this.field.name);
+                control?.patchValue({
+                    default: null,
+                    suggest: null,
+                    example: null,
+                    ...value,
+                });
+            });
+    }
+
     ngOnInit(): void {
         if (this.fieldsForm && this.buildField) {
             const onFieldChange = (value: any) => {
-                this.defaultValuesSubscription?.unsubscribe();
-                this.defaultValues = new UntypedFormGroup({});
-                this.defaultValuesSubscription =
-                    this.defaultValues.valueChanges
-                        .pipe(takeUntil(this.destroy$))
-                        // tslint:disable-next-line:no-shadowed-variable
-                        .subscribe((value) => {
-                            const control = this.fieldsForm?.get(
-                                this.field.name
-                            );
-                            control?.patchValue({
-                                default: null,
-                                suggest: null,
-                                example: null,
-                                ...value,
-                            });
-                        });
                 this.fieldsFormValue = value;
                 try {
-                    this.parsedField = this.buildField(
-                        this.field,
-                        this.fieldsFormValue
-                    );
-                    this.presetFormFields = [
-                        Object.assign({}, this.parsedField, {
-                            name: 'default',
-                            description: 'Default Value',
-                            required: false,
-                            hidden: false,
-                            default: null,
-                            suggest: null,
-                            examples: null,
-                        }),
-                        Object.assign({}, this.parsedField, {
-                            name: 'suggest',
-                            description: 'Suggested Value',
-                            required: false,
-                            hidden: false,
-                            default: null,
-                            suggest: null,
-                            examples: null,
-                        }),
-                        Object.assign({}, this.parsedField, {
-                            name: 'example',
-                            description: 'Test Value',
-                            required: false,
-                            hidden: false,
-                            default: null,
-                            suggest: null,
-                            examples: null,
-                        }),
-                    ];
+                    this.parsedField = this.buildField(this.field, this.fieldsFormValue);
+                    if (this.parsedField) {
+                        this.presetFormFields = [
+                            Object.assign({}, this.parsedField, {
+                                name: 'default',
+                                description: 'Default Value',
+                                required: false,
+                                hidden: false,
+                                default: null,
+                                suggest: null,
+                                examples: null,
+                            }),
+                            Object.assign({}, this.parsedField, {
+                                name: 'suggest',
+                                description: 'Suggested Value',
+                                required: false,
+                                hidden: false,
+                                default: null,
+                                suggest: null,
+                                examples: null,
+                            }),
+                            Object.assign({}, this.parsedField, {
+                                name: 'example',
+                                description: 'Test Value',
+                                required: false,
+                                hidden: false,
+                                default: null,
+                                suggest: null,
+                                examples: null,
+                            }),
+                        ];
+                    }
                 } catch (error) {
                     console.warn(error)
                 }

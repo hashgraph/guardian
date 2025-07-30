@@ -184,7 +184,7 @@
                 <div *ngIf="this.values && this.values[item.name]" class="form-field-array-item">
                     <div class="form-field-group">
                         <ng-container [ngSwitch]="item.customType">
-                            <app-geojson-type
+                            <!-- <app-geojson-type
                                 *ngSwitchCase="'geo'"
                                 [preset]="this.values && this.values[item.name]"
                                 [disabled]="true">
@@ -193,7 +193,7 @@
                                     *ngSwitchCase="'sentinel'"
                                     [disabled]="true"
                                     [preset]="this.values && this.values[item.name]">
-                            </app-sentinel-hub-type>
+                            </app-sentinel-hub-type> -->
                             <app-schema-form-view
                                     *ngSwitchDefault
                                     [dryRun]="dryRun"
@@ -215,13 +215,16 @@
                     [attr.index]="item.list.indexOf(listItem)">
                     <div class="form-field-group">
                         <ng-container [ngSwitch]="item.customType">
-                            <app-geojson-type *ngSwitchCase="'geo'" [preset]="listItem" [disabled]="true">
+                            <!-- <app-geojson-type 
+                                *ngSwitchCase="'geo'" 
+                                [preset]="listItem" 
+                                [disabled]="true">
                             </app-geojson-type>
                             <app-sentinel-hub-type
-                                    *ngSwitchCase="'sentinel'"
-                                    [disabled]="true"
-                                    [preset]="listItem">
-                            </app-sentinel-hub-type>
+                                *ngSwitchCase="'sentinel'"
+                                [disabled]="true"
+                                [preset]="listItem">
+                            </app-sentinel-hub-type> -->
                             <app-schema-form-view
                                     *ngSwitchDefault
                                     [delimiter-hide]="true"
