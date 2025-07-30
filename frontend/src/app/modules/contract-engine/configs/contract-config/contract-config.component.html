@@ -77,10 +77,14 @@
                             <td class="permissions-column">
                                 <div class="permissions">
                                     <div class="permissions__roles">
-                                        <span class="badge owner"   *ngIf="hasPermissions(element.permissions,0)">Owner</span>
-                                        <span class="badge admin"   *ngIf="hasPermissions(element.permissions,1)">Admin</span>
-                                        <span class="badge manager" *ngIf="type==='WIPE' && hasPermissions(element.permissions,2)">Manager</span>
-                                        <span class="badge wiper"   *ngIf="type==='WIPE' && element.version==='1.0.0' && hasPermissions(element.permissions,3)">Wiper</span>
+                                        <span class="badge owner"
+                                              *ngIf="hasPermissions(element.permissions,0)">Owner</span>
+                                        <span class="badge admin"
+                                              *ngIf="hasPermissions(element.permissions,1)">Admin</span>
+                                        <span class="badge manager"
+                                              *ngIf="type==='WIPE' && hasPermissions(element.permissions,2)">Manager</span>
+                                        <span class="badge wiper"
+                                              *ngIf="type==='WIPE' && element.version==='1.0.0' && hasPermissions(element.permissions,3)">Wiper</span>
                                     </div>
                                     <app-refresh-btn (refresh)="checkStatus(element, $event)"></app-refresh-btn>
                                 </div>

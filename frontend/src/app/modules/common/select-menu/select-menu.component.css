@@ -40,8 +40,7 @@
 }
 
 .select-menu-item {
-    padding: 8px 10px;
-    border-bottom: 1px solid #979797;
+    padding: 6px 10px;
     cursor: pointer;
 }
 
@@ -52,19 +51,36 @@
 .select-menu-item-title {
     display: block;
     max-width: 300px;
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 500;
     pointer-events: none;
-    margin-bottom: 5px;
+    margin-bottom: 2px;
 }
 
 .select-menu-item-description {
     display: block;
     max-width: 300px;
-    font-size: 14px;
+    font-size: 12px;
     pointer-events: none;
+    color: var(--color-grey-4);
 }
 
 .select-menu-item:last-child {
     border-bottom: none;
+}
+
+::ng-deep .select-menu-panel.p-overlaypanel {
+    border-radius: 8px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    padding: 0;
+}
+
+::ng-deep .select-menu-panel .p-overlaypanel-content {
+    padding: 4px;
+    width: 228px;
+}
+
+::ng-deep .select-menu-panel:after,
+::ng-deep .select-menu-panel:before{
+    display: none !important;
 }

@@ -37,18 +37,18 @@
 
     ::ng-deep .p-selectbutton .p-button {
         background: transparent !important;
-        border: none          !important;
-        color: #848FA9        !important;
+        border: none !important;
+        color: #848FA9 !important;
         position: relative;
         padding: 0.75rem 2rem 0.5rem 0 !important;
         margin: 0 0.5rem 0 0 !important;
-        border-radius: 0                  !important;
+        border-radius: 0 !important;
     }
 
     ::ng-deep .p-selectbutton .p-button.p-highlight {
         color: var(--color-primary, #0b73f8) !important;
         pointer-events: none !important;
-        cursor: default      !important;
+        cursor: default !important;
     }
 
     ::ng-deep .p-selectbutton .p-button.p-highlight::after {
@@ -74,7 +74,7 @@
 }
 
 .button-group {
-    display: grid  ;
+    display: grid;
     grid-template-columns: max-content max-content;
     column-gap: 10px;
     justify-content: end;
@@ -94,11 +94,11 @@
 }
 
 :host ::ng-deep .table ::ng-deep tbody tr.card-row:first-child td:first-child {
-    border-top-left-radius: 12px !important;
+    border-top-left-radius: 8px !important;
 }
 
 :host ::ng-deep .table ::ng-deep tbody tr.card-row:first-child td:last-child {
-    border-top-right-radius: 12px !important;
+    border-top-right-radius: 8px !important;
 }
 
 .table ::ng-deep thead th {
@@ -165,19 +165,22 @@
     color: #fff;
 }
 
-:host ::ng-deep .badge.owner  {
+:host ::ng-deep .badge.owner {
     background: var(--color-accent-green-3);
     color: var(--color-accent-green-1);
 }
-:host ::ng-deep .badge.admin  {
+
+:host ::ng-deep .badge.admin {
     background: var(--color-accent-green-3);
     color: var(--color-accent-green-1);
 }
+
 :host ::ng-deep .badge.manager {
     background: var(--color-grey-3);
     color: var(--primary-color);
 }
-:host ::ng-deep .badge.wiper   {
+
+:host ::ng-deep .badge.wiper {
     background: var(--color-grey-3);
     color: var(--primary-color);
 }
@@ -190,19 +193,19 @@
 
 :host ::ng-deep .operations-column .select-menu,
 :host ::ng-deep .operations-column .select-menu-min {
-    background: var(--color-grey-2)    !important;
-    border: none                       !important;
-    width: 36px                        !important;
-    height: 36px                       !important;
-    padding: 0                         !important;
-    border-radius: 8px                 !important;
-    display: flex                      !important;
-    align-items: center                !important;
-    justify-content: center            !important;
-    color: var(--color-grey-5)         !important;
-    outline: none                      !important;
-    box-shadow: none                   !important;
-    margin-bottom: 50px                !important;
+    background: var(--color-grey-2) !important;
+    border: none !important;
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: var(--color-grey-5) !important;
+    outline: none !important;
+    box-shadow: none !important;
+    margin-bottom: 50px !important;
 }
 
 :host ::ng-deep .operations-column .select-menu i.pi-sort-down-fill,
