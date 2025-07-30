@@ -40,10 +40,12 @@ import {
     DocumentStatus,
     EntityOwner,
     ISchema,
+    MintTransactionStatus,
     PolicyStatus,
     SchemaCategory,
     SchemaEntity,
     SchemaStatus,
+    TokenType,
     TopicType,
     UserRole,
     WorkerTaskType
@@ -142,6 +144,24 @@ export class RestoreDataFromHedera {
             console.error(`Error: ${errors}/${result.length}`);
         }
         return result;
+    }
+
+    private async readTokenMessages(topicId, userId) {
+        if (typeof topicId !== 'string') {
+            throw new Error('Bad topicId');
+        }
+
+        const fullTokenInfo = await this.workers.addRetryableTask(
+            {
+                type: WorkerTaskType.GET_TOKEN_INFO,
+                data: { tokenId: topicId, payload: { userId } },
+            },
+            {
+                priority: 10
+            }
+        );
+
+        return fullTokenInfo;
     }
 
     /**
@@ -254,31 +274,55 @@ export class RestoreDataFromHedera {
                     const message = row as VCMessage;
                     const vcDoc = VcDocument.fromJsonTree(message.document);
 
+                    const documentFields = ['id', 'credentialSubject.id', 'credentialSubject.0.id'];
+
                     const documentOptions = message.option || {};
                     documentOptions.status = (message.documentStatus && message.documentStatus !== DocumentStatus.NEW) ? message.documentStatus : message.option?.status;
 
-                    const vcDocument = {
-                        hash: vcDoc.toCredentialHash(),
-                        owner,
-                        messageId: message.id,
-                        policyId,
-                        topicId: message.topicId,
-                        document: vcDoc.toJsonTree(),
-                        type: message.entityType || `#${vcDoc.getSubjectType()}`,
-                        schema: `#${vcDoc.getSubjectType()}`,
-                        tag: message.tag,
-                        relationship: message.relationships,
-                        option: documentOptions,
-                        comment: undefined,
-                    }
+                    const vcDocumentHash = vcDoc.toCredentialHash();
+                    const existingVcDocument = await dataBaseServer.findOne(VcDocumentCollection, { hash: vcDocumentHash });
 
-                    if (revokeDocumentsMap.has(row.getMessageId())) {
-                        vcDocument.option = vcDocument.option || {};
-                        vcDocument.option.status = 'Revoked';
-                        vcDocument.comment = revokeDocumentsMap.get(row.getMessageId());
-                    }
+                    if (existingVcDocument) {
+                        existingVcDocument.option = documentOptions;
+                        existingVcDocument.type = message.entityType || `#${vcDoc.getSubjectType()}`;
+                        existingVcDocument.schema = `#${vcDoc.getSubjectType()}`;
+                        existingVcDocument.tag = message.tag;
+                        existingVcDocument.relationships = message.relationships;
+                        existingVcDocument.document = vcDoc.toJsonTree();
+                        existingVcDocument.documentFields = documentFields;
 
-                    vcDocumentObjects.push(vcDocument);
+                        if (revokeDocumentsMap.has(row.getMessageId())) {
+                            existingVcDocument.option = existingVcDocument.option || {};
+                            existingVcDocument.option.status = 'Revoked';
+                            existingVcDocument.comment = revokeDocumentsMap.get(row.getMessageId());
+                        }
+
+                        await dataBaseServer.update(VcDocumentCollection, { hash: vcDocumentHash }, existingVcDocument);
+                    } else {
+                        const vcDocument = {
+                            hash: vcDocumentHash,
+                            owner,
+                            messageId: message.id,
+                            policyId,
+                            topicId: message.topicId,
+                            document: vcDoc.toJsonTree(),
+                            documentFields,
+                            type: message.entityType || `#${vcDoc.getSubjectType()}`,
+                            schema: `#${vcDoc.getSubjectType()}`,
+                            tag: message.tag,
+                            relationships: message.relationships,
+                            option: documentOptions,
+                            comment: undefined,
+                        }
+
+                        if (revokeDocumentsMap.has(row.getMessageId())) {
+                            vcDocument.option = vcDocument.option || {};
+                            vcDocument.option.status = 'Revoked';
+                            vcDocument.comment = revokeDocumentsMap.get(row.getMessageId());
+                        }
+
+                        vcDocumentObjects.push(vcDocument);
+                    }
 
                     break;
                 }
@@ -287,15 +331,21 @@ export class RestoreDataFromHedera {
                     const message = row as VPMessage;
                     const vpDoc = VpDocument.fromJsonTree(message.document);
 
-                    vpDocumentObjects.push({
+                    const documentFields = ['id', 'credentialSubject.id', 'credentialSubject.0.id', 'verifiableCredential.1.credentialSubject.0.tokenId'];
+
+                    const vpDocument = {
                         hash: vpDoc.toCredentialHash(),
                         policyId,
                         owner,
                         messageId: message.id,
                         topicId: message.topicId,
                         document: vpDoc.toJsonTree(),
+                        documentFields,
                         type: undefined,
-                    });
+                        relationships: message.relationships,
+                    };
+
+                    vpDocumentObjects.push(vpDocument);
 
                     break;
                 }
@@ -386,8 +436,8 @@ export class RestoreDataFromHedera {
             await this.restoreTopic(
                 {
                     topicId: policyTopicId,
-                    name: policyTopicMessage.name,
-                    description: policyTopicMessage.description,
+                    name: policyTopicMessage?.name,
+                    description: policyTopicMessage?.description,
                     owner,
                     type: TopicType.PolicyTopic,
                     policyId: null,
@@ -408,6 +458,13 @@ export class RestoreDataFromHedera {
                 tokenType,
                 decimals,
             } of this.findMessagesByType<TokenMessage>(MessageType.Token, policyMessages)) {
+
+                const token = await this.readTokenMessages(tokenId, user.id);
+
+                if (!token) {
+                    continue;
+                }
+
                 await dataBaseServer.save(Token, {
                     tokenId,
                     tokenName,
@@ -416,13 +473,79 @@ export class RestoreDataFromHedera {
                     decimals,
                     initialSupply: 0,
                     adminId: hederaAccountID,
-                    changeSupply: false,
-                    enableAdmin: false,
-                    enableKYC: false,
-                    enableFreeze: false,
-                    enableWipe: false,
+                    changeSupply: token.supplyKey ? true : false,
+                    enableAdmin: token.adminKey ? true : false,
+                    enableKYC: token.kycKey ? true : false,
+                    enableFreeze: token.freezeKey ? true : false,
+                    enableWipe: token.wipeKey ? true : false,
                     owner,
                 });
+
+                const mintTransactions = await new Workers().addRetryableTask(
+                    {
+                        type: WorkerTaskType.GET_TRANSACTIONS,
+                        data: {
+                            accountId: token.treasury_account_id,
+                            transactiontype: 'TOKENMINT',
+                            filter: {
+                                entity_id: tokenId,
+                            },
+                            payload: { userId: user.id }
+                        },
+                    },
+                    {
+                        priority: 1,
+                        attempts: 10
+                    }
+                );
+
+
+                const vpTransactionMap = new Map<string, any[]>();
+
+                for (const transaction of mintTransactions) {
+                    const vpTimestamp = atob(transaction.memo_base64).substring(0, 20);
+
+                    const transactionSerials = transaction.nft_transfers.map((nft: any) => nft.serial_number);
+
+                    const trans = vpTransactionMap.get(vpTimestamp) || [];
+                    if (transactionSerials.length > 0) {
+                        trans.push(...transactionSerials);
+                    }
+                    vpTransactionMap.set(vpTimestamp, trans);
+                }
+
+                for (const [vpMessageId, serials] of vpTransactionMap.entries()) {
+                    const request = {
+                        target: token.treasury_account_id,
+                        amount: serials.length > 0 ? serials.length : -1,
+                        vpMessageId: vpMessageId,
+                        memo: vpMessageId,
+                        tokenId: tokenId,
+                        tokenType: serials.length > 0 ? TokenType.NON_FUNGIBLE : TokenType.FUNGIBLE,
+                        decimals: decimals,
+                        metadata: vpMessageId,
+                        isTransferNeeded: false,
+                        wasTransferNeeded: true,
+                    };
+
+                    const mintRequest = await dataBaseServer.saveMintRequest(
+                        Object.assign(request, { isTransferNeeded: false, wasTransferNeeded: true })
+                    );
+                    const mintedSerialsLocal = await dataBaseServer.getMintRequestSerials(
+                        mintRequest.id
+                    );
+                    const missedSerials = serials.filter(
+                        (serial) => !mintedSerialsLocal.includes(serial)
+                    );
+
+                    await dataBaseServer.saveMintTransaction({
+                        mintRequestId: mintRequest.id,
+                        amount: serials.length > 0 ? serials.length : -1,
+                        mintStatus: MintTransactionStatus.SUCCESS,
+                        transferStatus: MintTransactionStatus.SUCCESS,
+                        serials: missedSerials,
+                    });
+                }
             }
 
             const publishedSchemas = this.findMessagesByType<SchemaMessage>(MessageType.Schema, policyMessages)
@@ -630,10 +753,10 @@ export class RestoreDataFromHedera {
             .filter((m: RegistrationMessage) => m.did === did)
             .find((m: RegistrationMessage) => {
                 if (m.registrantTopicId) {
-                    return m.registrantTopicId === registrantTopicId
+                    return m.registrantTopicId === registrantTopicId;
                 } else if (HederaDid.implement(m.did)) {
                     const { topicId } = HederaDid.parse(m.did);
-                    return topicId === registrantTopicId
+                    return topicId === registrantTopicId;
                 } else {
                     return false;
                 }
