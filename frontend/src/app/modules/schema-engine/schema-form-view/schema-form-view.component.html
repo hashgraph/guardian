@@ -184,25 +184,25 @@
                 <div *ngIf="this.values && this.values[item.name]" class="form-field-array-item">
                     <div class="form-field-group">
                         <ng-container [ngSwitch]="item.customType">
-                            <!-- <app-geojson-type
+                            <app-geojson-type
                                 *ngSwitchCase="'geo'"
                                 [preset]="this.values && this.values[item.name]"
                                 [disabled]="true">
                             </app-geojson-type>
                             <app-sentinel-hub-type
-                                    *ngSwitchCase="'sentinel'"
-                                    [disabled]="true"
-                                    [preset]="this.values && this.values[item.name]">
-                            </app-sentinel-hub-type> -->
+                                *ngSwitchCase="'sentinel'"
+                                [disabled]="true"
+                                [preset]="this.values && this.values[item.name]">
+                            </app-sentinel-hub-type>
                             <app-schema-form-view
-                                    *ngSwitchDefault
-                                    [dryRun]="dryRun"
-                                    [private-fields]="hide"
-                                    [delimiter-hide]="true"
-                                    [fields]="item.fields"
-                                    [values]="this.values && this.values[item.name]"
-                                    [rules]="rules"
-                                    [formulas]="formulas">
+                                *ngSwitchDefault
+                                [dryRun]="dryRun"
+                                [private-fields]="hide"
+                                [delimiter-hide]="true"
+                                [fields]="item.fields"
+                                [values]="this.values && this.values[item.name]"
+                                [rules]="rules"
+                                [formulas]="formulas">
                             </app-schema-form-view>
                         </ng-container>
                     </div>
@@ -211,11 +211,13 @@
 
             <div *ngIf="ifSubSchemaArray(item)" class="form-field-group schema-form-field-array-group">
                 <div class="label-field">{{item.description}}</div>
-                <div *ngFor="let listItem of getItemsPage(item)" class="form-field-array-item"
+                <div 
+                    *ngFor="let listItem of getItemsPage(item)" 
+                    class="form-field-array-item"
                     [attr.index]="item.list.indexOf(listItem)">
                     <div class="form-field-group">
                         <ng-container [ngSwitch]="item.customType">
-                            <!-- <app-geojson-type 
+                            <app-geojson-type 
                                 *ngSwitchCase="'geo'" 
                                 [preset]="listItem" 
                                 [disabled]="true">
@@ -224,16 +226,16 @@
                                 *ngSwitchCase="'sentinel'"
                                 [disabled]="true"
                                 [preset]="listItem">
-                            </app-sentinel-hub-type> -->
+                            </app-sentinel-hub-type>
                             <app-schema-form-view
-                                    *ngSwitchDefault
-                                    [delimiter-hide]="true"
-                                    [private-fields]="hide"
-                                    [dryRun]="dryRun"
-                                    [fields]="item.fields"
-                                    [values]="listItem"
-                                    [rules]="rules"
-                                    [formulas]="formulas">
+                                *ngSwitchDefault
+                                [delimiter-hide]="true"
+                                [private-fields]="hide"
+                                [dryRun]="dryRun"
+                                [fields]="item.fields"
+                                [values]="listItem"
+                                [rules]="rules"
+                                [formulas]="formulas">
                             </app-schema-form-view>
                         </ng-container>
                     </div>

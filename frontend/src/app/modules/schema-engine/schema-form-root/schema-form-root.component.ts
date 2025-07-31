@@ -14,6 +14,7 @@ import { FieldForm, IFieldControl } from '../schema-form-model/field-form';
 export class SchemaFormRootComponent implements OnInit {
     public group: UntypedFormGroup;
     public model: FieldForm | null;
+    public loading: boolean = true;
 
     @Input('schema') schema: Schema;
     @Input('fields') fields: SchemaField[];
@@ -60,6 +61,7 @@ export class SchemaFormRootComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges) {
+        this.loading = true;
         if (
             changes.schema ||
             changes.fields ||
@@ -68,12 +70,19 @@ export class SchemaFormRootComponent implements OnInit {
             changes.conditions ||
             changes.presetDocument
         ) {
-            this.buildFields();
+            setTimeout(() => {
+                this.buildFields();
+                setTimeout(() => {
+                    this.loading = false;
+                }, 0);
+            }, 0);
+        } else {
+            this.loading = false;
         }
     }
 
     ngOnDestroy() {
-        if(this.model) {
+        if (this.model) {
             this.model.destroy();
         }
     }

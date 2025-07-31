@@ -48,6 +48,7 @@ export interface IConditionControl<T extends UntypedFormControl | UntypedFormGro
 
 export class FieldForm {
     public readonly form: UntypedFormGroup;
+    public readonly lvl: number;
 
     private schema: Schema | null;
     private fields: SchemaField[] | null;
@@ -64,8 +65,9 @@ export class FieldForm {
     private readonly conditionFields: Set<string>;
     private readonly destroy$: Subject<boolean>;
 
-    constructor(form: UntypedFormGroup) {
+    constructor(form: UntypedFormGroup, lvl: number = 0) {
         this.form = form;
+        this.lvl = lvl;
         this.privateFields = {};
         this.conditionFields = new Set<string>();
         this.destroy$ = new Subject<boolean>();
@@ -315,7 +317,7 @@ export class FieldForm {
             form.build();
             return form;
         } else {
-            const form = new FieldForm(control);
+            const form = new FieldForm(control, this.lvl + 1);
             form.setData({
                 fields,
                 conditions,
@@ -435,7 +437,7 @@ export class FieldForm {
             path: field.path || '',
             fullPath: field.fullPath || '',
             control: null,
-            open: false,
+            open: this.lvl === 0,
             subject: new Subject(),
             visibility: true,
             model: null
@@ -557,7 +559,7 @@ export class FieldForm {
             index: String(count),
             index2: String(count + 1),
             control: null,
-            open: false,
+            open: this.lvl === 0,
             model: null,
         };
         if (item.isRef) {

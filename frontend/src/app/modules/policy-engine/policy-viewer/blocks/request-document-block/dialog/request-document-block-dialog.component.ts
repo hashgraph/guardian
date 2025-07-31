@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { RequestDocumentBlockComponent } from '../request-document-block.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -54,10 +54,14 @@ export class RequestDocumentBlockDialog {
         private policyEngineService: PolicyEngineService,
         private schemaRulesService: SchemaRulesService,
         private fb: UntypedFormBuilder,
-        private toastr: ToastrService
+        private toastr: ToastrService,
+        private changeDetectorRef: ChangeDetectorRef,
     ) {
         this.parent = this.config.data;
         this.dataForm = this.fb.group({});
+        if (this.parent) {
+            this.parent.dialog = this;
+        }
     }
 
     ngOnInit() {
@@ -221,5 +225,9 @@ export class RequestDocumentBlockDialog {
         } else {
             return false;
         }
+    }
+
+    public detectChanges() {
+        this.changeDetectorRef.detectChanges();
     }
 }

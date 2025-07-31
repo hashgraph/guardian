@@ -82,6 +82,7 @@ export class RequestDocumentBlockComponent
     public destroy$: Subject<boolean> = new Subject<boolean>();
     public readonly: boolean = false;
     public draftDocument: any;
+    public dialog: RequestDocumentBlockDialog;
 
     constructor(
         policyEngineService: PolicyEngineService,
@@ -323,6 +324,9 @@ export class RequestDocumentBlockComponent
     public preset(document: any) {
         this.presetDocument = document;
         this.changeDetectorRef.detectChanges();
+        if(this.dialog) {
+            this.dialog.detectChanges();
+        }
     }
 
     public getRef() {

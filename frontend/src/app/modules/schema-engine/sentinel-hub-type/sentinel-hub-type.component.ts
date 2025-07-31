@@ -14,6 +14,7 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
     @ViewChild('dateFrom') dateFrom: any
     @ViewChild('dateTo') dateTo: any
 
+    @Input('preset') presetDocument: any = null;
     @Input('form-model') formModel!: SentinelHubForm;
     @Input('disabled') isDisabled: boolean = false;
 
@@ -52,6 +53,15 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
     }
 
     ngOnInit(): void {
+        if (!this.formModel) {
+            const form = new UntypedFormGroup({});
+            this.formModel = new SentinelHubForm(form);
+            this.formModel.setData({
+                preset: this.presetDocument
+            });
+            this.formModel.build();
+        }
+        
         this.subscription.add(
             this.mapService.getSentinelKey().subscribe(value => {
                 this.key = value;

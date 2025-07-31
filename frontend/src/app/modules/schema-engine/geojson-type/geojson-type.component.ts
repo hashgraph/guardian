@@ -1,8 +1,6 @@
 import { ChangeDetectorRef, Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild, } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { GeoJsonSchema, GeoJsonType } from '@guardian/interfaces';
-import ajv from 'ajv';
-import { ajvSchemaValidator } from 'src/app/validators/ajv-schema.validator';
+import { GeoJsonType } from '@guardian/interfaces';
 import 'ol/ol.css';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import Map from 'ol/Map.js';
@@ -225,9 +223,7 @@ function selectedStyleFunction(feature: any) {
 export class GeojsonTypeComponent implements OnChanges {
     @ViewChild('map', { static: false }) mapElementRef!: ElementRef;
 
-    // @Input('formGroup') control?: UntypedFormControl;
-    // @Input('preset') presetDocument: any = null;
-
+    @Input('preset') presetDocument: any = null;
     @Input('form-model') formModel!: GeoForm;
     @Input('disabled') isDisabled: boolean = false;
 
@@ -279,6 +275,17 @@ export class GeojsonTypeComponent implements OnChanges {
             return value;
         } else {
             return undefined;
+        }
+    }
+
+    ngOnInit(): void {
+        if (!this.formModel) {
+            const form = new UntypedFormControl({});
+            this.formModel = new GeoForm(form);
+            this.formModel.setData({
+                preset: this.presetDocument
+            });
+            this.formModel.build();
         }
     }
 
