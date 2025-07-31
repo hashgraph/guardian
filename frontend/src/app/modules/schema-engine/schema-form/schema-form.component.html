@@ -16,9 +16,9 @@
                 <div 
                     *ngIf="!isHelpText(item)" class="label-field"
                     [attr.default]="item.default && !item.isPreset && !item.control.dirty"
+                    [attr.field-path]="item?.path"
                 >
-                    <span *ngIf="ifRequiredField(item)" class="required-field">*</span>
-                    {{ item.description }}
+                    <span *ngIf="ifRequiredField(item)" class="required-field">*</span> {{ item.description }}
                 </div>
 
                 <div *ngIf="isHelpText(item)" class="label-field help-text"
@@ -176,7 +176,7 @@
                     <div *ngIf="!isChildSchema && formModel.controls" class="page-number">
                         {{ i }}/{{ formModel.controls.length - 1 }}
                     </div>
-                    <div [attr.default]="item.default && !item.isPreset && !item.control.dirty">
+                    <div [attr.default]="item.default && !item.isPreset && !item.control.dirty" [attr.field-path]="item?.path">
                         <span *ngIf="ifRequiredField(item)" class="required-field">*</span> {{ item.description }}
                     </div>
                     <div *ngIf="!isChildSchema && formModel.controls && i !== formModel.controls.length - 1"
@@ -207,7 +207,7 @@
                 >
                     <div class="form-field-array-item">
                         <div class="form-field-value"
-                             [attr.invalid-required-field]="ifRequiredField(item) && !listItem.control.valid"
+                            [attr.invalid-required-field]="ifRequiredField(item) && !listItem.control.valid"
                         >
                             <div *ngIf="isPrefix(item)" class="form-field-prefix">{{ item.unit }}</div>
 
@@ -364,6 +364,7 @@
                                 <span 
                                     class="detail-section-title"
                                     [attr.default]="item.default && !item.isPreset && !item.control.dirty"
+                                    [attr.field-path]="item?.path"
                                 >
                                     <span *ngIf="ifRequiredField(item)" class="required-field">*</span> {{ item.description }}
                                 </span>
@@ -450,14 +451,14 @@
             <!-- array of sub schemas -->
             <div *ngIf="ifSubSchemaArray(item)"
                  class="accordion-container form-field-group schema-form-field-array-group sub-schemas sub-schema-{{item.customType}}">
-                <p-accordion class="guardian-accordion {{item.control?.invalid ? 'guardian-accordion-error' : ''}}">
+                <p-accordion class="guardian-accordion {{(item.control?.invalid) ? 'guardian-accordion-error' : ''}}">
                     <p-accordionTab [(selected)]="item.open">
                         <ng-template pTemplate="header">
                             <div class="group-label-field" id="detail-section">
                                 <div *ngIf="!isChildSchema && formModel.controls" class="page-number">
                                     {{ i }}/{{ formModel.controls.length - 1 }}
                                 </div>
-                                <span [attr.default]="item.default && !item.isPreset && !item.control.dirty">
+                                <span [attr.default]="item.default && !item.isPreset && !item.control.dirty" [attr.field-path]="item?.path">
                                     <span *ngIf="ifRequiredField(item)" class="required-field">*</span> {{ item.description }}
                                 </span>
                                 <div *ngIf="!isChildSchema && formModel.controls && i !== formModel.controls.length - 1"
@@ -488,7 +489,7 @@
                                 [attr.index]="listItem.index"
                                 [attr.required]="item.required"
                             >
-                                <p-accordion class="guardian-accordion {{item.control?.invalid ? 'guardian-accordion-error' : ''}}">
+                                <p-accordion class="guardian-accordion {{(listItem.control?.invalid) ? 'guardian-accordion-error' : ''}}">
                                     <p-accordionTab [(selected)]="listItem.open">
                                         <ng-template pTemplate="header">
                                             <div class="group-label-field" id="detail-section">
