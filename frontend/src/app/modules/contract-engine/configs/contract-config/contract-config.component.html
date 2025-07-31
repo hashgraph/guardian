@@ -7,96 +7,109 @@
             Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
         </div>
     </ng-container>
+
     <ng-container *ngIf="isConfirmed && contracts">
-        <div class="actions">
-            <div class="select-btn__container">
-                <p-selectButton class="p-select-button" [(ngModel)]="type" (onChange)="onChangeType($event)" [options]="[
-                    { label: 'Token wiping contracts', value: 'WIPE' },
-                     { label: 'Token retirement contracts', value: 'RETIRE' }
-                ]"></p-selectButton>
+        <div class="container">
+            <div class="header">
+                <h1>Retirement</h1>
             </div>
-            <div class="toolbar-btn__container">
-                <p-button label="Create Contract" icon="pi pi-plus" class="p-toolbar-btn add"
-                          (onClick)="createContract()"
-                          styleClass="p-button-raised p-button-primary toolbar-btn p-toolbar-btn"></p-button>
 
-                <p-button label="Import Contract" icon="pi pi-file-import" class="p-toolbar-btn import"
-                          (onClick)="importContract()"
-                          styleClass="p-button-raised p-button-primary toolbar-btn p-toolbar-btn"></p-button>
+
+            <div class="actions actions--top">
+                <div class="actions__tabs">
+                    <p-selectButton
+                        [(ngModel)]="type"
+                        (onChange)="onChangeType($event)"
+                        [options]="[
+                                    { label: 'Token Wiping Contracts', value: 'WIPE' },
+                                    { label: 'Token Retirement Contracts', value: 'RETIRE' }
+                                  ]"
+                    ></p-selectButton>
+                </div>
+
+                <div class="actions__cta button-group">
+
+                    <button
+                        pButton
+                        class="button"
+                        icon="pi pi-plus"
+                        label="Create Contract"
+                        type="button"
+                        (click)="createContract()"
+                    ></button>
+
+                    <button
+                        pButton
+                        class="button"
+                        icon="pi pi-file-import"
+                        label="Import"
+                        type="button"
+                        (click)="importContract()"
+                    ></button>
+                </div>
             </div>
-        </div>
 
-        <div class="table-container">
-            <p-table [value]="contracts" class="table" [scrollable]="true">
-                <ng-template pTemplate="header">
-                    <tr class="header">
-                        <th class="mat-column-contractId mat-header-cell">Hedera Contract Id</th>
-                        <th class="mat-column-description mat-header-cell">Description</th>
-                        <th class="mat-column-tags mat-header-cell">Tags</th>
-                        <th class="mat-column-permissions mat-header-cell">Permissions</th>
-                        <th class="mat-column-operations mat-header-cell">Operations</th>
-                    </tr>
-                </ng-template>
+            <div class="table-container">
+                <p-table [value]="contracts" class="table" [scrollable]="true">
+                    <ng-template pTemplate="header">
+                        <tr class="header">
+                            <th>HEDERA CONTRACT ID</th>
+                            <th>DESCRIPTION</th>
+                            <th>TAGS</th>
+                            <th>PERMISSIONS</th>
+                            <th>OPERATIONS</th>
+                        </tr>
+                    </ng-template>
 
-                <ng-template pTemplate="body" let-element>
-                    <tr class="body">
-                        <td class="mat-column-contractId">
-                            <hedera-explorer type="contracts" [params]="element.contractId">
-                                {{ element.contractId }}
-                            </hedera-explorer>
-                        </td>
-
-                        <td class="mat-column-description">
-                            {{ element.description }}
-                        </td>
-
-                        <td class="mat-column-tags">
-                            <tags-explorer *ngIf="user.TAGS_TAG_READ"
-                                           [user]="user"
-                                           [data]="element._tags"
-                                           [owner]="owner"
-                                           [target]="element.id"
-                                           [entity]="tagEntity"
-                                           [schemas]="tagSchemas"
-                                           [service]="tagsService"></tags-explorer>
-                        </td>
-                        <td class="mat-column-permissions">
-                            <div class="permissions">
-                                <div class="permissions__roles">
-                                    <span class="role" pTooltip="Owner"
-                                          [attr.has]="hasPermissions(element.permissions, 0)">O</span>
-                                    <span class="role" pTooltip="Admin"
-                                          [attr.has]="hasPermissions(element.permissions, 1)">A</span>
-                                    <span class="role" pTooltip="Manager" *ngIf="type === 'WIPE'"
-                                          [attr.has]="hasPermissions(element.permissions, 2)">M</span>
-                                    <span class="role" pTooltip="Wiper"
-                                          *ngIf="type === 'WIPE' && element.version === '1.0.0'"
-                                          [attr.has]="hasPermissions(element.permissions, 3)">W</span>
+                    <ng-template pTemplate="body" let-element>
+                        <tr class="card-row">
+                            <td class="contract-column">
+                                <hedera-explorer type="contracts"
+                                                 [params]="element.contractId">{{ element.contractId }}
+                                </hedera-explorer>
+                            </td>
+                            <td class="description-column">{{ element.description }}</td>
+                            <td class="tags-column">
+                                <tags-explorer [user]="user" [data]="element._tags" [owner]="owner"
+                                               [target]="element.id" [entity]="tagEntity" [schemas]="tagSchemas"
+                                               [service]="tagsService"></tags-explorer>
+                            </td>
+                            <td class="permissions-column">
+                                <div class="permissions">
+                                    <div class="permissions__roles">
+                                        <span class="badge owner"
+                                              *ngIf="hasPermissions(element.permissions,0)">Owner</span>
+                                        <span class="badge admin"
+                                              *ngIf="hasPermissions(element.permissions,1)">Admin</span>
+                                        <span class="badge manager"
+                                              *ngIf="type==='WIPE' && hasPermissions(element.permissions,2)">Manager</span>
+                                        <span class="badge wiper"
+                                              *ngIf="type==='WIPE' && element.version==='1.0.0' && hasPermissions(element.permissions,3)">Wiper</span>
+                                    </div>
+                                    <app-refresh-btn (refresh)="checkStatus(element, $event)"></app-refresh-btn>
                                 </div>
-                                <app-refresh-btn (refresh)="checkStatus(element, $event)"></app-refresh-btn>
-                            </div>
-                        </td>
-
-                        <td class="mat-column-operations">
-                            <div class="contract-operations">
-                                <select-menu-button class="btn-publish" (action)="onOperationAction($event, element)"
+                            </td>
+                            <td class="operations-column">
+                                <select-menu-button (action)="onOperationAction($event, element)"
                                                     [options]="type === 'WIPE' ? wipeOperations : retireOperations"
                                                     [permissions]="element.permissions">
-                                    Operations
+                                    <i class="pi pi-ellipsis-h"></i>
                                 </select-menu-button>
-                            </div>
-                        </td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        </div>
-        <div class="table-paginator">
-            <app-paginator
-                [pageIndex]="pageIndex"
-                [pageSize]="pageSize"
-                [length]="contractsCount"
-                (page)="onPage($event)"
-            ></app-paginator>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+            <div class="table-paginator">
+                <app-paginator
+                    [pageIndex]="pageIndex"
+                    [pageSize]="pageSize"
+                    [length]="contractsCount"
+                    (page)="onPage($event)"
+                    class="table-paginator"
+                >
+                </app-paginator>
+            </div>
         </div>
     </ng-container>
 </div>

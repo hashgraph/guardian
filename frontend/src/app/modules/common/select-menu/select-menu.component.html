@@ -3,7 +3,7 @@
         <ng-container *ngTemplateOutlet="tempOutlet"></ng-container>
         <i class="pi pi-sort-down-fill"></i>
     </div>
-    <p-overlayPanel #publishMenu>
+    <p-overlayPanel #publishMenu [styleClass]="'select-menu-panel'">
         <ng-container *ngFor="let item of options">
             <div *ngIf="hasPermissions(item.permissions)" class="select-menu-item" (click)="onAction(item)">
                 <div class="select-menu-item-title" [style.color]="item.color">{{ item.title }}</div>
