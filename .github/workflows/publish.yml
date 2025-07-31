@@ -33,7 +33,7 @@ jobs:
 
       - name: get-npm-version
         id: package-version
-        uses: martinbeentjes/npm-get-version-action@3cf273023a0dda27efcd3164bdfb51908dd46a5b # v1.3.1
+        uses: step-security/npm-get-version-action@937365306ec087b7af8c059beac03ae4c05533e5 # v1.3.1
         with:
           path: guardian-service
 
@@ -46,7 +46,7 @@ jobs:
 
       - name: Authenticate to Google Cloud
         id: auth
-        uses: google-github-actions/auth@140bb5113ffb6b65a7e9b937a81fa96cf5064462 # v2.1.11
+        uses: step-security/google-github-auth@40f6deebd366f16c782d7a0ad0844e3b96a032a6 # v2.1.10
         with:
           workload_identity_provider: 'projects/101730247931/locations/global/workloadIdentityPools/hedera-registry-pool/providers/hedera-registry-gh-actions'
           service_account: 'guardian-publisher@hedera-registry.iam.gserviceaccount.com'
