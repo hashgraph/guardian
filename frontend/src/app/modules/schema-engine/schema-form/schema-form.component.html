@@ -386,61 +386,63 @@
                             </div>
                         </ng-template>
 
-                        <div *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control?.value, item)"
-                             class="suggestion">
-                            <div *ngIf="!suggestIsObject(item.suggest)" class="suggestion-name">
-                                <span class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
+                        <ng-container *ngIf="item.open">
+                            <div *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control?.value, item)"
+                                class="suggestion">
+                                <div *ngIf="!suggestIsObject(item.suggest)" class="suggestion-name">
+                                    <span class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
+                                </div>
+                                <button
+                                    (click)="patchSuggestValue(item)"
+                                    class="guardian-button guardian-button-secondary">Fill the field with suggestion
+                                </button>
                             </div>
+
+                            <div *ngIf="ifInvalidField(item)" class="invalid-field-label invalid-sub-schema">
+                                Please make sure all fields in schema contain a valid value
+                            </div>
+
+                            <div *ngIf="item.control" class="form-field-array-item">
+                                <div class="form-field-sub-group">
+                                    <ng-container [ngSwitch]="item.customType">
+                                        <app-geojson-type
+                                            *ngSwitchCase="'geo'"
+                                            [form-model]="item.model"
+                                            [disabled]="item.control?.disabled">
+                                        </app-geojson-type>
+                                        <app-sentinel-hub-type
+                                            *ngSwitchCase="'sentinel'"
+                                            [form-model]="item.model"
+                                            [disabled]="item.control?.disabled">
+                                        </app-sentinel-hub-type>
+                                        <app-schema-form
+                                            *ngSwitchDefault
+                                            [form-model]="item.model"
+                                            [private-fields]="hide"
+                                            [rules]="rules"
+                                            [dryRun]="dryRun"
+                                            [policyId]="policyId"
+                                            [delimiter-hide]="true"
+                                            [isChildSchema]="true"
+                                            [isFormForRequestBlock]="isFormForRequestBlock">
+                                        </app-schema-form>
+                                    </ng-container>
+                                </div>
+                            </div>
+
                             <button
-                                (click)="patchSuggestValue(item)"
-                                class="guardian-button guardian-button-secondary">Fill the field with suggestion
+                                *ngIf="!item.control && !item.readonly"
+                                (click)="addGroup(item)"
+                                class="guardian-button guardian-button-secondary add-btn">
+                                <div class="guardian-button-icon">
+                                    <svg-icon class="icon-btn svg-icon"
+                                            src="/assets/images/icons/add.svg"
+                                            svgClass="icon-color-primary">
+                                    </svg-icon>
+                                </div>
+                                <div class="guardian-button-label">Add [{{ item.description }}]</div>
                             </button>
-                        </div>
-
-                        <div *ngIf="ifInvalidField(item)" class="invalid-field-label invalid-sub-schema">
-                            Please make sure all fields in schema contain a valid value
-                        </div>
-
-                        <div *ngIf="item.control" class="form-field-array-item">
-                            <div class="form-field-sub-group">
-                                <ng-container [ngSwitch]="item.customType">
-                                    <app-geojson-type
-                                        *ngSwitchCase="'geo'"
-                                        [form-model]="item.model"
-                                        [disabled]="item.control?.disabled">
-                                    </app-geojson-type>
-                                    <app-sentinel-hub-type
-                                        *ngSwitchCase="'sentinel'"
-                                        [form-model]="item.model"
-                                        [disabled]="item.control?.disabled">
-                                    </app-sentinel-hub-type>
-                                    <app-schema-form
-                                        *ngSwitchDefault
-                                        [form-model]="item.model"
-                                        [private-fields]="hide"
-                                        [rules]="rules"
-                                        [dryRun]="dryRun"
-                                        [policyId]="policyId"
-                                        [delimiter-hide]="true"
-                                        [isChildSchema]="true"
-                                        [isFormForRequestBlock]="isFormForRequestBlock">
-                                    </app-schema-form>
-                                </ng-container>
-                            </div>
-                        </div>
-
-                        <button
-                            *ngIf="!item.control && !item.readonly"
-                            (click)="addGroup(item)"
-                            class="guardian-button guardian-button-secondary add-btn">
-                            <div class="guardian-button-icon">
-                                <svg-icon class="icon-btn svg-icon"
-                                          src="/assets/images/icons/add.svg"
-                                          svgClass="icon-color-primary">
-                                </svg-icon>
-                            </div>
-                            <div class="guardian-button-label">Add [{{ item.description }}]</div>
-                        </button>
+                        </ng-container>
                     </p-accordionTab>
                 </p-accordion>
             </div>
@@ -466,94 +468,95 @@
                             </div>
                         </ng-template>
 
-                        <div *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control.value, item)" class="suggestion">
-                            <div *ngIf="!suggestIsObject(item.suggest)" class="suggestion-name">
-                                <span class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
+                        <ng-container *ngIf="item.open">
+                            <div *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control.value, item)" class="suggestion">
+                                <div *ngIf="!suggestIsObject(item.suggest)" class="suggestion-name">
+                                    <span class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
+                                </div>
+                                <button
+                                    (click)="patchSuggestValue(item)"
+                                    class="guardian-button guardian-button-secondary">Fill the field with suggestion
+                                </button>
                             </div>
-                            <button
-                                (click)="patchSuggestValue(item)"
-                                class="guardian-button guardian-button-secondary">Fill the field with suggestion
-                            </button>
-                        </div>
 
-                        <div *ngIf="ifInvalidField(item)" class="invalid-field-label invalid-sub-schema">
-                            Please make sure all fields in schemas contain a valid value
-                        </div>
+                            <div *ngIf="ifInvalidField(item)" class="invalid-field-label invalid-sub-schema">
+                                Please make sure all fields in schemas contain a valid value
+                            </div>
 
-                        <div *ngFor="let listItem of item.list"
-                             class="accordion-container form-field-array-item-container"
-                             [attr.index]="listItem.index"
-                             [attr.required]="item.required"
-                        >
-                            <p-accordion class="guardian-accordion">
-                                <p-accordionTab [(selected)]="listItem.open">
-                                    <ng-template pTemplate="header">
-                                        <div class="group-label-field" id="detail-section">
-                                            <span
-                                                [attr.default]="item.default && !item.isPreset && !item.control.dirty">
-                                                {{ item.description }} #{{ listItem.index2 }}
-                                            </span>
+                            <div *ngFor="let listItem of item.list"
+                                class="accordion-container form-field-array-item-container"
+                                [attr.index]="listItem.index"
+                                [attr.required]="item.required"
+                            >
+                                <p-accordion class="guardian-accordion">
+                                    <p-accordionTab [(selected)]="listItem.open">
+                                        <ng-template pTemplate="header">
+                                            <div class="group-label-field" id="detail-section">
+                                                <span
+                                                    [attr.default]="item.default && !item.isPreset && !item.control.dirty">
+                                                    {{ item.description }} #{{ listItem.index2 }}
+                                                </span>
 
-                                            <div
-                                                *ngIf="!item.control.disabled"
-                                                class="guardian-icon-button big"
-                                                (click)="removeItem(item, listItem, $event)">
-                                                <svg-icon
-                                                    class="icon-btn"
-                                                    src="/assets/images/icons/delete.svg"
-                                                    svgClass="icon-color-delete">
-                                                </svg-icon>
+                                                <div
+                                                    *ngIf="!item.control.disabled"
+                                                    class="guardian-icon-button big"
+                                                    (click)="removeItem(item, listItem, $event)">
+                                                    <svg-icon
+                                                        class="icon-btn"
+                                                        src="/assets/images/icons/delete.svg"
+                                                        svgClass="icon-color-delete">
+                                                    </svg-icon>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </ng-template>
+                                        </ng-template>
+                                        <ng-container *ngIf="listItem.open">
+                                            <div class="form-field-array-item">
+                                                <div class="form-field-group">
+                                                    <ng-container [ngSwitch]="item.customType">
+                                                        <app-geojson-type
+                                                            *ngSwitchCase="'geo'"
+                                                            [form-model]="listItem.model"
+                                                            [disabled]="item.control?.disabled">
+                                                        </app-geojson-type>
+                                                        <app-sentinel-hub-type
+                                                            *ngSwitchCase="'sentinel'"
+                                                            [form-model]="listItem.model"
+                                                            [disabled]="item.control?.disabled">
+                                                        </app-sentinel-hub-type>
+                                                        <app-schema-form
+                                                            *ngSwitchDefault
+                                                            [form-model]="listItem.model"
+                                                            [dryRun]="dryRun"
+                                                            [policyId]="policyId"
+                                                            [rules]="rules"
+                                                            [private-fields]="hide"
+                                                            [delimiter-hide]="true"
+                                                            [isChildSchema]="true"
+                                                            [isFormForRequestBlock]="isFormForRequestBlock"
+                                                            [paginationHidden]="paginationHidden">
+                                                        </app-schema-form>
+                                                    </ng-container>
+                                                </div>
+                                            </div>
+                                        </ng-container>
+                                    </p-accordionTab>
+                                </p-accordion>
 
-                                    <div class="form-field-array-item">
-                                        <div class="form-field-group">
-                                            <ng-container [ngSwitch]="item.customType">
-                                                <app-geojson-type
-                                                    *ngSwitchCase="'geo'"
-                                                    [form-model]="listItem.model"
-                                                    [disabled]="item.control?.disabled">
-                                                </app-geojson-type>
-                                                <app-sentinel-hub-type
-                                                    *ngSwitchCase="'sentinel'"
-                                                    [form-model]="listItem.model"
-                                                    [disabled]="item.control?.disabled">
-                                                </app-sentinel-hub-type>
-                                                <app-schema-form
-                                                    *ngSwitchDefault
-                                                    [form-model]="listItem.model"
-                                                    [dryRun]="dryRun"
-                                                    [policyId]="policyId"
-                                                    [rules]="rules"
-                                                    [private-fields]="hide"
-                                                    [delimiter-hide]="true"
-                                                    [isChildSchema]="true"
-                                                    [isFormForRequestBlock]="isFormForRequestBlock"
-                                                    [paginationHidden]="paginationHidden">
-                                                </app-schema-form>
-                                            </ng-container>
-                                        </div>
-                                    </div>
-
-                                </p-accordionTab>
-                            </p-accordion>
-
-                        </div>
-
-                        <button
-                            *ngIf="!item.control.disabled"
-                            (click)="addItem(item)"
-                            class="guardian-button guardian-button-secondary add-btn">
-                            <div class="guardian-button-icon">
-                                <svg-icon class="icon-btn svg-icon"
-                                          src="/assets/images/icons/add.svg"
-                                          svgClass="icon-color-primary">
-                                </svg-icon>
                             </div>
-                            <div class="guardian-button-label">Add [{{ item.description }}]</div>
-                        </button>
 
+                            <button
+                                *ngIf="!item.control.disabled"
+                                (click)="addItem(item)"
+                                class="guardian-button guardian-button-secondary add-btn">
+                                <div class="guardian-button-icon">
+                                    <svg-icon class="icon-btn svg-icon"
+                                            src="/assets/images/icons/add.svg"
+                                            svgClass="icon-color-primary">
+                                    </svg-icon>
+                                </div>
+                                <div class="guardian-button-label">Add [{{ item.description }}]</div>
+                            </button>
+                        </ng-container>
                     </p-accordionTab>
                 </p-accordion>
 

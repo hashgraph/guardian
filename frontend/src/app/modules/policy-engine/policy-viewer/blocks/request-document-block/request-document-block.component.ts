@@ -415,15 +415,6 @@ export class RequestDocumentBlockComponent
             const presetDocument = DocumentGenerator.generateDocument(this.schema, undefined, this.rowDocument);
             this.preset(presetDocument);
         }
-        // console.log('onDryRun');
-        // if (this.schema) {
-        //     console.time('buildForm');
-        //     const form = this.buildForm(this.schema, TEST_DATA);
-        //     console.timeEnd('buildForm');
-        //     // console.log(JSON.stringify(getO(form.value), null, 4));
-        //     // console.log(JSON.stringify(getO(TEST_DATA), null, 4));
-        //     debugger;
-        // }
     }
 
     public onCancelPage(value: boolean) {
@@ -442,28 +433,3 @@ export class RequestDocumentBlockComponent
         }
     }
 }
-
-// function getO(json: any): any {
-//     if (json) {
-//         if (typeof json === 'object') {
-//             if (Array.isArray(json)) {
-//                 const clone: any[] = [];
-//                 for (const e of json) {
-//                     clone.push(getO(e));
-//                 }
-//                 return clone;
-//             } else {
-//                 const clone: any = {};
-//                 const keys = Object.keys(json).sort();
-//                 for (const key of keys) {
-//                     clone[key] = getO(json[key]);
-//                 }
-//                 return clone;
-//             }
-//         } else {
-//             return json;
-//         }
-//     } else {
-//         return json;
-//     }
-// }

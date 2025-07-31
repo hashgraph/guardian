@@ -435,7 +435,7 @@ export class FieldForm {
             path: field.path || '',
             fullPath: field.fullPath || '',
             control: null,
-            open: true,
+            open: false,
             subject: new Subject(),
             visibility: true,
             model: null
@@ -557,7 +557,7 @@ export class FieldForm {
             index: String(count),
             index2: String(count + 1),
             control: null,
-            open: true,
+            open: false,
             model: null,
         };
         if (item.isRef) {
