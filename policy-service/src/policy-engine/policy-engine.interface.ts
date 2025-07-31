@@ -17,15 +17,6 @@ export enum ActionType {
 /**
  * Policy roles interface
  */
-export enum ActionType {
-    COMMON = 'COMMON',
-    LOCAL = 'LOCAL',
-    REMOTE = 'REMOTE'
-}
-
-/**
- * Policy roles interface
- */
 export interface IPolicyRoles {
     [policyId: string]: string;
 }
