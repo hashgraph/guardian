@@ -3,7 +3,7 @@ import { BlockActionError } from '../errors/index.js';
 import { DocumentCategoryType, DocumentSignature, LocationType, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import { Token as TokenCollection, VcHelper, VcDocumentDefinition as VcDocument, MessageServer, VCMessage, MessageAction, VPMessage, HederaDidDocument } from '@guardian/common';
+import { Token as TokenCollection, VcHelper, VcDocumentDefinition as VcDocument, MessageServer, VCMessage, MessageAction, VPMessage, HederaDidDocument, KEY_TYPE_KEY_ENTITY, KeyType } from '@guardian/common';
 import { PolicyUtils } from '../helpers/utils.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
@@ -37,7 +37,8 @@ import { MintService } from '../mint/mint-service.js';
         defaultEvent: true
     },
     variables: [
-        { path: 'options.tokenId', alias: 'token', type: 'Token' }
+        { path: 'options.tokenId', alias: 'token', type: 'Token' },
+        { path: 'options.template', alias: 'template', type: 'TokenTemplate' }
     ]
 })
 export class RetirementBlock {
@@ -183,6 +184,28 @@ export class RetirementBlock {
     }
 
     /**
+     * Get Token
+     * @param ref
+     * @param docs
+     * @private
+     */
+    private async getToken(ref: AnyBlockType, docs: IPolicyDocument[]): Promise<TokenCollection> {
+        let token: TokenCollection;
+        if (ref.options.useTemplate) {
+            if (docs[0].tokens) {
+                const tokenId = docs[0].tokens[ref.options.template];
+                token = await ref.databaseServer.getToken(tokenId, ref.dryRun);
+            }
+        } else {
+            token = await ref.databaseServer.getToken(ref.options.tokenId);
+        }
+        if (!token) {
+            throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
+        }
+        return token;
+    }
+
+    /**
      * Run action
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
@@ -197,15 +220,14 @@ export class RetirementBlock {
     @CatchErrors()
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-
-        const token = await ref.databaseServer.getToken(ref.options.tokenId);
-        if (!token) {
-            throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
-        }
-
         const docs = PolicyUtils.getArray<IPolicyDocument>(event.data.data);
         if (!docs.length && docs[0]) {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
+        }
+
+        const token = await this.getToken(ref, docs);
+        if (!token) {
+            throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
 
         const docOwner = await PolicyUtils.getDocumentOwner(ref, docs[0], event?.user?.userId);
