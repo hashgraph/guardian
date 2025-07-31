@@ -354,7 +354,7 @@
             <div *ngIf="ifSubSchema(item)"
                 class="accordion-container form-field-group sub-schema sub-schema-{{item.customType}}"
             >
-                <p-accordion class="guardian-accordion">
+                <p-accordion class="guardian-accordion {{item.control?.invalid ? 'guardian-accordion-error' : ''}}">
                     <p-accordionTab [(selected)]="item.open">
                         <ng-template pTemplate="header">
                             <div class="group-label-field" id="detail-section">
@@ -450,7 +450,7 @@
             <!-- array of sub schemas -->
             <div *ngIf="ifSubSchemaArray(item)"
                  class="accordion-container form-field-group schema-form-field-array-group sub-schemas sub-schema-{{item.customType}}">
-                <p-accordion class="guardian-accordion">
+                <p-accordion class="guardian-accordion {{item.control?.invalid ? 'guardian-accordion-error' : ''}}">
                     <p-accordionTab [(selected)]="item.open">
                         <ng-template pTemplate="header">
                             <div class="group-label-field" id="detail-section">
@@ -488,7 +488,7 @@
                                 [attr.index]="listItem.index"
                                 [attr.required]="item.required"
                             >
-                                <p-accordion class="guardian-accordion">
+                                <p-accordion class="guardian-accordion {{item.control?.invalid ? 'guardian-accordion-error' : ''}}">
                                     <p-accordionTab [(selected)]="listItem.open">
                                         <ng-template pTemplate="header">
                                             <div class="group-label-field" id="detail-section">
