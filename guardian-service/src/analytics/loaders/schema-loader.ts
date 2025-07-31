@@ -66,7 +66,8 @@ export class SchemaLoader {
             .getMessage<PolicyMessage>({
                 messageId,
                 loadIPFS: true,
-                userId: user.id
+                userId: user.id,
+                interception: user.id
             });
         if (message.type !== MessageType.InstancePolicy) {
             throw new Error('Invalid Message Type');

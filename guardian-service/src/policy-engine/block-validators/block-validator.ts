@@ -55,11 +55,15 @@ import { ButtonBlockAddon } from './blocks/button-block-addon.js';
 import { DropdownBlockAddon } from './blocks/dropdown-block-addon.js';
 import { RequestVcDocumentBlockAddon } from './blocks/request-vc-document-block-addon.js';
 import { DataTransformationAddon } from './blocks/data-transformation-addon.js';
+import { TransformationButtonBlock } from './blocks/transformation-button-block.js';
+import { IntegrationButtonBlock } from './blocks/integration-button-block.js';
 
 export const validators = [
     InterfaceDocumentActionBlock,
     AggregateBlock,
     ButtonBlock,
+    TransformationButtonBlock,
+    IntegrationButtonBlock,
     CalculateContainerBlock,
     CalculateMathAddon,
     CalculateMathVariables,
@@ -172,6 +176,13 @@ export class BlockValidator {
         }
         this.options = options;
         this.children = [];
+    }
+
+    /**
+     * Is Dry Run
+     */
+    public get isDryRun(): boolean {
+        return (this.validator instanceof PolicyValidator) && this.validator.isDryRun;
     }
 
     /**

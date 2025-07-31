@@ -1,56 +1,67 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{header}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
 <div class="dialog-body">
+    <div *ngIf="!started" class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+    </div>
     <div class="g-dialog-header">
-        <p-tabView>
+        <p-tabView class="guardian-tabs action-tabs" [activeIndex]="tab">
             <p-tabPanel *ngFor="let tab of items; let i = index">
                 <ng-template pTemplate="header">
-                    <div (click)="handleChangeTab(i)" class="tabview-label">
+                    <div (click)="onChangeTab($event, i)" class="tabview-label">
                         {{ tab.label }}
                     </div>
                 </ng-template>
             </p-tabPanel>
         </p-tabView>
     </div>
-    <div
-            (cdkDropListDropped)="drop($event)"
-            [cdkDropListData]="fields"
-            cdkDropList
-            class="g-dialog-body"
-    >
+    <div *ngIf="error && json" class="error-message">
+        {{error}}
+    </div>
+    <div class="g-dialog-body">
         <div style="padding-right: 12px;">
             <app-schema-configuration
-                #document
+                #schemaControl
                 [type]="type"
-                [value]="scheme"
+                [hidden]="!!json"
                 [extended]="extended"
-                (change-fields)="onChangeFields($event)"
-                [schemaType]="schemaType"
-                [modules]="modules"
-                (change-form)="onChangeForm($event)"
                 [policies]="policies"
-                [topicId]="topicId"
-                [properties]="properties"
                 [tools]="tools"
-                (use-update-sub-schemas)="getSubSchemes($event)"
+                [schemaType]="schemaType"
+                [properties]="properties"
+                (change-form)="onChangeForm($event)"
+                (use-update-sub-schemas)="onChangePolicy($event)"
             >
             </app-schema-configuration>
+            <ngx-codemirror 
+                *ngIf="json"
+                (ngModelChange)="onChangeDocument($event)"
+                [(ngModel)]="document"
+                [options]="codeMirrorOptions">
+            </ngx-codemirror>
         </div>
     </div>
 </div>
 <div class="dialog-footer">
     <div class="action-buttons">
         <div class="cancel-button">
-            <button (click)="onClose()" class="button secondary"
-                    label="Cancel"
-                    pButton
-            ></button>
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary"
+            >Cancel</button>
         </div>
         <div>
-            <button (click)="onCreate()" [disabled]="!(valid && started)"
-                    class="button"
-                    label="Save"
-                    pButton
-            >
-            </button>
+            <button 
+                (click)="onCreate()" 
+                [disabled]="disabled"
+                class="guardian-button guardian-button-primary"
+            >Save</button>
         </div>
     </div>
 </div>

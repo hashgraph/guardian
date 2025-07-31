@@ -113,6 +113,75 @@ export class CompareUtils {
     }
 
     /**
+     * Convert object to csv file
+     * @param csv
+     * @param table
+     * @public
+     * @static
+     */
+    public static objectToCsv(object: any): CSV {
+        const csv = new CSV()
+            .add('Index')
+            .add('Key')
+            .add('Value')
+            .add('Type')
+            .addLine();
+
+        CompareUtils.convertToCsvRecursive(csv, object);
+
+        return csv;
+    }
+
+    private static convertToCsvRecursive(csv: CSV, object: any, index?: string, parentKey?: string) {
+
+        if (Array.isArray(object)) {
+            const arrayIndex = index || '0';
+            const arrayKey = parentKey || '';
+
+            csv
+                .add(arrayIndex)
+                .add(arrayKey)
+                .add('')
+                .add('array')
+                .addLine();
+
+            object.forEach((value, i) => {
+                const path = (arrayIndex ? arrayIndex + '.' + i : i).toString();
+                // const key = (parentKey ? i + '.' + parentKey : i).toString();
+
+                CompareUtils.convertToCsvRecursive(csv, value, path, i.toString());
+            })
+        } else if (object !== null && typeof object === 'object') {
+            let objectIndex = null;
+            const objectKey = parentKey || '';
+
+            if (index) {
+                objectIndex = index;
+                csv
+                    .add(objectIndex)
+                    .add(objectKey)
+                    .add('')
+                    .add('object')
+                    .addLine();
+            }
+
+            Object.keys(object).forEach((key, i) => {
+                const value = object[key];
+                const path = (objectIndex ? objectIndex + '.' + i : i).toString();
+
+                CompareUtils.convertToCsvRecursive(csv, value, path, key);
+            })
+        } else {
+            csv
+                .add(index || '0')
+                .add(parentKey || '')
+                .add(object)
+                .add(typeof object)
+                .addLine();
+        }
+    }
+
+    /**
      * Aggregate hash
      * @param args - hash (array)
      * @public

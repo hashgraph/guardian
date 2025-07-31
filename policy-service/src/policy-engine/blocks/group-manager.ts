@@ -119,7 +119,8 @@ export class GroupManagerBlock {
                     dryRun: ref.dryRun,
                     messageId: member.messageId,
                     loadIPFS: true,
-                    userId
+                    userId,
+                    interception: null
                 });
             const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId, userId);
             message.setMessageStatus(MessageStatus.WITHDRAW, text);

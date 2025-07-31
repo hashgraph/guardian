@@ -23,6 +23,11 @@ context("Create User Accounts_Non Happy Scenarios", { tags: ['ui'] }, () => {
         homepage.verifyAlert();
     });
 
+    it("Verify error message when the password is weak", () => {
+        homepage.createAccount("User", userUsername + "1", "tt");
+        homepage.verifyWeakPasswordAlert();
+    });
+
     it("Verify error message when the username field is left blank in Create SR flow", () => {
         homepage.selectAccoutTypeToCreate("SR");
         homepage.checkCreateDisabledUserNameEmpty();

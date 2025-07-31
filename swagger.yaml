@@ -94,12 +94,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccountsSessionResponseDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
         '500':
           description: Internal server error.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
       summary: Change user password.
       tags:
         - accounts
@@ -1094,7 +1100,7 @@ paths:
       description: >-
         Create smart-contract. Only users with the Standard Registry role are
         allowed to make the request.
-      operationId: ContractsApi_createContract
+      operationId: ContractsApi_createContractV2
       parameters: []
       requestBody:
         required: true
@@ -2242,7 +2248,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RetireRequestTokenDTO'
+              type: array
+              items:
+                $ref: '#/components/schemas/RetireRequestTokenDTO'
       responses:
         '200':
           description: Successful operation.
@@ -2902,33 +2910,6 @@ paths:
       summary: Return url on seq store.
       tags:
         - logs
-  /map/key:
-    get:
-      description: Return map API key.
-      operationId: MapApi_getKey
-      parameters: []
-      responses:
-        '200':
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: string
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-      security:
-        - bearer: []
-      summary: Get map API key.
-      tags:
-        - map
   /map/sh:
     get:
       description: Return sentinel API key.
@@ -4368,6 +4349,42 @@ paths:
       summary: Return a list of tools.
       tags:
         - tools
+  /tools/check/{messageId}:
+    get:
+      description: >-
+        Checks the availability of the tool. Only users with the Standard
+        Registry role are allowed to make the request.
+      operationId: ToolsApi_checkTool
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Tool message ID
+          schema:
+            example: '0000000000.000000001'
+            type: string
+      responses:
+        '200':
+          description: Availability of the tool.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Checks the availability of the tool.
+      tags:
+        - tools
   /profiles/{username}:
     get:
       description: >-
@@ -4815,6 +4832,13 @@ paths:
           description: Policy type
           schema:
             example: local
+            type: string
+        - name: status
+          required: false
+          in: query
+          description: Policy status
+          schema:
+            example: PUBLISH
             type: string
       responses:
         '200':
@@ -5585,6 +5609,265 @@ paths:
       security:
         - bearer: []
       summary: Get policy documents.
+      tags:
+        - policies
+  /policies/{policyId}/search-documents:
+    get:
+      description: Get policy documents with filters.
+      operationId: PolicyApi_getPolicyDocumentsExport
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: textSearch
+          required: false
+          in: query
+          description: Text search
+          schema:
+            example: Example
+            type: string
+        - name: schemas
+          required: false
+          in: query
+          description: Schemas
+          schema:
+            example:
+              - '#001, #002'
+            type: string
+        - name: owners
+          required: false
+          in: query
+          description: Owners
+          schema:
+            example:
+              - 001, 002
+            type: string
+        - name: tokens
+          required: false
+          in: query
+          description: Tokens
+          schema:
+            example:
+              - 001, 002
+            type: string
+        - name: related
+          required: false
+          in: query
+          description: Related
+          schema:
+            example:
+              - 001, 002
+            type: string
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          schema:
+            example: 20
+            type: number
+      responses:
+        '200':
+          description: Documents.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get policy documents with filters.
+      tags:
+        - policies
+  /policies/{policyId}/export-documents:
+    get:
+      description: Export policy project data in CSV format.
+      operationId: PolicyApi_exportPolicyDocuments
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: ids
+          required: false
+          in: query
+          description: Ids
+          schema:
+            example:
+              - 001, 002
+            type: string
+        - name: textSearch
+          required: false
+          in: query
+          description: Text search
+          schema:
+            example: Example
+            type: string
+        - name: schemas
+          required: false
+          in: query
+          description: Schemas
+          schema:
+            example:
+              - '#001, #002'
+            type: string
+        - name: owners
+          required: false
+          in: query
+          description: Owners
+          schema:
+            example:
+              - 001, 002
+            type: string
+        - name: tokens
+          required: false
+          in: query
+          description: Tokens
+          schema:
+            example:
+              - 001, 002
+            type: string
+        - name: related
+          required: false
+          in: query
+          description: Related
+          schema:
+            example:
+              - 001, 002
+            type: string
+      responses:
+        '200':
+          description: Successful operation. Response zip file.
+          content:
+            application/json:
+              schema:
+                type: string
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns a zip file containing policy project data.
+      tags:
+        - policies
+  /policies/{policyId}/document-owners:
+    get:
+      description: Get policy document owners.
+      operationId: PolicyApi_getDocumentOwners
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Owner Ids.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get policy document owners.
+      tags:
+        - policies
+  /policies/{policyId}/tokens:
+    get:
+      description: Get policy tokens.
+      operationId: PolicyApi_getTokens
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Token Ids.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get policy tokens.
       tags:
         - policies
   /policies/{policyId}/data:
@@ -6912,6 +7195,94 @@ paths:
       summary: Change active virtual user.
       tags:
         - policies
+  /policies/{policyId}/dry-run/block:
+    post:
+      description: >-
+        . Only users with the Standard Registry role are allowed to make the
+        request.
+      operationId: PolicyApi_runBlock
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      requestBody:
+        required: true
+        description: Block config.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DebugBlockConfigDTO'
+      responses:
+        '200':
+          description: Result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebugBlockResultDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: .
+      tags:
+        - policies
+  /policies/{policyId}/dry-run/block/{tagName}/history:
+    get:
+      description: >-
+        . Only users with the Standard Registry role are allowed to make the
+        request.
+      operationId: PolicyApi_getBlockHistory
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: tagName
+          required: true
+          in: path
+          description: Block name (Tag)
+          schema:
+            example: block-tag
+            type: string
+      responses:
+        '200':
+          description: Input data.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DebugBlockHistoryDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: .
+      tags:
+        - policies
   /policies/{policyId}/savepoint/create:
     post:
       description: >-
@@ -7004,13 +7375,6 @@ paths:
           schema:
             example: '000000000000000000000001'
             type: string
-      requestBody:
-        required: true
-        description: .
-        content:
-          application/json:
-            schema:
-              type: string
       responses:
         '200':
           description: .
@@ -7846,6 +8210,13 @@ paths:
           description: Topic id
           schema:
             example: 0.0.1
+            type: string
+        - name: search
+          required: false
+          in: query
+          description: Search
+          schema:
+            example: text
             type: string
       responses:
         '200':
@@ -9044,6 +9415,7 @@ paths:
               - USER
               - POLICY
               - MINT_TOKEN
+              - INTEGRATION_DATA
               - WIPE_TOKEN
               - MINT_NFTOKEN
             type: string
@@ -15384,6 +15756,13 @@ paths:
           schema:
             example: 20
             type: number
+        - name: status
+          required: false
+          in: query
+          description: Status
+          schema:
+            example: NEW
+            type: string
       responses:
         '200':
           description: Successful operation. Returns notifications and count.
@@ -15474,7 +15853,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 3.2.0
+  version: 3.3.0-rc
   contact:
     name: API developer
     url: https://envisionblockchain.com
@@ -15606,9 +15985,10 @@ components:
           items:
             type: string
         credentialSubject:
-          items:
-            type: array
+          additionalProperties: true
           type: array
+          items:
+            type: object
         issuer:
           oneOf:
             - type: string
@@ -15643,7 +16023,10 @@ components:
           items:
             type: string
         verifiableCredential:
+          additionalProperties: true
           type: array
+          items:
+            type: object
         proof:
           $ref: '#/components/schemas/ProofDTO'
       required:
@@ -15849,6 +16232,7 @@ components:
             groupName: Name
             active: true
         userGroups:
+          additionalProperties: true
           example:
             - uuid: 00000000-0000-0000-0000-000000000000
               role: Installer
@@ -15857,7 +16241,7 @@ components:
               active: true
           type: array
           items:
-            type: array
+            type: object
         policyRoles:
           example:
             - Registrant
@@ -15865,6 +16249,7 @@ components:
           items:
             type: string
         policyNavigation:
+          additionalProperties: true
           example:
             - role: Registrant
               steps:
@@ -15873,8 +16258,9 @@ components:
                   name: Step name
           type: array
           items:
-            type: array
+            type: object
         policyTopics:
+          additionalProperties: true
           example:
             - name: Project
               description: Project
@@ -15883,8 +16269,9 @@ components:
               type: any
           type: array
           items:
-            type: array
+            type: object
         policyTokens:
+          additionalProperties: true
           example:
             - tokenName: Token name
               tokenSymbol: Token symbol
@@ -15898,8 +16285,9 @@ components:
               templateTokenTag: token_template_0
           type: array
           items:
-            type: array
+            type: object
         policyGroups:
+          additionalProperties: true
           example:
             - name: Group name
               creator: Registrant
@@ -15909,7 +16297,7 @@ components:
                 - Registrant
           type: array
           items:
-            type: array
+            type: object
         categories:
           type: array
           items:
@@ -16068,11 +16456,10 @@ components:
           example: >-
             #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
         tags:
-          example: Tag
           additionalProperties: true
           type: array
           items:
-            type: array
+            type: object
         vcCount:
           type: number
           example: 0
@@ -16085,6 +16472,8 @@ components:
         rate:
           type: number
           example: 0
+      required:
+        - tags
     SearchPoliciesDTO:
       type: object
       properties:
@@ -16525,10 +16914,10 @@ components:
           example: 00000000-0000-0000-0000-000000000000
         config:
           type: object
-          required: []
           additionalProperties: {}
       required:
         - id
+        - config
     SearchBlocksDTO:
       type: object
       properties:
@@ -16862,9 +17251,10 @@ components:
         totalCount:
           type: number
         logs:
+          additionalProperties: true
           type: array
           items:
-            type: array
+            type: object
       required:
         - totalCount
         - logs
@@ -16950,6 +17340,7 @@ components:
             - USER
             - POLICY
             - MINT_TOKEN
+            - INTEGRATION_DATA
             - RETIRE
             - WIPE_TOKEN
             - MINT_NFTOKEN
@@ -17068,15 +17459,17 @@ components:
         messageId:
           type: string
         schemas:
+          additionalProperties: true
           nullable: true
           type: array
           items:
-            type: array
+            type: object
         tags:
+          additionalProperties: true
           nullable: true
           type: array
           items:
-            type: array
+            type: object
         moduleTopicId:
           type: string
           nullable: true
@@ -17222,13 +17615,15 @@ components:
         tool:
           $ref: '#/components/schemas/ToolDTO'
         schemas:
+          additionalProperties: true
           type: array
           items:
-            type: array
+            type: object
         tags:
+          additionalProperties: true
           type: array
           items:
-            type: array
+            type: object
         tools:
           type: array
           items:
@@ -17338,40 +17733,47 @@ components:
           items:
             type: string
         verificationMethod:
+          additionalProperties: true
           nullable: true
           type: array
           items:
-            type: array
+            type: object
         authentication:
+          additionalProperties: true
           nullable: true
           type: array
           items:
-            type: array
+            type: object
         assertionMethod:
+          additionalProperties: true
           nullable: true
           type: array
           items:
-            type: array
+            type: object
         keyAgreement:
+          additionalProperties: true
           nullable: true
           type: array
           items:
-            type: array
+            type: object
         capabilityInvocation:
+          additionalProperties: true
           nullable: true
           type: array
           items:
-            type: array
+            type: object
         capabilityDelegation:
+          additionalProperties: true
           nullable: true
           type: array
           items:
-            type: array
+            type: object
         service:
+          additionalProperties: true
           nullable: true
           type: array
           items:
-            type: array
+            type: object
       required:
         - id
         - context
@@ -17440,7 +17842,6 @@ components:
         didDocument:
           type: object
           nullable: false
-          required: []
           additionalProperties:
             type: array
             items:
@@ -17448,6 +17849,7 @@ components:
       required:
         - valid
         - error
+        - didDocument
     DidKeyStatusDTO:
       type: object
       properties:
@@ -17659,13 +18061,15 @@ components:
           type: string
           example: '0000000000.000000001'
         schemas:
+          additionalProperties: true
           type: array
           items:
-            type: array
+            type: object
         tags:
+          additionalProperties: true
           type: array
           items:
-            type: array
+            type: object
         moduleTopicId:
           type: string
           example: 0.0.1
@@ -17675,6 +18079,100 @@ components:
         - schemas
         - tags
         - moduleTopicId
+    DebugBlockDataDTO:
+      type: object
+      properties:
+        input:
+          type: string
+          description: Input event
+          example: RunEvent
+        output:
+          type: string
+          description: Output event
+          example: RunEvent
+        type:
+          type: string
+          description: Document type
+          enum:
+            - schema
+            - json
+            - file
+            - history
+          example: json
+        document:
+          description: Document
+          oneOf:
+            - type: string
+            - type: object
+              additionalProperties: true
+      required:
+        - input
+        - output
+        - type
+        - document
+    DebugBlockConfigDTO:
+      type: object
+      properties:
+        block:
+          type: object
+          description: Block config
+          additionalProperties: true
+        data:
+          description: Input data
+          allOf:
+            - $ref: '#/components/schemas/DebugBlockDataDTO'
+      required:
+        - block
+        - data
+    DebugBlockResultDTO:
+      type: object
+      properties:
+        logs:
+          description: Logs
+          type: array
+          items:
+            type: string
+        errors:
+          description: Errors
+          type: array
+          items:
+            type: string
+        input:
+          description: Input documents
+          additionalProperties: true
+          type: array
+          items:
+            type: object
+        output:
+          description: Output documents
+          additionalProperties: true
+          type: array
+          items:
+            type: object
+      required:
+        - logs
+        - errors
+        - input
+        - output
+    DebugBlockHistoryDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: History ID
+          example: '000000000000000000000001'
+        createDate:
+          type: string
+          description: Create date
+          example: '1900-01-01T00:00:00.000Z'
+        document:
+          type: object
+          description: Input data
+          additionalProperties: true
+      required:
+        - id
+        - createDate
+        - document
     RunningDetailsDTO:
       type: object
       properties:
@@ -18268,13 +18766,65 @@ components:
               type: string
         schemas:
           additionalProperties: false
-          items:
-            type: array
+          properties:
+            name:
+              type: string
+            iri:
+              type: string
+            isApproveEnable:
+              type: boolean
+            isMintSchema:
+              type: boolean
+            mintOptions:
+              type: object
+              properties:
+                tokenId:
+                  type: string
+                rule:
+                  type: string
+            dependencySchemaIri:
+              type: string
+            relationshipsSchemaIri:
+              type: string
+            initialRolesFor:
+              type: array
+              items:
+                type: string
+            rolesConfig:
+              type: array
+              items:
+                type: object
+                properties:
+                  role:
+                    type: string
+                  isApprover:
+                    type: boolean
+                  isCreator:
+                    type: boolean
+                  gridColumns:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                        title:
+                          type: string
           type: array
+          items:
+            type: object
         trustChain:
-          items:
-            type: array
+          additionalProperties: false
+          properties:
+            role:
+              type: string
+            mintSchemaIri:
+              type: string
+            viewOnlyOwnDocuments:
+              type: boolean
           type: array
+          items:
+            type: object
       required:
         - roles
         - schemas
@@ -18344,9 +18894,9 @@ components:
           type: string
         children:
           nullable: true
-          items:
-            type: array
           type: array
+          items:
+            $ref: '#/components/schemas/SuggestionsInputDTO'
       required:
         - blockType
         - children

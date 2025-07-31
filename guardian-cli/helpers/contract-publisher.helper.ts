@@ -26,7 +26,7 @@ export class ContractPublisher {
     /**
      * Chunk size
      */
-    public static readonly CHUNK_SIZE = 20000;
+    public static readonly CHUNK_SIZE = 4096;
 
     /**
      * Split contract bytecode
@@ -44,6 +44,22 @@ export class ContractPublisher {
             chunks.push(chunk);
             chuckedSize += chunk.length;
         }
+        return chunks;
+    }
+
+    /**
+     * Split contract bytecode Buffer into chunks
+     * @param buffer Contract bytecode buffer
+     * @returns Chunks array (Buffer[])
+     */
+    private static _splitContractBuffer(buffer: Buffer): Buffer[] {
+        const chunks: Buffer[] = [];
+        const chunkSize = ContractPublisher.CHUNK_SIZE;
+
+        for (let i = 0; i < buffer.length; i += chunkSize) {
+            chunks.push(Buffer.from(buffer.subarray(i, i + chunkSize)));
+        }
+
         return chunks;
     }
 
@@ -80,7 +96,10 @@ export class ContractPublisher {
             const fileCreateTr = await fileCreateEx.getReceipt(client);
             const bytecodeFileId = fileCreateTr.fileId;
 
-            const chunks = ContractPublisher._splitContractBytecode(bytecode);
+            const sanitizedBytecode = bytecode.startsWith('0x') ? bytecode.slice(2) : bytecode;
+            const bytecodeBuffer = Buffer.from(sanitizedBytecode, 'hex');
+            const chunks = ContractPublisher._splitContractBuffer(bytecodeBuffer);
+
             for (const chunk of chunks) {
                 const fileAppendTx = new FileAppendTransaction()
                     .setFileId(bytecodeFileId)
@@ -174,6 +193,13 @@ export class ContractPublisher {
             language: 'Solidity',
             sources,
             settings: {
+                optimizer: {
+                    enabled: true,
+                    runs: 200,
+                },
+                metadata: {
+                    bytecodeHash: 'none',
+                },
                 outputSelection: {
                     '*': {
                         '*': ['*'],

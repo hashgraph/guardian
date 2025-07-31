@@ -7,14 +7,14 @@
     "private": true,
     "resolutions": {
         "@azure/core-rest-pipeline": "1.12.1",
-        "@azure/msal-node": "2.5.1",
+        "@azure/msal-node": "2.9.0",
         "image-size": "1.0.2"
     },
     "scripts": {
         "detect-secrets": "detect-secrets-launcher --word-list exclude-secrets.txt k8s-manifests/**/* */src/**.ts **/.env*",
         "publish-policies": "guardian-cli publish-policies \"Methodology Library\" -c \"configs/automatic-publish-policies.config.json\" -o \"published-policies.txt\""
     },
-    "version": "3.2.0",
+    "version": "3.3.0-rc",
     "workspaces": [
         "interfaces",
         "common",

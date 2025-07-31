@@ -49,8 +49,11 @@
                         class="form-field-input guardian-input-container"
                         [ngClass]="{'ipfs-url' : isIPFS(item)}"
                     >
-                        <input pInputText [formControl]="item.control" [placeholder]="getPlaceholderByFieldType(item)"
-                               type="text"/>
+                        <input pInputText [formControl]="item.control"
+                            (focus)="onFocusField(item.format, item)"
+                            (blur)="onUnfocusField(item.format, item)"
+                            [placeholder]="getPlaceholderByFieldType(item)"
+                            type="text"/>
                         <div *ngIf="isIPFS(item)">
                             <div class="file-upload">
                                 <ng-container [ngSwitch]="item.fileUploading">
@@ -60,7 +63,7 @@
                                     </p-progressSpinner>
 
                                     <button mat-icon-button *ngSwitchCase="false" class="upload-btn"
-                                            (click)="uploadFile(item)">
+                                            (click)="uploadFile(item, isFile(item))">
                                         <i class="pi pi-paperclip"></i>
                                     </button>
                                 </ng-container>
@@ -195,7 +198,9 @@
                                 [ngClass]="{'ipfs-url' : isIPFS(item)}"
                             >
                                 <input pInputText [formControl]="listItem.control"
-                                       [placeholder]="getPlaceholderByFieldType(item)" type="text"/>
+                                    (focus)="onFocusField(item.format, listItem)"
+                                    (blur)="onUnfocusField(item.format, listItem)"
+                                    [placeholder]="getPlaceholderByFieldType(item)" type="text"/>
                                 <div *ngIf="isIPFS(item)">
                                     <div class="file-upload">
                                         <ng-container [ngSwitch]="listItem.fileUploading">
@@ -204,7 +209,7 @@
                                                 [style]="{ width: '38px', height: '38px' }">
                                             </p-progressSpinner>
                                             <button *ngSwitchCase="false" class="upload-btn"
-                                                    (click)="uploadFile(listItem)">
+                                                    (click)="uploadFile(listItem, isFile(item))">
                                                 <i class="pi pi-paperclip"></i>
                                             </button>
                                         </ng-container>
@@ -386,6 +391,7 @@
                                         [isChildSchema]="true"
                                         [policyId]="policyId"
                                         [preset]="item.preset"
+                                        [isFormForRequestBlock]="isFormForRequestBlock"
                                         [rules]="rules"
                                     >
                                     </app-schema-form>
@@ -499,6 +505,7 @@
                                                     [policyId]="policyId"
                                                     [preset]="listItem.preset"
                                                     [rules]="rules"
+                                                    [isFormForRequestBlock]="isFormForRequestBlock"
                                                     [paginationHidden]="paginationHidden">
                                                 </app-schema-form>
                                             </ng-container>
@@ -541,6 +548,7 @@
                     [dryRun]="dryRun"
                     [isChildSchema]="true"
                     [policyId]="policyId"
+                    [isFormForRequestBlock]="isFormForRequestBlock"
                     [rules]="rules">
                 </app-schema-form>
                 <ng-template #elseCondition>
@@ -554,6 +562,7 @@
                         [dryRun]="dryRun"
                         [isChildSchema]="true"
                         [policyId]="policyId"
+                        [isFormForRequestBlock]="isFormForRequestBlock"
                         [rules]="rules">
                     </app-schema-form>
                 </ng-template>
@@ -569,7 +578,9 @@
                 (click)="config.fn()"
                 [disabled]="config.disabled()"
                 type="button"
-                class="guardian-button guardian-button-{{config.type}}">{{ config.text }}
+                class="guardian-button guardian-button-{{config.type}}">
+                <svg-icon *ngIf="config.iconPath" src="{{config.iconPath}}" svgClass="save-icon-color"></svg-icon>
+                {{ config.text }}
             </button>
         </ng-container>
     </div>

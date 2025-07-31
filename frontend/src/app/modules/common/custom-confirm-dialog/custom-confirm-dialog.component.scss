@@ -27,7 +27,7 @@
 
 
 .dialog-body {
-    min-height: 200px;
+    min-height: 100px;
 }
 
 .action-buttons {
@@ -52,6 +52,11 @@
     color: #848FA9;
 }
 
+.save-icon-color {
+    fill: var(--color-primary);
+    color: var(--color-primary);
+}
+
 .confirmation-text {
     font-family: Inter, sans-serif;
     font-size: 16px;
@@ -59,4 +64,5 @@
     font-weight: 500;
     line-height: 18px;
     margin-top: 25px;
+    white-space: pre-line;
 }

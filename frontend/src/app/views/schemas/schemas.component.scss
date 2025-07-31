@@ -47,6 +47,7 @@
 
 .actions-controls-container {
     display: flex;
+    height: 60px;
 }
 
 .toolbar-icons {
@@ -129,8 +130,14 @@ a {
 }
 
 .table-container {
-    margin-top: 20px;
+    margin-top: 0px;
     overflow-x: auto;
+
+    ::ng-deep .p-datatable-wrapper {
+        max-height: calc(100vh - 355px);
+        overflow: auto;
+        margin-bottom: 16px;
+    }
 }
 
 .table-paginator {
@@ -605,7 +612,7 @@ a {
             overflow: hidden;
             height: 48px;
             font-size: 14px;
-            color: var( --color-grey-black-1);
+            color: var(--color-grey-black-1);
             width: 100%;
             display: grid;
             grid-template-columns: 40px 1fr;
@@ -622,5 +629,59 @@ a {
             display: grid;
             justify-self: start;
         }
+    }
+}
+
+.topic-search {
+    margin-right: 16px;
+}
+
+.text-search {
+    position: relative;
+
+    .search-icon {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        pointer-events: none;
+        color: #6c757d;
+    }
+}
+
+.guardian-user-not-data {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--color-grey-black-2);
+    font-family: var(--font-family-inter);
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    row-gap: 8px;
+    justify-content: center;
+
+    &__text {
+        color: var(--color-grey-5, #848fa9);
+        text-align: center;
+        font-family: var(--font-family-inter);
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: normal;
+    }
+
+    &__text-strong {
+        color: var(--color-grey-5, #848fa9);
+        text-align: center;
+        font-family: var(--font-family-inter);
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: normal;
     }
 }

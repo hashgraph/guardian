@@ -332,7 +332,12 @@ export class SchemaImport {
                     message.setDocument(schemaObject);
                     await this.messageServer
                         .setTopicObject(this.topicRow)
-                        .sendMessage(message, true, null, this.owner.id);
+                        .sendMessage(message, {
+                            sendToIPFS: true,
+                            memo: null,
+                            userId: this.owner.id,
+                            interception: this.owner.id
+                        });
                 }
             }
 

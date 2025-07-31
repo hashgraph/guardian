@@ -20,16 +20,21 @@ export function CatchErrors() {
                     try {
                         await target.apply(thisArg, argArray);
                     } catch (error) {
-                        await new PinoLogger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId], userId);
-                        PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user);
-                        thisArg.triggerEvents(PolicyOutputEventType.ErrorEvent, user, data);
                         switch (thisArg.options.onErrorAction) {
                             case BlockErrorActions.RETRY: {
+                                await new PinoLogger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId], userId);
+                                PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user);
+                                thisArg.triggerEvents(PolicyOutputEventType.ErrorEvent, user, data);
+
                                 setTimeout(f, parseInt(thisArg.options.errorTimeout, 10));
                                 break;
                             }
 
                             case BlockErrorActions.GOTO_STEP: {
+                                await new PinoLogger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId], userId);
+                                PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user);
+                                thisArg.triggerEvents(PolicyOutputEventType.ErrorEvent, user, data);
+
                                 const stepParent = thisArg.parent;
                                 const targetBlock = stepParent.children[parseInt(thisArg.options.errorFallbackStep, 10)];
                                 if ((stepParent.blockType === 'interfaceStepBlock') && targetBlock) {
@@ -39,6 +44,10 @@ export function CatchErrors() {
                             }
 
                             case BlockErrorActions.GOTO_TAG: {
+                                await new PinoLogger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId], userId);
+                                PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user);
+                                thisArg.triggerEvents(PolicyOutputEventType.ErrorEvent, user, data);
+
                                 const stepParent = thisArg.parent;
                                 const targetBlock = stepParent.children.find(c => c.tag === thisArg.options.errorFallbackTag);
                                 if ((stepParent.blockType === 'interfaceStepBlock') && targetBlock) {
@@ -47,7 +56,15 @@ export function CatchErrors() {
                                 break;
                             }
 
+                            case BlockErrorActions.DEBUG: {
+                                thisArg.debugError(error);
+                                return;
+                            }
+
                             default:
+                                await new PinoLogger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId], userId);
+                                PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user);
+                                thisArg.triggerEvents(PolicyOutputEventType.ErrorEvent, user, data);
                                 return;
 
                         }

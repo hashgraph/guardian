@@ -2,11 +2,11 @@ import { METHOD } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("Prepare accounts for future tests", { tags: ['preparing', 'smoke', 'all'] }, () => {
+context("Prepare accounts for future tests", { tags: ['preparing', 'smoke', 'all', 'ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const SR2Username = Cypress.env('SR2User');
-    const SR3Username = Cypress.env('SR3User');
+    const Installer = Cypress.env('Installer');
     const userUsername = Cypress.env('User');
     const password = Cypress.env('Password');
 
@@ -23,7 +23,7 @@ context("Prepare accounts for future tests", { tags: ['preparing', 'smoke', 'all
                     SRExist = true;
                 else if (element.username == SR2Username)
                     SR2Exist = true;
-                else if (element.username == SR3Username)
+                else if (element.username == Installer)
                     SR3Exist = true;
                 else if (element.username == userUsername)
                     UserExist = true;
@@ -55,7 +55,7 @@ context("Prepare accounts for future tests", { tags: ['preparing', 'smoke', 'all
                     method: METHOD.POST,
                     url: API.ApiServer + API.AccountRegister,
                     body: {
-                        username: SR3Username,
+                        username: Installer,
                         password: password,
                         password_confirmation: password,
                         role: 'STANDARD_REGISTRY'

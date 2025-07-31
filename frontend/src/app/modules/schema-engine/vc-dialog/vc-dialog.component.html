@@ -31,15 +31,23 @@
                 </ng-template>
             </p-selectButton>
 
-            <app-compare-btn 
-                *ngIf="isCompare"
-                [id]="id" 
-                type="document" 
-                class="compare-container"
-                buttonStyle="guardian"></app-compare-btn>
+
+            <div class="option-buttons">
+                <button 
+                    *ngIf="messageId && !dryRun"
+                    (click)="onFindInExport()" 
+                    class="guardian-button guardian-button-secondary">Export</button>
+
+                <app-compare-btn 
+                    *ngIf="isCompare"
+                    [id]="id" 
+                    type="document" 
+                    class="compare-container"
+                    buttonStyle="guardian"></app-compare-btn>
+            </div>
         </div>
         <div class="view-dialog-content">
-            <ng-container *ngIf="viewDocument">
+            <ng-container *ngIf="viewDocument === true">
                 <app-document-view 
                     [policyId]="policyId"
                     [documentId]="documentId"
@@ -50,13 +58,25 @@
                     [schema]="schema"
                     [type]="type"></app-document-view>
             </ng-container>
-            <ng-container *ngIf="!viewDocument">
+            <ng-container *ngIf="viewDocument === false">
                 <div *ngIf="type !== 'TEXT'" class="json">
                     {{ json }}
                 </div>
                 <div *ngIf="type === 'TEXT'" class="text">
                     {{ text }}
                 </div>
+            </ng-container>
+            <ng-container *ngIf="additionalOptionsData">
+                <ng-container *ngFor="let option of additionalOptionsData">
+                    <ng-container *ngIf="option.optionValue === viewDocument">
+                        <div *ngIf="option.type !== 'TEXT'" class="json">
+                            {{ option.data }}
+                        </div>
+                        <div *ngIf="option.type === 'TEXT'" class="text">
+                            {{ option.data }}
+                        </div>
+                    </ng-container>
+                </ng-container>
             </ng-container>
         </div>
     </div>

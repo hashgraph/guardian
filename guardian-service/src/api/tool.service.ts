@@ -55,8 +55,14 @@ export async function preparePreviewMessage(
         .getMessage<ToolMessage>({
             messageId,
             loadIPFS: true,
-            userId: user.id
+            userId: user.id,
+            interception: null
         });
+
+    if (!message) {
+        throw new Error('Invalid Message');
+    }
+
     if (message.type !== MessageType.Tool) {
         throw new Error('Invalid Message Type');
     }
@@ -183,7 +189,12 @@ export async function publishTool(
         const message = new ToolMessage(MessageType.Tool, MessageAction.PublishTool);
         message.setDocument(tool, buffer);
         const result = await messageServer
-            .sendMessage(message, true, null, user.id);
+            .sendMessage(message, {
+                sendToIPFS: true,
+                memo: null,
+                userId: user.id,
+                interception: user.id
+            });
 
         notifier.completedAndStart('Publish tags');
         try {
@@ -332,7 +343,12 @@ export async function createTool(
             message.setDocument(tool);
             const messageStatus = await messageServer
                 .setTopicObject(parent)
-                .sendMessage(message, true, null, user.id);
+                .sendMessage(message, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId: user.id,
+                    interception: null
+                });
 
             notifier.completedAndStart('Link topic and tool');
             await topicHelper.twoWayLink(topic, parent, messageStatus.getId(), user.id);
@@ -924,6 +940,27 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.CHECK_TOOL,
+        async (msg: {
+            messageId: string,
+            owner: IOwner
+        }) => {
+            try {
+                const { messageId, owner } = msg;
+                const tool = await DatabaseServer.getTool({
+                    messageId,
+                    status: ModuleStatus.PUBLISHED
+                });
+                if (tool) {
+                    return new MessageResponse(true);
+                }
+                const preview = await preparePreviewMessage(messageId, owner, emptyNotifier());
+                return new MessageResponse(!!preview);
+            } catch (error) {
+                return new MessageResponse(false);
             }
         });
 }

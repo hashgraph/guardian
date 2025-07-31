@@ -1,4 +1,4 @@
-import { NatsService, Singleton } from '@guardian/common';
+import { JwtServicesValidator, NatsService, Singleton } from '@guardian/common';
 import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
 import { headers } from 'nats';
 
@@ -51,11 +51,13 @@ export class GuardiansService extends NatsService {
      * @param data
      * @param awaitInterval
      */
-    public sendPolicyMessage<T>(subject: string, policyId: string, data: unknown, awaitInterval: number = 100000): Promise<T> {
+    public async sendPolicyMessage<T>(subject: string, policyId: string, data: unknown, awaitInterval: number = 100000): Promise<T> {
         const messageId = GenerateUUIDv4();
         const head = headers();
         head.append('messageId', messageId);
         head.append('policyId', policyId);
+        const token = await JwtServicesValidator.sign([policyId, subject].join('-'));
+        head.append('serviceToken', token);
 
         return Promise.race([
             new Promise<T>(async (resolve, reject) => {
@@ -87,7 +89,7 @@ export class GuardiansService extends NatsService {
      * @param data
      * @param awaitInterval
      */
-    public sendBlockMessage<T>(
+    public async sendBlockMessage<T>(
         subject: string,
         policyId: string,
         data: unknown,
@@ -97,6 +99,8 @@ export class GuardiansService extends NatsService {
         const head = headers();
         head.append('messageId', messageId);
         head.append('policyId', policyId);
+        const token = await JwtServicesValidator.sign([policyId, subject].join('-'));
+        head.append('serviceToken', token);
 
         return Promise.race([
             new Promise<T>(async (resolve, reject) => {

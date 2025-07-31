@@ -60,30 +60,8 @@
 
 .merge-lvl-btn {
     width: 120px;
-    cursor: pointer;
-    font-weight: 500;
-    user-select: none;
-    position: relative;
-    border-radius: 8px;
-    font-size: 14px;
-    box-shadow: 0px 3px 1px -2px rgb(0 0 0 / 20%), 0px 2px 2px 0px rgb(0 0 0 / 14%), 0px 1px 5px 0px rgb(0 0 0 / 12%);
-    background-color: #ffffff;
-    color: #0c77ff;
     height: 40px;
-    box-sizing: border-box;
-    text-align: center;
-    align-items: center;
-    justify-content: center;
-    display: flex;
-    border: 1px solid #fdfdfd;
-    margin-top: 5px;
-    margin-right: 8px;
-}
-
-.merge-lvl-btn[need-apple='true'] {
-    color: #ffffff;
-    background-color: #0c77ff;
-    border: 1px solid #0c77ff;
+    margin-top: 8px;
 }
 
 .f1 {
@@ -112,32 +90,10 @@
 
 
 .export-btn {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    margin-top: 4px;
-    padding-left: 45px;
-    color: #0c77ff;
-    height: 44px;
-    box-sizing: border-box;
-    display: flex;
-    user-select: none;
-    position: relative;
-    border-radius: 8px;
-    font-size: 14px;
+    margin-top: 8px;
+    height: 40px;
     width: 115px;
-    cursor: pointer;
-    font-weight: 500;
-    align-items: center;
-
 }
-
-.export-btn i,
-.export-btn svg {
-    position: absolute;
-    left: 10px;
-    top: 8px;
-}
-
 
 .merge-back>div {
     width: 105px;
@@ -158,7 +114,7 @@
 }
 
 .merge-back>div i,
-.merge-back>div svg{
+.merge-back>div svg {
     color: #707070;
     position: absolute;
     top: 3px;
@@ -203,6 +159,10 @@
         width: 44px;
         overflow: hidden;
         padding-left: 44px;
+
+        .guardian-button-label {
+            display: none;
+        }
     }
 }
 
@@ -229,6 +189,10 @@
         width: 44px;
         overflow: hidden;
         padding-left: 44px;
+
+        .guardian-button-label {
+            display: none;
+        }
     }
 }
 

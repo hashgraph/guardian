@@ -15,10 +15,8 @@ Create policy key.
 
 **Body**
 
-| Name                                                                    | Type   | Description                                                                                           |
-| ----------------------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------- |
-| <ul class="contains-task-list"><li><input type="checkbox">DID</li></ul> | string | <p></p><p></p><pre class="language-yaml"><code class="lang-yaml">DID Document and keys.
-</code></pre> |
+<table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td><ul class="contains-task-list"><li><input type="checkbox">DID</li></ul></td><td>string</td><td><p></p><p></p><pre class="language-yaml"><code class="lang-yaml">DID Document and keys.
+</code></pre></td></tr></tbody></table>
 
 **Response**
 

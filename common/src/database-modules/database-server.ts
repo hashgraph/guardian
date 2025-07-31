@@ -210,7 +210,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getStatisticsAndCount(
         filters?: FilterObject<PolicyStatistic>,
-        options?: FindOptions<unknown>
+        options?: FindOptions<object>
     ): Promise<[PolicyStatistic[], number]> {
         return await new DataBaseHelper(PolicyStatistic).findAndCount(filters, options);
     }
@@ -266,7 +266,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getStatisticDocumentsAndCount(
         filters?: FilterObject<VcDocumentCollection>,
-        options?: FindOptions<unknown>
+        options?: FindOptions<object>
     ): Promise<[VcDocumentCollection[], number]> {
         return await new DataBaseHelper(VcDocumentCollection).findAndCount(filters, options);
     }
@@ -323,7 +323,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getStatisticAssessmentsAndCount(
         filters?: FilterObject<PolicyStatisticDocument>,
-        options?: FindOptions<unknown>
+        options?: FindOptions<object>
     ): Promise<[PolicyStatisticDocument[], number]> {
         return await new DataBaseHelper(PolicyStatisticDocument).findAndCount(filters, options);
     }
@@ -356,7 +356,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getSchemaRulesAndCount(
         filters?: FilterObject<SchemaRule>,
-        options?: FindOptions<unknown>
+        options?: FindOptions<object>
     ): Promise<[SchemaRule[], number]> {
         return await new DataBaseHelper(SchemaRule).findAndCount(filters, options);
     }
@@ -415,7 +415,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getPolicyLabelsAndCount(
         filters?: FilterObject<PolicyLabel>,
-        options?: FindOptions<unknown>
+        options?: FindOptions<object>
     ): Promise<[PolicyLabel[], number]> {
         return await new DataBaseHelper(PolicyLabel).findAndCount(filters, options);
     }
@@ -474,7 +474,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getLabelDocumentsAndCount(
         filters?: FilterObject<PolicyLabelDocument>,
-        options?: FindOptions<unknown>
+        options?: FindOptions<object>
     ): Promise<[PolicyLabelDocument[], number]> {
         return await new DataBaseHelper(PolicyLabelDocument).findAndCount(filters, options);
     }
@@ -529,7 +529,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getFormulasAndCount(
         filters?: FilterObject<Formula>,
-        options?: FindOptions<unknown>
+        options?: FindOptions<object>
     ): Promise<[Formula[], number]> {
         return await new DataBaseHelper(Formula).findAndCount(filters, options);
     }
@@ -588,7 +588,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getExternalPoliciesAndCount(
         filters?: FilterObject<ExternalPolicy>,
-        options?: FindOptions<unknown>
+        options?: FindOptions<object>
     ): Promise<[ExternalPolicy[], number]> {
         return await new DataBaseHelper(ExternalPolicy).findAndCount(filters, options);
     }
@@ -975,7 +975,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param filters
      * @param options
      */
-    public async count<T extends BaseEntity>(entityClass: new () => T, filters: FilterQuery<T>, options?: FindOptions<unknown>): Promise<number> {
+    public async count<T extends BaseEntity>(entityClass: new () => T, filters: FilterQuery<T>, options?: FindOptions<object>): Promise<number> {
         if (this.dryRun) {
 
             const _filters = {
@@ -1570,7 +1570,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param countResult
      * @virtual
      */
-    public async getApprovalDocuments(filters: FilterObject<ApprovalDocumentCollection>, options?: FindOptions<unknown>, countResult?: boolean): Promise<ApprovalDocumentCollection[] | number> {
+    public async getApprovalDocuments(filters: FilterObject<ApprovalDocumentCollection>, options?: FindOptions<object>, countResult?: boolean): Promise<ApprovalDocumentCollection[] | number> {
         if (countResult) {
             return await this.count(ApprovalDocumentCollection, filters, options);
         }
@@ -1629,7 +1629,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param options Options
      * @returns Artifacts
      */
-    public static async getArtifactsAndCount(filters?: FilterObject<ArtifactCollection>, options?: FindOptions<unknown>): Promise<[ArtifactCollection[], number]> {
+    public static async getArtifactsAndCount(filters?: FilterObject<ArtifactCollection>, options?: FindOptions<object>): Promise<[ArtifactCollection[], number]> {
         return await new DataBaseHelper(ArtifactCollection).findAndCount(filters, options);
     }
 
@@ -1714,14 +1714,16 @@ export class DatabaseServer extends AbstractDatabaseServer {
         blockId: string,
         blockTag: string
     ): Promise<BlockState | null> {
+
+        const conditions: any[] = [{ blockId }];
+
+        if (blockTag !== null && blockTag !== undefined) {
+            conditions.push({ blockTag });
+        }
+
         return await this.findOne(BlockState, {
             policyId,
-            $or: [{
-                blockId
-            }, {
-                blockTag
-            }]
-
+            $or: conditions
         });
     }
 
@@ -1780,7 +1782,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param countResult
      * @virtual
      */
-    public async getDidDocuments(filters: FilterObject<DidDocumentCollection>, options?: FindOptions<unknown>, countResult?: boolean): Promise<DidDocumentCollection[] | number> {
+    public async getDidDocuments(filters: FilterObject<DidDocumentCollection>, options?: FindOptions<object>, countResult?: boolean): Promise<DidDocumentCollection[] | number> {
         if (countResult) {
             return await this.count(DidDocumentCollection, filters, options);
         }
@@ -1813,7 +1815,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      *
      * @virtual
      */
-    public async getDocumentStates(filters: FilterObject<DocumentState>, options?: FindOptions<unknown>): Promise<DocumentState[]> {
+    public async getDocumentStates(filters: FilterObject<DocumentState>, options?: FindOptions<object>): Promise<DocumentState[]> {
         return await this.find(DocumentState, filters, options);
     }
 
@@ -1980,7 +1982,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param options Options
      * @returns Mint transactions
      */
-    public async getMintTransactions(filters: FilterObject<MintTransaction>, options?: FindOptions<unknown>): Promise<MintTransaction[]> {
+    public async getMintTransactions(filters: FilterObject<MintTransaction>, options?: FindOptions<object>): Promise<MintTransaction[]> {
         return await this.find(MintTransaction, filters, options);
     }
 
@@ -2022,7 +2024,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getModulesAndCount(filters?: FilterObject<PolicyModule>, options?: FindOptions<unknown>): Promise<[PolicyModule[], number]> {
+    public static async getModulesAndCount(filters?: FilterObject<PolicyModule>, options?: FindOptions<object>): Promise<[PolicyModule[], number]> {
         return await new DataBaseHelper(PolicyModule).findAndCount(filters, options);
     }
 
@@ -2117,7 +2119,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getPoliciesAndCount(filters: FilterObject<Policy>, options?: FindOptions<unknown>): Promise<[Policy[], number]> {
+    public static async getPoliciesAndCount(filters: FilterObject<Policy>, options?: FindOptions<object>): Promise<[Policy[], number]> {
         return await new DataBaseHelper(Policy).findAndCount(filters, options);
     }
 
@@ -2135,7 +2137,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * Get policy
      * @param filters
      */
-    public static async getPolicy(filters: FilterObject<Policy>, options?: FindOptions<unknown>): Promise<Policy | null> {
+    public static async getPolicy(filters: FilterObject<Policy>, options?: FindOptions<object>): Promise<Policy | null> {
         return await new DataBaseHelper(Policy).findOne(filters, options);
     }
 
@@ -2368,7 +2370,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getSchemasAndCount(filters?: FilterObject<SchemaCollection>, options?: FindOptions<unknown>): Promise<[SchemaCollection[], number]> {
+    public static async getSchemasAndCount(filters?: FilterObject<SchemaCollection>, options?: FindOptions<object>): Promise<[SchemaCollection[], number]> {
         return await new DataBaseHelper(SchemaCollection).findAndCount(filters, options);
     }
 
@@ -2447,7 +2449,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param filters
      * @param options
      */
-    public async getTagCache(filters?: FilterObject<TagCache>, options?: FindOptions<unknown>): Promise<TagCache[]> {
+    public async getTagCache(filters?: FilterObject<TagCache>, options?: FindOptions<object>): Promise<TagCache[]> {
         return await this.find(TagCache, filters, options);
     }
 
@@ -2465,7 +2467,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param filters
      * @param options
      */
-    public async getTags(filters?: FilterQuery<Tag>, options?: FindOptions<unknown>): Promise<Tag[]> {
+    public async getTags(filters?: FilterQuery<Tag>, options?: FindOptions<object>): Promise<Tag[]> {
         return await this.find(Tag, filters, options);
     }
 
@@ -2581,7 +2583,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getToolsAndCount(filters?: FilterObject<PolicyTool>, options?: FindOptions<unknown>): Promise<[PolicyTool[], number]> {
+    public static async getToolsAndCount(filters?: FilterObject<PolicyTool>, options?: FindOptions<object>): Promise<[PolicyTool[], number]> {
         return await new DataBaseHelper(PolicyTool).findAndCount(filters, options);
     }
 
@@ -2793,7 +2795,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getVP(filters?: FilterQuery<VpDocumentCollection>, options?: FindOptions<unknown>): Promise<VpDocumentCollection | null> {
+    public static async getVP(filters?: FilterQuery<VpDocumentCollection>, options?: FindOptions<object>): Promise<VpDocumentCollection | null> {
         return await new DataBaseHelper(VpDocumentCollection).findOne(filters, options);
     }
 
@@ -2960,7 +2962,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async getVcDocuments<T extends VcDocumentCollection | number>(
         filters: FilterObject<T>,
-        options?: FindOptions<unknown>,
+        options?: FindOptions<object>,
         countResult?: boolean
     ): Promise<T[] | number> {
         if (countResult) {
@@ -3160,7 +3162,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 'hederaAccountId',
                 'active'
             ]
-        } as unknown as FindOptions<unknown>);
+        } as unknown as FindOptions<object>);
     }
 
     /**
@@ -3207,7 +3209,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async getVpDocuments<T extends VpDocumentCollection | number>(
         filters: FilterObject<T>,
-        options?: FindOptions<unknown>,
+        options?: FindOptions<object>,
         countResult?: boolean
     ): Promise<T[] | number> {
         if (countResult) {
@@ -4417,7 +4419,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getRemoteRequestsAndCount(filters?: FilterObject<PolicyAction>, options?: FindOptions<unknown>): Promise<[PolicyAction[], number]> {
+    public static async getRemoteRequestsAndCount(filters?: FilterObject<PolicyAction>, options?: FindOptions<object>): Promise<[PolicyAction[], number]> {
         return await new DataBaseHelper(PolicyAction).findAndCount(filters, options);
     }
 
@@ -4426,7 +4428,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getRemoteRequestsCount(filters?: FilterObject<PolicyAction>, options?: FindOptions<unknown>): Promise<number> {
+    public static async getRemoteRequestsCount(filters?: FilterObject<PolicyAction>, options?: FindOptions<object>): Promise<number> {
         return await new DataBaseHelper(PolicyAction).count(filters, options);
     }
 
@@ -4455,7 +4457,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getKeysAndCount(filters?: FilterObject<PolicyKey>, options?: FindOptions<unknown>): Promise<[PolicyKey[], number]> {
+    public static async getKeysAndCount(filters?: FilterObject<PolicyKey>, options?: FindOptions<object>): Promise<[PolicyKey[], number]> {
         return await new DataBaseHelper(PolicyKey).findAndCount(filters, options);
     }
 
@@ -4473,5 +4475,36 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async deleteKey(key: PolicyKey): Promise<void> {
         return await new DataBaseHelper(PolicyKey).remove(key);
+    }
+
+    /**
+     * Save debug context
+     * @param row
+     *
+     * @virtual
+     */
+    public static async saveDebugContext(row: Partial<DryRun>): Promise<DryRun> {
+        row.dryRunId = row.policyId;
+        row.dryRunClass = 'DebugContext';
+        const item = new DataBaseHelper(DryRun).create(row);
+        return await new DataBaseHelper(DryRun).save(item);
+    }
+
+    /**
+     * Get debug context
+     * @param filters
+     * @param options
+     */
+    public static async getDebugContext(id: string): Promise<DryRun> {
+        return await new DataBaseHelper(DryRun).findOne(id);
+    }
+
+    /**
+     * Get debug context
+     * @param filters
+     * @param options
+     */
+    public static async getDebugContexts(policyId: string, tag: string): Promise<DryRun[]> {
+        return await new DataBaseHelper(DryRun).find({ policyId, tag });
     }
 }

@@ -9,6 +9,8 @@ import { audit, takeUntil } from 'rxjs/operators';
 import { interval, Subject } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { DocumentValidators } from '@guardian/interfaces';
+import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
     selector: 'request-document-block-dialog',
@@ -38,6 +40,7 @@ export class RequestDocumentBlockDialog {
     public rulesResults: any;
 
     private buttonNames: { [id: string]: string } = {
+        save: "Save",
         cancel: "Cancel",
         prev: "Previous",
         next: "Next",
@@ -51,6 +54,7 @@ export class RequestDocumentBlockDialog {
         private policyEngineService: PolicyEngineService,
         private schemaRulesService: SchemaRulesService,
         private fb: UntypedFormBuilder,
+        private toastr: ToastrService
     ) {
         this.parent = this.config.data;
         this.dataForm = this.fb.group({});
@@ -101,11 +105,11 @@ export class RequestDocumentBlockDialog {
         this.dialogRef.close(null);
     }
 
-    public onSubmit() {
+    public onSubmit(draft?: boolean) {
         if (this.disabled || this.loading) {
             return;
         }
-        if (this.dataForm.valid) {
+        if (this.dataForm.valid || draft) {
             const data = this.dataForm.getRawValue();
             this.loading = true;
             prepareVcData(data);
@@ -113,10 +117,27 @@ export class RequestDocumentBlockDialog {
                 .setBlockData(this.id, this.policyId, {
                     document: data,
                     ref: this.docRef,
+                    draft,
                 })
                 .subscribe(() => {
                     setTimeout(() => {
                         this.loading = false;
+                        if(draft && this.parent instanceof RequestDocumentBlockComponent) {
+                            this.parent.draftDocument = {
+                                policyId: this.parent.policyId,
+                                user: this.parent.user.did,
+                                blockId: this.parent.id,
+                                data
+                            };
+
+                            this.toastr.success('The draft version of the document was saved successfully', '', {
+                                timeOut: 3000,
+                                closeButton: true,
+                                positionClass: 'toast-bottom-right',
+                                enableHtml: true,
+                            });
+                        }
+
                         this.dialogRef.close(null);
                     }, 1000);
                 }, (e) => {
@@ -141,6 +162,37 @@ export class RequestDocumentBlockDialog {
     public handleSubmitBtnEvent(value: any, data: RequestDocumentBlockDialog) {
         if (data.dataForm.valid || !this.loading) {
             data.onSubmit();
+        }
+    }
+
+    public handleSaveBtnEvent(value: any, data: RequestDocumentBlockDialog) {
+        if (!this.loading) {
+            if(this.parent instanceof RequestDocumentBlockComponent && this.parent.draftDocument) {
+                const dialogOptionRef = this.dialogService.open(CustomConfirmDialogComponent, {
+                    showHeader: false,
+                    width: '640px',
+                    styleClass: 'guardian-dialog draft-dialog',
+                    data: {
+                        header: 'Overwrite Old Draft',
+                        text: 'You already have a saved draft. Are you sure you want to overwrite it? \n Please note that saving a new draft will permanently delete the previous one.',
+                        buttons: [{
+                            name: 'Cancel',
+                            class: 'secondary'
+                        }, {
+                            name: 'Save Draft',
+                            class: 'primary'
+                        }]
+                    },
+                });
+
+                dialogOptionRef.onClose.subscribe((result: string) => {
+                    if(result == 'Save Draft') {
+                        data.onSubmit(true);
+                    }
+                });
+            } else {
+                data.onSubmit(true);
+            }
         }
     }
 

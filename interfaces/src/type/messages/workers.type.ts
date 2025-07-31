@@ -28,6 +28,7 @@ export enum WorkerTaskType {
     GET_TOPIC_MESSAGE_BY_INDEX = 'get-topic-message-by-index',
     GET_TOPIC_MESSAGE_CHUNKS = 'get-topic-message-chunks',
     CREATE_CONTRACT = 'create-contract',
+    CREATE_CONTRACT_V2 = 'create-contract-v2',
     CONTRACT_CALL = 'contract-call',
     CONTRACT_QUERY = 'contract-query',
     CUSTOM_CONTRACT_CALL = 'custom-contract-call',
@@ -118,6 +119,10 @@ export interface ITask {
      */
     attempt?: number
 
+    /**
+     * UserId
+     */
+    interception?: string | null | undefined;
 }
 
 /**
@@ -159,4 +164,30 @@ export interface IActiveTask {
      * @param data
      */
     callback: (data: any, error: any, isTimeoutError?: boolean) => void;
+}
+
+/**
+ * Task options
+ */
+export interface ITaskOptions {
+    /**
+     * Default value = 10
+     */
+    priority?: number,
+    /**
+     * Default value = 0
+     */
+    attempts?: number,
+    /**
+     * Default value = true
+     */
+    registerCallback?: boolean,
+    /**
+     * Default value = null
+     */
+    interception?: string | boolean,
+    /**
+     * Default value = null
+     */
+    userId?: string,
 }

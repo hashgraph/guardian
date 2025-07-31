@@ -1,5 +1,5 @@
 import { Singleton } from '../decorators/singleton.js';
-import { ExternalMessageEvents, GenerateUUIDv4, HederaResponseCode, IActiveTask, ITask, QueueEvents, TimeoutError, WorkerEvents } from '@guardian/interfaces';
+import { ExternalMessageEvents, GenerateUUIDv4, HederaResponseCode, IActiveTask, ITask, ITaskOptions, QueueEvents, TimeoutError, WorkerEvents } from '@guardian/interfaces';
 import { Environment } from '../hedera-modules/index.js';
 import { NatsService } from '../mq/index.js';
 
@@ -106,6 +106,31 @@ export class Workers extends NatsService {
         return error;
     }
 
+    private setDefaultValue(options: ITaskOptions): ITaskOptions {
+        if (options.priority === undefined) {
+            options.priority = 10;
+        }
+        if (options.attempts === undefined) {
+            options.attempts = 0;
+        }
+        if (options.registerCallback === undefined) {
+            options.registerCallback = true;
+        }
+        if (options.userId === undefined) {
+            options.userId = null;
+        }
+        if (options.interception === undefined) {
+            options.interception = null;
+        }
+        if (options.interception === true) {
+            options.interception = options.userId;
+        }
+        if (options.interception === false) {
+            options.interception = null;
+        }
+        return options;
+    }
+
     /**
      * Check error message for retryable
      * @param error Error
@@ -119,11 +144,10 @@ export class Workers extends NatsService {
     /**
      * Add non retryable task
      * @param task
-     * @param priority
-     * @param userId
-     * @param registerCallback
+     * @param options
      */
-    public addNonRetryableTask(task: ITask, priority: number, userId?: string | null, registerCallback: boolean = true): Promise<any> {
+    public addNonRetryableTask(task: ITask, options: ITaskOptions): Promise<any> {
+        options = this.setDefaultValue(options);
         if (!task.data.network) {
             task.data.network = Environment.network;
         }
@@ -139,7 +163,15 @@ export class Workers extends NatsService {
         if (!task.data.localNodeProtocol) {
             task.data.localNodeProtocol = Environment.localNodeProtocol;
         }
-        return this.addTask(task, priority, false, 0, registerCallback, userId);
+        return this.addTask(
+            task,
+            options.priority,
+            options.attempts,
+            false,
+            options.registerCallback,
+            options.interception as string,
+            options.userId
+        )
     }
 
     /**
@@ -150,7 +182,8 @@ export class Workers extends NatsService {
      * @param userId
      * @param registerCallback
      */
-    public addRetryableTask(task: ITask, priority: number, attempts: number = 0, userId: string = null, registerCallback: boolean = true): Promise<any> {
+    public addRetryableTask(task: ITask, options: ITaskOptions): Promise<any> {
+        options = this.setDefaultValue(options);
         if (!task.data.network) {
             task.data.network = Environment.network;
         }
@@ -166,7 +199,15 @@ export class Workers extends NatsService {
         if (!task.data.localNodeProtocol) {
             task.data.localNodeProtocol = Environment.localNodeProtocol;
         }
-        return this.addTask(task, priority, true, attempts, registerCallback, userId);
+        return this.addTask(
+            task,
+            options.priority,
+            options.attempts,
+            true,
+            options.registerCallback,
+            options.interception as string,
+            options.userId
+        )
     }
 
     /**
@@ -261,13 +302,22 @@ export class Workers extends NatsService {
      * @param registerCallback
      * @param userId
      */
-    private async addTask(task: ITask, priority: number, isRetryableTask: boolean = false, attempts: number = 0, registerCallback = true, userId?: string | null): Promise<any> {
+    private async addTask(
+        task: ITask,
+        priority: number,
+        attempts: number,
+        isRetryableTask: boolean,
+        registerCallback: boolean,
+        interception: string | null,
+        userId: string | null
+    ): Promise<any> {
         const taskId = task.id || GenerateUUIDv4();
         task.id = taskId;
         task.priority = priority;
         task.isRetryableTask = isRetryableTask;
         task.attempts = attempts;
         task.userId = userId;
+        task.interception = interception;
 
         const addTaskToQueue = async (): Promise<void> => {
             const result = await this.sendMessage<any>(QueueEvents.ADD_TASK_TO_QUEUE, task);

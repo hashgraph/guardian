@@ -1,62 +1,72 @@
-<div class="g-dialog-content">
-    <div class="g-dialog-body enum-input-container">
-        <div class="enum-import-container">
-            <div class="form-group enum-import-url">
-                <label for="urlInput" class="form-label">URL</label>
-                <input
-                    pInputText
-                    id="urlInput"
-                    [formControl]="urlControl"
-                    placeholder="example.com"
-                    class="full-width">
-            </div>
-
-            <button
-                pButton
-                label="Import by URL"
-                class="enum-import-button p-button-raised p-button-primary"
-                (click)="onImportByUrl()"
-                [disabled]="urlControl.value && !urlControl.valid"
-            ></button>
-            <button
-                pButton
-                label="Import by file"
-                class="enum-import-button p-button-raised p-button-primary"
-                (click)="onImportByFile()"
-            ></button>
-        </div>
-        <div class="enum-label">Enum</div>
-        <div *ngIf="loadToIpfs" class="form-group enum-load-to-ipfs">
-            <p-checkbox
-                [(ngModel)]="loadToIpfsValue"
-                [binary]="true"
-                inputId="ipfsCheckbox"
-                class="p-checkbox-primary">
-            </p-checkbox>
-            <label [htmlFor]="'ipfsCheckbox'" class="form-label">
-                Will data be loaded to IPFS? (There are more than 5 options)
-            </label>
-        </div>
-        <div id="text-editor" class="text-editor" *ngIf="!loading">
-            <ngx-codemirror
-                (ngModelChange)="checkLoadIpfsVisible($event)"
-                *ngIf="initDialog"
-                [(ngModel)]="enumValue"
-                [options]="codeMirrorOptions"
-            ></ngx-codemirror>
-        </div>
-        <div *ngIf="loading" class="loading">
-            <p-progressSpinner></p-progressSpinner>
-        </div>
-
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{header}}</div>
     </div>
-    <div class="g-dialog-actions">
-        <div style="margin-left: auto; width: fit-content">
-            <p-button
-                (click)="this.ref.close({enumValue,loadToIpfs:loadToIpfs&&loadToIpfsValue})"
-                class="g-dialog-actions-btn"
-                label="Save"
-            ></p-button>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div *ngIf="loading" class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+    </div>
+
+    <div class="enum-import-container">
+        <div class="guardian-input-container">
+            <label for="urlInput" class="form-label">URL</label>
+            <input
+                pInputText
+                id="urlInput"
+                [formControl]="urlControl"
+                placeholder="example.com"
+                class="full-width">
+        </div>
+
+        <button 
+            (click)="onImportByUrl()" 
+            class="guardian-button guardian-button-primary"
+            [disabled]="!urlControl.value || !urlControl.valid"
+        >Import by URL</button>
+        <button 
+            (click)="onImportByFile()" 
+            class="guardian-button guardian-button-primary"
+        >Import by file</button>
+    </div>
+
+    <div class="enum-label">Enum</div>
+
+    <div id="text-editor" class="text-editor" *ngIf="!loading">
+        <ngx-codemirror
+            (ngModelChange)="checkLoadIpfsVisible($event)"
+            *ngIf="initDialog"
+            [(ngModel)]="enumValue"
+            [options]="codeMirrorOptions"
+        ></ngx-codemirror>
+    </div>
+
+    <div *ngIf="loadToIpfs" class="enum-load-to-ipfs">
+        <p-checkbox
+            [(ngModel)]="loadToIpfsValue"
+            [binary]="true"
+            inputId="ipfsCheckbox"
+            class="guardian-checkbox-secondary checkbox-24"
+            label="Will data be loaded to IPFS? (There are more than 5 options)">
+        </p-checkbox>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary"
+            >Cancel</button>
+        </div>
+        <div>
+            <button 
+                (click)="onSave()" 
+                class="guardian-button guardian-button-primary"
+            >Save</button>
         </div>
     </div>
 </div>

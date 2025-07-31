@@ -1,10 +1,7 @@
 <div class="context">
-    <div *ngIf="loading" class="loading">
-        <div class="preloader-image preloader-image-l-size"></div>
-    </div>
     <form *ngIf="started" [formGroup]="dataForm" class="context">
         <div class="configurator-block-title">Schema Properties</div>
-        <div class="input-field-container">
+        <div class="input-field-container guardian-input-container">
             <label class="form-label" htmlFor="schemaName">* Schema Name</label>
             <input
                 formControlName="name"
@@ -16,13 +13,14 @@
         </div>
 
         <div class="optional-row">
-            <div *ngIf="isPolicy" class="dropdown-field">
+            <div *ngIf="isPolicy" class="dropdown-field guardian-input-container">
                 <label class="form-label" htmlFor="policy">* Policy</label>
                 <p-dropdown
+                    class="guardian-dropdown"
+                    panelStyleClass="guardian-dropdown-panel width-825"
                     (onChange)="onFilter($event)"
                     [options]="policies"
-                    [showClear]="true"
-                    [disabled]="!isNewSchema"
+                    [attr.disabled-dropdown]="!isNewSchema"
                     appendTo="body"
                     formControlName="topicId"
                     id="policy"
@@ -32,9 +30,11 @@
                 ></p-dropdown>
             </div>
 
-            <div *ngIf="isTool" class="dropdown-field">
+            <div *ngIf="isTool" class="dropdown-field guardian-input-container">
                 <label class="form-label" htmlFor="tools">* Tool</label>
                 <p-dropdown
+                    class="guardian-dropdown"
+                    panelStyleClass="guardian-dropdown-panel width-825"
                     [options]="tools"
                     appendTo="body"
                     formControlName="topicId"
@@ -42,12 +42,15 @@
                     optionLabel="name"
                     optionValue="topicId"
                     placeholder="No binding"
+                    [attr.disabled-dropdown]="!isNewSchema"
                 ></p-dropdown>
             </div>
 
-            <div *ngIf="isSystem" class="dropdown-field">
+            <div *ngIf="isSystem" class="dropdown-field guardian-input-container">
                 <label class="form-label" htmlFor="forSystemEntity">For (Entity)</label>
                 <p-dropdown
+                    class="guardian-dropdown"
+                    panelStyleClass="guardian-dropdown-panel"
                     [options]="systemEntityOptions"
                     appendTo="body"
                     formControlName="entity"
@@ -58,9 +61,11 @@
                 ></p-dropdown>
             </div>
 
-            <div *ngIf="isPolicy || isModule" class="dropdown-field">
+            <div *ngIf="isPolicy || isModule" class="dropdown-field guardian-input-container">
                 <label class="form-label" htmlFor="forPolicyModuleEntity">For (Entity)</label>
                 <p-dropdown
+                    class="guardian-dropdown"
+                    panelStyleClass="guardian-dropdown-panel"
                     [options]="policyModuleEntityOptions"
                     appendTo="body"
                     formControlName="entity"
@@ -72,7 +77,7 @@
             </div>
         </div>
 
-        <div class="input-field-container">
+        <div class="guardian-input-container input-field-container" style="margin-bottom: 32px">
             <label class="form-label" htmlFor="descriptionForSchema">Description</label>
             <input
                 formControlName="description"
@@ -129,10 +134,18 @@
             </div>
         </div>
 
-        <div (click)="onAdd($event)" class="add-btn">
-            <i class="pi pi-plus toolbar-icons"></i>
-            Add Field
-        </div>
+        <button 
+            (click)="onAdd($event)" 
+            class="guardian-button guardian-button-secondary add-btn">
+            <div class="guardian-button-icon">
+                <svg-icon 
+                    class="icon-btn svg-icon" 
+                    src="/assets/images/icons/add.svg"
+                    svgClass="icon-color-primary">
+                </svg-icon>
+            </div>
+            <div class="guardian-button-label">Add Field</div>
+        </button>
 
         <div class="configurator-block-title">Conditions</div>
 
@@ -147,10 +160,12 @@
                             <div class="condition-label">IF</div>
 
                             <div class="if-condition-equality-container">
-                                <div class="if-dropdown-field">
+                                <div class="if-dropdown-field guardian-input-container">
                                     <label class="form-label">* Field</label>
                                     <p-dropdown
-                                        (onChange)="onIfConditionFieldChange(condition,$event)"
+                                        class="guardian-dropdown"
+                                        panelStyleClass="guardian-dropdown-panel"
+                                        (onChange)="onIfConditionFieldChange(condition, $event)"
                                         [formControl]="condition.field"
                                         [options]="getFieldsForCondition()"
                                         appendTo="body"
@@ -162,17 +177,10 @@
                                 <div *ngIf="condition.field?.value" class="equal-label">=</div>
                                 <div
                                     *ngIf="isConditionType1(condition)"
-                                    class="input-field-container"
+                                    class="input-field-container guardian-input-container"
                                     style="margin-bottom: unset"
                                 >
-                                    <label class="form-label">
-                                        {{
-                                            condition.field.value.controlRequired
-                                                .value
-                                                ? "Field value"
-                                                : "Field value"
-                                        }}
-                                    </label>
+                                    <label class="form-label">Field value</label>
                                     <input
                                         [formControl]="condition.fieldValue"
                                         pInputText
@@ -183,17 +191,10 @@
 
                                 <div
                                     *ngIf="isConditionType2(condition)"
-                                    class="input-field-container"
+                                    class="input-field-container guardian-input-container"
                                     style="margin-bottom: unset"
                                 >
-                                    <label class="form-label">
-                                        {{
-                                            condition.field.value.controlRequired
-                                                .value
-                                                ? "* Field value"
-                                                : "* Field value"
-                                        }}
-                                    </label>
+                                    <label class="form-label">* Field value</label>
                                     <input
                                         [formControl]="condition.fieldValue"
                                         pInputText
@@ -204,16 +205,17 @@
                                 </div>
                                 <div
                                     *ngIf="isConditionType3(condition)"
-                                    class="form-group example-full-width required-form-field">
+                                    class="form-group required-form-field guardian-input-container"
+                                >
                                     <label for="dateTimePicker" class="form-label">Choose a date & time</label>
                                     <p-calendar
+                                        class="guardian-datepicker"
                                         [formControl]="condition.fieldValue"
                                         [showTime]="true"
                                         [hourFormat]="'12'"
                                         id="dateTimePicker"
                                         placeholder="Choose a date & time"
-                                        appendTo="body"
-                                        class="full-width">
+                                        appendTo="body">
                                     </p-calendar>
                                 </div>
                                 <div
@@ -221,32 +223,32 @@
                                     class="form-group example-full-width required-form-field">
                                     <label for="datePicker" class="form-label">Choose a date</label>
                                     <p-calendar
+                                        class="guardian-datepicker"
                                         [formControl]="condition.fieldValue"
                                         id="datePicker"
                                         [showTime]="false"
                                         placeholder="Choose a date"
-                                        appendTo="body"
-                                        class="full-width">
+                                        appendTo="body">
                                     </p-calendar>
                                 </div>
-                                <div *ngIf="isConditionType5(condition)">
+                                <div *ngIf="isConditionType5(condition)" class="radio-button-container">
                                     <div>
                                         <p-radioButton
                                             name="booleanOption"
                                             [value]="true"
                                             [formControl]="condition.fieldValue"
-                                            class="boolean-option">
+                                            class="guardian-radio-button  boolean-option"
+                                            label="True">
                                         </p-radioButton>
-                                        <label>True</label>
                                     </div>
                                     <div>
                                         <p-radioButton
                                             name="booleanOption"
                                             [value]="false"
                                             [formControl]="condition.fieldValue"
-                                            class="boolean-option">
+                                            class="guardian-radio-button boolean-option"
+                                            label="False">
                                         </p-radioButton>
-                                        <label>False</label>
                                     </div>
                                 </div>
                             </div>
@@ -283,13 +285,19 @@
                                 </div>
                             </div>
                         </div>
-                        <div
+
+                        <button 
                             (click)="onConditionFieldAdd(condition, 'then')"
-                            class="add-btn"
-                        >
-                            <i class="pi pi-plus toolbar-icons"></i>
-                            Add THEN Field
-                        </div>
+                            class="guardian-button guardian-button-secondary add-btn">
+                            <div class="guardian-button-icon">
+                                <svg-icon 
+                                    class="icon-btn svg-icon" 
+                                    src="/assets/images/icons/add.svg"
+                                    svgClass="icon-color-primary">
+                                </svg-icon>
+                            </div>
+                            <div class="guardian-button-label">Add THEN Field</div>
+                        </button>
 
                         <p class="condition-label">ELSE</p>
                         <div
@@ -323,23 +331,47 @@
                             </div>
                         </div>
 
-                        <div (click)="onConditionFieldAdd(condition, 'else')" class="add-btn">
-                            <i class="pi pi-plus toolbar-icons"></i>
-                            Add ELSE Field
-                        </div>
-                    </div>
+                        <button 
+                            (click)="onConditionFieldAdd(condition, 'else')"
+                            class="guardian-button guardian-button-secondary add-btn">
+                            <div class="guardian-button-icon">
+                                <svg-icon 
+                                    class="icon-btn svg-icon" 
+                                    src="/assets/images/icons/add.svg"
+                                    svgClass="icon-color-primary">
+                                </svg-icon>
+                            </div>
+                            <div class="guardian-button-label">Add ELSE Field</div>
+                        </button>
 
-                    <div (click)="onConditionRemove(condition)" class="rmv-btn">
-                        <i class="pi pi-trash"></i>
-                        Remove Condition
+                        <button 
+                            (click)="onConditionRemove(condition)"
+                            class="guardian-button guardian-button-delete rmv-btn">
+                            <div class="guardian-button-icon">
+                                <svg-icon 
+                                    class="icon-btn svg-icon" 
+                                    src="/assets/images/icons/delete.svg"
+                                    svgClass="icon-color-delete">
+                                </svg-icon>
+                            </div>
+                            <div class="guardian-button-label">Remove Condition</div>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <div (click)="onConditionAdd()" class="add-btn">
-                <i class="pi pi-plus toolbar-icons"></i>
-                Add Condition
-            </div>
+            <button 
+                (click)="onConditionAdd()"
+                class="guardian-button guardian-button-secondary add-btn">
+                <div class="guardian-button-icon">
+                    <svg-icon 
+                        class="icon-btn svg-icon" 
+                        src="/assets/images/icons/add.svg"
+                        svgClass="icon-color-primary">
+                    </svg-icon>
+                </div>
+                <div class="guardian-button-label">Add Condition</div>
+            </button>
         </ng-template>
 
         <ng-template [ngIf]="fields.length == 0">

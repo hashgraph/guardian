@@ -264,6 +264,14 @@ export class PolicyEngineService {
         return this.http.post<any>(`${this.url}/${policyId}/dry-run/restart`, null);
     }
 
+    public runBlock(policyId: string, config: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/dry-run/block`, config);
+    }
+
+    public getBlockHistory(policyId: string, tag: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${policyId}/dry-run/block/${tag}/history`);
+    }
+
     public createSavepoint(policyId: string): Observable<any> {
         return this.http.post<any>(`${this.url}/${policyId}/savepoint/create`, null);
     }
@@ -313,6 +321,36 @@ export class PolicyEngineService {
             params.pageSize = pageSize;
         }
         return this.http.get<any>(`${this.url}/${policyId}/documents`, { observe: 'response', params });
+    }
+
+    public searchDocuments(
+        policyId: string,
+        filters: any,
+        pageIndex?: number,
+        pageSize?: number
+    ): Observable<HttpResponse<any[]>> {
+        const params = this.getOptions(filters, pageIndex, pageSize);
+        return this.http.get<any>(`${this.url}/${policyId}/search-documents`, { observe: 'response', params });
+    }
+
+    public exportDocuments(
+        policyId: string,
+        filters: any,
+    ): Observable<ArrayBuffer> {
+        const params = this.getOptions(filters);
+        return this.http.get(`${this.url}/${policyId}/export-documents`, { responseType: 'arraybuffer', params });
+    }
+
+    public getPolicyDocumentOwners(
+        policyId: string,
+    ): Observable<string[]> {
+        return this.http.get<string[]>(`${this.url}/${policyId}/document-owners`);
+    }
+
+    public getPolicyTokens(
+        policyId: string,
+    ): Observable<string[]> {
+        return this.http.get<string[]>(`${this.url}/${policyId}/tokens`);
     }
 
     public migrateData(migrationConfig: MigrationConfig) {
@@ -419,5 +457,40 @@ export class PolicyEngineService {
             formData.append('tests', file);
         }
         return this.http.post<any[]>(`${this.url}/${policyId}/test/`, formData);
+    }
+
+    public parsePage(response: HttpResponse<any[]>) {
+        const page = response.body || [];
+        const count = Number(response.headers.get('X-Total-Count')) || page.length;
+        return { page, count };
+    }
+
+    public getOptions(
+        filters: any,
+        pageIndex?: number,
+        pageSize?: number
+    ): HttpParams {
+        let params = new HttpParams();
+        if (filters && typeof filters === 'object') {
+            for (const key of Object.keys(filters)) {
+                if (filters[key]) {
+                    params = params.set(key, filters[key]);
+                }
+            }
+        }
+        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            params = params.set('pageIndex', String(pageIndex));
+            params = params.set('pageSize', String(pageSize));
+        }
+        return params;
+    }
+
+    public sendData(url: string, data: any, token: string): Observable<any> {
+        return this.http.post<string>(url, data, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+        });
     }
 }

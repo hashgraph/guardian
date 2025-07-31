@@ -21,6 +21,10 @@ enum PlaceholderByFieldType {
     Duration = 'P1D'
 }
 
+enum PresetPrefixByFieldType {
+    URL = "https://"
+}
+
 enum ErrorFieldMessageByFieldType {
     Email = "Please make sure the field contain a valid email address",
     Number = "Please make sure the field contain a valid number value",
@@ -52,6 +56,7 @@ class IButton {
     text: string;
     class: string;
     type: string;
+    iconPath?: string;
     fn: () => void;
 }
 
@@ -84,6 +89,7 @@ interface IFieldIndexControl<T extends UntypedFormControl | UntypedFormGroup> {
     open: boolean
 }
 
+const FILE_EXTENSIONS = '.txt, .pdf, .doc, .docx, .xls, .csv, .kml, .geoJSON';
 /**
  * Form built by schema
  */
@@ -103,9 +109,11 @@ export class SchemaFormComponent implements OnInit {
     @Input('preset') presetDocument: any = null;
     @Input('example') example: boolean = false;
     @Input() cancelText: string = 'Cancel';
+    @Input() saveText: string = 'Save';
     @Input() submitText: string = 'Submit';
     @Input() cancelHidden: boolean = false;
     @Input() submitHidden: boolean = false;
+    @Input() saveShown: boolean = false;
     @Input() showButtons: boolean = true;
     @Input() isChildSchema: boolean = false;
     @Input() comesFromDialog: boolean = false;
@@ -114,11 +122,13 @@ export class SchemaFormComponent implements OnInit {
     @Input() rules?: SchemaRuleValidateResult;
     @Input() paginationHidden: boolean = true;
     @Input() isFormForFinishSetup: boolean = false;
+    @Input() isFormForRequestBlock: boolean = false;
 
     @Output('change') change = new EventEmitter<Schema | null>();
     @Output('destroy') destroy = new EventEmitter<void>();
     @Output() cancelBtnEvent = new EventEmitter<boolean>();
     @Output() submitBtnEvent = new EventEmitter<IFieldControl<any>[] | undefined | boolean>();
+    @Output() saveBtnEvent = new EventEmitter<IFieldControl<any>[] | undefined | boolean>();
     @Output('buttons') buttons = new EventEmitter<any>();
 
     public destroy$: Subject<boolean> = new Subject<boolean>();
@@ -130,6 +140,22 @@ export class SchemaFormComponent implements OnInit {
     public iri?: string;
 
     public buttonsConfig: IButton[] = [
+        {
+            id: 'save',
+            visible: () => {
+                return this.saveShown;
+            },
+            disabled: () => {
+                return false;
+            },
+            text: this.saveText,
+            class: 'p-button-outlined',
+            type: 'secondary',
+            iconPath: '/assets/images/icons/save.svg',
+            fn: () => {
+                this.onSaveBtnClick(this.fields);
+            },
+        },
         {
             id: 'cancel',
             visible: () => {
@@ -254,6 +280,12 @@ export class SchemaFormComponent implements OnInit {
         this.destroy$.unsubscribe();
     }
 
+    public preset(data: any) {
+        this.presetDocument = data;
+        this.buildFields();
+        this.changeDetectorRef.detectChanges();
+    }
+
     private buildFields() {
         let schemaFields: SchemaField[] | undefined = undefined;
 
@@ -303,6 +335,20 @@ export class SchemaFormComponent implements OnInit {
         const validators = this.getValidators(item);
         const value = (preset === null || preset === undefined) ? undefined : preset;
         return new UntypedFormControl(value, validators);
+    }
+
+    private getValueForField(item: IFieldControl<any>, preset: any): any {
+        let value;
+        if (this.isFormForRequestBlock) {
+            if (item.format === 'url') {
+                value = (preset === null || preset === undefined) ? PresetPrefixByFieldType.URL : preset;
+            } else {
+                value = (preset === null || preset === undefined) ? undefined : preset;
+            }
+        } else {
+            value = (preset === null || preset === undefined) ? undefined : preset;
+        }
+        return value;
     }
 
     private createArrayControl(): UntypedFormArray {
@@ -381,13 +427,13 @@ export class SchemaFormComponent implements OnInit {
         );
     }
 
-    uploadFile(item: any): void {
+    uploadFile(item: any, isFile: boolean): void {
         const input = document.createElement('input');
 
         const control = item.control;
 
         input.type = 'file';
-        input.accept = 'image/*';
+        input.accept = isFile ? FILE_EXTENSIONS : 'image/*';
         input.onchange = (event) => {
             const file = input.files ? input.files[0] : undefined;
             if (!file) {
@@ -707,6 +753,10 @@ export class SchemaFormComponent implements OnInit {
             || item.pattern === '^ipfs:\/\/.+';
     }
 
+    public isFile(item: SchemaField): boolean {
+        return item.customType === 'file';
+    }
+
     private postFormat(item: any, control: UntypedFormControl): any {
         const format = item.format;
         const type = item.type;
@@ -912,6 +962,10 @@ export class SchemaFormComponent implements OnInit {
 
     public onSubmitBtnClick(fields: IFieldControl<any>[] | undefined) {
         this.submitBtnEvent.emit(fields);
+    }
+
+    public onSaveBtnClick(fields: IFieldControl<any>[] | undefined) {
+        this.saveBtnEvent.emit(fields);
     }
 
     public patchSuggestValue(item: IFieldControl<any>) {
@@ -1152,5 +1206,23 @@ export class SchemaFormComponent implements OnInit {
 
     public isRulesStatus(item: IFieldControl<any>) {
         return this.rules?.[item.fullPath]?.status;
+    }
+
+    public onFocusField(formatType: string, item: any) {
+        if (this.isFormForRequestBlock
+            && formatType === 'url'
+            && !item.control.value
+        ) {
+            item.control.setValue(PresetPrefixByFieldType.URL);
+        }
+    }
+
+    public onUnfocusField(formatType: string, item: any) {
+        if (this.isFormForRequestBlock
+            && formatType === 'url'
+            && item.control.value === PresetPrefixByFieldType.URL
+        ) {
+            item.control.setValue('');
+        }
     }
 }

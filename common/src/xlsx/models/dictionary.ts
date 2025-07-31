@@ -18,6 +18,7 @@ export enum Dictionary {
     QUESTION = 'Question',
     ALLOW_MULTIPLE_ANSWERS = 'Allow Multiple Answers',
     ANSWER = 'Answer',
+    KEY = 'Key',
     AUTO_CALCULATE = 'Auto-Calculate',
     SUB_SCHEMA = 'Sub-Schema',
     SCHEMA_NAME = 'Schema',
@@ -28,6 +29,7 @@ export enum Dictionary {
     SCHEMA_TOOL_ID = 'Tool Id',
     ENUM_SCHEMA_NAME = 'Schema name',
     ENUM_FIELD_NAME = 'Field name',
+    ENUM_IPFS = 'Loaded to IPFS',
     DEFAULT = 'Default',
     SUGGEST = 'Suggest',
 }
@@ -186,6 +188,18 @@ export class FieldTypes {
             unit: undefined,
             unitSystem: undefined,
             customType: undefined,
+            hidden: false,
+            pars: (value: any) => String(value)
+        },
+        {
+            name: 'File',
+            type: 'string',
+            format: undefined,
+            pattern: '^ipfs:\/\/.+',
+            isRef: false,
+            unit: undefined,
+            unitSystem: undefined,
+            customType: 'file',
             hidden: false,
             pars: (value: any) => String(value)
         },

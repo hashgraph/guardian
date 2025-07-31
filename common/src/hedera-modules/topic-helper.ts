@@ -120,7 +120,9 @@ export class TopicHelper {
                 keys,
                 payload: { userId }
             }
-        }, 10);
+        }, {
+            priority: 10
+        });
         let adminKey: any = null;
         let submitKey: any = null;
         if (keys) {
@@ -181,7 +183,12 @@ export class TopicHelper {
 
         await messageServer
             .setTopicObject(topic)
-            .sendMessage(message1, true, null, userId);
+            .sendMessage(message1, {
+                sendToIPFS: true,
+                memo: null,
+                userId,
+                interception: userId
+            });
     }
 
     /**
@@ -216,7 +223,12 @@ export class TopicHelper {
         });
         await messageServer
             .setTopicObject(topic)
-            .sendMessage(message1, true, null, userId);
+            .sendMessage(message1, {
+                sendToIPFS: true,
+                memo: null,
+                userId,
+                interception: userId
+            });
 
         if (parent) {
             const message2 = new TopicMessage(MessageAction.CreateTopic);
@@ -231,7 +243,12 @@ export class TopicHelper {
             });
             await messageServer
                 .setTopicObject(parent)
-                .sendMessage(message2, true, null, userId);
+                .sendMessage(message2, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId,
+                    interception: userId
+                });
         }
     }
 }

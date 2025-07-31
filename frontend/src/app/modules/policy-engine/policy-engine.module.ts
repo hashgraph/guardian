@@ -86,7 +86,6 @@ import { PreviewPolicyDialog } from './dialogs/preview-policy-dialog/preview-pol
 import { ExportPolicyDialog } from './dialogs/export-policy-dialog/export-policy-dialog.component';
 import { CronConfigDialog } from './dialogs/cron-config-dialog/cron-config-dialog.component';
 import { CodeEditorDialogComponent } from './dialogs/code-editor-dialog/code-editor-dialog.component';
-import { SaveBeforeDialogComponent } from './dialogs/save-before-dialog/save-before-dialog.component';
 import { InviteDialogComponent } from './dialogs/invite-dialog/invite-dialog.component';
 import { DocumentPath } from './helpers/document-path/document-path.component';
 import { SelectBlock } from './helpers/select-block/select-block.component';
@@ -106,6 +105,7 @@ import { SearchBlocksComponent } from './helpers/search-blocks/search-blocks.com
 import { SelectSchema } from './helpers/select-schema/select-schema.component';
 import { PolicyTestResult } from './helpers/policy-test-result/policy-test-result.component';
 import { PublishPolicyDialog } from './dialogs/publish-policy-dialog/publish-policy-dialog.component';
+import { SearchToolDialog } from './dialogs/search-tool-dialog/search-tool-dialog.component';
 //Modules
 import { ModulesListComponent } from './modules-list/modules-list.component';
 import { ToolsListComponent } from './tools-list/tools-list.component';
@@ -151,6 +151,10 @@ import { DataTransformationConfigComponent } from './policy-configuration/blocks
 import { ExternalPolicyComponent } from './external-policies/external-policies.component';
 import { SearchExternalPolicyDialog } from './dialogs/search-external-policy-dialog/search-external-policy-dialog.component';
 import { PolicyRequestsComponent } from './requests/requests.component';
+import { TestCodeDialog } from './dialogs/test-code-dialog/test-code-dialog.component';
+import { ProjectDataExportComponent } from './project-data-export/project-data-export.component';
+import { TransformationButtonBlockComponent } from './policy-viewer/blocks/transformation-button-block/transformation-button-block.component';
+import { IntegrationButtonBlockComponent } from './policy-viewer/blocks/integration-button-block/integration-button-block.component';
 
 @NgModule({
     declarations: [
@@ -204,11 +208,12 @@ import { PolicyRequestsComponent } from './requests/requests.component';
         RevokeConfigComponent,
         ButtonConfigComponent,
         ButtonBlockComponent,
+        TransformationButtonBlockComponent,
+        IntegrationButtonBlockComponent,
         TokenActionConfigComponent,
         DocumentValidatorConfigComponent,
         TokenConfirmationConfigComponent,
         TokenConfirmationBlockComponent,
-        SaveBeforeDialogComponent,
         GroupManagerConfigComponent,
         GroupManagerBlockComponent,
         InviteDialogComponent,
@@ -258,9 +263,12 @@ import { PolicyRequestsComponent } from './requests/requests.component';
         RequestDocumentBlockAddonComponent,
         RequestDocumentBlockDialog,
         DataTransformationConfigComponent,
+        ProjectDataExportComponent,
         ExternalPolicyComponent,
         PolicyRequestsComponent,
-        SearchExternalPolicyDialog
+        SearchExternalPolicyDialog,
+        TestCodeDialog,
+        SearchToolDialog
     ],
     imports: [
         CommonModule,

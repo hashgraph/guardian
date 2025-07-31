@@ -29,7 +29,7 @@ import { ContractAPI, ContractParamType, ContractType, EntityOwner, IOwner, Reti
 import { AccountId, TokenId } from '@hashgraph/sdk';
 import { proto } from '@hashgraph/proto';
 import * as ethers from 'ethers';
-import { contractCall, contractQuery, createContract, customContractCall } from './helpers/index.js';
+import {contractCall, contractQuery, createContract, createContractV2, customContractCall} from './helpers/index.js';
 import { emptyNotifier } from '../helpers/notifier.js';
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
 
@@ -96,21 +96,22 @@ const retireEventsAbi = new ethers.Interface([
 ]);
 
 async function getContractMessage(
-    workers,
-    contractId,
+    workers: Workers,
+    contractId: string,
     userId: string | null
 ): Promise<[ContractMessage, string]> {
-    const { memo } = await workers.addNonRetryableTask(
-        {
-            type: WorkerTaskType.GET_CONTRACT_INFO,
-            data: {
-                contractId,
-                payload: { userId }
-            },
-        },
-        20,
-        null
-    );
+    const { memo } = await workers.addNonRetryableTask({
+        type: WorkerTaskType.GET_CONTRACT_INFO,
+        data: {
+            contractId,
+            payload: { userId }
+        }
+    }, {
+        priority: 20,
+        attempts: 0,
+        userId,
+        interception: null
+    });
 
     const message = await workers.addRetryableTask(
         {
@@ -121,7 +122,12 @@ async function getContractMessage(
                 payload: { userId }
             },
         },
-        10
+        {
+            priority: 10,
+            attempts: 0,
+            userId,
+            interception: null
+        }
     );
 
     const contractMessage = ContractMessage.fromMessage(message?.message);
@@ -197,7 +203,9 @@ async function setPool(
                     type: WorkerTaskType.GET_TOKEN_INFO,
                     data: { tokenId: item.token, payload: { userId } },
                 },
-                10
+                {
+                    priority: 10
+                }
             );
             const wipeContractId = getTokenContractId(tokenInfo.wipe_key);
 
@@ -377,7 +385,9 @@ async function setRetireRequest(
                     type: WorkerTaskType.GET_TOKEN_INFO,
                     data: { tokenId: token.token, payload: { userId } },
                 },
-                10
+                {
+                    priority: 10
+                }
             );
             const tokenInfo = {
                 type:
@@ -502,8 +512,9 @@ export async function syncWipeContract(
                     payload: { userId }
                 },
             },
-            20,
-            null
+            {
+                priority: 20
+            }
         );
 
         if (!result || !result.length) {
@@ -778,8 +789,9 @@ export async function syncRetireContract(
                     payload: { userId }
                 },
             },
-            20,
-            null
+            {
+                priority: 20
+            }
         );
 
         if (!result || !result.length) {
@@ -1073,8 +1085,9 @@ async function isContractWiper(
                     payload: { userId }
                 },
             },
-            20,
-            null
+            {
+                priority: 20
+            }
         );
 
         if (!result || !result.length) {
@@ -1257,7 +1270,12 @@ async function saveRetireVC(
 
     const vcMessage = new VCMessage(MessageAction.CreateVC);
     vcMessage.setDocument(vcObject);
-    await messageServer.sendMessage(vcMessage, true, null, userId);
+    await messageServer.sendMessage(vcMessage, {
+        sendToIPFS: true,
+        memo: null,
+        interception: null,
+        userId
+    });
 
     await dataBaseServer.save(VcDocumentCollection, {
         hash: vcMessage.hash,
@@ -1346,6 +1364,7 @@ export async function contractAPI(
                 KeyType.KEY,
                 owner.creator
             );
+
             const signOptions = await wallet.getUserSignOptions(root);
 
             const topicHelper = new TopicHelper(root.hederaAccountId, rootKey, signOptions);
@@ -1371,7 +1390,8 @@ export async function contractAPI(
                 type,
                 root.hederaAccountId,
                 rootKey,
-                topic.topicId
+                topic.topicId,
+                userId
             );
 
             await topic.saveKeys(userId);
@@ -1380,6 +1400,7 @@ export async function contractAPI(
             const version = await getContractVersion(
                 log
             );
+
             const contract = await dataBaseServer.save(Contract, {
                 contractId,
                 owner: owner.owner,
@@ -1405,12 +1426,128 @@ export async function contractAPI(
             });
             const contractMessageResult = await messageServer
                 .setTopicObject(topic)
-                .sendMessage(contractMessage, true, null, userId);
+                .sendMessage(contractMessage, {
+                    sendToIPFS: true,
+                    memo: null,
+                    interception: null,
+                    userId
+                });
+
             const userTopic = await TopicConfig.fromObject(
                 await DatabaseServer.getTopicByType(owner.owner, TopicType.UserTopic),
                 true, userId
             );
+
             await topicHelper.twoWayLink(topic, userTopic, contractMessageResult.getId(), userId);
+
+            return new MessageResponse(contract);
+        } catch (error) {
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Create contract V2 22.07.2025
+     */
+    ApiResponse(ContractAPI.CREATE_CONTRACT_V2, async (msg: {
+        owner: IOwner,
+        description: string,
+        type: ContractType
+    }) => {
+        const userId = msg?.owner?.id;
+        try {
+            if (!msg) {
+                return new MessageError('Invalid get contract parameters');
+            }
+
+            const { description, owner, type } = msg;
+
+            const users = new Users();
+            const wallet = new Wallet();
+            const workers = new Workers();
+            const root = await users.getUserById(owner.creator, userId);
+            const rootKey = await wallet.getKey(
+                root.walletToken,
+                KeyType.KEY,
+                owner.creator
+            );
+
+            const signOptions = await wallet.getUserSignOptions(root);
+
+            const topicHelper = new TopicHelper(root.hederaAccountId, rootKey, signOptions);
+            const topic = await topicHelper.create(
+                {
+                    type: TopicType.ContractTopic,
+                    name: TopicType.ContractTopic,
+                    description: TopicType.ContractTopic,
+                    owner: owner.owner,
+                    policyId: null,
+                    policyUUID: null,
+                },
+                userId,
+                {
+                    admin: true,
+                    submit: false,
+                }
+            );
+
+            const [contractId, log] = await createContractV2(
+                ContractAPI.CREATE_CONTRACT,
+                workers,
+                type,
+                root.hederaAccountId,
+                rootKey,
+                topic.topicId,
+                userId
+            );
+
+            await topic.saveKeys(userId);
+            await DatabaseServer.saveTopic(topic.toObject());
+
+            const version = await getContractVersion(
+                log
+            );
+
+            const contract = await dataBaseServer.save(Contract, {
+                contractId,
+                owner: owner.owner,
+                description,
+                permissions: type === ContractType.WIPE ?
+                    (version !== '1.0.0' ? 7 : 15)
+                    : 3,
+                type,
+                topicId: topic.topicId,
+                wipeContractIds: [],
+                wipeTokenIds: [],
+                version,
+            });
+
+            const contractMessage = new ContractMessage(
+                MessageAction.CreateContract
+            );
+            contractMessage.setDocument(contract);
+            const messageServer = new MessageServer({
+                operatorId: root.hederaAccountId,
+                operatorKey: rootKey,
+                signOptions
+            });
+            const contractMessageResult = await messageServer
+                .setTopicObject(topic)
+                .sendMessage(contractMessage, {
+                    sendToIPFS: true,
+                    memo: null,
+                    interception: null,
+                    userId
+                });
+
+            const userTopic = await TopicConfig.fromObject(
+                await DatabaseServer.getTopicByType(owner.owner, TopicType.UserTopic),
+                true, userId
+            );
+
+            await topicHelper.twoWayLink(topic, userTopic, contractMessageResult.getId(), userId);
+
             return new MessageResponse(contract);
         } catch (error) {
             await logger.error(error, ['GUARDIAN_SERVICE'], userId);
@@ -2485,7 +2622,9 @@ export async function contractAPI(
                                 type: WorkerTaskType.GET_TOKEN_INFO,
                                 data: { tokenId: token.token, payload: { userId } },
                             },
-                            10
+                            {
+                                priority: 10
+                            }
                         );
                         token.contract = getTokenContractId(tokenInfo.wipe_key);
                         if (handledContracts.has(token.contract)) {
@@ -3532,7 +3671,9 @@ export async function contractAPI(
                 data: {
                     payload: { options: { topicId: contractTopicId }, userId }
                 }
-            }, 2);
+            }, {
+                priority: 2
+            });
 
             return new MessageResponse([messages, messages.length]);
         } catch (error) {

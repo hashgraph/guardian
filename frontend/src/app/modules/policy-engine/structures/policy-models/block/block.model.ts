@@ -77,12 +77,35 @@ export class PolicyBlock {
         }
     }
 
+    public get policyId(): string | undefined {
+        return this._module?.id;
+    }
+
     public get isModule(): boolean {
         return false;
     }
 
     public get isTool(): boolean {
         return false;
+    }
+
+    public get isPolicy(): boolean {
+        return true;
+    }
+
+    public get isTest(): boolean {
+        if (this._module) {
+            return this._module.isTest;
+        }
+        return false;
+    }
+
+    public get rootParent(): PolicyBlock {
+        if (this._parent) {
+            return this._parent.rootParent;
+        } else {
+            return this;
+        }
     }
 
     public get canAddBlocks(): boolean {
@@ -422,6 +445,14 @@ export class PolicyBlock {
                 }
             }
         }
+        return json;
+    }
+
+    public getProp(): any {
+        const json: any = { ...this.properties };
+        json.id = this.id;
+        json.blockType = this.blockType;
+        json.tag = this.tag;
         return json;
     }
 

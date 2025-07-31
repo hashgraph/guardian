@@ -60,6 +60,14 @@ export class PolicyTool extends PolicyBlock {
         return this.properties.messageId;
     }
 
+    public get policyId(): string | undefined {
+        return this._module?.policyId;
+    }
+
+    public get isDraft(): boolean {
+        return this._module ? this._module.isDraft : true;
+    }
+
     constructor(config: IModuleConfig, parent: PolicyBlock | null) {
         super(config, parent);
     }
@@ -148,6 +156,25 @@ export class PolicyTool extends PolicyBlock {
 
     public get isTool(): boolean {
         return true;
+    }
+
+    public get isPolicy(): boolean {
+        return false;
+    }
+
+    public get isTest(): boolean {
+        if(this._module) {
+            return this._module.isTest;
+        }
+        return false;
+    }
+
+    public get rootParent(): PolicyBlock {
+        if (this._parent) {
+            return this._parent.rootParent;
+        } else {
+            return this;
+        }
     }
 
     public get canAddBlocks(): boolean {
@@ -670,7 +697,7 @@ export class PolicyTool extends PolicyBlock {
     }
 
     public setEnvironments(env: any): void {
-        if(env) {
+        if (env) {
             this._name = env.name;
             this._description = env.description;
             this._localTag = env.localTag;

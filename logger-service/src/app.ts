@@ -1,4 +1,4 @@
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, GenerateTLSOptionsNats, LargePayloadContainer, Log, MessageBrokerChannel, Migration, mongoForLoggingInitialization } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, Log, MessageBrokerChannel, Migration, mongoForLoggingInitialization } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { NestFactory } from '@nestjs/core';
 import { Deserializer, IncomingRequest, MicroserviceOptions, Serializer, Transport } from '@nestjs/microservices';
@@ -48,6 +48,10 @@ Promise.all([
     DatabaseServer.connectBD(db);
 
     app.listen();
+
+    const jwtServiceName = 'LOGGER_SERVICE';
+
+    JwtServicesValidator.setServiceName(jwtServiceName);
 
     const state = new ApplicationState();
     await state.setServiceName('LOGGER_SERVICE').setConnection(mqConnection).init();

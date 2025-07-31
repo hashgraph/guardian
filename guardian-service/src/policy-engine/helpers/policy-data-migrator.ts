@@ -45,6 +45,7 @@ import {
     TopicType,
     ISignOptions,
     PolicyHelper,
+    BlockType,
 } from '@guardian/interfaces';
 import { INotifier } from '../../helpers/notifier.js';
 import {
@@ -293,13 +294,20 @@ export class PolicyDataMigrator {
                     throw new Error(`Can't find source policy`);
                 }
                 const srcModelDryRun = PolicyHelper.isDryRunMode(srcModel);
-                policyUsers = await users.getUsersBySrId(owner, userId);
+
+                if (srcModelDryRun) {
+                    policyUsers = await DatabaseServer.getVirtualUsers(srcModel.id)
+                } else {
+                    policyUsers = await users.getUsersBySrId(owner, userId);
+                }
+
                 policyRoles = await new RolesLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
                     srcModelDryRun
                 ).get();
+
                 policyStates = await new BlockStateLoader(
                     srcModel.id,
                     srcModel.topicId,
@@ -474,6 +482,7 @@ export class PolicyDataMigrator {
                 migrateState,
                 migrateRetirePools,
                 userId,
+                srcModel.id,
                 retireContractId
             );
 
@@ -529,6 +538,7 @@ export class PolicyDataMigrator {
         migrateState = false,
         migrateRetirePools = false,
         userId: string | null,
+        srcPolicyId: string,
         retireContractId?: string
     ) {
         const errors = new Array<DocumentError>();
@@ -545,6 +555,49 @@ export class PolicyDataMigrator {
                 errors,
                 userId
             );
+
+            if (states?.length > 0) {
+                const [{ config: srcBlockTree }, { config: blockTree }] = await Promise.all([
+                    DatabaseServer.getPolicyById(srcPolicyId),
+                    DatabaseServer.getPolicyById(this._policyId)
+                ]);
+
+                const srcStepStateMap = new Map<number, string>();
+                const stepStateMap = new Map<string, number>();
+                const stepBlockStates: BlockState[] = [];
+
+                states.forEach(state => {
+                    const srcBlock = this.findBlockById(srcBlockTree, state.blockId);
+                    if (srcBlock && srcBlock.blockType === BlockType.Step && srcBlock.children?.length > 0) {
+                        srcBlock.children.forEach((child, index) => {
+                            srcStepStateMap.set(index, child.tag)
+                        });
+                        stepBlockStates.push(state);
+                    }
+                    const block = this.findBlockByTag(blockTree, srcBlock.tag);
+                    if (block && block.blockType === BlockType.Step && block.children?.length > 0) {
+                        block.children.forEach((child, index) => {
+                            stepStateMap.set(child.tag, index)
+                        });
+                    }
+                });
+                stepBlockStates.forEach(stepState => {
+                    const blockState = JSON.parse(stepState.blockState);
+                    if (blockState && blockState.state) {
+                        const currentState = blockState.state;
+                        for (const key in currentState) {
+                            if (currentState.hasOwnProperty(key)) {
+                                if (currentState[key]?.index && srcStepStateMap.get(currentState[key].index)) {
+                                    const tag = srcStepStateMap.get(currentState[key].index);
+                                    currentState[key].index = stepStateMap.get(tag) || currentState[key];
+                                }
+                            }
+                        }
+                    }
+                    stepState.blockState = JSON.stringify(blockState);
+                });
+            }
+
             await this._migratePolicyStates(states);
         } else {
             this._notifier?.info('Migrate policy state skipped');
@@ -668,6 +721,50 @@ export class PolicyDataMigrator {
     }
 
     /**
+     * Find block in policy config by id
+     * @param policyConfig policy config
+     * @param blockId block id
+     * @returns Policy block or null
+     */
+    private findBlockById(policyConfig: any, blockId: string): any | null {
+        for (const node of policyConfig.children) {
+            if (node.id === blockId) {
+                return node;
+            }
+
+            if (node.children && node.children.length) {
+                const found = this.findBlockById(node, blockId);
+                if (found) {
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Find block in policy config by tag
+     * @param policyConfig policy config
+     * @param blockTag block tag
+     * @returns Policy block or null
+     */
+    private findBlockByTag(tree: any, blockTag: string): any | null {
+        for (const node of tree.children) {
+            if (node.tag === blockTag) {
+                return node;
+            }
+
+            if (node.children && node.children.length) {
+                const found = this.findBlockByTag(node, blockTag);
+                if (found) {
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Migrate tokens
      * @param dynamicTokens Dynamic tokens
      * @param tokenTemplates Token templates
@@ -784,7 +881,8 @@ export class PolicyDataMigrator {
             ContractType.WIPE,
             this._root.hederaAccountId,
             this._rootKey,
-            topic.topicId
+            topic.topicId,
+            userId
         );
 
         await topic.saveKeys(userId);
@@ -809,7 +907,13 @@ export class PolicyDataMigrator {
             MessageAction.CreateContract
         );
         contractMessage.setDocument(contract);
-        await this._ms.setTopicObject(topic).sendMessage(contractMessage, true, null, userId);
+        await this._ms.setTopicObject(topic)
+            .sendMessage(contractMessage, {
+                sendToIPFS: true,
+                memo: null,
+                userId,
+                interception: null
+            });
 
         this._createdWipeContractId = contract.contractId;
         return this._createdWipeContractId;
@@ -971,6 +1075,10 @@ export class PolicyDataMigrator {
         }[]
     ) {
         for (const user of users) {
+            if (user.username === 'Administrator') {
+                continue;
+            }
+
             user.did = await this._replaceDidTopicId(user.did);
             if (user.did === this._owner) {
                 continue;
@@ -1057,13 +1165,21 @@ export class PolicyDataMigrator {
                 relationships.push(...doc.relationships);
             }
             vcMessage.setRelationships(relationships);
+            vcMessage.setTag(doc);
+            vcMessage.setEntityType(doc);
+            vcMessage.setOption(doc);
             if (role) {
                 vcMessage.setUser(role.messageId);
             }
             const message = vcMessage;
             const vcMessageResult = await this._ms
                 .setTopicObject(this._policyInstanceTopic)
-                .sendMessage(message, true, null, userId);
+                .sendMessage(message, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId,
+                    interception: null
+                });
             doc.messageId = vcMessageResult.getId();
             doc.topicId = vcMessageResult.getTopicId();
             doc.messageHash = vcMessageResult.toHash();
@@ -1236,9 +1352,17 @@ export class PolicyDataMigrator {
             vpMessage.setDocument(vp);
             vpMessage.setUser(null);
             vpMessage.setRelationships([...doc.relationships, doc.messageId]);
+            vpMessage.setTag(doc);
+            vpMessage.setEntityType(doc);
+            vpMessage.setOption(doc);
             const vpMessageResult = await this._ms
                 .setTopicObject(this._policyInstanceTopic)
-                .sendMessage(vpMessage, true, null, userId);
+                .sendMessage(vpMessage, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId,
+                    interception: null
+                });
             const vpMessageId = vpMessageResult.getId();
             this.vpIds.set(doc.messageId, vpMessageId);
             doc.messageId = vpMessageId;
@@ -1424,13 +1548,21 @@ export class PolicyDataMigrator {
                 doc.option?.status || DocumentStatus.NEW
             );
             vcMessage.setRelationships([...doc.relationships, doc.messageId]);
+            vcMessage.setTag(doc);
+            vcMessage.setEntityType(doc);
+            vcMessage.setOption(doc);
             if (role && schema.category === SchemaCategory.POLICY) {
                 vcMessage.setUser(role.messageId);
             }
             const message = vcMessage;
             const vcMessageResult = await this._ms
                 .setTopicObject(this._policyInstanceTopic)
-                .sendMessage(message, true, null, userId);
+                .sendMessage(message, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId,
+                    interception: null
+                });
             doc.messageId = vcMessageResult.getId();
             doc.topicId = vcMessageResult.getTopicId();
             doc.messageHash = vcMessageResult.toHash();

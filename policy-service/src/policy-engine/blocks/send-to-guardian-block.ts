@@ -481,6 +481,9 @@ export class SendToGuardianBlock {
             vcMessage.setDocument(vc);
             vcMessage.setDocumentStatus(document.option?.status || DocumentStatus.NEW);
             vcMessage.setRelationships(document.relationships);
+            vcMessage.setTag(ref);
+            vcMessage.setEntityType(ref);
+            vcMessage.setOption(document, ref);
             vcMessage.setUser(owner.roleMessage);
             message = vcMessage;
             docObject = vc;
@@ -490,6 +493,9 @@ export class SendToGuardianBlock {
             const vpMessage = new VPMessage(MessageAction.CreateVP);
             vpMessage.setDocument(vp);
             vpMessage.setRelationships(document.relationships);
+            vpMessage.setTag(ref);
+            vpMessage.setEntityType(ref);
+            vpMessage.setOption(document, ref);
             vpMessage.setUser(owner.roleMessage);
             message = vpMessage;
             docObject = vp;

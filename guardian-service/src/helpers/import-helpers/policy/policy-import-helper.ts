@@ -38,6 +38,7 @@ export class PolicyImportExportHelper {
         const schemas = await Promise.all([
             DatabaseServer.getSystemSchema(SchemaEntity.POLICY),
             DatabaseServer.getSystemSchema(SchemaEntity.MINT_TOKEN),
+            DatabaseServer.getSystemSchema(SchemaEntity.INTEGRATION_DATA),
             DatabaseServer.getSystemSchema(SchemaEntity.MINT_NFTOKEN),
             DatabaseServer.getSystemSchema(SchemaEntity.WIPE_TOKEN),
             DatabaseServer.getSystemSchema(SchemaEntity.ISSUER),
@@ -252,7 +253,12 @@ export class PolicyImportExportHelper {
             signOptions: hederaAccount.signOptions
         });
         const message = await messageServer
-            .getMessage<PolicyMessage>({ messageId, loadIPFS: true, userId });
+            .getMessage<PolicyMessage>({
+                messageId,
+                loadIPFS: true,
+                userId,
+                interception: null
+            });
         if (message.type !== MessageType.InstancePolicy) {
             throw new Error('Invalid Message Type');
         }

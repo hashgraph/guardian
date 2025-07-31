@@ -44,7 +44,9 @@ export async function createHederaToken(
             payload: { userId },
             ...token
         }
-    }, 20);
+    }, {
+        priority: 20
+    });
 
     const wallet = new Wallet();
     await Promise.all([
@@ -300,7 +302,9 @@ async function updateToken(
                 changes,
                 payload: { userId: user.id }
             }
-        }, 20);
+        }, {
+            priority: 20
+        });
 
         notifier.completedAndStart('Save token in DB');
 
@@ -381,7 +385,9 @@ async function deleteToken(
                 adminKey,
                 payload: { userId: user.id }
             }
-        }, 20);
+        }, {
+            priority: 20
+        });
         notifier.completedAndStart('Save token in DB');
 
         if (tokenData) {
@@ -445,7 +451,9 @@ async function associateToken(
             associate,
             payload: { userId: user.id }
         }
-    }, 20);
+    }, {
+        priority: 20
+    });
 
     notifier.completed();
     return { tokenName: token.tokenName, status };
@@ -505,7 +513,13 @@ async function grantKycToken(
             grant,
             payload: { userId: user.id }
         }
-    }, 20, user.id.toString());
+    }, {
+        priority: 20,
+        attempts: 0,
+        userId: user.id.toString(),
+        interception: user.id.toString(),
+        registerCallback: true
+    });
 
     await new Promise(resolve => setTimeout(resolve, 15000));
 
@@ -517,7 +531,13 @@ async function grantKycToken(
             hederaAccountId: user.hederaAccountId,
             payload: { userId: user.id }
         }
-    }, 20, user.id.toString());
+    }, {
+        priority: 20,
+        attempts: 0,
+        userId: user.id.toString(),
+        interception: user.id.toString(),
+        registerCallback: true
+    });
 
     const result = getTokenInfo(info, token);
     notifier.completed();
@@ -578,7 +598,13 @@ async function freezeToken(
             freeze,
             payload: { userId: user.id }
         }
-    }, 20, user.id.toString());
+    }, {
+        priority: 20,
+        attempts: 0,
+        userId: user.id.toString(),
+        interception: user.id.toString(),
+        registerCallback: true
+    });
 
     await new Promise(resolve => setTimeout(resolve, 15000));
 
@@ -590,7 +616,13 @@ async function freezeToken(
             hederaAccountId: user.hederaAccountId,
             payload: { userId: user.id }
         }
-    }, 20, user.id.toString());
+    }, {
+        priority: 20,
+        attempts: 0,
+        userId: user.id.toString(),
+        interception: user.id.toString(),
+        registerCallback: true
+    });
 
     const result = getTokenInfo(info, token);
     notifier.completed();
@@ -882,7 +914,9 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                         hederaAccountId: user.hederaAccountId,
                         payload: { userId: owner?.id }
                     }
-                }, 20);
+                }, {
+                    priority: 20
+                });
 
                 const result = getTokenInfo(info, token);
 
@@ -931,14 +965,18 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                             hederaAccountId: user.hederaAccountId,
                             payload: { userId: owner?.id }
                         }
-                    }, 20),
+                    }, {
+                        priority: 20
+                    }),
                     workers.addNonRetryableTask({
                         type: WorkerTaskType.GET_USER_NFTS_SERIALS,
                         data: {
                             hederaAccountId: user.hederaAccountId,
                             payload: { userId: owner?.id }
                         },
-                    }, 20)
+                    }, {
+                        priority: 20
+                    })
                 ])
 
                 const result: any[] = [];
@@ -1125,7 +1163,9 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                                 payload: { userId: owner?.id }
                             },
                         },
-                        20
+                        {
+                            priority: 20
+                        }
                     ));
                 return new MessageResponse(serials[tokenId] || []);
             } catch (error) {

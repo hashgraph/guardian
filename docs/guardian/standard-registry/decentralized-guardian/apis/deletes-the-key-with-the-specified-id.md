@@ -17,10 +17,8 @@ Deletes the key with the provided ID.
 
 **Body**
 
-| Name | Type   | Description                                                                            |
-| ---- | ------ | -------------------------------------------------------------------------------------- |
-| id   | string | <p></p><pre class="language-yaml"><code class="lang-yaml">Key Identifier
-</code></pre> |
+<table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td>id</td><td>string</td><td><p></p><pre class="language-yaml"><code class="lang-yaml">Key Identifier
+</code></pre></td></tr></tbody></table>
 
 **Response**
 

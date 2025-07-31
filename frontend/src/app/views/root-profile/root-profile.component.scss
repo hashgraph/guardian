@@ -409,7 +409,14 @@ button[disabled] {
     align-content: center;
 }
 
-:host ::ng-deep .p-dropdown {
+:host ::ng-deep .topic-id-field .p-dropdown {
+    width: 200px;
+    border-radius: 8px;
+    border: 1px solid var(--color-grey-3);
+    background: #fff;
+}
+
+:host ::ng-deep.p-dropdown {
     width: 100px;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);

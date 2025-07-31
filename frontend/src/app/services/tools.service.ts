@@ -76,11 +76,11 @@ export class ToolsService {
         });
     }
 
-    public importByMessage(messageId: string, metadata?:  { tools: { [key: string]: string }}): Observable<any[]> {
+    public importByMessage(messageId: string, metadata?: { tools: { [key: string]: string } }): Observable<any[]> {
         return this.http.post<any[]>(`${this.url}/import/message`, { messageId, metadata });
     }
 
-    public importByFile(file: any, metadata?: { tools: { [key: string]: string }}): Observable<any[]> {
+    public importByFile(file: any, metadata?: { tools: { [key: string]: string } }): Observable<any[]> {
         const formData = new FormData();
         formData.append('file', new Blob([file], { type: "application/octet-stream" }));
         if (metadata) {
@@ -120,5 +120,9 @@ export class ToolsService {
 
     public validate(policy: any): Observable<any> {
         return this.http.post<any>(`${this.url}/validate`, policy);
+    }
+
+    public checkMessage(messageId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/check/${messageId}`);
     }
 }

@@ -1,5 +1,6 @@
 import { randomBytes, pbkdf2, createHash } from 'crypto';
 import { User } from '../entity/user.js';
+import { PasswordComplexityEnum, minPasswordLength, passwordComplexity } from '#constants';
 
 export interface IPassword {
     password: string,
@@ -102,5 +103,31 @@ export class UserPassword {
         } else {
             return await UserPassword.verifyPasswordV1(originalPassword, currentPassword)
         }
+    }
+
+    public static validatePassword(password: string) {
+        if (password.length < minPasswordLength) {
+            return false;
+        }
+
+        let pattern: RegExp | null = null;
+
+        switch (passwordComplexity) {
+          case PasswordComplexityEnum.MEDIUM:
+            pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;
+            break;
+          case PasswordComplexityEnum.HARD:
+            pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w]).+$/;
+            break;
+          case PasswordComplexityEnum.EASY:
+          default:
+            break;
+        }
+
+        if (pattern) {
+            return pattern.test(password);
+        }
+
+        return true;
     }
 }

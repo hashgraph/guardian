@@ -140,11 +140,18 @@
             [attr.expired]="!!policyInfo.discontinuedDate" 
             [attr.policy-status]="policyInfo.status"
             class="policy-header">
-            <div class="guardian-user-back-button">
+            <div *ngIf="!isDryRun && !policyInfo.discontinuedDate">
+                <a
+                    (click)="onBack()"
+                    class="back-button"
+                >
+                    List of Policies
+                </a>
+            </div>
+            <div *ngIf="isDryRun || !!policyInfo.discontinuedDate" class="guardian-user-back-button">
                 <button
                     (click)="onBack()"
-                    [ngClass]="{ 'back-button': isDryRun || !!policyInfo.discontinuedDate }"
-                    class="guardian-button guardian-button-secondary"
+                    class="dry-run-back-button guardian-button guardian-button-secondary"
                 >
                     <div class="guardian-button-icon">
                         <svg-icon class="icon-btn svg-icon"
@@ -194,40 +201,88 @@
         <div
             [attr.hidden-container]="view !== 'policy'"
             [attr.policy-status]="policyInfo.status"
-            class="policy-container"
+            *ngIf="view == 'policy'"
+            style="height: 100%;"
         >
-            <progress-tracker
-                *ngIf="steps && steps.length > 0"
-                [steps]="steps"
-            ></progress-tracker>
-            <div style="width: 100%; overflow-y: scroll;">
-                <render-block
-                    [block]="policy"
-                    [dryRun]="isDryRun"
-                    [policyId]="policyId"
-                    style="width: 100%;"
-                ></render-block>
-
-                <div *ngIf="!navigationFooterDisabled" class="progress-footer-container">
-                    <div class="progress-footer">
-                        <button 
-                            (click)="onNavigationPrevButton()" 
-                            [disabled]="prevButtonDisabled" 
-                            class="button"
-                            label="Previous" 
-                            pButton
-                            type="button"></button>
-                        <div *ngIf="!nextButtonDisabled">
-                            <button 
-                                (click)="onNavigationNextButton()"
-                                class="p-button" 
-                                label="Next" 
-                                pButton
-                                type="button"></button>
+            <ng-container *ngIf="!isDryRun; else dryRunContent">
+                <p-tabView [(activeIndex)]="activeTabIndex" (activeIndexChange)="onTabChange($event)">
+                    <p-tabPanel [header]="'General'">
+                        <div class="policy-container">
+                            <progress-tracker
+                                *ngIf="steps && steps.length > 0"
+                                [steps]="steps"
+                            ></progress-tracker>
+                            <div style="width: 100%;">
+                                <render-block
+                                    [block]="policy"
+                                    [dryRun]="isDryRun"
+                                    [policyId]="policyId"
+                                    style="width: 100%;"
+                                ></render-block>
+                
+                                <div *ngIf="!navigationFooterDisabled" class="progress-footer-container">
+                                    <div class="progress-footer">
+                                        <button 
+                                            (click)="onNavigationPrevButton()" 
+                                            [disabled]="prevButtonDisabled" 
+                                            class="button"
+                                            label="Previous" 
+                                            pButton
+                                            type="button"></button>
+                                        <div *ngIf="!nextButtonDisabled">
+                                            <button 
+                                                (click)="onNavigationNextButton()"
+                                                class="p-button" 
+                                                label="Next" 
+                                                pButton
+                                                type="button"></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </p-tabPanel>
+                    <p-tabPanel [header]="'Export Documents'">
+                        <app-project-data-export></app-project-data-export>
+                    </p-tabPanel>
+                </p-tabView>
+            </ng-container>
+            <ng-template #dryRunContent>
+                <div class="policy-container">
+                    <progress-tracker
+                        *ngIf="steps && steps.length > 0"
+                        [steps]="steps"
+                    ></progress-tracker>
+                    <div style="width: 100%;">
+                        <render-block
+                            [block]="policy"
+                            [dryRun]="isDryRun"
+                            [policyId]="policyId"
+                            style="width: 100%;"
+                        ></render-block>
+        
+                        <div *ngIf="!navigationFooterDisabled" class="progress-footer-container">
+                            <div class="progress-footer">
+                                <button 
+                                    (click)="onNavigationPrevButton()" 
+                                    [disabled]="prevButtonDisabled" 
+                                    class="button"
+                                    label="Previous" 
+                                    pButton
+                                    type="button"></button>
+                                <div *ngIf="!nextButtonDisabled">
+                                    <button 
+                                        (click)="onNavigationNextButton()"
+                                        class="p-button" 
+                                        label="Next" 
+                                        pButton
+                                        type="button"></button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </ng-template>
         </div>
 
         <div

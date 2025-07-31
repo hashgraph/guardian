@@ -27,6 +27,8 @@ export { RevokeBlock } from './revoke-block.js';
 export { RevocationBlock } from './revocation-block.js';
 export { SetRelationshipsBlock } from './set-relationships-block.js';
 export { ButtonBlock } from './button-block.js';
+export { TransformationButtonBlock } from './transformation-button-block.js';
+export { IntegrationButtonBlock } from './integration-button-block.js';
 export { TokenActionBlock } from './token-action-block.js';
 export { DocumentValidatorBlock } from './document-validator-block.js';
 export { TokenConfirmationBlock } from './token-confirmation-block.js';

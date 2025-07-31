@@ -7,6 +7,7 @@
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.08);
     margin-bottom: 32px;
     overflow-x: hidden;
+    position: relative;
     //flex-wrap: wrap;
     //grid-gap: 6px;
     //column-gap: 14px;
@@ -57,6 +58,7 @@
 
 .checkbox-label {
     margin-left: 12px;
+    margin-right: 12px;
     color: #23252e;
     font-family: Inter, sans-serif;
     font-size: 14px;
@@ -137,17 +139,15 @@
 }
 
 .custom-fields-remove {
-    width: 24px;
+    width: 36px;
+    min-width: 36px;
     height: 36px;
-    margin: 0px 20px;
+    margin: 0px 20px 2px 0px;
     justify-content: center;
     justify-items: center;
     align-content: center;
     align-items: center;
     display: flex;
-    color: #f00;
-    cursor: pointer;
-    font-size: 25px;
 }
 
 .custom-fields-remove i,
@@ -258,36 +258,35 @@
     width: 100%;
     gap: 10px;
     overflow: hidden;
+    margin-bottom: 16px;
+
+    .enum-form-field {
+        flex: 1;
+        pointer-events: none;
+    }
+
+    .enum-edit-button-only {
+        flex: 1;
+        padding: 15px 27px;
+        margin-bottom: 0px;
+        margin-top: 0px;
+    }
 }
 
-.enum-options-container .enum-form-field {
-    flex: 1;
-    pointer-events: none;
+.enum-edit-button {
+    height: 39px;
+    padding: 18px 24px 18px 20px;
+    margin-bottom: 0px;
+    margin-top: 20px;
 }
 
-.enum-options-container .enum-edit-button-only {
-    flex: 1;
-    padding: 15px 27px;
-}
-
-.enum-edit-button,
 .reset-btn {
     height: 39px;
-    color: var(--primary-color);
-    padding: 18px 27px;
-    border: 1px solid #e9e9e9;
-    border-radius: 6px;
-    margin-bottom: 11px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    justify-content: center;
-}
-
-.reset-btn {
-    padding: 17px 15px;
+    padding: 18px 24px 18px 20px;
     margin-top: 20px;
+    margin-bottom: 11px;
+    min-width: 110px;
+    max-width: 110px;
 }
 
 .mat-chip-value-label {
@@ -313,8 +312,16 @@
 
 .loading {
     display: flex;
-    width: 100%;
+    height: 288px;
     justify-content: center;
+    position: absolute;
+    left: 32px;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    background: #fff;
+    justify-content: center;
+    align-items: center;
 }
 
 .enum-edit-button-label,
@@ -392,7 +399,7 @@
 }
 
 .fields-main-container {
-    width: 100%;
+    width: calc(100% - 32px);
     padding: 16px;
 }
 
@@ -508,7 +515,6 @@
         padding: 0;
         width: 108px;
         height: 28px;
-        background-color: white !important;
     }
 
     &__title {
@@ -523,13 +529,56 @@
 }
 
 .edit-button {
-  padding: 0;
-  width: 108px;
-  height: 28px;
-  background-color: white !important;
+    border-radius: 6px;
+    background-color: white !important;
+
+    &.danger {
+        color: red !important;
+        border-color: red !important;
+        background-color: white !important;
+    }
+}
+
+.auto-calculate {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 6px;
+    width: 100%;
+    margin-right: 20px;
+    margin-bottom: 24px;
 }
 
 .checkbox-field-container.private {
     margin-left: 7px;
     padding-left: 1px;
+}
+
+.cdk-drag-placeholder {
+    opacity: 0.3;
+}
+
+.p-chips-container {
+    display: flex;
+    height: 39px;
+    align-items: center;
+
+    .p-chips-token {
+        background: var(--color-grey-1);
+        padding: 4px 8px;
+        border-radius: 6px;
+        margin-right: 8px;
+        border: 1px solid var(--color-grey-3);
+        color: #23252E;
+        max-width: 98px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+}
+
+.align-items-center {
+    display: flex;
+    flex-direction: row;
 }

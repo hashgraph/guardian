@@ -13,7 +13,7 @@ jobs:
         node-version: [ 20.18.1 ]
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
         with:
           egress-policy: audit
 
@@ -131,7 +131,7 @@ jobs:
           OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
 
       - name: Publish Unit Test Results
-        uses: step-security/publish-unit-test-result-action@cc82caac074385ae176d39d2d143ad05e1130b2d # v2.18.0
+        uses: step-security/publish-unit-test-result-action@43e0c963eea0ace6eca353cb1d814d857fee5c53 # v2.20.2
         if: always()
         with:
           files: test_results/**/*.xml

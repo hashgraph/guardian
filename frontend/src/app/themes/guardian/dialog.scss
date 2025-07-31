@@ -48,6 +48,17 @@
                 line-height: 32px;
                 height: 32px;
             }
+
+            .header-item {
+                padding: 6px 12px;
+                margin: 0px 16px;
+                border-radius: 6px;
+                font-size: var(--guardian-primary-font-size);
+                color: var(--guardian-dry-run-color);
+                background: var(--guardian-dry-run-background);
+                user-select: none;
+                cursor: default;
+            }
         }
 
         .header-icon {
@@ -70,7 +81,7 @@
 
     .dialog-body {
         overflow-y: auto;
-        max-height: calc(100vh - 320px);
+        max-height: calc(100vh - 335px);
     }
 
     .dialog-footer {
@@ -93,6 +104,32 @@
                 font-weight: 500;
             }
         }
+    }
+}
+
+.draft-dialog {
+    .action-buttons button {
+        padding: 5px 24px;
+    }
+
+    .confirmation-text {
+        margin-top: 0;
+    }
+
+    .dialog-footer {
+        padding-top: 32px;
+    }
+    .dialog-footer .action-buttons > :nth-child(2) {
+        margin-left: auto;
+    }
+
+    .dialog-footer .action-buttons > :nth-child(3) {
+        margin-left: 16px;
+    }
+
+    .dialog-body {
+        min-height: 100px;
+        padding-bottom: 32px;
     }
 }
 

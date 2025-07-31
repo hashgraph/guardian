@@ -230,7 +230,7 @@ export class TokensComponent extends BaseGridComponent {
         if (this.priorityChecked && this.priorityChecked.length > 0) {
             this.landingService.setDataPriorityLoadingProgressTokens(this.priorityChecked).subscribe(data => {
                 if (!data) {
-                    this.messageService.add({ severity: 'error', summary: 'Error', detail: this.translocoService.translate('priority_queue.add_to_queue_error'), life: 3000 });
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: this.translocoService.translate('priority_queue.not_exist_queue_error'), life: 3000 });
                 } else {
                     location.reload();
                 }

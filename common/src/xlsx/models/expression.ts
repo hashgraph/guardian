@@ -19,10 +19,10 @@ export class Expression {
     }
 
     public parse(): void {
-        const tree = mathjs.parse(this.formulae);
+        const tree = mathjs.parse(this.formulae) as mathjs.FunctionNode | mathjs.SymbolNode | mathjs.OperatorNode | mathjs.RangeNode;
         this.parseNodes(tree);
         const transformed = tree.transform(
-            (node: mathjs.MathNode, path: string, parent: mathjs.MathNode) => {
+            (node: mathjs.FunctionNode | mathjs.SymbolNode | mathjs.OperatorNode | mathjs.RangeNode, path: string, parent: mathjs.MathNode) => {
                 if (node.type === 'RangeNode') {
                     return new mathjs.SymbolNode(
                         `${node.start.toString()}_${node.end.toString()}`
@@ -36,7 +36,7 @@ export class Expression {
         this.transformed = transformed.toString();
     }
 
-    private parseNodes(node: mathjs.MathNode): void {
+    private parseNodes(node: mathjs.FunctionNode | mathjs.SymbolNode | mathjs.OperatorNode | mathjs.RangeNode): void {
         if (node.type === 'SymbolNode') {
             this.symbols.add(node.name);
         } else if (node.type === 'FunctionNode') {
@@ -44,11 +44,11 @@ export class Expression {
             const templates = this.functions.get(name) || [];
             templates.push(node.toString());
             this.functions.set(name, templates);
-            for (const arg of node.args) {
+            for (const arg of node.args as mathjs.FunctionNode[]) {
                 this.parseNodes(arg);
             }
         } else if (node.type === 'OperatorNode') {
-            for (const arg of node.args) {
+            for (const arg of node.args as mathjs.OperatorNode[]) {
                 this.parseNodes(arg);
             }
         } else if (node.type === 'RangeNode') {

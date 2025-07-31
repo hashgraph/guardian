@@ -8,6 +8,7 @@ import {
     RetireTokenPool,
     RetireTokenRequest,
 } from '@guardian/interfaces';
+import {headersV2} from '../constants';
 
 /**
  * Services for working with contracts.
@@ -41,6 +42,9 @@ export class ContractService {
         return this.http.post<any>(`${this.url}`, {
             description,
             type,
+        },
+        {
+            headers: headersV2
         });
     }
 

@@ -316,10 +316,18 @@ export class MintBlock {
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(mintVC);
         vcMessage.setRelationships(messages);
+        vcMessage.setTag(mintVC);
+        vcMessage.setEntityType(mintVC);
+        vcMessage.setOption(null, ref);
         vcMessage.setUser(null);
         const vcMessageResult = await messageServer
             .setTopicObject(topic)
-            .sendMessage(vcMessage, true, null, userId);
+            .sendMessage(vcMessage, {
+                sendToIPFS: true,
+                memo: null,
+                userId,
+                interception: null
+            });
         const mintVcDocument = PolicyUtils.createVC(ref, user, mintVC);
         mintVcDocument.type = DocumentCategoryType.MINT;
         mintVcDocument.schema = `#${mintVC.getSubjectType()}`;
@@ -338,11 +346,19 @@ export class MintBlock {
         const vpMessage = new VPMessage(MessageAction.CreateVP);
         vpMessage.setDocument(vp);
         vpMessage.setRelationships(messages);
+        vpMessage.setTag(vp);
+        vpMessage.setEntityType(vp);
+        vpMessage.setOption(null, vp);
         vpMessage.setUser(null);
 
         const vpMessageResult = await messageServer
             .setTopicObject(topic)
-            .sendMessage(vpMessage, true, null, userId);
+            .sendMessage(vpMessage, {
+                sendToIPFS: true,
+                memo: null,
+                userId,
+                interception: null
+            });
         const vpMessageId = vpMessageResult.getId();
         const vpDocument = PolicyUtils.createVP(ref, user, vp);
         vpDocument.type = DocumentCategoryType.MINT;
@@ -369,6 +385,7 @@ export class MintBlock {
             policyOwnerSignOptions,
             userId
         );
+
         return [savedVp, tokenValue];
     }
 

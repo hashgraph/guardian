@@ -28,34 +28,31 @@
     color: #000;
 }
 
-.field-value {
-    color: #181818;
-    font-family: Inter, sans-serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    margin-bottom: 24px;
-    max-width: 600px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-}
-
-.field-name {
-    color: #181818;
-    font-family: Inter, sans-serif;
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 600;
-}
-
 .field {
-    margin-top: 5px;
-    margin-bottom: 28px;
-}
+    margin-bottom: 16px;
 
-.field-last {
-    margin-bottom: 0px;
+    .field-name {
+        font-family: Inter;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 14px;
+        color: #181818;
+        margin-bottom: 6px;
+    }
+
+    .field-value {
+        width: 100%;
+        border-radius: 8px;
+        border: 1px solid #E1E7EF;
+        background: #F9FAFC;
+        padding: 12px 16px;
+        font-family: Inter;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 14px;
+        color: #23252E;
+        margin-bottom: 8px;
+    }
 }
 
 .loading {

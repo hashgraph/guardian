@@ -13,6 +13,9 @@ import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { audit, takeUntil } from 'rxjs/operators';
 import { interval, Subject } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
+import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { MergeUtils } from 'src/app/utils';
+import {ToastrService} from 'ngx-toastr';
 
 interface IRequestDocumentData {
     readonly: boolean;
@@ -22,6 +25,7 @@ interface IRequestDocumentData {
     presetFields: any[];
     restoreData: any;
     data: any;
+    draftDocument: any;
     uiMetaData: {
         type: string;
         title: string;
@@ -77,6 +81,7 @@ export class RequestDocumentBlockComponent
     public rulesResults: any;
     public destroy$: Subject<boolean> = new Subject<boolean>();
     public readonly: boolean = false;
+    public draftDocument: any;
 
     constructor(
         policyEngineService: PolicyEngineService,
@@ -87,7 +92,8 @@ export class RequestDocumentBlockComponent
         private fb: UntypedFormBuilder,
         private dialogService: DialogService,
         private router: Router,
-        private changeDetectorRef: ChangeDetectorRef
+        private changeDetectorRef: ChangeDetectorRef,
+        private toastr: ToastrService
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
@@ -128,6 +134,7 @@ export class RequestDocumentBlockComponent
             }, 500);
         } else if (this.type === 'page') {
             this.loadRules();
+            this.draftDocument && this.showDraftDialog();
         } else {
             setTimeout(() => {
                 this.loading = false;
@@ -146,6 +153,7 @@ export class RequestDocumentBlockComponent
             this.type = uiMetaData.type;
             this.schema = new Schema(schema);
             this.hideFields = {};
+            this.draftDocument = data.draftDocument;
             if (uiMetaData.privateFields) {
                 for (
                     let index = 0;
@@ -236,11 +244,11 @@ export class RequestDocumentBlockComponent
         return null;
     }
 
-    public onSubmit(form: UntypedFormGroup) {
+    public onSubmit(form: UntypedFormGroup, draft?: boolean) {
         if (this.disabled || this.loading) {
             return;
         }
-        if (form.valid) {
+        if (form.valid || draft) {
             const data = form.getRawValue();
             this.loading = true;
             prepareVcData(data);
@@ -248,15 +256,62 @@ export class RequestDocumentBlockComponent
                 .setBlockData(this.id, this.policyId, {
                     document: data,
                     ref: this.ref,
+                    draft
                 })
                 .subscribe(() => {
                     setTimeout(() => {
                         this.loading = false;
+                        if(draft) {
+                            this.draftDocument = {
+                                policyId: this.policyId,
+                                user: this.user.did,
+                                blockId: this.id,
+                                data
+                            };
+
+                            this.toastr.success('The draft version of the document was saved successfully', '', {
+                                timeOut: 3000,
+                                closeButton: true,
+                                positionClass: 'toast-bottom-right',
+                                enableHtml: true,
+                            });
+                        }
                     }, 1000);
                 }, (e) => {
                     console.error(e.error);
                     this.loading = false;
                 });
+        }
+    }
+
+    public handleSaveBtnEvent(form: UntypedFormGroup) {
+        if (!this.loading) {
+            if(this.draftDocument) {
+                const dialogOptionRef = this.dialogService.open(CustomConfirmDialogComponent, {
+                    showHeader: false,
+                    width: '640px',
+                    styleClass: 'guardian-dialog draft-dialog',
+                    data: {
+                        header: 'Overwrite Old Draft',
+                        text: 'You already have a saved draft. Are you sure you want to overwrite it? \n Please note that saving a new draft will permanently delete the previous one.',
+                        buttons: [{
+                            name: 'Cancel',
+                            class: 'secondary'
+                        }, {
+                            name: 'Save Draft',
+                            class: 'primary'
+                        }]
+                    },
+                });
+
+                dialogOptionRef.onClose.subscribe((result: string) => {
+                    if(result == 'Save Draft') {
+                        this.onSubmit(form, true);
+                    }
+                });
+            } else {
+                this.onSubmit(form, true);
+            }
         }
     }
 
@@ -276,13 +331,67 @@ export class RequestDocumentBlockComponent
             this.presetDocument = null;
         }
 
+        if(this.draftDocument) {
+            this.showDraftDialog(this.showDocumentDialog);
+        } else {
+            this.showDocumentDialog();
+        }
+
+    }
+
+    private showDocumentDialog() {
         const dialogRef = this.dialogService.open(RequestDocumentBlockDialog, {
             showHeader: false,
             width: '1000px',
             styleClass: 'guardian-dialog',
             data: this
         });
-        dialogRef.onClose.subscribe(async (result) => { });
+
+        dialogRef && dialogRef.onClose.subscribe(async (result) => { });
+    }
+
+    private showDraftDialog(callback?: any) {
+        const dialogOptionRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog draft-dialog',
+            data: {
+                header: 'Open Existing Draft',
+                text: 'You have previously saved draft. Do you want to continue with editing it or create completely new one? \n\n Remember that after saving new draft, previous one will be deleted.',
+                buttons: [{
+                    name: 'Cancel',
+                    class: 'secondary'
+                }, {
+                    name: 'Create New',
+                    class: 'secondary'
+                }, {
+                    name: 'Continue with Draft',
+                    class: 'primary'
+                }]
+            },
+        });
+
+        dialogOptionRef.onClose.subscribe((result: string) => {
+            if(result != 'Cancel') {
+                if (result === 'Continue with Draft') {
+                    this.draftRestore();
+                }
+
+                if(callback) {
+                    callback.call(this);
+                }
+            }
+        });
+    }
+
+    public draftRestore() {
+        if (this.draftDocument) {
+            if(this.needPreset && this.rowDocument) {
+                this.preset(MergeUtils.deepMerge(this.draftDocument.data, this.presetDocument))
+            } else {
+                this.preset(this.draftDocument.data);
+            }
+        }
     }
 
     public onRestoreClick() {
@@ -299,7 +408,7 @@ export class RequestDocumentBlockComponent
 
     public onDryRun() {
         if (this.schema) {
-            const presetDocument = DocumentGenerator.generateDocument(this.schema);
+            const presetDocument = DocumentGenerator.generateDocument(this.schema, undefined, this.rowDocument);
             this.preset(presetDocument);
         }
     }

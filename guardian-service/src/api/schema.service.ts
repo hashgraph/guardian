@@ -65,11 +65,12 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             name: string,
             owner: IOwner,
             task: any,
+            copyNested: boolean,
         }) => {
-            const { iri, topicId, name, owner, task } = msg;
+            const { iri, topicId, name, owner, task, copyNested } = msg;
             const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
-                const schema = await copySchemaAsync(iri, topicId, name, owner);
+                const schema = await copySchemaAsync(iri, topicId, name, owner, copyNested);
                 notifier.result(schema.iri);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
@@ -380,7 +381,16 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      */
     ApiResponse(MessageAPI.GET_SCHEMAS_V2,
         async (msg: {
-            options: any,
+            options: {
+                pageIndex?: number | string,
+                pageSize?: number | string,
+                category?: string,
+                policyId?: string,
+                moduleId?: string,
+                toolId?: string,
+                topicId?: string,
+                search?: string
+            },
             owner: IOwner,
         }) => {
             try {
@@ -393,14 +403,13 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     readonly: false,
                     system: false
                 }
+
+                //owner
                 if (owner) {
                     filter.owner = owner.owner;
                 }
-                if (Array.isArray(options.category)) {
-                    filter.category = { $in: options.category };
-                } else if (typeof options.category === 'string') {
-                    filter.category = options.category;
-                }
+
+                //category
                 if (options.policyId) {
                     filter.category = SchemaCategory.POLICY;
                     const userPolicy = await DatabaseServer.getPolicyCache({
@@ -411,11 +420,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         filter.cacheCollection = 'schemas';
                         filter.cachePolicyId = options.policyId;
                         // tslint:disable-next-line:no-shadowed-variable
-                        const [items, count] =
-                            await DatabaseServer.getAndCountPolicyCacheData(
-                                filter,
-                                otherOptions
-                            );
+                        const [items, count] = await DatabaseServer.getAndCountPolicyCacheData(filter, otherOptions);
                         return new MessageResponse({ items, count });
                     }
                     const policy = await DatabaseServer.getPolicyById(options.policyId);
@@ -431,17 +436,24 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     if (tool && tool.status === ModuleStatus.PUBLISHED) {
                         delete filter.owner;
                     }
+                } else if (Array.isArray(options.category)) {
+                    filter.category = { $in: options.category };
+                } else if (typeof options.category === 'string') {
+                    filter.category = options.category;
                 }
+
+                //topicId
                 if (options.topicId) {
                     filter.topicId = options.topicId;
-                    if (filter.category === SchemaCategory.TOOL) {
+                }
+                if (filter.category === SchemaCategory.TOOL) {
+                    if (options.topicId) {
                         const tool = await DatabaseServer.getTool({ topicId: options.topicId });
                         if (tool && tool.status === ModuleStatus.PUBLISHED) {
                             delete filter.owner;
                         }
-                    }
-                } else {
-                    if (filter.category === SchemaCategory.TOOL) {
+                        filter.topicId = options.topicId;
+                    } else {
                         const tools = await DatabaseServer.getTools({
                             $or: [{
                                 owner: owner.owner
@@ -453,12 +465,40 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         });
                         const ids = tools.map(t => t.topicId);
                         delete filter.owner;
-                        filter.topicId = { $in: ids }
+                        filter.topicId = { $in: ids };
                     }
                 }
 
-                const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
+                //search
+                if (options.search) {
+                    let search = options.search.toLowerCase();
+                    let global = false;
+                    if (search.startsWith('@')) {
+                        global = true;
+                        search = search.substring(1);
+                    }
+                    let schemas = await DatabaseServer.getSchemas(filter, {
+                        orderBy: { createDate: 'DESC' },
+                        limit: 10000,
+                        offset: 0,
+                        fields: ['_id', 'documentFileId']
+                    });
+                    schemas = schemas.filter((s) => {
+                        if (s.document) {
+                            if (!global) {
+                                delete s.document.$defs;
+                            }
+                            const text = JSON.stringify(s.document).toLowerCase();
+                            return text.indexOf(search) > -1;
+                        } else {
+                            return false;
+                        }
+                    })
+                    const ids = schemas.map((s) => s._id);
+                    filter._id = { $in: ids };
+                }
 
+                const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
                 return new MessageResponse({ items, count });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -1036,7 +1076,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      */
     ApiResponse(MessageAPI.GET_SYSTEM_SCHEMAS_V2,
         async (msg: {
-            owner: IOwner,
+            user: IAuthUser,
             fields: string[],
             pageIndex?: any,
             pageSize?: any
@@ -1066,7 +1106,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     count
                 });
             } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
                 return new MessageError(error);
             }
         });
@@ -1500,7 +1540,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 if (!xlsx) {
                     throw new Error('file in body is empty');
                 }
-                const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
+                const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data), { preview: true });
                 for (const toolId of xlsxResult.getToolIds()) {
                     try {
                         const tool = await previewToolByMessage(toolId.messageId, owner?.id);
