@@ -243,10 +243,12 @@
                         label="Allow multiple answers"></p-checkbox>
                 </div>
 
-                <div *ngIf="field.autocalculated.value" class="checkbox-field-container">
+                <div *ngIf="field.autocalculated.value" class="checkbox-field-container auto-calculate">
+                    <label class="form-label">Required</label>
                     <button
                         (click)="onEditExpression()"
-                        class=".edit-button button secondary"
+                        class="edit-button secondary"
+                        [ngClass]="{'danger': !this.field.expression.value}"
                         label="Edit expression"
                         pButton>
                     </button>

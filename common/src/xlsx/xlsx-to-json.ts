@@ -552,6 +552,17 @@ export class XlsxToJson {
                 field.textSize = font.size;
             }
 
+            if (field.autocalculate && !param) {
+                xlsxResult.addError({
+                    type: 'error',
+                    text: `Auto-calculate field is empty.`,
+                    message: `Auto-calculate field is empty.`,
+                    worksheet: worksheet.name,
+                    cell: worksheet.getPath(table.getCol(Dictionary.PARAMETER), row),
+                    row
+                }, field);
+            }
+
             if (param) {
                 if (fieldType.name === 'Prefix') {
                     field.unit = param;

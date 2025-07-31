@@ -529,10 +529,25 @@
 }
 
 .edit-button {
-    padding: 0;
-    width: 108px;
-    height: 28px;
+    border-radius: 6px;
     background-color: white !important;
+
+    &.danger {
+        color: red !important;
+        border-color: red !important;
+        background-color: white !important;
+    }
+}
+
+.auto-calculate {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 6px;
+    width: 100%;
+    margin-right: 20px;
+    margin-bottom: 24px;
 }
 
 .checkbox-field-container.private {
