@@ -224,38 +224,42 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
             );
         }
         this.fieldTypeSub = this.fieldType.valueChanges.subscribe(value => {
+
+            this.field.expression.clearValidators();
             switch (value) {
                 case 'autocalculate':
                     this.autocalculated = true;
                     this.field.controlRequired.setValue(false);
                     this.field.hidden.setValue(false);
-                    this.field.autocalculated.setValue(true)
+                    this.field.autocalculated.setValue(true);
+                    this.field.expression.setValidators([Validators.required]);
                     break;
                 case 'required':
                     this.autocalculated = false;
                     this.field.controlRequired.setValue(true);
                     this.field.hidden.setValue(false);
-                    this.field.autocalculated.setValue(false)
+                    this.field.autocalculated.setValue(false);
                     break;
                 case 'hidden':
                     this.autocalculated = false;
                     this.field.controlRequired.setValue(false);
                     this.field.hidden.setValue(true);
-                    this.field.autocalculated.setValue(false)
+                    this.field.autocalculated.setValue(false);
                     break;
                 case 'none':
                     this.autocalculated = false;
                     this.field.controlRequired.setValue(false);
                     this.field.hidden.setValue(false);
-                    this.field.autocalculated.setValue(false)
+                    this.field.autocalculated.setValue(false);
                     break;
                 default:
                     this.autocalculated = false;
                     this.field.controlRequired.setValue(false);
                     this.field.hidden.setValue(false);
-                    this.field.autocalculated.setValue(false)
+                    this.field.autocalculated.setValue(false);
                     break;
             }
+            this.field.expression.updateValueAndValidity();
         });
         this.fieldPropertySub = this.property.valueChanges.subscribe(val => {
             this.field.property.setValue(val);
@@ -425,7 +429,9 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         })
         dialogRef.onClose.subscribe(result => {
             if (result) {
+                this.field.expression.setValidators([Validators.required]);
                 this.field.expression.patchValue(result.expression);
+                this.field.expression.updateValueAndValidity();
             }
         })
     }
