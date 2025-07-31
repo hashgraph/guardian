@@ -57,6 +57,7 @@ class MigrationConfig {
         '#Retire',
         '#MintNFToken',
         '#MintToken',
+        '#IntegrationData',
         '#UserRole',
     ];
 
