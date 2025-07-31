@@ -1291,10 +1291,10 @@
     streaming-iterables "^6.0.0"
     throttled-queue "^2.1.2"
 
-"@formulajs/formulajs@4.5.1":
-  version "4.5.1"
-  resolved "https://registry.yarnpkg.com/@formulajs/formulajs/-/formulajs-4.5.1.tgz#8738ac38f4ced71b81efb2b316f95dd0e271ea8b"
-  integrity sha512-Edenag5E8YqYEvOUQ4gKZQ2+udbpG9FGAeMfPlY+JcL0oYGG4ULaDWqE5wRWSGdRXfEmKHroJhB4+QFXyVKDcw==
+"@formulajs/formulajs@4.5.3":
+  version "4.5.3"
+  resolved "https://registry.yarnpkg.com/@formulajs/formulajs/-/formulajs-4.5.3.tgz#5985d186dfbc1f0ed5d2d0a824a8ab34025fb0e8"
+  integrity sha512-bFyB7/3BWIny8rGJfbFnhHHM2ZNYiYoM4f9Q6fJVWo8wyfS174lDbk469A+J2NjECWq/M2CZVJcwDhzZ9EW8Sw==
   dependencies:
     bessel "^1.0.2"
     jstat "^1.9.6"

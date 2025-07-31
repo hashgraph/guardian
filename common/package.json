@@ -42,7 +42,7 @@
         "node-vault": "^0.10.0",
         "reflect-metadata": "^0.1.13",
         "ws": "^8.2.1",
-        "@formulajs/formulajs": "4.5.1",
+        "@formulajs/formulajs": "4.5.3",
         "prom-client": "^14.1.1",
         "seq-logging": "^2.2.0"
     },
