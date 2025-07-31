@@ -20,7 +20,7 @@ export class VCViewerDialog {
     public title: string = '';
     public json: string = '';
     public text: string = '';
-    public viewDocument!: boolean;
+    public viewDocument!: boolean | string | number;
     public isVcDocument!: boolean;
     public document: any;
     public type: any;
@@ -40,6 +40,11 @@ export class VCViewerDialog {
     public schemaId?: string;
     public messageId?: string;
     public user: UserPermissions = new UserPermissions();
+    public additionalOptionsData?: {
+        type: string;
+        data: Record<string, string | number>;
+        optionValue: string | number | boolean;
+    }[];
 
     constructor(
         public dialogRef: DynamicDialogRef,
@@ -74,7 +79,9 @@ export class VCViewerDialog {
             schemaId,
             topicId,
             category,
-            getByUser
+            getByUser,
+            additionalOptions = [],
+            additionalOptionsData,
         } = this.dialogConfig.data;
 
         this.policyId = row?.policyId;
@@ -108,6 +115,8 @@ export class VCViewerDialog {
         }
         this.viewDocument = (viewDocument || false) && (this.isVcDocument || this.isVpDocument);
         this.schema = schema;
+        this.viewDocumentOptions = [...this.viewDocumentOptions, ...additionalOptions];
+        this.additionalOptionsData = additionalOptionsData;
 
         this.getSubSchemes(schemaId, topicId, category);
     }

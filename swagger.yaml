@@ -9415,6 +9415,7 @@ paths:
               - USER
               - POLICY
               - MINT_TOKEN
+              - INTEGRATION_DATA
               - WIPE_TOKEN
               - MINT_NFTOKEN
             type: string
@@ -15852,7 +15853,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 3.2.0
+  version: 3.3.0-rc
   contact:
     name: API developer
     url: https://envisionblockchain.com
@@ -17339,6 +17340,7 @@ components:
             - USER
             - POLICY
             - MINT_TOKEN
+            - INTEGRATION_DATA
             - RETIRE
             - WIPE_TOKEN
             - MINT_NFTOKEN
