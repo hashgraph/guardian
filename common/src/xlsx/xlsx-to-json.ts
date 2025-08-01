@@ -552,6 +552,17 @@ export class XlsxToJson {
                 field.textSize = font.size;
             }
 
+            if (field.autocalculate && !param) {
+                xlsxResult.addError({
+                    type: 'error',
+                    text: `Auto-calculate field is empty.`,
+                    message: `Auto-calculate field is empty.`,
+                    worksheet: worksheet.name,
+                    cell: worksheet.getPath(table.getCol(Dictionary.PARAMETER), row),
+                    row
+                }, field);
+            }
+
             if (param) {
                 if (fieldType.name === 'Prefix') {
                     field.unit = param;
@@ -830,7 +841,7 @@ export class XlsxToJson {
             xlsxResult.addError({
                 type: 'error',
                 text: `Failed to parse field.`,
-                message: `Key ${field.name} is already exists`,
+                message: `Key ${field.name} already exists`,
                 worksheet: worksheet.name,
                 cell: worksheet.getPath(table.getCol(Dictionary.KEY), row),
                 row,

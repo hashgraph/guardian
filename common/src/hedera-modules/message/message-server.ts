@@ -1,6 +1,6 @@
 import { AccountId, PrivateKey, TopicId, } from '@hashgraph/sdk';
 import { GenerateUUIDv4, ISignOptions, SignType, WorkerTaskType } from '@guardian/interfaces';
-import { IPFS, IPFSOptions, PinoLogger, Workers } from '../../helpers/index.js';
+import { IPFS, PinoLogger, Workers } from '../../helpers/index.js';
 import { TransactionLogger } from '../transaction-logger.js';
 import { Environment } from '../environment.js';
 import { MessageMemo } from '../memo-mappings/message-memo.js';
@@ -178,7 +178,6 @@ export class MessageServer {
         message = await this.sendHedera(message, options);
         notifier.completeStep('Send messages');
 
-
         if (this.dryRun) {
             await DatabaseServer.saveVirtualMessage<T>(this.dryRun, message);
         }
@@ -277,12 +276,13 @@ export class MessageServer {
             }
             await new TransactionLogger().virtualFileLog(this.dryRun, file, result);
             return result
+        } else {
+            const step = notifier.addStep('Send file');
+            step.start();
+            const result = await IPFS.addFile(file, options);
+            step.complete();
+            return result;
         }
-        const step = notifier.addStep('Send file');
-        step.start();
-        const result = await IPFS.addFile(file, options);
-        step.complete();
-        return result;
     }
 
     /**

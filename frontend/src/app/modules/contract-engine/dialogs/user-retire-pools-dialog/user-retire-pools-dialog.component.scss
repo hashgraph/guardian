@@ -1,172 +1,300 @@
-.no-pools {
-    font-size: 25px;
-    color: gray;
-    font-weight: bold;
-    min-height: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+::ng-deep .p-dialog.pools-dialog {
+    min-width: 840px !important;
+    height: 800px;
 }
 
-.pool {
-    display: grid;
-    grid-template-columns: minmax(150px, 1fr) 150px 100px;
-    align-items: center;
-    column-gap: 30px;
-    padding: 20px 20px;
-    box-shadow: 0px 0px 4px 2px rgb(127 127 127 / 13%);
-    margin-bottom: 20px;
+::ng-deep .p-dialog.pools-dialog .p-dialog-content {
     border-radius: 10px;
+    padding: 12px 10px 0
 }
 
-.status {
-    text-wrap: nowrap;
-    font-size: 20px;
-    font-weight: bold;
-    flex-basis: 117px;
-
-    &__label--available {
-        color: green;
-    }
-
-    &__label--not-available {
-        color: gray;
-    }
+::ng-deep .p-dialog.pools-dialog > .p-dialog-header {
+    display: none;
 }
 
-.approve {
-    // text-wrap: nowrap;
-    font-size: 20px;
-    font-weight: bold;
-    flex-basis: 117px;
-
-    &__label--approve {
-        color: green;
-    }
-
-    &__label--no-approve {
-        color: goldenrod;
-    }
+::ng-deep .g-dialog.pools-dialog .g-dialog-header {
+    margin-top: 20px
 }
 
-.tokens {
-    display: flex;
-    overflow: auto;
-    display: flex;
-    padding: 5px;
-    gap: 25px;
-
-    .token-card {
-        display: flex;
-        flex-direction: column;
-        // border: 1px solid black;
-        box-shadow: 0px 0px 3px 2px rgb(0 144 255 / 20%);
-        border-radius: 5px;
-        padding: 10px;
-        gap: 5px;
-
-        color: rgb(71, 71, 71);
-
-        & span:last-child {
-            margin: 5px 0 0 2px;
-        }
-
-        svg-icon {
-            width: 26px;
-            height: 26px;
-            line-height: 26px;
-            font-size: 26px
-        }
-
-        i, svg {
-            color: #3f51b5;
-        }
-
-        &__token,
-        &__count {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: bold;
-            margin-top: 2px;
-
-            i, svg {
-                font-size: 30px;
-                width: 30px;
-                height: 30px;
-            }
-        }
-
-        &__count {
-            i, svg {
-                transform: translateX(-2px);
-            }
-        }
-
-        .icon-style-calculate {
-            margin-left: 2px;
-        }
-    }
+::ng-deep .g-dialog.pools-dialog .g-dialog-cancel-btn {
+    width: 18px;
+    height: 18px;
+    overflow: hidden;
+    margin: -10px 0 0 36px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #969696;
 }
 
-:host ::ng-deep .pool-actions {
-    display: flex;
-    align-items: center;
-
-    i, svg {
-        font-size: 25px;
-        width: 25px;
-        height: 25px;
-    }
+::ng-deep .g-dialog.pools-dialog .g-dialog-header .g-dialog-title {
+    height: 46px;
+    flex: 1;
+    padding: 10px 0;
+    box-sizing: border-box;
+    color: var(--color-grey-black-1);
+    font-weight: 500;
+    font-size: 22px;
 }
 
-.btn {
-    color: white;
-
-    &--retire {
-        background-color: rgb(223, 173, 80);
-    }
+::ng-deep .g-dialog.pools-dialog p-multiselect {
+    margin-top: 4px;
 }
 
-.retire {
-    display: grid;
-    grid-template-columns: 1fr;
-    justify-items: center;
-    grid-gap: 10px;
-
-    &__back {
-        justify-self: flex-start;
-        margin-left: 9px;
-        background: var(--color-grey-white);
-        border: none;
-        cursor: pointer;
-    }
+::ng-deep .g-dialog.pools-dialog .p-multiselect {
+    width: 250px;
 }
 
-::ng-deep .g-dialog-cancel-btn {
-    i {
-        font-size: 22px;
-        margin: 8px;
-    }
-}
-
-::ng-deep .g-dialog-actions .g-dialog-actions-btn {
-    padding: 11px 20px !important;
+::ng-deep .g-dialog.pools-dialog p-multiselect-item {
+    width: 250px;
 }
 
 .action-buttons {
     margin-bottom: 20px;
-    width: 230px;
+    width: 100%;
+    max-width: 250px;
+    display: grid;
+    grid-template-rows: max-content auto;
 }
 
-::ng-deep .table-paginator {
-    margin-bottom: 15px;
+.action-field__label {
+    font-size: 12px;
+    color: var(--color-grey-black-1);
 }
 
-.pool-actions button {
-    border-radius: 5px;
+.pools-head {
+    display: grid;
+    grid-template-columns: 335px 120px 120px auto;
+    color: var(--color-grey-5);
+    gap: 24px;
+    margin-bottom: 8px;
+}
+
+.pools-head .wipe-permission,
+.pools-head .retire-request {
+    font-size: 14px;
+}
+
+.table-tokens {
+    max-height: calc(100vh - 540px);
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+}
+
+.pool {
+    border: 1px solid var(--color-grey-3);
+    display: grid;
+    grid-template-columns: 297px 265px auto;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    background-color: var(--color-grey-white);
+    gap: 24px;
+}
+
+.tokens {
+    display: flex;
+    gap: 15px;
+    max-height: 300px;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+}
+
+.token-card {
+    background-color: var(--color-background);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    border: 1px solid #e6ebf5;
+    line-height: 1.4;
+    min-width: 140px;
+}
+
+.token-card__name,
+.token-card__token,
+.token-card__count {
+    margin-bottom: 5px;
+    color: #8c93a1;
+    font-weight: 500;
+}
+
+.token-card_value {
+    color: var(--color-grey-black-1);
+    font-weight: 400;
+}
+
+.pool-permissions {
+    display: grid;
+    grid-template-columns: 120px 120px;
+    gap: 24px;
+    align-self: start;
+}
+
+.permission.enabled {
+    padding: 4px 12px;
+    background: #eafdf2;
+    color: #24d16c;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    height: 30px;
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    width: max-content;
+}
+
+.approval {
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    height: 30px;
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    width: max-content;
+
+    &.need-approval {
+        background: #e7fef0;
+        color: #30cc70;
+    }
+    &.no-approval {
+        background: #f0f4fb;
+        color: #7c96b8;
+    }
+}
+
+.btn--retire {
+    background: none;
     border: none;
-    padding: 10px 20px;
-    font-size: 15px;
     cursor: pointer;
+    color: var(--color-grey-black-1);
+    font-size: 20px;
+    display: grid;
+    align-self: start;
+    margin-top: 20px;
+}
+
+.no-pools {
+    font-size: 18px;
+    color: #888;
+    text-align: center;
+    padding: 20px;
+}
+
+.retire {
+    display: flex;
+    flex-direction: column;
+}
+
+.retire__back {
+    margin-bottom: 10px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #3f51b5;
+}
+
+::ng-deep .g-dialog.pools-dialog .table-paginator {
+    box-shadow: none !important;
+}
+
+::ng-deep .g-dialog.pools-dialog .g-dialog-header {
+    position: relative;
+    padding-right: 48px;
+    display: flex;
+    align-items: center;
+}
+
+::ng-deep .g-dialog.pools-dialog .g-dialog-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0;
+}
+
+::ng-deep .g-dialog.pools-dialog .g-dialog-cancel {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+}
+
+::ng-deep .g-dialog-cancel-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .15s;
+
+    .pi {
+        font-size: 18px;
+        color: #6b6b6b;
+    }
+
+    &:hover {
+        background: rgba(0,0,0,.05);
+        border-radius: 50%;
+    }
+}
+
+::ng-deep .g-dialog.pools-dialog .g-dialog-actions {
+    margin-left: auto;
+}
+
+:host ::ng-deep .g-dialog.pools-dialog .g-dialog-body {
+    position: relative;
+    padding-bottom: 92px !important;
+}
+
+:host ::ng-deep .pools-dialog__footer {
+    position: absolute;
+    right: 32px;
+    bottom: 24px;
+    z-index: 3;
+    margin-bottom: 30px;
+    margin-top: 10px;
+}
+
+:host ::ng-deep .pools-dialog__close-btn {
+    min-width: 96px;
+    height: 42px;
+    border-radius: 8px;
+    font-size: 16px;
+    color: var(--guardian-primary-color);
+}
+
+.retire-mode ::ng-deep .g-dialog-actions {
+    display: none !important;
+}
+
+::ng-deep .retire-serials-ms__panel {
+    width: 250px;
+}
+
+::ng-deep .g-dialog.pools-dialog .g-dialog-actions {
+    flex: 1 !important;
+}
+
+.retire__back {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    width: 30px;
+    column-gap: 10px;
+    color: var(--color-grey-6);
+}
+
+.pools-dialog__retire-btn {
+    min-width: 80px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 16px;
+    color: var(--guardian-primary-color);
+    display: grid;
+    align-self: start;
+    padding: 5px;
 }

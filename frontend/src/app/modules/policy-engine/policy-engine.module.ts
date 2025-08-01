@@ -154,6 +154,7 @@ import { PolicyRequestsComponent } from './requests/requests.component';
 import { TestCodeDialog } from './dialogs/test-code-dialog/test-code-dialog.component';
 import { ProjectDataExportComponent } from './project-data-export/project-data-export.component';
 import { TransformationButtonBlockComponent } from './policy-viewer/blocks/transformation-button-block/transformation-button-block.component';
+import { IntegrationButtonBlockComponent } from './policy-viewer/blocks/integration-button-block/integration-button-block.component';
 
 @NgModule({
     declarations: [
@@ -208,6 +209,7 @@ import { TransformationButtonBlockComponent } from './policy-viewer/blocks/trans
         ButtonConfigComponent,
         ButtonBlockComponent,
         TransformationButtonBlockComponent,
+        IntegrationButtonBlockComponent,
         TokenActionConfigComponent,
         DocumentValidatorConfigComponent,
         TokenConfirmationConfigComponent,

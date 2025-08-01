@@ -4,8 +4,6 @@ import { INotificationStep } from './notification-step.interface.js';
 export class EmptyNotifier implements INotificationStep {
     public readonly name: string = 'empty';
 
-    public constructor() { }
-
     public minimize(value: boolean): INotificationStep {
         return this;
     }
@@ -90,15 +88,18 @@ export class EmptyNotifier implements INotificationStep {
     }
 
     public sendStatus(): void {
+        return;
     }
 
     public sendError(error: {
         code: string | number;
         message: string;
     }): void {
+        return;
     }
 
     public sendResult(result: any): void {
+        return;
     }
 
     public setId(id: string): INotificationStep {

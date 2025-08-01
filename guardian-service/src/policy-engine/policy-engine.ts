@@ -1568,7 +1568,6 @@ export class PolicyEngine extends NatsService {
         notifier.addStep('Parse policy files');
         notifier.start();
 
-
         notifier.startStep('Resolve Hedera account');
         if (!messageId) {
             throw new Error('Policy ID in body is empty');

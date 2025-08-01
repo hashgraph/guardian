@@ -122,6 +122,40 @@ export async function createContract(
     memo: string,
     userId: string
 ) {
+    return await _contractCall(
+        event,
+        workers,
+        {
+            type: WorkerTaskType.CREATE_CONTRACT,
+            data: {
+                bytecodeFileId:
+                    type === ContractType.WIPE
+                        ? process.env.WIPE_CONTRACT_FILE_ID
+                        : process.env.RETIRE_CONTRACT_FILE_ID,
+                hederaAccountId,
+                hederaAccountKey,
+                topicKey: hederaAccountKey,
+                memo,
+                userId
+            },
+        },
+        20,
+        type
+    );
+}
+
+/**
+ * Create contract V2 22.07.2025
+ */
+export async function createContractV2(
+    event: ContractAPI,
+    workers: Workers,
+    type: ContractType,
+    hederaAccountId: string,
+    hederaAccountKey: string,
+    memo: string,
+    userId: string
+) {
     const constructorParams =
         type === ContractType.RETIRE
             ? {
@@ -137,7 +171,7 @@ export async function createContract(
         event,
         workers,
         {
-            type: WorkerTaskType.CREATE_CONTRACT,
+            type: WorkerTaskType.CREATE_CONTRACT_V2,
             data: {
                 bytecodeFileId:
                     type === ContractType.WIPE

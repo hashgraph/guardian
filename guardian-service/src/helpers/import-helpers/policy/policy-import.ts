@@ -228,24 +228,11 @@ export class PolicyImport {
                 );
                 step.skip();
             } else {
-                step.addStep('Publish Policy in Hedera');
                 step.addStep('Create policy topic');
+                step.addStep('Publish Policy in Hedera');
                 step.addStep('Link topic and policy');
 
-                step.getStep('Publish Policy in Hedera').start();
-                const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
-                message.setDocument(policy);
-                const createPolicyMessage = await this.messageServer
-                    .setTopicObject(this.parentTopic)
-                    .sendMessage(message, {
-                        sendToIPFS: true,
-                        memo: null,
-                        interception: null,
-                        userId
-                    });
-                step.getStep('Publish Policy in Hedera').complete();
-
-                step.getStep('Create policy topic').start();
+                step.startStep('Create policy topic');
                 this.topicRow = await this.topicHelper.create({
                     type: TopicType.PolicyTopic,
                     name: policy.name || TopicType.PolicyTopic,
@@ -256,16 +243,31 @@ export class PolicyImport {
                 }, userId);
                 await this.topicRow.saveKeys(userId);
                 await DatabaseServer.saveTopic(this.topicRow.toObject());
-                step.getStep('Create policy topic').complete();
 
-                step.getStep('Link topic and policy').start();
+                policy.topicId = this.topicRow.topicId;
+                step.completeStep('Create policy topic');
+
+                step.startStep('Publish Policy in Hedera');
+                const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
+                message.setDocument(policy);
+                const createPolicyMessage = await this.messageServer
+                    .setTopicObject(this.parentTopic)
+                    .sendMessage(message, {
+                        sendToIPFS: true,
+                        memo: null,
+                        interception: null,
+                        userId
+                    });
+                step.completeStep('Publish Policy in Hedera');
+
+                step.startStep('Link topic and policy');
                 await this.topicHelper.twoWayLink(
                     this.topicRow,
                     this.parentTopic,
                     createPolicyMessage.getId(),
                     this.owner.id
                 );
-                step.getStep('Link topic and policy').complete();
+                step.completeStep('Link topic and policy');
             }
         }
         policy.topicId = this.topicRow.topicId;

@@ -47,7 +47,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             id: 'addWiper',
             title: 'Add wiper',
             description: 'Add contract wiper.',
-            color: '#e6bf00',
+            color: '#d3a719',
             callback: this.addWiper,
             permissions: 2
         },
@@ -55,7 +55,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             id: 'removeWiper',
             title: 'Remove wiper',
             description: 'Remove contract wiper.',
-            color: '#e6bf00',
+            color: '#d3a719',
             callback: this.removeWiper,
             permissions: 2
         },
@@ -63,7 +63,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             id: 'addAdmin',
             title: 'Add admin',
             description: 'Add contract admin.',
-            color: '#e6bf00',
+            color: '#d3a719',
             callback: this.addAdmin,
             permissions: 0
         },
@@ -71,7 +71,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             id: 'removeAdmin',
             title: 'Remove admin',
             description: 'Remove contract admin.',
-            color: '#e6bf00',
+            color: '#d3a719',
             callback: this.removeAdmin,
             permissions: 0
         },
@@ -79,7 +79,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             id: 'addManager',
             title: 'Add manager',
             description: 'Add contract manager.',
-            color: '#e6bf00',
+            color: '#d3a719',
             callback: this.addManager,
             permissions: 1
         },
@@ -87,7 +87,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             id: 'removeManager',
             title: 'Remove manager',
             description: 'Remove contract manager.',
-            color: '#e6bf00',
+            color: '#d3a719',
             callback: this.removeManager,
             permissions: 1
         },
@@ -95,7 +95,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             id: 'enableRequests',
             title: 'Enable requests',
             description: 'Enable contract requests.',
-            color: '#e6bf00',
+            color: '#d3a719',
             callback: this.enableRequests,
             permissions: 1
         },
@@ -103,7 +103,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             id: 'disableRequests',
             title: 'Disable requests',
             description: 'Disable contract requests.',
-            color: '#e6bf00',
+            color: '#d3a719',
             callback: this.disableRequests,
             permissions: 1
         },
@@ -111,7 +111,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             id: 'clearRequests',
             title: 'Clear requests',
             description: 'Clear contract requests.',
-            color: '#a80f0f',
+            color: '#FF432A',
             callback: this.clearRequests,
             permissions: 0
         },
@@ -120,7 +120,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             title: 'Remove contract',
             description:
                 'Remove contract. Contract still will be available on Hedera.',
-            color: '#a80f0f',
+            color: '#FF432A',
             callback: this.removeContract,
         },
     ];
@@ -143,7 +143,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             id: 'setPool',
             title: 'Set pool',
             description: 'Set contract pool.',
-            color: '#e6bf00',
+            color: '#d3a719',
             callback: this.setPool,
             permissions: 1
         },
@@ -151,7 +151,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             id: 'addAdmin',
             title: 'Add admin',
             description: 'Add contract admin.',
-            color: '#e6bf00',
+            color: '#d3a719',
             callback: this.addAdminRetire,
             permissions: 0
         },
@@ -159,7 +159,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             id: 'removeAdmin',
             title: 'Remove admin',
             description: 'Remove contract admin.',
-            color: '#e6bf00',
+            color: '#d3a719',
             callback: this.removeAdminRetire,
             permissions: 0
         },
@@ -167,7 +167,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             id: 'clearPools',
             title: 'Clear pools',
             description: 'Clear contract pools.',
-            color: '#a80f0f',
+            color: '#FF432A',
             callback: this.clearRetirePools,
             permissions: 0
         },
@@ -175,7 +175,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             id: 'clearRequests',
             title: 'Clear requests',
             description: 'Clear contract requests.',
-            color: '#a80f0f',
+            color: '#FF432A',
             callback: this.clearRetireRequests,
             permissions: 0
         },
@@ -184,7 +184,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
             title: 'Remove contract',
             description:
                 'Remove contract. Contract still will be available on Hedera.',
-            color: '#a80f0f',
+            color: '#FF432A',
             callback: this.removeContract,
         },
     ];
@@ -643,9 +643,11 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                     .filter((token: Token) => !token.draftToken);
                 const dialogRef = this.dialog.open(SetPoolDialogComponent, {
                     width: '750px',
-                    styleClass: 'g-dialog',
+                    styleClass: 'g-dialog set-pool-dialog',
                     modal: true,
                     closable: false,
+                    showHeader: false,
+                    height: '450px'
                 });
                 dialogRef.onClose.subscribe(async (result) => {
                     if (result) {
@@ -699,7 +701,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
     openPools(contract: any) {
         this.dialog.open(RetirePoolsDialogComponent, {
             width: '800px',
-            styleClass: 'g-dialog',
+            styleClass: 'g-dialog retire-pool-dialog',
             modal: true,
             closable: false,
             data: contract,

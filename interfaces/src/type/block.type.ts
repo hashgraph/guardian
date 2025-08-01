@@ -32,6 +32,7 @@ export enum BlockType {
     SetRelationshipsBlock = 'setRelationshipsBlock',
     ButtonBlock = 'buttonBlock',
     TransformationButtonBlock = 'transformationButtonBlock',
+    IntegrationButtonBlock = 'integrationButtonBlock',
     ButtonBlockAddon = 'buttonBlockAddon',
     DropdownBlockAddon = 'dropdownBlockAddon',
     TokenActionBlock = 'tokenActionBlock',

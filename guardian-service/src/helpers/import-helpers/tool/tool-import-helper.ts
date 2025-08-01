@@ -4,7 +4,6 @@ import { importTag } from '../tag/tag-import-helper.js';
 import { SchemaImportExportHelper } from '../schema/schema-import-helper.js';
 import { ImportToolMap, ImportToolResult, ImportToolResults } from './tool-import.interface.js';
 
-
 /**
  * Import tools by messages
  * @param owner

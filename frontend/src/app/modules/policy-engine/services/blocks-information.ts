@@ -53,6 +53,7 @@ import { BlockType } from '@guardian/interfaces';
 import BlockIcons from './block-icons';
 import { DataTransformationConfigComponent } from '../policy-configuration/blocks/calculate/data-transformation-config/data-transformation-config.component';
 import { TransformationButtonBlockComponent } from '../policy-viewer/blocks/transformation-button-block/transformation-button-block.component';
+import { IntegrationButtonBlockComponent } from '../policy-viewer/blocks/integration-button-block/integration-button-block.component';
 
 const Container: IBlockSetting = {
     type: BlockType.Container,
@@ -88,6 +89,7 @@ const Container: IBlockSetting = {
         { type: BlockType.SetRelationshipsBlock },
         { type: BlockType.ButtonBlock },
         { type: BlockType.TransformationButtonBlock },
+        { type: BlockType.IntegrationButtonBlock },
         { type: BlockType.TokenActionBlock },
         { type: BlockType.TokenConfirmationBlock },
         { type: BlockType.DocumentValidatorBlock },
@@ -135,6 +137,7 @@ const Step: IBlockSetting = {
         { type: BlockType.SetRelationshipsBlock },
         { type: BlockType.ButtonBlock },
         { type: BlockType.TransformationButtonBlock },
+        { type: BlockType.IntegrationButtonBlock },
         { type: BlockType.TokenActionBlock },
         { type: BlockType.TokenConfirmationBlock },
         { type: BlockType.DocumentValidatorBlock },
@@ -238,6 +241,14 @@ const TransformationButtonBlock: IBlockSetting = {
     property: null,
 }
 
+const IntegrationButtonBlock: IBlockSetting = {
+    type: BlockType.IntegrationButtonBlock,
+    icon: BlockIcons[BlockType.IntegrationButtonBlock],
+    group: BlockGroup.Main,
+    header: BlockHeaders.UIComponents,
+    factory: IntegrationButtonBlockComponent,
+    property: null,
+}
 
 const ButtonBlockAddon: IBlockSetting = {
     type: BlockType.ButtonBlockAddon,
@@ -784,5 +795,6 @@ export default [
     DropdownBlockAddon,
     RequestBlockAddon,
     DataTransformationAddon,
-    TransformationButtonBlock
+    TransformationButtonBlock,
+    IntegrationButtonBlock,
 ];

@@ -2,7 +2,6 @@ import { ApiResponse } from '../api/helpers/api-response.js';
 import { DatabaseServer, INotificationStep, MessageError, MessageResponse, NewNotifier, PinoLogger, Policy, RunFunctionAsync, SecretManager, Workers } from '@guardian/common';
 import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
 
-
 /**
  * Demo key
  */

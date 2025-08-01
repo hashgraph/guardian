@@ -618,7 +618,6 @@ async function freezeToken(
     notifier.addStep(freeze ? 'Freeze Token' : 'Unfreeze Token');
     notifier.start();
 
-
     notifier.startStep('Find token data');
     const token = await dataBaseServer.findOne(Token, { tokenId: { $eq: tokenId } });
     if (!token) {

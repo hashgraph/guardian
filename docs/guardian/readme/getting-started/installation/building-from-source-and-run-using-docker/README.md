@@ -10,23 +10,22 @@
 
 The following steps need to be executed in order to start Guardian using docker:
 
-1. Clone the repo
-2. Configure project level .env file
-3. Update BC access variables
-4. Setup IPFS
-5. Setting up ChatGPT Key (if required)
-6. Build and launch with Docker
-7. Browse to [http://localhost:3000](http://localhost:3000)
-8. For increased security remove credentials from `.env` file
+1. [Clone the repo](./#id-1.-clone-the-repo)
+2. [Configure project level .env file](./#id-2.-configure-project-level-.env-file)
+3. [Update BC access variables](./#id-3.-update-bc-access-variables)
+4. [Setup IPFS](./#id-4.-setup-ipfs)
+5. [Setting up ChatGPT Key (if required)](./#id-5.-setting-up-chat-gpt-api-key-to-enable-ai-search-and-guided-search)
+6. [Build and launch with Docker](./#id-6.-build-and-launch-with-docker)
+7. [Browse to http://localhost:3000](./#id-7.-browse-the-local-browser)
+8. [For increased security remove credentials from `.env` file](./#id-8.-increase-security)
 
-Here the steps description follows:
+## 1. Clone the repo
 
-1.  Clone the repo
+```shell
+git clone https://github.com/hashgraph/guardian.git
+```
 
-    ```shell
-    git clone https://github.com/hashgraph/guardian.git
-    ```
-2. Configure project level .env file.
+## 2. Configure project level .env file.
 
 The main configuration file that needs to be provided to the Guardian system is the `.env` file. Note that these files contain sensitive configuration such as keys and access credentials which are only used at the initial start of Guardian. For increased security it is recommended to disable inbound network access until after the first run of Guardian, when the credentials configuration has been removed from `.env` file (see p8 below).
 
@@ -40,9 +39,11 @@ For this example purpose let's name the Guardian platform as "develop"
 **Note** Every single service is provided in its folder with a `.env.template` file, this set of files are only needed for the case of Manual installation.
 {% endhint %}
 
-3.  Update the following files with your Hedera Mainnet or Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operator\_ID and Operator\_Key by looking at the link: [How to Create Operator\_ID and Operator\_Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-operator-id-and-operator-key). The Operator\_ID and Operator\_Key and HEDERA\_NET are all that Guardian needs to access the Hedera Blockchain assuming a role on it. This parameters needs to be configured in a file at the path `./configs`, the file should use the following naming convention:
+## 3. Update BC access variables
 
-    `./configs/.env.\<GUARDIAN_ENV\>.guardian.system`
+Update the following files with your Hedera Mainnet or Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operator\_ID and Operator\_Key by looking at the link: [How to Create Operator\_ID and Operator\_Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-operator-id-and-operator-key). The Operator\_ID and Operator\_Key and HEDERA\_NET are all that Guardian needs to access the Hedera Blockchain assuming a role on it. This parameters needs to be configured in a file at the path `./configs`, the file should use the following naming convention:
+
+`./configs/.env.\<GUARDIAN_ENV\>.guardian.system`
 
 There will be other steps in the Demo Usage Guide that will be required for the generation of Operator\_ID and Operator\_Key. It is important to mention that the Operator\_ID and Operator\_Key in the `./configs/.env.<GUARDIAN_ENV>.guardian.system` will be used to generate demo accounts.
 
@@ -64,7 +65,7 @@ Starting from Multi-environment release (2.13.0) it has been introduced a new pa
 * if you are upgrading from a release after the Multi-environment (>= to 2.13.0) do not change the state of this parameter (so if you removed the parameter in some previous installation do not introduce it).
 * if the installation is an upgrading from a release previous of the Multi-environment (<= to 2.13.0) to a following one you need to configure the `PREUSED_HEDERA_NET`. After that the parameter will last in the configuration unchanged.
 
-#### 3.1. PREUSED\_HEDERA\_NET configuration
+### 3.1. PREUSED\_HEDERA\_NET configuration
 
 The `PREUSED_HEDERA_NET` parameter is intended to hold the target Hedera network that the system already started to notarize data to. PREUSED\_HEDERA\_NET is the reference to the HEDERA\_NET that was in usa before the upgrade. To let the Multi-environment transition happen in a transparent way the `GUARDIAN_ENV` parameter in the `.env` file has to be configured as empty while the `PREUSED_HEDERA_NET` has to be set with the same value configured in the `HEDERA_NET` parameter in the previous configuration file.
 
@@ -128,16 +129,26 @@ This configuration allows you to leave untouched all the data referring to Mainn
 **Note** for any other GUARDIAN\_ENV name of your choice just copy and paste the file `/configs/.env.template.guardian.system` and rename as `/configs/.env.<choosen name>.guardian.system`
 {% endhint %}
 
-#### 3.2 Setting up JWT keys in /`.env` file
+### 3.2 Setting up JWT keys in /`.env` file
 
 To start of auth-service it is necessary to fill in `JWT_PRIVATE_KEY` and `JWT_PUBLIC_KEY`, which are RSA key pair. You can generate it in any convenient way, for example, using this service [https://travistidwell.com/jsencrypt/demo/](https://travistidwell.com/jsencrypt/demo/).
+
+<figure><img src="../../../../../.gitbook/assets/image (841).png" alt=""><figcaption></figcaption></figure>
+
+{% hint style="info" %}
+Note: **Please make sure you copy and paste complete keys starting from "-----BEGIN-----" to "-----END-----".**
+{% endhint %}
 
 To start all services, you need to create a 2048-bit RSA key pair for each service. You can generate a key pair in any convenient way—for example, using the online tool at [https://mkjwk.org/](https://mkjwk.org/) with the following settings:\
 &#x20;  \- key size: 2048\
 &#x20;  \- key use: signature\
 &#x20;  \- algorithm: RS256: RSA\
 &#x20;  \- key ID: sha256\
-&#x20;  \- show: yesFor each service, you must add its secret key \`SERVICE\_JWT\_SECRET\_KEY\` and a list of all public keys from every service:\
+&#x20;  \- show: yes
+
+<figure><img src="../../../../../.gitbook/assets/image (842).png" alt=""><figcaption></figcaption></figure>
+
+For each service, you must add its secret key \`SERVICE\_JWT\_SECRET\_KEY\` and a list of all public keys from every service:\
 \- \`SERVICE\_JWT\_PUBLIC\_KEY\_WORKER\_SERVICE\`\
 \- \`SERVICE\_JWT\_PUBLIC\_KEY\_TOPIC\_LISTENER\_SERVICE\`\
 \- \`SERVICE\_JWT\_PUBLIC\_KEY\_QUEUE\_SERVICE\`\
@@ -147,15 +158,19 @@ To start all services, you need to create a 2048-bit RSA key pair for each servi
 \- \`SERVICE\_JWT\_PUBLIC\_KEY\_GUARDIAN\_SERVICE\`\
 \- \`SERVICE\_JWT\_PUBLIC\_KEY\_AUTH\_SERVICE\`\
 \- \`SERVICE\_JWT\_PUBLIC\_KEY\_API\_GATEWAY\_SERVICE\`\
-\- \`SERVICE\_JWT\_PUBLIC\_KEY\_AI\_SERVICE\`Alternatively, you can create a single key pair and, instead of adding the public keys for each individual service, you can add \`SERVICE\_JWT\_SECRET\_KEY\_ALL\` and \`SERVICE\_JWT\_PUBLIC\_KEY\_ALL\` to use the same keys for all services. However, it is recommended to generate a separate key pair for each service
+\- \`SERVICE\_JWT\_PUBLIC\_KEY\_AI\_SERVICE\`
 
-{% hint style="info" %}
+**Note:** Alternatively, you can create a single key pair and, instead of adding the public keys for each individual service, you can add \`SERVICE\_JWT\_SECRET\_KEY\_ALL\` and \`SERVICE\_JWT\_PUBLIC\_KEY\_ALL\` to use the same keys for all services. However, it is recommended to generate a separate key pair for each service
+
+{% hint style="warning" %}
 **Note**: It is important to add these keys to the env files, because without them the services will return errors, and communication with a service that does not sign messages for the message queue will not be supported.
 {% endhint %}
 
-4\. Now, we have two options to setup IPFS node : 1. Local node 2. IPFS Web3Storage node.
+## 4. Setup IPFS
 
-#### 4.1 Setting up IPFS Local node:
+Now, we have four options to setup IPFS node : 1. Local node 2. IPFS Web3Storage node. 3. IPFS Filebase Bucket. 4. Custom IPFS
+
+### 4.1 Setting up IPFS Local node:
 
 * 4.1.1 We need to install and configure any IPFS node. [example](https://github.com/yeasy/docker-ipfs)
 * 4.1.2 For setup IPFS local node you need to set variables in the same file `./configs/.env.develop.guardian.system`
@@ -173,7 +188,7 @@ Note:
 2. Default IPFS\_PUBLIC\_GATEWAY="[http://ipfs-node:8080/ipfs/${cid}](http://ipfs-node:8080/ipfs/$%7Bcid%7D%22)"
 {% endhint %}
 
-#### 4.2 Setting up IPFS Web3Storage node:
+### 4.2 Setting up IPFS Web3Storage node:
 
 For setup IPFS web3storage node you need to set variables in file `./configs/.env..guardian.system`:
 
@@ -190,7 +205,7 @@ IPFS_STORAGE_PROOF="..."
 
 To know complete process of How to setup IPFS Storage variables, please check [How to generate Web3.Storage API values](../../how-to-generate-web3.storage-api-key.md)
 
-#### 4.3 Setting up IPFS Filebase Bucket:
+### 4.3 Setting up IPFS Filebase Bucket:
 
 To configure the Filebase IPFS provider, set the following variables in the file `./configs/.env.<environment>.guardian.system`**:**
 
@@ -203,7 +218,7 @@ Create a new "bucket" on Filebase since we utilize the **IPFS Pinning Service AP
 
 For detailed setup instructions, refer to the official [https://docs.filebase.com/api-documentation/ipfs-pinning-service-api](https://docs.filebase.com/api-documentation/ipfs-pinning-service-api).
 
-**4.4 Implement and test a custom IPFS provider:**
+### **4.4 Implement and test a custom IPFS provider:**
 
 We provide a flexible workflow for integrating additional IPFS providers:
 
@@ -219,7 +234,7 @@ We provide a flexible workflow for integrating additional IPFS providers:
 
     This streamlined process allows any product team to swiftly integrate new IPFS clients into the Guardian system, significantly reducing development time
 
-#### 5. Setting up Chat GPT API KEY to enable AI Search and Guided Search:
+## 5. Setting up Chat GPT API KEY to enable AI Search and Guided Search:
 
 For setting up AI and Guided Search, we need to set OPENAI\_API\_KEY variable in `./configs/.env*` files.
 
@@ -227,7 +242,9 @@ For setting up AI and Guided Search, we need to set OPENAI\_API\_KEY variable in
 OPENAI_API_KEY="..."
 ```
 
-6. Build and launch with Docker. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
+## 6. Build and launch with Docker.&#x20;
+
+Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
 
 ```
 docker-compose up -d --build
@@ -239,10 +256,15 @@ docker-compose up -d --build
 About docker-compose: from the end of June 2023 Compose V1 won’t be supported anymore and will be removed from all Docker Desktop versions. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/
 {% endhint %}
 
-7. Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](../launching-guardian.md)
-8. For increased security remove credentials from `.env` file and enable network access
+## 7. Browse the local browser
 
-On first state the credentials from `.env` file are copied into the secure  storage as configured (e.g. Vault). After that Guardian does not use any credentials stored in the .env file, thus they should be removed for security reasons.
+Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](../launching-guardian.md)
+
+## 8. Increase security
+
+For increased security remove credentials from `.env` file and enable network access
+
+On first state the credentials from `.env` file are copied into the secure storage as configured (e.g. Vault). After that Guardian does not use any credentials stored in the .env file, thus they should be removed for security reasons.
 
 ### Process on How to Configure SSL Encryption:
 

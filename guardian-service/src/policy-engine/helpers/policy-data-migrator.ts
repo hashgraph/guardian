@@ -1178,6 +1178,9 @@ export class PolicyDataMigrator {
                 relationships.push(...doc.relationships);
             }
             vcMessage.setRelationships(relationships);
+            vcMessage.setTag(doc);
+            vcMessage.setEntityType(doc);
+            vcMessage.setOption(doc);
             if (role) {
                 vcMessage.setUser(role.messageId);
             }
@@ -1362,6 +1365,9 @@ export class PolicyDataMigrator {
             vpMessage.setDocument(vp);
             vpMessage.setUser(null);
             vpMessage.setRelationships([...doc.relationships, doc.messageId]);
+            vpMessage.setTag(doc);
+            vpMessage.setEntityType(doc);
+            vpMessage.setOption(doc);
             const vpMessageResult = await this._ms
                 .setTopicObject(this._policyInstanceTopic)
                 .sendMessage(vpMessage, {
@@ -1555,6 +1561,9 @@ export class PolicyDataMigrator {
                 doc.option?.status || DocumentStatus.NEW
             );
             vcMessage.setRelationships([...doc.relationships, doc.messageId]);
+            vcMessage.setTag(doc);
+            vcMessage.setEntityType(doc);
+            vcMessage.setOption(doc);
             if (role && schema.category === SchemaCategory.POLICY) {
                 vcMessage.setUser(role.messageId);
             }

@@ -30,3 +30,5 @@ export * from './pino-logger-initialization.js';
 export * from './insert-variables.js';
 export * from './generate-tls-options.js';
 export * from './encrypt-vc-helper.js';
+export * from './generate-config-for-integration-block-helper.js';
+export * from './custom-csv-parser.js';

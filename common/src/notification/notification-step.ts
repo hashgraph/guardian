@@ -2,7 +2,6 @@ import { INotificationInfo } from './notification-info.interface.js';
 import { INotificationStep } from './notification-step.interface.js';
 import { NewNotifier } from './notifier.js';
 
-
 export class NotificationStep implements INotificationStep {
     public readonly name: string;
     public readonly size: number;
@@ -21,7 +20,7 @@ export class NotificationStep implements INotificationStep {
     public id: string;
     public minimized: boolean;
 
-    private steps: NotificationStep[];
+    private readonly steps: NotificationStep[];
     private notify: NewNotifier;
 
     constructor(name: string, size: number) {

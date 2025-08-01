@@ -210,7 +210,7 @@ export class NotificationEvents {
     }
 
     public static init(service: NatsService) {
-        this.service = service;
+        NotificationEvents.service = service;
     }
 
     public async init(): Promise<void> {
@@ -240,7 +240,7 @@ export class NotificationEvents {
         });
         NotificationEvents.service.publish(MessageAPI.UPDATE_TASK_STATUS, {
             taskId: this.taskId,
-            error: error,
+            error,
         });
     }
 
@@ -262,5 +262,3 @@ export class NotificationEvents {
         });
     }
 }
-
-
