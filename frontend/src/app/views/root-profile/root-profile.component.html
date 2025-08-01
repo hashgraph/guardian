@@ -154,10 +154,16 @@
                     <div class="topic-id-field">
                         <div class="group-body">
                             <div class="form-group example-full-width">
-                                <label for="topicIdDropdown" class="form-label">Topic ID:</label>
-                                <p-dropdown id="topicIdDropdown" [options]="userTopics" [formControl]="selectedTokenId"
-                                    optionLabel="topicId" optionValue="topicId" [appendTo]="'body'"
-                                    placeholder="Select a Topic ID" class="full-width">
+                                <label for="topicIdDropdown" class="form-label">Topic ID: </label>
+                                <p-dropdown
+                                    id="topicIdDropdown"
+                                    [options]="userTopics"
+                                    [formControl]="selectedTokenId"
+                                    optionLabel="topicId"
+                                    optionValue="topicId"
+                                    [appendTo]="'body'"
+                                    placeholder="Select a Topic ID"
+                                    class="full-width">
                                     <ng-template let-topic pTemplate="item">
                                         <div class="topic-item">
                                             <span>{{ topic.topicId }}</span>

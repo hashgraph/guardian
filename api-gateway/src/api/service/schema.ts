@@ -2237,7 +2237,7 @@ export class SchemaApi {
     })
     @ApiParam({
         name: 'schemaEntity',
-        enum: ['STANDARD_REGISTRY', 'USER', 'POLICY', 'MINT_TOKEN', 'WIPE_TOKEN', 'MINT_NFTOKEN'],
+        enum: ['STANDARD_REGISTRY', 'USER', 'POLICY', 'MINT_TOKEN', 'INTEGRATION_DATA', 'WIPE_TOKEN', 'MINT_NFTOKEN'],
         description: 'Entity name',
         required: true,
         example: 'STANDARD_REGISTRY'
@@ -2319,7 +2319,8 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             const file: any = await guardians.exportSchemasXlsx(owner, [schemaId]);
             const schema: any = await guardians.getSchemaById(user, schemaId);
-            res.header('Content-disposition', `attachment; filename=${schema.name}`);
+            const filename = (schema.name || '').replace(/[/\\?%*:|"<>,.]/g, '_');
+            res.header('Content-disposition', `attachment; filename=${filename}`);
             res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {

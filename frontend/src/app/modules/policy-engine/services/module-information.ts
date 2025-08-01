@@ -37,6 +37,8 @@ const Module: IBlockSetting = {
         { type: BlockType.RevocationBlock },
         { type: BlockType.SetRelationshipsBlock },
         { type: BlockType.ButtonBlock },
+        { type: BlockType.TransformationButtonBlock },
+        { type: BlockType.IntegrationButtonBlock },
         { type: BlockType.TokenActionBlock },
         { type: BlockType.TokenConfirmationBlock },
         { type: BlockType.DocumentValidatorBlock },

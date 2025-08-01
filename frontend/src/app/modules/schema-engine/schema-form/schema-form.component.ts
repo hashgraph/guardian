@@ -21,6 +21,10 @@ enum PlaceholderByFieldType {
     Duration = 'P1D'
 }
 
+enum PresetPrefixByFieldType {
+    URL = "https://"
+}
+
 enum ErrorFieldMessageByFieldType {
     Email = "Please make sure the field contain a valid email address",
     Number = "Please make sure the field contain a valid number value",
@@ -118,6 +122,7 @@ export class SchemaFormComponent implements OnInit {
     @Input() rules?: SchemaRuleValidateResult;
     @Input() paginationHidden: boolean = true;
     @Input() isFormForFinishSetup: boolean = false;
+    @Input() isFormForRequestBlock: boolean = false;
 
     @Output('change') change = new EventEmitter<Schema | null>();
     @Output('destroy') destroy = new EventEmitter<void>();
@@ -332,6 +337,20 @@ export class SchemaFormComponent implements OnInit {
         return new UntypedFormControl(value, validators);
     }
 
+    private getValueForField(item: IFieldControl<any>, preset: any): any {
+        let value;
+        if (this.isFormForRequestBlock) {
+            if (item.format === 'url') {
+                value = (preset === null || preset === undefined) ? PresetPrefixByFieldType.URL : preset;
+            } else {
+                value = (preset === null || preset === undefined) ? undefined : preset;
+            }
+        } else {
+            value = (preset === null || preset === undefined) ? undefined : preset;
+        }
+        return value;
+    }
+
     private createArrayControl(): UntypedFormArray {
         return new UntypedFormArray([]);
     }
@@ -414,7 +433,7 @@ export class SchemaFormComponent implements OnInit {
         const control = item.control;
 
         input.type = 'file';
-        input.accept = isFile ? FILE_EXTENSIONS : 'image/*' ;
+        input.accept = isFile ? FILE_EXTENSIONS : 'image/*';
         input.onchange = (event) => {
             const file = input.files ? input.files[0] : undefined;
             if (!file) {
@@ -1187,5 +1206,23 @@ export class SchemaFormComponent implements OnInit {
 
     public isRulesStatus(item: IFieldControl<any>) {
         return this.rules?.[item.fullPath]?.status;
+    }
+
+    public onFocusField(formatType: string, item: any) {
+        if (this.isFormForRequestBlock
+            && formatType === 'url'
+            && !item.control.value
+        ) {
+            item.control.setValue(PresetPrefixByFieldType.URL);
+        }
+    }
+
+    public onUnfocusField(formatType: string, item: any) {
+        if (this.isFormForRequestBlock
+            && formatType === 'url'
+            && item.control.value === PresetPrefixByFieldType.URL
+        ) {
+            item.control.setValue('');
+        }
     }
 }

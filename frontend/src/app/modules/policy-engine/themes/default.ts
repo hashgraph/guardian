@@ -17,6 +17,8 @@ export const defaultTheme = {
             filterValue: [
                 'interfaceActionBlock',
                 'buttonBlock',
+                'transformationButtonBlock',
+                'integrationButtonBlock',
                 'interfaceContainerBlock',
                 'createTokenBlock',
                 'interfaceDocumentsSourceBlock',

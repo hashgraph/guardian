@@ -1317,7 +1317,7 @@ export class Guardians extends NatsService {
 
     /**
      * Create contract
-     * @param did
+     * @param owner
      * @param description
      * @param type
      * @returns Created contract
@@ -1328,6 +1328,25 @@ export class Guardians extends NatsService {
         type: ContractType
     ): Promise<IContract> {
         return await this.sendMessage(ContractAPI.CREATE_CONTRACT, {
+            owner,
+            description,
+            type,
+        });
+    }
+
+    /**
+     * Create contract V2 22.07.2025
+     * @param owner
+     * @param description
+     * @param type
+     * @returns Created contract
+     */
+    public async createContractV2(
+        owner: IOwner,
+        description: string,
+        type: ContractType
+    ): Promise<IContract> {
+        return await this.sendMessage(ContractAPI.CREATE_CONTRACT_V2, {
             owner,
             description,
             type,
@@ -2134,6 +2153,15 @@ export class Guardians extends NatsService {
      */
     public async getMenuTool(owner: IOwner): Promise<any[]> {
         return await this.sendMessage(MessageAPI.GET_MENU_TOOLS, { owner });
+    }
+
+    /**
+     * Check tool
+     * @param owner
+     * @returns tools
+     */
+    public async checkTool(messageId: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.CHECK_TOOL, { messageId, owner });
     }
 
     /**

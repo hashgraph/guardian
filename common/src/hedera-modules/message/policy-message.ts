@@ -137,7 +137,32 @@ export class PolicyMessage extends Message {
         if ([MessageAction.DeferredDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(this.action)) {
             messageObject.effectiveDate = this.discontinuedDate?.toISOString();
         }
-        return messageObject;
+        return this.limit(messageObject);
+    }
+
+    private cut(text: string, size: number): string {
+        if (!text) {
+            return text;
+        }
+        if (text.length <= 40) {
+            return text;
+        }
+        return text.slice(0, Math.max(text.length - size, 40) - 3) + '...';
+    }
+
+    private limit(json: PolicyMessageBody): PolicyMessageBody {
+        const LIMIT = 950;
+        const fields = ['topicDescription', 'description', 'name', 'policyTag'];
+        let text: string;
+        for (const field of fields) {
+            text = JSON.stringify(json);
+            if (text.length > LIMIT) {
+                json[field] = this.cut(json[field], text.length - LIMIT);
+            } else {
+                return json;
+            }
+        }
+        return json;
     }
 
     /**

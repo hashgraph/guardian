@@ -1,10 +1,231 @@
-.content {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    top: 0;
-    display: block;
+.container {
+    display: flex;
+    flex-direction: column;
+    margin: var(--container-margin);
+}
+
+.container > .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.container > .header > h1 {
+    width: 100%;
+    color: #000;
+    font-family: Poppins, serif;
+    font-size: 32px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 40px;
+}
+
+.actions__tabs {
+    position: relative;
+    margin-bottom: 1.5rem;
+
+    &::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--color-grey-3);
+        z-index: 0;
+    }
+
+    ::ng-deep .p-selectbutton .p-button {
+        background: transparent !important;
+        border: none !important;
+        color: #848FA9 !important;
+        position: relative;
+        padding: 0.75rem 2rem 0.5rem 0 !important;
+        margin: 0 0.5rem 0 0 !important;
+        border-radius: 0 !important;
+    }
+
+    ::ng-deep .p-selectbutton .p-button.p-highlight {
+        color: var(--color-primary, #0b73f8) !important;
+        pointer-events: none !important;
+        cursor: default !important;
+    }
+
+    ::ng-deep .p-selectbutton .p-button.p-highlight::after {
+        display: none !important;
+    }
+
+    ::ng-deep .p-selectbutton .p-button .p-button-label {
+        position: relative;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    ::ng-deep .p-selectbutton .p-button.p-highlight .p-button-label::after {
+        content: "";
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: var(--color-primary, #0b73f8);
+        z-index: 2;
+    }
+}
+
+.button-group {
+    display: grid;
+    grid-template-columns: max-content max-content;
+    column-gap: 10px;
+    justify-content: end;
+
+    button {
+        padding: 6px 20px;
+    }
+}
+
+.table-container {
+    margin-top: 16px;
+    overflow: hidden;
+}
+
+.table {
+    width: 100%;
+}
+
+:host ::ng-deep .table ::ng-deep tbody tr.card-row:first-child td:first-child {
+    border-top-left-radius: 8px !important;
+}
+
+:host ::ng-deep .table ::ng-deep tbody tr.card-row:first-child td:last-child {
+    border-top-right-radius: 8px !important;
+}
+
+.table ::ng-deep thead th {
+    font-family: Inter, sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    text-transform: uppercase;
+    color: var(--color-grey-5);
+    padding: 0 12px;
+    height: 56px;
+    text-align: left;
+    border: none;
+}
+
+.contract-column {
+    width: 150px;
+}
+
+.description-column {
+    width: 200px
+}
+
+.tags-column {
+    width: 150px;
+}
+
+:host ::ng-deep tags-explorer button svg-icon,
+:host ::ng-deep tags-explorer button .pi-plus {
+    display: none !important;
+}
+
+.permissions-column {
+    width: 150px;
+
+    .permissions {
+        row-gap: 16px;
+        margin-bottom: 12px;
+    }
+}
+
+.operations-column {
+    width: 50px;
+}
+
+:host ::ng-deep .permissions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    row-gap: 8px;
+}
+
+:host ::ng-deep .permissions__roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+:host ::ng-deep .badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+}
+
+:host ::ng-deep .badge.owner {
+    background: var(--color-accent-green-3);
+    color: var(--color-accent-green-1);
+}
+
+:host ::ng-deep .badge.admin {
+    background: var(--color-accent-green-3);
+    color: var(--color-accent-green-1);
+}
+
+:host ::ng-deep .badge.manager {
+    background: var(--color-accent-green-3);
+    color: var(--color-accent-green-1);
+}
+
+:host ::ng-deep .badge.wiper {
+    background: var(--color-accent-green-3);
+    color: var(--color-accent-green-1);
+}
+
+:host ::ng-deep .refresh-action-btn {
+    border: none;
+    cursor: pointer;
+    color: var(--color-primary) !important;
+}
+
+:host ::ng-deep .operations-column .select-menu,
+:host ::ng-deep .operations-column .select-menu-min {
+    background: var(--color-grey-2) !important;
+    border: none !important;
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: var(--color-grey-5) !important;
+    outline: none !important;
+    box-shadow: none !important;
+    margin-bottom: 50px !important;
+}
+
+:host ::ng-deep .operations-column .select-menu i.pi-sort-down-fill,
+:host ::ng-deep .operations-column .select-menu-min i.pi-sort-down-fill {
+    display: none !important;
+}
+
+:host ::ng-deep .operations-column .select-menu:hover,
+:host ::ng-deep .operations-column .select-menu-min:hover {
+    background: var(--color-grey-3) !important;
+    cursor: pointer;
+}
+
+:host ::ng-deep .operations-column .select-menu i.pi-ellipsis-h {
+    color: var(--color-primary) !important;
+}
+
+:host ::ng-deep .table-paginator .table-paginator {
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
 }
 
 .loading {
@@ -13,24 +234,11 @@
     z-index: 99;
     top: var(--header-height);
     left: 0;
-    bottom: 0;
     right: 0;
+    bottom: 0;
     display: flex;
     align-items: center;
-    justify-items: center;
     justify-content: center;
-    align-content: center;
-}
-
-.table {
-    width: 100%;
-}
-
-.btn-publish::ng-deep > * {
-    background: #4caf50 !important;
-    color: #fff !important;
-    min-width: 121px;
-    cursor: pointer !important;
 }
 
 .not-exist {
@@ -41,248 +249,3 @@
     font-size: 20px;
     color: darkgrey;
 }
-
-.table-container {
-    max-height: calc(100vh - var(--header-height) - 170px);
-    min-height: 100px;
-    overflow-y: auto;
-    position: relative;
-    z-index: 1;
-    border-top: 1px solid #eee;
-}
-
-.table-container .mat-column-contractId {
-    padding-left: 8px;
-    width: 150px;
-    max-width: 150px;
-}
-
-.table-container .mat-column-description {
-    border-right: 1px solid #dddddd;
-    padding-left: 8px;
-    max-width: 500px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.table-container .mat-column-operations {
-    padding-left: 8px;
-    width: 200px;
-    min-width: 200px;
-    max-width: 200px;
-    border-right: 1px solid #dddddd;
-}
-
-.table-container .mat-column-retire {
-    padding-left: 8px;
-    width: 137px;
-    min-width: 137px;
-    max-width: 137px;
-}
-
-.table-container .mat-column-owner {
-    width: 300px;
-    max-width: 500px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.actions-container {
-    display: block;
-    z-index: 2;
-}
-
-.table-paginator {
-    height: 60px;
-    border-top: 1px solid #eee;
-    margin-top: 5px;
-    z-index: 0;
-}
-
-.select-btn__container {
-    display: grid;
-    align-items: center;
-}
-
-::ng-deep p-selectbutton .p-button {
-    height: 50px;
-    width: max-content;
-    font-size: 14px;
-    padding: 9px;
-    color: rgba(0, 0, 0, 0.87);
-}
-
-::ng-deep p-selectbutton .p-button[aria-pressed="true"] {
-    background-color: #e0e0e0;
-    border: 1px solid #ced4da;
-}
-
-::ng-deep p-selectbutton .p-button[aria-pressed="true"]:focus {
-    border: 1px solid #ced4da;
-}
-
-::ng-deep .p-selectbutton .p-button:focus {
-    outline: none;
-    box-shadow: none;
-}
-
-::ng-deep .p-selectbutton .p-button.p-highlight {
-    pointer-events: none;
-}
-
-.action-btn {
-    background: #4caf50;
-    color: #fff;
-    border-radius: 6px;
-    display: inline-block;
-    padding: 6px 0;
-    width: 173px;
-    margin: 0px 5px;
-    cursor: pointer;
-    font-weight: 500;
-    text-align: center;
-    -webkit-user-select: none;
-    user-select: none;
-    position: relative;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-.action-btn.view-btn {
-    width: 143px;
-}
-
-.table-container .mat-column-tags {
-    max-width: 175px;
-    min-width: 175px;
-    width: 175px;
-    border-right: 1px solid #dddddd;
-    padding-left: 10px;
-}
-
-.table-container .mat-column-permissions {
-    width: 100px;
-    border-right: 1px solid #dddddd;
-    padding-left: 10px;
-}
-
-.actions {
-    display: grid;
-    grid-template-columns: auto 0;
-    padding: 14px 20px 14px 14px;
-    border-bottom: 1px solid #eee;
-    margin: 0;
-    height: 92px;
-    box-sizing: border-box;
-    overflow: hidden;
-}
-
-.actions ::ng-deep button.mat-raised-button.mat-primary {
-    margin: 8px 10px 0 10px;
-}
-
-.toolbar-btn__container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    width: 30%;
-    column-gap: 20px;
-    align-content: center;
-    justify-content: end;
-}
-
-.toolbar-btn,
-::ng-deep button.p-toolbar-btn {
-    margin: 15px;
-    min-width: 120px;
-    cursor: pointer;
-    font-weight: 500;
-    text-align: left;
-    user-select: none;
-    position: relative;
-    border-radius: 8px;
-    padding: 0;
-    font-size: 14px;
-    padding-left: 48px !important;
-    padding-right: 30px;
-}
-
-::ng-deep button.p-toolbar-btn {
-    height: 48px;
-    width: 178px;
-    padding: 0;
-    padding-left: 22px!important;
-    margin: 0;
-    background: var(--color-primary);
-}
-
-::ng-deep button span.pi {
-    left: 14px;
-    top: 12px;
-    font-size: 20px;
-}
-
-::ng-deep button span.pi-plus {
-    font-size: 20px;
-    left: 14px;
-    top: 12px;
-}
-
-.permissions {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.permissions, .permissions__roles {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-}
-
-.permissions__roles {
-    font-weight: bold;
-}
-
-::ng-deep app-refresh-btn .refresh-action-btn {
-    border: none;
-    cursor: pointer;
-}
-
-.permissions__roles .role[has="true"] {
-    color: darkgreen;
-}
-
-.permissions__roles .role[has="false"] {
-    color: gray;
-}
-
-.contract-operations {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.header {
-    height: 56px;
-    font-size: 12px;
-}
-
-.header th {
-    background: var(--color-grey-white);
-}
-
-.header::after {
-    content: "";
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    width: 100%;
-    height: 1px;
-    background-color: #ddd;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-

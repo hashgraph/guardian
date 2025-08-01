@@ -192,6 +192,18 @@ export class FieldTypes {
             pars: (value: any) => String(value)
         },
         {
+            name: 'File',
+            type: 'string',
+            format: undefined,
+            pattern: '^ipfs:\/\/.+',
+            isRef: false,
+            unit: undefined,
+            unitSystem: undefined,
+            customType: 'file',
+            hidden: false,
+            pars: (value: any) => String(value)
+        },
+        {
             name: 'Enum',
             type: 'string',
             format: undefined,

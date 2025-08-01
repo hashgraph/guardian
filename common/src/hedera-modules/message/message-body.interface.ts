@@ -269,6 +269,18 @@ export interface VcMessageBody extends MessageBody {
      * Guardian Version
      */
     guardianVersion: string;
+    /**
+     * Tag
+     */
+    tag: string;
+    /**
+     * Entity Type
+     */
+    entityType: string;
+    /**
+     * Option
+     */
+    option: any;
 }
 
 /**
@@ -291,6 +303,18 @@ export interface VpMessageBody extends MessageBody {
      * Relationships
      */
     relationships: string[];
+    /**
+     * Tag
+     */
+    tag: string;
+    /**
+     * Entity Type
+     */
+    entityType: string;
+    /**
+     * Option
+     */
+    option: any;
 }
 
 /**
