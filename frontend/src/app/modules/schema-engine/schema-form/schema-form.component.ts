@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { UntypedFormArray } from '@angular/forms';
 import { Schema, SchemaField, SchemaRuleValidateResult, UnitSystem } from '@guardian/interfaces';
-import { Subject } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
 import { FieldForm, IFieldControl, IFieldIndexControl } from '../schema-form-model/field-form';
@@ -198,6 +198,11 @@ export class SchemaFormComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges) {
+        if (this.formModel && this.formModel.controls) {
+            for (const item of this.formModel.controls) {
+                this.updateRemoteFiles(item);
+            }
+        }
         if (changes.rules && this.rules) {
             for (const value of Object.values(this.rules)) {
                 if (value.status === 'Failure' || value.status === 'Error') {
@@ -645,4 +650,20 @@ export class SchemaFormComponent implements OnInit {
             }
         }, 100)
     }
+
+    private updateRemoteFiles(item: IFieldControl<any>) {
+        if (item.remoteLink && item.fileUploading === true) {
+            this.ipfs
+                .loadJsonFileByLink(item.remoteLink)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe((res: any) => {
+                    item.enumValues = res?.enum;
+                    item.fileUploading = false;
+                }, (error) => {
+                    item.fileUploading = false;
+                    console.error(error);
+                })
+        }
+    }
 }
+

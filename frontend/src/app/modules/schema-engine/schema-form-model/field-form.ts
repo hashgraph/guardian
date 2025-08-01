@@ -455,11 +455,6 @@ export class FieldForm {
             item.control = this.createControl(item, item.preset);
             if (field.remoteLink) {
                 item.fileUploading = true;
-                this.getJsonFileByLink(field.remoteLink)
-                    .then((res: any) => {
-                        item.enumValues = res.enum;
-                    })
-                    .finally(() => item.fileUploading = false);
             }
             if (field.enum) {
                 item.enumValues = field.enum;
@@ -490,11 +485,6 @@ export class FieldForm {
             item.list = [];
             if (field.remoteLink) {
                 item.fileUploading = true;
-                this.getJsonFileByLink(field.remoteLink)
-                    .then((res: any) => {
-                        item.enumValues = res.enum;
-                    })
-                    .finally(() => item.fileUploading = false);
             }
             if (field.enum) {
                 item.enumValues = field.enum;
@@ -662,12 +652,6 @@ export class FieldForm {
         } else {
             return new UntypedFormGroup({});
         }
-    }
-
-    private getJsonFileByLink(link: string): Promise<any> {
-        return new Promise((resolve, reject) => {
-            reject();
-        });
     }
 
     public updateValueAndValidity() {
