@@ -198,6 +198,25 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     }, 500);
                 }
                 break;
+            case TaskAction.IMPORT_TOOL_FILE:
+            case TaskAction.IMPORT_TOOL_MESSAGE:
+                if (this.redir) {
+                    setTimeout(() => {
+                        this.router.navigate(['tool-configuration'], {
+                            queryParams: {
+                                toolId: result.toolId,
+                            },
+                            replaceUrl: true,
+                        });
+                    }, 500);
+                } else {
+                    setTimeout(() => {
+                        this.router.navigate(['tools'], {
+                            replaceUrl: true,
+                        });
+                    }, 500);
+                }
+                break;
             case TaskAction.WIZARD_CREATE_POLICY:
                 const { policyId, saveState } = result;
                 if (saveState) {
@@ -385,6 +404,8 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.CREATE_POLICY:
             case TaskAction.IMPORT_POLICY_FILE:
             case TaskAction.IMPORT_POLICY_MESSAGE:
+            case TaskAction.IMPORT_TOOL_FILE:
+            case TaskAction.IMPORT_TOOL_MESSAGE:
             case TaskAction.WIZARD_CREATE_POLICY:
             case TaskAction.PUBLISH_POLICY:
             case TaskAction.DELETE_POLICY:
