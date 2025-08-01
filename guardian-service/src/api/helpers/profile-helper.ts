@@ -183,11 +183,19 @@ export async function createSystemSchemas({
     logId: string | null
 }): Promise<Schema | null> {
     try {
-        notifier.addStep(`1. ${SchemaEntity.STANDARD_REGISTRY}`);
-        notifier.addStep(`2. ${SchemaEntity.USER}`);
-        notifier.addStep(`3. ${SchemaEntity.RETIRE_TOKEN}`);
-        notifier.addStep(`4. ${SchemaEntity.ROLE}`);
-        notifier.addStep(`5. ${SchemaEntity.USER_PERMISSIONS}`);
+        // <-- Steps
+        const STEP_STANDARD_REGISTRY = `1. ${SchemaEntity.STANDARD_REGISTRY}`;
+        const STEP_USER = `2. ${SchemaEntity.USER}`;
+        const STEP_RETIRE_TOKEN = `3. ${SchemaEntity.RETIRE_TOKEN}`;
+        const STEP_ROLE = `4. ${SchemaEntity.ROLE}`;
+        const STEP_USER_PERMISSIONS = `5. ${SchemaEntity.USER_PERMISSIONS}`;
+        // Steps -->
+
+        notifier.addStep(STEP_STANDARD_REGISTRY);
+        notifier.addStep(STEP_USER);
+        notifier.addStep(STEP_RETIRE_TOKEN);
+        notifier.addStep(STEP_ROLE);
+        notifier.addStep(STEP_USER_PERMISSIONS);
         notifier.start();
 
         const parent: IOwner = EntityOwner.sr(user.id.toString(), userDID);
@@ -198,7 +206,7 @@ export async function createSystemSchemas({
             parent,
             messageServer,
             logger,
-            notifier: notifier.addStep(`1. ${SchemaEntity.STANDARD_REGISTRY}`),
+            notifier: notifier.addStep(STEP_STANDARD_REGISTRY),
             logId
         });
         await checkAndPublishSchema({
@@ -208,7 +216,7 @@ export async function createSystemSchemas({
             parent,
             messageServer,
             logger,
-            notifier: notifier.addStep(`2. ${SchemaEntity.USER}`),
+            notifier: notifier.addStep(STEP_USER),
             logId
         });
         await checkAndPublishSchema({
@@ -218,7 +226,7 @@ export async function createSystemSchemas({
             parent,
             messageServer,
             logger,
-            notifier: notifier.addStep(`3. ${SchemaEntity.RETIRE_TOKEN}`),
+            notifier: notifier.addStep(STEP_RETIRE_TOKEN),
             logId
         });
         await checkAndPublishSchema({
@@ -228,7 +236,7 @@ export async function createSystemSchemas({
             parent,
             messageServer,
             logger,
-            notifier: notifier.addStep(`4. ${SchemaEntity.ROLE}`),
+            notifier: notifier.addStep(STEP_ROLE),
             logId
         });
         await checkAndPublishSchema({
@@ -238,7 +246,7 @@ export async function createSystemSchemas({
             parent,
             messageServer,
             logger,
-            notifier: notifier.addStep(`5. ${SchemaEntity.USER_PERMISSIONS}`),
+            notifier: notifier.addStep(STEP_USER_PERMISSIONS),
             logId
         });
         if (entity) {
@@ -290,15 +298,23 @@ export async function createUserProfile({
         fireblocksConfig
     } = profile;
 
-    notifier.addStep('Resolve hedera account');
-    notifier.addStep('Resolve topic');
-    notifier.addStep('Create user topic');
-    notifier.addStep('Publish DID Document');
-    notifier.addStep('Publish Schemas');
-    notifier.addStep('Publish VC Document');
-    notifier.addStep('Registration');
-    notifier.addStep('Create roles');
-    notifier.addStep('Save');
+    // <-- Steps
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_RESOLVE_TOPIC = 'Resolve topic';
+    const STEP_PUBLISH_DID = 'Publish DID Document';
+    const STEP_PUBLISH_SCHEMAS = 'Publish schemas';
+    const STEP_PUBLISH_VC = 'Publish VC Document';
+    const STEP_CREATE_ROLES = 'Create roles';
+    const STEP_SAVE = 'Save';
+    // Steps -->
+
+    notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_RESOLVE_TOPIC);
+    notifier.addStep(STEP_PUBLISH_DID);
+    notifier.addStep(STEP_PUBLISH_SCHEMAS);
+    notifier.addStep(STEP_PUBLISH_VC);
+    notifier.addStep(STEP_CREATE_ROLES);
+    notifier.addStep(STEP_SAVE);
     notifier.start();
 
     let signOptions: ISignOptions = {
@@ -325,7 +341,7 @@ export async function createUserProfile({
     // ------------------------
     // <-- Check hedera key
     // ------------------------
-    notifier.startStep('Resolve hedera account');
+    notifier.startStep(STEP_RESOLVE_ACCOUNT);
     try {
         const workers = new Workers();
         AccountId.fromString(hederaAccountId);
@@ -343,7 +359,7 @@ export async function createUserProfile({
     } catch (error) {
         throw new Error(`Invalid Hedera account or key.`);
     }
-    notifier.completeStep('Resolve hedera account');
+    notifier.completeStep(STEP_RESOLVE_ACCOUNT);
     // ------------------------
     // Check hedera key -->
     // ------------------------
@@ -351,7 +367,7 @@ export async function createUserProfile({
     // ------------------------
     // <-- Resolve topic
     // ------------------------
-    notifier.startStep('Resolve topic');
+    notifier.startStep(STEP_RESOLVE_TOPIC);
     let topicConfig: TopicConfig = null;
     let newTopic: Topic = null;
     const globalTopic = await getGlobalTopic();
@@ -377,7 +393,7 @@ export async function createUserProfile({
         newTopic = await dataBaseServer.save(Topic, topicConfig.toObject());
     }
     messageServer.setTopicObject(topicConfig);
-    notifier.completeStep('Resolve topic');
+    notifier.completeStep(STEP_RESOLVE_TOPIC);
     // ------------------------
     // Resolve topic -->
     // ------------------------
@@ -385,7 +401,7 @@ export async function createUserProfile({
     // ------------------------
     // <-- Publish DID Document
     // ------------------------
-    notifier.startStep('Publish DID Document');
+    notifier.startStep(STEP_PUBLISH_DID);
     logger.info('Create DID Document', ['GUARDIAN_SERVICE'], logId);
 
     const vcHelper = new VcHelper();
@@ -399,13 +415,15 @@ export async function createUserProfile({
 
     const existingUser = await dataBaseServer.findOne(DidDocumentCollection, { did: userDID });
     if (existingUser) {
-        notifier.addStep('User restored');
-        notifier.skipStep('Publish DID Document');
-        notifier.skipStep('Publish Schemas');
-        notifier.skipStep('Publish VC Document');
-        notifier.skipStep('Registration');
-        notifier.skipStep('Create roles')
-        notifier.completeStep('User restored');
+        notifier.skipStep(STEP_PUBLISH_DID);
+        notifier.skipStep(STEP_PUBLISH_SCHEMAS);
+        notifier.skipStep(STEP_PUBLISH_VC);
+        notifier.skipStep(STEP_CREATE_ROLES);
+        // <-- Steps
+        const STEP_RESTORE = 'User restored';
+        // Steps -->
+        notifier.addStep(STEP_RESTORE);
+        notifier.completeStep(STEP_RESTORE);
         return userDID;
     }
 
@@ -431,7 +449,7 @@ export async function createUserProfile({
         // didRow.status = DidDocumentStatus.FAILED;
         // await new DataBaseHelper(DidDocumentCollection).update(didRow);
     }
-    notifier.completeStep('Publish DID Document');
+    notifier.completeStep(STEP_PUBLISH_DID);
     // ------------------------
     // Publish DID Document -->
     // ------------------------
@@ -439,7 +457,7 @@ export async function createUserProfile({
     // ------------------
     // <-- Publish Schemas
     // ------------------
-    notifier.startStep('Publish Schemas');
+    notifier.startStep(STEP_PUBLISH_SCHEMAS);
     const schemaObject = await createSystemSchemas({
         entity,
         topicId: topicConfig.topicId,
@@ -447,10 +465,10 @@ export async function createUserProfile({
         userDID,
         messageServer,
         logger,
-        notifier: notifier.getStep('Publish Schemas'),
+        notifier: notifier.getStep(STEP_PUBLISH_SCHEMAS),
         logId
     });
-    notifier.completeStep('Publish Schemas');
+    notifier.completeStep(STEP_PUBLISH_SCHEMAS);
     // ------------------
     // Publish Schemas -->
     // ------------------
@@ -459,7 +477,7 @@ export async function createUserProfile({
     // <-- Publish VC Document
     // -----------------------
     if (vcDocument) {
-        notifier.startStep('Publish VC Document');
+        notifier.startStep(STEP_PUBLISH_VC);
         logger.info('Create VC Document', ['GUARDIAN_SERVICE'], logId);
 
         let credentialSubject: any = { ...vcDocument };
@@ -496,15 +514,15 @@ export async function createUserProfile({
             vcDoc.hederaStatus = DocumentStatus.FAILED;
             await dataBaseServer.update(VcDocumentCollection, null, vcDoc);
         }
-        notifier.completeStep('Publish VC Document');
+        notifier.completeStep(STEP_PUBLISH_VC);
     } else {
-        notifier.skipStep('Publish VC Document');
+        notifier.skipStep(STEP_PUBLISH_VC);
     }
     // -----------------------
     // Publish VC Document -->
     // -----------------------
 
-    notifier.startStep('Save');
+    notifier.startStep(STEP_SAVE);
     if (newTopic) {
         newTopic.owner = userDID;
         newTopic.parent = globalTopic?.topicId;
@@ -529,25 +547,25 @@ export async function createUserProfile({
                 interception: user.id.toString()
             })
     }
-    notifier.completeStep('Save');
+    notifier.completeStep(STEP_SAVE);
 
     // -----------------------
     // Publish Role Document -->
     // -----------------------
     if (user.role === UserRole.STANDARD_REGISTRY) {
-        notifier.startStep('Create roles');
+        notifier.startStep(STEP_CREATE_ROLES);
         messageServer.setTopicObject(topicConfig);
         await createDefaultRoles({
             userId: user.id.toString(),
             did: userDID,
             didDocument: currentDidDocument,
             messageServer,
-            notifier: notifier.getStep('Create roles'),
+            notifier: notifier.getStep(STEP_CREATE_ROLES),
             logId
         });
-        notifier.completeStep('Create roles');
+        notifier.completeStep(STEP_CREATE_ROLES);
     } else {
-        notifier.skipStep('Create roles');
+        notifier.skipStep(STEP_CREATE_ROLES);
     }
 
     return userDID;
@@ -578,14 +596,19 @@ export async function createRemoteUserProfile({
     } = profile;
     const dataBaseServer = new DatabaseServer();
 
-    notifier.addStep('Resolve hedera account');
-    notifier.addStep('Save');
+    // <-- Steps
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_SAVE = 'Save';
+    // Steps -->
+
+    notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_SAVE);
     notifier.start();
 
     // ------------------------
     // <-- Check hedera key
     // ------------------------
-    notifier.startStep('Resolve hedera account');
+    notifier.startStep(STEP_RESOLVE_ACCOUNT);
     try {
         const workers = new Workers();
         AccountId.fromString(hederaAccountId);
@@ -601,7 +624,7 @@ export async function createRemoteUserProfile({
     } catch (error) {
         throw new Error(`Invalid Hedera account or key.`);
     }
-    notifier.completeStep('Resolve hedera account');
+    notifier.completeStep(STEP_RESOLVE_ACCOUNT);
     // ------------------------
     // Check hedera key -->
     // ------------------------
@@ -609,7 +632,7 @@ export async function createRemoteUserProfile({
     // ------------------------
     // <-- DID Document
     // ------------------------
-    notifier.startStep('Save');
+    notifier.startStep(STEP_SAVE);
     const currentDidDocument = await validateDidWithoutKeys(didDocument);
     const userDID = currentDidDocument.getDid();
 
@@ -698,7 +721,11 @@ export async function saveUserProfile({
     logger: PinoLogger,
     logId: string | null
 }) {
-    notifier.startStep('Save');
+    // <-- Steps
+    const STEP_SAVE = 'Save'; // Init is create function
+    // Steps -->
+
+    notifier.startStep(STEP_SAVE);
     const users = new Users();
     await users.updateCurrentUser(username, {
         did,
@@ -718,7 +745,7 @@ export async function saveUserProfile({
     if (profile.useFireblocksSigning) {
         await wallet.setKey(user.walletToken, KeyType.FIREBLOCKS_KEY, did, JSON.stringify(profile.fireblocksConfig));
     }
-    notifier.completeStep('Save');
+    notifier.completeStep(STEP_SAVE);
     notifier.complete();
 }
 
@@ -745,8 +772,11 @@ export async function saveRemoteUserProfile({
     logger: PinoLogger,
     logId: string | null
 }) {
-    notifier.startStep('Save');
+    // <-- Steps
+    const STEP_SAVE = 'Save'; // Init is create function
+    // Steps -->
 
+    notifier.startStep(STEP_SAVE);
     const users = new Users();
     await users.updateCurrentUser(username, {
         did,
@@ -760,7 +790,7 @@ export async function saveRemoteUserProfile({
         await serDefaultRole(changeRole, EntityOwner.sr(null, profile.parent))
     }
 
-    notifier.completeStep('Save');
+    notifier.completeStep(STEP_SAVE);
     notifier.complete();
 }
 

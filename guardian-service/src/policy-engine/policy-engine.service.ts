@@ -1409,8 +1409,13 @@ export class PolicyEngineService {
                     if (!zip) {
                         throw new Error('file in body is empty');
                     }
-                    notifier.addStep('Import policy', 90);
-                    notifier.addStep('Start policy', 10);
+                    // <-- Steps
+                    const STEP_IMPORT_POLICY = 'Import policy';
+                    const STEP_START_POLICY = 'Start policy';
+                    // Steps -->
+
+                    notifier.addStep(STEP_IMPORT_POLICY, 90);
+                    notifier.addStep(STEP_START_POLICY, 10);
                     notifier.start();
 
                     await logger.info(`Import policy by file`, ['GUARDIAN_SERVICE'], owner?.id);
@@ -1422,7 +1427,7 @@ export class PolicyEngineService {
                             .setUser(owner)
                             .setParentPolicyTopic(versionOfTopicId)
                             .setMetadata(metadata),
-                        notifier.getStep('Import policy'),
+                        notifier.getStep(STEP_IMPORT_POLICY),
                         owner.id
                     );
                     if (result?.errors?.length) {
@@ -1436,7 +1441,7 @@ export class PolicyEngineService {
                             result.policy,
                             owner,
                             logger,
-                            notifier.getStep('Start policy')
+                            notifier.getStep(STEP_START_POLICY)
                         );
                     }
                     notifier.result({
@@ -1505,9 +1510,14 @@ export class PolicyEngineService {
                         throw new Error('Policy ID in body is empty');
                     }
 
+                    // <-- Steps
+                    const STEP_IMPORT_POLICY = 'Import policy';
+                    const STEP_START_POLICY = 'Start policy';
+                    // Steps -->
+
                     const notifier = NewNotifier.empty();
-                    notifier.addStep('Import policy', 90);
-                    notifier.addStep('Start policy', 10);
+                    notifier.addStep(STEP_IMPORT_POLICY, 90);
+                    notifier.addStep(STEP_START_POLICY, 10);
                     notifier.start();
                     const root = await this.users.getHederaAccount(owner.creator, owner?.id);
                     const policyToImport = await PolicyImportExportHelper.loadPolicyMessage(messageId, root, notifier, owner.id);
@@ -1518,7 +1528,7 @@ export class PolicyEngineService {
                             .setUser(owner)
                             .setParentPolicyTopic(versionOfTopicId)
                             .setMetadata(metadata),
-                        notifier.getStep('Import policy'),
+                        notifier.getStep(STEP_IMPORT_POLICY),
                         owner.id
                     );
                     if (result?.errors?.length) {
@@ -1531,7 +1541,7 @@ export class PolicyEngineService {
                             result.policy,
                             owner,
                             logger,
-                            notifier.getStep('Start policy')
+                            notifier.getStep(STEP_START_POLICY)
                         );
                     }
                     return new MessageResponse(true);
@@ -1558,15 +1568,22 @@ export class PolicyEngineService {
                         if (!messageId) {
                             throw new Error('Policy ID in body is empty');
                         }
-                        notifier.addStep('Load policy', 5);
-                        notifier.addStep('Import policy', 90);
-                        notifier.addStep('Start policy', 5);
+
+                        // <-- Steps
+                        const STEP_LOAD_POLICY = 'Load policy';
+                        const STEP_IMPORT_POLICY = 'Import policy';
+                        const STEP_START_POLICY = 'Start policy';
+                        // Steps -->
+
+                        notifier.addStep(STEP_LOAD_POLICY, 5);
+                        notifier.addStep(STEP_IMPORT_POLICY, 90);
+                        notifier.addStep(STEP_START_POLICY, 5);
                         notifier.start();
 
-                        notifier.startStep('Load policy');
+                        notifier.startStep(STEP_LOAD_POLICY);
                         const root = await this.users.getHederaAccount(owner.creator, owner?.id);
                         const policyToImport = await PolicyImportExportHelper.loadPolicyMessage(messageId, root, notifier, owner.id);
-                        notifier.completeStep('Load policy');
+                        notifier.completeStep(STEP_LOAD_POLICY);
 
                         const result = await PolicyImportExportHelper.importPolicy(
                             demo ? ImportMode.DEMO : ImportMode.COMMON,
@@ -1575,7 +1592,7 @@ export class PolicyEngineService {
                                 .setUser(owner)
                                 .setParentPolicyTopic(versionOfTopicId)
                                 .setMetadata(metadata),
-                            notifier.getStep('Import policy'),
+                            notifier.getStep(STEP_IMPORT_POLICY),
                             owner.id
                         );
                         if (result?.errors?.length) {
@@ -1589,7 +1606,7 @@ export class PolicyEngineService {
                                 result.policy,
                                 owner,
                                 logger,
-                                notifier.getStep('Start policy')
+                                notifier.getStep(STEP_START_POLICY)
                             );
                         }
                         notifier.complete();
@@ -1691,12 +1708,18 @@ export class PolicyEngineService {
                 const notifier = await NewNotifier.create(task);
 
                 RunFunctionAsync(async () => {
-                    notifier.addStep('Load file');
-                    notifier.addStep('Import tools');
-                    notifier.addStep('Import schemas');
+                    // <-- Steps
+                    const STEP_LOAD_POLICY = 'Load file';
+                    const STEP_IMPORT_TOOLS = 'Import tools';
+                    const STEP_IMPORT_SCHEMAS = 'Import schemas';
+                    // Steps -->
+
+                    notifier.addStep(STEP_LOAD_POLICY);
+                    notifier.addStep(STEP_IMPORT_TOOLS);
+                    notifier.addStep(STEP_IMPORT_SCHEMAS);
                     notifier.start();
 
-                    notifier.startStep('Load file');
+                    notifier.startStep(STEP_LOAD_POLICY);
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'create');
                     if (!xlsx) {
@@ -1705,9 +1728,9 @@ export class PolicyEngineService {
                     await logger.info(`Import policy by xlsx`, ['GUARDIAN_SERVICE'], owner?.id);
                     const root = await this.users.getHederaAccount(owner.creator, owner?.id);
                     const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
-                    notifier.completeStep('Load file');
+                    notifier.completeStep(STEP_LOAD_POLICY);
 
-                    notifier.startStep('Import tools');
+                    notifier.startStep(STEP_IMPORT_TOOLS);
                     const { tools, errors } = await importSubTools(root, xlsxResult.getToolIds(), owner, notifier, owner?.id);
                     for (const tool of tools) {
                         const subSchemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
@@ -1717,9 +1740,9 @@ export class PolicyEngineService {
                     xlsxResult.updatePolicy(policy);
                     xlsxResult.addErrors(errors);
                     GenerateBlocks.generate(xlsxResult);
-                    notifier.completeStep('Import tools');
+                    notifier.completeStep(STEP_IMPORT_TOOLS);
 
-                    notifier.startStep('Import schemas');
+                    notifier.startStep(STEP_IMPORT_SCHEMAS);
                     const category = await getSchemaCategory(policy.topicId);
                     const result = await SchemaImportExportHelper.importSchemaByFiles(
                         xlsxResult.schemas,
@@ -1733,7 +1756,7 @@ export class PolicyEngineService {
                         owner?.id
                     );
                     await PolicyImportExportHelper.updatePolicyComponents(policy, logger, owner?.id);
-                    notifier.completeStep('Import schemas');
+                    notifier.completeStep(STEP_IMPORT_SCHEMAS);
                     notifier.complete();
 
                     notifier.result({

@@ -179,10 +179,14 @@ export function profileAPI(logger: PinoLogger) {
             const notifier = await NewNotifier.create(task);
 
             RunFunctionAsync(async () => {
-                notifier.addStep('Restore user profile');
+                // <-- Steps
+                const STEP_RESTORE = 'Restore user profile';
+                // Steps -->
+
+                notifier.addStep(STEP_RESTORE);
                 notifier.start();
 
-                notifier.startStep('Restore user profile');
+                notifier.startStep(STEP_RESTORE);
                 if (!profile) {
                     notifier.fail('Invalid profile');
                     return;
@@ -231,7 +235,7 @@ export function profileAPI(logger: PinoLogger) {
                     logger,
                     user.id
                 )
-                notifier.completeStep('Restore user profile');
+                notifier.completeStep(STEP_RESTORE);
 
                 notifier.complete();
                 notifier.result(oldDidDocument?.getDid());
@@ -254,10 +258,14 @@ export function profileAPI(logger: PinoLogger) {
             const notifier = await NewNotifier.create(task);
 
             RunFunctionAsync(async () => {
-                notifier.addStep('Finding all user topics');
+                // <-- Steps
+                const STEP_FIND_TOPICS = 'Finding all user topics';
+                // Steps -->
+
+                notifier.addStep(STEP_FIND_TOPICS);
                 notifier.start();
 
-                notifier.startStep('Finding all user topics');
+                notifier.startStep(STEP_FIND_TOPICS);
                 const {
                     hederaAccountId,
                     hederaAccountKey,
@@ -292,7 +300,7 @@ export function profileAPI(logger: PinoLogger) {
                     did,
                     user.id
                 )
-                notifier.completeStep('Finding all user topics');
+                notifier.completeStep(STEP_FIND_TOPICS);
 
                 notifier.complete();
                 notifier.result(result);

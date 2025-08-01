@@ -35,11 +35,16 @@ export async function preparePreviewMessage(
     user: IOwner,
     notifier: INotificationStep
 ): Promise<any> {
-    notifier.addStep('Resolve Hedera account');
-    notifier.addStep('Parse module files');
+    // <-- Steps
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_PARSE_FILES = 'Parse module files';
+    // Steps -->
+
+    notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_PARSE_FILES);
     notifier.start();
 
-    notifier.startStep('Resolve Hedera account');
+    notifier.startStep(STEP_RESOLVE_ACCOUNT);
     if (!messageId) {
         throw new Error('Message ID in body is empty');
     }
@@ -65,13 +70,13 @@ export async function preparePreviewMessage(
     if (!message.document) {
         throw new Error('file in body is empty');
     }
-    notifier.completeStep('Resolve Hedera account');
+    notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-    notifier.startStep('Parse module files');
+    notifier.startStep(STEP_PARSE_FILES);
     const result: any = await ModuleImportExport.parseZipFile(message.document);
     result.messageId = messageId;
     result.moduleTopicId = message.moduleTopicId;
-    notifier.completeStep('Parse module files');
+    notifier.completeStep(STEP_PARSE_FILES);
 
     notifier.complete();
     return result;
@@ -91,11 +96,16 @@ export async function validateAndPublish(
     notifier: INotificationStep,
     logger: PinoLogger
 ) {
-    notifier.addStep('Find and validate module');
-    notifier.addStep('Publish module');
+    // <-- Steps
+    const STEP_VALIDATE_MODULE = 'Find and validate module';
+    const STEP_PUBLISH_MODULE = 'Publish module';
+    // Steps -->
+
+    notifier.addStep(STEP_VALIDATE_MODULE);
+    notifier.addStep(STEP_PUBLISH_MODULE);
     notifier.start();
 
-    notifier.startStep('Find and validate module');
+    notifier.startStep(STEP_VALIDATE_MODULE);
     const item = await DatabaseServer.getModuleByUUID(uuid);
     if (!item) {
         throw new Error('Unknown module');
@@ -109,17 +119,17 @@ export async function validateAndPublish(
 
     const errors = await validateModel(item);
     const isValid = !errors.blocks.some(block => !block.isValid);
-    notifier.completeStep('Find and validate module');
+    notifier.completeStep(STEP_VALIDATE_MODULE);
 
     if (isValid) {
-        notifier.startStep('Publish module');
+        notifier.startStep(STEP_PUBLISH_MODULE);
         const newModule = await publishModule(
             item,
             user,
-            notifier.getStep('Publish module'),
+            notifier.getStep(STEP_PUBLISH_MODULE),
             logger
         );
-        notifier.completeStep('Publish module');
+        notifier.completeStep(STEP_PUBLISH_MODULE);
 
         notifier.complete();
         return { item: newModule, isValid, errors };
@@ -154,23 +164,33 @@ export async function publishModule(
     notifier: INotificationStep,
     logger: PinoLogger
 ): Promise<PolicyModule> {
-    notifier.addStep('Resolve Hedera account');
-    notifier.addStep('Find topic');
-    notifier.addStep('Create module topic');
-    notifier.addStep('Generate file');
-    notifier.addStep('Publish module');
-    notifier.addStep('Link topic and module');
-    notifier.addStep('Save');
+    // <-- Steps
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_RESOLVE_TOPIC = 'Find topic';
+    const STEP_CREATE_TOPIC = 'Create module topic';
+    const STEP_GENERATE_FILE = 'Generate file';
+    const STEP_PUBLISH_MODULE = 'Publish module';
+    const STEP_LINK_TOPIC = 'Link topic and module';
+    const STEP_SAVE = 'Save';
+    // Steps -->
+
+    notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_RESOLVE_TOPIC);
+    notifier.addStep(STEP_CREATE_TOPIC);
+    notifier.addStep(STEP_GENERATE_FILE);
+    notifier.addStep(STEP_PUBLISH_MODULE);
+    notifier.addStep(STEP_LINK_TOPIC);
+    notifier.addStep(STEP_SAVE);
     notifier.start();
 
     logger.info('Publish module', ['GUARDIAN_SERVICE'], user.id);
 
-    notifier.startStep('Resolve Hedera account');
+    notifier.startStep(STEP_RESOLVE_ACCOUNT);
     const users = new Users();
     const root = await users.getHederaAccount(user.owner, user.id);
-    notifier.completeStep('Resolve Hedera account');
+    notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-    notifier.startStep('Find topic');
+    notifier.startStep(STEP_RESOLVE_TOPIC);
     const userTopic = await TopicConfig.fromObject(
         await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic),
         true, user.id
@@ -180,9 +200,9 @@ export async function publishModule(
         operatorKey: root.hederaAccountKey,
         signOptions: root.signOptions
     }).setTopicObject(userTopic);
-    notifier.completeStep('Find topic');
+    notifier.completeStep(STEP_RESOLVE_TOPIC);
 
-    notifier.startStep('Create module topic');
+    notifier.startStep(STEP_CREATE_TOPIC);
     const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
     const rootTopic = await topicHelper.create({
         type: TopicType.ModuleTopic,
@@ -196,9 +216,9 @@ export async function publishModule(
     await DatabaseServer.saveTopic(rootTopic.toObject());
 
     model.topicId = rootTopic.topicId;
-    notifier.completeStep('Create module topic');
+    notifier.completeStep(STEP_CREATE_TOPIC);
 
-    notifier.startStep('Generate file');
+    notifier.startStep(STEP_GENERATE_FILE);
     model = updateModuleConfig(model);
     const zip = await ModuleImportExport.generate(model);
     const buffer = await zip.generateAsync({
@@ -208,9 +228,9 @@ export async function publishModule(
             level: 3
         }
     });
-    notifier.completeStep('Generate file');
+    notifier.completeStep(STEP_GENERATE_FILE);
 
-    notifier.startStep('Publish module');
+    notifier.startStep(STEP_PUBLISH_MODULE);
     const message = new ModuleMessage(MessageType.Module, MessageAction.PublishModule);
     message.setDocument(model, buffer);
     const result = await messageServer
@@ -222,17 +242,17 @@ export async function publishModule(
         });
     model.messageId = result.getId();
     model.status = ModuleStatus.PUBLISHED;
-    notifier.completeStep('Publish module');
+    notifier.completeStep(STEP_PUBLISH_MODULE);
 
-    notifier.startStep('Link topic and module');
+    notifier.startStep(STEP_LINK_TOPIC);
     await topicHelper.twoWayLink(rootTopic, userTopic, result.getId(), user.id);
-    notifier.completeStep('Link topic and module');
+    notifier.completeStep(STEP_LINK_TOPIC);
 
     logger.info('Published module', ['GUARDIAN_SERVICE'], user.id);
 
-    notifier.startStep('Save');
+    notifier.startStep(STEP_SAVE);
     const retVal = await DatabaseServer.updateModule(model);
-    notifier.completeStep('Save');
+    notifier.completeStep(STEP_SAVE);
 
     notifier.complete();
     return retVal

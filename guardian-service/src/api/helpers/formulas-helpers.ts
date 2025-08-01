@@ -98,20 +98,25 @@ export async function publishFormula(
 ): Promise<Formula> {
     item.status = EntityStatus.PUBLISHED;
 
-    notifier.addStep('Resolve topic', 30);
-    notifier.addStep('Publish formula', 70);
+    // <-- Steps
+    const STEP_RESOLVE_TOPIC = 'Resolve topic';
+    const STEP_PUBLISH_FORMULA = 'Publish formula';
+    // Steps -->
+
+    notifier.addStep(STEP_RESOLVE_TOPIC, 30);
+    notifier.addStep(STEP_PUBLISH_FORMULA, 70);
     notifier.start();
 
-    notifier.startStep('Resolve topic');
+    notifier.startStep(STEP_RESOLVE_TOPIC);
     const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.policyTopicId), true, owner.id);
     const messageServer = new MessageServer({
         operatorId: root.hederaAccountId,
         operatorKey: root.hederaAccountKey,
         signOptions: root.signOptions
     }).setTopicObject(topic);
-    notifier.completeStep('Resolve topic');
+    notifier.completeStep(STEP_RESOLVE_TOPIC);
 
-    notifier.startStep('Publish formula');
+    notifier.startStep(STEP_PUBLISH_FORMULA);
     const zip = await FormulaImportExport.generate(item);
     const buffer = await zip.generateAsync({
         type: 'arraybuffer',
@@ -134,6 +139,6 @@ export async function publishFormula(
     item.messageId = statMessageResult.getId();
 
     const result = await DatabaseServer.updateFormula(item);
-    notifier.completeStep('Publish formula');
+    notifier.completeStep(STEP_PUBLISH_FORMULA);
     return result;
 }

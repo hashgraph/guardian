@@ -651,22 +651,34 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             const { id, version, owner, task } = msg;
             const notifier = await NewNotifier.create(task);
             RunFunctionAsync(async () => {
+                // <-- Steps
+                const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+                const STEP_PUBLISH_SCHEMAS = 'Publish schemas';
+                // Steps -->
+
                 if (!msg) {
                     notifier.fail('Invalid id');
                 }
-                notifier.addStep('Resolve Hedera account');
-                notifier.addStep('Publish schemas');
+                notifier.addStep(STEP_RESOLVE_ACCOUNT);
+                notifier.addStep(STEP_PUBLISH_SCHEMAS);
                 notifier.start();
-                notifier.startStep('Resolve Hedera account');
+
+                notifier.startStep(STEP_RESOLVE_ACCOUNT);
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator, owner.id);
-                notifier.completeStep('Resolve Hedera account');
+                notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-                notifier.startStep('Publish schemas');
+                notifier.startStep(STEP_PUBLISH_SCHEMAS);
                 const item = await findAndPublishSchema(
-                    id, version, owner, root, notifier.getStep('Publish schemas'), null, owner.id
+                    id,
+                    version,
+                    owner,
+                    root,
+                    notifier.getStep(STEP_PUBLISH_SCHEMAS),
+                    null,
+                    owner.id
                 );
-                notifier.completeStep('Publish schemas');
+                notifier.completeStep(STEP_PUBLISH_SCHEMAS);
 
                 notifier.result(item.id);
             }, async (error) => {
@@ -1489,9 +1501,15 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             const { owner, xlsx, topicId, task } = msg;
             const notifier = await NewNotifier.create(task);
             RunFunctionAsync(async () => {
-                notifier.addStep('File parsing');
-                notifier.addStep('Import tools');
-                notifier.addStep('Import schemas');
+                // <-- Steps
+                const STEP_PARS_FILE = 'File parsing';
+                const STEP_IMPORT_TOOLS = 'Import tools';
+                const STEP_IMPORT_SCHEMAS = 'Import schemas';
+                // Steps -->
+
+                notifier.addStep(STEP_PARS_FILE);
+                notifier.addStep(STEP_IMPORT_TOOLS);
+                notifier.addStep(STEP_IMPORT_SCHEMAS);
                 notifier.start();
 
                 const { category, target } = await getSchemaTarget(topicId);
@@ -1507,16 +1525,16 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator, owner?.id);
 
-                notifier.getStep('File parsing').start();
+                notifier.startStep(STEP_PARS_FILE);
                 const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
-                notifier.getStep('File parsing').complete();
+                notifier.completeStep(STEP_PARS_FILE);
 
-                notifier.getStep('Import tools').start();
+                notifier.startStep(STEP_IMPORT_TOOLS);
                 const { tools, errors } = await importSubTools(
                     root,
                     xlsxResult.getToolIds(),
                     owner,
-                    notifier.getStep('Import tools'),
+                    notifier.getStep(STEP_IMPORT_TOOLS),
                     owner.id
                 );
                 for (const tool of tools) {
@@ -1527,9 +1545,9 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 xlsxResult.updatePolicy(target);
                 xlsxResult.addErrors(errors);
                 GenerateBlocks.generate(xlsxResult);
-                notifier.getStep('Import tools').complete();
+                notifier.completeStep(STEP_IMPORT_TOOLS);
 
-                notifier.getStep('Import schemas').start();
+                notifier.startStep(STEP_IMPORT_SCHEMAS);
                 const result = await SchemaImportExportHelper.importSchemaByFiles(
                     xlsxResult.schemas,
                     owner,
@@ -1538,10 +1556,10 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         topicId,
                         skipGenerateId: true
                     },
-                    notifier.getStep('Import schemas'),
+                    notifier.getStep(STEP_IMPORT_SCHEMAS),
                     owner?.id
                 );
-                notifier.getStep('Import schemas').complete();
+                notifier.completeStep(STEP_IMPORT_SCHEMAS);
 
                 if (category === SchemaCategory.TOOL) {
                     await updateToolConfig(target);

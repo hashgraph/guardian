@@ -128,31 +128,31 @@ export class NewNotifier implements INotificationStep {
     }
 
     public startStep(name: string): NewNotifier {
-        const step = this.steps.find((s) => s.name === name);
+        const step = this.getStep(name);
         if (step) {
             step.start();
         } else {
-            throw new Error(`Step ${name} not found`);
+            console.error(`Step ${name} not found`);
         }
         return this;
     }
 
     public completeStep(name: string): NewNotifier {
-        const step = this.steps.find((s) => s.name === name);
+        const step = this.getStep(name);
         if (step) {
             step.complete();
         } else {
-            throw new Error(`Step ${name} not found`);
+            console.error(`Step ${name} not found`);
         }
         return this;
     }
 
     public skipStep(name: string): NewNotifier {
-        const step = this.steps.find((s) => s.name === name);
+        const step = this.getStep(name);
         if (step) {
             step.skip();
         } else {
-            throw new Error(`Step ${name} not found`);
+            console.error(`Step ${name} not found`);
         }
         return this;
     }
@@ -162,11 +162,11 @@ export class NewNotifier implements INotificationStep {
         error: string | Error,
         code?: string | number
     ): NewNotifier {
-        const step = this.steps.find((s) => s.name === name);
+        const step = this.getStep(name);
         if (step) {
             step.fail(error, code);
         } else {
-            throw new Error(`Step ${name} not found`);
+            console.error(`Step ${name} not found`);
         }
         return this;
     }

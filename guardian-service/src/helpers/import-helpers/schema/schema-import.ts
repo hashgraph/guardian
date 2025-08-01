@@ -426,21 +426,27 @@ export class SchemaImport {
     ): Promise<ImportSchemaResult> {
         const { topicId, category } = options;
 
-        this.notifier.addStep('Resolve hedera account', 1);
-        this.notifier.addStep('Resolve topics', 1);
-        this.notifier.addStep('Update UUID', 1);
+        // <-- Steps
+        const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+        const STEP_RESOLVE_TOPIC = 'Resolve topic';
+        const STEP_UPDATE_UUID = 'Update UUID';
+        // Steps -->
+
+        this.notifier.addStep(STEP_RESOLVE_ACCOUNT, 1);
+        this.notifier.addStep(STEP_RESOLVE_TOPIC, 1);
+        this.notifier.addStep(STEP_UPDATE_UUID, 1);
         this.notifier.addEstimate(components.length);
         this.notifier.start();
 
         await this.resolveAccount(
             user,
-            this.notifier.getStep('Resolve hedera account'),
+            this.notifier.getStep(STEP_RESOLVE_ACCOUNT),
             userId
         );
         await this.resolveTopic(
             user,
             topicId,
-            this.notifier.getStep('Resolve topics'),
+            this.notifier.getStep(STEP_RESOLVE_TOPIC),
             userId
         );
 
@@ -453,10 +459,10 @@ export class SchemaImport {
             userId
         );
 
-        this.notifier.getStep('Update UUID').start();
+        this.notifier.startStep(STEP_UPDATE_UUID);
         await this.updateUUIDs(components);
         await this.validateDefs(components);
-        this.notifier.getStep('Update UUID').complete();
+        this.notifier.completeStep(STEP_UPDATE_UUID);
 
         await this.saveSchemas(components, this.notifier, userId);
 
@@ -476,21 +482,28 @@ export class SchemaImport {
     ): Promise<ImportSchemaResult> {
         const { topicId, category } = options;
 
-        this.notifier.addStep('Resolve hedera account', 1);
-        this.notifier.addStep('Resolve topics', 1);
-        this.notifier.addStep('Update UUID', 1);
-        this.notifier.addStep('Import schemas', 20);
+        // <-- Steps
+        const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+        const STEP_RESOLVE_TOPIC = 'Resolve topic';
+        const STEP_UPDATE_UUID = 'Update UUID';
+        const STEP_IMPORT_SCHEMAS = 'Import schemas';
+        // Steps -->
+
+        this.notifier.addStep(STEP_RESOLVE_ACCOUNT, 1);
+        this.notifier.addStep(STEP_RESOLVE_TOPIC, 1);
+        this.notifier.addStep(STEP_UPDATE_UUID, 1);
+        this.notifier.addStep(STEP_IMPORT_SCHEMAS, 20);
         this.notifier.start();
 
         await this.resolveAccount(
             user,
-            this.notifier.getStep('Resolve hedera account'),
+            this.notifier.getStep(STEP_RESOLVE_ACCOUNT),
             userId
         );
         await this.resolveTopic(
             user,
             topicId,
-            this.notifier.getStep('Resolve topics'),
+            this.notifier.getStep(STEP_RESOLVE_TOPIC),
             userId
         );
 
@@ -499,18 +512,18 @@ export class SchemaImport {
             components,
             user,
             true,
-            this.notifier.getStep('Import schemas'),
+            this.notifier.getStep(STEP_IMPORT_SCHEMAS), // Estimate only
             userId
         );
 
-        this.notifier.getStep('Update UUID').start();
+        this.notifier.startStep(STEP_UPDATE_UUID);
         await this.updateUUIDs(components);
         await this.updateDefs(components);
-        this.notifier.getStep('Update UUID').complete();
+        this.notifier.completeStep(STEP_UPDATE_UUID);
 
         await this.saveSchemas(
             components,
-            this.notifier.getStep('Import schemas'),
+            this.notifier.getStep(STEP_IMPORT_SCHEMAS),
             userId
         );
 
@@ -531,29 +544,40 @@ export class SchemaImport {
     ): Promise<ImportSchemaResult> {
         const { topicId, category } = options;
 
-        this.notifier.addStep('Resolve hedera account', 1);
-        this.notifier.addStep('Resolve topics', 1);
-        this.notifier.addStep('Resolve messages', 1);
-        this.notifier.addStep('Update UUID', 1);
-        this.notifier.addStep('Import schemas', 20);
-        this.notifier.addStep('Import tags', 1);
+        // <-- Steps
+        const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+        const STEP_RESOLVE_TOPIC = 'Resolve topic';
+        const STEP_RESOLVE_MESSAGE = 'Resolve messages';
+        const STEP_UPDATE_UUID = 'Update UUID';
+        const STEP_IMPORT_SCHEMAS = 'Import schemas';
+        const STEP_SAVE = 'Save in DB';
+        const STEP_IMPORT_TAGS = 'Import tags';
+        // Steps -->
+
+        this.notifier.addStep(STEP_RESOLVE_ACCOUNT, 1);
+        this.notifier.addStep(STEP_RESOLVE_TOPIC, 1);
+        this.notifier.addStep(STEP_RESOLVE_MESSAGE, 1);
+        this.notifier.addStep(STEP_UPDATE_UUID, 1);
+        this.notifier.addStep(STEP_IMPORT_SCHEMAS, 20);
+        this.notifier.addStep(STEP_SAVE, 1);
+        this.notifier.addStep(STEP_IMPORT_TAGS, 1);
         this.notifier.start();
 
         await this.resolveAccount(
             user,
-            this.notifier.getStep('Resolve hedera account'),
+            this.notifier.getStep(STEP_RESOLVE_ACCOUNT),
             userId
         );
         await this.resolveTopic(
             user,
             topicId,
-            this.notifier.getStep('Resolve topics'),
+            this.notifier.getStep(STEP_RESOLVE_TOPIC),
             userId
         );
         const components = await this.resolveMessages(
             messageIds,
             logger,
-            this.notifier.getStep('Resolve messages'),
+            this.notifier.getStep(STEP_RESOLVE_MESSAGE),
             userId
         );
         const topics = new Set(components.map((s) => s.topicId));
@@ -563,26 +587,26 @@ export class SchemaImport {
             components,
             user,
             false,
-            this.notifier.getStep('Import schemas'),
+            this.notifier.getStep(STEP_IMPORT_SCHEMAS),  // Estimate only
             userId
         );
 
-        this.notifier.getStep('Update UUID').start();
+        this.notifier.startStep(STEP_UPDATE_UUID);
         await this.updateUUIDs(components);
         await this.validateDefs(components);
-        this.notifier.getStep('Update UUID').complete();
+        this.notifier.completeStep(STEP_UPDATE_UUID);
 
-        this.notifier.getStep('Save').start();
+        this.notifier.startStep(STEP_SAVE);
         await this.saveSchemas(
             components,
-            this.notifier.getStep('Import schemas'),
+            this.notifier.getStep(STEP_IMPORT_SCHEMAS),
             userId
         );
-        this.notifier.getStep('Save').complete();
+        this.notifier.completeStep(STEP_SAVE);
 
         await this.importTags(
             topics,
-            this.notifier.getStep('Import tags'),
+            this.notifier.getStep(STEP_IMPORT_TAGS),
             userId
         );
 

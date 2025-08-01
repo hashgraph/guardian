@@ -207,14 +207,20 @@ export async function findAndPublishSchema(
     schemaMap: Map<string, string> | null,
     userId: string | null
 ): Promise<SchemaCollection> {
-    notifier.addStep('Resolve topic', 5);
-    notifier.addStep('Publish related schemas', 40);
-    notifier.addStep('Publish schema', 40);
-    notifier.addStep('Publish tags', 10);
-    notifier.addStep('Save', 5);
-    notifier.start();
+    // <-- Steps
+    const STEP_RESOLVE_TOPIC = 'Resolve topic';
+    const STEP_PUBLISH_RELATED_SCHEMAS = 'Publish related schemas';
+    const STEP_PUBLISH_SCHEMA = 'Publish schema';
+    const STEP_PUBLISH_TAGS = 'Publish tags';
+    const STEP_SAVE = 'Save';
+    // Steps -->
 
-    notifier.startStep('Publish schema');
+    notifier.addStep(STEP_RESOLVE_TOPIC, 5);
+    notifier.addStep(STEP_PUBLISH_RELATED_SCHEMAS, 40);
+    notifier.addStep(STEP_PUBLISH_SCHEMA, 40);
+    notifier.addStep(STEP_PUBLISH_TAGS, 10);
+    notifier.addStep(STEP_SAVE, 5);
+    notifier.start();
 
     let item = await DatabaseServer.getSchema(id);
     await accessSchema(item, user, 'publish');
@@ -226,29 +232,29 @@ export async function findAndPublishSchema(
         throw new Error('Invalid status');
     }
 
-    notifier.startStep('Resolve topic');
+    notifier.startStep(STEP_RESOLVE_TOPIC);
     const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true, userId);
     const messageServer = new MessageServer({
         operatorId: root.hederaAccountId,
         operatorKey: root.hederaAccountKey,
         signOptions: root.signOptions
     }).setTopicObject(topic);
-    notifier.completeStep('Resolve topic');
+    notifier.completeStep(STEP_RESOLVE_TOPIC);
 
-    notifier.startStep('Publish related schemas');
+    notifier.startStep(STEP_PUBLISH_RELATED_SCHEMAS);
     const oldSchemaIri = item.iri;
     await publishDefsSchemas(
         item.document?.$defs,
         user,
         root,
         schemaMap,
-        notifier.getStep('Publish related schemas'),
+        notifier.getStep(STEP_PUBLISH_RELATED_SCHEMAS),
         userId
     );
     item = await DatabaseServer.getSchema(id);
-    notifier.completeStep('Publish related schemas');
+    notifier.completeStep(STEP_PUBLISH_RELATED_SCHEMAS);
 
-    notifier.startStep('Publish schema');
+    notifier.startStep(STEP_PUBLISH_SCHEMA);
     SchemaHelper.updateVersion(item, version);
     item = await publishSchema(
         item,
@@ -257,16 +263,17 @@ export async function findAndPublishSchema(
         MessageAction.PublishSchema,
         notifier
     );
-    notifier.completeStep('Publish schema');
+    notifier.completeStep(STEP_PUBLISH_SCHEMA);
 
-    notifier.startStep('Publish tags');
+    notifier.startStep(STEP_PUBLISH_TAGS);
     await publishSchemaTags(item, user, root, userId);
-    notifier.completeStep('Publish tags');
+    notifier.completeStep(STEP_PUBLISH_TAGS);
 
-    notifier.startStep('Save');
+    notifier.startStep(STEP_SAVE);
     await updateSchemaDocument(item);
     await updateSchemaDefs(item.iri, oldSchemaIri);
-    notifier.startStep('Save');
+    notifier.completeStep(STEP_SAVE);
+
     notifier.complete();
 
     if (schemaMap) {

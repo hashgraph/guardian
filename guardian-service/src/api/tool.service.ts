@@ -38,21 +38,27 @@ export async function preparePreviewMessage(
     user: IOwner,
     notifier: INotificationStep
 ): Promise<any> {
-    notifier.addStep('Resolve Hedera account');
-    notifier.addStep('Load file');
-    notifier.addStep('Parse tool files');
+    // <-- Steps
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_LOAD_FILE = 'Load file';
+    const STEP_PARSE_FILE = 'Parse tool files';
+    // Steps -->
+
+    notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_LOAD_FILE);
+    notifier.addStep(STEP_PARSE_FILE);
     notifier.start();
 
-    notifier.startStep('Resolve Hedera account');
+    notifier.startStep(STEP_RESOLVE_ACCOUNT);
     if (!messageId) {
         throw new Error('Message ID in body is empty');
     }
 
     const users = new Users();
     const root = await users.getHederaAccount(user.creator, user.id);
-    notifier.completeStep('Resolve Hedera account');
+    notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-    notifier.startStep('Load file');
+    notifier.startStep(STEP_LOAD_FILE);
     const messageServer = new MessageServer({
         operatorId: root.hederaAccountId,
         operatorKey: root.hederaAccountKey,
@@ -77,13 +83,13 @@ export async function preparePreviewMessage(
     if (!message.document) {
         throw new Error('file in body is empty');
     }
-    notifier.completeStep('Load file');
+    notifier.completeStep(STEP_LOAD_FILE);
 
-    notifier.startStep('Parse tool files');
+    notifier.startStep(STEP_PARSE_FILE);
     const result: any = await ToolImportExport.parseZipFile(message.document);
     result.messageId = messageId;
     result.toolTopicId = message.toolTopicId;
-    notifier.completeStep('Parse tool files');
+    notifier.completeStep(STEP_PARSE_FILE);
 
     notifier.complete();
     return result;
@@ -102,11 +108,16 @@ export async function validateAndPublish(
     notifier: INotificationStep,
     logger: PinoLogger
 ) {
-    notifier.addStep('Find and validate tool');
-    notifier.addStep('Publish tool');
+    // <-- Steps
+    const STEP_FIND_TOOL = 'Find and validate tool';
+    const STEP_PUBLISH_TOOL = 'Publish tool';
+    // Steps -->
+
+    notifier.addStep(STEP_FIND_TOOL);
+    notifier.addStep(STEP_PUBLISH_TOOL);
     notifier.start();
 
-    notifier.startStep('Find and validate tool');
+    notifier.startStep(STEP_FIND_TOOL);
     const item = await DatabaseServer.getToolById(id);
     if (!item) {
         throw new Error('Unknown tool');
@@ -120,22 +131,22 @@ export async function validateAndPublish(
 
     const errors = await validateTool(item);
     const isValid = !errors.blocks.some(block => !block.isValid);
-    notifier.completeStep('Find and validate tool');
+    notifier.completeStep(STEP_FIND_TOOL);
 
     if (isValid) {
-        notifier.startStep('Publish tool');
+        notifier.startStep(STEP_PUBLISH_TOOL);
         const newTool = await publishTool(
             item,
             user,
-            notifier.getStep('Publish tool'),
+            notifier.getStep(STEP_PUBLISH_TOOL),
             logger
         );
-        notifier.completeStep('Publish tool');
+        notifier.completeStep(STEP_PUBLISH_TOOL);
         notifier.complete();
 
         return { tool: newTool, isValid, errors };
     } else {
-        notifier.skipStep('Publish tool');
+        notifier.skipStep(STEP_PUBLISH_TOOL);
         notifier.complete();
 
         return { tool: item, isValid, errors };
@@ -167,42 +178,53 @@ export async function publishTool(
     logger: PinoLogger
 ): Promise<PolicyTool> {
     try {
-        notifier.addStep('Resolve Hedera account');
-        notifier.addStep('Find topic');
-        notifier.addStep('Publish schemas');
-        notifier.addStep('Create tags topic');
-        notifier.addStep('Generate file');
-        notifier.addStep('Publish tool');
-        notifier.addStep('Publish tags');
-        notifier.addStep('Save');
+        // <-- Steps
+        const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+        const STEP_RESOLVE_TOPIC = 'Find topic';
+        const STEP_PUBLISH_SCHEMAS = 'Publish schemas';
+        const STEP_CREATE_TAGS_TOPIC = 'Create tags topic';
+        const STEP_GENERATE_FILE = 'Generate file';
+        const STEP_PUBLISH_TOOL = 'Publish tool';
+        const STEP_PUBLISH_TAGS = 'Publish tags';
+        const STEP_SAVE = 'Save';
+        // Steps -->
+
+        notifier.addStep(STEP_RESOLVE_ACCOUNT);
+        notifier.addStep(STEP_RESOLVE_TOPIC);
+        notifier.addStep(STEP_PUBLISH_SCHEMAS);
+        notifier.addStep(STEP_CREATE_TAGS_TOPIC);
+        notifier.addStep(STEP_GENERATE_FILE);
+        notifier.addStep(STEP_PUBLISH_TOOL);
+        notifier.addStep(STEP_PUBLISH_TAGS);
+        notifier.addStep(STEP_SAVE);
         notifier.start();
 
         await logger.info('Publish tool', ['GUARDIAN_SERVICE'], user.id);
 
-        notifier.startStep('Resolve Hedera account');
+        notifier.startStep(STEP_RESOLVE_ACCOUNT);
         const users = new Users();
         const root = await users.getHederaAccount(user.creator, user.id);
-        notifier.completeStep('Resolve Hedera account');
+        notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-        notifier.startStep('Find topic');
+        notifier.startStep(STEP_RESOLVE_TOPIC);
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(tool.topicId), true, user.id);
         const messageServer = new MessageServer({
             operatorId: root.hederaAccountId,
             operatorKey: root.hederaAccountKey,
             signOptions: root.signOptions
         }).setTopicObject(topic);
-        notifier.completeStep('Find topic');
+        notifier.completeStep(STEP_RESOLVE_TOPIC);
 
-        notifier.startStep('Publish schemas');
+        notifier.startStep(STEP_PUBLISH_SCHEMAS);
         tool = await publishSchemas(
             tool,
             user,
             root,
-            notifier.getStep('Publish schemas')
+            notifier.getStep(STEP_PUBLISH_SCHEMAS)
         );
-        notifier.completeStep('Publish schemas');
+        notifier.completeStep(STEP_PUBLISH_SCHEMAS);
 
-        notifier.startStep('Create tags topic');
+        notifier.startStep(STEP_CREATE_TAGS_TOPIC);
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
         const tagsTopic = await topicHelper.create({
             type: TopicType.TagsTopic,
@@ -215,9 +237,9 @@ export async function publishTool(
         await tagsTopic.saveKeys(user.id);
         await DatabaseServer.saveTopic(tagsTopic.toObject());
         tool.tagsTopicId = tagsTopic.topicId;
-        notifier.completeStep('Create tags topic');
+        notifier.completeStep(STEP_CREATE_TAGS_TOPIC);
 
-        notifier.startStep('Generate file');
+        notifier.startStep(STEP_GENERATE_FILE);
         tool = await updateToolConfig(tool);
         const zip = await ToolImportExport.generate(tool);
         const buffer = await zip.generateAsync({
@@ -228,9 +250,9 @@ export async function publishTool(
             }
         });
         tool.hash = sha256(buffer);
-        notifier.completeStep('Generate file');
+        notifier.completeStep(STEP_GENERATE_FILE);
 
-        notifier.startStep('Publish tool');
+        notifier.startStep(STEP_PUBLISH_TOOL);
         const message = new ToolMessage(MessageType.Tool, MessageAction.PublishTool);
         message.setDocument(tool, buffer);
         const result = await messageServer
@@ -240,21 +262,21 @@ export async function publishTool(
                 userId: user.id,
                 interception: user.id
             });
-        notifier.completeStep('Publish tool');
+        notifier.completeStep(STEP_PUBLISH_TOOL);
 
-        notifier.startStep('Publish tags');
+        notifier.startStep(STEP_PUBLISH_TAGS);
         try {
             await publishToolTags(tool, user, root, user.id);
         } catch (error) {
             await logger.error(error, ['GUARDIAN_SERVICE, TAGS'], user.id);
         }
-        notifier.completeStep('Publish tags');
+        notifier.completeStep(STEP_PUBLISH_TAGS);
 
-        notifier.startStep('Save');
+        notifier.startStep(STEP_SAVE);
         tool.messageId = result.getId();
         tool.status = ModuleStatus.PUBLISHED;
         const retVal = await DatabaseServer.updateTool(tool);
-        notifier.completeStep('Save');
+        notifier.completeStep(STEP_SAVE);
 
         notifier.complete();
 
@@ -347,16 +369,24 @@ export async function createTool(
     notifier: INotificationStep,
     logger: PinoLogger
 ): Promise<PolicyTool> {
-    notifier.addStep('Save in DB');
-    notifier.addStep('Resolve Hedera account');
-    notifier.addStep('Create topic');
-    notifier.addStep('Create tool in Hedera');
-    notifier.addStep('Link topic and tool');
+    // <-- Steps
+    const STEP_SAVE = 'Save in DB';
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_CREATE_TOPIC = 'Create topic';
+    const STEP_CREATE_TOOL = 'Create tool in Hedera';
+    const STEP_LINK_TOPIC = 'Link topic and tool';
+    // Steps -->
+
+    notifier.addStep(STEP_SAVE);
+    notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_CREATE_TOPIC);
+    notifier.addStep(STEP_CREATE_TOOL);
+    notifier.addStep(STEP_LINK_TOPIC);
     notifier.start();
 
     await logger.info('Create Policy', ['GUARDIAN_SERVICE'], user.id);
 
-    notifier.startStep('Save in DB');
+    notifier.startStep(STEP_SAVE);
     if (json) {
         delete json._id;
         delete json.id;
@@ -371,16 +401,16 @@ export async function createTool(
 
     json = await updateToolConfig(json);
     const tool = await DatabaseServer.createTool(json);
-    notifier.completeStep('Save in DB');
+    notifier.completeStep(STEP_SAVE);
 
     try {
         if (!tool.topicId) {
-            notifier.startStep('Resolve Hedera account');
+            notifier.startStep(STEP_RESOLVE_ACCOUNT);
             const users = new Users();
             const root = await users.getHederaAccount(user.creator, user.id);
-            notifier.completeStep('Resolve Hedera account');
+            notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-            notifier.startStep('Create topic');
+            notifier.startStep(STEP_CREATE_TOPIC);
             await logger.info('Create Tool: Create New Topic', ['GUARDIAN_SERVICE'], user.id);
             const parent = await TopicConfig.fromObject(
                 await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true, user.id
@@ -395,9 +425,9 @@ export async function createTool(
                 targetUUID: tool.uuid
             }, user.id, { admin: true, submit: true });
             await topic.saveKeys(user.id);
-            notifier.completeStep('Create topic');
+            notifier.completeStep(STEP_CREATE_TOPIC);
 
-            notifier.startStep('Create tool in Hedera');
+            notifier.startStep(STEP_CREATE_TOOL);
             const messageServer = new MessageServer({
                 operatorId: root.hederaAccountId,
                 operatorKey: root.hederaAccountKey,
@@ -413,20 +443,20 @@ export async function createTool(
                     userId: user.id,
                     interception: null
                 });
-            notifier.completeStep('Create tool in Hedera');
+            notifier.completeStep(STEP_CREATE_TOOL);
 
-            notifier.startStep('Link topic and tool');
+            notifier.startStep(STEP_LINK_TOPIC);
             await topicHelper.twoWayLink(topic, parent, messageStatus.getId(), user.id);
 
             await DatabaseServer.saveTopic(topic.toObject());
             tool.topicId = topic.topicId;
             await DatabaseServer.updateTool(tool);
-            notifier.completeStep('Link topic and tool');
+            notifier.completeStep(STEP_LINK_TOPIC);
         } else {
-            notifier.skipStep('Resolve Hedera account');
-            notifier.skipStep('Create topic');
-            notifier.skipStep('Create tool in Hedera');
-            notifier.skipStep('Link topic and tool');
+            notifier.skipStep(STEP_RESOLVE_ACCOUNT);
+            notifier.skipStep(STEP_CREATE_TOPIC);
+            notifier.skipStep(STEP_CREATE_TOOL);
+            notifier.skipStep(STEP_LINK_TOPIC);
         }
 
         notifier.complete();

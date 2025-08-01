@@ -31,11 +31,16 @@ async function preparePolicyPreviewMessage(
     logger: PinoLogger,
     userId: string | null
 ): Promise<any> {
-    notifier.addStep('Resolve Hedera account');
-    notifier.addStep('Parse policy files');
+    // <-- Steps
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_PARSE_FILE = 'Parse policy files';
+    // Steps -->
+
+    notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_PARSE_FILE);
     notifier.start();
 
-    notifier.startStep('Resolve Hedera account');
+    notifier.startStep(STEP_RESOLVE_ACCOUNT);
     if (!messageId) {
         throw new Error('Policy ID in body is empty');
     }
@@ -59,16 +64,16 @@ async function preparePolicyPreviewMessage(
     if (!message.document) {
         throw new Error('file in body is empty');
     }
-    notifier.completeStep('Resolve Hedera account');
+    notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-    notifier.startStep('Parse policy files');
+    notifier.startStep(STEP_PARSE_FILE);
     const policyToImport: any = await PolicyImportExport.parseZipFile(message.document, true);
 
     policyToImport.topicId = message.getTopicId();
     policyToImport.availability = message.availability;
     policyToImport.restoreTopicId = message.restoreTopicId;
     policyToImport.actionsTopicId = message.actionsTopicId;
-    notifier.completeStep('Parse policy files');
+    notifier.completeStep(STEP_PARSE_FILE);
 
     notifier.complete();
     return policyToImport;
@@ -81,37 +86,44 @@ async function addPolicy(
     notifier: INotificationStep,
     userId: string | null
 ) {
-    notifier.addStep('Resolve Hedera account', 1);
-    notifier.addStep('Load message', 5);
-    notifier.addStep('Import policy', 90);
-    notifier.addStep('Start policy', 4);
+    // <-- Steps
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_LOAD_MESSAGE = 'Load message';
+    const STEP_IMPORT_POLICY = 'Import policy';
+    const STEP_START_POLICY = 'Parse policy files';
+    // Steps -->
+
+    notifier.addStep(STEP_RESOLVE_ACCOUNT, 1);
+    notifier.addStep(STEP_LOAD_MESSAGE, 5);
+    notifier.addStep(STEP_IMPORT_POLICY, 90);
+    notifier.addStep(STEP_START_POLICY, 4);
     notifier.start();
 
     const users = new Users();
-    notifier.getStep('Resolve Hedera account').start();
+    notifier.startStep(STEP_RESOLVE_ACCOUNT);
     const root = await users.getHederaAccount(owner.creator, userId);
-    notifier.getStep('Resolve Hedera account').complete();
+    notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-    notifier.getStep('Load message').start();
+    notifier.startStep(STEP_LOAD_MESSAGE);
     const policyToImport = await PolicyImportExportHelper.loadPolicyMessage(
         messageId,
         root,
-        notifier.getStep('Load message'),
+        notifier.getStep(STEP_LOAD_MESSAGE),
         userId
     );
-    notifier.getStep('Load message').complete();
+    notifier.completeStep(STEP_LOAD_MESSAGE);
 
-    notifier.getStep('Import policy').start();
+    notifier.startStep(STEP_IMPORT_POLICY);
     const result = await PolicyImportExportHelper.importPolicy(
         ImportMode.VIEW,
         (new ImportPolicyOptions(logger))
             .setComponents(policyToImport)
             .setUser(owner)
             .setAdditionalPolicy({ messageId }),
-        notifier.getStep('Import policy'),
+        notifier.getStep(STEP_IMPORT_POLICY),
         userId
     );
-    notifier.getStep('Import policy').complete();
+    notifier.completeStep(STEP_IMPORT_POLICY);
 
     if (result?.errors?.length) {
         const message = PolicyImportExportHelper.errorsMessage(result.errors);
@@ -121,10 +133,10 @@ async function addPolicy(
         return result;
     }
 
-    notifier.getStep('Start policy').start();
+    notifier.startStep(STEP_START_POLICY);
     const policyEngine = new PolicyEngine(logger);
     await policyEngine.startView(result.policy, owner, logger, notifier);
-    notifier.getStep('Start policy').complete();
+    notifier.completeStep(STEP_START_POLICY);
 
     return result;
 }

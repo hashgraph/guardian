@@ -228,11 +228,16 @@ export class PolicyImport {
                 );
                 step.skip();
             } else {
-                step.addStep('Create policy topic');
-                step.addStep('Publish Policy in Hedera');
-                step.addStep('Link topic and policy');
+                // <-- Steps
+                const STEP_CREATE_POLICY_TOPIC = 'Create policy topic';
+                const STEP_PUBLISH_POLICY = 'Publish Policy in Hedera';
+                const STEP_LINK_TOPIC = 'Link topic and policy';
+                // Steps -->
+                step.addStep(STEP_CREATE_POLICY_TOPIC);
+                step.addStep(STEP_PUBLISH_POLICY);
+                step.addStep(STEP_LINK_TOPIC);
 
-                step.startStep('Create policy topic');
+                step.startStep(STEP_CREATE_POLICY_TOPIC);
                 this.topicRow = await this.topicHelper.create({
                     type: TopicType.PolicyTopic,
                     name: policy.name || TopicType.PolicyTopic,
@@ -245,9 +250,9 @@ export class PolicyImport {
                 await DatabaseServer.saveTopic(this.topicRow.toObject());
 
                 policy.topicId = this.topicRow.topicId;
-                step.completeStep('Create policy topic');
+                step.completeStep(STEP_CREATE_POLICY_TOPIC);
 
-                step.startStep('Publish Policy in Hedera');
+                step.startStep(STEP_PUBLISH_POLICY);
                 const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
                 message.setDocument(policy);
                 const createPolicyMessage = await this.messageServer
@@ -258,16 +263,16 @@ export class PolicyImport {
                         interception: null,
                         userId
                     });
-                step.completeStep('Publish Policy in Hedera');
+                step.completeStep(STEP_PUBLISH_POLICY);
 
-                step.startStep('Link topic and policy');
+                step.startStep(STEP_LINK_TOPIC);
                 await this.topicHelper.twoWayLink(
                     this.topicRow,
                     this.parentTopic,
                     createPolicyMessage.getId(),
                     this.owner.id
                 );
-                step.completeStep('Link topic and policy');
+                step.completeStep(STEP_LINK_TOPIC);
             }
         }
         policy.topicId = this.topicRow.topicId;
@@ -685,22 +690,36 @@ export class PolicyImport {
         const metadata = options.metadata;
         const logger = options.logger;
 
-        this.notifier.addStep('Resolve Hedera account', 1);
-        this.notifier.addStep('Resolve topic', 1);
-        this.notifier.addStep('Publish system schemas', 40);
-        this.notifier.addStep('Import tools', 10);
-        this.notifier.addStep('Import tokens', 2);
-        this.notifier.addStep('Import schemas', 70);
-        this.notifier.addStep('Import artifacts', 5);
-        this.notifier.addStep('Import tests', 2);
-        this.notifier.addStep('Import formulas', 2);
-        this.notifier.addStep('Save', 3);
-        this.notifier.addStep('Import tags', 5);
+        // <-- Steps
+        const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+        const STEP_RESOLVE_TOPIC = 'Resolve topic';
+        const STEP_PUBLISH_SYSTEM_SCHEMAS = 'Publish system schemas';
+        const STEP_IMPORT_TOOLS = 'Import tools';
+        const STEP_IMPORT_TOKENS = 'Import tokens';
+        const STEP_IMPORT_SCHEMAS = 'Import schemas';
+        const STEP_IMPORT_ARTIFACTS = 'Import artifacts';
+        const STEP_IMPORT_TESTS = 'Import tests';
+        const STEP_IMPORT_FORMULAS = 'Import formulas';
+        const STEP_SAVE = 'Save';
+        const STEP_IMPORT_TAGS = 'Import tags';
+        // Steps -->
+
+        this.notifier.addStep(STEP_RESOLVE_ACCOUNT, 1);
+        this.notifier.addStep(STEP_RESOLVE_TOPIC, 1);
+        this.notifier.addStep(STEP_PUBLISH_SYSTEM_SCHEMAS, 40);
+        this.notifier.addStep(STEP_IMPORT_TOOLS, 10);
+        this.notifier.addStep(STEP_IMPORT_TOKENS, 2);
+        this.notifier.addStep(STEP_IMPORT_SCHEMAS, 70);
+        this.notifier.addStep(STEP_IMPORT_ARTIFACTS, 5);
+        this.notifier.addStep(STEP_IMPORT_TESTS, 2);
+        this.notifier.addStep(STEP_IMPORT_FORMULAS, 2);
+        this.notifier.addStep(STEP_SAVE, 3);
+        this.notifier.addStep(STEP_IMPORT_TAGS, 5);
         this.notifier.start();
 
         await this.resolveAccount(
             user,
-            this.notifier.getStep('Resolve Hedera account'),
+            this.notifier.getStep(STEP_RESOLVE_ACCOUNT),
             userId
         );
         await this.dataPreparation(policy, user, additionalPolicyConfig);
@@ -708,74 +727,83 @@ export class PolicyImport {
             policy,
             user,
             versionOfTopicId,
-            this.notifier.getStep('Resolve topic'),
+            this.notifier.getStep(STEP_RESOLVE_TOPIC),
             userId
         );
         await this.publishSystemSchemas(
             systemSchemas,
             user,
             versionOfTopicId,
-            this.notifier.getStep('Publish system schemas'),
+            this.notifier.getStep(STEP_PUBLISH_SYSTEM_SCHEMAS),
             userId
         );
         await this.importTools(
             tools,
             user,
             metadata,
-            this.notifier.getStep('Import tools'),
+            this.notifier.getStep(STEP_IMPORT_TOOLS),
             userId
         );
         await this.importTokens(
             tokens,
             user,
-            this.notifier.getStep('Import tokens'),
+            this.notifier.getStep(STEP_IMPORT_TOKENS),
             userId
         );
         await this.importSchemas(
             schemas,
             user,
-            this.notifier.getStep('Import schemas'),
+            this.notifier.getStep(STEP_IMPORT_SCHEMAS),
             userId
         );
         await this.importArtifacts(
             artifacts,
             user,
-            this.notifier.getStep('Import artifacts'),
+            this.notifier.getStep(STEP_IMPORT_ARTIFACTS),
             userId
         );
         await this.importTests(
             tests,
             user,
-            this.notifier.getStep('Import tests'),
+            this.notifier.getStep(STEP_IMPORT_TESTS),
             userId
         );
         await this.importFormulas(
             formulas,
             user,
-            this.notifier.getStep('Import formulas'),
+            this.notifier.getStep(STEP_IMPORT_FORMULAS),
             userId
         );
 
-        const step = this.notifier.getStep('Save');
-        step.addStep('Save policy');
-        step.addStep('Save topic');
-        step.addStep('Save artifacts');
-        step.addStep('Save tests');
-        step.addStep('Save formulas');
-        step.addStep('Save hash');
-        step.addStep('Save suggestions');
+        const step = this.notifier.getStep(STEP_SAVE);
+        // <-- Steps
+        const STEP_SAVE_POLICY = 'Save policy';
+        const STEP_SAVE_TOPIC = 'Save topic';
+        const STEP_SAVE_ARTIFACTS = 'Save artifacts';
+        const STEP_SAVE_TESTS = 'Save tests';
+        const STEP_SAVE_FORMULAS = 'Save formulas';
+        const STEP_SAVE_HASH = 'Save hash';
+        const STEP_SAVE_SUGGEST = 'Save suggestions';
+        // Steps -->
+        step.addStep(STEP_SAVE_POLICY);
+        step.addStep(STEP_SAVE_TOPIC);
+        step.addStep(STEP_SAVE_ARTIFACTS);
+        step.addStep(STEP_SAVE_TESTS);
+        step.addStep(STEP_SAVE_FORMULAS);
+        step.addStep(STEP_SAVE_HASH);
+        step.addStep(STEP_SAVE_SUGGEST);
 
         await this.updateUUIDs(policy);
 
-        const row = await this.savePolicy(policy, step.getStep('Save policy'));
-        await this.saveTopic(row, step.getStep('Save topic'));
-        await this.saveArtifacts(row, step.getStep('Save artifacts'));
-        await this.saveTests(row, step.getStep('Save tests'));
-        await this.saveFormulas(row, step.getStep('Save formulas'));
-        await this.saveHash(row, logger, step.getStep('Save hash'), userId);
-        await this.setSuggestionsConfig(row, user, step.getStep('Save suggestions'));
+        const row = await this.savePolicy(policy, step.getStep(STEP_SAVE_POLICY));
+        await this.saveTopic(row, step.getStep(STEP_SAVE_TOPIC));
+        await this.saveArtifacts(row, step.getStep(STEP_SAVE_ARTIFACTS));
+        await this.saveTests(row, step.getStep(STEP_SAVE_TESTS));
+        await this.saveFormulas(row, step.getStep(STEP_SAVE_FORMULAS));
+        await this.saveHash(row, logger, step.getStep(STEP_SAVE_HASH), userId);
+        await this.setSuggestionsConfig(row, user, step.getStep(STEP_SAVE_SUGGEST));
 
-        await this.importTags(row, tags, this.notifier.getStep('Import tags'));
+        await this.importTags(row, tags, this.notifier.getStep(STEP_IMPORT_TAGS));
 
         this.notifier.complete();
 

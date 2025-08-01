@@ -28,18 +28,26 @@ async function publishPolicyLabel(
     notifier: INotificationStep,
     logger: PinoLogger
 ): Promise<PolicyLabel> {
-    notifier.addStep('Create topic');
-    notifier.addStep('Generate schemas');
-    notifier.addStep('Publish schemas');
-    notifier.addStep('Publish label');
-    notifier.addStep('Save');
+    // <-- Steps
+    const STEP_CREATE_TOPIC = 'Create topic';
+    const STEP_GENERATE_SCHEMAS = 'Generate schemas';
+    const STEP_PUBLISH_SCHEMAS = 'Publish schemas';
+    const STEP_PUBLISH_LABEL = 'Publish label';
+    const STEP_SAVE = 'Save';
+    // Steps -->
+
+    notifier.addStep(STEP_CREATE_TOPIC);
+    notifier.addStep(STEP_GENERATE_SCHEMAS);
+    notifier.addStep(STEP_PUBLISH_SCHEMAS);
+    notifier.addStep(STEP_PUBLISH_LABEL);
+    notifier.addStep(STEP_SAVE);
     notifier.start();
 
     item.status = EntityStatus.PUBLISHED;
     item.config = PolicyLabelImportExport.validateConfig(item.config);
     item.config = publishLabelConfig(item.config);
 
-    notifier.startStep('Create topic');
+    notifier.startStep(STEP_CREATE_TOPIC);
     const topic = await getOrCreateTopic(item, owner.id);
     const user = await (new Users()).getHederaAccount(owner.creator, owner.id);
     const messageServer = new MessageServer({
@@ -48,31 +56,31 @@ async function publishPolicyLabel(
         signOptions: user.signOptions
     });
     messageServer.setTopicObject(topic);
-    notifier.completeStep('Create topic');
+    notifier.completeStep(STEP_CREATE_TOPIC);
 
-    notifier.startStep('Generate schemas');
+    notifier.startStep(STEP_GENERATE_SCHEMAS);
     const schemas = await generateSchema(topic.topicId, item.config, owner);
     const schemaList = new Set<SchemaCollection>();
     for (const { schema } of schemas) {
         schemaList.add(schema);
     }
-    notifier.completeStep('Generate schemas');
+    notifier.completeStep(STEP_GENERATE_SCHEMAS);
 
-    notifier.startStep('Publish schemas');
+    notifier.startStep(STEP_PUBLISH_SCHEMAS);
     await publishSchemas(
         schemaList,
         owner,
         messageServer,
         MessageAction.PublishSchema,
-        notifier.getStep('Publish schemas'),
+        notifier.getStep(STEP_PUBLISH_SCHEMAS),
     );
     await saveSchemas(schemaList);
     for (const { node, schema } of schemas) {
         node.schemaId = schema.iri;
     }
-    notifier.completeStep('Publish schemas');
+    notifier.completeStep(STEP_PUBLISH_SCHEMAS);
 
-    notifier.startStep('Publish label');
+    notifier.startStep(STEP_PUBLISH_LABEL);
     const zip = await PolicyLabelImportExport.generate(item);
     const buffer = await zip.generateAsync({
         type: 'arraybuffer',
@@ -94,11 +102,11 @@ async function publishPolicyLabel(
 
     item.topicId = topic.topicId;
     item.messageId = statMessageResult.getId();
-    notifier.completeStep('Publish label');
+    notifier.completeStep(STEP_PUBLISH_LABEL);
 
-    notifier.startStep('Save');
+    notifier.startStep(STEP_SAVE);
     const result = await DatabaseServer.updatePolicyLabel(item);
-    notifier.completeStep('Save');
+    notifier.completeStep(STEP_SAVE);
     notifier.complete();
     return result;
 }

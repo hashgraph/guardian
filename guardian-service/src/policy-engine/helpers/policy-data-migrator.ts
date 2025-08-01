@@ -541,14 +541,21 @@ export class PolicyDataMigrator {
         srcPolicyId: string,
         retireContractId?: string
     ) {
-        this._notifier.addStep('Migrate policy state');
-        this._notifier.addStep('Migrate VC documents');
-        this._notifier.addStep('Migrate VP documents');
-        this._notifier.addStep('Migrate Tokens');
+        // <-- Steps
+        const STEP_MIGRATE_POLICY = 'Migrate policy state';
+        const STEP_MIGRATE_VC = 'Migrate VC documents';
+        const STEP_MIGRATE_VP = 'Migrate VP documents';
+        const STEP_MIGRATE_TOKENS = 'Migrate Tokens';
+        // Steps -->
+
+        this._notifier.addStep(STEP_MIGRATE_POLICY);
+        this._notifier.addStep(STEP_MIGRATE_VC);
+        this._notifier.addStep(STEP_MIGRATE_VP);
+        this._notifier.addStep(STEP_MIGRATE_TOKENS);
         this._notifier.start();
 
         const errors = new Array<DocumentError>();
-        this._notifier.startStep('Migrate policy state');
+        this._notifier.startStep(STEP_MIGRATE_POLICY);
         if (migrateState) {
             if (this._dryRunId) {
                 await this._createVirtualUsers(users);
@@ -605,12 +612,12 @@ export class PolicyDataMigrator {
             }
 
             await this._migratePolicyStates(states);
-            this._notifier.completeStep('Migrate policy state');
+            this._notifier.completeStep(STEP_MIGRATE_POLICY);
         } else {
-            this._notifier.skipStep('Migrate policy state');
+            this._notifier.skipStep(STEP_MIGRATE_POLICY);
         }
 
-        this._notifier.startStep('Migrate VC documents');
+        this._notifier.startStep(STEP_MIGRATE_VC);
         await this._migrateDocument(
             vcs,
             (vc: VcDocument) =>
@@ -656,9 +663,9 @@ export class PolicyDataMigrator {
                 userId
             );
         }
-        this._notifier.completeStep('Migrate VC documents');
+        this._notifier.completeStep(STEP_MIGRATE_VC);
 
-        this._notifier.startStep('Migrate VP documents');
+        this._notifier.startStep(STEP_MIGRATE_VP);
         await this._migrateDocument(
             vps,
             this._migrateVpDocument.bind(this),
@@ -667,13 +674,13 @@ export class PolicyDataMigrator {
             userId
         );
         await this._migrateMintRequests(mintRequests, mintTransactions);
-        this._notifier.completeStep('Migrate VP documents');
+        this._notifier.completeStep(STEP_MIGRATE_VP);
 
-        this._notifier.startStep('Migrate Tokens');
+        this._notifier.startStep(STEP_MIGRATE_TOKENS);
         if (migrateRetirePools && migrateState) {
             await this.migrateTokenPools(retireContractId, retirePools, errors, userId);
         }
-        this._notifier.completeStep('Migrate Tokens');
+        this._notifier.completeStep(STEP_MIGRATE_TOKENS);
         return errors;
     }
 

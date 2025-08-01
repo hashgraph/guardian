@@ -367,11 +367,19 @@ export async function createSchema(
     user: IOwner,
     notifier: INotificationStep
 ): Promise<SchemaCollection> {
-    notifier.addStep('Resolve Hedera account');
-    notifier.addStep('Save in DB');
-    notifier.addStep('Resolve Topic');
-    notifier.addStep('Save to IPFS & Hedera');
-    notifier.addStep('Update schema in DB');
+    // <-- Steps
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_SAVE = 'Save in DB';
+    const STEP_RESOLVE_TOPIC = 'Resolve topic';
+    const STEP_SEND = 'Save to IPFS & Hedera';
+    const STEP_UPDATE = 'Update schema in DB';
+    // Steps -->
+
+    notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_SAVE);
+    notifier.addStep(STEP_RESOLVE_TOPIC);
+    notifier.addStep(STEP_SEND);
+    notifier.addStep(STEP_UPDATE);
     notifier.start();
 
     if (checkForCircularDependency(newSchema)) {
@@ -381,19 +389,19 @@ export async function createSchema(
     delete newSchema.id;
     delete newSchema._id;
     const users = new Users();
-    notifier.startStep('Resolve Hedera account');
+    notifier.startStep(STEP_RESOLVE_ACCOUNT);
     const root = await users.getHederaAccount(user.creator, user.id);
-    notifier.completeStep('Resolve Hedera account');
+    notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-    notifier.startStep('Save in DB');
+    notifier.startStep(STEP_SAVE);
     if (newSchema) {
         delete newSchema.status;
     }
 
     const schemaObject = DatabaseServer.createSchema(newSchema);
-    notifier.completeStep('Save in DB');
+    notifier.completeStep(STEP_SAVE);
 
-    notifier.startStep('Resolve Topic');
+    notifier.startStep(STEP_RESOLVE_TOPIC);
     let topic: TopicConfig;
     if (newSchema.topicId) {
         topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(newSchema.topicId), true, user.id);
@@ -413,9 +421,9 @@ export async function createSchema(
         await DatabaseServer.saveTopic(topic.toObject());
         await topicHelper.twoWayLink(topic, null, null, user.id);
     }
-    notifier.completeStep('Resolve Topic');
+    notifier.completeStep(STEP_RESOLVE_TOPIC);
 
-    notifier.startStep('Save to IPFS & Hedera');
+    notifier.startStep(STEP_SEND);
     const errors = SchemaHelper.checkErrors(newSchema as Schema)
     SchemaHelper.updateIRI(schemaObject);
     schemaObject.errors = errors;
@@ -453,11 +461,11 @@ export async function createSchema(
             schemaObject
         );
     }
-    notifier.completeStep('Save to IPFS & Hedera');
+    notifier.completeStep(STEP_SEND);
 
-    notifier.startStep('Update schema in DB');
+    notifier.startStep(STEP_UPDATE);
     const savedSchema = await DatabaseServer.saveSchema(schemaObject);
-    notifier.completeStep('Update schema in DB');
+    notifier.completeStep(STEP_UPDATE);
 
     notifier.complete();
     return savedSchema;
@@ -546,20 +554,26 @@ export async function prepareSchemaPreview(
     logger: PinoLogger,
     userId: string | null
 ): Promise<any[]> {
-    notifier.addStep('Load schema file');
-    notifier.addStep('Parse schema');
-    notifier.addStep('Verifying');
+    // <-- Steps
+    const STEP_LOAD_FILE = 'Load schema file';
+    const STEP_PARSE_FILE = 'Parse schema';
+    const STEP_VERIFYING = 'Verifying';
+    // Steps -->
+
+    notifier.addStep(STEP_LOAD_FILE);
+    notifier.addStep(STEP_PARSE_FILE);
+    notifier.addStep(STEP_VERIFYING);
     notifier.start();
 
-    notifier.startStep('Load schema file');
+    notifier.startStep(STEP_LOAD_FILE);
     const schemas = [];
     for (const messageId of messageIds) {
         const schema = await loadSchema(messageId, logger, userId);
         schemas.push(schema);
     }
-    notifier.completeStep('Load schema file');
+    notifier.completeStep(STEP_LOAD_FILE);
 
-    notifier.startStep('Parse schema');
+    notifier.startStep(STEP_PARSE_FILE);
     const messageServer = new MessageServer(null);
     const uniqueTopics = schemas.map(res => res.topicId).filter(onlyUnique);
     const anotherSchemas: SchemaMessage[] = [];
@@ -574,9 +588,9 @@ export async function prepareSchemaPreview(
             anotherSchemas.push(ver);
         }
     }
-    notifier.completeStep('Parse schema');
+    notifier.completeStep(STEP_PARSE_FILE);
 
-    notifier.startStep('Verifying');
+    notifier.startStep(STEP_VERIFYING);
     for (const schema of schemas) {
         if (!schema.version) {
             continue;
@@ -598,7 +612,7 @@ export async function prepareSchemaPreview(
             schema.newVersions = newVersions.reverse();
         }
     }
-    notifier.completeStep('Verifying');
+    notifier.completeStep(STEP_VERIFYING);
 
     notifier.complete();
     return schemas;

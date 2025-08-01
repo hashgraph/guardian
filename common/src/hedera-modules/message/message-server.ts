@@ -158,25 +158,30 @@ export class MessageServer {
         message: T,
         options: MessageOptions
     ): Promise<T> {
+        // <-- Steps
+        const STEP_SEND_FILES = 'Send files';
+        const STEP_SEND_MESSAGES = 'Send messages';
+        // Steps -->
+
         const notifier = options?.notifier || NewNotifier.empty();
         if (options.sendToIPFS !== false) {
-            notifier.addStep('Send files');
+            notifier.addStep(STEP_SEND_FILES);
         }
-        notifier.addStep('Send messages');
+        notifier.addStep(STEP_SEND_MESSAGES);
         notifier.start();
 
         if (options.sendToIPFS !== false) {
-            notifier.startStep('Send files');
+            notifier.startStep(STEP_SEND_FILES);
             message = await this.sendIPFS(message, {
                 ...options,
-                notifier: notifier.getStep('Send files')
+                notifier: notifier.getStep(STEP_SEND_FILES)
             });
-            notifier.completeStep('Send files');
+            notifier.completeStep(STEP_SEND_FILES);
         }
 
-        notifier.startStep('Send messages');
+        notifier.startStep(STEP_SEND_MESSAGES);
         message = await this.sendHedera(message, options);
-        notifier.completeStep('Send messages');
+        notifier.completeStep(STEP_SEND_MESSAGES);
 
         if (this.dryRun) {
             await DatabaseServer.saveVirtualMessage<T>(this.dryRun, message);
@@ -277,7 +282,11 @@ export class MessageServer {
             await new TransactionLogger().virtualFileLog(this.dryRun, file, result);
             return result
         } else {
-            const step = notifier.addStep('Send file');
+            // <-- Steps
+            const STEP_SEND_FILE = 'Send file';
+            // Steps -->
+
+            const step = notifier.addStep(STEP_SEND_FILE);
             step.start();
             const result = await IPFS.addFile(file, options);
             step.complete();

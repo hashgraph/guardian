@@ -172,9 +172,15 @@ async function createToken(
     dataBaseServer: DatabaseServer,
     notifier: INotificationStep
 ): Promise<Token> {
-    notifier.addStep('Resolve Hedera account');
-    notifier.addStep('Create token');
-    notifier.addStep('Save');
+    // <-- Steps
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_CREATE_TOKEN = 'Create token';
+    const STEP_SAVE = 'Save';
+    // Steps -->
+
+    notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_CREATE_TOKEN);
+    notifier.addStep(STEP_SAVE);
     notifier.start();
 
     if (!token.tokenName) {
@@ -185,12 +191,12 @@ async function createToken(
         throw new Error('Invalid Token Symbol');
     }
 
-    notifier.startStep('Resolve Hedera account');
+    notifier.startStep(STEP_RESOLVE_ACCOUNT);
     const users = new Users();
     const root = await users.getHederaAccount(user.creator, user.id);
-    notifier.completeStep('Resolve Hedera account');
+    notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-    notifier.startStep('Create token');
+    notifier.startStep(STEP_CREATE_TOKEN);
     let rawTokenObject: any = {
         ...token,
         tokenId: GenerateUUIDv4(),
@@ -203,12 +209,12 @@ async function createToken(
     if (!token.draftToken) {
         rawTokenObject = await createHederaToken(rawTokenObject, root, user.id);
     }
-    notifier.completeStep('Create token');
+    notifier.completeStep(STEP_CREATE_TOKEN);
 
-    notifier.startStep('Save');
+    notifier.startStep(STEP_SAVE);
     const tokenObject = dataBaseServer.create(Token, rawTokenObject);
     const result = await dataBaseServer.save(Token, tokenObject);
-    notifier.completeStep('Save');
+    notifier.completeStep(STEP_SAVE);
 
     notifier.complete();
     return result;
@@ -233,50 +239,66 @@ async function updateToken(
     userId: string
 ): Promise<Token> {
     if (oldToken.draftToken && newToken.draftToken) {
-        notifier.addStep('Update token');
+        // <-- Steps
+        const STEP_UPDATE_TOKEN = 'Update token';
+        // Steps -->
+
+        notifier.addStep(STEP_UPDATE_TOKEN);
         notifier.start();
 
-        notifier.startStep('Update token');
+        notifier.startStep(STEP_UPDATE_TOKEN);
         const tokenObject = Object.assign(oldToken, newToken);
         const result = await dataBaseServer.update(Token, oldToken?.id, tokenObject);
-        notifier.completeStep('Update token');
+        notifier.completeStep(STEP_UPDATE_TOKEN);
 
         notifier.complete();
 
         return result;
     } else if (oldToken.draftToken && !newToken.draftToken) {
-        notifier.addStep('Resolve Hedera account');
-        notifier.addStep('Create and save token in DB');
-        notifier.addStep('Publish tags');
+        // <-- Steps
+        const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+        const STEP_CREATE_TOKEN = 'Create and save token in DB';
+        const STEP_PUBLISH_TAGS = 'Publish tags';
+        // Steps -->
+
+        notifier.addStep(STEP_RESOLVE_ACCOUNT);
+        notifier.addStep(STEP_CREATE_TOKEN);
+        notifier.addStep(STEP_PUBLISH_TAGS);
         notifier.start();
 
-        notifier.startStep('Resolve Hedera account');
+        notifier.startStep(STEP_RESOLVE_ACCOUNT);
         const users = new Users();
         const root = await users.getHederaAccount(user.creator, user.id);
-        notifier.completeStep('Resolve Hedera account');
+        notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-        notifier.startStep('Create and save token in DB');
+        notifier.startStep(STEP_CREATE_TOKEN);
         const newTokenObject = await createHederaToken(newToken, root, user.id);
         const tokenObject = Object.assign(oldToken, newTokenObject);
 
         const result = await dataBaseServer.update(Token, oldToken?.id, tokenObject);
-        notifier.completeStep('Create and save token in DB');
+        notifier.completeStep(STEP_CREATE_TOKEN);
 
-        notifier.startStep('Publish tags');
+        notifier.startStep(STEP_PUBLISH_TAGS);
         try {
             await publishTokenTags(result, user, root, userId);
         } catch (error) {
             log.error(error, ['GUARDIAN_SERVICE, TAGS'], userId);
         }
-        notifier.completeStep('Publish tags');
+        notifier.completeStep(STEP_PUBLISH_TAGS);
 
         notifier.complete();
         return result;
 
     } else {
-        notifier.addStep('Resolve Hedera account');
-        notifier.addStep('Update token');
-        notifier.addStep('Save token in DB');
+        // <-- Steps
+        const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+        const STEP_UPDATE_TOKEN = 'Update token';
+        const STEP_SAVE = 'Save token in DB';
+        // Steps -->
+
+        notifier.addStep(STEP_RESOLVE_ACCOUNT);
+        notifier.addStep(STEP_UPDATE_TOKEN);
+        notifier.addStep(STEP_SAVE);
         notifier.start();
 
         if (!newToken.tokenName) {
@@ -299,7 +321,7 @@ async function updateToken(
             changes.tokenSymbol = newToken.tokenSymbol;
         }
 
-        notifier.startStep('Resolve Hedera account');
+        notifier.startStep(STEP_RESOLVE_ACCOUNT);
         const users = new Users();
         const wallet = new Wallet();
         const workers = new Workers();
@@ -311,9 +333,9 @@ async function updateToken(
             oldToken.tokenId,
             user.id
         );
-        notifier.completeStep('Resolve Hedera account');
+        notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-        notifier.startStep('Update token');
+        notifier.startStep(STEP_UPDATE_TOKEN);
         const tokenData = await workers.addNonRetryableTask({
             type: WorkerTaskType.UPDATE_TOKEN,
             data: {
@@ -327,9 +349,9 @@ async function updateToken(
         }, {
             priority: 20
         });
-        notifier.completeStep('Update token');
+        notifier.completeStep(STEP_UPDATE_TOKEN);
 
-        notifier.startStep('Save token in DB');
+        notifier.startStep(STEP_SAVE);
         oldToken.tokenName = newToken.tokenName;
         oldToken.tokenSymbol = newToken.tokenSymbol;
 
@@ -364,7 +386,7 @@ async function updateToken(
             ));
         }
         await Promise.all(saveKeys);
-        notifier.completeStep('Save token in DB');
+        notifier.completeStep(STEP_SAVE);
 
         notifier.complete();
         return result;
@@ -384,12 +406,18 @@ async function deleteToken(
     notifier: INotificationStep
 ): Promise<boolean> {
     if (!token.draftToken) {
-        notifier.addStep('Resolve Hedera account');
-        notifier.addStep('Delete token');
-        notifier.addStep('Save token in DB');
+        // <-- Steps
+        const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+        const STEP_DELETE_TOKEN = 'Delete token';
+        const STEP_SAVE = 'Save token in DB';
+        // Steps -->
+
+        notifier.addStep(STEP_RESOLVE_ACCOUNT);
+        notifier.addStep(STEP_DELETE_TOKEN);
+        notifier.addStep(STEP_SAVE);
         notifier.start();
 
-        notifier.startStep('Resolve Hedera account');
+        notifier.startStep(STEP_RESOLVE_ACCOUNT);
         const users = new Users();
         const wallet = new Wallet();
         const workers = new Workers();
@@ -401,9 +429,9 @@ async function deleteToken(
             token.tokenId,
             user.id
         );
-        notifier.completeStep('Resolve Hedera account');
+        notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-        notifier.startStep('Delete token');
+        notifier.startStep(STEP_DELETE_TOKEN);
         const tokenData = await workers.addNonRetryableTask({
             type: WorkerTaskType.DELETE_TOKEN,
             data: {
@@ -416,22 +444,26 @@ async function deleteToken(
         }, {
             priority: 20
         });
-        notifier.completeStep('Delete token');
+        notifier.completeStep(STEP_DELETE_TOKEN);
 
-        notifier.startStep('Save token in DB');
+        notifier.startStep(STEP_SAVE);
         if (tokenData) {
             await dataBaseServer.deleteEntity(Token, token);
         }
-        notifier.completeStep('Save token in DB');
+        notifier.completeStep(STEP_SAVE);
 
         notifier.complete();
     } else {
-        notifier.addStep('Delete token from db');
+        // <-- Steps
+        const STEP_DELETE_TOKEN = 'Delete token from db';
+        // Steps -->
+
+        notifier.addStep(STEP_DELETE_TOKEN);
         notifier.start();
 
-        notifier.startStep('Delete token from db');
+        notifier.startStep(STEP_DELETE_TOKEN);
         await dataBaseServer.deleteEntity(Token, token);
-        notifier.completeStep('Delete token from db');
+        notifier.completeStep(STEP_DELETE_TOKEN);
 
         notifier.complete();
     }
@@ -454,19 +486,25 @@ async function associateToken(
     dataBaseServer: DatabaseServer,
     notifier: INotificationStep
 ): Promise<{ tokenName: string; status: boolean }> {
-    notifier.addStep('Find token data');
-    notifier.addStep('Resolve Hedera account');
-    notifier.addStep(associate ? 'Associate' : 'Dissociate');
+    // <-- Steps
+    const STEP_FIND_TOKEN = 'Find token data';
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_ACTION = associate ? 'Associate' : 'Dissociate';
+    // Steps -->
+
+    notifier.addStep(STEP_FIND_TOKEN);
+    notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_ACTION);
     notifier.start();
 
-    notifier.startStep('Find token data');
+    notifier.startStep(STEP_FIND_TOKEN);
     const token = await dataBaseServer.findOne(Token, { tokenId: { $eq: tokenId } });
     if (!token) {
         throw new Error('Token not found');
     }
-    notifier.completeStep('Find token data');
+    notifier.completeStep(STEP_FIND_TOKEN);
 
-    notifier.startStep('Resolve Hedera account');
+    notifier.startStep(STEP_RESOLVE_ACCOUNT);
     const wallet = new Wallet();
     const users = new Users();
     const user = await users.getUserById(target.creator, target.id);
@@ -480,9 +518,9 @@ async function associateToken(
     if (!user.hederaAccountId) {
         throw new Error('User is not linked to an Hedera Account');
     }
-    notifier.completeStep('Resolve Hedera account');
+    notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-    notifier.startStep(associate ? 'Associate' : 'Dissociate');
+    notifier.startStep(STEP_ACTION);
     const workers = new Workers();
     const status = await workers.addNonRetryableTask({
         type: WorkerTaskType.ASSOCIATE_TOKEN,
@@ -496,7 +534,7 @@ async function associateToken(
     }, {
         priority: 20
     });
-    notifier.completeStep(associate ? 'Associate' : 'Dissociate');
+    notifier.completeStep(STEP_ACTION);
 
     notifier.complete();
     return { tokenName: token.tokenName, status };
@@ -519,19 +557,25 @@ async function grantKycToken(
     dataBaseServer: DatabaseServer,
     notifier: INotificationStep
 ): Promise<any> {
-    notifier.addStep('Find token data');
-    notifier.addStep('Resolve Hedera account');
-    notifier.addStep(grant ? 'Grant KYC' : 'Revoke KYC');
+    // <-- Steps
+    const STEP_FIND_TOKEN = 'Find token data';
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_ACTION = grant ? 'Grant KYC' : 'Revoke KYC';
+    // Steps -->
+
+    notifier.addStep(STEP_FIND_TOKEN);
+    notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_ACTION);
     notifier.start();
 
-    notifier.startStep('Find token data');
+    notifier.startStep(STEP_FIND_TOKEN);
     const token = await dataBaseServer.findOne(Token, { tokenId: { $eq: tokenId } });
     if (!token) {
         throw new Error('Token not found');
     }
-    notifier.completeStep('Find token data');
+    notifier.completeStep(STEP_FIND_TOKEN);
 
-    notifier.startStep('Resolve Hedera account');
+    notifier.startStep(STEP_RESOLVE_ACCOUNT);
     const users = new Users();
     const user = await users.getUser(username, owner.id);
     if (!user) {
@@ -542,9 +586,9 @@ async function grantKycToken(
     }
 
     const root = await users.getHederaAccount(owner.creator, owner.id);
-    notifier.completeStep('Resolve Hedera account');
+    notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-    notifier.startStep(grant ? 'Grant KYC' : 'Revoke KYC');
+    notifier.startStep(STEP_ACTION);
     const workers = new Workers();
     const kycKey = await new Wallet().getUserKey(
         owner.owner,
@@ -590,7 +634,7 @@ async function grantKycToken(
     });
 
     const result = getTokenInfo(info, token);
-    notifier.completeStep(grant ? 'Grant KYC' : 'Revoke KYC');
+    notifier.completeStep(STEP_ACTION);
 
     notifier.complete();
     return result;
@@ -613,19 +657,25 @@ async function freezeToken(
     dataBaseServer: DatabaseServer,
     notifier: INotificationStep
 ): Promise<any> {
-    notifier.addStep('Find token data');
-    notifier.addStep('Resolve Hedera account');
-    notifier.addStep(freeze ? 'Freeze Token' : 'Unfreeze Token');
+    // <-- Steps
+    const STEP_FIND_TOKEN = 'Find token data';
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_ACTION = freeze ? 'Freeze Token' : 'Unfreeze Token';
+    // Steps -->
+
+    notifier.addStep(STEP_FIND_TOKEN);
+    notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_ACTION);
     notifier.start();
 
-    notifier.startStep('Find token data');
+    notifier.startStep(STEP_FIND_TOKEN);
     const token = await dataBaseServer.findOne(Token, { tokenId: { $eq: tokenId } });
     if (!token) {
         throw new Error('Token not found');
     }
-    notifier.completeStep('Find token data');
+    notifier.completeStep(STEP_FIND_TOKEN);
 
-    notifier.startStep('Resolve Hedera account');
+    notifier.startStep(STEP_RESOLVE_ACCOUNT);
     const users = new Users();
     const user = await users.getUser(username, owner.id);
     if (!user) {
@@ -636,9 +686,9 @@ async function freezeToken(
     }
 
     const root = await users.getHederaAccount(owner.creator, owner.id);
-    notifier.completeStep('Resolve Hedera account');
+    notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-    notifier.startStep(freeze ? 'Freeze Token' : 'Unfreeze Token');
+    notifier.startStep(STEP_ACTION);
     const workers = new Workers();
     const freezeKey = await new Wallet().getUserKey(
         owner.owner,
@@ -684,7 +734,7 @@ async function freezeToken(
     });
 
     const result = getTokenInfo(info, token);
-    notifier.completeStep(freeze ? 'Freeze Token' : 'Unfreeze Token');
+    notifier.completeStep(STEP_ACTION);
 
     notifier.complete();
     return result;

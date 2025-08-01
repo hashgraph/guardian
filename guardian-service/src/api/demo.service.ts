@@ -27,11 +27,16 @@ async function generateDemoKey(
     notifier: INotificationStep,
     userId: string
 ): Promise<DemoKey> {
-    notifier.addStep('Resolve settings');
-    notifier.addStep('Creating account in Hedera');
+    // <-- Steps
+    const STEP_RESOLVE_SETTINGS = 'Resolve settings';
+    const STEP_CREATE_ACCOUNT = 'Creating account in Hedera';
+    // Steps -->
+
+    notifier.addStep(STEP_RESOLVE_SETTINGS);
+    notifier.addStep(STEP_CREATE_ACCOUNT);
     notifier.start();
 
-    notifier.startStep('Resolve settings');
+    notifier.startStep(STEP_RESOLVE_SETTINGS);
     const secretManager = SecretManager.New();
     const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator');
     let initialBalance: number = null;
@@ -44,9 +49,9 @@ async function generateDemoKey(
     } catch (error) {
         initialBalance = null;
     }
-    notifier.completeStep('Resolve settings');
+    notifier.completeStep(STEP_RESOLVE_SETTINGS);
 
-    notifier.startStep('Creating account in Hedera');
+    notifier.startStep(STEP_CREATE_ACCOUNT);
     const workers = new Workers();
     const result = await workers.addNonRetryableTask({
         type: WorkerTaskType.CREATE_ACCOUNT,
@@ -63,7 +68,7 @@ async function generateDemoKey(
         interception: userId,
         registerCallback: true
     });
-    notifier.completeStep('Creating account in Hedera');
+    notifier.completeStep(STEP_CREATE_ACCOUNT);
 
     notifier.complete();
     return result;
