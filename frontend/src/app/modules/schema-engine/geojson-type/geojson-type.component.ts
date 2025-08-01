@@ -142,10 +142,10 @@ const selectedStyles: any = {
     Cluster: new Style({
         image: selectedCluster,
     }),
-    MultiPoint:  new Style({
+    MultiPoint: new Style({
         image: selectedPoint,
     }),
-    LineString:  new Style({
+    LineString: new Style({
         image: selectedPoint,
     }),
     Polygon: selectedPolygon,
@@ -257,8 +257,8 @@ export class GeojsonTypeComponent implements OnChanges {
     private lastSelectedCoordinates: any[] = [];
 
     constructor(
-        private cdkRef: ChangeDetectorRef
-    ) {}
+        private cdkRef: ChangeDetectorRef,
+    ) { }
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes?.isDisabled && !changes?.isDisabled.firstChange) {
@@ -295,7 +295,7 @@ export class GeojsonTypeComponent implements OnChanges {
             }, 0)
         }
     }
-    
+
     private initMap() {
         const clusterSource = new Cluster({
             distance: CLUSTER_DISTANCE.distance,
@@ -430,10 +430,14 @@ export class GeojsonTypeComponent implements OnChanges {
         this.map.addInteraction(selectHover);
         this.map.addInteraction(selectDoubleClick);
     }
-    
+
     private updateMap(updateInput: boolean = false) {
         const shapeFeatures: any[] = [];
-        
+
+        if (!this.type) {
+            return;
+        }
+
         shapeFeatures.push({
             type: 'Feature',
             geometry: {
@@ -441,7 +445,7 @@ export class GeojsonTypeComponent implements OnChanges {
                 coordinates: this.parsedCoordinates,
             },
         });
-        
+
         const features = new GeoJSON({
             featureProjection: 'EPSG:3857',
         }).readFeatures({
@@ -465,7 +469,7 @@ export class GeojsonTypeComponent implements OnChanges {
 
         this.geoShapesSource?.clear(true);
         this.geoShapesSource?.addFeatures(features);
-        
+
         if (updateInput) {
             this.coordinates = JSON.stringify(this.parsedCoordinates, null, 4);
             this.setControlValue({
@@ -486,7 +490,7 @@ export class GeojsonTypeComponent implements OnChanges {
         if (this.isDisabled) {
             return;
         }
-        
+
         try {
             switch (this.type) {
                 case GeoJsonType.POINT:
@@ -502,7 +506,7 @@ export class GeojsonTypeComponent implements OnChanges {
                     break;
                 case GeoJsonType.POLYGON:
                     this.parsedCoordinates?.[this.selectedRingIndex]?.push(coordinates);
-                    
+
                     break;
                 case GeoJsonType.MULTI_POLYGON:
                     if (this.parsedCoordinates?.[this.selectedFeatureIndex]?.[this.selectedRingIndex][0]?.length <= 0) {
@@ -526,10 +530,10 @@ export class GeojsonTypeComponent implements OnChanges {
                 default:
                     break;
             }
-            
+
             this.updateMap(true);
         }
-        catch {}
+        catch { }
     }
 
     private mapRightclick(featureIndex = 0, ringIndex = 0) {
@@ -669,11 +673,11 @@ export class GeojsonTypeComponent implements OnChanges {
         }
 
         if (!this.isJSON || this.isDisabled) {
-            this.type = value?.type;
+            this.type = value?.type || GeoJsonType.POINT;
             this.onTypeChange(dirty);
             this.coordinates = JSON.stringify(value?.coordinates, null, 4);
             this.coordinatesChanged(dirty);
-        
+
         }
 
         if (!this.isJSON) {
@@ -723,14 +727,14 @@ export class GeojsonTypeComponent implements OnChanges {
                 } else {
                     this.center = null;
                 }
-                
+
                 if (this.center && this.center.length > 1) {
                     this.map?.getView().animate({
                         center: this.center,
                         zoom: 7,
                         duration: 500,
                     });
-                      
+
                     this.updateMap(true);
                 }
             }, 500)
