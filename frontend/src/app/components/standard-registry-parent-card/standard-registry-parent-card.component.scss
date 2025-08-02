@@ -1,0 +1,75 @@
+
+.sr-card {
+    position: relative;
+
+    ::ng-deep .p-card {
+        border-radius: 8px;
+        border: 1px solid var(--color-grey-3);
+        box-shadow: none;
+    }
+
+    ::ng-deep .p-card-content {
+        flex-direction: column;
+        display: flex;
+        gap: 16px;
+        padding-bottom: 0;
+    }
+
+    ::ng-deep .p-chip {
+        cursor: pointer;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    ::ng-deep p-chip.active .p-chip {
+        color: var(--color-accent-green-1);
+        background-color: var(--color-accent-green-2);
+    }
+
+    ::ng-deep p-chip.inactive .p-chip {
+        color: var(--color-grey-6);
+        background-color: var(--color-grey-2);
+    }
+
+    .sr-main-info {
+        font-size: 12px;
+        font-weight: 500;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+
+    .sr-account-id {
+        font-family: Poppins;
+        font-weight: 600;
+        font-size: 16px;
+        line-height: 20px;
+    }
+
+    .sr-policy-count {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        i {
+            position: relative;
+            top: 2px;
+        }
+    }
+
+    .set-active-btn {
+        margin-left: 8px;
+    }
+
+    .sr-action button {
+        height: 28px;
+        padding: 6px 16px;
+    }
+}
+
+.dropdown-item {
+    padding: 8px 16px;
+    font-size: 15px;
+    white-space: nowrap;
+}

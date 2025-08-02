@@ -26,6 +26,7 @@ import { UserPermissionsMessage } from './user-permissions-message.js';
 import { StatisticMessage } from './statistic-message.js';
 import { LabelMessage } from './label-message.js';
 import { FormulaMessage } from './formula-message.js';
+import { UserMessage } from './user-message.js';
 import { PolicyDiffMessage } from './policy-diff-message.js';
 import { PolicyActionMessage } from './policy-action-message.js';
 import { ContractMessage } from './contract-message.js';
@@ -396,6 +397,8 @@ export class MessageServer {
             case MessageType.Formula:
                 message = FormulaMessage.fromMessageObject(json);
                 break;
+            case MessageType.User:
+                message = UserMessage.fromMessageObject(json);
             case MessageType.PolicyDiff:
                 message = PolicyDiffMessage.fromMessageObject(json);
                 break;

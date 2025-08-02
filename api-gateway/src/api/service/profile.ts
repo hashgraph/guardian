@@ -2,7 +2,7 @@ import { Permissions, TaskAction } from '@guardian/interfaces';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req, Response, Query, Delete } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO, Examples, InternalServerErrorDTO, PolicyKeyConfigDTO, PolicyKeyDTO, ProfileDTO, TaskDTO, pageHeader } from '#middlewares';
+import { CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO, Examples, InternalServerErrorDTO, PolicyKeyConfigDTO, PolicyKeyDTO, ProfileDTO, TaskDTO, pageHeader, UserDidDTO } from '#middlewares';
 import { Auth, AuthUser } from '#auth';
 import { CacheService, getCacheKey, Guardians, InternalException, ServiceError, TaskManager, UseCache } from '#helpers';
 import { CACHE, PREFIXES } from '#constants';
@@ -102,6 +102,105 @@ export class ProfileApi {
         const invalidedCacheTags = [`/${PREFIXES.PROFILES}/${username}`];
 
         await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
+    }
+
+    /**
+     * Update user parent
+     */
+    @Put('/parent/select/:username')
+    @Auth(
+        //Permissions.PROFILES_USER_UPDATE,
+    )
+    @ApiOperation({
+        summary: '',
+        description: ''
+    })
+    @ApiParam({
+        name: 'username',
+        type: String,
+        description: 'The name of the user for whom to update the information.',
+        required: true,
+        example: 'username'
+    })
+    @ApiBody({
+        description: '',
+        required: true,
+        type: UserDidDTO
+    })
+    @ApiOkResponse({
+        description: 'Updated.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(UserDidDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async setUserStandardRegistry(
+        @AuthUser() user: IAuthUser,
+        @Body() parent: any,
+        @Req() req
+    ): Promise<void> {
+        const { username } = user;
+        const guardians = new Guardians();
+        try {
+            await guardians.updateUserStandardRegistry(username, parent.did);
+
+            const invalidedCacheTags = [`/${PREFIXES.PROFILES}/${user.username}`];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    /**
+     * Add user standart registry
+     */
+    @Put('/parent/add/:username')
+    @Auth(
+        //Permissions.PROFILES_USER_UPDATE,
+    )
+    @ApiOperation({
+        summary: '',
+        description: ''
+    })
+    @ApiParam({
+        name: 'username',
+        type: String,
+        description: 'The name of the user for whom to update the information.',
+        required: true,
+        example: 'username'
+    })
+    @ApiBody({
+        description: '',
+        required: true,
+        type: UserDidDTO
+    })
+    @ApiOkResponse({
+        description: 'Updated.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(UserDidDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async addUserStandardRegistry(
+        @AuthUser() user: IAuthUser,
+        @Body() parent: any,
+        @Req() req
+    ): Promise<void> {
+        const guardians = new Guardians();
+        try {
+            await guardians.addUserStandardRegistry(user, user.username, parent.did);
+
+            const invalidedCacheTags = [`/${PREFIXES.PROFILES}/${user.username}`];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
+        }
     }
 
     /**

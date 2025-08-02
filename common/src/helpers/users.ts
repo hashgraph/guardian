@@ -267,6 +267,14 @@ export class Users extends NatsService {
         return await this.sendMessage(AuthEvents.UPDATE_USER_ROLE, { username, userRoles, owner, userId: owner.id });
     }
 
+    public async addUserParent(username: string, parent: string) {
+        return await this.sendMessage(AuthEvents.ADD_USER_PARENT, { username, parent });
+    }
+
+    public async updateUserParent(username: string, parent: string) {
+        return await this.sendMessage(AuthEvents.UPDATE_USER_PARENT, { username, parent });
+    }
+
     /**
      * Get hedera account
      * @param did

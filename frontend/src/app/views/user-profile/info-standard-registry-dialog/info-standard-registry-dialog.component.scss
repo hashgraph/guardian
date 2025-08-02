@@ -1,0 +1,75 @@
+.dialog-body {
+    height: calc(100% - 150px);
+}
+
+.dialog-header {
+    padding-bottom: 32px;
+}
+
+.info-standart-registry {
+    .content {
+        margin-bottom: 64px;
+    }
+
+    ::ng-deep .p-inputswitch.p-inputswitch-checked .p-inputswitch-slider {
+        background-color: var(--color-primary);
+    }
+    ::ng-deep p-inputswitch {
+        height: 24px;
+    }
+    ::ng-deep .p-inputswitch-slider {
+        height: 24px;
+        box-shadow: none !important;
+    }
+
+    h3 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 16px;
+        line-height: 20px;
+
+        font-family: Poppins;
+        letter-spacing: 0%;
+
+    }
+    .content {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .default-label {
+        font-weight: 500;
+        margin-bottom: 8px;
+        font-weight: 500;
+        font-size: 12px;
+        line-height: 14px;
+    }
+
+    .registry-row.double {
+        display: flex;
+        gap: 16px;
+
+        .registry-row__label {
+            width: 164px;
+        }
+    }
+
+    .registry-row__label {
+        font-family: Inter;
+        text-transform: uppercase;
+        font-weight: 500;
+        font-size: 12px;
+        line-height: 14px;
+        color: var(--color-grey-6);
+        margin-bottom: 8px;
+    }
+    .registry-row__value {
+        font-family: Inter;
+        color: var(--color-grey-black-2);
+        font-weight: 400;
+        font-size: 12px;
+        line-height: 14px;
+
+    }
+}

@@ -75,6 +75,14 @@ export class ProfileService {
         return this.http.post<any>(`${this.url}/did-keys/validate`, { document, keys });
     }
 
+    public addStandartRegistriesAsParent(standardRegistryDids: string[]): Observable<any> {
+        return this.http.put<any>(`${this.url}/parent/add/${encodeURIComponent(this.auth.getUsername())}`, { did: standardRegistryDids });
+    }
+
+    public selectActiveStandartRegistry(standardRegistryDids: string): Observable<any> {
+        return this.http.put<any>(`${this.url}/parent/select/${encodeURIComponent(this.auth.getUsername())}`, { did: standardRegistryDids });
+    }
+
     public keys(
         pageIndex?: number,
         pageSize?: number
