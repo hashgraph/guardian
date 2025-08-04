@@ -665,5 +665,57 @@ export class SchemaFormComponent implements OnInit {
                 })
         }
     }
+
+    public async onFileSelected(file: File, item: IFieldControl<any>) {
+        const rows = await this.parseCsvFile(file);
+        this.formModel.setFromCsv(item, rows);
+    }
+
+    public stopAndTrigger(event: MouseEvent, item: IFieldControl<any>): void {
+        event.stopPropagation();
+        event.preventDefault();
+
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.csv';
+
+        input.addEventListener('change', (e: Event) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
+            if (file) {
+                this.onFileSelected(file, item);
+            }
+        });
+
+        input.click();
+    }
+
+    public async parseCsvFile(file: File): Promise<Record<string, string>[]> {
+        return new Promise((resolve, reject) => {
+            if (!file) return reject(new Error('No file selected'));
+
+            const reader = new FileReader();
+
+            reader.onload = () => {
+            const text = reader.result as string;
+            const lines = text.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+
+            const rows = lines.slice(1).map(line => {
+                const values = line.split(',').map(v => v.trim());
+                const row: Record<string, string> = {};
+                headers.forEach((header, i) => {
+                    row[header] = values[i] ?? '';
+                });
+                return row;
+            });
+
+            resolve(rows);
+            };
+
+            reader.onerror = () => reject(reader.error);
+
+            reader.readAsText(file);
+        });
+    }
 }
 
