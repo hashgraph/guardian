@@ -499,45 +499,59 @@
 
             <!-- array of simple fields -->
             <div *ngIf="ifSimpleArray(item)" class="form-field-array" [attr.array-invalid]="item.control?.invalid">
-                <div class="label-field" id="detail-section">
-                    <div
-                        *ngIf="!isChildSchema && formModel.controls && !isEditMode"
-                        class="page-number"
-                    >
-                        {{ i }}/{{ formModel.controls.length - 1 }}
-                    </div>
-                    <div
-                        [attr.default]="
-                            item.default &&
-                            !item.isPreset &&
-                            !item.control.dirty
-                        "
-                        [attr.field-path]="item?.path"
-                    >
-                        <span
-                            *ngIf="ifRequiredField(item)"
-                            class="required-field"
-                            >*</span
+                <div class="label-field csv-button" id="detail-section">
+                    <div>
+                        <div
+                            *ngIf="!isChildSchema && formModel.controls && !isEditMode"
+                            class="page-number"
                         >
-                        {{ item.description }}
+                            {{ i }}/{{ formModel.controls.length - 1 }}
+                        </div>
+                        <div
+                            [attr.default]="
+                                item.default &&
+                                !item.isPreset &&
+                                !item.control.dirty
+                            "
+                            [attr.field-path]="item?.path"
+                        >
+                            <span
+                                *ngIf="ifRequiredField(item)"
+                                class="required-field"
+                                >*</span
+                            >
+                            {{ item.description }}
+                        </div>
+                        <div
+                            *ngIf="
+                                !isChildSchema &&
+                                formModel.controls &&
+                                i !== formModel.controls.length - 1
+                            "
+                            class="delimiter-to-next-page"
+                        ></div>
+                        <div
+                            *ngIf="
+                                !isChildSchema &&
+                                formModel.controls &&
+                                i !== formModel.controls.length - 1
+                            "
+                            class="next-page-number"
+                        >
+                            {{ i + 1 }}
+                        </div>
                     </div>
-                    <div
-                        *ngIf="
-                            !isChildSchema &&
-                            formModel.controls &&
-                            i !== formModel.controls.length - 1
-                        "
-                        class="delimiter-to-next-page"
-                    ></div>
-                    <div
-                        *ngIf="
-                            !isChildSchema &&
-                            formModel.controls &&
-                            i !== formModel.controls.length - 1
-                        "
-                        class="next-page-number"
-                    >
-                        {{ i + 1 }}
+                     <div *ngIf="item.csvEnabled" class="csv-button-area">
+                        <span class="invalid-field-label">
+                            Quickly prefill the data using a CSV file
+                        </span>
+                        <button
+                            class="guardian-button guardian-button-secondary"
+                            type="button"
+                            (mousedown)="$event.stopPropagation()"
+                            (click)="stopAndTrigger($event, item)">
+                                Upload CSV
+                        </button>
                     </div>
                 </div>
 
@@ -866,7 +880,7 @@
                 >
                     <p-accordionTab [(selected)]="item.open" (selectedChange)="onAccordionSelectEvent($event, item)">
                         <ng-template pTemplate="header">
-                            <div class="group-label-field" id="detail-section" [attr.accordiontabid]="item.id">
+                            <div class="group-label-field csv-button csv-button-padding" id="detail-section" [attr.accordiontabid]="item.id">
                                 <div
                                     *ngIf="
                                         !isChildSchema &&
@@ -1089,9 +1103,19 @@
                                 >
                                     {{ i + 1 }}
                                 </div>
+                                <div *ngIf="item.csvEnabled" class="csv-button-area" >
+                                    <span class="invalid-field-label">
+                                        Quickly prefill the data using a CSV file
+                                    </span>
+                                    <button
+                                        type="button"
+                                        (click)="stopAndTrigger($event, item)"
+                                        class="guardian-button guardian-button-secondary">Upload CSV
+                                    </button>
+                                </div>
                             </div>
-                        </ng-template>
 
+                        </ng-template>
                         <ng-container *ngIf="item.open">
                             <div
                                 *ngIf="

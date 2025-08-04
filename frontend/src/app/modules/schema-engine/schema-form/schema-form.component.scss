@@ -30,6 +30,24 @@ form {
             }
         }
 
+        .csv-button {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .csv-button-padding {
+            padding-right: 40px !important;
+        }
+
+        .csv-button-area {
+            display: flex;
+            gap: 8px;
+
+            button {
+                padding: 6px 16px;
+            }
+        }
+
         .group-label-field {
             font-family: Poppins;
             font-size: 16px;
