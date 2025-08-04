@@ -94,27 +94,6 @@ form {
     margin-top: 20px;
 }
 
-:host ::ng-deep .p-dialog .p-button {
-    background-color: var(--color-grey-white, #FFF);
-    color: var(--primary-color);
-    border-radius: 20px;
-    padding: 8px 24px;
-    font-weight: bold;
-}
-
-:host ::ng-deep .p-dialog .p-button-ok {
-    background-color: var(--primary-color);
-    color: var(--color-grey-white, #FFF);
-}
-
-:host ::ng-deep .p-dialog .p-button:hover {
-    background-color: var(--blue-100);
-}
-
-:host ::ng-deep .p-dialog .p-button-ok:hover {
-    background-color: var(--blue-700);
-}
-
 .custom-form-field.invalid {
     border: 1px solid var(--color-accent-red-1);
 }
