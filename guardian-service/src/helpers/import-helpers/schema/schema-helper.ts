@@ -294,17 +294,10 @@ export async function copySchemaAsync(
 
     copiedSchemas.set(iri, newItem);
 
-    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true, user.id);
-
-    if (topic) {
-        await sendSchemaMessage(
-            user,
-            root,
-            topic,
-            MessageAction.CreateSchema,
-            item
-        );
-    }
+    // const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true, user.id);
+    // if (topic) {
+    //     await sendSchemaMessage(user, root, topic, MessageAction.CreateSchema, item);
+    // }
     return item;
 }
 
@@ -428,21 +421,14 @@ export async function createSchema(
                 },
             },
         ],
-    } as FilterObject<SchemaCollection>,
-    );
+    } as FilterObject<SchemaCollection>);
     if (errorsCount > 0) {
         throw new Error('Schema identifier already exist');
     }
-    notifier.completedAndStart('Save to IPFS & Hedera');
-    if (topic) {
-        await sendSchemaMessage(
-            user,
-            root,
-            topic,
-            MessageAction.CreateSchema,
-            schemaObject
-        );
-    }
+    // notifier.completedAndStart('Save to IPFS & Hedera');
+    // if (topic) {
+    //     await sendSchemaMessage(user, root, topic, MessageAction.CreateSchema, schemaObject);
+    // }
     notifier.completedAndStart('Update schema in DB');
     const savedSchema = await DatabaseServer.saveSchema(schemaObject);
     notifier.completed();
@@ -473,20 +459,14 @@ export async function deleteSchema(
     }
 
     notifier.info(`Delete schema ${item.name}`);
-    if (item.topicId) {
-        const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true, owner.id);
-        if (topic) {
-            const users = new Users();
-            const root = await users.getHederaAccount(owner.creator, owner.id);
-            await sendSchemaMessage(
-                owner,
-                root,
-                topic,
-                MessageAction.DeleteSchema,
-                item
-            );
-        }
-    }
+    // if (item.topicId) {
+    //     const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true, owner.id);
+    //     if (topic) {
+    //         const users = new Users();
+    //         const root = await users.getHederaAccount(owner.creator, owner.id);
+    //         await sendSchemaMessage(owner, root, topic, MessageAction.DeleteSchema, item);
+    //     }
+    // }
     await DatabaseServer.deleteSchemas(item.id);
 }
 

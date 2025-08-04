@@ -3,42 +3,24 @@ import { Message } from './message.js';
 import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
-import { SchemaMessageBody } from './message-body.interface.js';
+import { SchemaPackageMessageBody } from './message-body.interface.js';
 
 /**
  * Schema message
  */
-export class SchemaMessage extends Message {
+export class SchemaPackageMessage extends Message {
     /**
      * Name
      */
     public name: string;
     /**
-     * Description
-     */
-    public description: string;
-    /**
-     * Entity
-     */
-    public entity: string;
-    /**
      * Owner
      */
     public owner: string;
     /**
-     * UUID
-     */
-    public uuid: string;
-    /**
      * Version
      */
     public version: string;
-
-    /**
-     * Code Version
-     */
-    public codeVersion: string;
-
     /**
      * Documents
      */
@@ -57,16 +39,12 @@ export class SchemaMessage extends Message {
      * Set document
      * @param schema
      */
-    public setDocument(schema: Schema): void {
-        this.name = schema.name;
-        this.description = schema.description;
-        this.entity = schema.entity;
-        this.owner = schema.owner;
-        this.uuid = schema.uuid;
-        this.version = schema.version;
-        this.codeVersion = schema.codeVersion;
-        const document = schema.document;
-        const context = schema.context;
+    public setDocument(packageDocuments: any): void {
+        this.name = packageDocuments.name;
+        this.owner = packageDocuments.owner;
+        this.version = packageDocuments.version;
+        const document = packageDocuments.document;
+        const context = packageDocuments.context;
         this.documents = [document, context];
     }
 
@@ -96,7 +74,7 @@ export class SchemaMessage extends Message {
     /**
      * To message object
      */
-    public override toMessageObject(): SchemaMessageBody {
+    public override toMessageObject(): SchemaPackageMessageBody {
         return {
             id: null,
             status: null,
@@ -104,17 +82,13 @@ export class SchemaMessage extends Message {
             action: this.action,
             lang: this.lang,
             name: this.name,
-            description: this.description,
-            entity: this.entity,
             owner: this.owner,
-            uuid: this.uuid,
             version: this.version,
             relationships: this.relationships,
             document_cid: this.getDocumentUrl(UrlType.cid),
             document_uri: this.getDocumentUrl(UrlType.url),
             context_cid: this.getContextUrl(UrlType.cid),
             context_uri: this.getContextUrl(UrlType.url),
-            code_version: this.codeVersion
         };
     }
 
@@ -141,7 +115,7 @@ export class SchemaMessage extends Message {
      * Load documents
      * @param documents
      */
-    public loadDocuments(documents: string[]): SchemaMessage {
+    public loadDocuments(documents: string[]): SchemaPackageMessage {
         if (documents && Array.isArray(documents)) {
             this.documents = documents.map(e => JSON.parse(e));
         }
@@ -152,35 +126,31 @@ export class SchemaMessage extends Message {
      * From message
      * @param message
      */
-    public static fromMessage(message: string): SchemaMessage {
+    public static fromMessage(message: string): SchemaPackageMessage {
         if (!message) {
             throw new Error('Message Object is empty');
         }
 
         const json = JSON.parse(message);
-        return SchemaMessage.fromMessageObject(json);
+        return SchemaPackageMessage.fromMessageObject(json);
     }
 
     /**
      * From message object
      * @param json
      */
-    public static fromMessageObject(json: SchemaMessageBody): SchemaMessage {
+    public static fromMessageObject(json: SchemaPackageMessageBody): SchemaPackageMessage {
         if (!json) {
             throw new Error('JSON Object is empty');
         }
 
-        let message = new SchemaMessage(json.action);
+        let message = new SchemaPackageMessage(json.action);
         message = Message._fromMessageObject(message, json);
         message._id = json.id;
         message._status = json.status;
         message.name = json.name;
-        message.description = json.description;
-        message.entity = json.entity;
         message.owner = json.owner;
-        message.uuid = json.uuid;
         message.version = json.version;
-        message.codeVersion = json.code_version;
         message.relationships = json.relationships;
         const urls = [{
             cid: json.document_cid,
@@ -230,12 +200,8 @@ export class SchemaMessage extends Message {
     public override toJson(): any {
         const result = super.toJson();
         result.name = this.name;
-        result.description = this.description;
-        result.entity = this.entity;
         result.owner = this.owner;
-        result.uuid = this.uuid;
         result.version = this.version;
-        result.codeVersion = this.codeVersion;
         result.relationships = this.relationships;
         result.documentUrl = this.getDocumentUrl(UrlType.url);
         result.contextUrl = this.getContextUrl(UrlType.url);
@@ -246,19 +212,15 @@ export class SchemaMessage extends Message {
         return result;
     }
 
-    public static fromJson(json: any): SchemaMessage {
+    public static fromJson(json: any): SchemaPackageMessage {
         if (!json) {
             throw new Error('JSON Object is empty');
         }
 
-        const result = Message._fromJson(new SchemaMessage(json.action), json);
+        const result = Message._fromJson(new SchemaPackageMessage(json.action), json);
         result.name = json.name;
-        result.description = json.description;
-        result.entity = json.entity;
         result.owner = json.owner;
-        result.uuid = json.uuid;
         result.version = json.version;
-        result.codeVersion = json.codeVersion;
         result.relationships = json.relationships;
         result.documents = [json.document, json.context];
         return result;

@@ -44,15 +44,7 @@ async function getSchema(
             active: true,
         });
         if (schema) {
-            schema.creator = owner.creator;
-            schema.owner = owner.owner;
-            const item = await publishSystemSchema(
-                schema,
-                owner,
-                messageServer,
-                MessageAction.PublishSystemSchema,
-                emptyNotifier()
-            );
+            const item = await publishSystemSchema(schema, owner, messageServer, emptyNotifier());
             const result = await dataBaseServer.save(SchemaCollection, item);
             return result;
         } else {

@@ -325,21 +325,21 @@ export class SchemaImport {
             //     throw new Error('Schema identifier already exist');
             // }
 
-            this.notifier.info(`${label}: Save to IPFS & Hedera`);
-            if (this.mode === ImportMode.COMMON) {
-                if (this.topicRow) {
-                    const message = new SchemaMessage(MessageAction.CreateSchema);
-                    message.setDocument(schemaObject);
-                    await this.messageServer
-                        .setTopicObject(this.topicRow)
-                        .sendMessage(message, {
-                            sendToIPFS: true,
-                            memo: null,
-                            userId: this.owner.id,
-                            interception: this.owner.id
-                        });
-                }
-            }
+            // this.notifier.info(`${label}: Save to IPFS & Hedera`);
+            // if (this.mode === ImportMode.COMMON) {
+            //     if (this.topicRow) {
+            //         const message = new SchemaMessage(MessageAction.CreateSchema);
+            //         message.setDocument(schemaObject);
+            //         await this.messageServer
+            //             .setTopicObject(this.topicRow)
+            //             .sendMessage(message, {
+            //                 sendToIPFS: true,
+            //                 memo: null,
+            //                 userId: this.owner.id,
+            //                 interception: this.owner.id
+            //             });
+            //     }
+            // }
 
             this.notifier.info(`${label}: Update schema in DB`);
             const row = await DatabaseServer.saveSchema(schemaObject);

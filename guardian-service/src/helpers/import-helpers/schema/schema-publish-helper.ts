@@ -1,5 +1,5 @@
-import { GeoJsonContext, IOwner, IRootConfig, SchemaHelper, SchemaStatus, SentinelHubContext } from '@guardian/interfaces';
-import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaMessage, schemasToContext, TopicConfig, UrlType } from '@guardian/common';
+import { GeoJsonContext, IOwner, IRootConfig, ISchemaDocument, ModuleStatus, Schema, SchemaHelper, SchemaStatus, SentinelHubContext } from '@guardian/interfaces';
+import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaMessage, SchemaPackageMessage, schemasToContext, TopicConfig, UrlType } from '@guardian/common';
 import { checkForCircularDependency } from '../common/load-helper.js';
 import { incrementSchemaVersion, updateSchemaDefs, updateSchemaDocument } from './schema-helper.js';
 import { publishSchemaTags } from '../tag/tag-publish-helper.js';
@@ -25,16 +25,34 @@ export async function accessSchema(
     if (user.creator === schema.creator) {
         return true;
     }
-    // if (user.published && schema.status !== SchemaStatus.PUBLISHED) {
-    //     throw new Error(`Insufficient permissions to ${action} the schema.`);
-    // }
-    // if (user.assigned) {
-    //     const assigned = await DatabaseServer.getAssignedEntity(AssignedEntityType.Schema, schema.id, user.creator);
-    //     if (!assigned) {
-    //         throw new Error(`Insufficient permissions to ${action} the schema.`);
-    //     }
-    // }
     return true;
+}
+
+function checkSchemaProps(item: SchemaCollection, document: ISchemaDocument) {
+    const names = Object.keys(document.properties);
+    for (const name of names) {
+        const field = SchemaHelper.parseProperty(name, document.properties[name]);
+        if (!field.type) {
+            throw new Error(`Field type is not set. Field: ${name}, Schema: ${item.uuid}`);
+        }
+        if (field.isRef && (!document.$defs || !document.$defs[field.type])) {
+            throw new Error(`Dependent schema not found: ${item.iri}. Field: ${name}`);
+        }
+    }
+}
+
+function getAdditionalContexts(document: ISchemaDocument) {
+    let additionalContexts: Map<string, any> | undefined;
+    if (document.$defs && (document.$defs['#GeoJSON'] || document.$defs['#SentinelHUB'])) {
+        additionalContexts = new Map<string, any>();
+        if (document.$defs['#GeoJSON']) {
+            additionalContexts.set('#GeoJSON', GeoJsonContext);
+        }
+        if (document.$defs['#SentinelHUB']) {
+            additionalContexts.set('#SentinelHUB', SentinelHubContext);
+        }
+    }
+    return additionalContexts;
 }
 
 /**
@@ -43,28 +61,108 @@ export async function accessSchema(
  */
 export function generateSchemaContext(item: SchemaCollection) {
     const itemDocument = item.document;
+    checkSchemaProps(item, itemDocument);
     const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
-    const names = Object.keys(itemDocument.properties);
-    for (const name of names) {
-        const field = SchemaHelper.parseProperty(name, itemDocument.properties[name]);
-        if (!field.type) {
-            throw new Error(`Field type is not set. Field: ${name}, Schema: ${item.uuid}`);
-        }
-        if (field.isRef && (!itemDocument.$defs || !itemDocument.$defs[field.type])) {
-            throw new Error(`Dependent schema not found: ${item.iri}. Field: ${name}`);
+    const additionalContexts = getAdditionalContexts(itemDocument);
+    return schemasToContext([...defsArray, itemDocument], additionalContexts);
+}
+
+export function generatePackage(options: {
+    name: string,
+    version: string,
+    type: MessageAction,
+    schemas: SchemaCollection[],
+    owner: IOwner,
+}) {
+    const {
+        name,
+        version,
+        type,
+        owner,
+        schemas,
+    } = options;
+
+    const defsArray = new Map<string, ISchemaDocument>();
+    for (const item of schemas) {
+        const itemDocument = item.document;
+        checkSchemaProps(item, itemDocument);
+        defsArray.set(itemDocument.$id, itemDocument);
+        if (itemDocument.$defs) {
+            for (const def of Object.values(itemDocument.$defs)) {
+                defsArray.set(def.$id, def);
+            }
         }
     }
-    let additionalContexts: Map<string, any>;
-    if (itemDocument.$defs && (itemDocument.$defs['#GeoJSON'] || itemDocument.$defs['#SentinelHUB'])) {
+
+    let additionalContexts: Map<string, any> | undefined;
+    if (defsArray.has('#GeoJSON') || defsArray.has('#SentinelHUB')) {
         additionalContexts = new Map<string, any>();
-        if (itemDocument.$defs['#GeoJSON']) {
+        if (defsArray.has('#GeoJSON')) {
             additionalContexts.set('#GeoJSON', GeoJsonContext);
         }
-        if (itemDocument.$defs['#SentinelHUB']) {
+        if (defsArray.has('#SentinelHUB')) {
             additionalContexts.set('#SentinelHUB', SentinelHubContext);
         }
     }
-    return schemasToContext([...defsArray, itemDocument], additionalContexts);
+
+
+    const context = schemasToContext(
+        Array.from(defsArray.values()),
+        additionalContexts,
+        {
+            vocab: name
+        }
+    );
+
+    const document: any = {
+        name,
+        version
+    };
+
+    for (const item of schemas) {
+        document[item.iri] = item.document;
+    }
+
+    return {
+        name,
+        version,
+        owner: owner.owner,
+        document,
+        context
+    }
+}
+
+export async function generateSchemaVersion(schema: SchemaCollection): Promise<SchemaCollection> {
+    if (schema.status === SchemaStatus.PUBLISHED) {
+        return schema;
+    }
+
+    const { previousVersion } = SchemaHelper.getVersion(schema);
+    let newVersion = '1.0.0';
+    if (previousVersion) {
+        const schemas = await DatabaseServer.getSchemas({ uuid: schema.uuid, topicId: schema.topicId });
+        const versions = [];
+        for (const element of schemas) {
+            const elementVersions = SchemaHelper.getVersion(element);
+            versions.push(elementVersions.version, elementVersions.previousVersion);
+        }
+        newVersion = SchemaHelper.incrementVersion(previousVersion, versions);
+    }
+    schema.version = newVersion;
+
+    return schema;
+}
+
+async function getPublishedTopics(topicId: string): Promise<string[]> {
+    const publishedToolsTopics = await DatabaseServer.getTools(
+        {
+            status: ModuleStatus.PUBLISHED,
+        },
+        {
+            fields: ['topicId'],
+        }
+    );
+    return [topicId].concat(publishedToolsTopics.map((tool) => tool.topicId));
 }
 
 /**
@@ -117,11 +215,43 @@ export async function publishSchema(
 }
 
 /**
+ * Publish system schema
+ * @param item
+ * @param user
+ * @param messageServer
+ * @param type
+ * @param notifier
+ */
+export async function publishSystemSchema(
+    item: SchemaCollection,
+    user: IOwner,
+    messageServer: MessageServer,
+    notifier: INotifier
+): Promise<SchemaCollection> {
+    const type = MessageAction.PublishSystemSchema;
+    delete item.id;
+    delete item._id;
+    item.readonly = true;
+    item.system = false;
+    item.active = false;
+    item.version = undefined;
+    item.creator = user.creator;
+    item.owner = user.owner;
+    item.topicId = messageServer.getTopic();
+    SchemaHelper.setVersion(item, undefined, undefined);
+    const result = await publishSchema(item, user, messageServer, type);
+    if (notifier) {
+        notifier.info(`Schema ${result.name || '-'} published`);
+    }
+    return result;
+}
+
+/**
  * Publish schemas
  * @param schemas
- * @param messageServer
  * @param owner
- * @param notifier
+ * @param messageServer
+ * @param type
  */
 export async function publishSchemas(
     schemas: Iterable<SchemaCollection>,
@@ -133,50 +263,201 @@ export async function publishSchemas(
     for (const schema of schemas) {
         tasks.push(publishSchema(schema, owner, messageServer, type));
     }
-    await Promise.all(tasks);
-}
-
-/**
- * Save schemas
- * @param schemas
- * @param messageServer
- * @param owner
- * @param notifier
- */
-export async function saveSchemas(
-    schemas: Iterable<SchemaCollection>
-): Promise<void> {
-    for (const schema of schemas) {
+    const items = await Promise.all(tasks);
+    for (const schema of items) {
         await DatabaseServer.createAndSaveSchema(schema);
     }
 }
 
 /**
- * Publishing schemas in defs
- * @param defs Definitions
+ * Publish system schemas
+ * @param systemSchemas
+ * @param messageServer
  * @param user
- * @param root HederaAccount
+ * @param notifier
  */
-export async function publishDefsSchemas(
-    defs: any,
+export async function publishSystemSchemas(
+    systemSchemas: SchemaCollection[],
+    messageServer: MessageServer,
     user: IOwner,
-    root: IRootConfig,
-    schemaMap: Map<string, string> | null,
-    userId: string | null
-) {
-    if (!defs) {
-        return;
-    }
-    const schemasIdsInDocument = Object.keys(defs);
-    for (const schemaId of schemasIdsInDocument) {
-        let schema = await DatabaseServer.getSchema({
-            iri: schemaId
-        });
-        if (schema && schema.status !== SchemaStatus.PUBLISHED) {
-            schema = await incrementSchemaVersion(schema.topicId, schema.iri, user);
-            await findAndPublishSchema(schema.id, schema.version, user, root, emptyNotifier(), schemaMap, userId);
+    notifier: INotifier
+): Promise<void> {
+    const tasks = [];
+    for (const schema of systemSchemas) {
+        if (schema) {
+            tasks.push(publishSystemSchema(schema, user, messageServer, notifier));
         }
     }
+    const items = await Promise.all(tasks);
+    for (const schema of items) {
+        await DatabaseServer.createAndSaveSchema(schema);
+    }
+}
+
+export async function searchSchemaDefs(
+    schema: SchemaCollection,
+    topicIds: string[],
+    map: Map<string, SchemaCollection>
+) {
+    if (!schema || map.has(schema.iri)) {
+        return;
+    }
+    map.set(schema.iri, schema);
+    if (schema?.document?.$defs) {
+        const schemasIdsInDocument = Object.keys(schema.document.$defs);
+        for (const schemaId of schemasIdsInDocument) {
+            const sub = await DatabaseServer.getSchema({
+                iri: schemaId,
+                topicId: { $in: topicIds }
+            });
+            await searchSchemaDefs(sub, topicIds, map);
+        }
+    };
+}
+
+/**
+ * Publish schemas
+ * @param schemas
+ * @param owner
+ * @param messageServer
+ * @param type
+ */
+export async function publishSchemasPackage(options: {
+    name: string,
+    version: string,
+    type: MessageAction,
+    schemas: SchemaCollection[],
+    owner: IOwner,
+    server: MessageServer,
+    notifier: INotifier
+}): Promise<Map<string, string>> {
+    const {
+        name,
+        version,
+        type,
+        schemas,
+        owner,
+        server,
+        notifier
+    } = options;
+
+    const topicId = server.getTopic();
+
+    const idsMap = new Map<string, string>();
+
+    const map = new Map<string, SchemaCollection>();
+    const publishedTopics = await getPublishedTopics(topicId);
+    for (const schema of schemas) {
+        await searchSchemaDefs(schema, publishedTopics, map);
+    }
+
+    const relatedSchemas: SchemaCollection[] = [];
+    const draftSchemas: SchemaCollection[] = [];
+    for (const item of map.values()) {
+        relatedSchemas.push(item);
+        if (item.status !== SchemaStatus.PUBLISHED && item.topicId === topicId) {
+            draftSchemas.push(item);
+        }
+    }
+
+    // <-- Update uuid & version
+    for (const item of draftSchemas) {
+        if (checkForCircularDependency(item)) {
+            throw new Error(`There is circular dependency in schema: ${item.iri}`);
+        }
+    }
+    for (const item of draftSchemas) {
+        const oldSchemaIri = item.iri;
+        await generateSchemaVersion(item);
+        SchemaHelper.updateVersion(item, item.version);
+        item.status = SchemaStatus.PUBLISHED;
+        item.topicId = topicId;
+        item.sourceVersion = '';
+        item.context = generateSchemaContext(item);
+        SchemaHelper.updateIRI(item);
+        const newSchemaIri = item.iri;
+        idsMap.set(oldSchemaIri, newSchemaIri);
+    }
+
+    const allParsedSchemas = relatedSchemas.map(item => new Schema(item));
+    for (const item of draftSchemas) {
+        const parsedSchema = new Schema(item, true);
+        parsedSchema.update(parsedSchema.fields, parsedSchema.conditions);
+        parsedSchema.updateRefs(allParsedSchemas);
+        item.document = parsedSchema.document;
+    }
+    // Update uuid & version -->
+
+    const packageDocuments = generatePackage({ ...options, schemas: relatedSchemas });
+
+    const message = new SchemaPackageMessage(type);
+    message.setDocument(packageDocuments);
+    message.setRelationships(relatedSchemas);
+    const result = await server
+        .sendMessage(message, {
+            sendToIPFS: true,
+            memo: null,
+            userId: owner.id,
+            interception: owner.id
+        });
+
+    const messageId = result.getId();
+    const contextUrl = result.getContextUrl(UrlType.url);
+    const documentUrl = result.getDocumentUrl(UrlType.url);
+
+    for (const item of draftSchemas) {
+        item.documentURL = documentUrl;
+        item.contextURL = contextUrl;
+        item.messageId = messageId;
+    }
+
+    for (const schema of draftSchemas) {
+        if (schema.id) {
+            await DatabaseServer.updateSchema(schema.id, schema);
+        } else {
+            await DatabaseServer.createAndSaveSchema(schema);
+        }
+    }
+
+    for (const [oldSchemaIri, newSchemaIri] of idsMap.entries()) {
+        await updateSchemaDefs(newSchemaIri, oldSchemaIri);
+    }
+
+    return idsMap;
+}
+
+/**
+ * Publish system schemas
+ * @param systemSchemas
+ * @param messageServer
+ * @param owner
+ * @param notifier
+ */
+export async function publishSystemSchemasPackage(options: {
+    name: string,
+    version: string,
+    schemas: SchemaCollection[],
+    owner: IOwner,
+    server: MessageServer,
+    notifier: INotifier
+}): Promise<void> {
+    const type = MessageAction.PublishSystemSchemas;
+    const topicId = options.server.getTopic();
+    for (const schema of options.schemas) {
+        if (schema) {
+            delete schema.id;
+            delete schema._id;
+            schema.readonly = true;
+            schema.system = false;
+            schema.active = false;
+            schema.version = undefined;
+            schema.creator = options.owner.creator;
+            schema.owner = options.owner.owner;
+            schema.topicId = topicId;
+            SchemaHelper.setVersion(schema, undefined, undefined);
+        }
+    }
+    await publishSchemasPackage({ ...options, type });
 }
 
 /**
@@ -242,65 +523,30 @@ export async function findAndPublishSchema(
 }
 
 /**
- * Publish system schema
- * @param item
+ * Publishing schemas in defs
+ * @param defs Definitions
  * @param user
- * @param messageServer
- * @param type
- * @param notifier
+ * @param root HederaAccount
  */
-export async function publishSystemSchema(
-    item: SchemaCollection,
+export async function publishDefsSchemas(
+    defs: any,
     user: IOwner,
-    messageServer: MessageServer,
-    type: MessageAction,
-    notifier: INotifier
-): Promise<SchemaCollection> {
-    delete item.id;
-    delete item._id;
-    item.readonly = true;
-    item.system = false;
-    item.active = false;
-    item.version = undefined;
-    item.topicId = messageServer.getTopic();
-    SchemaHelper.setVersion(item, undefined, undefined);
-    const result = await publishSchema(item, user, messageServer, type);
-    if (notifier) {
-        notifier.info(`Schema ${result.name || '-'} published`);
+    root: IRootConfig,
+    schemaMap: Map<string, string> | null,
+    userId: string | null
+) {
+    if (!defs) {
+        return;
     }
-    return result;
-}
-
-/**
- * Publish system schemas
- * @param systemSchemas
- * @param messageServer
- * @param user
- * @param notifier
- */
-export async function publishSystemSchemas(
-    systemSchemas: SchemaCollection[],
-    messageServer: MessageServer,
-    user: IOwner,
-    notifier: INotifier
-): Promise<void> {
-    const tasks = [];
-    for (const schema of systemSchemas) {
-        if (schema) {
-            schema.creator = user.creator;
-            schema.owner = user.owner;
-            tasks.push(publishSystemSchema(
-                schema,
-                user,
-                messageServer,
-                MessageAction.PublishSystemSchema,
-                notifier
-            ));
+    const schemasIdsInDocument = Object.keys(defs);
+    for (const schemaId of schemasIdsInDocument) {
+        let schema = await DatabaseServer.getSchema({
+            iri: schemaId
+        });
+        if (schema && schema.status !== SchemaStatus.PUBLISHED) {
+            schema = await incrementSchemaVersion(schema.topicId, schema.iri, user);
+            await findAndPublishSchema(schema.id, schema.version, user, root, emptyNotifier(), schemaMap, userId);
         }
-    }
-    const items = await Promise.all(tasks);
-    for (const schema of items) {
-        await DatabaseServer.createAndSaveSchema(schema);
     }
 }
 

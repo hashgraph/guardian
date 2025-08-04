@@ -316,7 +316,6 @@ export async function createUserProfile(
         await checkAndPublishSchema(
             SchemaEntity.STANDARD_REGISTRY,
             topicConfig,
-            userDID,
             srUser,
             messageServer,
             logger,
@@ -326,7 +325,6 @@ export async function createUserProfile(
         await checkAndPublishSchema(
             SchemaEntity.USER,
             topicConfig,
-            userDID,
             srUser,
             messageServer,
             logger,
@@ -336,7 +334,6 @@ export async function createUserProfile(
         await checkAndPublishSchema(
             SchemaEntity.RETIRE_TOKEN,
             topicConfig,
-            userDID,
             srUser,
             messageServer,
             logger,
@@ -346,7 +343,6 @@ export async function createUserProfile(
         await checkAndPublishSchema(
             SchemaEntity.ROLE,
             topicConfig,
-            userDID,
             srUser,
             messageServer,
             logger,
@@ -356,7 +352,6 @@ export async function createUserProfile(
         await checkAndPublishSchema(
             SchemaEntity.USER_PERMISSIONS,
             topicConfig,
-            userDID,
             srUser,
             messageServer,
             logger,
@@ -840,7 +835,6 @@ export async function validateVc(json: string | any): Promise<VcDocumentDefiniti
 export async function checkAndPublishSchema(
     entity: SchemaEntity,
     topicConfig: TopicConfig,
-    userDID: string,
     srUser: IOwner,
     messageServer: MessageServer,
     logger: PinoLogger,
@@ -863,11 +857,7 @@ export async function checkAndPublishSchema(
         if (schema) {
             notifier.info(`Publish System Schema (${entity})`);
             logger.info(`Publish System Schema (${entity})`, ['GUARDIAN_SERVICE'], logId);
-            schema.creator = userDID;
-            schema.owner = userDID;
-            const item = await publishSystemSchema(
-                schema, srUser, messageServer, MessageAction.PublishSystemSchema, notifier
-            );
+            const item = await publishSystemSchema(schema, srUser, messageServer, notifier);
             await dataBaseServer.save(SchemaCollection, item);
         }
     }

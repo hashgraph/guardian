@@ -60,8 +60,7 @@ import {
     incrementSchemaVersion,
     PolicyImportExportHelper,
     publishPolicyTags,
-    publishSystemSchemas,
-    sendSchemaMessage
+    publishSystemSchemas
 } from '../helpers/import-helpers/index.js';
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
 import { emptyNotifier, INotifier } from '../helpers/notifier.js';
@@ -364,22 +363,10 @@ export class PolicyEngine extends NatsService {
             } as FilterObject<SchemaCollection>);
             for (const dependencySchema of dependencySchemas) {
                 dependencySchema.topicId = policyTopicId;
-                await sendSchemaMessage(
-                    owner,
-                    root,
-                    topic,
-                    MessageAction.CreateSchema,
-                    dependencySchema
-                );
+                // await sendSchemaMessage(owner, root, topic, MessageAction.CreateSchema, dependencySchema);
             }
             await DatabaseServer.updateSchemas(dependencySchemas);
-            await sendSchemaMessage(
-                owner,
-                root,
-                topic,
-                MessageAction.CreateSchema,
-                schema
-            );
+            // await sendSchemaMessage(owner, root, topic, MessageAction.CreateSchema, schema);
         }
         await DatabaseServer.updateSchemas(schemas);
     }
@@ -1296,7 +1283,7 @@ export class PolicyEngine extends NatsService {
     private cleanHeadersRecursive(currentBlock: any, blocks: any[]): void {
         if (blocks.includes(currentBlock.blockType) && Array.isArray(currentBlock.headers)) {
             currentBlock.headers = currentBlock.headers.map(header => {
-                if(!header.included) {
+                if (!header.included) {
                     delete header.value;
                 }
                 return header
