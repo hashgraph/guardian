@@ -205,7 +205,7 @@ export class NewNotifier implements INotificationStep {
             info.index = info.estimate;
             info.message = this.name;
         } else if (this.failed) {
-            info.progress = 100;
+            info.progress = 0;
             info.index = info.estimate;
             info.message = this.error?.message;
         } else if (this.started) {
