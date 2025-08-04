@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { DocumentGenerator, Schema } from '@guardian/interfaces';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { SchemaService } from '../../../services/schema.service';
@@ -33,7 +33,7 @@ export class SchemaFormDialog {
         this.header = this.config.header || '';
         this.schema = data.schema || null;
         this.example = data.example || false;
-        this.dataForm = fb.group({});
+        this.dataForm = this.fb.group({});
         this.hideFields = {};
         this.category = data.category
     }
@@ -44,6 +44,10 @@ export class SchemaFormDialog {
 
     onClose() {
         this.dialogRef.close(null);
+    }
+
+    public initForm($event: any) {
+        this.dataForm = $event;
     }
 
     getSubSchemes() {
