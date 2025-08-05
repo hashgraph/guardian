@@ -44,6 +44,7 @@ import { EnumComponent } from './schema-form/controls/enum/enum';
 import { InputComponent } from './schema-form/controls/input/input';
 import { FormulasModule } from '../formulas/formulas.module';
 import { DialogService } from 'primeng/dynamicdialog';
+import { UploadGeoDataDialog } from './upload-geo-data-dialog/upload-geo-data-dialog.component';
 
 @NgModule({
     declarations: [
@@ -62,6 +63,7 @@ import { DialogService } from 'primeng/dynamicdialog';
         EnumEditorDialog,
         CompareSchemaDialog,
         GeojsonTypeComponent,
+        UploadGeoDataDialog,
         SentinelHubTypeComponent,
         ServiceUnavailableDialog,
         SchemaTreeComponent,

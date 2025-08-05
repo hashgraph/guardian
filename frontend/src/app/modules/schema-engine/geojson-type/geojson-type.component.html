@@ -15,6 +15,11 @@
             (ngModelChange)="jsonChanged()"
             class="full-width">
         </textarea>
+        <app-file-drag-n-drop
+            (onFileLoaded)="importFromFile($event)"
+            [dropZoneLabel]="'Upload file (.json, .kml)'"
+            [fileExtension]="'json, .kml, .geojson'"
+        ></app-file-drag-n-drop>
     </div>
 </ng-container>
 <ng-template #form>

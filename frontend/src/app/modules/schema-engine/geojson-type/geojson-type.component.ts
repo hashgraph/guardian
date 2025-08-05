@@ -16,6 +16,12 @@ import { doubleClick, pointerMove } from 'ol/events/condition.js';
 import { LineString, MultiLineString, MultiPoint, MultiPolygon, Polygon } from 'ol/geom';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer.js';
 import Select from 'ol/interaction/Select.js';
+import { GeoJsonService } from 'src/app/services/geo-json.service';
+import { DOMParser } from 'xmldom';
+import { DialogService } from 'primeng/dynamicdialog';
+import { UploadGeoDataDialog } from '../upload-geo-data-dialog/upload-geo-data-dialog.component';
+import { FeatureCollection } from 'geojson';
+import { kml } from '@tmcw/togeojson';
 
 const MAP_OPTIONS = {
     center: [0, 0],
@@ -258,11 +264,14 @@ export class GeojsonTypeComponent implements OnChanges {
 
     constructor(
         private cdkRef: ChangeDetectorRef,
+        private geoJsonService: GeoJsonService,
+        private dialogService: DialogService
     ) { }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes?.isDisabled && !changes?.isDisabled.firstChange) {
-            this.onViewTypeChange(this.control?.value);
+        if (changes?.isDisabled && !changes?.isDisabled.firstChange && this.control?.value?.geometry) {
+            const geometry = this.control.value.geometry;
+            this.onViewTypeChange(geometry);
         }
     }
 
@@ -432,25 +441,23 @@ export class GeojsonTypeComponent implements OnChanges {
     }
 
     private updateMap(updateInput: boolean = false) {
-        const shapeFeatures: any[] = [];
-
         if (!this.type) {
             return;
         }
 
-        shapeFeatures.push({
+        const shapeFeature = {
             type: 'Feature',
             geometry: {
                 type: this.type,
                 coordinates: this.parsedCoordinates,
             },
-        });
+        };
 
         const features = new GeoJSON({
             featureProjection: 'EPSG:3857',
         }).readFeatures({
             type: 'FeatureCollection',
-            features: shapeFeatures,
+            features: [shapeFeature],
         });
 
         if (this.type == GeoJsonType.POLYGON && this.lastSelectedGeometry) {
@@ -472,10 +479,7 @@ export class GeojsonTypeComponent implements OnChanges {
 
         if (updateInput) {
             this.coordinates = JSON.stringify(this.parsedCoordinates, null, 4);
-            this.setControlValue({
-                type: this.type,
-                coordinates: this.parsedCoordinates,
-            }, true);
+            this.setControlValue(shapeFeature.geometry, true);
         }
     }
 
@@ -663,19 +667,19 @@ export class GeojsonTypeComponent implements OnChanges {
         this.updateMap(false);
     }
 
-    public onViewTypeChange(value: any, dirty = true) {
-        if (!value) {
+    public onViewTypeChange(geometry: any, dirty = true) {
+        if (!geometry) {
             return;
         }
 
         if (this.isJSON || this.isDisabled) {
-            this.jsonInput = JSON.stringify(value, null, 4);
+            this.jsonInput = JSON.stringify(geometry, null, 4);
         }
 
         if (!this.isJSON || this.isDisabled) {
-            this.type = value?.type || GeoJsonType.POINT;
+            this.type = geometry?.type || GeoJsonType.POINT;
             this.onTypeChange(dirty);
-            this.coordinates = JSON.stringify(value?.coordinates, null, 4);
+            this.coordinates = JSON.stringify(geometry?.coordinates, null, 4);
             this.coordinatesChanged(dirty);
 
         }
@@ -780,5 +784,111 @@ export class GeojsonTypeComponent implements OnChanges {
 
     authFailed() {
         this.cdkRef.detectChanges();
+    }
+
+    public importFromFile(file: any) {
+        const fileType = file.name.split('.').pop()?.toLowerCase();
+
+        if (fileType === 'json') {
+            this.importJsonFile(file);
+        } else if (fileType === 'kml') {
+            this.importKmlFile(file);
+        } else if (fileType === 'shp') {
+            // this.importShapefile(file);
+        } else {
+            console.error('Wrong file format!');
+        }
+    }
+
+    public importJsonFile(file: any) {
+        const reader = new FileReader();
+        reader.readAsArrayBuffer(file);
+
+        reader.addEventListener('load', (e: any) => {
+            const arrayBuffer = e.target.result;
+
+            if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+                return;
+            }
+
+            const decoder = new TextDecoder('utf-8');
+            const fileContent = decoder.decode(arrayBuffer);
+
+            try {
+                const geoJsonData = JSON.parse(fileContent);
+                this.geoJsonService.saveFile(file.name, geoJsonData);
+            } catch (error) {
+                console.error('Error JSON:', error);
+            }
+
+            this.getShapeFromFile();
+        });
+    }
+
+    public importKmlFile(file: any) {
+        const reader = new FileReader();
+        reader.readAsText(file);
+
+        reader.addEventListener('load', (e: any) => {
+            const kmlText = e.target.result;
+
+            if (!kmlText) {
+                return;
+            }
+
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(kmlText, 'application/xml');
+            const geoJsonData = kml(xmlDoc);
+            
+            // geoJsonData.features.forEach((feature: any) => {
+            //     if (feature.geometry.type === 'Point') {
+            //         feature.geometry.coordinates = feature.geometry.coordinates.slice(0, 2);
+            //     }
+            // });
+            // geoJsonData = geoJsonData.features[0].geometry;
+
+            this.geoJsonService.saveFile(file.name, geoJsonData);
+            // console.log(geoJsonData);
+            
+            this.getShapeFromFile();
+        });
+    }
+
+    public getShapeFromFile() {
+        const getFileNames = this.geoJsonService.getFileNames();
+
+        for (const [id, name] of getFileNames) {
+            const shapeFile = this.geoJsonService.getFile(id);
+
+            if (shapeFile) {
+                if (shapeFile.type === 'FeatureCollection') {
+                    console.log(1);
+                    this.onUploadMultiLocationFile(shapeFile);
+                } else {
+                    console.log(2);
+                    this.jsonInput = JSON.stringify(shapeFile.geometry, null, 4);
+                    this.jsonChanged();
+                }
+            } else {
+                this.setControlValue({});
+            }
+        }
+    }
+    
+    public onUploadMultiLocationFile(featureCollection: FeatureCollection) {
+        const dialogRef = this.dialogService.open(UploadGeoDataDialog, {
+            header: 'Upload file',
+            width: '860px',
+            styleClass: 'custom-dialog',
+            data: {
+                featureCollection,
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => {
+            if (result && result.feature) {
+                this.jsonInput = JSON.stringify(result.feature.geometry, null, 4);
+                this.jsonChanged();
+            }
+        });
     }
 }
