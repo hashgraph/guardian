@@ -699,7 +699,10 @@ export class PolicyEngineService {
         //#region Policy endpoints
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICY,
             async (msg: {
-                options: { filters: any, userDid: string },
+                options: {
+                    filters: any,
+                    userDid: string
+                },
                 owner: IOwner
             }) => {
                 const { options, owner } = msg;
@@ -708,7 +711,8 @@ export class PolicyEngineService {
                 await this.policyEngine.accessPolicy(policy, owner, 'read');
                 const result: any = policy;
                 if (policy) {
-                    await PolicyComponentsUtils.GetPolicyInfo(policy, userDid);
+                    const userFull = await (new Users()).getUserById(userDid, owner.id);
+                    await PolicyComponentsUtils.GetPolicyInfo(policy, userFull);
                 }
                 return new MessageResponse(result);
             });
@@ -755,8 +759,9 @@ export class PolicyEngineService {
                     await this.policyEngine.addAccessFilters(_filters, owner);
                     await this.policyEngine.addLocationFilters(_filters, type);
                     const [policies, count] = await DatabaseServer.getPoliciesAndCount(_filters, otherOptions);
+                    const userFull = await (new Users()).getUserById(owner.creator, owner.id);
                     for (const policy of policies) {
-                        await PolicyComponentsUtils.GetPolicyInfo(policy, owner.creator);
+                        await PolicyComponentsUtils.GetPolicyInfo(policy, userFull);
                     }
                     return new MessageResponse({ policies, count });
                 } catch (error) {
@@ -789,8 +794,10 @@ export class PolicyEngineService {
                     await this.policyEngine.addAccessFilters(_filters, owner);
                     await this.policyEngine.addLocationFilters(_filters, type);
                     const [policies, count] = await DatabaseServer.getPoliciesAndCount(_filters, otherOptions);
+
+                    const userFull = await (new Users()).getUserById(owner.creator, owner.id);
                     for (const policy of policies) {
-                        await PolicyComponentsUtils.GetPolicyInfo(policy, owner.creator);
+                        await PolicyComponentsUtils.GetPolicyInfo(policy, userFull);
                     }
                     return new MessageResponse({ policies, count });
                 } catch (error) {
