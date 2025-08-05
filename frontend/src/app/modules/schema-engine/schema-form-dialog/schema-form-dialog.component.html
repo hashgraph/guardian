@@ -11,14 +11,14 @@
         <div class="guardian-loading-image"></div>
     </div>
     <div class="context">
-        <app-schema-form
-            [formGroup]="dataForm"
+        <app-schema-form-root
             [schema]="schema"
-            [private-fields]="hideFields"
             [preset]="presetDocument"
+            [private-fields]="hideFields"
             [showButtons]="false"
-            [example]="example">
-        </app-schema-form>
+            [example]="example"
+            (form)="initForm($event)">
+        </app-schema-form-root>
     </div>
 </div>
 <div class="dialog-footer">

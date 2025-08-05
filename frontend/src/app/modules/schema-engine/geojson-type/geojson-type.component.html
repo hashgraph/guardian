@@ -1,6 +1,10 @@
 <div class="switch-btn">
-    <switch-button [on-label]="'JSON'" [off-label]="'Form'" [(value)]="isJSON"
-                   (valueChange)="onViewTypeChange(!isDisabled && this.control?.value || this.presetDocument)"></switch-button>
+    <switch-button 
+        [on-label]="'JSON'" 
+        [off-label]="'Form'" 
+        [(value)]="isJSON"
+        (valueChange)="onViewTypeChange()">
+    </switch-button>
 </div>
 <ng-container *ngIf="isJSON; else form">
     <div class="form-group type-selector">

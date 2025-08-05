@@ -115,6 +115,10 @@ export class TestCodeDialog {
     ngOnDestroy(): void {
     }
 
+    public initForm($event: any) {
+        this.schemaValue = $event;
+    }
+
     public onClose(): void {
         this.ref.close(null);
     }
@@ -248,7 +252,6 @@ export class TestCodeDialog {
             case 'schema':
                 return this.schemaValue.value;
             case 'json':
-
                 const json = JSON.parse(this.jsonValue);
                 return json;
             case 'file':
