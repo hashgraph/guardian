@@ -6,28 +6,6 @@ import { publishSchemaTags } from '../tag/tag-publish-helper.js';
 import { SchemaImportExportHelper } from './schema-import-helper.js';
 import { emptyNotifier, INotifier } from '../../notifier.js';
 
-/**
- * Check access
- * @param schema
- * @param user
- */
-export async function accessSchema(
-    schema: SchemaCollection,
-    user: IOwner,
-    action: string
-): Promise<boolean> {
-    if (!schema) {
-        throw new Error('Schema does not exist.');
-    }
-    if (user.owner !== schema.owner) {
-        throw new Error(`Insufficient permissions to ${action} the schema.`);
-    }
-    if (user.creator === schema.creator) {
-        return true;
-    }
-    return true;
-}
-
 function checkSchemaProps(item: SchemaCollection, document: ISchemaDocument) {
     const names = Object.keys(document.properties);
     for (const name of names) {
@@ -36,7 +14,9 @@ function checkSchemaProps(item: SchemaCollection, document: ISchemaDocument) {
             throw new Error(`Field type is not set. Field: ${name}, Schema: ${item.uuid}`);
         }
         if (field.isRef && (!document.$defs || !document.$defs[field.type])) {
-            throw new Error(`Dependent schema not found: ${item.iri}. Field: ${name}`);
+            console.debug(field);
+            console.debug(document);
+            throw new Error(`Dependent schema not found: ${item.iri}, Field: ${name}, Field Type: ${field.type}`);
         }
     }
 }
@@ -77,7 +57,6 @@ export function generatePackage(options: {
     const {
         name,
         version,
-        type,
         owner,
         schemas,
     } = options;
@@ -132,7 +111,7 @@ export function generatePackage(options: {
     }
 }
 
-export async function generateSchemaVersion(schema: SchemaCollection): Promise<SchemaCollection> {
+async function generateSchemaVersion(schema: SchemaCollection): Promise<SchemaCollection> {
     if (schema.status === SchemaStatus.PUBLISHED) {
         return schema;
     }
@@ -154,14 +133,11 @@ export async function generateSchemaVersion(schema: SchemaCollection): Promise<S
 }
 
 async function getPublishedTopics(topicId: string): Promise<string[]> {
-    const publishedToolsTopics = await DatabaseServer.getTools(
-        {
-            status: ModuleStatus.PUBLISHED,
-        },
-        {
-            fields: ['topicId'],
-        }
-    );
+    const publishedToolsTopics = await DatabaseServer.getTools({
+        status: ModuleStatus.PUBLISHED,
+    }, {
+        fields: ['topicId'],
+    });
     return [topicId].concat(publishedToolsTopics.map((tool) => tool.topicId));
 }
 
@@ -329,21 +305,21 @@ export async function publishSchemasPackage(options: {
     schemas: SchemaCollection[],
     owner: IOwner,
     server: MessageServer,
-    notifier: INotifier
+    notifier: INotifier,
+    schemaMap?: Map<string, string>,
 }): Promise<Map<string, string>> {
     const {
-        name,
-        version,
         type,
         schemas,
         owner,
         server,
+        schemaMap,
         notifier
     } = options;
 
     const topicId = server.getTopic();
 
-    const idsMap = new Map<string, string>();
+    const idsMap = schemaMap || new Map<string, string>();
 
     const map = new Map<string, SchemaCollection>();
     const publishedTopics = await getPublishedTopics(topicId);
@@ -392,7 +368,7 @@ export async function publishSchemasPackage(options: {
 
     const message = new SchemaPackageMessage(type);
     message.setDocument(packageDocuments);
-    message.setRelationships(relatedSchemas);
+    message.setMetadata(relatedSchemas);
     const result = await server
         .sendMessage(message, {
             sendToIPFS: true,
@@ -423,6 +399,10 @@ export async function publishSchemasPackage(options: {
         await updateSchemaDefs(newSchemaIri, oldSchemaIri);
     }
 
+    for (const schema of draftSchemas) {
+        await publishSchemaTags(schema, owner, server);
+    }
+
     return idsMap;
 }
 
@@ -440,7 +420,7 @@ export async function publishSystemSchemasPackage(options: {
     owner: IOwner,
     server: MessageServer,
     notifier: INotifier
-}): Promise<void> {
+}): Promise<Map<string, string>> {
     const type = MessageAction.PublishSystemSchemas;
     const topicId = options.server.getTopic();
     for (const schema of options.schemas) {
@@ -457,7 +437,7 @@ export async function publishSystemSchemasPackage(options: {
             SchemaHelper.setVersion(schema, undefined, undefined);
         }
     }
-    await publishSchemasPackage({ ...options, type });
+    return await publishSchemasPackage({ ...options, type });
 }
 
 /**
@@ -480,8 +460,12 @@ export async function findAndPublishSchema(
     notifier.start('Load schema');
 
     let item = await DatabaseServer.getSchema(id);
-    await accessSchema(item, user, 'publish');
-
+    if (!item) {
+        throw new Error('Schema does not exist.');
+    }
+    if (user.owner !== item.owner) {
+        throw new Error(`Insufficient permissions to publish the schema.`);
+    }
     if (!item.topicId || item.topicId === 'draft') {
         throw new Error('Invalid topicId');
     }
@@ -507,7 +491,7 @@ export async function findAndPublishSchema(
     item = await publishSchema(item, user, messageServer, MessageAction.PublishSchema);
 
     notifier.completedAndStart('Publish tags');
-    await publishSchemaTags(item, user, root, userId);
+    await publishSchemaTags(item, user, messageServer);
 
     notifier.completedAndStart('Update in DB');
     await updateSchemaDocument(item);
@@ -561,8 +545,12 @@ export async function findAndDryRunSchema(
     version: string,
     user: IOwner
 ): Promise<SchemaCollection> {
-    await accessSchema(item, user, 'publish')
-
+    if (!item) {
+        throw new Error('Schema does not exist.');
+    }
+    if (user.owner !== item.owner) {
+        throw new Error(`Insufficient permissions to publish the schema.`);
+    }
     if (!item.topicId) {
         throw new Error('Invalid topicId');
     }

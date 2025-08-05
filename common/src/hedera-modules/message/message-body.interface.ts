@@ -874,10 +874,6 @@ export interface SchemaPackageMessageBody extends MessageBody {
      */
     version: string;
     /**
-     * Relationships
-     */
-    relationships: string[];
-    /**
      * Document CID
      */
     document_cid: string;
@@ -901,4 +897,16 @@ export interface SchemaPackageMessageBody extends MessageBody {
      * Context URI
      */
     context_uri?: string;
+    /**
+     * Metadata CID
+     */
+    metadata_cid: string;
+    /**
+     * Metadata URL
+     */
+    metadata_url?: string;
+    /**
+     * Metadata URI
+     */
+    metadata_uri?: string;
 }

@@ -13,8 +13,9 @@ import { ImportTokenMap, ImportTokenResult } from '../token/token-import.interfa
 import { ImportArtifactResult } from '../artifact/artifact-import.interface.js';
 import { importTokensByFiles } from '../token/token-import-helper.js';
 import { importArtifactsByFiles } from '../artifact/artifact-import-helper.js';
-import { publishSystemSchemas } from '../schema/schema-publish-helper.js';
+// import { publishSystemSchemas } from '../schema/schema-publish-helper.js';
 import { ObjectId } from '@mikro-orm/mongodb';
+import { publishSystemSchemasPackage } from '../schema/schema-publish-helper.js';
 
 export class PolicyImport {
     private readonly mode: ImportMode;
@@ -222,7 +223,13 @@ export class PolicyImport {
         this.topicId = policy.topicId;
     }
 
-    private async publishSystemSchemas(systemSchemas: Schema[], user: IOwner, versionOfTopicId: string, userId: string | null) {
+    private async publishSystemSchemas(
+        policy: Policy,
+        systemSchemas: Schema[],
+        user: IOwner,
+        versionOfTopicId: string,
+        userId: string | null
+    ) {
         if (this.mode === ImportMode.DEMO) {
             systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
             this.schemasResult = await SchemaImportExportHelper.importSystemSchema(
@@ -258,7 +265,15 @@ export class PolicyImport {
                 systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
                 this.notifier.info(`Found ${systemSchemas.length} schemas`);
                 this.messageServer.setTopicObject(this.topicRow);
-                await publishSystemSchemas(systemSchemas, this.messageServer, user, this.notifier);
+                // await publishSystemSchemas(systemSchemas, this.messageServer, user, this.notifier);
+                await publishSystemSchemasPackage({
+                    name: policy.name,
+                    version: policy.version,
+                    schemas: systemSchemas,
+                    owner: user,
+                    server: this.messageServer,
+                    notifier: this.notifier
+                })
             }
         }
     }
@@ -573,7 +588,7 @@ export class PolicyImport {
         await this.resolveAccount(user, userId);
         await this.dataPreparation(policy, user, additionalPolicyConfig);
         await this.createPolicyTopic(policy, user, versionOfTopicId, userId);
-        await this.publishSystemSchemas(systemSchemas, user, versionOfTopicId, userId);
+        await this.publishSystemSchemas(policy, systemSchemas, user, versionOfTopicId, userId);
         await this.importTools(tools, user, metadata, userId);
         await this.importTokens(tokens, user);
         await this.importSchemas(schemas, user, userId);

@@ -53,14 +53,14 @@ import {
     deleteDemoSchema,
     deleteSchema,
     findAndDryRunSchema,
-    findAndPublishSchema,
     ImportMode,
     ImportPolicyOptions,
     importTag,
     incrementSchemaVersion,
     PolicyImportExportHelper,
     publishPolicyTags,
-    publishSystemSchemas
+    publishSchemasPackage,
+    publishSystemSchemasPackage
 } from '../helpers/import-helpers/index.js';
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
 import { emptyNotifier, INotifier } from '../helpers/notifier.js';
@@ -468,7 +468,15 @@ export class PolicyEngine extends NatsService {
             notifier.info(`Found ${systemSchemas.length} schemas`);
             messageServer.setTopicObject(topic);
 
-            await publishSystemSchemas(systemSchemas, messageServer, user, notifier);
+            // await publishSystemSchemas(systemSchemas, messageServer, user, notifier);
+            await publishSystemSchemasPackage({
+                name: model.name,
+                version: model.version,
+                schemas: systemSchemas,
+                owner: user,
+                server: messageServer,
+                notifier: notifier
+            })
 
             newTopic = await DatabaseServer.saveTopic(topic.toObject());
             notifier.completed();
@@ -727,39 +735,52 @@ export class PolicyEngine extends NatsService {
      */
     public async publishSchemas(
         model: Policy,
-        user: IOwner,
+        owner: IOwner,
         root: IRootConfig,
+        server: MessageServer,
         notifier: INotifier,
         schemaMap: Map<string, string>,
         userId: string | null
     ): Promise<Policy> {
         const schemas = await DatabaseServer.getSchemas({ topicId: model.topicId });
-        notifier.info(`Found ${schemas.length} schemas`);
-        let num: number = 0;
-        let skipped: number = 0;
-        for (const row of schemas) {
-            const schema = await incrementSchemaVersion(row.topicId, row.iri, user);
-            if (!schema || schema.status === SchemaStatus.PUBLISHED) {
-                skipped++;
-                continue;
-            }
-            const newSchema = await findAndPublishSchema(
-                schema.id,
-                schema.version,
-                user,
-                root,
-                emptyNotifier(),
-                schemaMap,
-                userId
-            );
-            const name = newSchema.name;
-            num++;
-            notifier.info(`Schema ${num} (${name || '-'}) published`);
-        }
+        await publishSchemasPackage({
+            name: model.name,
+            version: model.version,
+            type: MessageAction.PublishSchemas,
+            schemas,
+            owner,
+            server,
+            schemaMap,
+            notifier
+        })
 
-        if (skipped) {
-            notifier.info(`Skip published ${skipped}`);
-        }
+
+        // notifier.info(`Found ${schemas.length} schemas`);
+        // let num: number = 0;
+        // let skipped: number = 0;
+        // for (const row of schemas) {
+        //     const schema = await incrementSchemaVersion(row.topicId, row.iri, user);
+        //     if (!schema || schema.status === SchemaStatus.PUBLISHED) {
+        //         skipped++;
+        //         continue;
+        //     }
+        //     const newSchema = await findAndPublishSchema(
+        //         schema.id,
+        //         schema.version,
+        //         user,
+        //         root,
+        //         emptyNotifier(),
+        //         schemaMap,
+        //         userId
+        //     );
+        //     const name = newSchema.name;
+        //     num++;
+        //     notifier.info(`Schema ${num} (${name || '-'}) published`);
+        // }
+
+        // if (skipped) {
+        //     notifier.info(`Skip published ${skipped}`);
+        // }
         return model;
     }
 
@@ -887,7 +908,15 @@ export class PolicyEngine extends NatsService {
         const schemaMap = new Map<string, string>();
         notifier.completedAndStart('Publish schemas');
         try {
-            model = await this.publishSchemas(model, user, root, notifier, schemaMap, userId);
+            model = await this.publishSchemas(
+                model,
+                user,
+                root,
+                messageServer,
+                notifier,
+                schemaMap,
+                userId
+            );
         } catch (error) {
             model.status = PolicyStatus.PUBLISH_ERROR;
             model.version = '';
