@@ -203,6 +203,7 @@ export class SchemaFormComponent implements OnInit {
                 this.updateRemoteFiles(item);
             }
         }
+        this.updatePages();
         if (changes.rules && this.rules) {
             for (const value of Object.values(this.rules)) {
                 if (value.status === 'Failure' || value.status === 'Error') {
@@ -716,6 +717,20 @@ export class SchemaFormComponent implements OnInit {
 
             reader.readAsText(file);
         });
+    }
+
+    private updatePages() {
+        if (this.formModel && this.formModel.controls) {
+            for (let i = 0; i < this.formModel.controls.length; i++) {
+                const item = this.formModel.controls[i];
+                if (item.isRef) {
+                    this.isShown[i] = true;
+                    break;
+                } else {
+                    this.isShown[i] = true;
+                }
+            }
+        }
     }
 }
 
