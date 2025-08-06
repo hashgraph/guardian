@@ -213,7 +213,7 @@ export class SchemaImport {
         user: IOwner,
         system: boolean
     ) {
-        this.notifier.info(`Found ${schemas.length} schemas`);
+        // this.notifier.info(`Found ${schemas.length} schemas`);
         for (const file of schemas) {
             this.updateId(file);
             file.category = category;

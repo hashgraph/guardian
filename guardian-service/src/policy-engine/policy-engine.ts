@@ -465,7 +465,7 @@ export class PolicyEngine extends NatsService {
             notifier.completedAndStart('Publish schemas');
             const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
 
-            notifier.info(`Found ${systemSchemas.length} schemas`);
+            // notifier.info(`Found ${systemSchemas.length} schemas`);
             messageServer.setTopicObject(topic);
 
             // await publishSystemSchemas(systemSchemas, messageServer, user, notifier);

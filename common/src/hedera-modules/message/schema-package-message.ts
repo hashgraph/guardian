@@ -54,24 +54,30 @@ export class SchemaPackageMessage extends Message {
         this.documents = [this.document, this.context, this.metadata];
     }
 
-    public setMetadata(schemas: Schema[]): void {
+    public setMetadata(
+        schemas: Schema[],
+        relationships: Schema[]
+    ): void {
         const metadata = [];
         const ids = new Set<string>();
         if (schemas) {
             for (const schema of schemas) {
+                metadata.push({
+                    id: schema.iri,
+                    uuid: schema.uuid,
+                    name: schema.name,
+                    description: schema.description,
+                    entity: schema.entity,
+                    owner: schema.owner,
+                    version: schema.version,
+                    codeVersion: schema.codeVersion
+                })
+            }
+        }
+        if (relationships) {
+            for (const schema of relationships) {
                 if (schema.messageId) {
                     ids.add(schema.messageId);
-                } else {
-                    metadata.push({
-                        id: schema.iri,
-                        uuid: schema.uuid,
-                        name: schema.name,
-                        description: schema.description,
-                        entity: schema.entity,
-                        owner: schema.owner,
-                        version: schema.version,
-                        codeVersion: schema.codeVersion
-                    })
                 }
             }
         }
@@ -123,8 +129,8 @@ export class SchemaPackageMessage extends Message {
      */
     public async toDocuments(): Promise<ArrayBuffer[]> {
         if (
-            this.action === MessageAction.PublishSchema ||
-            this.action === MessageAction.PublishSystemSchema
+            this.action === MessageAction.PublishSchemas ||
+            this.action === MessageAction.PublishSystemSchemas
         ) {
             const result = new Array(this.documents.length);
             for (let i = 0; i < this.documents.length; i++) {

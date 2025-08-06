@@ -263,7 +263,7 @@ export class PolicyImport {
             } else {
                 this.notifier.completedAndStart('Publishing schemas');
                 systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
-                this.notifier.info(`Found ${systemSchemas.length} schemas`);
+                // this.notifier.info(`Found ${systemSchemas.length} schemas`);
                 this.messageServer.setTopicObject(this.topicRow);
                 // await publishSystemSchemas(systemSchemas, this.messageServer, user, this.notifier);
                 await publishSystemSchemasPackage({

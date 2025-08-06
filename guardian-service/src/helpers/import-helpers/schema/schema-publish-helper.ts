@@ -306,6 +306,7 @@ export async function publishSchemasPackage(options: {
     owner: IOwner,
     server: MessageServer,
     notifier: INotifier,
+    staticSchemas?: boolean,
     schemaMap?: Map<string, string>,
 }): Promise<Map<string, string>> {
     const {
@@ -314,6 +315,7 @@ export async function publishSchemasPackage(options: {
         owner,
         server,
         schemaMap,
+        staticSchemas,
         notifier
     } = options;
 
@@ -327,12 +329,13 @@ export async function publishSchemasPackage(options: {
         await searchSchemaDefs(schema, publishedTopics, map);
     }
 
-    const relatedSchemas: SchemaCollection[] = [];
+    const publishedSchemas: SchemaCollection[] = [];
     const draftSchemas: SchemaCollection[] = [];
     for (const item of map.values()) {
-        relatedSchemas.push(item);
         if (item.status !== SchemaStatus.PUBLISHED && item.topicId === topicId) {
             draftSchemas.push(item);
+        } else {
+            publishedSchemas.push(item);
         }
     }
 
@@ -342,6 +345,7 @@ export async function publishSchemasPackage(options: {
             throw new Error(`There is circular dependency in schema: ${item.iri}`);
         }
     }
+
     for (const item of draftSchemas) {
         const oldSchemaIri = item.iri;
         await generateSchemaVersion(item);
@@ -355,20 +359,33 @@ export async function publishSchemasPackage(options: {
         idsMap.set(oldSchemaIri, newSchemaIri);
     }
 
-    const allParsedSchemas = relatedSchemas.map(item => new Schema(item));
-    for (const item of draftSchemas) {
-        const parsedSchema = new Schema(item, true);
-        parsedSchema.update(parsedSchema.fields, parsedSchema.conditions);
-        parsedSchema.updateRefs(allParsedSchemas);
-        item.document = parsedSchema.document;
+    if (!staticSchemas) {
+        const parsedSchemas = new Array(draftSchemas.length);
+        for (let i = 0; i < draftSchemas.length; i++) {
+            parsedSchemas[i] = new Schema(draftSchemas[i], true);
+        }
+
+        for (const parsedSchema of parsedSchemas) {
+            for (const [oldSchemaIri, newSchemaIri] of idsMap.entries()) {
+                replaceSchemaIds(parsedSchema, oldSchemaIri, newSchemaIri);
+            }
+            parsedSchema.update(parsedSchema.fields, parsedSchema.conditions);
+        }
+
+        const allParsedSchemas = publishedSchemas.map(item => new Schema(item));
+        updateSchemasRefs(parsedSchemas, allParsedSchemas);
+
+        for (let i = 0; i < draftSchemas.length; i++) {
+            draftSchemas[i].document = parsedSchemas[i].document;
+        }
     }
     // Update uuid & version -->
 
-    const packageDocuments = generatePackage({ ...options, schemas: relatedSchemas });
+    const packageDocuments = generatePackage({ ...options, schemas: publishedSchemas });
 
     const message = new SchemaPackageMessage(type);
     message.setDocument(packageDocuments);
-    message.setMetadata(relatedSchemas);
+    message.setMetadata(draftSchemas, publishedSchemas);
     const result = await server
         .sendMessage(message, {
             sendToIPFS: true,
@@ -437,7 +454,7 @@ export async function publishSystemSchemasPackage(options: {
             SchemaHelper.setVersion(schema, undefined, undefined);
         }
     }
-    return await publishSchemasPackage({ ...options, type });
+    return await publishSchemasPackage({ ...options, type, staticSchemas: true });
 }
 
 /**
@@ -565,4 +582,85 @@ export async function findAndDryRunSchema(
     SchemaHelper.updateIRI(item);
     await DatabaseServer.updateSchema(item.id, item);
     return item;
+}
+
+function replaceSchemaIds(
+    parsedSchema: Schema,
+    oldSchemaIri: string,
+    newSchemaIri: string
+) {
+    if (oldSchemaIri) {
+        if (Array.isArray(parsedSchema?.fields)) {
+            for (const field of parsedSchema.fields) {
+                if (field.type === oldSchemaIri) {
+                    field.type = newSchemaIri;
+                }
+            }
+        }
+        if (Array.isArray(parsedSchema?.conditions)) {
+            for (const condition of parsedSchema.conditions) {
+                if (condition.ifCondition?.field?.type === oldSchemaIri) {
+                    condition.ifCondition.field.type = newSchemaIri;
+                }
+                if (Array.isArray(condition.thenFields)) {
+                    for (const field of condition.thenFields) {
+                        if (field.type === oldSchemaIri) {
+                            field.type = newSchemaIri;
+                        }
+                    }
+                }
+                if (Array.isArray(condition.elseFields)) {
+                    for (const field of condition.elseFields) {
+                        if (field.type === oldSchemaIri) {
+                            field.type = newSchemaIri;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+function updateSchemasRefs(schemas: Schema[], allSchemas: Schema[]) {
+    const map = new Map<string, Schema>();
+    const finished = new Map<string, boolean>();
+    finished.set('#GeoJSON', true);
+    finished.set('#SentinelHUB', true);
+
+    for (const item of allSchemas) {
+        map.set(item.iri, item);
+        finished.set(item.iri, true);
+    }
+    for (const item of schemas) {
+        map.set(item.iri, item);
+        finished.set(item.iri, false);
+        allSchemas.push(item);
+    }
+    for (const schema of schemas) {
+        updateSchemaRefs(schema.iri, map, finished, allSchemas);
+
+
+    }
+}
+
+function updateSchemaRefs(
+    iri: string,
+    map: Map<string, Schema>,
+    finished: Map<string, boolean>,
+    allSchemas: Schema[],
+) {
+    if (finished.get(iri)) {
+        return;
+    }
+    const schema = map.get(iri);
+    if (!schema) {
+        return;
+    }
+
+    for (const field of schema.fields) {
+        if (field.isRef && !finished.get(field.type)) {
+            updateSchemaRefs(field.type, map, finished, allSchemas);
+        }
+    }
+    schema.updateRefs(allSchemas);
 }

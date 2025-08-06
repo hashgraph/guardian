@@ -24,6 +24,14 @@ export async function updateSchemaDefs(schemaId: string, oldSchemaId?: string) {
         return;
     }
 
+    const filters: any = {
+        defs: oldSchemaId || schemaId
+    };
+    const relatedSchemas = await DatabaseServer.getSchemas(filters);
+    if (!relatedSchemas.length) {
+        return;
+    }
+
     const schema = await DatabaseServer.getSchema({ iri: schemaId });
     if (!schema) {
         throw new Error(`Can not find schema ${schemaId}`);
@@ -34,12 +42,9 @@ export async function updateSchemaDefs(schemaId: string, oldSchemaId?: string) {
         return;
     }
 
-    const schemaDefs = schema.document.$defs;
+    const schemaDefs = schemaDocument.$defs;
     delete schemaDocument.$defs;
 
-    const filters: any = {};
-    filters.defs = { $elemMatch: { $eq: oldSchemaId || schemaId } };
-    const relatedSchemas = await DatabaseServer.getSchemas(filters);
     for (const rSchema of relatedSchemas) {
         if (oldSchemaId) {
             let document = JSON.stringify(rSchema.document) as string;
@@ -53,6 +58,7 @@ export async function updateSchemaDefs(schemaId: string, oldSchemaId?: string) {
             }
         }
     }
+
     await DatabaseServer.updateSchemas(relatedSchemas);
 }
 
