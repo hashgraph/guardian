@@ -187,4 +187,4 @@ Once completed you will see the document that you have created with the followin
 
 <figure><img src="../../../../.gitbook/assets/image (191).png" alt=""><figcaption></figcaption></figure>
 
-For more information about different GHG versions and their IPFS timestamps, you can click [here](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/GHG%20Methodology/Remote%20WorkFlow%20Policy/readme.md) to see the GHG policy versions.
+For more information about different GHG versions and their IPFS timestamps, you can click [here](../../../../../Methodology%20Library/GHG%20Methodology/Remote%20WorkFlow%20Policy/) to see the GHG policy versions.

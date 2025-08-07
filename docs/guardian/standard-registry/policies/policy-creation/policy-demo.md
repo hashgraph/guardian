@@ -77,7 +77,7 @@ When you click on Save to file, Policy is exported as a .zip file.
 
 **Note:** While importing tool via file, or policy via file or IPFS, you can change used tools in preview dialog, it will change tools references in schemas and config automatically.
 
-To get complete information about tools, please refer to [Tools](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/readme.md) section.
+To get complete information about tools, please refer to [Tools](../../../../../Methodology%20Library/CDM/Tools/) section.
 
 <figure><img src="../../../../.gitbook/assets/image (587).png" alt=""><figcaption></figcaption></figure>
 

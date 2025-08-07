@@ -11,13 +11,13 @@ On this page you'll find:
   * [For Organizations to create an Employer User (Employer Admin User)](carbon-emissions-measurement-ghg-corporate-standard-policy-guide.md#for-organizations-to-create-an-employer-employer-admin-user)
   * [For Employees to create an Employee User and join an organization](carbon-emissions-measurement-ghg-corporate-standard-policy-guide.md#for-employees-to-create-an-employee-user-and-join-an-organization-employee-users)
 
-**For more Carbon Emissions Measurement - GHG Corporate Standard information, please visit the TYMLEZ-contributed open-source Guardian policy page** [**here**](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CET%20&%20CRU/Tymlez/policies/Tymlez-CET.policy)
+**For more Carbon Emissions Measurement - GHG Corporate Standard information, please visit the TYMLEZ-contributed open-source Guardian policy page** [**here**](../../../../Methodology%20Library/CET%20&%20CRU/Tymlez/policies/Tymlez-CET.policy)
 
 ## Methodologies
 
 TYMLEZ aims to provide the capability to quantify and tokenize carbon. To do this, we have designed a universal schema that can be used as the basis for both insetting and avoidance claims made against any GHG Protocol compatible project. Whilst these schemas will not be able to be used verbatim for all carbon registries, they form an important base for digital measurement, reporting, and verification (dMRV) recording against a particular project. A core focus at TYMLEZ is the accurate reading of MRV data from source devices. As such, this schema is not designed for use in scenarios requiring the manual entry of carbon data – we have however included UI screens to support manual entry in this public version.
 
-We have included a full schema for the CET policy [here](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CET%20&%20CRU/Tymlez/methodologies/CET_CRU_TYMLEZ.pdf)[ ](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CET%20&%20CRU/Tymlez/methodologies/CET_CRU_TYMLEZ.pdf)that can be used to record Scope 1 & 2 emissions data
+We have included a full schema for the CET policy [here](../../../../Methodology%20Library/CET%20&%20CRU/Tymlez/methodologies/CET_CRU_TYMLEZ.pdf)[ ](../../../../Methodology%20Library/CET%20&%20CRU/Tymlez/methodologies/CET_CRU_TYMLEZ.pdf)that can be used to record Scope 1 & 2 emissions data
 
 \\
 
@@ -51,7 +51,7 @@ Login as the new owner user
 
 Associate owner with CET (Click on tokens from the nav link and click on the associate button on the table, see picture below)
 
-<figure><img src="../../../.gitbook/assets/image (59) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (59) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Open policy `Tymlez CET` and fill in the owner information when the screen has loaded and select role as `TOKEN_OWNER`
 
