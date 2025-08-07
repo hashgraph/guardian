@@ -813,8 +813,6 @@
   * [Guardian System Standards (GSS)](guardian/community-standards/guardian-system-standards-gss.md)
   * [Proposal for Defining Standards](guardian/community-standards/proposal-for-defining-standards.md)
 
-***
-
 ## Methodology Digitization
 
 * [📚 Methodology Digitization Handbook](methodology-digitization-handbook/README.md)
