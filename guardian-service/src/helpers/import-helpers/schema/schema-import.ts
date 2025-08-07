@@ -18,7 +18,6 @@ import {
     MessageType,
     replaceValueRecursive,
     SchemaConverterUtils,
-    SchemaMessage,
     TagMessage,
     TopicConfig,
     TopicHelper,

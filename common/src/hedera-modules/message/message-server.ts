@@ -29,6 +29,7 @@ import { FormulaMessage } from './formula-message.js';
 import { PolicyDiffMessage } from './policy-diff-message.js';
 import { PolicyActionMessage } from './policy-action-message.js';
 import { ContractMessage } from './contract-message.js';
+import { SchemaPackageMessage } from './schema-package-message.js';
 
 interface LoadMessageOptions {
     messageId: string,
@@ -351,6 +352,9 @@ export class MessageServer {
             case MessageType.Schema:
                 message = SchemaMessage.fromMessageObject(json);
                 break;
+            case MessageType.SchemaPackage:
+                message = SchemaPackageMessage.fromMessageObject(json);
+                break;
             case MessageType.Policy:
                 message = PolicyMessage.fromMessageObject(json);
                 break;
@@ -438,6 +442,9 @@ export class MessageServer {
                 break;
             case MessageType.Schema:
                 message = SchemaMessage.fromJson(json);
+                break;
+            case MessageType.SchemaPackage:
+                message = SchemaPackageMessage.fromJson(json);
                 break;
             case MessageType.Policy:
             case MessageType.InstancePolicy:

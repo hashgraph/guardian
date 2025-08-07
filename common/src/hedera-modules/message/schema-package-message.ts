@@ -31,7 +31,7 @@ export class SchemaPackageMessage extends Message {
     private metadata: any;
 
     constructor(action: MessageAction) {
-        super(action, MessageType.Schema);
+        super(action, MessageType.SchemaPackage);
     }
 
     /**
