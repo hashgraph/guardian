@@ -485,6 +485,7 @@
         * [Returns the list of saved mock-up data for the selected block](guardian/standard-registry/policies/testing-debugging-code/apis/returns-the-list-of-saved-mock-up-data-for-the-selected-block.md)
         * [Executes the test-run of the code in the block](guardian/standard-registry/policies/testing-debugging-code/apis/executes-the-test-run-of-the-code-in-the-block.md)
     * [Python Implementation in Guardian](guardian/standard-registry/policies/python-implementation-in-guardian.md)
+    * [Integrating 3rd Party Data Resources](guardian/standard-registry/policies/integrating-3rd-party-data-resources.md)
   * [Bring your own DIDs](guardian/standard-registry/bring-your-own-dids/README.md)
     * [Bring your own (BYO) DIDs UI](guardian/standard-registry/bring-your-own-dids/bring-your-own-byo-dids-ui.md)
     * [APIs](guardian/standard-registry/bring-your-own-dids/apis/README.md)
