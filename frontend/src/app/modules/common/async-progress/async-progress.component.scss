@@ -2,9 +2,11 @@
     display: grid;
     grid-template-columns: 70% 30%;
 }
+
 .status {
     text-align: right;
 }
+
 .info {
     padding-left: 30px;
 }
@@ -64,15 +66,19 @@
 }
 
 .task-viewer {
-    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-top: 150px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translate(0px, -50%);
+    height: 50vh;
 }
 
-.task-viewer > .header {
+.task-viewer>.header {
     color: #000;
     font-family: Poppins, sans-serif;
     font-size: 24px;
@@ -81,7 +87,7 @@
     line-height: normal;
 }
 
-.task-viewer > .header {
+.task-viewer>.header {
     color: #000;
     font-family: Poppins, sans-serif;
     font-size: 24px;
@@ -90,7 +96,7 @@
     line-height: normal;
 }
 
-.task-viewer > .progress-bar-container {
+.task-viewer>.progress-bar-container {
     width: 100%;
     margin-top: 24px;
     height: 10px;
@@ -102,9 +108,8 @@
 
 .status-items {
     margin-top: 24px;
-    min-height: 300px;
-    height: 300px;
-    max-height: 300px;
+    min-height: 200px;
+    max-height: 400px;
     color: var(--color-grey-5, #848FA9);
     font-family: Inter, sans-serif;
     font-size: 14px;
@@ -112,13 +117,14 @@
     font-weight: 400;
     line-height: 20px;
     overflow-y: auto;
+    width: 100%;
 }
 
-.status-items > .info-part {
+.status-items>.info-part {
     margin-left: 24px;
 }
 
-.status-items > .non-info-part {
+.status-items>.non-info-part {
     display: flex;
     justify-content: space-between;
     column-gap: 192px;
@@ -133,3 +139,50 @@
     background-color: var(--color-primary);
 }
 
+.step-children {
+    width: 100%;
+    overflow: hidden;
+}
+
+.sub-steps {
+    padding-left: 24px;
+}
+
+.step-body {
+    height: 34px;
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+
+    &:hover {
+        background-color: var(--guardian-disabled-background);
+    }
+
+    .step-name {
+        width: calc(100% - 120px);
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .step-status {
+        width: 100px;
+        display: flex;
+        justify-content: end;
+        padding-right: 10px
+    }
+}
+
+.step-container {
+    width: 100%;
+}
+
+.scroller::ng-deep * {
+    overflow-anchor: none !important;
+}
+
+.scroller .scroller-anchor {
+    overflow-anchor: auto !important;
+    height: 3px;
+}

@@ -1,8 +1,8 @@
 import { IOwner } from '@guardian/interfaces';
-import { INotifier } from '../../notifier.js';
 import { ImportArtifactResult } from './artifact-import.interface.js';
 import { ArtifactImport } from './artifact-import.js';
 import { ImportMode } from '../common/import.interface.js';
+import { INotificationStep } from '@guardian/common';
 
 /**
  * Import artifacts by files
@@ -14,8 +14,12 @@ export async function importArtifactsByFiles(
     user: IOwner,
     artifacts: any[] = [],
     mode: ImportMode,
-    notifier: INotifier
+    notifier: INotificationStep,
+    userId: string | null
 ): Promise<ImportArtifactResult> {
+    notifier.start();
     const artifactImport = new ArtifactImport(mode, notifier);
-    return await artifactImport.import(artifacts, user);
+    const result = await artifactImport.import(artifacts, user);
+    notifier.complete();
+    return result;
 }

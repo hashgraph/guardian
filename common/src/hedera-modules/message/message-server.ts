@@ -1,6 +1,6 @@
 import { AccountId, PrivateKey, TopicId, } from '@hashgraph/sdk';
 import { GenerateUUIDv4, ISignOptions, SignType, WorkerTaskType } from '@guardian/interfaces';
-import { IPFS, IPFSOptions, PinoLogger, Workers } from '../../helpers/index.js';
+import { IPFS, PinoLogger, Workers } from '../../helpers/index.js';
 import { TransactionLogger } from '../transaction-logger.js';
 import { Environment } from '../environment.js';
 import { MessageMemo } from '../memo-mappings/message-memo.js';
@@ -29,6 +29,7 @@ import { FormulaMessage } from './formula-message.js';
 import { PolicyDiffMessage } from './policy-diff-message.js';
 import { PolicyActionMessage } from './policy-action-message.js';
 import { ContractMessage } from './contract-message.js';
+import { INotificationStep, NewNotifier } from '../../notification/index.js';
 
 interface LoadMessageOptions {
     messageId: string,
@@ -60,8 +61,9 @@ interface MessageServerOptions {
 interface MessageOptions {
     sendToIPFS?: boolean,
     memo?: string,
-    userId?: string | null
-    interception?: string | boolean | null
+    userId?: string | null,
+    interception?: string | boolean | null,
+    notifier?: INotificationStep
 }
 
 /**
@@ -156,13 +158,36 @@ export class MessageServer {
         message: T,
         options: MessageOptions
     ): Promise<T> {
+        // <-- Steps
+        const STEP_SEND_FILES = 'Send files';
+        const STEP_SEND_MESSAGES = 'Send messages';
+        // Steps -->
+
+        const notifier = options?.notifier || NewNotifier.empty();
         if (options.sendToIPFS !== false) {
-            message = await this.sendIPFS(message, options);
+            notifier.addStep(STEP_SEND_FILES);
         }
+        notifier.addStep(STEP_SEND_MESSAGES);
+        notifier.start();
+
+        if (options.sendToIPFS !== false) {
+            notifier.startStep(STEP_SEND_FILES);
+            message = await this.sendIPFS(message, {
+                ...options,
+                notifier: notifier.getStep(STEP_SEND_FILES)
+            });
+            notifier.completeStep(STEP_SEND_FILES);
+        }
+
+        notifier.startStep(STEP_SEND_MESSAGES);
         message = await this.sendHedera(message, options);
+        notifier.completeStep(STEP_SEND_MESSAGES);
+
         if (this.dryRun) {
             await DatabaseServer.saveVirtualMessage<T>(this.dryRun, message);
         }
+
+        notifier.complete();
         return message;
     }
 
@@ -246,7 +271,8 @@ export class MessageServer {
      * @param options
      * @private
      */
-    private async addFile(file: ArrayBuffer, options?: IPFSOptions) {
+    private async addFile(file: ArrayBuffer, options?: MessageOptions) {
+        const notifier = options?.notifier || NewNotifier.empty();
         if (this.dryRun) {
             const id = GenerateUUIDv4();
             const result = {
@@ -255,9 +281,17 @@ export class MessageServer {
             }
             await new TransactionLogger().virtualFileLog(this.dryRun, file, result);
             return result
-        }
+        } else {
+            // <-- Steps
+            const STEP_SEND_FILE = 'Send file';
+            // Steps -->
 
-        return IPFS.addFile(file, options);
+            const step = notifier.addStep(STEP_SEND_FILE);
+            step.start();
+            const result = await IPFS.addFile(file, options);
+            step.complete();
+            return result;
+        }
     }
 
     /**
@@ -303,10 +337,13 @@ export class MessageServer {
      */
     private async sendIPFS<T extends Message>(
         message: T,
-        options?: IPFSOptions
+        options?: MessageOptions
     ): Promise<T> {
         const buffers = await message.toDocuments(this.encryptKey);
         if (buffers && buffers.length) {
+            if (options?.notifier) {
+                options.notifier.setEstimate(buffers.length);
+            }
             const time = await this.messageStartLog('IPFS', options.userId);
             const promises = buffers.map(buffer => {
                 return this.addFile(buffer, options);

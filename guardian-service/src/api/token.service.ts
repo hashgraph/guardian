@@ -1,7 +1,6 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { ArrayMessageResponse, DatabaseServer, KeyType, MessageError, MessageResponse, PinoLogger, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers } from '@guardian/common';
+import { ArrayMessageResponse, DatabaseServer, INotificationStep, KeyType, MessageError, MessageResponse, NewNotifier, PinoLogger, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, OrderDirection, TopicType, WorkerTaskType } from '@guardian/interfaces';
-import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { FilterObject } from '@mikro-orm/core';
 import { publishTokenTags } from '../helpers/import-helpers/index.js'
 
@@ -171,8 +170,19 @@ async function createToken(
     token: Token,
     user: IOwner,
     dataBaseServer: DatabaseServer,
-    notifier: INotifier
+    notifier: INotificationStep
 ): Promise<Token> {
+    // <-- Steps
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_CREATE_TOKEN = 'Create token';
+    const STEP_SAVE = 'Save';
+    // Steps -->
+
+    notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_CREATE_TOKEN);
+    notifier.addStep(STEP_SAVE);
+    notifier.start();
+
     if (!token.tokenName) {
         throw new Error('Invalid Token Name');
     }
@@ -181,12 +191,12 @@ async function createToken(
         throw new Error('Invalid Token Symbol');
     }
 
-    notifier.start('Resolve Hedera account');
+    notifier.startStep(STEP_RESOLVE_ACCOUNT);
     const users = new Users();
     const root = await users.getHederaAccount(user.creator, user.id);
+    notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-    notifier.completedAndStart('Create token');
-
+    notifier.startStep(STEP_CREATE_TOKEN);
     let rawTokenObject: any = {
         ...token,
         tokenId: GenerateUUIDv4(),
@@ -199,12 +209,14 @@ async function createToken(
     if (!token.draftToken) {
         rawTokenObject = await createHederaToken(rawTokenObject, root, user.id);
     }
+    notifier.completeStep(STEP_CREATE_TOKEN);
 
-    notifier.completedAndStart('Create and save token in DB');
+    notifier.startStep(STEP_SAVE);
     const tokenObject = dataBaseServer.create(Token, rawTokenObject);
     const result = await dataBaseServer.save(Token, tokenObject);
+    notifier.completeStep(STEP_SAVE);
 
-    notifier.completed();
+    notifier.complete();
     return result;
 }
 
@@ -222,40 +234,72 @@ async function updateToken(
     newToken: Token,
     user: IOwner,
     dataBaseServer: DatabaseServer,
-    notifier: INotifier,
+    notifier: INotificationStep,
     log: PinoLogger,
     userId: string
 ): Promise<Token> {
     if (oldToken.draftToken && newToken.draftToken) {
-        notifier.start('Update token');
+        // <-- Steps
+        const STEP_UPDATE_TOKEN = 'Update token';
+        // Steps -->
+
+        notifier.addStep(STEP_UPDATE_TOKEN);
+        notifier.start();
+
+        notifier.startStep(STEP_UPDATE_TOKEN);
         const tokenObject = Object.assign(oldToken, newToken);
         const result = await dataBaseServer.update(Token, oldToken?.id, tokenObject);
-        notifier.completed();
+        notifier.completeStep(STEP_UPDATE_TOKEN);
+
+        notifier.complete();
 
         return result;
     } else if (oldToken.draftToken && !newToken.draftToken) {
-        notifier.start('Resolve Hedera account');
+        // <-- Steps
+        const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+        const STEP_CREATE_TOKEN = 'Create and save token in DB';
+        const STEP_PUBLISH_TAGS = 'Publish tags';
+        // Steps -->
+
+        notifier.addStep(STEP_RESOLVE_ACCOUNT);
+        notifier.addStep(STEP_CREATE_TOKEN);
+        notifier.addStep(STEP_PUBLISH_TAGS);
+        notifier.start();
+
+        notifier.startStep(STEP_RESOLVE_ACCOUNT);
         const users = new Users();
         const root = await users.getHederaAccount(user.creator, user.id);
+        notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-        notifier.completedAndStart('Create and save token in DB');
-
+        notifier.startStep(STEP_CREATE_TOKEN);
         const newTokenObject = await createHederaToken(newToken, root, user.id);
         const tokenObject = Object.assign(oldToken, newTokenObject);
 
         const result = await dataBaseServer.update(Token, oldToken?.id, tokenObject);
+        notifier.completeStep(STEP_CREATE_TOKEN);
 
-        notifier.completedAndStart('Publish tags');
+        notifier.startStep(STEP_PUBLISH_TAGS);
         try {
             await publishTokenTags(result, user, root, userId);
         } catch (error) {
             log.error(error, ['GUARDIAN_SERVICE, TAGS'], userId);
         }
+        notifier.completeStep(STEP_PUBLISH_TAGS);
 
-        notifier.completed();
+        notifier.complete();
         return result;
 
     } else {
+        // <-- Steps
+        const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+        const STEP_UPDATE_TOKEN = 'Update token';
+        const STEP_SAVE = 'Save token in DB';
+        // Steps -->
+
+        notifier.addStep(STEP_RESOLVE_ACCOUNT);
+        notifier.addStep(STEP_UPDATE_TOKEN);
+        notifier.addStep(STEP_SAVE);
+        notifier.start();
 
         if (!newToken.tokenName) {
             throw new Error('Invalid Token Name');
@@ -277,7 +321,7 @@ async function updateToken(
             changes.tokenSymbol = newToken.tokenSymbol;
         }
 
-        notifier.start('Resolve Hedera account');
+        notifier.startStep(STEP_RESOLVE_ACCOUNT);
         const users = new Users();
         const wallet = new Wallet();
         const workers = new Workers();
@@ -289,9 +333,9 @@ async function updateToken(
             oldToken.tokenId,
             user.id
         );
+        notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-        notifier.completedAndStart('Update token');
-
+        notifier.startStep(STEP_UPDATE_TOKEN);
         const tokenData = await workers.addNonRetryableTask({
             type: WorkerTaskType.UPDATE_TOKEN,
             data: {
@@ -305,9 +349,9 @@ async function updateToken(
         }, {
             priority: 20
         });
+        notifier.completeStep(STEP_UPDATE_TOKEN);
 
-        notifier.completedAndStart('Save token in DB');
-
+        notifier.startStep(STEP_SAVE);
         oldToken.tokenName = newToken.tokenName;
         oldToken.tokenSymbol = newToken.tokenSymbol;
 
@@ -342,8 +386,9 @@ async function updateToken(
             ));
         }
         await Promise.all(saveKeys);
+        notifier.completeStep(STEP_SAVE);
 
-        notifier.completed();
+        notifier.complete();
         return result;
     }
 }
@@ -358,10 +403,21 @@ async function deleteToken(
     token: Token,
     user: IOwner,
     dataBaseServer: DatabaseServer,
-    notifier: INotifier
+    notifier: INotificationStep
 ): Promise<boolean> {
     if (!token.draftToken) {
-        notifier.start('Resolve Hedera account');
+        // <-- Steps
+        const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+        const STEP_DELETE_TOKEN = 'Delete token';
+        const STEP_SAVE = 'Save token in DB';
+        // Steps -->
+
+        notifier.addStep(STEP_RESOLVE_ACCOUNT);
+        notifier.addStep(STEP_DELETE_TOKEN);
+        notifier.addStep(STEP_SAVE);
+        notifier.start();
+
+        notifier.startStep(STEP_RESOLVE_ACCOUNT);
         const users = new Users();
         const wallet = new Wallet();
         const workers = new Workers();
@@ -373,9 +429,9 @@ async function deleteToken(
             token.tokenId,
             user.id
         );
+        notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-        notifier.completedAndStart('Delete token');
-
+        notifier.startStep(STEP_DELETE_TOKEN);
         const tokenData = await workers.addNonRetryableTask({
             type: WorkerTaskType.DELETE_TOKEN,
             data: {
@@ -388,17 +444,29 @@ async function deleteToken(
         }, {
             priority: 20
         });
-        notifier.completedAndStart('Save token in DB');
+        notifier.completeStep(STEP_DELETE_TOKEN);
 
+        notifier.startStep(STEP_SAVE);
         if (tokenData) {
             await dataBaseServer.deleteEntity(Token, token);
         }
-    } else {
-        notifier.start('Delete token from db');
-        await dataBaseServer.deleteEntity(Token, token);
-    }
+        notifier.completeStep(STEP_SAVE);
 
-    notifier.completed();
+        notifier.complete();
+    } else {
+        // <-- Steps
+        const STEP_DELETE_TOKEN = 'Delete token from db';
+        // Steps -->
+
+        notifier.addStep(STEP_DELETE_TOKEN);
+        notifier.start();
+
+        notifier.startStep(STEP_DELETE_TOKEN);
+        await dataBaseServer.deleteEntity(Token, token);
+        notifier.completeStep(STEP_DELETE_TOKEN);
+
+        notifier.complete();
+    }
 
     return true;
 }
@@ -416,17 +484,29 @@ async function associateToken(
     target: IOwner,
     associate: any,
     dataBaseServer: DatabaseServer,
-    notifier: INotifier
+    notifier: INotificationStep
 ): Promise<{ tokenName: string; status: boolean }> {
-    notifier.start('Find token data');
+    // <-- Steps
+    const STEP_FIND_TOKEN = 'Find token data';
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_ACTION = associate ? 'Associate' : 'Dissociate';
+    // Steps -->
+
+    notifier.addStep(STEP_FIND_TOKEN);
+    notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_ACTION);
+    notifier.start();
+
+    notifier.startStep(STEP_FIND_TOKEN);
     const token = await dataBaseServer.findOne(Token, { tokenId: { $eq: tokenId } });
     if (!token) {
         throw new Error('Token not found');
     }
+    notifier.completeStep(STEP_FIND_TOKEN);
 
+    notifier.startStep(STEP_RESOLVE_ACCOUNT);
     const wallet = new Wallet();
     const users = new Users();
-    notifier.completedAndStart('Resolve Hedera account');
     const user = await users.getUserById(target.creator, target.id);
     const userID = user.hederaAccountId;
     const userDID = user.did;
@@ -438,9 +518,9 @@ async function associateToken(
     if (!user.hederaAccountId) {
         throw new Error('User is not linked to an Hedera Account');
     }
+    notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-    notifier.completedAndStart(associate ? 'Associate' : 'Dissociate');
-
+    notifier.startStep(STEP_ACTION);
     const workers = new Workers();
     const status = await workers.addNonRetryableTask({
         type: WorkerTaskType.ASSOCIATE_TOKEN,
@@ -454,8 +534,9 @@ async function associateToken(
     }, {
         priority: 20
     });
+    notifier.completeStep(STEP_ACTION);
 
-    notifier.completed();
+    notifier.complete();
     return { tokenName: token.tokenName, status };
 }
 
@@ -474,15 +555,27 @@ async function grantKycToken(
     owner: IOwner,
     grant: boolean,
     dataBaseServer: DatabaseServer,
-    notifier: INotifier
+    notifier: INotificationStep
 ): Promise<any> {
-    notifier.start('Find token data');
+    // <-- Steps
+    const STEP_FIND_TOKEN = 'Find token data';
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_ACTION = grant ? 'Grant KYC' : 'Revoke KYC';
+    // Steps -->
+
+    notifier.addStep(STEP_FIND_TOKEN);
+    notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_ACTION);
+    notifier.start();
+
+    notifier.startStep(STEP_FIND_TOKEN);
     const token = await dataBaseServer.findOne(Token, { tokenId: { $eq: tokenId } });
     if (!token) {
         throw new Error('Token not found');
     }
+    notifier.completeStep(STEP_FIND_TOKEN);
 
-    notifier.completedAndStart('Resolve Hedera account');
+    notifier.startStep(STEP_RESOLVE_ACCOUNT);
     const users = new Users();
     const user = await users.getUser(username, owner.id);
     if (!user) {
@@ -493,8 +586,9 @@ async function grantKycToken(
     }
 
     const root = await users.getHederaAccount(owner.creator, owner.id);
+    notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-    notifier.completedAndStart(grant ? 'Grant KYC' : 'Revoke KYC');
+    notifier.startStep(STEP_ACTION);
     const workers = new Workers();
     const kycKey = await new Wallet().getUserKey(
         owner.owner,
@@ -540,7 +634,9 @@ async function grantKycToken(
     });
 
     const result = getTokenInfo(info, token);
-    notifier.completed();
+    notifier.completeStep(STEP_ACTION);
+
+    notifier.complete();
     return result;
 }
 
@@ -559,15 +655,27 @@ async function freezeToken(
     owner: IOwner,
     freeze: boolean,
     dataBaseServer: DatabaseServer,
-    notifier: INotifier
+    notifier: INotificationStep
 ): Promise<any> {
-    notifier.start('Find token data');
+    // <-- Steps
+    const STEP_FIND_TOKEN = 'Find token data';
+    const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+    const STEP_ACTION = freeze ? 'Freeze Token' : 'Unfreeze Token';
+    // Steps -->
+
+    notifier.addStep(STEP_FIND_TOKEN);
+    notifier.addStep(STEP_RESOLVE_ACCOUNT);
+    notifier.addStep(STEP_ACTION);
+    notifier.start();
+
+    notifier.startStep(STEP_FIND_TOKEN);
     const token = await dataBaseServer.findOne(Token, { tokenId: { $eq: tokenId } });
     if (!token) {
         throw new Error('Token not found');
     }
+    notifier.completeStep(STEP_FIND_TOKEN);
 
-    notifier.completedAndStart('Resolve Hedera account');
+    notifier.startStep(STEP_RESOLVE_ACCOUNT);
     const users = new Users();
     const user = await users.getUser(username, owner.id);
     if (!user) {
@@ -578,8 +686,9 @@ async function freezeToken(
     }
 
     const root = await users.getHederaAccount(owner.creator, owner.id);
+    notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-    notifier.completedAndStart(freeze ? 'Freeze Token' : 'Unfreeze Token');
+    notifier.startStep(STEP_ACTION);
     const workers = new Workers();
     const freezeKey = await new Wallet().getUserKey(
         owner.owner,
@@ -625,7 +734,9 @@ async function freezeToken(
     });
 
     const result = getTokenInfo(info, token);
-    notifier.completed();
+    notifier.completeStep(STEP_ACTION);
+
+    notifier.complete();
     return result;
 }
 
@@ -656,7 +767,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
 
                 const { item, owner } = msg;
 
-                await createToken(item, owner, dataBaseServer, emptyNotifier());
+                await createToken(item, owner, dataBaseServer, NewNotifier.empty());
 
                 const tokens = await dataBaseServer.findAll(Token);
                 return new MessageResponse(tokens);
@@ -673,7 +784,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
             task: any
         }) => {
             const { token, owner, task } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
 
             RunFunctionAsync(async () => {
                 if (!msg) {
@@ -683,7 +794,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 notifier.result(result);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                notifier.error(error);
+                notifier.fail(error);
             });
 
             return new MessageResponse(task);
@@ -705,7 +816,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 }
 
                 return new MessageResponse(
-                    await updateToken(item, token, owner, dataBaseServer, emptyNotifier(), logger, owner?.id)
+                    await updateToken(item, token, owner, dataBaseServer, NewNotifier.empty(), logger, owner?.id)
                 );
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -720,7 +831,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
             task: any
         }) => {
             const { token, owner, task } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
             RunFunctionAsync(async () => {
                 if (!msg) {
                     throw new Error('Invalid Params');
@@ -734,7 +845,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 notifier.result(result);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                notifier.error(error);
+                notifier.fail(error);
             });
 
             return new MessageResponse(task);
@@ -747,7 +858,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
             task: any
         }) => {
             const { tokenId, owner, task } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
             RunFunctionAsync(async () => {
                 if (!msg) {
                     throw new Error('Invalid Params');
@@ -760,7 +871,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                 notifier.result(result);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                notifier.error(error);
+                notifier.fail(error);
             });
             return new MessageResponse(task);
         });
@@ -774,7 +885,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         }) => {
             try {
                 const { tokenId, username, owner, freeze } = msg;
-                const result = await freezeToken(tokenId, username, owner, freeze, dataBaseServer, emptyNotifier());
+                const result = await freezeToken(tokenId, username, owner, freeze, dataBaseServer, NewNotifier.empty());
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -791,14 +902,14 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
             task: any
         }) => {
             const { tokenId, username, owner, freeze, task } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
 
             RunFunctionAsync(async () => {
                 const result = await freezeToken(tokenId, username, owner, freeze, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                notifier.error(error);
+                notifier.fail(error);
             });
 
             return new MessageResponse(task);
@@ -813,7 +924,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         }) => {
             try {
                 const { tokenId, username, owner, grant } = msg;
-                const result = await grantKycToken(tokenId, username, owner, grant, dataBaseServer, emptyNotifier());
+                const result = await grantKycToken(tokenId, username, owner, grant, dataBaseServer, NewNotifier.empty());
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -830,14 +941,14 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
             task: any
         }) => {
             const { tokenId, username, owner, grant, task } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
 
             RunFunctionAsync(async () => {
                 const result = await grantKycToken(tokenId, username, owner, grant, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                notifier.error(error);
+                notifier.fail(error);
             });
 
             return new MessageResponse(task);
@@ -851,7 +962,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         }) => {
             try {
                 const { tokenId, owner, associate } = msg;
-                const result = await associateToken(tokenId, owner, associate, dataBaseServer, emptyNotifier());
+                const result = await associateToken(tokenId, owner, associate, dataBaseServer, NewNotifier.empty());
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -867,14 +978,14 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
             task: any
         }) => {
             const { tokenId, owner, associate, task } = msg;
-            const notifier = await initNotifier(task);
+            const notifier = await NewNotifier.create(task);
 
             RunFunctionAsync(async () => {
                 const result = await associateToken(tokenId, owner, associate, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                notifier.error(error);
+                notifier.fail(error);
             });
 
             return new MessageResponse(task);
