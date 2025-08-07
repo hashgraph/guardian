@@ -347,6 +347,9 @@ export async function publishSchemasPackage(options: {
     }
 
     for (const item of draftSchemas) {
+        item.documentURL = null;
+        item.contextURL = null;
+        item.messageId = null;
         const oldSchemaIri = item.iri;
         await generateSchemaVersion(item);
         SchemaHelper.updateVersion(item, item.version);
@@ -381,7 +384,7 @@ export async function publishSchemasPackage(options: {
     }
     // Update uuid & version -->
 
-    const packageDocuments = generatePackage({ ...options, schemas: publishedSchemas });
+    const packageDocuments = generatePackage({ ...options, schemas: draftSchemas });
 
     const message = new SchemaPackageMessage(type);
     message.setDocument(packageDocuments);
