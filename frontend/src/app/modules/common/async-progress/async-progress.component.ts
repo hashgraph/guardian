@@ -26,7 +26,6 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
     private taskId: string;
     private expected: number;
     private taskNotFound: boolean = false;
-    private userRole?: UserRole;
     private last?: any;
     private redir?: boolean;
     private lastTimestamp: number = 0;
@@ -70,29 +69,13 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
     ngOnInit() {
         if (this.inputTaskId) {
             this.taskId = this.inputTaskId;
+            this.initEvents();
+            this.update();
         } else {
             this.taskId = this.route.snapshot.params['id'];
+            this.initEvents();
             this.subscription.add(this.route.params.subscribe(this.update.bind(this)));
         }
-        this.subscription.add(
-            this.wsService.taskSubscribe((task) => {
-                const { taskId, statuses, error, result, info } = task;
-                if (taskId != this.taskId) {
-                    return;
-                }
-                if (info) {
-                    this.setNewProgress(info);
-                } else if (statuses) {
-                    this.setStatuses(statuses);
-                }
-                if (result) {
-                    this.progressValue = 100;
-                    this.setResult(result);
-                } else if (error) {
-                    this.setError(error);
-                }
-            })
-        );
     }
 
     ngOnDestroy() {
@@ -108,30 +91,48 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
     }
 
     private update() {
-        forkJoin([
-            this.taskService.get(this.taskId),
-            this.auth.sessions(),
-        ]).subscribe(([task, user]) => {
-            this.userRole = user?.role;
-            this.taskNotFound = !task;
-            if (!task) {
-                return;
+        this.taskService.get(this.taskId).subscribe((task) => {
+            if (task) {
+                this.expected = task.expectation;
+                this.action = task.action;
+            } else {
+                this.taskNotFound = true;
             }
-            this.expected = task.expectation;
-            this.action = task.action;
-            const { statuses, error, result, info } = task;
-            if (info) {
-                this.setNewProgress(info);
-            } else if (statuses) {
-                this.setStatuses(statuses);
-            }
-            if (result) {
-                this.progressValue = 100;
-                this.setResult(result);
-            } else if (error) {
-                this.setError(error);
-            }
+            this.setTask(task);
         });
+    }
+
+    private initEvents() {
+        this.subscription.add(
+            this.wsService.taskSubscribe((task) => {
+                this.setTask(task);
+            })
+        );
+    }
+
+    private setTask(task: any) {
+        if (!task) {
+            return;
+        }
+        const { taskId, statuses, error, result, info } = task;
+        if (taskId != this.taskId) {
+            return;
+        }
+
+        this.expected = task.expectation;
+        this.action = task.action;
+
+        if (info) {
+            this.setNewProgress(info);
+        } else if (statuses) {
+            this.setStatuses(statuses);
+        }
+        if (result) {
+            this.progressValue = 100;
+            this.setResult(result);
+        } else if (error) {
+            this.setError(error);
+        }
     }
 
     private setResult(result: any) {
@@ -143,12 +144,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.RESTORE_USER_PROFILE:
             case TaskAction.CONNECT_USER:
                 this.wsService.updateProfile();
-                const home = this.auth.home(this.userRole);
-                setTimeout(() => {
-                    this.router.navigate([home], {
-                        replaceUrl: true,
-                    });
-                }, 500);
+                this.toHome();
                 return;
             case TaskAction.DELETE_TOKEN:
             case TaskAction.UPDATE_TOKEN:
@@ -368,6 +364,9 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     });
                 }, 500);
                 break;
+            default:
+                debugger;
+                return;
         }
     }
 
@@ -385,12 +384,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         switch (this.action) {
             case TaskAction.RESTORE_USER_PROFILE:
             case TaskAction.CONNECT_USER:
-                const home = this.auth.home(this.userRole);
-                setTimeout(() => {
-                    this.router.navigate([home], {
-                        replaceUrl: true,
-                    });
-                }, 500);
+                this.toHome();
                 break;
             case TaskAction.DELETE_TOKEN:
             case TaskAction.UPDATE_TOKEN:
@@ -570,5 +564,24 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
 
     public isStarted(step: any): boolean {
         return step.started && !step.completed && !step.failed && !step.skipped;
+    }
+
+    private toHome() {
+        this.auth.sessions().subscribe((user) => {
+            const userRole = user?.role;
+            const home = this.auth.home(userRole);
+            setTimeout(() => {
+                this.router.navigate([home], {
+                    replaceUrl: true,
+                });
+            });
+        }, (error) => {
+            const home = this.auth.home('');
+            setTimeout(() => {
+                this.router.navigate([home], {
+                    replaceUrl: true,
+                });
+            });
+        });
     }
 }
