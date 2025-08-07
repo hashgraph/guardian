@@ -56,7 +56,7 @@ export class NotificationStep implements INotificationStep {
     public start(): NotificationStep {
         this.startDate = Date.now();
         this.started = true;
-        this.notify?.sendStatus();
+        this.notify?.sendStatus('Start: ' + this.name);
         return this;
     }
 
@@ -64,7 +64,7 @@ export class NotificationStep implements INotificationStep {
         this.stopDate = Date.now();
         this.completed = true;
         this.failed = false;
-        this.notify?.sendStatus();
+        this.notify?.sendStatus('Complete: ' + this.name);
         return this;
     }
 
@@ -79,7 +79,7 @@ export class NotificationStep implements INotificationStep {
             this.failed = false;
             this.skipped = true;
         }
-        this.notify?.sendStatus();
+        this.notify?.sendStatus('Skip: ' + this.name);
         return this;
     }
 

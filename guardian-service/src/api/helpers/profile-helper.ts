@@ -875,7 +875,7 @@ export async function createDefaultRoles({
     let index = 0;
     notifier.setEstimate(roles.length);
     for (const config of roles) {
-        const step = notifier.addStep(`${index + 1}. Create role (${config.name})`);
+        const step = notifier.addStep(`${config.name}`);
         step.start();
 
         const role = await users.createRole(config, owner);

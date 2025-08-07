@@ -15,4 +15,6 @@ export interface INotificationInfo {
     startDate: number;
     stopDate: number;
     steps: INotificationInfo[];
+    timestamp?: number;
+    action?: string;
 }

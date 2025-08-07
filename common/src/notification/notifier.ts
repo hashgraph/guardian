@@ -66,7 +66,7 @@ export class NewNotifier implements INotificationStep {
     public start(): NewNotifier {
         this.startDate = Date.now();
         this.started = true;
-        this.sendStatus();
+        this.sendStatus('Start');
         return this;
     }
 
@@ -74,7 +74,7 @@ export class NewNotifier implements INotificationStep {
         this.stopDate = Date.now();
         this.completed = true;
         this.failed = false;
-        this.sendStatus();
+        this.sendStatus('Complete');
         return this;
     }
 
@@ -89,7 +89,7 @@ export class NewNotifier implements INotificationStep {
             this.failed = false;
             this.skipped = true;
         }
-        this.sendStatus();
+        this.sendStatus('Skip');
         return this;
     }
 
@@ -198,7 +198,8 @@ export class NewNotifier implements INotificationStep {
             minimized: this.minimized,
             index: -1,
             progress: -1,
-            message: ''
+            message: '',
+            timestamp: Date.now()
         };
         if (this.completed || this.skipped) {
             info.progress = 100;
@@ -242,8 +243,9 @@ export class NewNotifier implements INotificationStep {
         return info;
     }
 
-    public sendStatus(): void {
+    public sendStatus(action: string): void {
         const info = this.info();
+        info.action = action;
         this.helper?.sendStatus(info);
     }
 

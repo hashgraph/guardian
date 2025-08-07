@@ -29,6 +29,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
     private userRole?: UserRole;
     private last?: any;
     private redir?: boolean;
+    private lastTimestamp: number = 0;
 
     @Input('taskId') inputTaskId?: string;
     @Output() completed = new EventEmitter<string>();
@@ -536,7 +537,10 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
     }
 
     private setNewProgress(info: any) {
-        console.log('update');
+        if (info.timestamp && this.lastTimestamp > info.timestamp) {
+            return;
+        }
+        this.lastTimestamp = info.timestamp || 0;
         const needScroll = this.needScroll();
         this.newProgress = true;
         this.progressValue = Math.min(Math.max(info.progress, 0), 100);
