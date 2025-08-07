@@ -22,7 +22,7 @@
 
 [Token (Verified Emission Reduction)](gold-standard-carbon-sequestration-through-accelerated-carbonation-of-concrete-aggregate.md#toc157611390)
 
-[Step by Step​  ](gold-standard-carbon-sequestration-through-accelerated-carbonation-of-concrete-aggregate.md#toc157611391)
+[Step by Step​](gold-standard-carbon-sequestration-through-accelerated-carbonation-of-concrete-aggregate.md#toc157611391)
 
 ### ​Summary <a href="#toc157611381" id="toc157611381"></a>
 
@@ -77,29 +77,29 @@ Carbon sequestration projects play a crucial role in addressing global climate c
 * Utilizes the latest approved version of the CDM Tool 02 for baseline scenario determination.
 * Lists baseline alternatives, considering different scenarios for demolition concrete treatment and CO2 sources.
 
-### Demo Video   <a href="#toc157611385" id="toc157611385"></a>
+### Demo Video <a href="#toc157611385" id="toc157611385"></a>
 
 [Youtube](https://youtu.be/bg7wQMkj1Zg?si=_dUy4Ryj-oZZgs5A)
 
-### Policy Workflow  <a href="#toc157611386" id="toc157611386"></a>
+### Policy Workflow <a href="#toc157611386" id="toc157611386"></a>
 
 <figure><img src="../../../.gitbook/assets/0 (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-### Policy Guide  <a href="#toc157611387" id="toc157611387"></a>
+### Policy Guide <a href="#toc157611387" id="toc157611387"></a>
 
-This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.&#x20;
+This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.
 
-### Available Roles  <a href="#toc157611388" id="toc157611388"></a>
+### Available Roles <a href="#toc157611388" id="toc157611388"></a>
 
-**Project Proponent -** The project proponent is responsible for executing the emission reduction project. The project proponent must adhere to the requirements outlined by Gold Standard’s methodology and provide evidence of the emission reductions achieved. Upon successful verification, the project proponent receives Verified Emission Reductions (VER) as an incentive for their emission reductions.&#x20;
+**Project Proponent -** The project proponent is responsible for executing the emission reduction project. The project proponent must adhere to the requirements outlined by Gold Standard’s methodology and provide evidence of the emission reductions achieved. Upon successful verification, the project proponent receives Verified Emission Reductions (VER) as an incentive for their emission reductions.
 
-**Verification and Validation Body (VVB) -** The VVB plays a critical role in independently verifying and validating the project data submitted by the project proponent. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration.&#x20;
+**Verification and Validation Body (VVB) -** The VVB plays a critical role in independently verifying and validating the project data submitted by the project proponent. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration.
 
-**Registry (Gold Standard) –** With Gold Standard as the registry they take on responsibilities that encompass project intake, pipeline management, and final review of project descriptions and monitoring reports. This process ensures that emission reduction projects meet the highest standards before tokens are issued.&#x20;
+**Registry (Gold Standard) –** With Gold Standard as the registry they take on responsibilities that encompass project intake, pipeline management, and final review of project descriptions and monitoring reports. This process ensures that emission reduction projects meet the highest standards before tokens are issued.
 
-### Important Documents & Schemas  <a href="#toc157611389" id="toc157611389"></a>
+### Important Documents & Schemas <a href="#toc157611389" id="toc157611389"></a>
 
-1. **Project Details –** Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.&#x20;
+1. **Project Details –** Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.
 2. **Project Sinks –** Project Sinks are equivalent to the amount of CO2 sequestered in carbonated concrete aggregate by applying direct or indirect mineral carbonation with biogenic CO2 in the project activity. The ex-ante and ex-post values will be calculated by filling out the project form.
 3. **Project Emissions –** Project emissions are associated with activities related to the operation of carbonation plants for CO2 treatment. These emissions will be calculated once the project form is filled.
 4. **Leakage Emissions –** Leakage emissions can be calculated once the project form is filled, and they consist of:
@@ -109,32 +109,32 @@ This policy is published to Hedera network and can either be imported via Github
    4. Emissions due to electricity consumption associated with the liquefaction of CO2.
    5. Emissions associated with the transportation of liquefied CO2 to the carbonation plant.
    6. Emissions associated with the transportation of concrete aggregate and regenerated sand.
-5. **Emissions Reduction –** Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.&#x20;
-6. **Monitoring Report –** The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.  &#x20;
+5. **Emissions Reduction –** Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.
+6. **Monitoring Report –** The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
 
-### Token (Verified Emission Reduction)  <a href="#toc157611390" id="toc157611390"></a>
+### Token (Verified Emission Reduction) <a href="#toc157611390" id="toc157611390"></a>
 
-Verified Emission Reduction (VER) credits, each equivalent to one tonne of CO2.&#x20;
+Verified Emission Reduction (VER) credits, each equivalent to one tonne of CO2.
 
-### Step by Step  <a href="#toc157611391" id="toc157611391"></a>
+### Step by Step <a href="#toc157611391" id="toc157611391"></a>
 
 {% hint style="info" %}
-Note:  If you would like to organize your data before adding it to the project form refer the GS Carbon Sequestration through Accelerated Carbonation Excel workbook. You can find this file in the GitHub methodology library. Make sure macros are enabled before using.
+Note: If you would like to organize your data before adding it to the project form refer the GS Carbon Sequestration through Accelerated Carbonation Excel workbook. You can find this file in the GitHub methodology library. Make sure macros are enabled before using.
 {% endhint %}
 
-1. Create a new user and assign role as Project Proponent.&#x20;
+1. Create a new user and assign role as Project Proponent.
 
 ![](<../../../.gitbook/assets/1 (1) (1) (1) (1) (1) (1) (1) (1).png>)
 
 ![](<../../../.gitbook/assets/2 (1) (1) (1) (1) (1) (1) (1) (1).png>)
 
-2. Create a New project by clicking on "New Project" button and enter all the required details.&#x20;
+2. Create a New project by clicking on "New Project" button and enter all the required details.
 
 ![](<../../../.gitbook/assets/3 (1) (1) (1) (1) (1) (1) (1).png>)
 
 ![](<../../../.gitbook/assets/4 (1) (1) (1) (1) (1) (1) (1).png>)
 
-3. Once project details are submitted, the Registry adds the project to the project pipeline.&#x20;
+3. Once project details are submitted, the Registry adds the project to the project pipeline.
 
 ![](<../../../.gitbook/assets/5 (1) (1) (1) (1) (1) (1) (1).png>)
 
@@ -148,15 +148,15 @@ Note:  If you would like to organize your data before adding it to the project f
 
 ![](<../../../.gitbook/assets/8 (1) (1) (1) (1) (1) (1).png>)
 
-6. Now we login as SR and approve VVB.&#x20;
+6. Now we login as SR and approve VVB.
 
 ![](<../../../.gitbook/assets/9 (1) (1) (1) (1) (1) (1).png>)
 
-7. Now we login as the Project Proponent and assign project to VVB.&#x20;
+7. Now we login as the Project Proponent and assign project to VVB.
 
 ![](<../../../.gitbook/assets/10 (1) (1) (1) (1) (1).png>)
 
-8. Now we login as VVB and validate the project by viewing project document details. Once validated, VVB clicks on Validate button.&#x20;
+8. Now we login as VVB and validate the project by viewing project document details. Once validated, VVB clicks on Validate button.
 
 ![](<../../../.gitbook/assets/11 (1) (1) (1) (1) (1).png>)
 
@@ -174,25 +174,25 @@ Note:  If you would like to organize your data before adding it to the project f
 
 ![](<../../../.gitbook/assets/16 (1) (1) (1) (1) (1).png>)
 
-11. Once validated, we login as Project Proponent and Add Monitoring Report.&#x20;
+11. Once validated, we login as Project Proponent and Add Monitoring Report.
 
 ![](<../../../.gitbook/assets/17 (1) (1) (1) (1) (1).png>)
 
 ![](<../../../.gitbook/assets/18 (1) (1) (1) (1) (1).png>)
 
-12. Once the report is submitted, we now login as VVB and validate the monitoring report by clicking on Verify button.&#x20;
+12. Once the report is submitted, we now login as VVB and validate the monitoring report by clicking on Verify button.
 
 ![](<../../../.gitbook/assets/19 (1) (1) (1) (1) (1).png>)
 
-13. Once the monitoring report is validated, we login as SR and click on Approve then the Mint button should appear which can then be used to mint the tokens.&#x20;
+13. Once the monitoring report is validated, we login as SR and click on Approve then the Mint button should appear which can then be used to mint the tokens.
 
-![](<../../../.gitbook/assets/20 (1) (1) (1) (1) (1).png>)
+![](<../../../.gitbook/assets/20 (1) (1) (1) (1) (1) (1).png>)
 
-14. Once minting is completed, we can view tokens in Token History tab&#x20;
+14. Once minting is completed, we can view tokens in Token History tab
 
 <figure><img src="../../../.gitbook/assets/image (421).png" alt=""><figcaption></figcaption></figure>
 
-15. Trustchain can also be viewed by clicking on View TrustChain button:&#x20;
+15. Trustchain can also be viewed by clicking on View TrustChain button:
 
 <figure><img src="../../../.gitbook/assets/image (422).png" alt=""><figcaption></figcaption></figure>
 
