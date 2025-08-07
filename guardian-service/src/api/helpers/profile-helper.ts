@@ -184,11 +184,11 @@ export async function createSystemSchemas({
 }): Promise<Schema | null> {
     try {
         // <-- Steps
-        const STEP_STANDARD_REGISTRY = `1. ${SchemaEntity.STANDARD_REGISTRY}`;
-        const STEP_USER = `2. ${SchemaEntity.USER}`;
-        const STEP_RETIRE_TOKEN = `3. ${SchemaEntity.RETIRE_TOKEN}`;
-        const STEP_ROLE = `4. ${SchemaEntity.ROLE}`;
-        const STEP_USER_PERMISSIONS = `5. ${SchemaEntity.USER_PERMISSIONS}`;
+        const STEP_STANDARD_REGISTRY = `${SchemaEntity.STANDARD_REGISTRY}`;
+        const STEP_USER = `${SchemaEntity.USER}`;
+        const STEP_RETIRE_TOKEN = `${SchemaEntity.RETIRE_TOKEN}`;
+        const STEP_ROLE = `${SchemaEntity.ROLE}`;
+        const STEP_USER_PERMISSIONS = `${SchemaEntity.USER_PERMISSIONS}`;
         // Steps -->
 
         notifier.addStep(STEP_STANDARD_REGISTRY);
