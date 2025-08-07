@@ -391,6 +391,10 @@ export class UserProfileComponent implements OnInit {
         clearInterval(this.interval);
     }
 
+    public initForm($event: any) {
+        this.vcDocumentForm = $event;
+    }
+
     private update() {
         this.interval = setInterval(() => {
             if (!this.isConfirmed && !this.isNewAccount) {

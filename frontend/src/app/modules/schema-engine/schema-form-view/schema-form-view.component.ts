@@ -16,6 +16,7 @@ interface IFieldControl extends SchemaField {
     pageIndex: number;
     pageSize: number;
     notCorrespondCondition?: boolean;
+    open: boolean;
 }
 
 interface IFieldIndexControl {
@@ -148,7 +149,8 @@ export class SchemaFormViewComponent implements OnInit {
                 pageIndex: 0,
                 pageSize: 0,
                 count: 0,
-                imgSrc: ''
+                imgSrc: '',
+                open: false
             }
             if (!field.isArray && !field.isRef) {
                 item.value = !this.values

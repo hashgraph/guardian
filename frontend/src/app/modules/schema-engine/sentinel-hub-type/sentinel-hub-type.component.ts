@@ -3,18 +3,7 @@ import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms
 import { Subscription } from 'rxjs';
 import { MapService } from '../../../services/map.service';
 import moment from 'moment';
-
-const MY_FORMATS = {
-    parse: {
-        dateInput: 'l, LT',
-    },
-    display: {
-        dateInput: 'YYYY-MM-DD',
-        monthYearLabel: 'MM yyyy',
-        dateA11yLabel: 'LL',
-        monthYearA11yLabel: 'MMMM YYYY',
-    }
-};
+import { SentinelHubForm } from '../schema-form-model/sentinel-hub-form';
 
 @Component({
     selector: 'app-sentinel-hub-type',
@@ -22,36 +11,29 @@ const MY_FORMATS = {
     styleUrls: ['./sentinel-hub-type.component.scss'],
 })
 export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewInit {
-    
     @ViewChild('dateFrom') dateFrom: any
     @ViewChild('dateTo') dateTo: any
 
-    public key: string;
-    subscription = new Subscription();
-    @Input('formGroup') control: UntypedFormGroup;
-
-    public get formattedImageLink(): string {
-        if (!this.key) {
-            return '';
-        }
-        
-        if (this.control.valid || this.control.disabled) {
-            const value = this.control.value;
-            if (!value.bbox || !value.format || !value.layers || !value.maxcc || !value.width || !value.height || !value.time) {
-                return '';
-            }
-            return `https://services.sentinel-hub.com/ogc/wms/${this.key}?REQUEST=GetMap&BBOX=${value.bbox}&FORMAT=${value.format}&LAYERS=${value.layers}&MAXCC=${value.maxcc}&WIDTH=${value.width}&HEIGHT=${value.height}&TIME=${value.time}`
-        }
-
-        return '';
-    }
     @Input('preset') presetDocument: any = null;
+    @Input('form-model') formModel!: SentinelHubForm;
     @Input('disabled') isDisabled: boolean = false;
+
+    public key: string;
+    public subscription = new Subscription();
+
     public datePicker = new UntypedFormGroup({
         from: new UntypedFormControl(null, Validators.required),
         to: new UntypedFormControl(null, Validators.required)
     });
     protected readonly FormControl = UntypedFormControl;
+
+    public get formattedImageLink(): string {
+        if (!this.key || !this.formModel) {
+            return '';
+        }
+
+        return this.formModel.formattedImageLink(this.key);
+    }
 
     constructor(
         private cdkRef: ChangeDetectorRef,
@@ -60,14 +42,6 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-    }
-
-    get formControl(): UntypedFormGroup {
-        return this.control || new UntypedFormGroup({})
-    }
-
-    getControlByName(name: string): UntypedFormControl {
-        return this.control.get(name) as UntypedFormControl;
     }
 
     getDateByName(name: string): UntypedFormControl {
@@ -79,54 +53,53 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
     }
 
     ngOnInit(): void {
-        if (!this.control) {
-            this.control = new UntypedFormGroup({});
+        if (!this.formModel) {
+            const form = new UntypedFormGroup({});
+            this.formModel = new SentinelHubForm(form);
+            this.formModel.setData({
+                preset: this.presetDocument
+            });
+            this.formModel.build();
         }
-
-        this.control.registerControl('layers', new UntypedFormControl('NATURAL-COLOR', Validators.required));
-        this.control.registerControl('format', new UntypedFormControl('image/jpeg', Validators.required));
-        this.control.registerControl('maxcc', new UntypedFormControl(undefined, Validators.required));
-        this.control.registerControl('width', new UntypedFormControl(undefined, Validators.required));
-        this.control.registerControl('height', new UntypedFormControl(undefined, Validators.required));
-        this.control.registerControl('bbox', new UntypedFormControl('', Validators.required));
-        this.control.registerControl('time', new UntypedFormControl(undefined, Validators.required));
-
+        
         this.subscription.add(
             this.mapService.getSentinelKey().subscribe(value => {
-                    this.key = value;
-                    this.cdkRef.detectChanges();
-                }
+                this.key = value;
+                this.cdkRef.detectChanges();
+            }
             )
         )
 
-        if (this.presetDocument) {
-            this.control.patchValue(this.presetDocument);
-            let [from, to] = this.control.get('time')?.value?.split('/') || [];
+        if (this.formModel) {
+            const time = this.formModel.getValue('time');
+            if (time) {
+                let [from, to] = time.split('/');
 
-            const _from = from;
-            const _to = to;
-            
-            if (!/(\d+)-(\d+)-(\d+)/.test(_from)) {
-                from = moment(_from, 'YYYY-MM-DD');
-            }
-            if (!/(\d+)-(\d+)-(\d+)/.test(_to)) {
-                to = moment(_to, 'YYYY-MM-DD');
-            }
-            if (/(\d+)/.test(_from)) {
-                from = moment(_from);
-            }
-            if (/(\d+)/.test(_to)) {
-                to = moment(_to);
-            }
-            this.datePicker.patchValue({from, to});
+                const _from = from;
+                const _to = to;
 
-            setTimeout(() => {
-                const dateFromInput = this.dateFrom?.el.nativeElement.querySelector('input');
-                const dateToInput = this.dateTo?.el.nativeElement.querySelector('input');
-                
-                dateFromInput.value = moment(from, 'YYYY-MM-DD').format('YYYY-MM-DD');
-                dateToInput.value = moment(to, 'YYYY-MM-DD').format('YYYY-MM-DD');
-            }, 100)
+                if (!/(\d+)-(\d+)-(\d+)/.test(_from)) {
+                    from = moment(_from, 'YYYY-MM-DD');
+                }
+                if (!/(\d+)-(\d+)-(\d+)/.test(_to)) {
+                    to = moment(_to, 'YYYY-MM-DD');
+                }
+                if (/(\d+)/.test(_from)) {
+                    from = moment(_from);
+                }
+                if (/(\d+)/.test(_to)) {
+                    to = moment(_to);
+                }
+                this.datePicker.patchValue({ from, to });
+
+                setTimeout(() => {
+                    const dateFromInput = this.dateFrom?.el.nativeElement.querySelector('input');
+                    const dateToInput = this.dateTo?.el.nativeElement.querySelector('input');
+
+                    dateFromInput.value = moment(from, 'YYYY-MM-DD').format('YYYY-MM-DD');
+                    dateToInput.value = moment(to, 'YYYY-MM-DD').format('YYYY-MM-DD');
+                }, 100)
+            }
         }
 
         this.subscription.add(
@@ -137,15 +110,14 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
 
                 const fromDate = value.from.format ? value.from.format('YYYY-MM-DD') : moment(value.from).format('YYYY-MM-DD')
                 const toDate = value.to.format ? value.to.format('YYYY-MM-DD') : moment(value.to).format('YYYY-MM-DD')
-
-                this.getControlByName('time').setValue(fromDate + '/' + toDate);
+                this.formModel?.setValue('time', fromDate + '/' + toDate);
             })
         );
-        
+
         setTimeout(() => {
             if (this.isDisabled) {
                 this.datePicker?.disable();
-                this.control?.disable();
+                this.formModel?.disable();
             }
         });
 

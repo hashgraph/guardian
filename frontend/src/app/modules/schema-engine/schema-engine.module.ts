@@ -40,10 +40,9 @@ import { TooltipModule } from 'primeng/tooltip';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { AccordionModule } from 'primeng/accordion';
 import { DateTimeComponent } from './schema-form/controls/date-time/date-time.component';
-import { EnumComponent } from './schema-form/controls/enum/enum';
-import { InputComponent } from './schema-form/controls/input/input';
 import { FormulasModule } from '../formulas/formulas.module';
 import { DialogService } from 'primeng/dynamicdialog';
+import { SchemaFormRootComponent } from './schema-form-root/schema-form-root.component';
 
 @NgModule({
     declarations: [
@@ -67,8 +66,7 @@ import { DialogService } from 'primeng/dynamicdialog';
         SchemaTreeComponent,
         SchemaFormDialog,
         DateTimeComponent,
-        EnumComponent,
-        InputComponent
+        SchemaFormRootComponent
     ],
     imports: [
         CommonModule,
@@ -103,7 +101,8 @@ import { DialogService } from 'primeng/dynamicdialog';
         VCViewerDialog,
         ExportSchemaDialog,
         SchemaFieldConfigurationComponent,
-        SchemaFormDialog
+        SchemaFormDialog,
+        SchemaFormRootComponent
     ],
     providers: [
         DialogService
