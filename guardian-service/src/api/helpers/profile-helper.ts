@@ -313,8 +313,8 @@ export async function createUserProfile({
     notifier.addStep(STEP_PUBLISH_DID);
     notifier.addStep(STEP_PUBLISH_SCHEMAS);
     notifier.addStep(STEP_PUBLISH_VC);
-    notifier.addStep(STEP_CREATE_ROLES);
     notifier.addStep(STEP_SAVE);
+    notifier.addStep(STEP_CREATE_ROLES);
     notifier.start();
 
     let signOptions: ISignOptions = {
