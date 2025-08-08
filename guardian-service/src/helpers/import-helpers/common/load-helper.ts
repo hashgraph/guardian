@@ -101,9 +101,13 @@ export async function loadSchema(
         } else if (response.type === MessageType.SchemaPackage) {
             const message = response as SchemaPackageMessage;
             const schemasToImport: any[] = [];
+            const documents = message.getDocument();
+            const contexts = message.getContext();
             const metadata = message.getMetadata();
             if (Array.isArray(metadata?.schemas)) {
                 for (const schema of metadata.schemas) {
+                    const document = documents[schema.id];
+                    const context = contexts;
                     const schemaToImport: any = {
                         iri: null,
                         uuid: schema.uuid,
@@ -122,8 +126,8 @@ export async function loadSchema(
                         readonly: false,
                         system: false,
                         active: false,
-                        document: message.getDocument(),
-                        context: message.getContext(),
+                        document,
+                        context,
                         documentURL: message.getDocumentUrl(UrlType.url),
                         contextURL: message.getContextUrl(UrlType.url)
                     }
