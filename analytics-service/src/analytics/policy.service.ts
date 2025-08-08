@@ -9,6 +9,7 @@ import {
     TokenMessage,
     UrlType,
     DatabaseServer,
+    SchemaPackageMessage,
 } from '@guardian/common';
 import { AnalyticsModule as Module } from '../entity/analytics-module.js';
 import { AnalyticsPolicy as Policy } from '../entity/analytics-policy.js';
@@ -59,6 +60,9 @@ export class AnalyticsPolicyService {
             if (json.type === MessageType.Schema) {
                 item = SchemaMessage.fromMessageObject(json);
             }
+            if (json.type === MessageType.SchemaPackage) {
+                item = SchemaPackageMessage.fromMessageObject(json);
+            }
             if (item && item.validate()) {
                 item.setAccount(message.payer_account_id);
                 item.setIndex(message.sequence_number);
@@ -94,6 +98,9 @@ export class AnalyticsPolicyService {
             }
             if (json.type === MessageType.Schema) {
                 item = SchemaMessage.fromMessageObject(json);
+            }
+            if (json.type === MessageType.SchemaPackage) {
+                item = SchemaPackageMessage.fromMessageObject(json);
             }
             if (item && item.validate()) {
                 item.setAccount(message.payer_account_id);
@@ -215,6 +222,9 @@ export class AnalyticsPolicyService {
 
                         await databaseServer.save(Schema, entity);
                     }
+                    if (data.type === MessageType.SchemaPackage) {
+
+                    }
                 }
             });
         } catch (error) {
@@ -318,6 +328,10 @@ export class AnalyticsPolicyService {
                         const entity = await databaseServer.create(Schema, row);
 
                         await databaseServer.save(Schema, entity);
+                    }
+
+                    if (data.type === MessageType.SchemaPackage) {
+
                     }
                 }
             });
