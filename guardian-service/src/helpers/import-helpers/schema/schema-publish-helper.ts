@@ -1,10 +1,9 @@
 import { GeoJsonContext, IOwner, IRootConfig, ISchemaDocument, ModuleStatus, Schema, SchemaHelper, SchemaStatus, SentinelHubContext } from '@guardian/interfaces';
-import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaMessage, SchemaPackageMessage, schemasToContext, TopicConfig, UrlType } from '@guardian/common';
+import { DatabaseServer, INotificationStep, MessageAction, MessageServer, Schema as SchemaCollection, SchemaMessage, SchemaPackageMessage, schemasToContext, TopicConfig, UrlType } from '@guardian/common';
 import { checkForCircularDependency } from '../common/load-helper.js';
 import { incrementSchemaVersion, updateSchemaDefs, updateSchemaDocument } from './schema-helper.js';
 import { publishSchemaTags } from '../tag/tag-publish-helper.js';
 import { SchemaImportExportHelper } from './schema-import-helper.js';
-import { emptyNotifier, INotifier } from '../../notifier.js';
 
 function checkSchemaProps(item: SchemaCollection, document: ISchemaDocument) {
     const names = Object.keys(document.properties);
@@ -152,7 +151,8 @@ export async function publishSchema(
     item: SchemaCollection,
     user: IOwner,
     messageServer: MessageServer,
-    type: MessageAction
+    type: MessageAction,
+    notifier: INotificationStep
 ): Promise<SchemaCollection> {
     if (checkForCircularDependency(item)) {
         throw new Error(`There is circular dependency in schema: ${item.iri}`);
@@ -170,7 +170,8 @@ export async function publishSchema(
             sendToIPFS: true,
             memo: null,
             userId: user.id,
-            interception: user.id
+            interception: user.id,
+            notifier: notifier.minimize(true)
         });
 
     const messageId = result.getId();
@@ -202,8 +203,9 @@ export async function publishSystemSchema(
     item: SchemaCollection,
     user: IOwner,
     messageServer: MessageServer,
-    notifier: INotifier
+    notifier: INotificationStep
 ): Promise<SchemaCollection> {
+    notifier.start();
     const type = MessageAction.PublishSystemSchema;
     delete item.id;
     delete item._id;
@@ -215,10 +217,8 @@ export async function publishSystemSchema(
     item.owner = user.owner;
     item.topicId = messageServer.getTopic();
     SchemaHelper.setVersion(item, undefined, undefined);
-    const result = await publishSchema(item, user, messageServer, type);
-    if (notifier) {
-        notifier.info(`Schema ${result.name || '-'} published`);
-    }
+    const result = await publishSchema(item, user, messageServer, type, notifier);
+    notifier.complete();
     return result;
 }
 
@@ -233,11 +233,12 @@ export async function publishSchemas(
     schemas: Iterable<SchemaCollection>,
     owner: IOwner,
     messageServer: MessageServer,
-    type: MessageAction
+    type: MessageAction,
+    notifier: INotificationStep
 ): Promise<void> {
     const tasks = [];
     for (const schema of schemas) {
-        tasks.push(publishSchema(schema, owner, messageServer, type));
+        tasks.push(publishSchema(schema, owner, messageServer, type, notifier));
     }
     const items = await Promise.all(tasks);
     for (const schema of items) {
@@ -256,18 +257,22 @@ export async function publishSystemSchemas(
     systemSchemas: SchemaCollection[],
     messageServer: MessageServer,
     user: IOwner,
-    notifier: INotifier
+    notifier: INotificationStep
 ): Promise<void> {
+    notifier.start();
+    notifier.setEstimate(systemSchemas.length);
     const tasks = [];
     for (const schema of systemSchemas) {
         if (schema) {
-            tasks.push(publishSystemSchema(schema, user, messageServer, notifier));
+            const step = notifier.addStep(`${schema.name || '-'}`);
+            tasks.push(publishSystemSchema(schema, user, messageServer, step));
         }
     }
     const items = await Promise.all(tasks);
     for (const schema of items) {
         await DatabaseServer.createAndSaveSchema(schema);
     }
+    notifier.complete();
 }
 
 export async function searchSchemaDefs(
@@ -305,7 +310,7 @@ export async function publishSchemasPackage(options: {
     schemas: SchemaCollection[],
     owner: IOwner,
     server: MessageServer,
-    notifier: INotifier,
+    notifier: INotificationStep,
     staticSchemas?: boolean,
     schemaMap?: Map<string, string>,
 }): Promise<Map<string, string>> {
@@ -439,7 +444,7 @@ export async function publishSystemSchemasPackage(options: {
     schemas: SchemaCollection[],
     owner: IOwner,
     server: MessageServer,
-    notifier: INotifier
+    notifier: INotificationStep
 }): Promise<Map<string, string>> {
     const type = MessageAction.PublishSystemSchemas;
     const topicId = options.server.getTopic();
@@ -473,11 +478,24 @@ export async function findAndPublishSchema(
     version: string,
     user: IOwner,
     root: IRootConfig,
-    notifier: INotifier,
+    notifier: INotificationStep,
     schemaMap: Map<string, string> | null,
     userId: string | null
 ): Promise<SchemaCollection> {
-    notifier.start('Load schema');
+    // <-- Steps
+    const STEP_RESOLVE_TOPIC = 'Resolve topic';
+    const STEP_PUBLISH_RELATED_SCHEMAS = 'Publish related schemas';
+    const STEP_PUBLISH_SCHEMA = 'Publish schema';
+    const STEP_PUBLISH_TAGS = 'Publish tags';
+    const STEP_SAVE = 'Save';
+    // Steps -->
+
+    notifier.addStep(STEP_RESOLVE_TOPIC, 5);
+    notifier.addStep(STEP_PUBLISH_RELATED_SCHEMAS, 40);
+    notifier.addStep(STEP_PUBLISH_SCHEMA, 40);
+    notifier.addStep(STEP_PUBLISH_TAGS, 10);
+    notifier.addStep(STEP_SAVE, 5);
+    notifier.start();
 
     let item = await DatabaseServer.getSchema(id);
     if (!item) {
@@ -493,35 +511,54 @@ export async function findAndPublishSchema(
         throw new Error('Invalid status');
     }
 
-    notifier.completedAndStart('Publishing related schemas');
-    const oldSchemaIri = item.iri;
-    await publishDefsSchemas(item.document?.$defs, user, root, schemaMap, userId);
-    item = await DatabaseServer.getSchema(id);
-
-    notifier.completedAndStart('Resolve topic');
+    notifier.startStep(STEP_RESOLVE_TOPIC);
     const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true, userId);
     const messageServer = new MessageServer({
         operatorId: root.hederaAccountId,
         operatorKey: root.hederaAccountKey,
         signOptions: root.signOptions
     }).setTopicObject(topic);
-    notifier.completedAndStart('Publish schema');
+    notifier.completeStep(STEP_RESOLVE_TOPIC);
 
+    notifier.startStep(STEP_PUBLISH_RELATED_SCHEMAS);
+    const oldSchemaIri = item.iri;
+    await publishDefsSchemas(
+        item.document?.$defs,
+        user,
+        root,
+        schemaMap,
+        notifier.getStep(STEP_PUBLISH_RELATED_SCHEMAS),
+        userId
+    );
+    item = await DatabaseServer.getSchema(id);
+    notifier.completeStep(STEP_PUBLISH_RELATED_SCHEMAS);
+
+    notifier.startStep(STEP_PUBLISH_SCHEMA);
     SchemaHelper.updateVersion(item, version);
-    item = await publishSchema(item, user, messageServer, MessageAction.PublishSchema);
+    item = await publishSchema(
+        item,
+        user,
+        messageServer,
+        MessageAction.PublishSchema,
+        notifier.getStep(STEP_PUBLISH_SCHEMA)
+    );
+    notifier.completeStep(STEP_PUBLISH_SCHEMA);
 
-    notifier.completedAndStart('Publish tags');
+    notifier.startStep(STEP_PUBLISH_TAGS);
     await publishSchemaTags(item, user, messageServer);
+    notifier.completeStep(STEP_PUBLISH_TAGS);
 
-    notifier.completedAndStart('Update in DB');
+    notifier.startStep(STEP_SAVE);
     await updateSchemaDocument(item);
     await updateSchemaDefs(item.iri, oldSchemaIri);
-    notifier.completed();
+    notifier.completeStep(STEP_SAVE);
 
     if (schemaMap) {
         const newSchemaIri = item.iri;
         schemaMap.set(oldSchemaIri, newSchemaIri);
     }
+
+    notifier.complete();
 
     return item;
 }
@@ -537,6 +574,7 @@ export async function publishDefsSchemas(
     user: IOwner,
     root: IRootConfig,
     schemaMap: Map<string, string> | null,
+    notifier: INotificationStep,
     userId: string | null
 ) {
     if (!defs) {
@@ -549,7 +587,15 @@ export async function publishDefsSchemas(
         });
         if (schema && schema.status !== SchemaStatus.PUBLISHED) {
             schema = await incrementSchemaVersion(schema.topicId, schema.iri, user);
-            await findAndPublishSchema(schema.id, schema.version, user, root, emptyNotifier(), schemaMap, userId);
+            await findAndPublishSchema(
+                schema.id,
+                schema.version,
+                user,
+                root,
+                notifier.getStepById(schema.id),
+                schemaMap,
+                userId
+            );
         }
     }
 }

@@ -96,9 +96,11 @@ export class TaskManager {
         this.channel.setConnection(cn);
 
         this.channel.subscribe(MessageAPI.UPDATE_TASK_STATUS, async (msg) => {
-            const { taskId, statuses, result, error } = msg;
+            const { taskId, statuses, result, error, info } = msg;
             if (taskId) {
-                if (statuses) {
+                if (info) {
+                    this.addInfo(taskId, info, statuses);
+                } else if (statuses) {
                     this.addStatuses(taskId, statuses);
                 }
                 if (error) {
@@ -159,6 +161,32 @@ export class TaskManager {
         const task = this.tasks[taskId];
         if (task) {
             task.statuses.push(...statuses);
+            this.wsService.notifyTaskProgress(task);
+        } else if (skipIfNotFound) {
+            return;
+        } else {
+            throw new Error(`Task ${taskId} not found.`);
+        }
+    }
+
+    /**
+     * Add task statuses
+     * @param taskId
+     * @param statuses
+     * @param skipIfNotFound
+     */
+    public addInfo(
+        taskId: string,
+        info: any,
+        statuses: IStatus[],
+        skipIfNotFound: boolean = true
+    ): void {
+        const task = this.tasks[taskId];
+        if (task) {
+            task.info = info;
+            if (statuses) {
+                task.statuses.push(...statuses);
+            }
             this.wsService.notifyTaskProgress(task);
         } else if (skipIfNotFound) {
             return;
@@ -324,11 +352,15 @@ class Task {
      * Error of task
      */
     public error: any;
+    /**
+     * Info of task
+     */
+    public info: any;
 
     constructor(
         public action: TaskAction | string,
         public userId: string,
         public expectation: number,
         public taskId: string
-    ) {}
+    ) { }
 }

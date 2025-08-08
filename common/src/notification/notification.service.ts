@@ -1,8 +1,8 @@
 import { NotificationAction, NotificationType, NotifyAPI, } from '@guardian/interfaces';
 import { Injectable } from '@nestjs/common';
-import { CommonVariables } from './common-variables.js';
+import { CommonVariables } from '../helpers/common-variables.js';
 import { Client, ClientProxy, Transport, NatsRecordBuilder } from '@nestjs/microservices';
-import { GenerateTLSOptionsNats } from './generate-tls-options.js';
+import { GenerateTLSOptionsNats } from '../helpers/generate-tls-options.js';
 import { JwtServicesValidator } from '../security/index.js';
 import { headers } from 'nats';
 

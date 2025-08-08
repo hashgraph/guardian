@@ -58,8 +58,8 @@ This policy is published to Hedera network and can either be imported via Github
 ### Tools referenced
 
 * Tool 02 - Combined tool to identify the baseline scenario and demonstrate additionality
-* Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion&#x20;
-* Tool 07 - Tool to calculate the emission factor for an electricity system&#x20;
+* Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
+* Tool 07 - Tool to calculate the emission factor for an electricity system
 * Tool 10 - Tool to determine the remaining lifetime of equipment
 
 ### Token(Carbon Emissions Reduction) <a href="#tokencarbon-emissions-reduction" id="tokencarbon-emissions-reduction"></a>
@@ -148,4 +148,4 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 <figure><img src="../../../.gitbook/assets/image (26) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (27) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (27) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>

@@ -31,7 +31,8 @@ import {
     Wallet,
     Workers,
     entities,
-    JwtServicesValidator
+    JwtServicesValidator,
+    NotificationEvents
 } from '@guardian/common';
 import { ApplicationStates, PolicyEvents, PolicyStatus, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
@@ -145,6 +146,7 @@ Promise.all([
     const channel = new MessageBrokerChannel(cn, 'guardians');
 
     const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
+    NotificationEvents.init(new GuardiansService());
 
     const state = new ApplicationState();
     await state.setServiceName('GUARDIAN_SERVICE').setConnection(cn).init();

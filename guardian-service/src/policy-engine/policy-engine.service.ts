@@ -14,6 +14,7 @@ import {
     MessageServer,
     MessageType,
     NatsService,
+    NewNotifier,
     PinoLogger,
     Policy,
     PolicyAction,
@@ -35,7 +36,6 @@ import { CompareUtils, HashComparator } from '../analytics/index.js';
 import { compareResults, getDetails } from '../api/record.service.js';
 import { Inject } from '../helpers/decorators/inject.js';
 import { GuardiansService } from '../helpers/guardians.js';
-import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { BlockAboutString } from './block-about.js';
 import { PolicyDataMigrator } from './helpers/policy-data-migrator.js';
 import { PolicyDataLoader, VcDocumentLoader, VpDocumentLoader } from './helpers/policy-data/loaders/index.js';
@@ -966,7 +966,7 @@ export class PolicyEngineService {
             async (msg: { model: Policy, owner: IOwner }): Promise<IMessageResponse<Policy>> => {
                 try {
                     const { model, owner } = msg;
-                    let policy = await this.policyEngine.createPolicy(model, owner, emptyNotifier(), logger);
+                    let policy = await this.policyEngine.createPolicy(model, owner, NewNotifier.empty(), logger);
                     policy = await PolicyImportExportHelper.updatePolicyComponents(policy, logger, owner.id);
                     return new MessageResponse(policy);
                 } catch (error) {
@@ -977,13 +977,13 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_POLICIES_ASYNC,
             async (msg: { model: Policy, owner: IOwner, task: any }): Promise<IMessageResponse<any>> => {
                 const { model, owner, task } = msg;
-                const notifier = await initNotifier(task);
+                const notifier = await NewNotifier.create(task);
                 RunFunctionAsync(async () => {
                     let policy = await this.policyEngine.createPolicy(model, owner, notifier, logger);
                     policy = await PolicyImportExportHelper.updatePolicyComponents(policy, logger, owner.id);
                     notifier.result(policy.id);
                 }, async (error) => {
-                    notifier.error(error);
+                    notifier.fail(error);
                 });
                 return new MessageResponse(task);
             });
@@ -996,18 +996,18 @@ export class PolicyEngineService {
                 task: any
             }): Promise<IMessageResponse<any>> => {
                 const { policyId, model, owner, task } = msg;
-                const notifier = await initNotifier(task);
+                const notifier = await NewNotifier.create(task);
                 RunFunctionAsync(async () => {
                     const result = await this.policyEngine.clonePolicy(policyId, model, owner, notifier, logger, owner.id);
                     if (result?.errors?.length) {
                         const message = `Failed to clone schemas: ${JSON.stringify(result.errors.map(e => e.name))}`;
-                        notifier.error(message);
+                        notifier.fail(message);
                         await logger.warn(message, ['GUARDIAN_SERVICE'], owner.id);
                         return;
                     }
                     notifier.result(result.policy.id);
                 }, async (error) => {
-                    notifier.error(error);
+                    notifier.fail(error);
                 });
                 return new MessageResponse(task);
             });
@@ -1015,7 +1015,7 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.DELETE_POLICY_ASYNC,
             async (msg: { policyId: string, owner: IOwner, task: any }): Promise<IMessageResponse<any>> => {
                 const { policyId, owner, task } = msg;
-                const notifier = await initNotifier(task);
+                const notifier = await NewNotifier.create(task);
                 RunFunctionAsync(async () => {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'delete');
@@ -1025,7 +1025,7 @@ export class PolicyEngineService {
                         notifier.result(await this.policyEngine.deletePolicy(policy, owner, notifier, logger));
                     }
                 }, async (error) => {
-                    notifier.error(error);
+                    notifier.fail(error);
                 });
                 return new MessageResponse(task);
             });
@@ -1064,7 +1064,12 @@ export class PolicyEngineService {
                         throw new Error('Policy version in body is empty');
                     }
                     const result = await this.policyEngine.validateAndPublishPolicy(
-                        options, policyId, owner, emptyNotifier(), logger, owner?.id
+                        options,
+                        policyId,
+                        owner,
+                        NewNotifier.empty(),
+                        logger,
+                        owner?.id
                     );
                     return new MessageResponse({
                         isValid: result.isValid,
@@ -1087,19 +1092,24 @@ export class PolicyEngineService {
                 task: any
             }): Promise<IMessageResponse<any>> => {
                 const { options, policyId, owner, task } = msg;
-                const notifier = await initNotifier(task);
+                const notifier = await NewNotifier.create(task);
 
                 RunFunctionAsync(async () => {
                     if (!options || !options.policyVersion) {
                         throw new Error('Policy version in body is empty');
                     }
                     const result = await this.policyEngine.validateAndPublishPolicy(
-                        options, policyId, owner, notifier, logger, owner?.id
+                        options,
+                        policyId,
+                        owner,
+                        notifier,
+                        logger,
+                        owner?.id
                     );
                     notifier.result(result);
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                    notifier.error(error);
+                    notifier.fail(error);
                 });
 
                 return new MessageResponse(task);
@@ -1372,7 +1382,7 @@ export class PolicyEngineService {
                             .setUser(owner)
                             .setParentPolicyTopic(versionOfTopicId)
                             .setMetadata(metadata),
-                        emptyNotifier(),
+                        NewNotifier.empty(),
                         owner.id
                     )
                     if (result?.errors?.length) {
@@ -1381,7 +1391,7 @@ export class PolicyEngineService {
                         return new MessageError(message);
                     }
                     if (demo) {
-                        await this.policyEngine.startDemo(result.policy, owner, logger);
+                        await this.policyEngine.startDemo(result.policy, owner, logger, NewNotifier.empty());
                     }
                     return new MessageResponse(true);
                 } catch (error) {
@@ -1400,16 +1410,23 @@ export class PolicyEngineService {
                 task: any
             }): Promise<IMessageResponse<any>> => {
                 const { zip, owner, versionOfTopicId, task, metadata, demo } = msg;
-                const notifier = await initNotifier(task);
+                const notifier = await NewNotifier.create(task);
 
                 RunFunctionAsync(async () => {
                     if (!zip) {
                         throw new Error('file in body is empty');
                     }
+                    // <-- Steps
+                    const STEP_IMPORT_POLICY = 'Import policy';
+                    const STEP_START_POLICY = 'Start policy';
+                    // Steps -->
+
+                    notifier.addStep(STEP_IMPORT_POLICY, 90);
+                    notifier.addStep(STEP_START_POLICY, 10);
+                    notifier.start();
+
                     await logger.info(`Import policy by file`, ['GUARDIAN_SERVICE'], owner?.id);
-                    notifier.start('File parsing');
                     const policyToImport = await PolicyImportExport.parseZipFile(Buffer.from(zip.data), true);
-                    notifier.completed();
                     const result = await PolicyImportExportHelper.importPolicy(
                         demo ? ImportMode.DEMO : ImportMode.COMMON,
                         (new ImportPolicyOptions(logger))
@@ -1417,17 +1434,22 @@ export class PolicyEngineService {
                             .setUser(owner)
                             .setParentPolicyTopic(versionOfTopicId)
                             .setMetadata(metadata),
-                        notifier,
+                        notifier.getStep(STEP_IMPORT_POLICY),
                         owner.id
                     );
                     if (result?.errors?.length) {
                         const message = PolicyImportExportHelper.errorsMessage(result.errors);
-                        notifier.error(message);
+                        notifier.fail(message);
                         await logger.warn(message, ['GUARDIAN_SERVICE'], owner?.id);
                         return;
                     }
                     if (demo) {
-                        await this.policyEngine.startDemo(result.policy, owner, logger, notifier);
+                        await this.policyEngine.startDemo(
+                            result.policy,
+                            owner,
+                            logger,
+                            notifier.getStep(STEP_START_POLICY)
+                        );
                     }
                     notifier.result({
                         policyId: result.policy.id,
@@ -1435,7 +1457,7 @@ export class PolicyEngineService {
                     });
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                    notifier.error(error);
+                    notifier.fail(error);
                 });
                 return new MessageResponse(task);
             });
@@ -1445,7 +1467,7 @@ export class PolicyEngineService {
                 try {
                     const { messageId, owner } = msg;
                     const policyToImport = await this.policyEngine
-                        .preparePolicyPreviewMessage(messageId, owner, emptyNotifier(), logger, owner?.id);
+                        .preparePolicyPreviewMessage(messageId, owner, NewNotifier.empty(), logger, owner?.id);
                     const hash = await this.createHashByFile(policyToImport, logger, owner?.id);
                     const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
                     const similarPolicies = await DatabaseServer.getListOfPolicies(filters);
@@ -1464,7 +1486,7 @@ export class PolicyEngineService {
                 task: any
             }): Promise<IMessageResponse<any>> => {
                 const { messageId, owner, task } = msg;
-                const notifier = await initNotifier(task);
+                const notifier = await NewNotifier.create(task);
 
                 RunFunctionAsync(async () => {
                     const policyToImport = await this.policyEngine
@@ -1476,7 +1498,7 @@ export class PolicyEngineService {
                     notifier.result(policyToImport);
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                    notifier.error(error);
+                    notifier.fail(error);
                 });
                 return new MessageResponse(task);
             });
@@ -1494,10 +1516,17 @@ export class PolicyEngineService {
                     if (!messageId) {
                         throw new Error('Policy ID in body is empty');
                     }
-                    const notifier = emptyNotifier();
-                    notifier.start('Resolve Hedera account');
+
+                    // <-- Steps
+                    const STEP_IMPORT_POLICY = 'Import policy';
+                    const STEP_START_POLICY = 'Start policy';
+                    // Steps -->
+
+                    const notifier = NewNotifier.empty();
+                    notifier.addStep(STEP_IMPORT_POLICY, 90);
+                    notifier.addStep(STEP_START_POLICY, 10);
+                    notifier.start();
                     const root = await this.users.getHederaAccount(owner.creator, owner?.id);
-                    notifier.completed();
                     const policyToImport = await PolicyImportExportHelper.loadPolicyMessage(messageId, root, notifier, owner.id);
                     const result = await PolicyImportExportHelper.importPolicy(
                         demo ? ImportMode.DEMO : ImportMode.COMMON,
@@ -1506,7 +1535,7 @@ export class PolicyEngineService {
                             .setUser(owner)
                             .setParentPolicyTopic(versionOfTopicId)
                             .setMetadata(metadata),
-                        notifier,
+                        notifier.getStep(STEP_IMPORT_POLICY),
                         owner.id
                     );
                     if (result?.errors?.length) {
@@ -1515,7 +1544,12 @@ export class PolicyEngineService {
                         return new MessageError(message);
                     }
                     if (demo) {
-                        await this.policyEngine.startDemo(result.policy, owner, logger);
+                        await this.policyEngine.startDemo(
+                            result.policy,
+                            owner,
+                            logger,
+                            notifier.getStep(STEP_START_POLICY)
+                        );
                     }
                     return new MessageResponse(true);
                 } catch (error) {
@@ -1534,17 +1568,30 @@ export class PolicyEngineService {
                 task: any
             }): Promise<IMessageResponse<boolean>> => {
                 const { messageId, owner, versionOfTopicId, task, metadata, demo } = msg;
-                const notifier = await initNotifier(task);
+                const notifier = await NewNotifier.create(task);
 
                 RunFunctionAsync(async () => {
                     try {
                         if (!messageId) {
                             throw new Error('Policy ID in body is empty');
                         }
-                        notifier.start('Resolve Hedera account');
+
+                        // <-- Steps
+                        const STEP_LOAD_POLICY = 'Load policy';
+                        const STEP_IMPORT_POLICY = 'Import policy';
+                        const STEP_START_POLICY = 'Start policy';
+                        // Steps -->
+
+                        notifier.addStep(STEP_LOAD_POLICY, 5);
+                        notifier.addStep(STEP_IMPORT_POLICY, 90);
+                        notifier.addStep(STEP_START_POLICY, 5);
+                        notifier.start();
+
+                        notifier.startStep(STEP_LOAD_POLICY);
                         const root = await this.users.getHederaAccount(owner.creator, owner?.id);
-                        notifier.completed();
                         const policyToImport = await PolicyImportExportHelper.loadPolicyMessage(messageId, root, notifier, owner.id);
+                        notifier.completeStep(STEP_LOAD_POLICY);
+
                         const result = await PolicyImportExportHelper.importPolicy(
                             demo ? ImportMode.DEMO : ImportMode.COMMON,
                             (new ImportPolicyOptions(logger))
@@ -1552,25 +1599,31 @@ export class PolicyEngineService {
                                 .setUser(owner)
                                 .setParentPolicyTopic(versionOfTopicId)
                                 .setMetadata(metadata),
-                            notifier,
+                            notifier.getStep(STEP_IMPORT_POLICY),
                             owner.id
                         );
                         if (result?.errors?.length) {
                             const message = PolicyImportExportHelper.errorsMessage(result.errors);
-                            notifier.error(message);
+                            notifier.fail(message);
                             await logger.warn(message, ['GUARDIAN_SERVICE'], owner?.id);
                             return;
                         }
                         if (demo) {
-                            await this.policyEngine.startDemo(result.policy, owner, logger, notifier);
+                            await this.policyEngine.startDemo(
+                                result.policy,
+                                owner,
+                                logger,
+                                notifier.getStep(STEP_START_POLICY)
+                            );
                         }
+                        notifier.complete();
                         notifier.result({
                             policyId: result.policy.id,
                             errors: result.errors
                         });
                     } catch (error) {
                         await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                        notifier.error(error);
+                        notifier.fail(error);
                     }
                 });
                 return new MessageResponse(task);
@@ -1609,7 +1662,7 @@ export class PolicyEngineService {
             async (msg: { xlsx: any, policyId: string, owner: IOwner }): Promise<IMessageResponse<any>> => {
                 try {
                     const { xlsx, policyId, owner } = msg;
-                    const notifier = emptyNotifier();
+                    const notifier = NewNotifier.empty();
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'create');
                     if (!xlsx) {
@@ -1617,7 +1670,9 @@ export class PolicyEngineService {
                     }
                     const root = await this.users.getHederaAccount(owner.creator, owner?.id);
                     const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
-                    const { tools, errors } = await importSubTools(root, xlsxResult.getToolIds(), owner, notifier, owner?.id);
+                    const { tools, errors } = await importSubTools(
+                        root, xlsxResult.getToolIds(), owner, notifier, owner?.id
+                    );
                     for (const tool of tools) {
                         const subSchemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
                         xlsxResult.updateTool(tool, subSchemas);
@@ -1657,9 +1712,21 @@ export class PolicyEngineService {
                 task: any
             }): Promise<IMessageResponse<any>> => {
                 const { xlsx, policyId, owner, task } = msg;
-                const notifier = await initNotifier(task);
+                const notifier = await NewNotifier.create(task);
 
                 RunFunctionAsync(async () => {
+                    // <-- Steps
+                    const STEP_LOAD_POLICY = 'Load file';
+                    const STEP_IMPORT_TOOLS = 'Import tools';
+                    const STEP_IMPORT_SCHEMAS = 'Import schemas';
+                    // Steps -->
+
+                    notifier.addStep(STEP_LOAD_POLICY);
+                    notifier.addStep(STEP_IMPORT_TOOLS);
+                    notifier.addStep(STEP_IMPORT_SCHEMAS);
+                    notifier.start();
+
+                    notifier.startStep(STEP_LOAD_POLICY);
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'create');
                     if (!xlsx) {
@@ -1667,8 +1734,10 @@ export class PolicyEngineService {
                     }
                     await logger.info(`Import policy by xlsx`, ['GUARDIAN_SERVICE'], owner?.id);
                     const root = await this.users.getHederaAccount(owner.creator, owner?.id);
-                    notifier.start('File parsing');
                     const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
+                    notifier.completeStep(STEP_LOAD_POLICY);
+
+                    notifier.startStep(STEP_IMPORT_TOOLS);
                     const { tools, errors } = await importSubTools(root, xlsxResult.getToolIds(), owner, notifier, owner?.id);
                     for (const tool of tools) {
                         const subSchemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
@@ -1678,6 +1747,9 @@ export class PolicyEngineService {
                     xlsxResult.updatePolicy(policy);
                     xlsxResult.addErrors(errors);
                     GenerateBlocks.generate(xlsxResult);
+                    notifier.completeStep(STEP_IMPORT_TOOLS);
+
+                    notifier.startStep(STEP_IMPORT_SCHEMAS);
                     const category = await getSchemaCategory(policy.topicId);
                     const result = await SchemaImportExportHelper.importSchemaByFiles(
                         xlsxResult.schemas,
@@ -1691,13 +1763,16 @@ export class PolicyEngineService {
                         owner?.id
                     );
                     await PolicyImportExportHelper.updatePolicyComponents(policy, logger, owner?.id);
+                    notifier.completeStep(STEP_IMPORT_SCHEMAS);
+                    notifier.complete();
+
                     notifier.result({
                         policyId: policy.id,
                         errors: result.errors
                     });
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                    notifier.error(error);
+                    notifier.fail(error);
                 });
                 return new MessageResponse(task);
             });
@@ -2008,7 +2083,7 @@ export class PolicyEngineService {
                         owner.owner,
                         migrationConfig,
                         owner?.id,
-                        emptyNotifier()
+                        NewNotifier.empty()
                     );
                     await this.policyEngine.regenerateModel(
                         migrationConfig.policies.dst,
@@ -2033,7 +2108,7 @@ export class PolicyEngineService {
             async (msg: { migrationConfig: any, owner: IOwner, task: any }) => {
                 try {
                     const { migrationConfig, owner, task } = msg;
-                    const notifier = await initNotifier(task);
+                    const notifier = await NewNotifier.create(task);
                     RunFunctionAsync(
                         async () => {
                             const migrationErrors =
@@ -2061,7 +2136,7 @@ export class PolicyEngineService {
                             notifier.result(migrationErrors);
                         },
                         async (error) => {
-                            notifier.error(error);
+                            notifier.fail(error);
                         }
                     );
                 } catch (error) {
