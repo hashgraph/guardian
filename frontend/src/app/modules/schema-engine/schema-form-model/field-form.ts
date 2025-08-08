@@ -26,6 +26,7 @@ export interface IFieldControl<T extends UntypedFormControl | UntypedFormGroup |
     model: any;
     subject: Subject<void>;
     visibility: boolean;
+    csvEnabled: boolean;
 }
 
 export interface IFieldIndexControl<T extends UntypedFormControl | UntypedFormGroup> {
@@ -440,7 +441,8 @@ export class FieldForm {
             open: this.lvl === 0,
             subject: new Subject(),
             visibility: true,
-            model: null
+            model: null,
+            csvEnabled: false
         };
         item.visibility = !item.hide && !item.hidden && !item.autocalculate;
         item.preset = field.default;
@@ -483,6 +485,7 @@ export class FieldForm {
         if (field.isArray && !field.isRef) {
             item.control = this.createArrayControl();
             item.list = [];
+            item.csvEnabled = true;
             if (field.remoteLink) {
                 item.fileUploading = true;
             }
@@ -512,6 +515,15 @@ export class FieldForm {
             item.control = this.createArrayControl();
             item.list = [];
             item.fields = field.fields;
+            item.csvEnabled = true;
+            if(item.fields) {
+                for (const fld of item.fields) {
+                    if(fld.isRef) {
+                        item.csvEnabled = false;
+                    }
+                }
+            }
+
             if (item.preset && item.preset.length) {
                 for (let index = 0; index < item.preset.length; index++) {
                     const preset = item.preset[index];
@@ -682,6 +694,43 @@ export class FieldForm {
         }
         if (item.control) {
             item.control.push(listItem.control);
+        }
+    }
+
+    public setFromCsv(control: IFieldControl<any>, rows: Record<string, string>[]) {
+        const cFieldName = control.field.name;
+
+        const values = rows.reduce<string[]>((acc, row) => {
+            const raw = row[cFieldName];
+            const split = raw?.includes(';')
+                    ? raw.split(';').map(v => v.trim().replace(/^\(/, '').replace(/\)$/, ''))
+                    : [raw?.trim()];
+            return acc.concat(split);
+        }, []);
+
+        if(control.isArray) {
+            //remove items
+            control.list?.forEach(controlListItem => this.removeItem(control, controlListItem));
+            //add items
+            values.forEach(() => this.addItem(control));
+        }
+
+        //fill
+        if(!control.isRef && control.isArray) {
+            for(let i = 0; i< values.length; i++) {
+                control.list && control.list[i].control.setValue(values[i]);
+            }
+        } else if(control.isRef && control.isArray) {
+            if(control.list) {
+                for(let i = 0; i < control.list.length; i++) {
+                    const listItem = control.list[i];
+                    listItem.model.controls.forEach((ctr: any) => {
+                        listItem.model.setFromCsv(ctr, [rows[i]]);
+                    })
+                }
+            }
+        } else if(!control.isArray && !control.isRef) {
+            control.control.setValue(values[0]);
         }
     }
 
