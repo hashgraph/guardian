@@ -1,8 +1,8 @@
 import { GenerateUUIDv4, IOwner, IRootConfig, ISchema, ModelHelper, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
-import { DatabaseServer, INotificationStep, MessageAction, MessageServer, MessageType, PinoLogger, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { DatabaseServer, INotificationStep, MessageAction, MessageServer, MessageType, PinoLogger, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, SchemaPackageMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { FilterObject } from '@mikro-orm/core';
 import { importTag } from '../tag/tag-import-helper.js';
-import { checkForCircularDependency, loadSchema } from '../common/load-helper.js';
+import { checkForCircularDependency, loadAnotherSchemas, loadSchema } from '../common/load-helper.js';
 
 /**
  * Only unique
@@ -542,12 +542,12 @@ export async function prepareSchemaPreview(
 ): Promise<any[]> {
     // <-- Steps
     const STEP_LOAD_FILE = 'Load schema file';
-    const STEP_PARSE_FILE = 'Parse schema';
+    const STEP_LOAD_ANOTHER_FILES = 'Load another schemas';
     const STEP_VERIFYING = 'Verifying';
     // Steps -->
 
     notifier.addStep(STEP_LOAD_FILE);
-    notifier.addStep(STEP_PARSE_FILE);
+    notifier.addStep(STEP_LOAD_ANOTHER_FILES);
     notifier.addStep(STEP_VERIFYING);
     notifier.start();
 
@@ -565,41 +565,22 @@ export async function prepareSchemaPreview(
     }
     notifier.completeStep(STEP_LOAD_FILE);
 
-    notifier.startStep(STEP_PARSE_FILE);
-    const messageServer = new MessageServer(null);
+    notifier.startStep(STEP_LOAD_ANOTHER_FILES);
     const uniqueTopics = schemas.map(res => res.topicId).filter(onlyUnique);
-    const anotherSchemas: SchemaMessage[] = [];
-    for (const topicId of uniqueTopics) {
-        const anotherVersions = await messageServer.getMessages<SchemaMessage>(
-            topicId,
-            userId,
-            MessageType.Schema,
-            MessageAction.PublishSchema
-        );
-        for (const ver of anotherVersions) {
-            anotherSchemas.push(ver);
-        }
-    }
-    notifier.completeStep(STEP_PARSE_FILE);
+    const anotherSchemas = await loadAnotherSchemas(uniqueTopics, logger, userId);
+    notifier.completeStep(STEP_LOAD_ANOTHER_FILES);
 
     notifier.startStep(STEP_VERIFYING);
     for (const schema of schemas) {
         if (!schema.version) {
             continue;
         }
-        const newVersions = [];
-        const topicMessages = anotherSchemas.filter(item => item.uuid === schema.uuid);
-        for (const topicMessage of topicMessages) {
-            if (
-                topicMessage.version &&
-                ModelHelper.versionCompare(topicMessage.version, schema.version) === 1
-            ) {
-                newVersions.push({
-                    messageId: topicMessage.getId(),
-                    version: topicMessage.version
-                });
-            }
-        }
+        const newVersions = anotherSchemas
+            .filter((anotherSchema) => anotherSchema.uuid === schema.uuid)
+            .filter((anotherSchema) => (
+                anotherSchema.version &&
+                ModelHelper.versionCompare(anotherSchema.version, schema.version) === 1
+            ));
         if (newVersions && newVersions.length !== 0) {
             schema.newVersions = newVersions.reverse();
         }
