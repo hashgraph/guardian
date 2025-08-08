@@ -856,7 +856,6 @@ export interface PolicyActionMessageBody extends MessageBody {
     uri: string;
 }
 
-
 /**
  * Schema message body
  */

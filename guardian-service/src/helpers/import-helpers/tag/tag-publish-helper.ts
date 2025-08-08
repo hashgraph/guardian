@@ -79,7 +79,6 @@ export async function publishSchemaTags(
     await new DatabaseServer().updateTags(tagObjects);
 }
 
-
 /**
  * Publish policy tags
  * @param policy

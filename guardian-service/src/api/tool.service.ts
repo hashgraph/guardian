@@ -6,7 +6,7 @@ import { ToolValidator } from '../policy-engine/block-validators/tool-validator.
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
 import * as crypto from 'crypto';
 import { FilterObject } from '@mikro-orm/core';
-import { deleteSchema, importToolByFile, importToolByMessage, importToolErrors, incrementSchemaVersion, publishSchemasPackage, publishToolTags, updateToolConfig } from '../helpers/import-helpers/index.js'
+import { deleteSchema, importToolByFile, importToolByMessage, importToolErrors, publishSchemasPackage, publishToolTags, updateToolConfig } from '../helpers/import-helpers/index.js'
 
 /**
  * Sha256

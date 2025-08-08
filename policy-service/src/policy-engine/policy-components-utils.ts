@@ -8,7 +8,7 @@ import {
     PolicyOutputEventType,
     PolicyTagMap
 } from './interfaces/index.js';
-import { BlockType, GenerateUUIDv4, LocationType, ModuleStatus, PolicyEvents, PolicyHelper, PolicyStatus } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, LocationType, ModuleStatus, PolicyEvents, PolicyHelper } from '@guardian/interfaces';
 import {
     ActionType,
     AnyBlockType,

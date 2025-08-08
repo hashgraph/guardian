@@ -83,7 +83,6 @@ export function generatePackage(options: {
         }
     }
 
-
     const context = schemasToContext(
         Array.from(defsArray.values()),
         additionalContexts,
@@ -320,8 +319,7 @@ export async function publishSchemasPackage(options: {
         owner,
         server,
         schemaMap,
-        staticSchemas,
-        notifier
+        staticSchemas
     } = options;
 
     const topicId = server.getTopic();
@@ -687,8 +685,6 @@ function updateSchemasRefs(schemas: Schema[], allSchemas: Schema[]) {
     }
     for (const schema of schemas) {
         updateSchemaRefs(schema.iri, map, finished, allSchemas);
-
-
     }
 }
 

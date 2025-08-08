@@ -43,7 +43,7 @@ export class SchemaImport {
 
     private root: IRootConfig;
     private topicHelper: TopicHelper;
-    private messageServer: MessageServer;
+    // private messageServer: MessageServer;
     private owner: IOwner;
     private topicRow: TopicConfig;
     private topicId: string;
@@ -81,11 +81,11 @@ export class SchemaImport {
             this.root.hederaAccountKey,
             this.root.signOptions
         );
-        this.messageServer = new MessageServer({
-            operatorId: this.root.hederaAccountId,
-            operatorKey: this.root.hederaAccountKey,
-            signOptions: this.root.signOptions
-        });
+        // this.messageServer = new MessageServer({
+        //     operatorId: this.root.hederaAccountId,
+        //     operatorKey: this.root.hederaAccountKey,
+        //     signOptions: this.root.signOptions
+        // });
         this.owner = user;
         step.complete();
         return this.root;

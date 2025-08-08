@@ -57,7 +57,6 @@ import {
     ImportMode,
     ImportPolicyOptions,
     importTag,
-    incrementSchemaVersion,
     PolicyImportExportHelper,
     publishPolicyTags,
     publishSchemasPackage,
@@ -344,15 +343,15 @@ export class PolicyEngine extends NatsService {
             topicId: { $eq: 'draft' },
             owner: owner.owner
         });
-        const users = new Users();
+        // const users = new Users();
         for (const schema of schemas) {
+            // const topic = await TopicConfig.fromObject(
+            //     await DatabaseServer.getTopicById(policyTopicId),
+            //     true,
+            //     owner.id
+            // );
+            // const root = await users.getHederaAccount(owner.creator, owner.id);
             schema.topicId = policyTopicId;
-            const topic = await TopicConfig.fromObject(
-                await DatabaseServer.getTopicById(policyTopicId),
-                true,
-                owner.id
-            );
-            const root = await users.getHederaAccount(owner.creator, owner.id);
             const dependencySchemas = await DatabaseServer.getSchemas({
                 $and: [
                     { iri: { $in: schema.defs } },
@@ -509,7 +508,7 @@ export class PolicyEngine extends NatsService {
                 schemas: systemSchemas,
                 owner: user,
                 server: messageServer,
-                notifier: notifier
+                notifier
             })
             step.completeStep(STEP_PUBLISH_SYSTEM_SCHEMAS);
 
