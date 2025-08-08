@@ -141,11 +141,18 @@ export class SchemaImport {
     ): Promise<ISchema[]> {
         step.start();
         const schemas: ISchema[] = [];
-
         const relationships = new Set<string>();
         for (const messageId of messageIds) {
             const newSchema = await loadSchema(messageId, logger, userId);
-            schemas.push(newSchema);
+            if (Array.isArray(newSchema)) {
+                for (const s of newSchema) {
+                    schemas.push(s);
+                }
+            } else if (newSchema) {
+                schemas.push(newSchema);
+            }
+        }
+        for (const newSchema of schemas) {
             for (const id of newSchema.relationships) {
                 relationships.add(id);
             }
@@ -155,7 +162,13 @@ export class SchemaImport {
         }
         for (const messageId of relationships) {
             const newSchema = await loadSchema(messageId, logger, userId);
-            schemas.push(newSchema);
+            if (Array.isArray(newSchema)) {
+                for (const s of newSchema) {
+                    schemas.push(s);
+                }
+            } else if (newSchema) {
+                schemas.push(newSchema);
+            }
         }
 
         step.complete();

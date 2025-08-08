@@ -1644,7 +1644,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const { filename } = msg;
                 const filePath = path.join(process.cwd(), 'artifacts', filename);
                 const file = await readFile(filePath);
-                return new BinaryMessageResponse(file.buffer as ArrayBuffer);
+                return new BinaryMessageResponse(file.buffer);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);

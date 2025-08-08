@@ -555,7 +555,13 @@ export async function prepareSchemaPreview(
     const schemas = [];
     for (const messageId of messageIds) {
         const schema = await loadSchema(messageId, logger, userId);
-        schemas.push(schema);
+        if (Array.isArray(schema)) {
+            for (const s of schema) {
+                schemas.push(s);
+            }
+        } else if (schema) {
+            schemas.push(schema);
+        }
     }
     notifier.completeStep(STEP_LOAD_FILE);
 

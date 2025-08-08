@@ -5,6 +5,20 @@ import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { SchemaPackageMessageBody } from './message-body.interface.js';
 
+interface IMetadata {
+    schemas: {
+        id: string,
+        uuid: string,
+        name: string,
+        description: string,
+        entity: string,
+        owner: string,
+        version: string,
+        codeVersion: string,
+    }[],
+    relationships: string[]
+}
+
 /**
  * Schema message
  */
@@ -28,7 +42,7 @@ export class SchemaPackageMessage extends Message {
 
     private document: any;
     private context: any;
-    private metadata: any;
+    private metadata: IMetadata;
 
     constructor(action: MessageAction) {
         super(action, MessageType.SchemaPackage);
@@ -58,7 +72,7 @@ export class SchemaPackageMessage extends Message {
         schemas: Schema[],
         relationships: Schema[]
     ): void {
-        const metadata = [];
+        const metadata: any[] = [];
         const ids = new Set<string>();
         if (schemas) {
             for (const schema of schemas) {
@@ -100,6 +114,13 @@ export class SchemaPackageMessage extends Message {
      */
     public getContext(): any {
         return this.documents[1];
+    }
+
+    /**
+     * Get context
+     */
+    public getMetadata(): IMetadata | undefined {
+        return this.documents[2];
     }
 
     /**
