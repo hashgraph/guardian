@@ -69,16 +69,16 @@ export class InterfaceDocumentsSource {
         );
 
         const saved = (this.state?.[user.id] as any) || {};
-        const dryRunProps = saved.__dryRun as { dryRunId?: string; dryRunClass?: string } | undefined;
+        const savepointId = saved.__savepointId as string | undefined;
 
         const enableCommonSorting =
             !!ref.options?.uiMetaData?.enableSorting ||
-            !!(dryRunProps?.dryRunId && dryRunProps?.dryRunClass);
+            !!savepointId;
 
         const sourceAddons = fields
             ?.filter((field) => field.bindGroup)
             .map((field) => field.bindGroup);
-        const documents = (await this._getData(user, ref, enableCommonSorting,  {}, null, undefined, dryRunProps)) as any[];
+        const documents = (await this._getData(user, ref, enableCommonSorting,  {}, null, undefined, savepointId)) as any[];
         const document = documents.find(
             // tslint:disable-next-line:no-shadowed-variable
             (document) =>
@@ -126,10 +126,10 @@ export class InterfaceDocumentsSource {
         sortState = {},
         paginationData?,
         history?,
-        dryRunProps?: { dryRunId?: string; dryRunClass?: string }
+        savepointId?: string
     ) {
         console.log('enableCommonSorting', enableCommonSorting)
-        console.log('dryRunProps', dryRunProps)
+        console.log('savepointId', savepointId)
 
 
         return enableCommonSorting
@@ -139,7 +139,7 @@ export class InterfaceDocumentsSource {
                 sortState,
                 paginationData,
                 history,
-                dryRunProps
+                savepointId
             )
             : await ref.getGlobalSources(user, paginationData);
     }
@@ -167,17 +167,14 @@ export class InterfaceDocumentsSource {
             queryParams = {};
         }
 
-        const { itemsPerPage, page, size, filterByUUID, sortDirection, sortField, useStrict, dryRunId, dryRunClass, ...filterIds } = queryParams;
+        const { itemsPerPage, page, size, filterByUUID, sortDirection, sortField, useStrict, savepointId, ...filterIds } = queryParams;
 
-        if (dryRunId && dryRunClass) {
-            if (!this.state) {
-                this.state = {};
+        if (this.state?.[user.id]) {
+            if (savepointId) {
+                (this.state[user.id] as any).__savepointId = savepointId;
+            } else if ((this.state[user.id] as any).__savepointId) {
+                delete (this.state[user.id] as any).__savepointId;
             }
-            if (!this.state[user.id]) {
-                this.state[user.id] = {};
-            }
-
-            (this.state[user.id] as any).__dryRun = { dryRunId, dryRunClass };
         }
 
         const filterAddons = ref.getFiltersAddons();
@@ -236,7 +233,7 @@ export class InterfaceDocumentsSource {
             return addon.blockType === 'historyAddon';
         }) as IPolicyAddonBlock;
 
-        const enableCommonSorting = ref.options.uiMetaData.enableSorting || (sortDirection && sortField) || (dryRunId && dryRunClass);
+        const enableCommonSorting = ref.options.uiMetaData.enableSorting || (sortDirection && sortField) || savepointId;
         let sortState = this.state[user.id] || {};
         if (sortDirection && sortField) {
             sortState = {
@@ -245,7 +242,7 @@ export class InterfaceDocumentsSource {
             };
             this.state[user.id] = sortState;
         }
-        let data: any = await this._getData(user, ref, enableCommonSorting, sortState, paginationData, history, { dryRunId, dryRunClass });
+        let data: any = await this._getData(user, ref, enableCommonSorting, sortState, paginationData, history, savepointId);
 
         if (paginationData) {
             ret = Object.assign(ret, {
@@ -338,21 +335,20 @@ export class InterfaceDocumentsSource {
      * @param sortState Sort state
      * @param paginationData Paginaton data
      * @param history
-     * @param dryRunProps
+     * @param savepointId
      * @returns Data
      */
-    private async getDataByAggregationFilters(ref: IPolicySourceBlock, user: PolicyUser, sortState: any, paginationData: any, history?: IPolicyAddonBlock, dryRunProps?: { dryRunId?: string; dryRunClass?: string }) {
+    private async getDataByAggregationFilters(ref: IPolicySourceBlock, user: PolicyUser, sortState: any, paginationData: any, history?: IPolicyAddonBlock, savepointId?: string) {
         const filtersAndDataType = await ref.getGlobalSourcesFilters(user);
 
         const aggregation = [...filtersAndDataType.filters] as unknown[];
 
-        if (dryRunProps?.dryRunId && dryRunProps?.dryRunClass) {
+        if (savepointId) {
             ref.databaseServer.getDocumentAggregationFilters({
                 aggregation,
                 aggregateMethod: 'unshift',
-                nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.DRY_RUN_STEPS,
-                dryRunId: dryRunProps.dryRunId,
-                dryRunClass: dryRunProps.dryRunClass,
+                nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.DRY_RUN_SAVEPOINT,
+                savepointId,
             });
         }
 

@@ -43,6 +43,27 @@ export class DryRun extends BaseEntity {
     savepoint?: boolean;
 
     /**
+     * SavepointId
+     * @type {string}
+     */
+    @Property({ nullable: true })
+    savepointId?: string;
+
+    /**
+     * ParentSavepointId
+     * @type {string}
+     */
+    @Property({ nullable: true })
+    parentSavepointId?: string;
+
+    /**
+     * savepointPath
+     * @type {string[]}
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    savepointPath?: string[];
+
+    /**
      * Class
      */
     @Property({ nullable: true })

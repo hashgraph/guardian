@@ -16,7 +16,7 @@ export const MAP_DOCUMENT_AGGREGATION_FILTERS = {
     VC_DOCUMENTS: 'vc-documents',
     VP_DOCUMENTS: 'vp-documents',
     APPROVE: 'approve',
-    DRY_RUN_STEPS: 'dry-run-steps',
+    DRY_RUN_SAVEPOINT: 'dry-run-savepoint',
 }
 
 export const MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS = {
@@ -297,6 +297,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
             itemsPerPage,
             page,
             policyId,
+            savepointId
         } = props;
 
         const filters = {
@@ -384,11 +385,10 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
                     }
                 }
             ],
-            [MAP_DOCUMENT_AGGREGATION_FILTERS.DRY_RUN_STEPS]: [
+            [MAP_DOCUMENT_AGGREGATION_FILTERS.DRY_RUN_SAVEPOINT]: [
                 {
                     $match: {
-                        dryRunId: props.dryRunId,
-                        dryRunClass: props.dryRunClass,
+                        savepointId
                     }
                 }
             ],
