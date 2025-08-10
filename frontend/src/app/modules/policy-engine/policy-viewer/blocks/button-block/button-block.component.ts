@@ -19,6 +19,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
+    @Input('savepointId') savepointId: string | null = null;
 
     loading: boolean = true;
     socket: any;
@@ -91,8 +92,9 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
                 this.cdref.detectChanges();
             }, 500);
         } else {
+            console.log('33332', this.savepointId)
             this.policyEngineService
-                .getBlockData(this.id, this.policyId)
+                .getBlockData(this.id, this.policyId, this.savepointId)
                 .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
         }
     }

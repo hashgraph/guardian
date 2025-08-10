@@ -16,6 +16,7 @@ export class ActionBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
+    @Input('savepointId') savepointId: string | null = null;
 
     loading: boolean = true;
     socket: any;
@@ -67,8 +68,9 @@ export class ActionBlockComponent implements OnInit {
                 this.loading = false;
             }, 500);
         } else {
+            console.log('ButtonBlock', this.savepointId)
             this.policyEngineService
-                .getBlockData(this.id, this.policyId)
+                .getBlockData(this.id, this.policyId, this.savepointId)
                 .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
         }
     }

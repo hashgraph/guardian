@@ -31,6 +31,7 @@ export class ReportBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
+    @Input('savepointId') savepointId: string | null = null;
 
     hash: string = '';
     loading: boolean = true;
@@ -110,7 +111,7 @@ export class ReportBlockComponent implements OnInit {
         } else {
             this.loading = true;
             this.policyEngineService
-                .getBlockData(this.id, this.policyId)
+                .getBlockData(this.id, this.policyId, this.savepointId)
                 .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
         }
     }
@@ -589,7 +590,7 @@ export class ReportBlockComponent implements OnInit {
         event.stopPropagation();
         group.selectedItemIndex = (group.selectedItemIndex - 1) >= 0 ? (group.selectedItemIndex - 1) : (group.documents.length - 1);
     }
-    
+
     openRetireVCDocument(
         item: any,
         document?: any

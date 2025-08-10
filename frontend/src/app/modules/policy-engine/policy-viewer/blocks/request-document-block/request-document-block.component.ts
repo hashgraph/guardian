@@ -54,6 +54,7 @@ export class RequestDocumentBlockComponent
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
     @Input('dryRun') dryRun!: any;
+    @Input('savepointId') savepointId: string | null = null;
 
     @ViewChild("dialogTemplate") dialogTemplate!: TemplateRef<any>;
 

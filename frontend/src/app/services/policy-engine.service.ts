@@ -113,24 +113,17 @@ export class PolicyEngineService {
         return this.http.post<any>(`${this.url}/validate`, policy);
     }
 
-    public policyBlock(policyId: string, savepointId?: string | null): Observable<any> {
-        // const savepointIdParam = '?savepointId=' + savepointId
-        //
-        // return this.http.get<any>(`${this.url}/${policyId}/blocks${savepointIdParam}`);
-        let params = undefined
-
-        if(savepointId) {
-            params = new HttpParams().set('savepointId', savepointId)
-        }
-
-        return this.http.get<any>(`${this.url}/${policyId}/blocks`, { params });
+    public policyBlock(policyId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${policyId}/blocks`);
     }
 
-    public getBlockData<T>(blockId: string, policyId: string, filters?: any): Observable<T> {
-        return this.http.get<any>(`${this.url}/${policyId}/blocks/${blockId}`, {
-            // TODO: Is it used?
-            params: filters
-        });
+    public getBlockData<T>(blockId: string, policyId: string, savepointId?: string | null): Observable<T> {
+        console.log('savepointId2', savepointId)
+        if(savepointId) {
+            return this.http.get<any>(`${this.url}/${policyId}/blocks/${blockId}?savepointId=${savepointId}`);
+        }
+
+        return this.http.get<any>(`${this.url}/${policyId}/blocks/${blockId}`);
     }
 
     public getBlockDataByName(blockName: string, policyId: string): Observable<any> {
@@ -371,11 +364,12 @@ export class PolicyEngineService {
     }
 
     public getGroups(policyId: string, savepointId?: string | null): Observable<any[]> {
-        const params = savepointId ? new HttpParams().set('savepointId', savepointId) : undefined;
+        if(savepointId) {
+            console.log('savepointId1', savepointId)
+            return this.http.get<any>(`${this.url}/${policyId}/groups?savepointId=${savepointId}`);
+        }
 
-        return this.http.get<any>(`${this.url}/${policyId}/groups`, { params });
-
-        // return this.http.get<any>(`${this.url}/${policyId}/groups`);
+        return this.http.get<any>(`${this.url}/${policyId}/groups`);
     }
 
     public setGroup(policyId: string, uuid: string): Observable<any> {

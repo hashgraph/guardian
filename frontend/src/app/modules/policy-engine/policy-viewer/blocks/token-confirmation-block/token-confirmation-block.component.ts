@@ -17,6 +17,7 @@ export class TokenConfirmationBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
+    @Input('savepointId') savepointId: string | null = null;
 
     isActive = false;
     loading: boolean = true;
@@ -80,7 +81,7 @@ export class TokenConfirmationBlockComponent implements OnInit {
         } else {
             this.loading = true;
             this.policyEngineService
-                .getBlockData(this.id, this.policyId)
+                .getBlockData(this.id, this.policyId, this.savepointId)
                 .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
         }
     }

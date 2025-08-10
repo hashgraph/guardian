@@ -16,6 +16,7 @@ export class RenderBlockComponent {
     @Input('static') static!: any;
     @Input('policyId') policyId!: any;
     @Input('dryRun') dryRun!: any;
+    @Input('savepointId') savepointId: string | null = null;
 
     @ViewChild('target', { read: ViewContainerRef }) target!: ViewContainerRef;
     @ViewChild('empty', { read: TemplateRef }) empty!: TemplateRef<any>;
@@ -36,8 +37,19 @@ export class RenderBlockComponent {
     ) {
     }
 
-    ngOnChanges() {
-        this.render();
+    ngOnChanges(changes: any) {
+        // Пересоздаём контент только если изменился сам блок (или policyId/static/dryRun — по необходимости)
+        if (changes['block'] /* || changes['policyId'] || changes['static'] || changes['dryRun'] */) {
+            this.render();
+        }
+
+        // А вот savepointId просто передаём вниз — без render()
+        if (changes['savepointId'] && this.componentRef) {
+            this.componentRef.instance.savepointId = this.savepointId;
+            // если у блока есть метод перезагрузки — дерни его
+            this.componentRef.instance.reload?.();
+            // НЕ вызывай changeDetectorRef.detectChanges() тут — это и провоцирует цикл
+        }
     }
 
     ngAfterViewInit() {
@@ -89,6 +101,8 @@ export class RenderBlockComponent {
             this.componentRef.instance.static = this.static;
             this.componentRef.instance.policyId = this.policyId;
             this.componentRef.instance.dryRun = this.dryRun;
+            this.componentRef.instance.savepointId = this.savepointId;
+
             this.componentRef.changeDetectorRef.detectChanges();
 
             this.policyProgressService.addComponentRef(this.id, this.componentRef);

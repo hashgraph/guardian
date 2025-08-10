@@ -19,6 +19,7 @@ export class IntegrationButtonBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
+    @Input('savepointId') savepointId: string | null = null;
 
     loading: boolean = true;
     socket: any;
@@ -29,7 +30,7 @@ export class IntegrationButtonBlockComponent implements OnInit {
     readonly: boolean = false;
     commonVisible: boolean = false;
     integrationType: string;
-    
+
     // private readonly _commentField: string = 'option.comment';
 
     constructor(
@@ -73,7 +74,7 @@ export class IntegrationButtonBlockComponent implements OnInit {
             }, 500);
         } else {
             this.policyEngineService
-                .getBlockData(this.id, this.policyId)
+                .getBlockData(this.id, this.policyId, this.savepointId)
                 .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
         }
     }

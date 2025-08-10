@@ -60,6 +60,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     private destroy$: Subject<boolean> = new Subject<boolean>();
     public activeTabIndex = 0;
 
+    public savepointId: string | null = '55c612c6-37eb-466b-abe1-b224332a4f6e';
+
     constructor(
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
@@ -206,7 +208,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.isConfirmed = !!(profile && profile.confirmed);
                 this.role = profile ? profile.role : null;
                 if (this.isConfirmed) {
-                    this.loadPolicyById(this.policyId);
+                    this.loadPolicyById(this.policyId, this.savepointId);
                 } else {
                     setTimeout(() => {
                         this.loading = false;
@@ -220,7 +222,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     loadPolicyById(policyId: string, savepointId?: string | null) {
         forkJoin([
             this.policyEngineService.policy(policyId),
-            this.policyEngineService.policyBlock(policyId, savepointId),
+            this.policyEngineService.policyBlock(policyId),
             this.policyEngineService.getGroups(policyId, savepointId),
             this.externalPoliciesService.getActionRequestsCount({ policyId })
         ]).subscribe(
@@ -307,7 +309,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 () => {
                     this.policy = null;
                     this.policyInfo = null;
-                    this.loadPolicyById(this.policyId);
+                    this.loadPolicyById(this.policyId, this.savepointId);
                 }, (e) => {
                     this.loading = false;
                 });
@@ -339,7 +341,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     this.policy = null;
                     this.policyInfo = null;
                     this.isMultipleGroups = false;
-                    this.loadPolicyById(this.policyId);
+                    this.loadPolicyById(this.policyId, this.savepointId);
                 }, (e) => {
                     this.loading = false;
                 });
@@ -348,7 +350,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public createSavepoint() {
         this.loading = true;
         this.policyEngineService.createSavepoint(this.policyInfo.id).subscribe(({ savepointId }) => {
-            this.loadPolicyById(this.policyId, 'cfc924e7-7606-43f6-8e18-6c8ff5100a23');
+            this.savepointId = savepointId || '55c612c6-37eb-466b-abe1-b224332a4f6e';
+            this.loadPolicyById(this.policyId, this.savepointId);
             this.getSavepointState();
         }, (e) => {
             this.loading = false;
@@ -359,7 +362,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public deleteSavepoint() {
         this.loading = true;
         this.policyEngineService.deleteSavepoint(this.policyInfo.id).subscribe(() => {
-            this.loadPolicyById(this.policyId);
+            this.loadPolicyById(this.policyId, this.savepointId);
         }, (e) => {
             this.loading = false;
         }
@@ -372,7 +375,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             this.policy = null;
             this.policyInfo = null;
             this.isMultipleGroups = false;
-            this.loadPolicyById(this.policyId);
+            this.loadPolicyById(this.policyId, this.savepointId);
         }, (e) => {
             this.loading = false;
         }
@@ -386,7 +389,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.policy = null;
                 this.policyInfo = null;
                 this.isMultipleGroups = false;
-                this.loadPolicyById(this.policyId);
+                this.loadPolicyById(this.policyId, this.savepointId);
             }, (e) => {
                 this.loading = false;
             });

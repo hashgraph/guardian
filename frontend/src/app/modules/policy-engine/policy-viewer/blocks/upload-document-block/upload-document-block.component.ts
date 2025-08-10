@@ -20,6 +20,7 @@ export class UploadDocumentBlockComponent implements OnInit {
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
     @ViewChild("dialogTemplate") dialogTemplate!: any;
+    @Input('savepointId') savepointId: string | null = null;
 
     isExist = false;
     disabled = false;
@@ -76,7 +77,7 @@ export class UploadDocumentBlockComponent implements OnInit {
             }, 500);
         } else {
             this.policyEngineService
-                .getBlockData(this.id, this.policyId)
+                .getBlockData(this.id, this.policyId, this.savepointId)
                 .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
         }
     }
