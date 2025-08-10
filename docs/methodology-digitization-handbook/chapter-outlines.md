@@ -2,8 +2,7 @@
 
 ## Part I: Foundation and Preparation
 
-### Chapter 1: Introduction to Methodology Digitization
-
+### [Chapter 1: Introduction to Methodology Digitization](part-1/chapter-1/README.md)
 **Purpose**: Establish the foundation for understanding methodology digitization on Guardian platform.
 
 **Key Topics**:
@@ -18,8 +17,7 @@
 
 **VM0033 Context**: Introduction to VM0033's significance in blue carbon markets and its complexity as a comprehensive tidal wetland restoration methodology.
 
-### Chapter 2: Understanding VM0033 Methodology
-
+### [Chapter 2: Understanding VM0033 Methodology](part-1/chapter-2/README.md)
 **Purpose**: Provide deep domain knowledge of VM0033 before beginning technical implementation.
 
 **Key Topics**:
@@ -34,8 +32,7 @@
 
 **VM0033 Context**: Complete walkthrough of the methodology document structure, highlighting sections that will be digitized and their interdependencies.
 
-### Chapter 3: Guardian Platform Overview for Methodology Developers
-
+### [Chapter 3: Guardian Platform Overview for Methodology Developers](part-1/chapter-3/README.md)
 **Purpose**: Provide methodology developers with Guardian-specific knowledge needed for digitization.
 
 **Key Topics**:
@@ -65,7 +62,7 @@
 * Understanding temporal boundaries and crediting periods
 * Identifying calculation dependencies and parameter relationships
 
-**VM0033 Context**: Step-by-step analysis of VM0033 document, breaking down its 117 pages into digestible components and identifying digitization priorities.
+**VM0033 Context**: Step-by-step analysis of VM0033 document, breaking down its content into digestible components and identifying digitization priorities.
 
 ### Chapter 5: Equation Mapping and Parameter Identification
 
@@ -95,7 +92,7 @@
 * Creating unified calculation frameworks
 * Managing tool dependencies and conflicts
 
-**VM0033 Context**: Integration of all tools referenced in VM0033, including AR-Tool02, AR-Tool03, AR-Tool14, and various VMD modules.
+**VM0033 Context**: Integration of subset of tools referenced in VM0033, limited to AR-Tool05, AR-Tool14, AFLOU Non permanence risk tool.
 
 ### Chapter 7: Test Artifact Development
 

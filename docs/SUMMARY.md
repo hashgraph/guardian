@@ -820,6 +820,20 @@
 * [📚 Methodology Digitization Handbook](methodology-digitization-handbook/README.md)
   * [📋 Table of Contents](methodology-digitization-handbook/table-of-contents.md)
   * [📝 Chapter Outlines](methodology-digitization-handbook/chapter-outlines.md)
+  * [🏗️ Part I: Foundation and Preparation](methodology-digitization-handbook/part-1/README.md)
+    * [Chapter 1: Introduction to Methodology Digitization](methodology-digitization-handbook/part-1/chapter-1/README.md)
+    * [Chapter 2: Understanding VM0033 Methodology](methodology-digitization-handbook/part-1/chapter-2/README.md)
+    * [Chapter 3: Guardian Platform Overview](methodology-digitization-handbook/part-1/chapter-3/README.md)
+  * [🔍 Part II: Analysis and Planning](methodology-digitization-handbook/part-2/README.md)
+    * [Chapter 4: Methodology Analysis and Decomposition](methodology-digitization-handbook/part-2/chapter-4/README.md)
+    * [Chapter 5: Equation Mapping and Parameter Identification](methodology-digitization-handbook/part-2/chapter-5/README.md)
+    * [Chapter 6: Tools and Modules Integration](methodology-digitization-handbook/part-2/chapter-6/README.md)
+    * [Chapter 7: Test Artifact Development](methodology-digitization-handbook/part-2/chapter-7/README.md)
+  * [🔧 Shared Resources](methodology-digitization-handbook/_shared/README.md)
+    * [📄 Templates](methodology-digitization-handbook/_shared/templates/README.md)
+    * [🔗 VM0033 Integration](methodology-digitization-handbook/_shared/vm0033-integration/README.md)
+    * [⚙️ Guardian Integration](methodology-digitization-handbook/_shared/guardian-integration/README.md)
+    * [🗂️ Artifacts Collection](methodology-digitization-handbook/_shared/artifacts/README.md)
 
 ***
 
