@@ -755,12 +755,14 @@ export class PolicyEngine extends NatsService {
      *
      * @param user
      * @param policyId
+     * @param savepointId
      */
     public async getGroups(
         user: IAuthUser,
-        policyId: string
+        policyId: string,
+        savepointId?: string
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_GROUPS, { user, policyId });
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_GROUPS, { user, policyId, savepointId });
     }
 
     /**

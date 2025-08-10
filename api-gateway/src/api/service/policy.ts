@@ -1011,10 +1011,11 @@ export class PolicyApi {
     async getPolicyGroups(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
+        @Query('savepointId') savepointId?: string
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
-            return await engineService.getGroups(user, policyId);
+            return await engineService.getGroups(user, policyId, savepointId);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

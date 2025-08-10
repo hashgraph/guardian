@@ -130,27 +130,55 @@ export class DatabaseServer extends AbstractDatabaseServer {
     /**
      * Create savepoint
      * @param dryRunId
-     * @param systemMode
+     * @param savepointId
      */
-    public static async createSavepoint(dryRunId: string): Promise<void> {
+    public static async createSavepoint(dryRunId: string, savepointId: string): Promise<void> {
+        // const limit = { limit: DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE };
+        // const amount = await new DataBaseHelper(DryRun).count({ dryRunId });
+        // const naturalCount = Math.floor(amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
+        // for (let i = 0; i < naturalCount; i++) {
+        //     const items = await new DataBaseHelper(DryRun).find({ dryRunId }, limit);
+        //     for (const item of items) {
+        //         item.savepoint = true;
+        //     }
+        //     await new DataBaseHelper(DryRun).update(items);
+        // }
+        // const restItems = await new DataBaseHelper(DryRun).find({ dryRunId });
+        // for (const item of restItems) {
+        //     item.savepoint = true;
+        // }
+        // await new DataBaseHelper(DryRun).update(restItems);
+
+        // const files = await new DataBaseHelper(DryRunFiles).find({ policyId: dryRunId });
+        // await new DataBaseHelper(DryRunFiles).remove(files);
+
+
         const limit = { limit: DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE };
+
         const amount = await new DataBaseHelper(DryRun).count({ dryRunId });
         const naturalCount = Math.floor(amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
+
         for (let i = 0; i < naturalCount; i++) {
             const items = await new DataBaseHelper(DryRun).find({ dryRunId }, limit);
             for (const item of items) {
                 item.savepoint = true;
+                if (!item.savepointId) {
+                    item.savepointId = savepointId;
+                    // item.parentSavepointId ??= parentId;
+                    // item.savepointPath ??= [savepointId];
+                }
             }
             await new DataBaseHelper(DryRun).update(items);
         }
+
         const restItems = await new DataBaseHelper(DryRun).find({ dryRunId });
         for (const item of restItems) {
             item.savepoint = true;
+            if (!item.savepointId) {
+                item.savepointId = savepointId;
+            }
         }
         await new DataBaseHelper(DryRun).update(restItems);
-
-        // const files = await new DataBaseHelper(DryRunFiles).find({ policyId: dryRunId });
-        // await new DataBaseHelper(DryRunFiles).remove(files);
     }
 
     /**

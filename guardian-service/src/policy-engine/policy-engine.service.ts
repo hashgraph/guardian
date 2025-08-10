@@ -1952,14 +1952,16 @@ export class PolicyEngineService {
                         throw new Error(`Policy is not in Dry Run`);
                     }
 
-                    await DatabaseServer.createSavepoint(policyId);
+                    const savepointId = GenerateUUIDv4();
+
+                    await DatabaseServer.createSavepoint(policyId, savepointId);
                     await DatabaseServer.copyStates(policyId);
                     // const users = await DatabaseServer.getVirtualUsers(policyId);
                     // await DatabaseServer.setVirtualUser(policyId, users[0]?.did);
                     // const filters = await this.policyEngine.addAccessFilters({}, owner);
                     // const policies = (await DatabaseServer.getListOfPolicies(filters));
                     console.log('Create savepoint');
-                    return new MessageResponse({});
+                    return new MessageResponse({ savepointId });
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                     return new MessageError(error);

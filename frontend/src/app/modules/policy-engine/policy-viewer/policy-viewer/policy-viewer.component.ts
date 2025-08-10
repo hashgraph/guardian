@@ -347,8 +347,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     public createSavepoint() {
         this.loading = true;
-        this.policyEngineService.createSavepoint(this.policyInfo.id).subscribe(() => {
-            this.loadPolicyById(this.policyId, null);
+        this.policyEngineService.createSavepoint(this.policyInfo.id).subscribe(({ savepointId }) => {
+            this.loadPolicyById(this.policyId, 'cfc924e7-7606-43f6-8e18-6c8ff5100a23');
             this.getSavepointState();
         }, (e) => {
             this.loading = false;

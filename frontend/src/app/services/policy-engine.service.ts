@@ -117,7 +117,7 @@ export class PolicyEngineService {
         // const savepointIdParam = '?savepointId=' + savepointId
         //
         // return this.http.get<any>(`${this.url}/${policyId}/blocks${savepointIdParam}`);
-        let params = null
+        let params = undefined
 
         if(savepointId) {
             params = new HttpParams().set('savepointId', savepointId)
