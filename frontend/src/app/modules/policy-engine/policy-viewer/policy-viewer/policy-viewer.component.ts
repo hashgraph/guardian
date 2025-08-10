@@ -60,7 +60,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     private destroy$: Subject<boolean> = new Subject<boolean>();
     public activeTabIndex = 0;
 
-    public savepointId: string | null = '55c612c6-37eb-466b-abe1-b224332a4f6e';
+    public savepointId: string | null = 'e32839d5-66d6-48c9-b4ae-634411bc90da';
 
     constructor(
         private profileService: ProfileService,
@@ -219,7 +219,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             });
     }
 
-    loadPolicyById(policyId: string, savepointId?: string | null) {
+    loadPolicyById(policyId: string, savepointId: string | null) {
         forkJoin([
             this.policyEngineService.policy(policyId),
             this.policyEngineService.policyBlock(policyId),
@@ -241,7 +241,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 if (this.policyInfo?.status === PolicyStatus.DRY_RUN
                     || this.policyInfo?.status === PolicyStatus.DEMO
                 ) {
-                    this.loadDryRunOptions();
+                    this.loadDryRunOptions(savepointId);
                 } else {
                     setTimeout(() => {
                         this.loading = false;
@@ -271,8 +271,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             });
     }
 
-    loadDryRunOptions() {
-        this.policyEngineService.getVirtualUsers(this.policyInfo.id).subscribe((value) => {
+    loadDryRunOptions(savepointId: string | null) {
+        this.policyEngineService.getVirtualUsers(this.policyInfo.id, savepointId).subscribe((value) => {
             this.virtualUsers = value;
             setTimeout(() => {
                 this.loading = false;
@@ -536,7 +536,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     public updatePolicy() {
         forkJoin([
-            this.policyEngineService.getVirtualUsers(this.policyId),
+            this.policyEngineService.getVirtualUsers(this.policyId, this.savepointId),
             this.policyEngineService.policyBlock(this.policyId),
             this.policyEngineService.policy(this.policyId),
         ]).subscribe((value) => {

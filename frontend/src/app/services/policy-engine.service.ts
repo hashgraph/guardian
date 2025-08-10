@@ -250,7 +250,11 @@ export class PolicyEngineService {
         return this.http.get<any>(`${this.url}/blocks/about`);
     }
 
-    public getVirtualUsers(policyId: string): Observable<any[]> {
+    public getVirtualUsers(policyId: string, savepointId: string | null): Observable<any[]> {
+        if(savepointId) {
+            return this.http.get<any>(`${this.url}/${policyId}/dry-run/users?savepointId=${savepointId}`);
+        }
+
         return this.http.get<any>(`${this.url}/${policyId}/dry-run/users`);
     }
 

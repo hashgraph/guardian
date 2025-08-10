@@ -1775,15 +1775,15 @@ export class PolicyEngineService {
 
         //#region DRY RUN endpoints
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_VIRTUAL_USERS,
-            async (msg: { policyId: string, owner: IOwner }) => {
+            async (msg: { policyId: string, owner: IOwner, savepointId?: string }) => {
                 try {
-                    const { policyId, owner } = msg;
+                    const { policyId, owner, savepointId } = msg;
                     const model = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(model, owner, 'read');
                     if (!PolicyHelper.isDryRunMode(model)) {
                         throw new Error(`Policy is not in Dry Run`);
                     }
-                    const users = await DatabaseServer.getVirtualUsers(policyId);
+                    const users = await DatabaseServer.getVirtualUsers(policyId, savepointId);
                     return new MessageResponse(users);
                 } catch (error) {
                     return new MessageError(error);

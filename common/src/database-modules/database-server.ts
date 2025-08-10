@@ -3202,12 +3202,15 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * Get All Virtual Users
      * @param policyId
      *
+     * @param savepointId
      * @virtual
      */
-    public static async getVirtualUsers(policyId: string): Promise<DryRun[]> {
+    public static async getVirtualUsers(policyId: string, savepointId?: string): Promise<DryRun[]> {
+        console.log('savepointId', savepointId)
         return (await new DataBaseHelper(DryRun).find({
             dryRunId: policyId,
-            dryRunClass: 'VirtualUsers'
+            dryRunClass: 'VirtualUsers',
+            ...(savepointId ? { savepointId } : {})
         }, {
             fields: [
                 'id',

@@ -585,12 +585,15 @@ export class PolicyEngine extends NatsService {
     /**
      * Get Virtual Users by policy id
      * @param policyId
+     * @param owner
+     * @param savepointId
      */
     public async getVirtualUsers(
         policyId: string,
-        owner: IOwner
+        owner: IOwner,
+        savepointId?
     ) {
-        return await this.sendMessage(PolicyEngineEvents.GET_VIRTUAL_USERS, { policyId, owner });
+        return await this.sendMessage(PolicyEngineEvents.GET_VIRTUAL_USERS, { policyId, owner, savepointId });
     }
 
     /**

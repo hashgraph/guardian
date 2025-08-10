@@ -37,19 +37,13 @@ export class RenderBlockComponent {
     ) {
     }
 
-    ngOnChanges(changes: any) {
-        // Пересоздаём контент только если изменился сам блок (или policyId/static/dryRun — по необходимости)
-        if (changes['block'] /* || changes['policyId'] || changes['static'] || changes['dryRun'] */) {
-            this.render();
-        }
+    ngOnChanges() {
+        this.render();
 
-        // А вот savepointId просто передаём вниз — без render()
-        if (changes['savepointId'] && this.componentRef) {
-            this.componentRef.instance.savepointId = this.savepointId;
-            // если у блока есть метод перезагрузки — дерни его
-            this.componentRef.instance.reload?.();
-            // НЕ вызывай changeDetectorRef.detectChanges() тут — это и провоцирует цикл
-        }
+        // if (changes['savepointId'] && this.componentRef) {
+        //     this.componentRef.instance.savepointId = this.savepointId;
+        //     this.componentRef.changeDetectorRef.detectChanges();
+        // }
     }
 
     ngAfterViewInit() {

@@ -3097,12 +3097,13 @@ export class PolicyApi {
     async getDryRunUsers(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
+        @Query('savepointId') savepointId?: string
     ) {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
         await engineService.accessPolicy(policyId, owner, 'read');
         try {
-            return await engineService.getVirtualUsers(policyId, owner);
+            return await engineService.getVirtualUsers(policyId, owner, savepointId);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
