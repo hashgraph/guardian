@@ -61,6 +61,7 @@ import { DataBaseHelper, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS } from '../
 import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js';
 import { AbstractDatabaseServer, IAddDryRunIdItem, IAuthUser, IGetDocumentAggregationFilters } from '../interfaces/index.js';
 import { BaseEntity } from '../models/index.js';
+// import {ChangeStream, ChangeStreamDocument, ChangeStreamUpdateDocument, Collection} from "mongodb";
 
 /**
  * Database server
@@ -967,6 +968,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static connectBD(db: MikroORM<MongoDriver>): void {
         DataBaseHelper.connectBD(db);
+
+        // DatabaseServer.startDryRunShadowUpdateWatcher(db);
     }
 
     /**
@@ -1372,11 +1375,13 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async find<T extends BaseEntity>(entityClass: new () => T, filters: FilterQuery<T> | string | ObjectId, options?: unknown): Promise<T[]> {
         if (this.dryRun) {
+            const sp = (options as { savepointId?: string } | undefined)?.savepointId;
 
             const _filters = {
                 ...filters as FilterObject<T>,
                 dryRunId: this.dryRun,
-                dryRunClass: this.classMap.get(entityClass)
+                dryRunClass: this.classMap.get(entityClass),
+                ...(sp ? { savepointId: sp } : {}),
             };
 
             return (await new DataBaseHelper(DryRun).find(_filters, options)) as unknown as T[];
@@ -4507,4 +4512,64 @@ export class DatabaseServer extends AbstractDatabaseServer {
     public static async getDebugContexts(policyId: string, tag: string): Promise<DryRun[]> {
         return await new DataBaseHelper(DryRun).find({ policyId, tag });
     }
+    //
+    // private static _dryRunWatcher?: ChangeStream;
+    //
+    // public static startDryRunShadowUpdateWatcher(orm: MikroORM<MongoDriver>): void {
+    //     const db = orm.em.getConnection().getClient().db();
+    //
+    //     const main   = db.collection('dry_run');
+    //     const shadow = db.collection('dry_run_shadow');
+    //
+    //     // закроем предыдущий, если вдруг уже запущен
+    //     // tslint:disable-next-line:no-empty
+    //     try { DatabaseServer._dryRunWatcher?.close().catch(() => {}); } catch {}
+    //
+    //     const cs = main.watch(
+    //         [
+    //             { $match: { operationType: 'update' } },
+    //             { $project: { fullDocument: 1, updateDescription: 1, documentKey: 1 } }
+    //         ],
+    //         { fullDocument: 'updateLookup' }
+    //     );
+    //
+    //     // type guard: гарантируем, что это апдейт
+    //     const isUpdate = <T>(ev: ChangeStreamDocument<T>): ev is ChangeStreamUpdateDocument<T> =>
+    //         (ev as any).operationType === 'update';
+    //
+    //     cs.on('change', async (ev) => {
+    //         try {
+    //             if (!isUpdate(ev)) { return; }
+    //
+    //             const key = ev.documentKey as { _id: any };
+    //
+    //             // если в shadow нет документа — не создаём, просто пропускаем
+    //             const exists = await shadow.findOne(key, { projection: { _id: 1 } });
+    //             if (!exists) return;
+    //
+    //             const set = ev.updateDescription.updatedFields ?? {};
+    //             const unset = Object.fromEntries(
+    //                 (ev.updateDescription.removedFields ?? []).map((k) => [k, ''])
+    //             );
+    //
+    //             const ops: any = {};
+    //             if (Object.keys(set).length) ops.$set = set;
+    //             if (Object.keys(unset).length) ops.$unset = unset;
+    //
+    //             if (Object.keys(ops).length) {
+    //                 await shadow.updateOne(key, ops, { upsert: false });
+    //             }
+    //         } catch (e) {
+    //             console.error('[DryRun shadow update watcher] error:', e);
+    //         }
+    //     });
+    //
+    //     cs.on('error', (e) => {
+    //         console.error('[DryRun shadow update watcher] stream error:', e);
+    //         // tslint:disable-next-line:no-empty
+    //         try { cs.close().catch(() => {}); } catch {}
+    //     });
+    //
+    //     DatabaseServer._dryRunWatcher = cs;
+    // }
 }

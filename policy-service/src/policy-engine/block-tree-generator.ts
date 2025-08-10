@@ -123,7 +123,7 @@ export class BlockTreeGenerator extends NatsService {
         });
 
         this.getPolicyMessages(PolicyEvents.GET_POLICY_GROUPS, policyId, async (msg: any) => {
-            const { user } = msg;
+            const { user, savepointId } = msg;
 
             const userFull = await this.getUser(policyInstance, user);
 
@@ -132,7 +132,7 @@ export class BlockTreeGenerator extends NatsService {
                 return new MessageResponse([]);
             }
 
-            const groups = await PolicyComponentsUtils.GetGroups(policyInstance, userFull);
+            const groups = await PolicyComponentsUtils.GetGroups(policyInstance, userFull, savepointId);
             return new MessageResponse(groups);
         });
 

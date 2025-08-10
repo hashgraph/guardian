@@ -576,16 +576,18 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICY_GROUPS,
             async (msg: {
                 user: IAuthUser,
-                policyId: string
+                policyId: string,
+                savepointId?: string
             }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { user, policyId } = msg;
+                    const { user, policyId, savepointId } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService()
                         .sendPolicyMessage(PolicyEvents.GET_POLICY_GROUPS, policyId, {
                             user,
-                            policyId
+                            policyId,
+                            savepointId
                         }) as any;
                     return new MessageResponse(blockData);
                 } catch (error) {

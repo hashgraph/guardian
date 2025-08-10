@@ -113,8 +113,17 @@ export class PolicyEngineService {
         return this.http.post<any>(`${this.url}/validate`, policy);
     }
 
-    public policyBlock(policyId: string): Observable<any> {
-        return this.http.get<any>(`${this.url}/${policyId}/blocks`);
+    public policyBlock(policyId: string, savepointId?: string | null): Observable<any> {
+        // const savepointIdParam = '?savepointId=' + savepointId
+        //
+        // return this.http.get<any>(`${this.url}/${policyId}/blocks${savepointIdParam}`);
+        let params = null
+
+        if(savepointId) {
+            params = new HttpParams().set('savepointId', savepointId)
+        }
+
+        return this.http.get<any>(`${this.url}/${policyId}/blocks`, { params });
     }
 
     public getBlockData<T>(blockId: string, policyId: string, filters?: any): Observable<T> {
@@ -361,8 +370,12 @@ export class PolicyEngineService {
         return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/migrate-data`, migrationConfig);
     }
 
-    public getGroups(policyId: string): Observable<any[]> {
-        return this.http.get<any>(`${this.url}/${policyId}/groups`);
+    public getGroups(policyId: string, savepointId?: string | null): Observable<any[]> {
+        const params = savepointId ? new HttpParams().set('savepointId', savepointId) : undefined;
+
+        return this.http.get<any>(`${this.url}/${policyId}/groups`, { params });
+
+        // return this.http.get<any>(`${this.url}/${policyId}/groups`);
     }
 
     public setGroup(policyId: string, uuid: string): Observable<any> {

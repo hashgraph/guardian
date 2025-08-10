@@ -135,7 +135,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 if (queryParams.tab) {
                     this.activeTabIndex = queryParams.tab;
                 }
-                
+
                 this.loadPolicy();
             })
         );
@@ -217,11 +217,11 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             });
     }
 
-    loadPolicyById(policyId: string) {
+    loadPolicyById(policyId: string, savepointId?: string | null) {
         forkJoin([
             this.policyEngineService.policy(policyId),
-            this.policyEngineService.policyBlock(policyId),
-            this.policyEngineService.getGroups(policyId),
+            this.policyEngineService.policyBlock(policyId, savepointId),
+            this.policyEngineService.getGroups(policyId, savepointId),
             this.externalPoliciesService.getActionRequestsCount({ policyId })
         ]).subscribe(
             (value) => {
@@ -348,7 +348,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public createSavepoint() {
         this.loading = true;
         this.policyEngineService.createSavepoint(this.policyInfo.id).subscribe(() => {
-            this.loadPolicyById(this.policyId);
+            this.loadPolicyById(this.policyId, null);
             this.getSavepointState();
         }, (e) => {
             this.loading = false;
