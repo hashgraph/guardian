@@ -15,7 +15,8 @@ export const MAP_DOCUMENT_AGGREGATION_FILTERS = {
     PAGINATION: 'pagination',
     VC_DOCUMENTS: 'vc-documents',
     VP_DOCUMENTS: 'vp-documents',
-    APPROVE: 'approve'
+    APPROVE: 'approve',
+    DRY_RUN_STEPS: 'dry-run-steps',
 }
 
 export const MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS = {
@@ -380,6 +381,14 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
                 {
                     $match: {
                         policyId: { $eq: policyId }
+                    }
+                }
+            ],
+            [MAP_DOCUMENT_AGGREGATION_FILTERS.DRY_RUN_STEPS]: [
+                {
+                    $match: {
+                        dryRunId: props.dryRunId,
+                        dryRunClass: props.dryRunClass,
                     }
                 }
             ],
