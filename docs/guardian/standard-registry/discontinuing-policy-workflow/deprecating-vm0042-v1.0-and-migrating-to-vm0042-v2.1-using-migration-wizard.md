@@ -1,8 +1,27 @@
 # Deprecating VM0042 v1.0 and Migrating to VM0042 v2.1 Using Migration Wizard
 
-### Purpose:
+## Background
 
-This guide provides step-by-step instructions with screenshots (placeholders) on how to deprecate VM0042 v1.0 and migrate data to VM0042 v2.1 using the Guardian Migration Wizard.
+An environmental carbon credit registry is using the VM0042 methodology for _Improved Agricultural Land Management_.\
+The current Guardian policy is based on VM0042 v1.0, which has been in use since 2023.
+
+In July 2025, Verra released VM0042 v2.1, which introduces:
+
+* Updated emission factor calculation formulas
+* New soil organic carbon (SOC) sampling schema
+* Mandatory geospatial boundaries in GeoJSON format
+* Additional MRV (Monitoring, Reporting, and Verification) metadata fields
+
+To comply with updated standards, the registry must:
+
+1. Deprecate VM0042 v1.0 so no new projects start on it.
+2. Migrate existing project data to VM0042 v2.1 using Guardian’s Migration Wizard.
+
+### Why Migration Is Needed
+
+* Regulatory compliance — Old methodology no longer meets Verra’s validation requirements.
+* Data consistency — All ongoing projects must follow the same updated schema for comparability.
+* Avoid double counting — Ensures migrated projects retain unique identifiers and traceable history.
 
 ### Part 1: Deprecate VM0042 v1.0 Policy
 
