@@ -1,4 +1,4 @@
-# Part II: Analysis and Planning
+# 🔍 Part II: Analysis and Planning
 
 > Systematic methodology analysis and digitization planning using the approach developed during VM0033 digitization
 
@@ -11,8 +11,9 @@ The four chapters in Part II follow the sequence we found most effective during 
 Part II follows the systematic approach we developed during VM0033 digitization work. This workflow emerged from our experience working through a complex environmental methodology and represents what we learned about moving from methodology understanding to implementation readiness.
 
 **The Systematic Approach**:
+
 1. **Methodology Analysis** (Chapter 4): Break down complex methodology documents into manageable components using structured reading techniques
-2. **Mathematical Component Extraction** (Chapter 5): Use recursive analysis to identify all equations and parameter dependencies 
+2. **Mathematical Component Extraction** (Chapter 5): Use recursive analysis to identify all equations and parameter dependencies
 3. **External Dependencies Integration** (Chapter 6): Handle CDM tools, VCS modules, and other external calculation resources
 4. **Validation Framework Creation** (Chapter 7): Develop comprehensive test artifacts that serve as accuracy benchmarks
 
@@ -22,28 +23,32 @@ This sequence ensures that no critical elements are missed while building system
 
 ## Chapter Progression and Learning Objectives
 
-### [Chapter 4: Methodology Analysis and Decomposition](chapter-4/README.md)
+### [Chapter 4: Methodology Analysis and Decomposition](chapter-4/)
+
 **Focus**: Systematic approach to reading and analyzing methodology PDFs, identifying key components, stakeholders, and workflow requirements.
 
 **What You'll Learn**: The techniques we developed for breaking down complex methodologies like VM0033 into digitization-ready components. You'll learn structured reading approaches that focus on core methodology sections, systematic parameter extraction techniques, and recursive analysis fundamentals that serve as the foundation for all subsequent work.
 
 **VM0033 Application**: Step-by-step analysis of VM0033's structure, demonstrating how to identify and prioritize the most critical sections for digitization. You'll see how VM0033's complexity can be systematically decomposed into manageable components while maintaining the integrity of the overall methodology requirements.
 
-### [Chapter 5: Equation Mapping and Parameter Identification](chapter-5/README.md) 
+### [Chapter 5: Equation Mapping and Parameter Identification](chapter-5/)
+
 **Focus**: Comprehensive mathematical component extraction using recursive analysis techniques starting from final emission reduction formulas.
 
 **What You'll Learn**: The recursive approach to equation mapping we developed that helps ensure no mathematical dependencies are missed. You'll learn parameter classification systems, dependency tree construction, and documentation techniques that create calculation frameworks ready for implementation.
 
 **VM0033 Application**: Complete mapping of VM0033's emission reduction equations, including baseline emissions, project emissions, and leakage calculations. You'll work through actual VM0033 equations using the recursive approach, building dependency trees that capture all parameter relationships.
 
-### [Chapter 6: Tools and Modules Integration](chapter-6/README.md)
+### [Chapter 6: Tools and Modules Integration](chapter-6/)
+
 **Focus**: Systematic approach to handling external tools and modules that methodologies reference, creating unified calculation frameworks.
 
 **What You'll Learn**: Integration techniques we used for CDM tools, VCS modules, and other standardized calculation components. You'll learn to create cohesive calculation systems that integrate multiple external dependencies while managing versioning and compatibility requirements.
 
 **VM0033 Application**: Integration of the tools we actually implemented for VM0033, including AR-Tool14 for biomass calculations, AR-Tool05 for fossil fuel emissions, and AFLOU for risk assessment. You'll see how to create unified frameworks that incorporate external calculation resources while maintaining VM0033's specific requirements.
 
-### [Chapter 7: Test Artifact Development](chapter-7/README.md)
+### [Chapter 7: Test Artifact Development](chapter-7/)
+
 **Focus**: Creating comprehensive test spreadsheets that serve as validation benchmarks for digitized methodology implementations.
 
 **What You'll Learn**: How we worked with Verra to develop test scenarios using real Allcot project data, covering all methodology pathways and creating comprehensive input datasets. You'll learn to create test artifacts that serve as accuracy standards for digital policy validation.
@@ -63,10 +68,11 @@ Part II assumes you have completed Part I and builds directly on that foundation
 Successfully completing Part II ensures you have the comprehensive analysis and planning foundation needed for Part III (Schema Design and Development). The systematic approach developed through these four chapters provides the detailed understanding required for technical implementation.
 
 **What You'll Have Accomplished**:
-- Systematic methodology analysis skills applicable to any environmental methodology
-- Comprehensive mathematical component extraction using recursive techniques
-- External tool integration planning and unified framework design
-- Complete validation framework with test artifacts serving as accuracy benchmarks
+
+* Systematic methodology analysis skills applicable to any environmental methodology
+* Comprehensive mathematical component extraction using recursive techniques
+* External tool integration planning and unified framework design
+* Complete validation framework with test artifacts serving as accuracy benchmarks
 
 **Preparation for Part III**: The detailed analysis and planning work in Part II directly supports the schema design and policy workflow development covered in Part III. The parameter classifications, dependency trees, and test artifacts created in Part II become the foundation for Guardian schema development and policy implementation.
 
@@ -78,16 +84,16 @@ Part II is designed for focused, practical learning with each chapter requiring 
 
 The industry techniques introduced in Part II represent knowledge gained through real-world methodology digitization experience. Mastering these systematic approaches provides the foundation for efficient, accurate methodology implementation across any environmental standard or framework.
 
----
+***
 
 ## Chapter Navigation
 
-| Chapter | Title | Focus | Reading Time |
-|---------|-------|--------|--------------|
-| **[4](chapter-4/README.md)** | **Methodology Analysis and Decomposition** | Systematic document analysis and component identification | ~15-20 min |
-| **[5](chapter-5/README.md)** | **Equation Mapping and Parameter Identification** | Recursive mathematical component extraction | ~15-20 min |
-| **[6](chapter-6/README.md)** | **Tools and Modules Integration** | External dependency integration and unified frameworks | ~15-20 min |
-| **[7](chapter-7/README.md)** | **Test Artifact Development** | Validation framework and test benchmark creation | ~15-20 min |
+| Chapter             | Title                                             | Focus                                                     | Reading Time |
+| ------------------- | ------------------------------------------------- | --------------------------------------------------------- | ------------ |
+| [**4**](chapter-4/) | **Methodology Analysis and Decomposition**        | Systematic document analysis and component identification | \~15-20 min  |
+| [**5**](chapter-5/) | **Equation Mapping and Parameter Identification** | Recursive mathematical component extraction               | \~15-20 min  |
+| [**6**](chapter-6/) | **Tools and Modules Integration**                 | External dependency integration and unified frameworks    | \~15-20 min  |
+| [**7**](chapter-7/) | **Test Artifact Development**                     | Validation framework and test benchmark creation          | \~15-20 min  |
 
 {% hint style="info" %}
 **Sequential Learning**: Complete chapters in order for optimal learning progression and systematic skill development.

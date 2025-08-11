@@ -1,57 +1,65 @@
-# VM0033 Reference Integration System
+# 🔗 VM0033 Integration
 
 > System for leveraging existing VM0033 documentation and requesting only Guardian-specific implementation details
 
 ## Overview
 
 This system ensures accurate VM0033 references by:
+
 1. **Using existing parsed documentation** in `docs/VM0033-methodology-pdf-parsed/` for basic methodology questions
 2. **Requesting user input only** for Guardian-specific implementation details, screenshots, and current system status
 
 ## Available VM0033 Documentation
 
 ### Parsed VM0033 Content
+
 The system can access comprehensive VM0033 methodology content from:
-- `docs/VM0033-methodology-pdf-parsed/VM0033-Methodology.md` - Full methodology text
-- `docs/VM0033-methodology-pdf-parsed/VM0033-Methodology_meta.json` - Structured metadata and table of contents
+
+* `docs/VM0033-methodology-pdf-parsed/VM0033-Methodology.md` - Full methodology text
+* `docs/VM0033-methodology-pdf-parsed/VM0033-Methodology_meta.json` - Structured metadata and table of contents
 
 ### What NOT to Ask Users
+
 **Basic methodology information available in parsed docs:**
-- VM0033 definitions and terminology
-- Applicability conditions and scope
-- Baseline scenario determination procedures
-- Carbon pools and GHG sources
-- Monitoring requirements and parameters
-- Mathematical formulas and calculations
-- Tool relationships (AR-Tool02, AR-Tool03, AR-Tool14)
-- Blue carbon significance and methodology overview
-- Temporal and geographic boundaries
-- Stratification requirements
+
+* VM0033 definitions and terminology
+* Applicability conditions and scope
+* Baseline scenario determination procedures
+* Carbon pools and GHG sources
+* Monitoring requirements and parameters
+* Mathematical formulas and calculations
+* Tool relationships (AR-Tool02, AR-Tool03, AR-Tool14)
+* Blue carbon significance and methodology overview
+* Temporal and geographic boundaries
+* Stratification requirements
 
 ### User Input Required For
 
 #### Guardian Implementation Details
-- [ ] Current Guardian VM0033 implementation status
-- [ ] Guardian UI screenshots showing VM0033 features
-- [ ] Guardian architecture diagrams for VM0033
-- [ ] Specific Guardian configuration examples
-- [ ] Guardian API endpoints used for VM0033
-- [ ] Guardian database schema for VM0033 data
-- [ ] Guardian workflow implementations
-- [ ] Guardian user role configurations for VM0033
+
+* [ ] Current Guardian VM0033 implementation status
+* [ ] Guardian UI screenshots showing VM0033 features
+* [ ] Guardian architecture diagrams for VM0033
+* [ ] Specific Guardian configuration examples
+* [ ] Guardian API endpoints used for VM0033
+* [ ] Guardian database schema for VM0033 data
+* [ ] Guardian workflow implementations
+* [ ] Guardian user role configurations for VM0033
 
 #### Development Environment & Setup
-- [ ] Current development environment requirements
-- [ ] Installation and setup procedures
-- [ ] Guardian-specific VM0033 configuration files
-- [ ] Testing procedures and validation scripts
-- [ ] Deployment considerations
+
+* [ ] Current development environment requirements
+* [ ] Installation and setup procedures
+* [ ] Guardian-specific VM0033 configuration files
+* [ ] Testing procedures and validation scripts
+* [ ] Deployment considerations
 
 #### Real Implementation Examples
-- [ ] Actual Guardian VM0033 project examples
-- [ ] User experience challenges with Guardian implementation
-- [ ] Performance considerations and optimizations
-- [ ] Integration issues and solutions
+
+* [ ] Actual Guardian VM0033 project examples
+* [ ] User experience challenges with Guardian implementation
+* [ ] Performance considerations and optimizations
+* [ ] Integration issues and solutions
 
 ## Content Integration Guidelines
 
@@ -97,20 +105,22 @@ VM0033 applicability conditions (Section 4) specify that projects must:
 ### VM0033 Content Integration Checklist
 
 For each VM0033 reference:
-- [ ] **Basic methodology content**: Referenced from parsed documentation (`docs/VM0033-methodology-pdf-parsed/`)
-- [ ] **Specific section citations**: Include section numbers and page references
-- [ ] **Guardian implementation**: User input obtained for system-specific details only
-- [ ] **Context appropriate**: Content serves both maintenance and learning audiences
-- [ ] **No assumptions**: No hallucinated methodology details
+
+* [ ] **Basic methodology content**: Referenced from parsed documentation (`docs/VM0033-methodology-pdf-parsed/`)
+* [ ] **Specific section citations**: Include section numbers and page references
+* [ ] **Guardian implementation**: User input obtained for system-specific details only
+* [ ] **Context appropriate**: Content serves both maintenance and learning audiences
+* [ ] **No assumptions**: No hallucinated methodology details
 
 ### Guardian Integration Checklist
 
 For each Guardian reference:
-- [ ] **Current status confirmed**: Implementation status verified with user
-- [ ] **Screenshots obtained**: Current Guardian interface examples from user
-- [ ] **Code examples validated**: Guardian-specific configurations from user
-- [ ] **Documentation links**: References to existing Guardian documentation
-- [ ] **Feature availability**: Current Guardian capabilities confirmed
+
+* [ ] **Current status confirmed**: Implementation status verified with user
+* [ ] **Screenshots obtained**: Current Guardian interface examples from user
+* [ ] **Code examples validated**: Guardian-specific configurations from user
+* [ ] **Documentation links**: References to existing Guardian documentation
+* [ ] **Feature availability**: Current Guardian capabilities confirmed
 
 ## Implementation Guidelines
 
@@ -167,39 +177,36 @@ the methodology requires [specific requirements from parsed documentation].
 
 ### Error Prevention
 
-- **Use Parsed Documentation**: Always check VM0033 parsed docs before asking users
-- **No Methodology Assumptions**: Never assume or hallucinate VM0033 content
-- **Guardian-Specific Requests**: Only request Guardian implementation details from users
-- **Source Attribution**: Always reference specific VM0033 sections from parsed docs
-- **Clear Boundaries**: Distinguish between methodology content and Guardian implementation
+* **Use Parsed Documentation**: Always check VM0033 parsed docs before asking users
+* **No Methodology Assumptions**: Never assume or hallucinate VM0033 content
+* **Guardian-Specific Requests**: Only request Guardian implementation details from users
+* **Source Attribution**: Always reference specific VM0033 sections from parsed docs
+* **Clear Boundaries**: Distinguish between methodology content and Guardian implementation
 
 ### Common Mistakes to Avoid
 
-❌ **Wrong**: Asking user "What does VM0033 say about blue carbon?"
-✅ **Right**: Reference VM0033 parsed documentation for blue carbon definition
+❌ **Wrong**: Asking user "What does VM0033 say about blue carbon?" ✅ **Right**: Reference VM0033 parsed documentation for blue carbon definition
 
-❌ **Wrong**: Asking user "What are VM0033 applicability conditions?"
-✅ **Right**: Reference Section 4 of parsed VM0033 documentation
+❌ **Wrong**: Asking user "What are VM0033 applicability conditions?" ✅ **Right**: Reference Section 4 of parsed VM0033 documentation
 
-❌ **Wrong**: Assuming Guardian implementation details
-✅ **Right**: Request specific Guardian screenshots and configurations from user
+❌ **Wrong**: Assuming Guardian implementation details ✅ **Right**: Request specific Guardian screenshots and configurations from user
 
 ## Maintenance
 
 ### Ongoing Updates
 
-- **VM0033 Changes**: System for handling methodology updates
-- **Guardian Updates**: Process for updating Guardian references
-- **User Feedback**: Integration of user corrections and improvements
-- **Documentation Sync**: Keeping Guardian documentation references current
+* **VM0033 Changes**: System for handling methodology updates
+* **Guardian Updates**: Process for updating Guardian references
+* **User Feedback**: Integration of user corrections and improvements
+* **Documentation Sync**: Keeping Guardian documentation references current
 
 ### Version Control
 
-- **Content Versioning**: Track changes to user-provided content
-- **Reference Updates**: Maintain current links to Guardian documentation
-- **Accuracy Tracking**: Monitor and update VM0033 references as needed
+* **Content Versioning**: Track changes to user-provided content
+* **Reference Updates**: Maintain current links to Guardian documentation
+* **Accuracy Tracking**: Monitor and update VM0033 references as needed
 
----
+***
 
 {% hint style="success" %}
 **Key Principle**: Use existing VM0033 parsed documentation for methodology content. Only request Guardian-specific implementation details from users.

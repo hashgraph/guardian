@@ -552,6 +552,7 @@
       * [Delete Notifications](guardian/standard-registry/notifications/apis-related-to-notification/delete-notifications.md)
   * [Discontinuing Policy Workflow](guardian/standard-registry/discontinuing-policy-workflow/README.md)
     * [User Guide](guardian/standard-registry/discontinuing-policy-workflow/user-guide.md)
+    * [Deprecating VM0042 v1.0 and Migrating to VM0042 v2.1 Using Migration Wizard](guardian/standard-registry/discontinuing-policy-workflow/deprecating-vm0042-v1.0-and-migrating-to-vm0042-v2.1-using-migration-wizard.md)
     * [APIs related to Discontinuing Policy workflow](guardian/standard-registry/discontinuing-policy-workflow/apis-related-to-discontinuing-policy-workflow/README.md)
       * [Discontinue Policy](guardian/standard-registry/discontinuing-policy-workflow/apis-related-to-discontinuing-policy-workflow/discontinue-policy.md)
       * [MigratePolicy Data](guardian/standard-registry/discontinuing-policy-workflow/apis-related-to-discontinuing-policy-workflow/migratepolicy-data.md)
