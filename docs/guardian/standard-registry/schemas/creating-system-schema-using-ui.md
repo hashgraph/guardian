@@ -36,7 +36,7 @@ Files with **.schema** extension are only accepted. These files are in zip forma
 
 #### Import from IPFS
 
-You can also import Schema from IPFS by entering the correct Schema timestamp.&#x20;
+You can also import Schema from IPFS by entering the correct Schema timestamp.
 
 Sample iREC Schema timestamp is below:
 
@@ -50,7 +50,7 @@ Once the Schema is imported, we need to select the Policy from the Policy dropdo
 
 <figure><img src="../../../.gitbook/assets/image (5) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (3) (1) (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (2) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Note:** The major difference between creating / importing System Schema and Policy Schema is that we only get policy selection dropdown when policy schema is imported.

@@ -21,7 +21,7 @@ We have two options to create Policy :
 
 1.3 Once the details are filled and clicked on OK. Initially, Policy is created in Draft status.
 
-![](<../../../../.gitbook/assets/image (1) (1) (2).png>)
+![](<../../../../.gitbook/assets/image (1) (1) (2) (2).png>)
 
 1.4 You can even edit the Policy by clicking Edit button.
 

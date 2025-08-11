@@ -31,7 +31,7 @@ Once the Policy is imported, you will need to create another user account to be 
 
 <figure><img src="../../../.gitbook/assets/image (2) (1) (6) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (11) (1) (2) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (11) (1) (2) (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 Next, fill out the Organization data form.
 
@@ -41,7 +41,7 @@ Once completed, add a new entity by clicking on the "New Entity" button and fill
 
 <figure><img src="../../../.gitbook/assets/image (20) (4).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (16) (1) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (16) (1) (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 Once the form has been submitted, you'll need to define a product. Click on the "Define Product" button and fill out the product form.
 
