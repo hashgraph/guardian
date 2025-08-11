@@ -48,7 +48,7 @@ services:
 #      - seq_data:/data
 
   ipfs-node:
-    image: ipfs/kubo:v0.34.1
+    image: ipfs/kubo:v0.36.0
     ports:
       - "5001:5001"
       - "4001:4001"
