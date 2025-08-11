@@ -20,7 +20,6 @@ export class UploadDocumentBlockComponent implements OnInit {
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
     @ViewChild("dialogTemplate") dialogTemplate!: any;
-    @Input('savepointId') savepointId: string | null = null;
 
     isExist = false;
     disabled = false;

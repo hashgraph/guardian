@@ -17,7 +17,6 @@ export class TokenConfirmationBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
-    @Input('savepointId') savepointId: string | null = null;
 
     isActive = false;
     loading: boolean = true;

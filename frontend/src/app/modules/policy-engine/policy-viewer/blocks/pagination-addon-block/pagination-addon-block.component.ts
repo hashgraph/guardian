@@ -15,7 +15,6 @@ export class PaginationAddonBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
-    @Input('savepointId') savepointId: string | null = null;
 
     loading: boolean = true;
     socket: any;

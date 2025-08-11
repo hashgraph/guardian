@@ -39,11 +39,6 @@ export class RenderBlockComponent {
 
     ngOnChanges() {
         this.render();
-
-        // if (changes['savepointId'] && this.componentRef) {
-        //     this.componentRef.instance.savepointId = this.savepointId;
-        //     this.componentRef.changeDetectorRef.detectChanges();
-        // }
     }
 
     ngAfterViewInit() {

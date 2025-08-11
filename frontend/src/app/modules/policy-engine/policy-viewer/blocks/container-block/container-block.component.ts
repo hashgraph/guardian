@@ -88,7 +88,6 @@ export class ContainerBlockComponent implements OnInit, OnDestroy {
                 this.loading = false;
             }, 500);
         } else {
-            console.log('conta', this.savepointId)
             this.policyEngineService
                 .getBlockData(this.id, this.policyId, this.savepointId)
                 .subscribe(this._onSuccess.bind(this), this._onError.bind(this));

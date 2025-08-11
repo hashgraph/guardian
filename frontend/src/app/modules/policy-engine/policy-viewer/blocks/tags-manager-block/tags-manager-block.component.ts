@@ -18,7 +18,6 @@ export class TagsManagerBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
-    @Input('savepointId') savepointId: string | null = null;
 
     public isActive = false;
     public loading: boolean = true;

@@ -17,7 +17,6 @@ export class MultiSignBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
-    @Input('savepointId') savepointId: string | null = null;
 
     @ViewChild('menu2') menu2!: OverlayPanel;
 
