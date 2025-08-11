@@ -32,7 +32,7 @@ The first step towards compliance was building a system to support manual attest
 2. Once, imported the policy, you can publish the policy to Hedera by clicking on publish button.
 3. Now, we will logout and login as a Registrant role and click on Go on the respective policy:
 
-<figure><img src="../../../.gitbook/assets/image (3) (1) (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (2) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 4. We need to fill the Registrant Application form and click on OK as shown below:
 
