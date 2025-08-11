@@ -15,6 +15,12 @@ Once the block configuration is completed, we need to follow the below steps:
 
 ### 1.1 Authentication Requirements <a href="#id-1.1-authentication-requirements" id="id-1.1-authentication-requirements"></a>
 
+**Global forest watch:**\
+You can read doc here [https://data-api.globalforestwatch.org/](https://data-api.globalforestwatch.org/) to get x-api-key but it has limitations. For full access, contact their support.
+
+<figure><img src="../../../.gitbook/assets/image (122).png" alt=""><figcaption></figcaption></figure>
+
+\
 **FIRMS:**
 
 Requires an map\_key. You can get one here [https://firms.modaps.eosdis.nasa.gov/api/map\_key/](https://firms.modaps.eosdis.nasa.gov/api/map_key/), but it has limitations. For full access, contact their support.
@@ -45,6 +51,13 @@ To explore request options and parameter details, refer to the documentation for
 You must set KANOP\_IO\_AUTH\_TOKEN in the policy-service config or in the Docker configuration. For FIRM You must set FIRMS\_AUTH\_TOKEN in the policy-service config or in the Docker configuration. You can easily find them using the keyword "Integrations tokens".
 
 <figure><img src="https://docs.hedera.com/guardian/~gitbook/image?url=https%3A%2F%2F1556785885-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FNYWPEEAknX9Vki1yV5HY%252Fuploads%252FBTeJ3P0FytrW8RROd2mg%252Fimage.png%3Falt%3Dmedia%26token%3D2d646ba2-852e-4f83-9444-1da7e5e74d50&#x26;width=768&#x26;dpr=4&#x26;quality=100&#x26;sign=7a19082a&#x26;sv=2" alt=""><figcaption></figcaption></figure>
+
+**For global forest watch:**\
+You must set GLOBAL\_FOREST\_WATCH\_API\_KEY in the policy-service config or in the Docker configuration.
+
+**For FIRM:**\
+You must set FIRMS\_AUTH\_TOKEN in the policy-service config or in the Docker configuration.\
+You can easily find them using the keyword "**Integrations** **tokens**"
 
 ### 1.3 Displaying Data in a Grid <a href="#id-1.3-displaying-data-in-a-grid" id="id-1.3-displaying-data-in-a-grid"></a>
 
