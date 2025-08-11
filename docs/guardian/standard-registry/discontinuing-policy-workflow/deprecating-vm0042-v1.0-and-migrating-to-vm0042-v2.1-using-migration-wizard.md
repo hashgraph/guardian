@@ -1,5 +1,15 @@
 # Deprecating VM0042 v1.0 and Migrating to VM0042 v2.1 Using Migration Wizard
 
+## Overview
+
+The Guardian platform allows any registry or standards body to create, manage, and update digital methodologies (policies) for environmental and sustainability programs.
+
+When a policy is updated, it is important to deprecate the old version so no new projects start on it, and migrate existing projects to the updated version while keeping all history intact. This ensures consistency across active projects and compliance with the latest requirements.
+
+This guide explains how to do that using the Guardian Migration Wizard.&#x20;
+
+The process is applicable to any policy for any registry.
+
 ## Background
 
 An environmental carbon credit registry is using the VM0042 methodology for _Improved Agricultural Land Management_.\
@@ -41,21 +51,21 @@ Click on `VM0042 v1.0` to open the policy details.
 
 * Click the **"Discontinue"** button.
 
-<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
 
 * Select the timeframe, when we want to discontinue the policy. For now, we will be selecting immediate in the pop up:
 
-<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 * The policy will now be marked as **Discontinued**, and users will no longer be able to issue new credentials.
 
-<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Part 2: Prepare VM0042 v2.1 Policy
 
 #### Step 5: Create/Import VM0042 V2.1 Policy:
 
-<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 Publishing VM0042 V2.1 Policy:
 
@@ -74,7 +84,7 @@ Publishing VM0042 V2.1 Policy:
 * **Source Policy**: Select Verra VM0042 Policy
 * **Target Policy**: Select VM0042 V2.1
 
-<figure><img src="../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
 
 #### Step 8: Map Credentials
 
@@ -113,7 +123,12 @@ The wizard will guide you to map old fields to the new schema structure.
 
 #### Step 13: Verify the VM0042 V2.1 Policy
 
-* Open the VM0042 V2.1 Policy and click on "**TrustChain**"
+* Open the VM0042 V2.1 Policy and click on "**TrustChain**".&#x20;
+* View the TrustChain to confirm:
+  * All records migrated correctly
+  * Original credential IDs are preserved
+  * Linked documents, token metadata, and approvals are intact
 
-<figure><img src="../../../.gitbook/assets/image (16).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
 
+<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>

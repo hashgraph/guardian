@@ -8,7 +8,7 @@ Schemas can be defined/changed by editing their JSON definitions
 
 <figure><img src="../../../.gitbook/assets/image (103).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Schema JSON definition contains the following editable fields
 
