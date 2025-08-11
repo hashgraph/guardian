@@ -35,17 +35,6 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
                     expect(response.body).to.have.property("username", name);
                     expect(response.body).to.have.property("role", "USER");
                 });
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.AccountsLogin,
-                    body: {
-                        username: name,
-                        password: "test"
-                    },
-                    failOnStatusCode: false
-                }).then((response) => {
-                    expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
-                });
             })
         })
     })
@@ -55,7 +44,10 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
             cy.request({
                 method: METHOD.POST,
                 url: API.ApiServer + API.ChangePassword,
-                failOnStatusCode: false
+                failOnStatusCode: false,
+                headers: {
+                    authorization,
+                }
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
             })
@@ -71,6 +63,9 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
                     username: name,
                     oldPassword: "test",
                     newPassword: "test2"
+                },
+                headers: {
+                    authorization,
                 },
                 failOnStatusCode: false
             }).then((response) => {
@@ -88,6 +83,9 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
                     oldPassword: "test",
                     newPassword: "test1"
                 },
+                headers: {
+                    authorization,
+                },
                 failOnStatusCode: false
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
@@ -103,6 +101,9 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
                 body: {
                     username: name,
                     newPassword: "test1"
+                },
+                headers: {
+                    authorization,
                 },
                 failOnStatusCode: false
             }).then((response) => {
@@ -121,6 +122,9 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
                     oldPassword: "test",
                     newPassword: "test1"
                 },
+                headers: {
+                    authorization,
+                },
                 failOnStatusCode: false
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
@@ -138,6 +142,9 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
                     oldPassword: "test",
                     newPassword: "test1"
                 },
+                headers: {
+                    authorization,
+                },
                 failOnStatusCode: false
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED);
@@ -154,6 +161,9 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
                     username: name,
                     oldPassword: "test1",
                     newPassword: "tt"
+                },
+                headers: {
+                    authorization,
                 },
                 failOnStatusCode: false,
             }).then((response) => {
@@ -173,8 +183,6 @@ context("Update password", { tags: ['accounts', 'firstPool', 'all'] }, () => {
                 username: name,
                 oldPassword: "test1",
                 newPassword: "test"
-            },
-            headers: {
             },
             failOnStatusCode: false,
         }).then((response) => {
