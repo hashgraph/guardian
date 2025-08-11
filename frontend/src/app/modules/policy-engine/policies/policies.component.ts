@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, Inject, OnInit, ViewChild} from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
     ContractType,
@@ -24,13 +24,13 @@ import { InformService } from 'src/app/services/inform.service';
 import { MultiPolicyDialogComponent } from '../dialogs/multi-policy-dialog/multi-policy-dialog.component';
 import { ComparePolicyDialog } from '../dialogs/compare-policy-dialog/compare-policy-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
-import {forkJoin, Subject, Subscription} from 'rxjs';
+import { forkJoin, Subject, Subscription } from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { SearchPolicyDialog } from '../../analytics/search-policy-dialog/search-policy-dialog.component';
-import {DialogService, DynamicDialogRef} from 'primeng/dynamicdialog';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { SuggestionsConfigurationComponent } from '../../../views/suggestions-configuration/suggestions-configuration.component';
 import { DeletePolicyDialogComponent } from '../dialogs/delete-policy-dialog/delete-policy-dialog.component';
 import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
@@ -47,10 +47,10 @@ import {
     ImportEntityType
 } from '../../common/import-entity-dialog/import-entity-dialog.component';
 import { SearchExternalPolicyDialog } from '../dialogs/search-external-policy-dialog/search-external-policy-dialog.component';
-import {OverlayPanel} from 'primeng/overlaypanel';
-import {takeUntil} from 'rxjs/operators';
-import {IndexedDbRegistryService} from 'src/app/services/indexed-db-registry.service';
-import {DB_NAME, STORES_NAME} from 'src/app/constants';
+import { OverlayPanel } from 'primeng/overlaypanel';
+import { takeUntil } from 'rxjs/operators';
+import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
+import { DB_NAME, STORES_NAME } from 'src/app/constants';
 
 class MenuButton {
     public readonly visible: boolean;
@@ -1018,7 +1018,8 @@ export class PoliciesComponent implements OnInit {
                 if (type == 'message') {
                     this.policyEngineService
                         .pushImportByMessage(data, versionOfTopicId, { tools }, demo)
-                        .pipe(takeUntil(this._destroy$)).subscribe((result) => {
+                        .pipe(takeUntil(this._destroy$))
+                        .subscribe((result) => {
                             const { taskId, expectation } = result;
                             this.router.navigate(['task', taskId], {
                                 queryParams: {
@@ -1513,7 +1514,7 @@ export class PoliciesComponent implements OnInit {
                 policy: item
             }
         });
-        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {});
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => { });
     }
 
     public onRunTest($event: any) {

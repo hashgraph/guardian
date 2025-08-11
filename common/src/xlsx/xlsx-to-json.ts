@@ -372,7 +372,7 @@ export class XlsxToJson {
             order: row
         };
         try {
-            const key = XlsxToJson.getFieldKey(worksheet, table, row);
+            const key = XlsxToJson.getFieldKey(worksheet, table, row, xlsxResult);
             const type = worksheet.getValue<string>(table.getCol(Dictionary.FIELD_TYPE), row);
             const description = worksheet.getValue<string>(table.getCol(Dictionary.QUESTION), row);
             const required = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.REQUIRED_FIELD), row));
@@ -552,6 +552,17 @@ export class XlsxToJson {
                 field.textSize = font.size;
             }
 
+            if (field.autocalculate && !param) {
+                xlsxResult.addError({
+                    type: 'error',
+                    text: `Auto-calculate field is empty.`,
+                    message: `Auto-calculate field is empty.`,
+                    worksheet: worksheet.name,
+                    cell: worksheet.getPath(table.getCol(Dictionary.PARAMETER), row),
+                    row
+                }, field);
+            }
+
             if (param) {
                 if (fieldType.name === 'Prefix') {
                     field.unit = param;
@@ -599,7 +610,7 @@ export class XlsxToJson {
             return null;
         }
 
-        const key = XlsxToJson.getFieldKey(worksheet, table, row);
+        const key = XlsxToJson.getFieldKey(worksheet, table, row, xlsxResult);
         const field = fields.find((f) => f.title === key.path);
 
         try {
@@ -675,7 +686,7 @@ export class XlsxToJson {
             return null;
         }
 
-        const key = XlsxToJson.getFieldKey(worksheet, table, row);
+        const key = XlsxToJson.getFieldKey(worksheet, table, row, xlsxResult);
         const description = worksheet.getValue<string>(table.getCol(Dictionary.QUESTION), row);
         const groupIndex = worksheet.getRow(row).getOutline();
         const type = worksheet.getValue<string>(table.getCol(Dictionary.FIELD_TYPE), row);
@@ -789,7 +800,8 @@ export class XlsxToJson {
     private static getFieldKey(
         worksheet: Worksheet,
         table: Table,
-        row: number
+        row: number,
+        xlsxResult: XlsxResult,
     ): IFieldKey {
         const path = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
         const fullPath = worksheet.getFullPath(table.getCol(Dictionary.ANSWER), row);
@@ -798,6 +810,21 @@ export class XlsxToJson {
             name = worksheet.getValue<string>(table.getCol(Dictionary.KEY), row) || path;
         } else {
             name = path;
+        }
+        if (name) {
+            name = name.trim();
+        }
+        if (name && name.includes('.')) {
+            xlsxResult.addError({
+                type: 'warning',
+                text: `Invalid character.`,
+                message: `Dots are not allowed in the Keys (${name})`,
+                worksheet: worksheet.name,
+                cell: worksheet.getPath(table.getCol(Dictionary.KEY), row),
+                row,
+                col: table.getCol(Dictionary.KEY),
+            }, null);
+            name = name.replaceAll('.', '');
         }
         return { name, path, fullPath }
     }
@@ -814,7 +841,7 @@ export class XlsxToJson {
             xlsxResult.addError({
                 type: 'error',
                 text: `Failed to parse field.`,
-                message: `Key ${field.name} is already exists`,
+                message: `Key ${field.name} already exists`,
                 worksheet: worksheet.name,
                 cell: worksheet.getPath(table.getCol(Dictionary.KEY), row),
                 row,

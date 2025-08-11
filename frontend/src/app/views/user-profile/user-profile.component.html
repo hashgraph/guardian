@@ -633,14 +633,15 @@
                             </div>
                             <div *ngIf="schema" class="hedera-credentials-form-container">
                                 <form class="hedera-form">
-                                    <app-schema-form
-                                        (change)="onChangeVcForm()"
+                                    <app-schema-form-root
                                         [formGroup]="vcDocumentForm"
                                         [private-fields]="privateFields"
                                         [schema]="schema"
                                         [showButtons]="false"
+                                        (change)="onChangeVcForm()"
+                                        (form)="initForm($event)"
                                     >
-                                    </app-schema-form>
+                                    </app-schema-form-root>
                                 </form>
                             </div>
                         </ng-container>

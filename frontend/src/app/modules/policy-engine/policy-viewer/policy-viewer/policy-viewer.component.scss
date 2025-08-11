@@ -17,7 +17,7 @@
         .p-tabview {
             height: 100%;
         }
-        
+
         .p-tabview-panels {
             background: none;
             padding: 0;
@@ -869,4 +869,9 @@ a.go-back-link svg {
     .policy-additional-info-container {
         display: none !important;
     }
+}
+
+:host ::ng-deep .content {
+    right: inherit !important;
+    min-width: 100% !important;
 }

@@ -1,8 +1,6 @@
 import { ChangeDetectorRef, Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild, } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { GeoJsonSchema, GeoJsonType } from '@guardian/interfaces';
-import ajv from 'ajv';
-import { ajvSchemaValidator } from 'src/app/validators/ajv-schema.validator';
+import { GeoJsonType } from '@guardian/interfaces';
 import 'ol/ol.css';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import Map from 'ol/Map.js';
@@ -16,6 +14,7 @@ import { doubleClick, pointerMove } from 'ol/events/condition.js';
 import { LineString, MultiLineString, MultiPoint, MultiPolygon, Polygon } from 'ol/geom';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer.js';
 import Select from 'ol/interaction/Select.js';
+import { GeoForm } from '../schema-form-model/geo-form';
 
 const MAP_OPTIONS = {
     center: [0, 0],
@@ -142,10 +141,10 @@ const selectedStyles: any = {
     Cluster: new Style({
         image: selectedCluster,
     }),
-    MultiPoint:  new Style({
+    MultiPoint: new Style({
         image: selectedPoint,
     }),
-    LineString:  new Style({
+    LineString: new Style({
         image: selectedPoint,
     }),
     Polygon: selectedPolygon,
@@ -224,8 +223,8 @@ function selectedStyleFunction(feature: any) {
 export class GeojsonTypeComponent implements OnChanges {
     @ViewChild('map', { static: false }) mapElementRef!: ElementRef;
 
-    @Input('formGroup') control?: UntypedFormControl;
     @Input('preset') presetDocument: any = null;
+    @Input('form-model') formModel!: GeoForm;
     @Input('disabled') isDisabled: boolean = false;
 
     type: GeoJsonType = GeoJsonType.POINT;
@@ -258,25 +257,57 @@ export class GeojsonTypeComponent implements OnChanges {
 
     constructor(
         private cdkRef: ChangeDetectorRef
-    ) {}
+    ) { }
+
+    private getValue() {
+        const value = this.formModel?.getValue();
+        if (!value) {
+            return undefined;
+        }
+        if (
+            value.type === GeoJsonType.POINT ||
+            value.type === GeoJsonType.LINE_STRING ||
+            value.type === GeoJsonType.POLYGON ||
+            value.type === GeoJsonType.MULTI_POINT ||
+            value.type === GeoJsonType.MULTI_LINE_STRING ||
+            value.type === GeoJsonType.MULTI_POLYGON
+        ) {
+            return value;
+        } else {
+            return undefined;
+        }
+    }
+
+    ngOnInit(): void {
+        if (!this.formModel) {
+            const form = new UntypedFormControl({});
+            this.formModel = new GeoForm(form);
+            this.formModel.setData({
+                preset: this.presetDocument
+            });
+            this.formModel.build();
+        }
+    }
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes?.isDisabled && !changes?.isDisabled.firstChange) {
-            this.onViewTypeChange(this.control?.value);
+            this.onViewTypeChange();
         }
     }
 
     ngAfterViewInit(): void {
         this.resetCoordinatesStructure();
-
-        this.onTypeChange(false);
-        this.control?.setValidators(
-            ajvSchemaValidator(new ajv().compile(GeoJsonSchema))
-        );
-        this.control?.updateValueAndValidity();
-        this.onViewTypeChange(this.presetDocument, false);
-
+        if (this.getValue()) {
+            this.onViewTypeChange(false);
+        } else {
+            this.onTypeChange(false);
+            this.onViewTypeChange(false);
+        }
         this.setupMap();
+    }
+
+    private setControlValue(value: any, dirty = true) {
+        this.formModel?.setControlValue(value, dirty);
     }
 
     private setupMap() {
@@ -295,7 +326,7 @@ export class GeojsonTypeComponent implements OnChanges {
             }, 0)
         }
     }
-    
+
     private initMap() {
         const clusterSource = new Cluster({
             distance: CLUSTER_DISTANCE.distance,
@@ -430,10 +461,10 @@ export class GeojsonTypeComponent implements OnChanges {
         this.map.addInteraction(selectHover);
         this.map.addInteraction(selectDoubleClick);
     }
-    
+
     private updateMap(updateInput: boolean = false) {
         const shapeFeatures: any[] = [];
-        
+
         shapeFeatures.push({
             type: 'Feature',
             geometry: {
@@ -441,7 +472,7 @@ export class GeojsonTypeComponent implements OnChanges {
                 coordinates: this.parsedCoordinates,
             },
         });
-        
+
         const features = new GeoJSON({
             featureProjection: 'EPSG:3857',
         }).readFeatures({
@@ -465,7 +496,7 @@ export class GeojsonTypeComponent implements OnChanges {
 
         this.geoShapesSource?.clear(true);
         this.geoShapesSource?.addFeatures(features);
-        
+
         if (updateInput) {
             this.coordinates = JSON.stringify(this.parsedCoordinates, null, 4);
             this.setControlValue({
@@ -475,18 +506,11 @@ export class GeojsonTypeComponent implements OnChanges {
         }
     }
 
-    private setControlValue(value: any, dirty = true) {
-        this.control?.patchValue(value);
-        if (dirty) {
-            this.control?.markAsDirty();
-        }
-    }
-
     private mapClick(coordinates: any) {
         if (this.isDisabled) {
             return;
         }
-        
+
         try {
             switch (this.type) {
                 case GeoJsonType.POINT:
@@ -502,7 +526,7 @@ export class GeojsonTypeComponent implements OnChanges {
                     break;
                 case GeoJsonType.POLYGON:
                     this.parsedCoordinates?.[this.selectedRingIndex]?.push(coordinates);
-                    
+
                     break;
                 case GeoJsonType.MULTI_POLYGON:
                     if (this.parsedCoordinates?.[this.selectedFeatureIndex]?.[this.selectedRingIndex][0]?.length <= 0) {
@@ -526,10 +550,10 @@ export class GeojsonTypeComponent implements OnChanges {
                 default:
                     break;
             }
-            
+
             this.updateMap(true);
         }
-        catch {}
+        catch { }
     }
 
     private mapRightclick(featureIndex = 0, ringIndex = 0) {
@@ -659,8 +683,9 @@ export class GeojsonTypeComponent implements OnChanges {
         this.updateMap(false);
     }
 
-    public onViewTypeChange(value: any, dirty = true) {
-        if (!value) {
+    public onViewTypeChange(dirty = true) {
+        const value = this.formModel?.getValue();
+        if (!value || !value.type) {
             return;
         }
 
@@ -673,7 +698,6 @@ export class GeojsonTypeComponent implements OnChanges {
             this.onTypeChange(dirty);
             this.coordinates = JSON.stringify(value?.coordinates, null, 4);
             this.coordinatesChanged(dirty);
-        
         }
 
         if (!this.isJSON) {
@@ -723,14 +747,14 @@ export class GeojsonTypeComponent implements OnChanges {
                 } else {
                     this.center = null;
                 }
-                
+
                 if (this.center && this.center.length > 1) {
                     this.map?.getView().animate({
                         center: this.center,
                         zoom: 7,
                         duration: 500,
                     });
-                      
+
                     this.updateMap(true);
                 }
             }, 500)

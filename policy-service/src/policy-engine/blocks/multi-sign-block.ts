@@ -232,6 +232,9 @@ export class MultiSignBlock {
             const vpMessage = new VPMessage(MessageAction.CreateVP);
             vpMessage.setDocument(vp);
             vpMessage.setRelationships(sourceDoc.messageId ? [sourceDoc.messageId] : []);
+            vpMessage.setTag(ref);
+            vpMessage.setEntityType(ref);
+            vpMessage.setOption(null, ref);
             vpMessage.setUser(null);
             const topic = await PolicyUtils.getPolicyTopic(ref, sourceDoc.topicId, userId);
             const vpMessageResult = await PolicyActionsUtils

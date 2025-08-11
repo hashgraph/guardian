@@ -243,10 +243,12 @@
                         label="Allow multiple answers"></p-checkbox>
                 </div>
 
-                <div *ngIf="field.autocalculated.value" class="checkbox-field-container">
+                <div *ngIf="field.autocalculated.value" class="checkbox-field-container auto-calculate">
+                    <label class="form-label">Required</label>
                     <button
                         (click)="onEditExpression()"
-                        class=".edit-button button secondary"
+                        class="edit-button secondary"
+                        [ngClass]="{'danger': !this.field.expression.value}"
                         label="Edit expression"
                         pButton>
                     </button>
@@ -294,7 +296,7 @@
                 <div class="guardian-button-label">Edit values</div>
             </button>
         </div>
-        <div *ngIf="!helpText && presetFormFields && defaultValues" class="selected-values">
+        <div *ngIf="!helpText && presetFormFields" class="selected-values">
             <div>
                 <span class="selected-values__title">Selected values</span>
             </div>
@@ -307,12 +309,12 @@
             </div>
             <div class="default-values" [attr.hide]="!isShowMore">
                 <div class="default-values__content">
-                    <app-schema-form
+                    <app-schema-form-root
                         [fields]="presetFormFields"
-                        [formGroup]="defaultValues"
                         [preset]="presetValues"
                         [showButtons]="false"
-                    ></app-schema-form>
+                        (form)="initDefaultForm($event)"
+                    ></app-schema-form-root>
                 </div>
             </div>
         </div>

@@ -1,5 +1,5 @@
 ---
-icon: computer
+icon: square-check
 ---
 
 # Testing/Debugging code for Calculate and Custom Logic Block using UI

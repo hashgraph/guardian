@@ -16,10 +16,8 @@ Updates schema rule
 
 **Body**
 
-| Name      | Type   | Description                                                                                    |
-| --------- | ------ | ---------------------------------------------------------------------------------------------- |
-| messageID | string | <p></p><pre class="language-yaml"><code class="lang-yaml">Schema Rule Identifier
-</code></pre> |
+<table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td>messageID</td><td>string</td><td><p></p><pre class="language-yaml"><code class="lang-yaml">Schema Rule Identifier
+</code></pre></td></tr></tbody></table>
 
 **Response**
 

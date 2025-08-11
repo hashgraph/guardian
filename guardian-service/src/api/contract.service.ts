@@ -8,6 +8,7 @@ import {
     MessageError,
     MessageResponse,
     MessageServer,
+    NewNotifier,
     NotificationHelper,
     PinoLogger,
     RetirePool,
@@ -23,14 +24,28 @@ import {
     VCMessage,
     Wallet,
     WiperRequest,
-    Workers,
+    Workers
 } from '@guardian/common';
-import { ContractAPI, ContractParamType, ContractType, EntityOwner, IOwner, RetireTokenPool, RetireTokenRequest, Schema, SchemaEntity, SchemaHelper, TokenType, TopicType, UserRole, WorkerTaskType, } from '@guardian/interfaces';
+import {
+    ContractAPI,
+    ContractParamType,
+    ContractType,
+    EntityOwner,
+    IOwner,
+    RetireTokenPool,
+    RetireTokenRequest,
+    Schema,
+    SchemaEntity,
+    SchemaHelper,
+    TokenType,
+    TopicType,
+    UserRole,
+    WorkerTaskType
+} from '@guardian/interfaces';
 import { AccountId, TokenId } from '@hashgraph/sdk';
 import { proto } from '@hashgraph/proto';
 import * as ethers from 'ethers';
-import { contractCall, contractQuery, createContract, customContractCall } from './helpers/index.js';
-import { emptyNotifier } from '../helpers/notifier.js';
+import { contractCall, contractQuery, createContract, createContractV2, customContractCall } from './helpers/index.js';
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
 
 const retireAbi = new ethers.Interface([
@@ -1238,7 +1253,7 @@ async function saveRetireVC(
                 owner,
                 messageServer,
                 MessageAction.PublishSystemSchema,
-                emptyNotifier()
+                NewNotifier.empty()
             );
             await dataBaseServer.save(SchemaCollection, item);
         }
@@ -1385,6 +1400,114 @@ export async function contractAPI(
             );
 
             const [contractId, log] = await createContract(
+                ContractAPI.CREATE_CONTRACT,
+                workers,
+                type,
+                root.hederaAccountId,
+                rootKey,
+                topic.topicId,
+                userId
+            );
+
+            await topic.saveKeys(userId);
+            await DatabaseServer.saveTopic(topic.toObject());
+
+            const version = await getContractVersion(
+                log
+            );
+
+            const contract = await dataBaseServer.save(Contract, {
+                contractId,
+                owner: owner.owner,
+                description,
+                permissions: type === ContractType.WIPE ?
+                    (version !== '1.0.0' ? 7 : 15)
+                    : 3,
+                type,
+                topicId: topic.topicId,
+                wipeContractIds: [],
+                wipeTokenIds: [],
+                version,
+            });
+
+            const contractMessage = new ContractMessage(
+                MessageAction.CreateContract
+            );
+            contractMessage.setDocument(contract);
+            const messageServer = new MessageServer({
+                operatorId: root.hederaAccountId,
+                operatorKey: rootKey,
+                signOptions
+            });
+            const contractMessageResult = await messageServer
+                .setTopicObject(topic)
+                .sendMessage(contractMessage, {
+                    sendToIPFS: true,
+                    memo: null,
+                    interception: null,
+                    userId
+                });
+
+            const userTopic = await TopicConfig.fromObject(
+                await DatabaseServer.getTopicByType(owner.owner, TopicType.UserTopic),
+                true, userId
+            );
+
+            await topicHelper.twoWayLink(topic, userTopic, contractMessageResult.getId(), userId);
+
+            return new MessageResponse(contract);
+        } catch (error) {
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Create contract V2 22.07.2025
+     */
+    ApiResponse(ContractAPI.CREATE_CONTRACT_V2, async (msg: {
+        owner: IOwner,
+        description: string,
+        type: ContractType
+    }) => {
+        const userId = msg?.owner?.id;
+        try {
+            if (!msg) {
+                return new MessageError('Invalid get contract parameters');
+            }
+
+            const { description, owner, type } = msg;
+
+            const users = new Users();
+            const wallet = new Wallet();
+            const workers = new Workers();
+            const root = await users.getUserById(owner.creator, userId);
+            const rootKey = await wallet.getKey(
+                root.walletToken,
+                KeyType.KEY,
+                owner.creator
+            );
+
+            const signOptions = await wallet.getUserSignOptions(root);
+
+            const topicHelper = new TopicHelper(root.hederaAccountId, rootKey, signOptions);
+            const topic = await topicHelper.create(
+                {
+                    type: TopicType.ContractTopic,
+                    name: TopicType.ContractTopic,
+                    description: TopicType.ContractTopic,
+                    owner: owner.owner,
+                    policyId: null,
+                    policyUUID: null,
+                },
+                userId,
+                {
+                    admin: true,
+                    submit: false,
+                }
+            );
+
+            const [contractId, log] = await createContractV2(
                 ContractAPI.CREATE_CONTRACT,
                 workers,
                 type,

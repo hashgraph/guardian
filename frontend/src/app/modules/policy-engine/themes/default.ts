@@ -18,6 +18,7 @@ export const defaultTheme = {
                 'interfaceActionBlock',
                 'buttonBlock',
                 'transformationButtonBlock',
+                'integrationButtonBlock',
                 'interfaceContainerBlock',
                 'createTokenBlock',
                 'interfaceDocumentsSourceBlock',

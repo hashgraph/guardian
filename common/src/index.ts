@@ -17,5 +17,7 @@ export * from './xlsx/index.js';
 export * from './metrics/index.js';
 export * from './topic-listener/topic-listener.js';
 export * from './security/index.js';
+export * from './notification/index.js';
+export * from './integrations/index.js';
 
 export const entities = Object.values(ent);

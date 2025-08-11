@@ -11,25 +11,25 @@ const CONTRACT_GAS_DEFAULT_VALUES = new Map<ContractAPI | string, number>([
     ['CREATE_WIPE_CONTRACT_GAS', 2000000],
     [ContractAPI.RETIRE_SINGLE_CONTRACT_GAS, 6000000],
     [ContractAPI.RETIRE_DOUBLE_CONTRACT_GAS, 7000000],
-    [ContractAPI.RETIRE_ADMIN_ROLE_GAS, 50000],
-    [ContractAPI.CONTRACT_PERMISSIONS, 100000],
-    [ContractAPI.SET_RETIRE_POOLS, 1000000],
+    [ContractAPI.RETIRE_ADMIN_ROLE_GAS, 300000],
+    [ContractAPI.CONTRACT_PERMISSIONS, 300000],
+    [ContractAPI.SET_RETIRE_POOLS, 3000000],
     [ContractAPI.CONTRACT_PERMISSIONS, 100000],
     [ContractAPI.ENABLE_WIPE_REQUESTS, 1000000],
     [ContractAPI.DISABLE_WIPE_REQUESTS, 1000000],
     [ContractAPI.APPROVE_WIPE_REQUEST, 1000000],
     [ContractAPI.REJECT_WIPE_REQUEST, 1000000],
-    [ContractAPI.CLEAR_WIPE_REQUESTS, 1000000],
+    [ContractAPI.CLEAR_WIPE_REQUESTS, 3000000],
     [ContractAPI.ADD_WIPE_ADMIN, 1000000],
     [ContractAPI.REMOVE_WIPE_ADMIN, 1000000],
     [ContractAPI.ADD_WIPE_MANAGER, 1000000],
     [ContractAPI.REMOVE_WIPE_MANAGER, 1000000],
     [ContractAPI.ADD_WIPE_WIPER, 1000000],
     [ContractAPI.REMOVE_WIPE_WIPER, 1000000],
-    [ContractAPI.CLEAR_RETIRE_REQUESTS, 1000000],
-    [ContractAPI.CLEAR_RETIRE_POOLS, 1000000],
-    [ContractAPI.UNSET_RETIRE_POOLS, 1000000],
-    [ContractAPI.UNSET_RETIRE_REQUEST, 1000000],
+    [ContractAPI.CLEAR_RETIRE_REQUESTS, 3000000],
+    [ContractAPI.CLEAR_RETIRE_POOLS, 3000000],
+    [ContractAPI.UNSET_RETIRE_POOLS, 3000000],
+    [ContractAPI.UNSET_RETIRE_REQUEST, 3000000],
     [ContractAPI.RETIRE, 1000000],
     [ContractAPI.APPROVE_RETIRE, 1000000],
     [ContractAPI.CANCEL_RETIRE, 1000000],
@@ -122,6 +122,40 @@ export async function createContract(
     memo: string,
     userId: string
 ) {
+    return await _contractCall(
+        event,
+        workers,
+        {
+            type: WorkerTaskType.CREATE_CONTRACT,
+            data: {
+                bytecodeFileId:
+                    type === ContractType.WIPE
+                        ? process.env.WIPE_CONTRACT_FILE_ID
+                        : process.env.RETIRE_CONTRACT_FILE_ID,
+                hederaAccountId,
+                hederaAccountKey,
+                topicKey: hederaAccountKey,
+                memo,
+                userId
+            },
+        },
+        20,
+        type
+    );
+}
+
+/**
+ * Create contract V2 22.07.2025
+ */
+export async function createContractV2(
+    event: ContractAPI,
+    workers: Workers,
+    type: ContractType,
+    hederaAccountId: string,
+    hederaAccountKey: string,
+    memo: string,
+    userId: string
+) {
     const constructorParams =
         type === ContractType.RETIRE
             ? {
@@ -137,7 +171,7 @@ export async function createContract(
         event,
         workers,
         {
-            type: WorkerTaskType.CREATE_CONTRACT,
+            type: WorkerTaskType.CREATE_CONTRACT_V2,
             data: {
                 bytecodeFileId:
                     type === ContractType.WIPE

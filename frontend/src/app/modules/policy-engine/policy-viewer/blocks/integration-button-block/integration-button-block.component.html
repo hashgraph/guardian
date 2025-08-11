@@ -1,0 +1,13 @@
+<div class="content" [attr.readonly-block]="readonly">
+    <div class="btn-option" (click)="onClick()">
+        {{buttonName}}
+    </div>
+</div>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>
