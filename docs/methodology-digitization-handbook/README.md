@@ -53,8 +53,7 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 {% endhint %}
 
 <details>
-
-<summary><strong>Part I: Foundation (Chapters 1-3)</strong> - 3-4 hours</summary>
+<summary><strong>Part I: Foundation (Chapters 1-3)</strong> - 20-30 minutes</summary>
 
 **Purpose**: Establish understanding of methodology digitization and Guardian platform **Outcome**: Clear comprehension of the digitization process and platform capabilities
 
@@ -65,8 +64,7 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 </details>
 
 <details>
-
-<summary><strong>Part II: Analysis and Planning (Chapters 4-7)</strong> - 4-5 hours</summary>
+<summary><strong>Part II: Analysis and Planning (Chapters 4-7)</strong> - 30-40 minutes</summary>
 
 **Purpose**: Systematic analysis of methodology documents and preparation for digitization **Outcome**: Complete understanding of methodology requirements and test artifacts
 
@@ -78,8 +76,7 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 </details>
 
 <details>
-
-<summary><strong>Part III: Schema Design (Chapters 8-12)</strong> - 5-7 hours</summary>
+<summary><strong>Part III: Schema Design (Chapters 8-12)</strong> - 40-50 minutes</summary>
 
 **Purpose**: Design and implement data structures for methodology implementation **Outcome**: Working schemas for all methodology data requirements
 
@@ -92,8 +89,7 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 </details>
 
 <details>
-
-<summary><strong>Part IV: Policy Workflow (Chapters 13-16)</strong> - 4-5 hours</summary>
+<summary><strong>Part IV: Policy Workflow (Chapters 13-16)</strong> - 30-40 minutes</summary>
 
 **Purpose**: Design and configure the complete certification workflow **Outcome**: Functional policy workflow with proper stakeholder interactions
 
@@ -105,8 +101,7 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 </details>
 
 <details>
-
-<summary><strong>Part V: Calculation Logic (Chapters 17-20)</strong> - 4-6 hours</summary>
+<summary><strong>Part V: Calculation Logic (Chapters 17-20)</strong> - 30-40 minutes</summary>
 
 **Purpose**: Implement mathematical calculations and validation logic **Outcome**: Accurate, tested calculation implementations
 
@@ -118,8 +113,7 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 </details>
 
 <details>
-
-<summary><strong>Part VI: Integration and Testing (Chapters 21-22)</strong> - 2-3 hours</summary>
+<summary><strong>Part VI: Integration and Testing (Chapters 21-22)</strong> - 20-30 minutes</summary>
 
 **Purpose**: Comprehensive testing and API integration **Outcome**: Production-ready methodology implementation
 
@@ -129,8 +123,7 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 </details>
 
 <details>
-
-<summary><strong>Part VII: Deployment and Maintenance (Chapters 23-25)</strong> - 2-3 hours</summary>
+<summary><strong>Part VII: Deployment and Maintenance (Chapters 23-25)</strong> - 10-20 minutes</summary>
 
 **Purpose**: Deploy, monitor, and maintain methodology implementations **Outcome**: Operational methodology with ongoing support procedures
 
@@ -141,8 +134,7 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 </details>
 
 <details>
-
-<summary><strong>Part VIII: Advanced Topics (Chapters 26-27)</strong> - 1-2 hours</summary>
+<summary><strong>Part VIII: Advanced Topics (Chapters 26-27)</strong> - 30-40 minutes</summary>
 
 **Purpose**: Advanced integration techniques and troubleshooting **Outcome**: Expert-level understanding and problem-solving capabilities
 
@@ -213,4 +205,31 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 {% endtab %}
 {% endtabs %}
 
-_This handbook represents the collective knowledge and experience of the Guardian community, with special thanks to the Verra and Allcot team for their collaboration on the VM0033 implementation that serves as our primary example throughout this guide._
+## Getting Started
+
+### Quick Navigation
+- **📋 [Table of Contents](table-of-contents.md)** - Complete handbook overview with reading time estimates
+- **📝 [Chapter Outlines](chapter-outlines.md)** - Detailed descriptions of all chapters and topics
+- **🏗️ [Part I: Foundation and Preparation](part-1/README.md)** - Start your learning journey here (Available Now!)
+- **🔍 [Part II: Analysis and Planning](part-2/README.md)** - Systematic methodology analysis techniques (Available Now!)
+
+### Available Content
+{% hint style="success" %}
+**Part I and Part II are now available** with all seven foundation and analysis chapters complete and ready for use.
+{% endhint %}
+
+| Part             | Status          | Chapters                         | Description                                                          |
+| ---------------- | --------------- | -------------------------------- | -------------------------------------------------------------------- |
+| **Part I**       | ✅ **Available** | [Chapters 1-3](part-1/README.md) | Foundation concepts, VM0033 overview, Guardian platform introduction |
+| **Part II**      | ✅ **Available** | [Chapters 4-7](part-2/README.md) | Methodology analysis, equation mapping, tools integration, test artifacts |
+| **Part III**     | 🚧 Coming Soon   | Chapters 8-12                    | Schema design and development                                        |
+| **Part IV-VIII** | 🚧 Coming Soon   | Chapters 13-27                   | Advanced implementation topics                                       |
+
+### Shared Resources
+- **🔧 [Shared Resources](_shared/README.md)** - Templates, integration guides, and reference materials
+- **📄 [Templates](_shared/templates/README.md)** - Standardized chapter and section templates
+- **🔗 [VM0033 Integration](_shared/vm0033-integration/README.md)** - VM0033-specific integration system
+
+---
+
+*This handbook represents the collective knowledge and experience of the Guardian community, with special thanks to the Verra and Allcot team for their collaboration on the VM0033 implementation that serves as our primary example throughout this guide.*
