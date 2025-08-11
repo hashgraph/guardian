@@ -202,7 +202,7 @@
                     <div class="topic-id-field">
                         <div class="group-body">
                             <div class="form-group example-full-width">
-                                <label for="topicIdDropdown" class="form-label">Topic ID:</label>
+                                <label for="topicIdDropdown" class="form-label">Topic ID: </label>
                                 <p-dropdown
                                     id="topicIdDropdown"
                                     [options]="userTopics"
@@ -311,15 +311,15 @@
                 </div>
 
                 <div *ngIf="step === 'VC'" class="list-item">
-                    <app-schema-form
-                        (change)="onChangeForm()"
-                        [formGroup]="vcForm"
+                    <app-schema-form-root
                         [isFormForFinishSetup]="true"
                         [private-fields]="hidePrivateFields"
                         [schema]="schema"
                         [showButtons]="false"
+                        (change)="onChangeForm()"
+                        (form)="initForm($event)"
                     >
-                    </app-schema-form>
+                    </app-schema-form-root>
                 </div>
             </div>
 

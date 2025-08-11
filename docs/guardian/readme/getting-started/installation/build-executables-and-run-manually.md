@@ -28,7 +28,7 @@ Install, configure and start all the prerequisites, then build and start each co
     If need to configure OVERRIDE uncomment the variable in file `./guardian-service/.env`:
 
     ```plaintext
-        OVERRIDE="false" 
+        OVERRIDE="false"
     ```
 *   configure the file `./<service_name>/configs/.env.<service>.<GUARDIAN_ENV>` file: to do this copy, past and rename the file `./<service_name>/.env.<service>.template`
 

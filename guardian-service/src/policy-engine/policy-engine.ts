@@ -24,6 +24,7 @@ import {
     findAllEntities,
     FormulaImportExport,
     getArtifactType,
+    INotificationStep,
     IPolicyComponents,
     MessageAction,
     MessageServer,
@@ -64,7 +65,6 @@ import {
     sendSchemaMessage
 } from '../helpers/import-helpers/index.js';
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
-import { emptyNotifier, INotifier } from '../helpers/notifier.js';
 import { ISerializedErrors } from './policy-validation-results-container.js';
 import { PolicyServiceChannelsContainer } from '../helpers/policy-service-channels-container.js';
 import { PolicyValidator } from '../policy-engine/block-validators/index.js';
@@ -395,11 +395,27 @@ export class PolicyEngine extends NatsService {
     public async createPolicy(
         data: Policy & { policySchemas?: string[] },
         user: IOwner,
-        notifier: INotifier,
+        notifier: INotificationStep,
         logger: PinoLogger
     ): Promise<Policy> {
+        // <-- Steps
+        const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+        const STEP_RESOLVE_TOPIC = 'Resolve topic';
+        const STEP_IMPORT_ARTIFACTS = 'Import Artifacts';
+        const STEP_IMPORT_TAGS = 'Import tags';
+        const STEP_SAVE = 'Save';
+        const STEP_UPDATE_HASH = 'Update hash';
+        // Steps -->
+
+        notifier.addStep(STEP_RESOLVE_ACCOUNT);
+        notifier.addStep(STEP_RESOLVE_TOPIC);
+        notifier.addStep(STEP_IMPORT_ARTIFACTS);
+        notifier.addStep(STEP_IMPORT_TAGS);
+        notifier.addStep(STEP_SAVE);
+        notifier.addStep(STEP_UPDATE_HASH);
+        notifier.start();
+
         logger.info('Create Policy', ['GUARDIAN_SERVICE'], user.id);
-        notifier.start('Save in DB');
         if (data) {
             delete data._id;
             delete data.id;
@@ -433,11 +449,26 @@ export class PolicyEngine extends NatsService {
         }
 
         let newTopic: Topic;
-        notifier.completedAndStart('Resolve Hedera account');
+        notifier.startStep(STEP_RESOLVE_ACCOUNT);
         const root = await this.users.getHederaAccount(user.owner, user.id);
-        notifier.completed();
+        notifier.completeStep(STEP_RESOLVE_ACCOUNT);
+
+        notifier.startStep(STEP_RESOLVE_TOPIC);
         if (!model.topicId) {
-            notifier.start('Create topic');
+            const step = notifier.getStep(STEP_RESOLVE_TOPIC);
+
+            // <-- Steps
+            const STEP_CREATE_POLICY_TOPIC = 'Create policy topic';
+            const STEP_CREATE_POLICY_MESSAGE = 'Create policy message';
+            const STEP_PUBLISH_SYSTEM_SCHEMAS = 'Publish system schemas';
+            // Steps -->
+
+            step.addStep(STEP_CREATE_POLICY_TOPIC);
+            step.addStep(STEP_CREATE_POLICY_MESSAGE);
+            step.addStep(STEP_PUBLISH_SYSTEM_SCHEMAS);
+            step.start();
+
+            step.startStep(STEP_CREATE_POLICY_TOPIC);
             logger.info('Create Policy: Create New Topic', ['GUARDIAN_SERVICE'], user.id);
             const parent = await TopicConfig.fromObject(
                 await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true, user.id
@@ -454,8 +485,9 @@ export class PolicyEngine extends NatsService {
             await topic.saveKeys(user.id);
 
             model.topicId = topic.topicId;
+            step.completeStep(STEP_CREATE_POLICY_TOPIC);
 
-            notifier.completedAndStart('Create policy in Hedera');
+            step.startStep(STEP_CREATE_POLICY_MESSAGE);
             const messageServer = new MessageServer({
                 operatorId: root.hederaAccountId,
                 operatorKey: root.hederaAccountKey,
@@ -472,22 +504,26 @@ export class PolicyEngine extends NatsService {
                     interception: null
                 });
 
-            notifier.completedAndStart('Link topic and policy');
             await topicHelper.twoWayLink(topic, parent, messageStatus.getId(), user.id);
-
-            notifier.completedAndStart('Publish schemas');
-            const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
-
-            notifier.info(`Found ${systemSchemas.length} schemas`);
             messageServer.setTopicObject(topic);
+            step.completeStep(STEP_CREATE_POLICY_MESSAGE);
 
-            await publishSystemSchemas(systemSchemas, messageServer, user, notifier);
+            step.startStep(STEP_PUBLISH_SYSTEM_SCHEMAS);
+            const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
+            await publishSystemSchemas(
+                systemSchemas,
+                messageServer,
+                user,
+                step.getStep(STEP_PUBLISH_SYSTEM_SCHEMAS)
+            );
+            step.completeStep(STEP_PUBLISH_SYSTEM_SCHEMAS);
 
             newTopic = await DatabaseServer.saveTopic(topic.toObject());
-            notifier.completed();
+            step.complete();
         }
+        notifier.completeStep(STEP_RESOLVE_TOPIC);
 
-        notifier.start('Create Artifacts');
+        notifier.startStep(STEP_IMPORT_ARTIFACTS);
         const artifactsMap = new Map<string, string>();
         const addedArtifacts = [];
         for (const artifact of artifacts) {
@@ -503,12 +539,13 @@ export class PolicyEngine extends NatsService {
             await DatabaseServer.saveArtifactFile(newArtifactUUID, artifact.data);
         }
         replaceArtifactProperties(model.config, 'uuid', artifactsMap);
+        notifier.completeStep(STEP_IMPORT_ARTIFACTS);
 
-        notifier.start('Create tags');
-
+        notifier.startStep(STEP_IMPORT_TAGS);
         await importTag(tags, model.id.toString());
+        notifier.completeStep(STEP_IMPORT_TAGS);
 
-        notifier.completedAndStart('Saving in DB');
+        notifier.startStep(STEP_SAVE);
         let policy = await DatabaseServer.updatePolicy(model);
 
         if (newTopic) {
@@ -518,19 +555,19 @@ export class PolicyEngine extends NatsService {
         }
 
         const artifactObjects = []
-
         for (const addedArtifact of addedArtifacts) {
             addedArtifact.policyId = policy.id;
-
             artifactObjects.push(addedArtifact);
         }
 
         await DatabaseServer.saveArtifacts(artifactObjects);
+        notifier.completeStep(STEP_SAVE);
 
-        notifier.completedAndStart('Updating hash');
+        notifier.startStep(STEP_UPDATE_HASH);
         policy = await PolicyImportExportHelper.updatePolicyComponents(policy, logger, user.id);
+        notifier.completeStep(STEP_UPDATE_HASH);
 
-        notifier.completed();
+        notifier.complete();
         return policy;
     }
 
@@ -546,7 +583,7 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         data: any,
         user: IOwner,
-        notifier: INotifier,
+        notifier: INotificationStep,
         logger: PinoLogger,
         userId: string | null
     ): Promise<{
@@ -623,43 +660,72 @@ export class PolicyEngine extends NatsService {
     public async deleteDemoPolicy(
         policyToDelete: Policy,
         user: IOwner,
-        notifier: INotifier,
+        notifier: INotificationStep,
         logger: PinoLogger
     ): Promise<boolean> {
+        // <-- Steps
+        const STEP_DELETE_INSTANCE = 'Delete policy instance';
+        const STEP_DELETE_SCHEMAS = 'Delete schemas';
+        const STEP_DELETE_ARTIFACTS = 'Delete artifacts';
+        const STEP_DELETE_TESTS = 'Delete tests';
+        const STEP_DELETE_POLICY = 'Delete policy from DB';
+        // Steps -->
+
+        notifier.addStep(STEP_DELETE_INSTANCE);
+        notifier.addStep(STEP_DELETE_SCHEMAS);
+        notifier.addStep(STEP_DELETE_ARTIFACTS);
+        notifier.addStep(STEP_DELETE_TESTS);
+        notifier.addStep(STEP_DELETE_POLICY);
+        notifier.start();
+
         await logger.info('Delete Policy', ['GUARDIAN_SERVICE'], user.id);
 
         if ((policyToDelete.status !== PolicyStatus.DEMO)) {
             throw new Error('Policy is not in demo status');
         }
 
-        notifier.start('Delete policy instance');
+        notifier.startStep(STEP_DELETE_INSTANCE);
         await this.destroyModel(policyToDelete.id.toString(), user.id);
         const databaseServer = new DatabaseServer(policyToDelete.id.toString());
         await databaseServer.clear(true);
+        notifier.completeStep(STEP_DELETE_INSTANCE);
 
-        notifier.start('Delete schemas');
+        notifier.startStep(STEP_DELETE_SCHEMAS);
         const schemasToDelete = await DatabaseServer.getSchemas({
             topicId: policyToDelete.topicId
         });
         for (const schema of schemasToDelete) {
-            await deleteDemoSchema(schema.id, user, notifier);
+            const step = notifier.addStep(`Delete schema ${schema.name}`);
+            step.setId(schema.id);
+            step.minimize(true);
         }
+        for (const schema of schemasToDelete) {
+            await deleteDemoSchema(
+                schema.id,
+                user,
+                notifier.getStepById(schema.id)
+            );
+        }
+        notifier.completeStep(STEP_DELETE_SCHEMAS);
 
-        notifier.completedAndStart('Delete artifacts');
+        notifier.startStep(STEP_DELETE_ARTIFACTS);
         const artifactsToDelete = await new DatabaseServer().find(Artifact, {
             policyId: policyToDelete.id
         });
         for (const artifact of artifactsToDelete) {
             await DatabaseServer.removeArtifact(artifact);
         }
+        notifier.completeStep(STEP_DELETE_ARTIFACTS);
 
-        notifier.completedAndStart('Delete tests');
+        notifier.startStep(STEP_DELETE_TESTS);
         await DatabaseServer.deletePolicyTests(policyToDelete.id);
+        notifier.completeStep(STEP_DELETE_TESTS);
 
-        notifier.completedAndStart('Delete policy from DB');
+        notifier.startStep(STEP_DELETE_POLICY);
         await DatabaseServer.deletePolicy(policyToDelete.id);
+        notifier.completeStep(STEP_DELETE_POLICY);
 
-        notifier.completed();
+        notifier.complete();
         return true;
     }
 
@@ -675,38 +741,67 @@ export class PolicyEngine extends NatsService {
     public async deletePolicy(
         policyToDelete: Policy,
         user: IOwner,
-        notifier: INotifier,
+        notifier: INotificationStep,
         logger: PinoLogger
     ): Promise<boolean> {
+        // <-- Steps
+        const STEP_DELETE_SCHEMAS = 'Delete schemas';
+        const STEP_DELETE_ARTIFACTS = 'Delete artifacts';
+        const STEP_DELETE_TESTS = 'Delete tests';
+        const STEP_DELETE_POLICY_MESSAGE = 'Publishing delete policy message';
+        const STEP_DELETE_POLICY = 'Delete policy from DB';
+        // Steps -->
+
+        notifier.addStep(STEP_DELETE_SCHEMAS);
+        notifier.addStep(STEP_DELETE_ARTIFACTS);
+        notifier.addStep(STEP_DELETE_TESTS);
+        notifier.addStep(STEP_DELETE_POLICY_MESSAGE);
+        notifier.addStep(STEP_DELETE_POLICY);
+        notifier.start();
+
         logger.info('Delete Policy', ['GUARDIAN_SERVICE'], user.id);
 
         if ((policyToDelete.status !== PolicyStatus.DRAFT)) {
             throw new Error('Policy is not in draft status');
         }
 
-        notifier.start('Delete schemas');
+        notifier.startStep(STEP_DELETE_SCHEMAS);
         const schemasToDelete = await DatabaseServer.getSchemas({
             topicId: policyToDelete.topicId,
             readonly: false
         });
         for (const schema of schemasToDelete) {
             if (schema.status === SchemaStatus.DRAFT) {
-                await deleteSchema(schema.id, user, notifier);
+                const step = notifier.addStep(`Delete schema ${schema.name}`);
+                step.setId(schema.id);
+                step.minimize(true);
             }
         }
-        notifier.completedAndStart('Delete artifacts');
+        for (const schema of schemasToDelete) {
+            if (schema.status === SchemaStatus.DRAFT) {
+                await deleteSchema(
+                    schema.id,
+                    user,
+                    notifier.getStepById(schema.id)
+                );
+            }
+        }
+        notifier.completeStep(STEP_DELETE_SCHEMAS);
 
+        notifier.startStep(STEP_DELETE_ARTIFACTS);
         const artifactsToDelete = await new DatabaseServer().find(Artifact, {
             policyId: policyToDelete.id
         });
         for (const artifact of artifactsToDelete) {
             await DatabaseServer.removeArtifact(artifact);
         }
+        notifier.completeStep(STEP_DELETE_ARTIFACTS);
 
-        notifier.completedAndStart('Delete tests');
+        notifier.startStep(STEP_DELETE_TESTS);
         await DatabaseServer.deletePolicyTests(policyToDelete.id);
+        notifier.completeStep(STEP_DELETE_TESTS);
 
-        notifier.completedAndStart('Publishing delete policy message');
+        notifier.startStep(STEP_DELETE_POLICY_MESSAGE);
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(policyToDelete.topicId), true, user.id);
         const users = new Users();
         const root = await users.getHederaAccount(user.creator, user.id);
@@ -724,10 +819,13 @@ export class PolicyEngine extends NatsService {
                 userId: user.id,
                 interception: null
             });
+        notifier.completeStep(STEP_DELETE_POLICY_MESSAGE);
 
-        notifier.completedAndStart('Delete policy from DB');
+        notifier.startStep(STEP_DELETE_POLICY);
         await DatabaseServer.deletePolicy(policyToDelete.id);
-        notifier.completed();
+        notifier.completeStep(STEP_DELETE_POLICY);
+
+        notifier.complete();
         return true;
     }
 
@@ -742,36 +840,40 @@ export class PolicyEngine extends NatsService {
         model: Policy,
         user: IOwner,
         root: IRootConfig,
-        notifier: INotifier,
+        notifier: INotificationStep,
         schemaMap: Map<string, string>,
         userId: string | null
     ): Promise<Policy> {
         const schemas = await DatabaseServer.getSchemas({ topicId: model.topicId });
-        notifier.info(`Found ${schemas.length} schemas`);
+        notifier.setEstimate(schemas.length);
+
         let num: number = 0;
-        let skipped: number = 0;
         for (const row of schemas) {
+            const step = notifier.addStep(`${row.name || '-'}`);
+            step.setId(row.id);
+            step.minimize(true);
+            num++;
+        }
+        for (const row of schemas) {
+            const step = notifier.getStepById(row.id);
+
             const schema = await incrementSchemaVersion(row.topicId, row.iri, user);
             if (!schema || schema.status === SchemaStatus.PUBLISHED) {
-                skipped++;
+                step.skip();
                 continue;
             }
-            const newSchema = await findAndPublishSchema(
+
+            step.start();
+            await findAndPublishSchema(
                 schema.id,
                 schema.version,
                 user,
                 root,
-                emptyNotifier(),
+                step,
                 schemaMap,
                 userId
             );
-            const name = newSchema.name;
-            num++;
-            notifier.info(`Schema ${num} (${name || '-'}) published`);
-        }
-
-        if (skipped) {
-            notifier.info(`Skip published ${skipped}`);
+            step.complete();
         }
         return model;
     }
@@ -787,17 +889,21 @@ export class PolicyEngine extends NatsService {
         model: Policy,
         user: IOwner,
         root: IRootConfig,
-        notifier: INotifier,
+        notifier: INotificationStep,
         schemaMap: Map<string, string>
     ): Promise<Policy> {
+
         const formulas = await DatabaseServer.getFormulas({ policyTopicId: model.topicId });
-        notifier.info(`Found ${formulas.length} formulas`);
+        notifier.setEstimate(formulas.length);
+        notifier.start();
 
         let num: number = 0;
         let skipped: number = 0;
         for (const formula of formulas) {
+            const step = notifier.addStep(`${formula.name || '-'}`);
             if (formula.status === EntityStatus.PUBLISHED) {
                 skipped++;
+                step.skip();
                 continue;
             }
 
@@ -805,21 +911,16 @@ export class PolicyEngine extends NatsService {
                 FormulaImportExport.replaceIds(formula.config, oldId, newId);
             }
 
-            const newFormula = await publishFormula(
+            await publishFormula(
                 formula,
                 user,
                 root,
-                emptyNotifier()
+                step
             );
-
-            const name = newFormula.name;
             num++;
-            notifier.info(`Formula ${num} (${name || '-'}) published`);
         }
 
-        if (skipped) {
-            notifier.info(`Skip published ${skipped}`);
-        }
+        notifier.complete();
         return model;
     }
 
@@ -877,16 +978,47 @@ export class PolicyEngine extends NatsService {
         user: IOwner,
         version: string,
         availability: PolicyAvailability,
-        notifier: INotifier,
+        notifier: INotificationStep,
         logger: PinoLogger,
         userId: string | null
     ): Promise<Policy> {
+        // <-- Steps
+        const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+        const STEP_RESOLVE_TOPIC = 'Resolve topic';
+        const STEP_PUBLISH_SCHEMAS = 'Publish schemas';
+        const STEP_PUBLISH_FORMULAS = 'Publish formulas';
+        const STEP_PUBLISH_TOKENS = 'Publish Tokens';
+        const STEP_CREATE_INSTANCE_TOPIC = 'Create instance topic';
+        const STEP_CREATE_SYNC_TOPIC = 'Create synchronization topic';
+        const STEP_CREATE_RESTORE_TOPIC = 'Create restore topic';
+        const STEP_CREATE_ACTION_TOPIC = 'Create actions topic';
+        const STEP_PUBLISH_POLICY = 'Publish policy';
+        const STEP_PUBLISH_MESSAGE = 'Publish message';
+        const STEP_PUBLISH_TAGS = 'Publish tags';
+        const STEP_SAVE = 'Save';
+        // Steps -->
+
+        notifier.addStep(STEP_RESOLVE_ACCOUNT, 2);
+        notifier.addStep(STEP_RESOLVE_TOPIC, 4);
+        notifier.addStep(STEP_PUBLISH_SCHEMAS, 50);
+        notifier.addStep(STEP_PUBLISH_FORMULAS, 5);
+        notifier.addStep(STEP_PUBLISH_TOKENS, 5);
+        notifier.addStep(STEP_CREATE_INSTANCE_TOPIC, 2);
+        notifier.addStep(STEP_CREATE_SYNC_TOPIC, 2);
+        notifier.addStep(STEP_CREATE_RESTORE_TOPIC, 2);
+        notifier.addStep(STEP_CREATE_ACTION_TOPIC, 2);
+        notifier.addStep(STEP_PUBLISH_POLICY, 20);
+        notifier.addStep(STEP_PUBLISH_MESSAGE, 4);
+        notifier.addStep(STEP_PUBLISH_TAGS, 4);
+        notifier.addStep(STEP_SAVE, 2);
+        notifier.start();
+
+        notifier.startStep(STEP_RESOLVE_ACCOUNT);
         await logger.info('Publish Policy', ['GUARDIAN_SERVICE'], user.id);
-        notifier.start('Resolve Hedera account');
         const root = await this.users.getHederaAccount(user.creator, user.id);
+        notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-        notifier.completedAndStart('Find topic');
-
+        notifier.startStep(STEP_RESOLVE_TOPIC);
         model.version = version;
         model.availability = availability;
 
@@ -896,11 +1028,19 @@ export class PolicyEngine extends NatsService {
             operatorKey: root.hederaAccountKey,
             signOptions: root.signOptions
         }).setTopicObject(topic);
+        notifier.completeStep(STEP_RESOLVE_TOPIC);
 
+        notifier.startStep(STEP_PUBLISH_SCHEMAS);
         const schemaMap = new Map<string, string>();
-        notifier.completedAndStart('Publish schemas');
         try {
-            model = await this.publishSchemas(model, user, root, notifier, schemaMap, userId);
+            model = await this.publishSchemas(
+                model,
+                user,
+                root,
+                notifier.getStep(STEP_PUBLISH_SCHEMAS),
+                schemaMap,
+                userId
+            );
         } catch (error) {
             model.status = PolicyStatus.PUBLISH_ERROR;
             model.version = '';
@@ -908,8 +1048,8 @@ export class PolicyEngine extends NatsService {
             model = await DatabaseServer.updatePolicy(model);
             throw error;
         }
+        notifier.completeStep(STEP_PUBLISH_SCHEMAS);
 
-        notifier.completedAndStart('Update UUID');
         try {
             model = await this.updateSchemaId(model, schemaMap);
         } catch (error) {
@@ -920,9 +1060,15 @@ export class PolicyEngine extends NatsService {
             throw error;
         }
 
-        notifier.completedAndStart('Publish formulas');
+        notifier.startStep(STEP_PUBLISH_FORMULAS);
         try {
-            model = await this.publishFormulas(model, user, root, notifier, schemaMap);
+            model = await this.publishFormulas(
+                model,
+                user,
+                root,
+                notifier.getStep(STEP_PUBLISH_FORMULAS),
+                schemaMap
+            );
         } catch (error) {
             model.status = PolicyStatus.PUBLISH_ERROR;
             model.version = '';
@@ -930,12 +1076,12 @@ export class PolicyEngine extends NatsService {
             model = await DatabaseServer.updatePolicy(model);
             throw error;
         }
+        notifier.completeStep(STEP_PUBLISH_FORMULAS);
 
         try {
-            notifier.completedAndStart('Generate file');
             this.regenerateIds(model.config);
 
-            notifier.completedAndStart('Token');
+            notifier.startStep(STEP_PUBLISH_TOKENS);
             const tokenIds = findAllEntities(model.config, ['tokenId']);
             const tokens = await DatabaseServer.getTokens({ tokenId: { $in: tokenIds }, owner: model.owner });
 
@@ -964,9 +1110,10 @@ export class PolicyEngine extends NatsService {
                     });
             }
             const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
+            notifier.completeStep(STEP_PUBLISH_TOKENS);
 
             const createInstanceTopic = async () => {
-                notifier.completedAndStart('Create instance topic');
+                notifier.startStep(STEP_CREATE_INSTANCE_TOPIC);
                 rootTopic = await topicHelper.create({
                     type: TopicType.InstancePolicyTopic,
                     name: model.name || TopicType.InstancePolicyTopic,
@@ -981,6 +1128,7 @@ export class PolicyEngine extends NatsService {
                 await rootTopic.saveKeys();
                 await DatabaseServer.saveTopic(rootTopic.toObject());
                 model.instanceTopicId = rootTopic.topicId;
+                notifier.completeStep(STEP_CREATE_INSTANCE_TOPIC);
             }
 
             let rootTopic;
@@ -991,13 +1139,15 @@ export class PolicyEngine extends NatsService {
                 }
                 if (!rootTopic) {
                     await createInstanceTopic();
+                } else {
+                    notifier.skipStep(STEP_CREATE_INSTANCE_TOPIC);
                 }
             } else {
                 await createInstanceTopic();
             }
 
             const createSynchronizationTopic = async () => {
-                notifier.completedAndStart('Create synchronization topic');
+                notifier.startStep(STEP_CREATE_SYNC_TOPIC);
                 const synchronizationTopic = await topicHelper.create({
                     type: TopicType.SynchronizationTopic,
                     name: model.name || TopicType.SynchronizationTopic,
@@ -1009,17 +1159,20 @@ export class PolicyEngine extends NatsService {
                 await synchronizationTopic.saveKeys(user.id);
                 await DatabaseServer.saveTopic(synchronizationTopic.toObject());
                 model.synchronizationTopicId = synchronizationTopic.topicId;
+                notifier.completeStep(STEP_CREATE_SYNC_TOPIC);
             }
             if (model.status === PolicyStatus.PUBLISH_ERROR) {
                 if (!!model.synchronizationTopicId) {
                     await createSynchronizationTopic();
+                } else {
+                    notifier.skipStep(STEP_CREATE_SYNC_TOPIC);
                 }
             } else {
                 await createSynchronizationTopic();
             }
 
             const createDiffTopic = async () => {
-                notifier.completedAndStart('Create restore topic');
+                notifier.startStep(STEP_CREATE_RESTORE_TOPIC);
                 const diffTopic = await topicHelper.create({
                     type: TopicType.RestoreTopic,
                     name: TopicType.RestoreTopic,
@@ -1031,19 +1184,24 @@ export class PolicyEngine extends NatsService {
                 await diffTopic.saveKeys(user.id);
                 await DatabaseServer.saveTopic(diffTopic.toObject());
                 model.restoreTopicId = diffTopic.topicId;
+                notifier.completeStep(STEP_CREATE_RESTORE_TOPIC);
             }
             if (model.availability === PolicyAvailability.PUBLIC) {
                 if (model.status === PolicyStatus.PUBLISH_ERROR) {
                     if (!!model.restoreTopicId) {
                         await createDiffTopic();
+                    } else {
+                        notifier.skipStep(STEP_CREATE_RESTORE_TOPIC);
                     }
                 } else {
                     await createDiffTopic();
                 }
+            } else {
+                notifier.skipStep(STEP_CREATE_RESTORE_TOPIC);
             }
 
             const createActionsTopic = async () => {
-                notifier.completedAndStart('Create actions topic');
+                notifier.startStep(STEP_CREATE_ACTION_TOPIC);
                 const actionsTopic = await topicHelper.create({
                     type: TopicType.ActionsTopic,
                     name: TopicType.ActionsTopic,
@@ -1055,15 +1213,20 @@ export class PolicyEngine extends NatsService {
                 await actionsTopic.saveKeys(user.id);
                 await DatabaseServer.saveTopic(actionsTopic.toObject());
                 model.actionsTopicId = actionsTopic.topicId;
+                notifier.completeStep(STEP_CREATE_ACTION_TOPIC);
             }
             if (model.availability === PolicyAvailability.PUBLIC) {
                 if (model.status === PolicyStatus.PUBLISH_ERROR) {
                     if (!!model.actionsTopicId) {
                         await createActionsTopic();
+                    } else {
+                        notifier.skipStep(STEP_CREATE_ACTION_TOPIC);
                     }
                 } else {
                     await createActionsTopic();
                 }
+            } else {
+                notifier.skipStep(STEP_CREATE_ACTION_TOPIC);
             }
 
             const configToPublish = structuredClone(model.config);
@@ -1081,7 +1244,7 @@ export class PolicyEngine extends NatsService {
                 }
             });
 
-            notifier.completedAndStart('Publish policy');
+            notifier.startStep(STEP_PUBLISH_POLICY);
             const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
             message.setDocument(model, buffer);
             const result = await messageServer
@@ -1093,10 +1256,10 @@ export class PolicyEngine extends NatsService {
                 });
             model.messageId = result.getId();
 
-            notifier.completedAndStart('Link topic and policy');
             await topicHelper.twoWayLink(rootTopic, topic, result.getId(), user.id);
+            notifier.completeStep(STEP_PUBLISH_POLICY);
 
-            notifier.completedAndStart('Create VC');
+            notifier.startStep(STEP_PUBLISH_MESSAGE);
             const messageId = result.getId();
             const url = result.getUrl();
             const policySchema = await DatabaseServer.getSchemaByType(model.topicId, SchemaEntity.POLICY);
@@ -1128,6 +1291,7 @@ export class PolicyEngine extends NatsService {
                 type: SchemaEntity.POLICY,
                 policyId: `${model.id}`
             });
+            notifier.completeStep(STEP_PUBLISH_MESSAGE);
 
             logger.info('Published Policy', ['GUARDIAN_SERVICE'], user.id);
         } catch (error) {
@@ -1138,22 +1302,21 @@ export class PolicyEngine extends NatsService {
             throw error
         }
 
-        notifier.completedAndStart('Publish tags');
+        notifier.startStep(STEP_PUBLISH_TAGS);
         try {
             await publishPolicyTags(model, user, root, user.id);
         } catch (error) {
             logger.error(error, ['GUARDIAN_SERVICE, TAGS'], user.id);
         }
+        notifier.completeStep(STEP_PUBLISH_TAGS);
 
-        notifier.completedAndStart('Saving in DB');
+        notifier.startStep(STEP_SAVE);
         model.status = PolicyStatus.PUBLISH;
-
         let retVal = await DatabaseServer.updatePolicy(model);
-
-        notifier.completedAndStart('Updating hash');
         retVal = await PolicyImportExportHelper.updatePolicyComponents(retVal, logger, user.id);
+        notifier.completeStep(STEP_SAVE);
 
-        notifier.completed();
+        notifier.complete();
         return retVal
     }
 
@@ -1296,7 +1459,7 @@ export class PolicyEngine extends NatsService {
     private cleanHeadersRecursive(currentBlock: any, blocks: any[]): void {
         if (blocks.includes(currentBlock.blockType) && Array.isArray(currentBlock.headers)) {
             currentBlock.headers = currentBlock.headers.map(header => {
-                if(!header.included) {
+                if (!header.included) {
                     delete header.value;
                 }
                 return header
@@ -1325,14 +1488,27 @@ export class PolicyEngine extends NatsService {
         },
         policyId: string,
         owner: IOwner,
-        notifier: INotifier,
+        notifier: INotificationStep,
         logger: PinoLogger,
         userId: string | null
     ): Promise<IPublishResult> {
+        // <-- Steps
+        const STEP_FIND_POLICY = 'Find policy';
+        const STEP_VALIDATE_POLICY = 'Validate policy';
+        const STEP_PUBLISH_POLICY = 'Publish policy';
+        const STEP_RUN_POLICY = 'Run policy';
+        // Steps -->
+
+        notifier.addStep(STEP_FIND_POLICY, 1);
+        notifier.addStep(STEP_VALIDATE_POLICY, 5);
+        notifier.addStep(STEP_PUBLISH_POLICY, 90);
+        notifier.addStep(STEP_RUN_POLICY, 4);
+        notifier.start();
+
         const version = options.policyVersion;
         const availability = options.policyAvailability || PolicyAvailability.PRIVATE;
 
-        notifier.start('Find and validate policy');
+        notifier.startStep(STEP_FIND_POLICY);
         const policy = await DatabaseServer.getPolicyById(policyId);
 
         await this.accessPolicy(policy, owner, 'read');
@@ -1366,25 +1542,38 @@ export class PolicyEngine extends NatsService {
         if (countModels > 0) {
             throw new Error('Policy with current version already was published');
         }
+        notifier.completeStep(STEP_FIND_POLICY);
 
+        notifier.startStep(STEP_VALIDATE_POLICY);
         const errors = await this.validateModel(policyId);
         const isValid = !errors.blocks.some(block => !block.isValid);
-        notifier.completed();
+        notifier.completeStep(STEP_VALIDATE_POLICY);
+
         if (isValid) {
+            notifier.startStep(STEP_PUBLISH_POLICY);
             if (policy.status === PolicyStatus.DRY_RUN) {
                 await this.destroyModel(policyId, owner.id);
                 await DatabaseServer.clearDryRun(policy.id.toString(), true);
             }
             const newPolicy = await this.publishPolicy(
-                policy, owner, version, availability, notifier, logger, userId
+                policy,
+                owner,
+                version,
+                availability,
+                notifier.getStep(STEP_PUBLISH_POLICY),
+                logger,
+                userId
             );
+            notifier.completeStep(STEP_PUBLISH_POLICY);
 
             if (newPolicy.status === PolicyStatus.PUBLISH) {
                 new AISuggestionsService().rebuildAIVector().then();
             }
 
+            notifier.startStep(STEP_RUN_POLICY);
             await this.generateModel(newPolicy.id.toString());
             const users = await new Users().getUsersBySrId(owner.owner, owner.id);
+            notifier.completeStep(STEP_RUN_POLICY);
 
             await Promise.all(
                 users.map(
@@ -1399,12 +1588,14 @@ export class PolicyEngine extends NatsService {
                 )
             );
 
+            notifier.complete();
             return {
                 policyId: newPolicy.id.toString(),
                 isValid,
                 errors
             };
         } else {
+            notifier.complete();
             return {
                 policyId: policy.id.toString(),
                 isValid,
@@ -1423,11 +1614,22 @@ export class PolicyEngine extends NatsService {
     public async preparePolicyPreviewMessage(
         messageId: string,
         user: IOwner,
-        notifier: INotifier,
+        notifier: INotificationStep,
         logger: PinoLogger,
         userId: string | null
     ): Promise<any> {
-        notifier.start('Resolve Hedera account');
+        // <-- Steps
+        const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
+        const STEP_LOAD_FILE = 'Load policy files';
+        const STEP_PARSE_FILE = 'Parse policy files';
+        // Steps -->
+
+        notifier.addStep(STEP_RESOLVE_ACCOUNT);
+        notifier.addStep(STEP_LOAD_FILE);
+        notifier.addStep(STEP_PARSE_FILE);
+        notifier.start();
+
+        notifier.startStep(STEP_RESOLVE_ACCOUNT);
         if (!messageId) {
             throw new Error('Policy ID in body is empty');
         }
@@ -1455,8 +1657,9 @@ export class PolicyEngine extends NatsService {
         if (!message.document) {
             throw new Error('file in body is empty');
         }
+        notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
-        notifier.completedAndStart('Load policy files');
+        notifier.startStep(STEP_LOAD_FILE);
         const newVersions: any = [];
         if (message.version) {
             const anotherVersions = await messageServer.getMessages<PolicyMessage>(
@@ -1471,14 +1674,16 @@ export class PolicyEngine extends NatsService {
                 }
             }
         }
+        notifier.completeStep(STEP_LOAD_FILE);
 
-        notifier.completedAndStart('Parse policy files');
+        notifier.startStep(STEP_PARSE_FILE);
         const policyToImport: any = await PolicyImportExport.parseZipFile(message.document, true);
         if (newVersions.length !== 0) {
             policyToImport.newVersions = newVersions.reverse();
         }
+        notifier.completeStep(STEP_PARSE_FILE);
 
-        notifier.completed();
+        notifier.complete();
         return policyToImport;
     }
 
@@ -1644,9 +1849,18 @@ export class PolicyEngine extends NatsService {
         policy: Policy,
         owner: IOwner,
         logger: PinoLogger,
-        notifier: INotifier = emptyNotifier(),
+        notifier: INotificationStep,
     ): Promise<void> {
-        notifier.completedAndStart('Validate policy');
+        // <-- Steps
+        const STEP_VALIDATE_POLICY = 'Validate policy';
+        const STEP_RUN_POLICY = 'Run policy';
+        // Steps -->
+
+        notifier.addStep(STEP_VALIDATE_POLICY);
+        notifier.addStep(STEP_RUN_POLICY);
+        notifier.start();
+
+        notifier.startStep(STEP_VALIDATE_POLICY);
         const blockErrors = await this.validateModel(policy.id);
         const errors = blockErrors.blocks
             .filter((block) => !block.isValid && block.errors)
@@ -1663,20 +1877,32 @@ export class PolicyEngine extends NatsService {
             throw new Error(message);
         }
 
-        notifier.completedAndStart('Update policy model');
         const model = await DatabaseServer.getPolicyById(policy.id);
+        notifier.completeStep(STEP_VALIDATE_POLICY);
+
+        notifier.startStep(STEP_RUN_POLICY);
         const newPolicy = await this.dryRunPolicy(model, owner, 'Demo', true, logger);
-        notifier.completedAndStart('Run policy');
         await this.generateModel(newPolicy.id.toString());
+        notifier.completeStep(STEP_RUN_POLICY);
+        notifier.complete();
     }
 
     public async startView(
         policy: Policy,
         owner: IOwner,
         logger: PinoLogger,
-        notifier: INotifier = emptyNotifier(),
+        notifier: INotificationStep,
     ): Promise<void> {
-        notifier.completedAndStart('Validate policy');
+        // <-- Steps
+        const STEP_VALIDATE_POLICY = 'Validate policy';
+        const STEP_RUN_POLICY = 'Run policy';
+        // Steps -->
+
+        notifier.addStep(STEP_VALIDATE_POLICY);
+        notifier.addStep(STEP_RUN_POLICY);
+        notifier.start();
+
+        notifier.startStep(STEP_VALIDATE_POLICY);
         const blockErrors = await this.validateModel(policy.id);
         const errors = blockErrors.blocks
             .filter((block) => !block.isValid && block.errors)
@@ -1692,7 +1918,11 @@ export class PolicyEngine extends NatsService {
             const message = PolicyImportExportHelper.errorsMessage(errors);
             throw new Error(message);
         }
-        notifier.completedAndStart('Run policy');
+        notifier.completeStep(STEP_VALIDATE_POLICY);
+
+        notifier.startStep(STEP_RUN_POLICY);
         await this.generateModel(policy.id.toString());
+        notifier.completeStep(STEP_RUN_POLICY);
+        notifier.complete();
     }
 }

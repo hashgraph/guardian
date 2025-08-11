@@ -20,7 +20,7 @@ This block allows to manage group membership, add and remove users from the grou
 
 #### 2.1 **List of the groups in which the user is included:**
 
-<figure><img src="../../../../../.gitbook/assets/image (13) (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (13) (4) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### **2.2 List of the users included in the group**
 
@@ -42,20 +42,17 @@ Next step is to copy and send the unique invite or the link to the invite.
 
 ### API Parameters
 
-{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
-{% swagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{policyId}/blocks/{uuid}`
 
-{% endswagger-description %}
+#### Path Parameters
 
-{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
-Policy ID
-{% endswagger-parameter %}
+| Name                                       | Type   | Description |
+| ------------------------------------------ | ------ | ----------- |
+| policyId<mark style="color:red;">\*</mark> | String | Policy ID   |
+| uuid<mark style="color:red;">\*</mark>     | String | Block UUID  |
 
-{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
-Block UUID
-{% endswagger-parameter %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
   "data": [
@@ -94,39 +91,24 @@ Block UUID
 
 
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
-{% swagger-description %}
+<mark style="color:green;">`POST`</mark> `/policies/{policyId}/blocks/{uuid}`
 
-{% endswagger-description %}
+#### Path Parameters
 
-{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
-Policy ID
-{% endswagger-parameter %}
+| Name                                       | Type   | Description |
+| ------------------------------------------ | ------ | ----------- |
+| policyId<mark style="color:red;">\*</mark> | String | Policy ID   |
+| uuid<mark style="color:red;">\*</mark>     | String | Block UUID  |
 
-{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
-Block UUID
-{% endswagger-parameter %}
+#### Request Body
 
-{% swagger-parameter in="body" name="action" type="String" required="true" %}
-invite/delete
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="role" type="String" required="true" %}
-role
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="group" type="String" required="true" %}
-group
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="user" type="String" required="true" %}
-User DID
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="message" type="String" required="true" %}
-removing message
-{% endswagger-parameter %}
-{% endswagger %}
+| Name                                      | Type   | Description      |
+| ----------------------------------------- | ------ | ---------------- |
+| action<mark style="color:red;">\*</mark>  | String | invite/delete    |
+| role<mark style="color:red;">\*</mark>    | String | role             |
+| group<mark style="color:red;">\*</mark>   | String | group            |
+| user<mark style="color:red;">\*</mark>    | String | User DID         |
+| message<mark style="color:red;">\*</mark> | String | removing message |

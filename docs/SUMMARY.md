@@ -235,6 +235,7 @@
         * [Dropdown Block Addon (dropdownBlockAddon)](guardian/standard-registry/policies/policy-creation/introduction/dropdown-block-addon-dropdownblockaddon.md)
         * [Request Vc Document Block Addon (requestVcDocumentBlockAddon)](guardian/standard-registry/policies/policy-creation/introduction/request-vc-document-block-addon-requestvcdocumentblockaddon.md)
         * [Data Transformation Addon](guardian/standard-registry/policies/policy-creation/introduction/data-transformation-addon.md)
+        * [IntegrationButtonBlock](guardian/standard-registry/policies/policy-creation/introduction/integrationbuttonblock.md)
       * [Creating Policy using UI](guardian/standard-registry/policies/policy-creation/policy-demo.md)
       * [Creating a Policy through Policy Configurator](guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/README.md)
         * [Getting Started with the Policy Workflows](guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/getting-started-with-the-policy-workflows.md)
@@ -484,6 +485,7 @@
         * [Returns the list of saved mock-up data for the selected block](guardian/standard-registry/policies/testing-debugging-code/apis/returns-the-list-of-saved-mock-up-data-for-the-selected-block.md)
         * [Executes the test-run of the code in the block](guardian/standard-registry/policies/testing-debugging-code/apis/executes-the-test-run-of-the-code-in-the-block.md)
     * [Python Implementation in Guardian](guardian/standard-registry/policies/python-implementation-in-guardian.md)
+    * [Integrating 3rd Party Data Resources](guardian/standard-registry/policies/integrating-3rd-party-data-resources.md)
   * [Bring your own DIDs](guardian/standard-registry/bring-your-own-dids/README.md)
     * [Bring your own (BYO) DIDs UI](guardian/standard-registry/bring-your-own-dids/bring-your-own-byo-dids-ui.md)
     * [APIs](guardian/standard-registry/bring-your-own-dids/apis/README.md)
@@ -812,6 +814,12 @@
   * [Guardian Policy Standards (GPS)](guardian/community-standards/guardian-policy-standards-gps.md)
   * [Guardian System Standards (GSS)](guardian/community-standards/guardian-system-standards-gss.md)
   * [Proposal for Defining Standards](guardian/community-standards/proposal-for-defining-standards.md)
+
+## Methodology Digitization
+
+* [📚 Methodology Digitization Handbook](methodology-digitization-handbook/README.md)
+  * [📋 Table of Contents](methodology-digitization-handbook/table-of-contents.md)
+  * [📝 Chapter Outlines](methodology-digitization-handbook/chapter-outlines.md)
 
 ***
 

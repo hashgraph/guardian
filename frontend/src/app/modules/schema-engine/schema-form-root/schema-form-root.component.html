@@ -1,0 +1,33 @@
+<app-schema-form
+    *ngIf="model"
+    [form-model]="model"
+    [private-fields]="hide"
+    [readonly-fields]="readonly"
+    [delimiter-hide]="delimiterHide"
+    [example]="example"
+    [cancelText]="cancelText"
+    [saveText]="saveText"
+    [submitText]="submitText"
+    [cancelHidden]="cancelHidden"
+    [submitHidden]="submitHidden"
+    [saveShown]="saveShown"
+    [showButtons]="showButtons"
+    [isChildSchema]="isChildSchema"
+    [comesFromDialog]="comesFromDialog"
+    [dryRun]="dryRun"
+    [policyId]="policyId"
+    [rules]="rules"
+    [paginationHidden]="paginationHidden"
+    [isFormForFinishSetup]="isFormForFinishSetup"
+    [isFormForRequestBlock]="isFormForRequestBlock"
+    (change)="onChange($event)"
+    (destroy)="onDestroy($event)"
+    (buttons)="onButtons($event)"
+    (cancelBtnEvent)="onCancelBtnEvent($event)"
+    (submitBtnEvent)="onSubmitBtnEvent($event)"
+    (saveBtnEvent)="onSaveBtnEvent($event)"
+>
+</app-schema-form>
+<div *ngIf="loading" class="guardian-loading">
+    <div class="guardian-loading-image"></div>
+</div>
