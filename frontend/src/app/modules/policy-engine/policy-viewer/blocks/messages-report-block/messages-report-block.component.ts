@@ -290,7 +290,7 @@ export class MessagesReportBlockComponent implements OnInit {
         } else {
             this.loading = true;
             this.policyEngineService
-                .getBlockData(this.id, this.policyId, this.savepointId)
+                .getBlockData(this.id, this.policyId)
                 .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
         }
     }
