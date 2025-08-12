@@ -3301,153 +3301,161 @@ export class PolicyApi {
     }
 
     /**
-     * Clear dry-run state.
+     * Get savepoints for policy
      */
-    @Post('/:policyId/savepoint/create')
-    @Auth(
-        Permissions.POLICIES_POLICY_UPDATE
-        // UserRole.STANDARD_REGISTRY,
-    )
+    @Get('/:policyId/savepoints')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Create dry-run savepoint.',
-        description: 'Create dry-run savepoint.' + ONLY_SR
+        summary: 'Get dry-run savepoints.',
+        description: 'Returns the list of savepoints for the policy (Dry Run only).',
     })
     @ApiParam({
         name: 'policyId',
         type: String,
-        description: 'Policy Id',
         required: true,
         example: Examples.DB_ID
     })
+    @ApiOkResponse({ description: 'Successful operation.' })
+    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getSavepoints(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+        const policy = await engineService.accessPolicy(policyId, owner, 'read');
+
+        if (!PolicyHelper.isDryRunMode(policy)) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN);
+        }
+
+        try {
+            return await engineService.getSavepoints(policyId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Get savepoint by id
+     */
+    @Get('/:policyId/savepoints/:savepointId')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Get dry-run savepoint by id.',
+        description: 'Returns the savepoint by its id (Dry Run only).',
+    })
+    @ApiParam({ name: 'policyId', type: String, required: true, example: Examples.DB_ID })
+    @ApiParam({ name: 'savepointId', type: String, required: true, example: Examples.DB_ID })
+    @ApiOkResponse({ description: 'Successful operation.' })
+    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getSavepoint(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('savepointId') savepointId: string,
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+        const policy = await engineService.accessPolicy(policyId, owner, 'read');
+
+        if (!PolicyHelper.isDryRunMode(policy)) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN);
+        }
+
+        try {
+            return await engineService.getSavepoint(policyId, savepointId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Create savepoint
+     */
+    @Post('/:policyId/savepoints')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Create dry-run savepoint.',
+        description: 'Creates a new savepoint for the policy (Dry Run only).',
+    })
+    @ApiParam({ name: 'policyId', type: String, required: true, example: Examples.DB_ID })
     @ApiBody({
-        description: '.'
+        description: '{ name: string; savepointPath: string[] }',
+        schema: {
+            type: 'object',
+            properties: {
+                name: { type: 'string' },
+                savepointPath: { type: 'array', items: { type: 'string' } }
+            },
+            required: ['name', 'savepointPath']
+        }
     })
-    @ApiOkResponse({
-        description: '.'
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO
-    })
+    @ApiOkResponse({ description: 'Successful operation.' })
+    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async createSavepoint(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: any,
+        @Body() body: { name: string; savepointPath: string[] },
         @Req() req
     ) {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
         const policy = await engineService.accessPolicy(policyId, owner, 'read');
+
         if (!PolicyHelper.isDryRunMode(policy)) {
             throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN);
         }
-
-        console.log('Create savepoint');
 
         const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
         await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
         try {
-            return await engineService.createSavepoint(body, owner, policyId);
+            return await engineService.createSavepoint(policyId, owner, body);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
     }
 
     /**
-     * Clear dry-run state.
+     * Delete savepoints
      */
-    @Post('/:policyId/savepoint/delete')
-    @Auth(
-        Permissions.POLICIES_POLICY_UPDATE
-        // UserRole.STANDARD_REGISTRY,
-    )
+    @Delete('/:policyId/savepoints')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({
-        summary: 'Delete dry-run savepoint.',
-        description: 'Delete dry-run savepoint.' + ONLY_SR
+        summary: 'Delete dry-run savepoints.',
+        description: 'Deletes the specified savepoints for the policy (Dry Run only).',
     })
-    @ApiParam({
-        name: 'policyId',
-        type: String,
-        description: 'Policy Id',
-        required: true,
-        example: Examples.DB_ID
-    })
+    @ApiParam({ name: 'policyId', type: String, required: true, example: Examples.DB_ID })
     @ApiBody({
-        description: '.'
+        description: '{ savepointIds: string[] }',
+        schema: {
+            type: 'object',
+            properties: {
+                savepointIds: { type: 'array', items: { type: 'string' } }
+            },
+            required: ['savepointIds']
+        }
     })
-    @ApiOkResponse({
-        description: '.'
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO
-    })
+    @ApiOkResponse({ description: 'Successful operation.' })
+    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async deleteSavepoint(
+    async deleteSavepoints(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: any,
+        @Body() body: { savepointIds: string[] },
         @Req() req
     ) {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
         const policy = await engineService.accessPolicy(policyId, owner, 'read');
-        if (!PolicyHelper.isDryRunMode(policy)) {
-            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN);
-        }
 
-        console.log('Delete savepoint');
-
-        const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
-        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
-
-        try {
-            return await engineService.deleteSavepoint(body, owner, policyId);
-        } catch (error) {
-            await InternalException(error, this.logger, user.id);
-        }
-    }
-
-    /**
-     * Get savepoint state.
-     */
-    @Get('/:policyId/savepoint/restore')
-    @Auth(
-        Permissions.POLICIES_POLICY_UPDATE
-        // UserRole.STANDARD_REGISTRY,
-    )
-    @ApiOperation({
-        summary: 'Get savepoint state.',
-        description: 'Get savepoint state.' + ONLY_SR
-    })
-    @ApiParam({
-        name: 'policyId',
-        type: String,
-        description: 'Policy Id',
-        required: true,
-        example: Examples.DB_ID
-    })
-    @ApiOkResponse({
-        description: '.'
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO
-    })
-    @ApiExtraModels(InternalServerErrorDTO)
-    @HttpCode(HttpStatus.OK)
-    async getSavepointState(
-        @AuthUser() user: IAuthUser,
-        @Param('policyId') policyId: string,
-        @Req() req
-    ) {
-        const engineService = new PolicyEngine();
-        const owner = new EntityOwner(user);
-        const policy = await engineService.accessPolicy(policyId, owner, 'read');
         if (!PolicyHelper.isDryRunMode(policy)) {
             throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN);
         }
@@ -3456,61 +3464,7 @@ export class PolicyApi {
         await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
         try {
-            return await engineService.getSavepointState(owner, policyId);
-        } catch (error) {
-            await InternalException(error, this.logger, user.id);
-        }
-    }
-
-    /**
-     * Clear dry-run state.
-     */
-    @Post('/:policyId/savepoint/restore')
-    @Auth(
-        Permissions.POLICIES_POLICY_UPDATE
-        // UserRole.STANDARD_REGISTRY,
-    )
-    @ApiOperation({
-        summary: 'Restore dry-run savepoint.',
-        description: 'Restore dry-run savepoint.' + ONLY_SR
-    })
-    @ApiParam({
-        name: 'policyId',
-        type: String,
-        description: 'Policy Id',
-        required: true,
-        example: Examples.DB_ID
-    })
-    @ApiBody({
-        description: '.'
-    })
-    @ApiOkResponse({
-        description: '.'
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO
-    })
-    @ApiExtraModels(InternalServerErrorDTO)
-    @HttpCode(HttpStatus.OK)
-    async restoreSavepoint(
-        @AuthUser() user: IAuthUser,
-        @Param('policyId') policyId: string,
-        @Body() body: any,
-        @Req() req
-    ) {
-        const engineService = new PolicyEngine();
-        const owner = new EntityOwner(user);
-        const policy = await engineService.accessPolicy(policyId, owner, 'read');
-        if (!PolicyHelper.isDryRunMode(policy)) {
-            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN);
-        }
-
-        const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
-        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
-
-        try {
-            return await engineService.restoreSavepoint(body, owner, policyId);
+            return await engineService.deleteSavepoints(policyId, owner, body.savepointIds);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

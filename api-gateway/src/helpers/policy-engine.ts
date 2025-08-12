@@ -664,57 +664,57 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
-     * Create savepoint
-     * @param model
-     * @param owner
+     * Get savepoints for policy
      * @param policyId
+     * @param owner
+     */
+    public async getSavepoints(
+        policyId: string,
+        owner: IOwner
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.GET_SAVEPOINTS, { policyId, owner });
+    }
+
+    /**
+     * Get savepoint by id
+     * @param policyId
+     * @param owner
+     * @param savepointId
+     */
+    public async getSavepoint(
+        policyId: string,
+        savepointId: string,
+        owner: IOwner
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.GET_SAVEPOINT, { policyId, owner, savepointId });
+    }
+
+    /**
+     * Create savepoint
+     * @param policyId
+     * @param owner
+     * @param savepointProps
      */
     public async createSavepoint(
-        model: any,
+        policyId: string,
         owner: IOwner,
-        policyId: string
+        savepointProps: { name: string; savepointPath: string[] },
     ) {
-        return await this.sendMessage(PolicyEngineEvents.CREATE_SAVEPOINT, { model, owner, policyId });
+        return await this.sendMessage(PolicyEngineEvents.CREATE_SAVEPOINT, { policyId, owner, savepointProps });
     }
 
     /**
-     * Delete savepoint
-     * @param model
-     * @param owner
+     * Delete savepoints
      * @param policyId
-     */
-    public async deleteSavepoint(
-        model: any,
-        owner: IOwner,
-        policyId: string
-    ) {
-        return await this.sendMessage(PolicyEngineEvents.DELETE_SAVEPOINT, { model, owner, policyId });
-    }
-
-    /**
-     * Restore savepoint
-     * @param model
+     * @param savepointIds
      * @param owner
-     * @param policyId
      */
-    public async restoreSavepoint(
-        model: any,
+    public async deleteSavepoints(
+        policyId: string,
         owner: IOwner,
-        policyId: string
+        savepointIds: string[],
     ) {
-        return await this.sendMessage(PolicyEngineEvents.RESTORE_SAVEPOINT, { model, owner, policyId });
-    }
-
-    /**
-     * Get savepoint state
-     * @param owner
-     * @param policyId
-     */
-    public async getSavepointState(
-        owner: IOwner,
-        policyId: string
-    ) {
-        return await this.sendMessage(PolicyEngineEvents.GET_SAVEPOINT, { owner, policyId });
+        return await this.sendMessage(PolicyEngineEvents.DELETE_SAVEPOINTS, { policyId, owner, savepointIds });
     }
 
     /**
