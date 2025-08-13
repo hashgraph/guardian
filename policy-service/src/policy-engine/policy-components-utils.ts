@@ -1125,19 +1125,40 @@ export class PolicyComponentsUtils {
      * Get Policy Groups
      * @param policy
      * @param user
-     * @param savepointId
+     * @param savepointIds optional list of savepoint ids
      */
     public static async GetGroups(
         policy: IPolicyInstance | IPolicyInterfaceBlock,
         user: PolicyUser,
-        savepointId?: string
+        savepointIds?: string[]
     ): Promise<PolicyRoles[]> {
-        return await policy.components.databaseServer.getGroupsByUser(
-            policy.policyId,
-            user.did,
+        const useIds: boolean = Array.isArray(savepointIds) && savepointIds.length > 0;
+
+        const where: any = {
+            policyId: policy.policyId,
+            did: user.did,
+            $or: useIds
+                ? [
+                    { savepointId: { $in: savepointIds } },
+                    { savepointId: { $exists: false } },
+                    { savepointId: null },
+                    { savepointStep: { $exists: false } },
+                    { savepointStep: null }
+                ]
+                : [
+                    { savepointId: { $exists: false } },
+                    { savepointId: null },
+                    { savepointStep: { $exists: false } },
+                    { savepointStep: null }
+                ]
+        };
+
+        return await policy.components.databaseServer.find(
+            PolicyRolesCollection,
+            where,
             {
-                fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active'],
-                savepointId
+                fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active'] as unknown as PopulatePath.ALL[],
+                orderBy: { createDate: 1 }
             }
         );
     }

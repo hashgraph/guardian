@@ -151,10 +151,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
     ): Promise<DryRunSavepoint[]> {
         return await new DataBaseHelper(DryRunSavepoint).find(
             { policyId },
-            {
-                fields: ['id','name','parentSavepointId','savepointPath','createdAt'] as any,
-                orderBy: { createDate: 'DESC' } as any
-            }
+            { orderBy: { createDate: 'DESC' } as any }
         );
     }
 
@@ -176,11 +173,24 @@ export class DatabaseServer extends AbstractDatabaseServer {
 
         const limit = { limit: DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE };
 
-        const filter = {
-            policyId,
-            $or: [{ savepointId: { $exists: false } }, { savepointId: null }],
-        } as any;
-
+        const filter: any = {
+            $and: [
+                {
+                    $or: [
+                        { policyId },
+                        { policyId: { $exists: false } },
+                        { policyId: null },
+                        { policyId: '' }
+                    ]
+                },
+                {
+                    $or: [
+                        { savepointId: { $exists: false } },
+                        { savepointId: null }
+                    ]
+                }
+            ]
+        };
         const dryRun = new DataBaseHelper(DryRun);
 
         const amount = await dryRun.count(filter);
@@ -3289,16 +3299,27 @@ export class DatabaseServer extends AbstractDatabaseServer {
     /**
      * Get All Virtual Users
      * @param policyId
-     *
-     * @param savepointId
+     * @param savepointIds
      * @virtual
      */
-    public static async getVirtualUsers(policyId: string, savepointId?: string): Promise<DryRun[]> {
-        return (await new DataBaseHelper(DryRun).find({
+    public static async getVirtualUsers(policyId: string, savepointIds?: string[]): Promise<DryRun[]> {
+        const useIds: boolean = Array.isArray(savepointIds) && savepointIds.length > 0;
+
+        const filter: any = {
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers',
-            ...(savepointId ? { savepointId } : {})
-        }, {
+            $or: useIds
+                ? [
+                    { savepointId: { $in: [...savepointIds, null, '' ] } },
+                    { savepointId: { $exists: false } }
+                ]
+                : [
+                    { savepointId: { $in: [null, '' ] } },
+                    { savepointId: { $exists: false } }
+                ]
+        };
+
+        const result = await new DataBaseHelper(DryRun).find(filter, {
             fields: [
                 'id',
                 'did',
@@ -3306,10 +3327,12 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 'hederaAccountId',
                 'active'
             ] as unknown as PopulatePath.ALL[],
-            orderBy: {
-                createDate: 1
-            }
-        }));
+            orderBy: { createDate: 1 }
+        });
+
+        console.log('result', result)
+
+        return result;
     }
 
     /**
@@ -4638,8 +4661,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
     //
     //     const main   = db.collection('dry_run');
     //     const shadow = db.collection('dry_run_shadow');
-    //
-    //     // закроем предыдущий, если вдруг уже запущен
+
     //     // tslint:disable-next-line:no-empty
     //     try { DatabaseServer._dryRunWatcher?.close().catch(() => {}); } catch {}
     //
@@ -4650,8 +4672,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
     //         ],
     //         { fullDocument: 'updateLookup' }
     //     );
-    //
-    //     // type guard: гарантируем, что это апдейт
+
     //     const isUpdate = <T>(ev: ChangeStreamDocument<T>): ev is ChangeStreamUpdateDocument<T> =>
     //         (ev as any).operationType === 'update';
     //

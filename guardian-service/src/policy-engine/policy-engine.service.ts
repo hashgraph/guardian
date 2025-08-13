@@ -577,17 +577,17 @@ export class PolicyEngineService {
             async (msg: {
                 user: IAuthUser,
                 policyId: string,
-                savepointId?: string
+                savepointIds?: string[]
             }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { user, policyId, savepointId } = msg;
+                    const { user, policyId, savepointIds } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService()
                         .sendPolicyMessage(PolicyEvents.GET_POLICY_GROUPS, policyId, {
                             user,
                             policyId,
-                            savepointId
+                            savepointIds
                         }) as any;
                     return new MessageResponse(blockData);
                 } catch (error) {
@@ -1775,15 +1775,15 @@ export class PolicyEngineService {
 
         //#region DRY RUN endpoints
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_VIRTUAL_USERS,
-            async (msg: { policyId: string, owner: IOwner, savepointId?: string }) => {
+            async (msg: { policyId: string, owner: IOwner, savepointIds?: string[] }) => {
                 try {
-                    const { policyId, owner, savepointId } = msg;
+                    const { policyId, owner, savepointIds } = msg;
                     const model = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(model, owner, 'read');
                     if (!PolicyHelper.isDryRunMode(model)) {
                         throw new Error(`Policy is not in Dry Run`);
                     }
-                    const users = await DatabaseServer.getVirtualUsers(policyId, savepointId);
+                    const users = await DatabaseServer.getVirtualUsers(policyId, savepointIds);
                     return new MessageResponse(users);
                 } catch (error) {
                     return new MessageError(error);

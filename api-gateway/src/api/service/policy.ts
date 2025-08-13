@@ -1011,11 +1011,11 @@ export class PolicyApi {
     async getPolicyGroups(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Query('savepointId') savepointId?: string
+        @Query('savepointId') savepointIds?: string[]
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
-            return await engineService.getGroups(user, policyId, savepointId);
+            return await engineService.getGroups(user, policyId, savepointIds);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -3097,13 +3097,13 @@ export class PolicyApi {
     async getDryRunUsers(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Query('savepointId') savepointId?: string
+        @Query('savepointId') savepointIds?: string[]
     ) {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
         await engineService.accessPolicy(policyId, owner, 'read');
         try {
-            return await engineService.getVirtualUsers(policyId, owner, savepointId);
+            return await engineService.getVirtualUsers(policyId, owner, savepointIds);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

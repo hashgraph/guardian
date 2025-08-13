@@ -69,16 +69,16 @@ export class InterfaceDocumentsSource {
         );
 
         const saved = (this.state?.[user.id] as any) || {};
-        const savepointId = saved.__savepointId as string | undefined;
+        const savepointIds = saved.__savepointIds as string[] | undefined;
 
         const enableCommonSorting =
             !!ref.options?.uiMetaData?.enableSorting ||
-            !!savepointId;
+            !!(savepointIds && savepointIds.length > 0);
 
         const sourceAddons = fields
             ?.filter((field) => field.bindGroup)
             .map((field) => field.bindGroup);
-        const documents = (await this._getData(user, ref, enableCommonSorting,  {}, null, undefined, savepointId)) as any[];
+        const documents = (await this._getData(user, ref, enableCommonSorting,  {}, null, undefined, savepointIds)) as any[];
         const document = documents.find(
             // tslint:disable-next-line:no-shadowed-variable
             (document) =>
@@ -126,10 +126,10 @@ export class InterfaceDocumentsSource {
         sortState = {},
         paginationData?,
         history?,
-        savepointId?: string
+        savepointIds?: string[]
     ) {
         console.log('enableCommonSorting', enableCommonSorting)
-        console.log('savepointId', savepointId)
+        console.log('savepointIds', savepointIds)
 
 
         return enableCommonSorting
@@ -139,7 +139,7 @@ export class InterfaceDocumentsSource {
                 sortState,
                 paginationData,
                 history,
-                savepointId
+                savepointIds
             )
             : await ref.getGlobalSources(user, paginationData);
     }
@@ -167,13 +167,13 @@ export class InterfaceDocumentsSource {
             queryParams = {};
         }
 
-        const { itemsPerPage, page, size, filterByUUID, sortDirection, sortField, useStrict, savepointId, ...filterIds } = queryParams;
+        const { itemsPerPage, page, size, filterByUUID, sortDirection, sortField, useStrict, savepointIds, ...filterIds } = queryParams;
 
         if (this.state?.[user.id]) {
-            if (savepointId) {
-                (this.state[user.id] as any).__savepointId = savepointId;
-            } else if ((this.state[user.id] as any).__savepointId) {
-                delete (this.state[user.id] as any).__savepointId;
+            if (Array.isArray(savepointIds) && savepointIds.length > 0) {
+                (this.state[user.id] as any).__savepointIds = savepointIds;
+            } else if ((this.state[user.id] as any).__savepointIds) {
+                delete (this.state[user.id] as any).__savepointIds;
             }
         }
 
@@ -233,7 +233,8 @@ export class InterfaceDocumentsSource {
             return addon.blockType === 'historyAddon';
         }) as IPolicyAddonBlock;
 
-        const enableCommonSorting = ref.options.uiMetaData.enableSorting || (sortDirection && sortField) || savepointId;
+        const enableCommonSorting = ref.options.uiMetaData.enableSorting || (sortDirection && sortField) ||
+            (Array.isArray(savepointIds) && savepointIds.length > 0);
         let sortState = this.state[user.id] || {};
         if (sortDirection && sortField) {
             sortState = {
@@ -242,7 +243,7 @@ export class InterfaceDocumentsSource {
             };
             this.state[user.id] = sortState;
         }
-        let data: any = await this._getData(user, ref, enableCommonSorting, sortState, paginationData, history, savepointId);
+        let data: any = await this._getData(user, ref, enableCommonSorting, sortState, paginationData, history, savepointIds);
 
         if (paginationData) {
             ret = Object.assign(ret, {
@@ -335,20 +336,20 @@ export class InterfaceDocumentsSource {
      * @param sortState Sort state
      * @param paginationData Paginaton data
      * @param history
-     * @param savepointId
+     * @param savepointIds
      * @returns Data
      */
-    private async getDataByAggregationFilters(ref: IPolicySourceBlock, user: PolicyUser, sortState: any, paginationData: any, history?: IPolicyAddonBlock, savepointId?: string) {
+    private async getDataByAggregationFilters(ref: IPolicySourceBlock, user: PolicyUser, sortState: any, paginationData: any, history?: IPolicyAddonBlock, savepointIds?: string[]) {
         const filtersAndDataType = await ref.getGlobalSourcesFilters(user);
 
         const aggregation = [...filtersAndDataType.filters] as unknown[];
 
-        if (savepointId) {
+        if (Array.isArray(savepointIds) && savepointIds.length > 0) {
             ref.databaseServer.getDocumentAggregationFilters({
                 aggregation,
                 aggregateMethod: 'unshift',
                 nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.DRY_RUN_SAVEPOINT,
-                savepointId,
+                savepointIds
             });
         }
 

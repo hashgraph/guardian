@@ -297,7 +297,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
             itemsPerPage,
             page,
             policyId,
-            savepointId
+            savepointIds
         } = props;
 
         const filters = {
@@ -387,9 +387,22 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
             ],
             [MAP_DOCUMENT_AGGREGATION_FILTERS.DRY_RUN_SAVEPOINT]: [
                 {
-                    $match: {
-                        savepointId
-                    }
+                    $match: Array.isArray(savepointIds) && savepointIds.length > 0
+                        ? {
+                            $or: [
+                                { savepointId: { $in: savepointIds } },
+                                { savepointId: { $exists: false } },
+                                { savepointId: null },
+                                { savepointId: '' }
+                            ]
+                        }
+                        : {
+                            $or: [
+                                { savepointId: { $exists: false } },
+                                { savepointId: null },
+                                { savepointId: '' }
+                            ]
+                        }
                 }
             ],
         };

@@ -586,14 +586,14 @@ export class PolicyEngine extends NatsService {
      * Get Virtual Users by policy id
      * @param policyId
      * @param owner
-     * @param savepointId
+     * @param savepointIds
      */
     public async getVirtualUsers(
         policyId: string,
         owner: IOwner,
-        savepointId?
+        savepointIds?: string[]
     ) {
-        return await this.sendMessage(PolicyEngineEvents.GET_VIRTUAL_USERS, { policyId, owner, savepointId });
+        return await this.sendMessage(PolicyEngineEvents.GET_VIRTUAL_USERS, { policyId, owner, savepointIds });
     }
 
     /**
@@ -672,6 +672,7 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         owner: IOwner
     ) {
+        console.log('policyId', policyId)
         return await this.sendMessage(PolicyEngineEvents.GET_SAVEPOINTS, { policyId, owner });
     }
 
@@ -779,14 +780,14 @@ export class PolicyEngine extends NatsService {
      *
      * @param user
      * @param policyId
-     * @param savepointId
+     * @param savepointIds
      */
     public async getGroups(
         user: IAuthUser,
         policyId: string,
-        savepointId?: string
+        savepointIds?: string[]
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_GROUPS, { user, policyId, savepointId });
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_GROUPS, { user, policyId, savepointIds });
     }
 
     /**
