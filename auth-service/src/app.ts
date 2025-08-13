@@ -14,6 +14,7 @@ import { MeecoAuthService } from './api/meeco-service.js';
 import { ApplicationEnvironment } from './environment.js';
 import { RoleService } from './api/role-service.js';
 import { DEFAULT_MONGO } from '#constants';
+import { checkValidJwt } from './utils/index.js';
 
 Promise.all([
     Migration({
@@ -96,14 +97,18 @@ Promise.all([
                 }
             }
 
-            let { JWT_PRIVATE_KEY, JWT_PUBLIC_KEY } = await secretManager.getSecrets('secretkey/auth');
-            if (!JWT_PRIVATE_KEY || !JWT_PUBLIC_KEY) {
-                JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
-                JWT_PUBLIC_KEY = process.env.JWT_PUBLIC_KEY;
-                if (JWT_PRIVATE_KEY.length < 8 || JWT_PUBLIC_KEY.length < 8) {
+            const isValidEnvTokens = checkValidJwt(process.env.JWT_PUBLIC_KEY, process.env.JWT_PRIVATE_KEY);
+
+            if (isValidEnvTokens) {
+                await secretManager.setSecrets('secretkey/auth', { JWT_PRIVATE_KEY: process.env.JWT_PRIVATE_KEY, JWT_PUBLIC_KEY: process.env.JWT_PUBLIC_KEY });
+            } else {
+                const { JWT_PRIVATE_KEY, JWT_PUBLIC_KEY } = await secretManager.getSecrets('secretkey/auth');
+
+                const isValidSecretManagerTokens = checkValidJwt(JWT_PUBLIC_KEY, JWT_PRIVATE_KEY);
+
+                if (!isValidSecretManagerTokens) {
                     return false;
                 }
-                await secretManager.setSecrets('secretkey/auth', { JWT_PRIVATE_KEY, JWT_PUBLIC_KEY });
             }
 
             return true;
