@@ -26,7 +26,7 @@ services:
       - mongo
 
   ipfs-node:
-    image: ipfs/kubo:v0.34.1
+    image: ipfs/kubo:v0.36.0
 
   ipfs-check:
     image: ghcr.io/ipfs/ipfs-check:main-latest
