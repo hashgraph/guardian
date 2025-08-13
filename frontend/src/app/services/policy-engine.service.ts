@@ -278,20 +278,45 @@ export class PolicyEngineService {
         return this.http.get<any>(`${this.url}/${policyId}/dry-run/block/${tag}/history`);
     }
 
-    public createSavepoint(policyId: string): Observable<any> {
-        return this.http.post<any>(`${this.url}/${policyId}/savepoint/create`, null);
+    public getSavepoints(policyId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${policyId}/savepoints`);
     }
 
-    public deleteSavepoint(policyId: string): Observable<any> {
-        return this.http.post<any>(`${this.url}/${policyId}/savepoint/delete`, null);
+    public getSavepoint(policyId: string, savepointId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${policyId}/savepoints/${savepointId}`);
+    }
+
+    public createSavepoint(
+        policyId: string,
+        body: { name: string; savepointPath: string[] }
+    ): Observable<{ savepointId: string }> {
+        return this.http.post<{ savepointId: string }>(
+            `${this.url}/${policyId}/savepoints`,
+            body
+        );
+    }
+
+    public deleteSavepoints(policyId: string, savepointIds: string[]) {
+        return this.http.request<void>(
+            'DELETE',
+            `${this.url}/${policyId}/savepoints`,
+            { body: { savepointIds } }
+        );
+    }
+
+    public updateSavepoint(policyId: string, savepointId: string, body: { name: string }) {
+        return this.http.patch<void>(
+            `${this.url}/${policyId}/savepoints/${savepointId}`,
+            body
+        );
     }
 
     public restoreSavepoint(policyId: string): Observable<any> {
         return this.http.post<any>(`${this.url}/${policyId}/savepoint/restore`, null);
     }
 
-    public getSavepointState(policyId: string): Observable<any> {
-        return this.http.get<any>(`${this.url}/${policyId}/savepoint/restore`);
+    public renameSavepoint(policyId: string, savepointId: string, name: string): Observable<void> {
+        return this.http.put<void>(`${this.url}/${policyId}/savepoints/${savepointId}`, { name });
     }
 
     public loadDocuments(
@@ -369,7 +394,6 @@ export class PolicyEngineService {
 
     public getGroups(policyId: string, savepointId?: string | null): Observable<any[]> {
         if(savepointId) {
-            console.log('savepointId1', savepointId)
             return this.http.get<any>(`${this.url}/${policyId}/groups?savepointId=${savepointId}`);
         }
 
