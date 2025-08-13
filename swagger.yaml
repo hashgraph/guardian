@@ -5476,7 +5476,9 @@ paths:
           required: true
           in: query
           schema:
-            type: string
+            type: array
+            items:
+              type: string
       responses:
         '200':
           description: Successful operation.
@@ -7115,7 +7117,9 @@ paths:
           required: true
           in: query
           schema:
-            type: string
+            type: array
+            items:
+              type: string
       responses:
         '200':
           description: Virtual users.
@@ -7293,30 +7297,65 @@ paths:
       summary: .
       tags:
         - policies
-  /policies/{policyId}/savepoint/create:
+  /policies/{policyId}/savepoints:
+    get:
+      description: Returns the list of savepoints for the policy (Dry Run only).
+      operationId: PolicyApi_getSavepoints
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get dry-run savepoints.
+      tags:
+        - policies
     post:
-      description: >-
-        Create dry-run savepoint. Only users with the Standard Registry role are
-        allowed to make the request.
+      description: Creates a new savepoint for the policy (Dry Run only).
       operationId: PolicyApi_createSavepoint
       parameters:
         - name: policyId
           required: true
           in: path
-          description: Policy Id
           schema:
             example: '000000000000000000000001'
             type: string
       requestBody:
         required: true
-        description: .
+        description: '{ name: string; savepointPath: string[] }'
         content:
           application/json:
             schema:
-              type: string
+              type: object
+              properties:
+                name:
+                  type: string
+                savepointPath:
+                  type: array
+                  items:
+                    type: string
+              required:
+                - name
+                - savepointPath
       responses:
         '200':
-          description: .
+          description: Successful operation.
         '401':
           description: Unauthorized.
         '403':
@@ -7332,30 +7371,33 @@ paths:
       summary: Create dry-run savepoint.
       tags:
         - policies
-  /policies/{policyId}/savepoint/delete:
-    post:
-      description: >-
-        Delete dry-run savepoint. Only users with the Standard Registry role are
-        allowed to make the request.
-      operationId: PolicyApi_deleteSavepoint
+    delete:
+      description: Deletes the specified savepoints for the policy (Dry Run only).
+      operationId: PolicyApi_deleteSavepoints
       parameters:
         - name: policyId
           required: true
           in: path
-          description: Policy Id
           schema:
             example: '000000000000000000000001'
             type: string
       requestBody:
         required: true
-        description: .
+        description: '{ savepointIds: string[] }'
         content:
           application/json:
             schema:
-              type: string
+              type: object
+              properties:
+                savepointIds:
+                  type: array
+                  items:
+                    type: string
+              required:
+                - savepointIds
       responses:
         '200':
-          description: .
+          description: Successful operation.
         '401':
           description: Unauthorized.
         '403':
@@ -7368,26 +7410,29 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Delete dry-run savepoint.
+      summary: Delete dry-run savepoints.
       tags:
         - policies
-  /policies/{policyId}/savepoint/restore:
+  /policies/{policyId}/savepoints/{savepointId}:
     get:
-      description: >-
-        Get savepoint state. Only users with the Standard Registry role are
-        allowed to make the request.
-      operationId: PolicyApi_getSavepointState
+      description: Returns the savepoint by its id (Dry Run only).
+      operationId: PolicyApi_getSavepoint
       parameters:
         - name: policyId
           required: true
           in: path
-          description: Policy Id
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: savepointId
+          required: true
+          in: path
           schema:
             example: '000000000000000000000001'
             type: string
       responses:
         '200':
-          description: .
+          description: Successful operation.
         '401':
           description: Unauthorized.
         '403':
@@ -7400,32 +7445,28 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Get savepoint state.
+      summary: Get dry-run savepoint by id.
       tags:
         - policies
-    post:
+    put:
       description: >-
-        Restore dry-run savepoint. Only users with the Standard Registry role
-        are allowed to make the request.
-      operationId: PolicyApi_restoreSavepoint
+        Restores Dry Run state to the selected savepoint and returns its
+        metadata.
+      operationId: PolicyApi_selectSavepoint
       parameters:
         - name: policyId
           required: true
           in: path
-          description: Policy Id
           schema:
-            example: '000000000000000000000001'
             type: string
-      requestBody:
-        required: true
-        description: .
-        content:
-          application/json:
-            schema:
-              type: string
+        - name: savepointId
+          required: true
+          in: path
+          schema:
+            type: string
       responses:
         '200':
-          description: .
+          description: Successful operation.
         '401':
           description: Unauthorized.
         '403':
@@ -7438,7 +7479,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Restore dry-run savepoint.
+      summary: Apply savepoint
       tags:
         - policies
   /policies/{policyId}/dry-run/restart:
