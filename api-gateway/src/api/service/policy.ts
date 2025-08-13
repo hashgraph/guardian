@@ -3374,6 +3374,65 @@ export class PolicyApi {
     }
 
     /**
+     *  Select savepoint by id
+     */
+    @Put('/:policyId/savepoints/:savepointId')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Apply savepoint',
+        description: 'Restores Dry Run state to the selected savepoint and returns its metadata.'
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        required: true
+    })
+    @ApiParam({
+        name: 'savepointId',
+        type: String,
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.'
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async selectSavepoint(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('savepointId') savepointId: string,
+        @Req() req
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+
+        const policy = await engineService.accessPolicy(policyId, owner, 'read');
+
+        if (!PolicyHelper.isDryRunMode(policy)) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN);
+        }
+
+        const invalidedCacheTags = [
+            `${PREFIXES.POLICIES}${policyId}/navigation`,
+            `${PREFIXES.POLICIES}${policyId}/groups`
+        ];
+
+        await this.cacheService.invalidate(
+            getCacheKey([req.url, ...invalidedCacheTags], user)
+        );
+
+        return await engineService.selectSavepoint(
+            policyId,
+            savepointId,
+            owner
+        );
+    }
+
+    /**
      * Create savepoint
      */
     @Post('/:policyId/savepoints')

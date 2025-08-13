@@ -690,6 +690,27 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Select savepoint
+     * @param policyId
+     * @param savepointId
+     * @param owner
+     */
+    public async selectSavepoint(
+        policyId: string,
+        savepointId: string,
+        owner: IOwner
+    ): Promise<{ savepoint: any }> {
+        return await this.sendMessage(
+            PolicyEngineEvents.SELECT_SAVEPOINT,
+            {
+                policyId,
+                savepointId,
+                owner
+            }
+        );
+    }
+
+    /**
      * Create savepoint
      * @param policyId
      * @param owner

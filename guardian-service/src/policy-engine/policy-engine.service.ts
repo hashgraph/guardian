@@ -1987,6 +1987,47 @@ export class PolicyEngineService {
             }
         );
 
+        this.channel.getMessages<any, any>(
+            PolicyEngineEvents.SELECT_SAVEPOINT,
+            async (
+                msg: {
+                    policyId: string;
+                    savepointId: string;
+                    owner: IOwner;
+                }
+            ) => {
+                try {
+                    const { policyId, savepointId, owner } = msg;
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'update');
+
+                    if (!policy || !policy.config) {
+                        throw new Error('The policy is empty');
+                    }
+
+                    if (!PolicyHelper.isDryRunMode(policy)) {
+                        throw new Error('Policy is not in Dry Run');
+                    }
+
+                    const savepoint = await DatabaseServer.getSavepointById(policyId, savepointId);
+
+                    if (!savepoint) {
+                        throw new Error('Savepoint not found');
+                    }
+
+                    await DatabaseServer.restoreSavepointStates(policyId, savepointId);
+
+                    return new MessageResponse({
+                        savepoint
+                    });
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error);
+                }
+            }
+        );
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_SAVEPOINT,
             async (msg: { policyId: string,
                 owner: IOwner,
