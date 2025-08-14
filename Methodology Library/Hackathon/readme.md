@@ -1,8 +1,13 @@
-This folder is dedicated to new **methodologies** contributed by the hackathon participants.
+**This folder is dedicated to new methodologies contributed by the hackathon participants.**
 
-Follow this guide to submit your methodology and ensure it meets the acceptance criteria.
+If you are willing to contribute to the hackathon, please first read our official guide:[**Methodology Digitization Handbook**](https://docs.hedera.com/guardian/methodology-digitization/methodology-digitization-handbook)  
 
----
+This Handbook will help you understand:
+- Methodology structure and components
+- Digitization best practices
+- How to prepare policies and schemas for Guardian
+
+**Once you are ready with your methodology, please follow the below guide to submit it:**
 
 ## 1. Process to Raise a Pull Request (PR)
 
