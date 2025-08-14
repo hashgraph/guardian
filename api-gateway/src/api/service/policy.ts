@@ -27,6 +27,7 @@ import {
     ServiceUnavailableErrorDTO,
     TaskDTO
 } from '#middlewares';
+import {parseSavepointIdsJson} from '#helpers'
 
 async function getOldResult(user: IAuthUser): Promise<PolicyDTO[]> {
     const options: any = {};
@@ -1011,11 +1012,14 @@ export class PolicyApi {
     async getPolicyGroups(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Query('savepointId') savepointIds?: string[]
+        @Query('savepointIds') savepointIds?: string
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
-            return await engineService.getGroups(user, policyId, savepointIds);
+
+            const ids = parseSavepointIdsJson(savepointIds);
+
+            return await engineService.getGroups(user, policyId, ids);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -3097,13 +3101,15 @@ export class PolicyApi {
     async getDryRunUsers(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Query('savepointId') savepointIds?: string[]
+        @Query('savepointIds') savepointIds?: string
     ) {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
         await engineService.accessPolicy(policyId, owner, 'read');
         try {
-            return await engineService.getVirtualUsers(policyId, owner, savepointIds);
+            const ids = parseSavepointIdsJson(savepointIds);
+
+            return await engineService.getVirtualUsers(policyId, owner, ids);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

@@ -2035,7 +2035,30 @@ export class DatabaseServer extends AbstractDatabaseServer {
         if (!did) {
             return [];
         }
-        return await this.find(PolicyRolesCollection, { policyId, did }, options);
+
+        const opt: any =
+            options && typeof options === 'object' ? (options as any) : undefined;
+
+        const savepointIds: string[] | undefined =
+            Array.isArray(opt?.savepointIds) && opt.savepointIds.length > 0
+                ? opt.savepointIds
+                : undefined;
+
+        const where: any = savepointIds
+            ? {
+                policyId,
+                did,
+                $or: [
+                    { savepointId: { $in: savepointIds } },
+                    { savepointId: { $exists: false } },
+                    { savepointId: null },
+                    { savepointStep: { $exists: false } },
+                    { savepointStep: null },
+                ],
+            }
+            : { policyId, did };
+
+        return await this.find(PolicyRolesCollection, where, options);
     }
 
     /**
@@ -3304,6 +3327,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getVirtualUsers(policyId: string, savepointIds?: string[]): Promise<DryRun[]> {
         const useIds: boolean = Array.isArray(savepointIds) && savepointIds.length > 0;
+
+        console.log('useIds', useIds, savepointIds)
 
         const filter: any = {
             dryRunId: policyId,
