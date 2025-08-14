@@ -5472,13 +5472,11 @@ paths:
           schema:
             example: '000000000000000000000001'
             type: string
-        - name: savepointId
+        - name: savepointIds
           required: true
           in: query
           schema:
-            type: array
-            items:
-              type: string
+            type: string
       responses:
         '200':
           description: Successful operation.
@@ -7113,13 +7111,11 @@ paths:
           schema:
             example: '000000000000000000000001'
             type: string
-        - name: savepointId
+        - name: savepointIds
           required: true
           in: query
           schema:
-            type: array
-            items:
-              type: string
+            type: string
       responses:
         '200':
           description: Virtual users.
