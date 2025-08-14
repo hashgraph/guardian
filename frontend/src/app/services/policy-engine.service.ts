@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { MigrationConfig, PolicyAvailability, PolicyToolMetadata } from '@guardian/interfaces';
-import { Observable } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
 import { headersV2 } from '../constants';
 import { API_BASE_URL } from './api';
 
@@ -117,13 +117,15 @@ export class PolicyEngineService {
         return this.http.get<any>(`${this.url}/${policyId}/blocks`);
     }
 
-    public getBlockData<T>(blockId: string, policyId: string, savepointId?: string | null): Observable<T> {
-        console.log('savepointId2', savepointId)
-        if(savepointId) {
-            return this.http.get<any>(`${this.url}/${policyId}/blocks/${blockId}?savepointId=${savepointId}`);
+    public getBlockData<T>(blockId: string, policyId: string, savepointIds?: string[] | null): Observable<T> {
+        console.log('savepointId2', savepointIds)
+        let params = new HttpParams();
+
+        if (Array.isArray(savepointIds) && savepointIds.length > 0) {
+            params = params.set('savepointIds', JSON.stringify(savepointIds));
         }
 
-        return this.http.get<any>(`${this.url}/${policyId}/blocks/${blockId}`);
+        return this.http.get<T>(`${this.url}/${policyId}/blocks/${blockId}`, { params });
     }
 
     public getBlockDataByName(blockName: string, policyId: string): Observable<any> {
@@ -250,12 +252,15 @@ export class PolicyEngineService {
         return this.http.get<any>(`${this.url}/blocks/about`);
     }
 
-    public getVirtualUsers(policyId: string, savepointId: string | null): Observable<any[]> {
-        if(savepointId) {
-            return this.http.get<any>(`${this.url}/${policyId}/dry-run/users?savepointId=${savepointId}`);
+    public getVirtualUsers(policyId: string, savepointIds: string[] | null): Observable<any[]> {
+        let params = new HttpParams();
+
+        console.log('savepointIds', savepointIds)
+        if (Array.isArray(savepointIds) && savepointIds.length > 0) {
+            params = params.set('savepointIds', JSON.stringify(savepointIds));
         }
 
-        return this.http.get<any>(`${this.url}/${policyId}/dry-run/users`);
+        return this.http.get<any[]>(`${this.url}/${policyId}/dry-run/users`, { params });
     }
 
     public createVirtualUser(policyId: string): Observable<any> {
@@ -286,6 +291,22 @@ export class PolicyEngineService {
         return this.http.get<any>(`${this.url}/${policyId}/savepoints/${savepointId}`);
     }
 
+    /**
+     * Return full ancestor path for the given savepointId (including itself).
+     */
+    public async getSavepointPath(
+        policyId: string,
+        savepointId: string
+    ): Promise<string[]> {
+        const sp: { savepointPath?: string[] } | null =
+            await firstValueFrom(this.getSavepoint(policyId, savepointId));
+
+        const path = Array.isArray(sp?.savepointPath) ? [...sp.savepointPath] : [];
+        if (path[path.length - 1] !== savepointId) {
+            path.push(savepointId);
+        }
+        return path;
+    }
     public createSavepoint(
         policyId: string,
         body: { name: string; savepointPath: string[] }
@@ -392,12 +413,14 @@ export class PolicyEngineService {
         return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/migrate-data`, migrationConfig);
     }
 
-    public getGroups(policyId: string, savepointId?: string | null): Observable<any[]> {
-        if(savepointId) {
-            return this.http.get<any>(`${this.url}/${policyId}/groups?savepointId=${savepointId}`);
+    public getGroups(policyId: string, savepointIds: string[] | null | any): Observable<any[]> {
+        let params = new HttpParams();
+
+        if (Array.isArray(savepointIds) && savepointIds.length > 0) {
+            params = params.set('savepointIds', JSON.stringify(savepointIds));
         }
 
-        return this.http.get<any>(`${this.url}/${policyId}/groups`);
+        return this.http.get<any[]>(`${this.url}/${policyId}/groups`, { params });
     }
 
     public setGroup(policyId: string, uuid: string): Observable<any> {

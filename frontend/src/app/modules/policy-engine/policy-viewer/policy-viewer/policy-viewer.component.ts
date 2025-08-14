@@ -18,7 +18,7 @@ import { RestoreSavepointDialog, IRestoreSavepointAction } from
 import { AddSavepointDialog, AddSavepointResult } from
         'src/app/modules/policy-engine/policy-viewer/dialogs/add-savepoint-dialog/add-savepoint-dialog.component';
 import { DynamicDialogConfig } from 'primeng/dynamicdialog'
-
+import { firstValueFrom } from 'rxjs';
 
 /**
  * Component for choosing a policy and
@@ -67,6 +67,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public activeTabIndex = 0;
 
     public savepointId: string | null = null;
+    public savepointIds: string[] | null = null;
     private restoreDialogOpened: boolean = false;
     private restoreDialogShownOnce: boolean = false;
 
@@ -227,11 +228,20 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             });
     }
 
-    loadPolicyById(policyId: string, savepointId: string | null) {
-        forkJoin([
+    async loadPolicyById(policyId: string, savepointId: string | null) {
+
+        const savepointIds: string[] | undefined | any = savepointId
+            ? await this.policyEngineService.getSavepointPath(policyId, savepointId)
+            : undefined;
+
+        this.savepointIds = savepointIds
+
+        console.log('savepointIds111', savepointIds)
+
+         forkJoin([
             this.policyEngineService.policy(policyId),
             this.policyEngineService.policyBlock(policyId),
-            this.policyEngineService.getGroups(policyId, savepointId),
+            this.policyEngineService.getGroups(policyId, savepointIds),
             this.externalPoliciesService.getActionRequestsCount({ policyId })
         ]).subscribe(
             (value) => {
@@ -246,10 +256,12 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.userRole = this.policyInfo.userRole;
                 this.userGroup = this.policyInfo.userGroup?.groupLabel || this.policyInfo.userGroup?.uuid;
 
+                console.log('PolicyStatus.DRY_RUN', PolicyStatus.DRY_RUN)
+
                 if (this.policyInfo?.status === PolicyStatus.DRY_RUN
                     || this.policyInfo?.status === PolicyStatus.DEMO
                 ) {
-                    this.loadDryRunOptions(savepointId);
+                    this.loadDryRunOptions(savepointIds);
                 } else {
                     setTimeout(() => {
                         this.loading = false;
@@ -281,8 +293,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             });
     }
 
-    loadDryRunOptions(savepointId: string | null) {
-        this.policyEngineService.getVirtualUsers(this.policyInfo.id, savepointId).subscribe((value) => {
+    loadDryRunOptions(savepointIds: string[] | null) {
+        console.log('loadDryRunOptions')
+        this.policyEngineService.getVirtualUsers(this.policyInfo.id, savepointIds).subscribe((value) => {
             this.virtualUsers = value;
             setTimeout(() => {
                 this.loading = false;
@@ -546,7 +559,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     public updatePolicy() {
         forkJoin([
-            this.policyEngineService.getVirtualUsers(this.policyId, this.savepointId),
+            this.policyEngineService.getVirtualUsers(this.policyId, this.savepointIds),
             this.policyEngineService.policyBlock(this.policyId),
             this.policyEngineService.policy(this.policyId),
         ]).subscribe((value) => {
@@ -602,7 +615,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     public openAddSavepointDialog(): void {
-        if (!this.policyInfo?.id) { return; }
+        if (!this.policyInfo?.id) return;
 
         const ref = this.dialogService.open(AddSavepointDialog, {
             showHeader: false,
@@ -614,37 +627,36 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         ref.onClose.subscribe((result?: AddSavepointResult) => {
             if (!result || result.type !== 'add') return;
 
-            const name = result.name.trim();
+            const name = result.name?.trim();
             if (!name) return;
 
             this.loading = true;
 
-            const path$ = this.savepointId
-                ? this.policyEngineService.getSavepoint(this.policyId, this.savepointId).pipe(
-                    map(sp => {
-                        let path: string[] = Array.isArray(sp?.savepointPath) ? [...sp.savepointPath] : [];
-                        if (this.savepointId && path[path.length - 1] !== this.savepointId) {
-                            path = [...path, this.savepointId];
-                        }
-                        return path;
-                    }),
-                    catchError(() => of<string[]>([]))
-                )
-                : of<string[]>([]);
+            const base: string[] = Array.isArray(this.savepointIds) ? [...this.savepointIds] : [];
 
-            path$.pipe(
-                switchMap(savepointPath =>
-                    this.policyEngineService.createSavepoint(this.policyId, { name, savepointPath })
-                )
-            ).subscribe({
-                next: ({ savepointId }) => {
-                    this.savepointId = savepointId || null;
-                    this.loadPolicyById(this.policyId, this.savepointId);
-                },
-                error: () => {
-                    this.loading = false;
+            if (this.savepointId) {
+                const last = base[base.length - 1];
+                if (last !== this.savepointId) {
+                    const idx = base.lastIndexOf(this.savepointId);
+                    if (idx >= 0) {
+                        base.splice(idx + 1);
+                    } else {
+                        base.push(this.savepointId);
+                    }
                 }
-            });
+            }
+
+            this.policyEngineService
+                .createSavepoint(this.policyId, { name, savepointPath: base })
+                .subscribe({
+                    next: ({ savepointId }) => {
+
+                        this.savepointId = savepointId ?? null;
+                        this.savepointIds = [...base, ...(savepointId ? [savepointId] : [])];
+                        this.loadPolicyById(this.policyId, this.savepointId);
+                    },
+                    error: () => { this.loading = false; }
+                });
         });
     }
 
