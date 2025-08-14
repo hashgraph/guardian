@@ -27,9 +27,11 @@ export class GeoForm {
         if (this.presetDocument) {
             const type = this.presetDocument.type;
             const coordinates = this.presetDocument.coordinates;
+            const features = this.presetDocument.features;
             this.form.patchValue({
                 type,
                 coordinates,
+                features,
             }, { emitEvent: false, onlySelf: true });
 
         }

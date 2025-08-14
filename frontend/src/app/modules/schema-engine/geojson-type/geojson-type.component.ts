@@ -19,7 +19,7 @@ import { GeoJsonService } from 'src/app/services/geo-json.service';
 import { DOMParser } from 'xmldom';
 import { DialogService } from 'primeng/dynamicdialog';
 import { UploadGeoDataDialog } from '../upload-geo-data-dialog/upload-geo-data-dialog.component';
-import { FeatureCollection } from 'geojson';
+import { Feature, FeatureCollection } from 'geojson';
 import { kml } from '@tmcw/togeojson';
 
 const MAP_OPTIONS = {
@@ -261,6 +261,11 @@ export class GeojsonTypeComponent implements OnChanges {
     private lastSelectedGeometry: any;
     private lastSelectedCoordinates: any[] = [];
 
+    public geometriesList: {
+        type: GeoJsonType,
+        coordinates: any
+    }[] = [];
+
     constructor(
         private cdkRef: ChangeDetectorRef,
         private geoJsonService: GeoJsonService,
@@ -269,9 +274,16 @@ export class GeojsonTypeComponent implements OnChanges {
 
     private getValue() {
         const value = this.formModel?.getValue();
-        if (!value) {
+        if (!value || !value.type) {
+            this.geometriesList.push({
+                type: GeoJsonType.POINT,
+                coordinates: undefined
+            })
             return undefined;
         }
+
+        console.log(value);
+
         if (
             value.type === GeoJsonType.POINT ||
             value.type === GeoJsonType.LINE_STRING ||
@@ -280,7 +292,20 @@ export class GeojsonTypeComponent implements OnChanges {
             value.type === GeoJsonType.MULTI_LINE_STRING ||
             value.type === GeoJsonType.MULTI_POLYGON
         ) {
+            this.geometriesList.push({
+                type: value.type,
+                coordinates: value.coordinates
+            })
             return value;
+        } else if (value.type === GeoJsonType.FEATURE_COLLECTION && value.features?.length > 0) {
+        console.log(1);
+            value.features.forEach((feature: any) => {
+
+                this.geometriesList.push({ 
+                    type: feature.type,
+                    coordinates: feature.coordinates
+                })
+            });
         } else {
             return undefined;
         }
@@ -471,23 +496,29 @@ export class GeojsonTypeComponent implements OnChanges {
     }
 
     private updateMap(updateInput: boolean = false) {
-        const shapeFeatures: any[] = [];
-
-        shapeFeatures.push({
+        const shapeFeatures: any[] = this.geometriesList.map(item => ({
             type: 'Feature',
+            properties: {},
             geometry: {
-                type: this.type,
-                coordinates: this.parsedCoordinates,
-            },
-        });
+                type: item.type,
+                coordinates: item.coordinates && JSON.parse(item.coordinates) || [],
+            }
+        }));
+
+        console.log(shapeFeatures);
+        
+
+        if (shapeFeatures.length <= 0) {
+            return;
+        }
 
         const features = new GeoJSON({
             featureProjection: 'EPSG:3857',
         }).readFeatures({
             type: 'FeatureCollection',
-            features: [shapeFeature],
+            features: shapeFeatures,
         });
-
+        
         if (this.type == GeoJsonType.POLYGON && this.lastSelectedGeometry) {
             const coords = this.parsedCoordinates;
             const clickCoord = this.lastSelectedCoordinates;
@@ -506,10 +537,15 @@ export class GeojsonTypeComponent implements OnChanges {
         this.geoShapesSource?.addFeatures(features);
 
         if (updateInput) {
+            console.log({
+                type: 'FeatureCollection',
+                features: shapeFeatures
+            });
+            
             this.coordinates = JSON.stringify(this.parsedCoordinates, null, 4);
             this.setControlValue({
-                type: this.type,
-                coordinates: this.parsedCoordinates,
+                type: 'FeatureCollection',
+                features: shapeFeatures
             }, true);
         }
     }
@@ -591,7 +627,7 @@ export class GeojsonTypeComponent implements OnChanges {
         this.updateMap(true);
     }
 
-    public onTypeChange(dirty = true) {
+    public onTypeChange(geometry: any, dirty = true) {
         this.resetCoordinatesStructure();
 
         this.setControlValue({}, dirty);
@@ -698,14 +734,14 @@ export class GeojsonTypeComponent implements OnChanges {
         }
 
         if (this.isJSON || this.isDisabled) {
-            this.jsonInput = JSON.stringify(geometry, null, 4);
+            this.jsonInput = JSON.stringify(value, null, 4);
         }
 
         if (!this.isJSON || this.isDisabled) {
-            this.type = geometry?.type || GeoJsonType.POINT;
-            this.onTypeChange(dirty);
-            this.coordinates = JSON.stringify(geometry?.coordinates, null, 4);
-            this.coordinatesChanged(dirty);
+            this.type = value?.type || GeoJsonType.POINT;
+            this.onTypeChange(null, dirty);
+            this.coordinates = JSON.stringify(value?.coordinates, null, 4);
+            this.coordinatesChanged(null, dirty);
         }
 
         if (!this.isJSON) {
@@ -723,16 +759,23 @@ export class GeojsonTypeComponent implements OnChanges {
         }
     }
 
-    public coordinatesChanged(dirty = true) {
+    public addGeometry() {
+        this.geometriesList.push({
+            type: GeoJsonType.POINT,
+            coordinates: undefined
+        })
+    }
+
+    public coordinatesChanged(geometry: any, dirty = true) {
         try {
 
-            this.parsedCoordinates = JSON.parse(this.coordinates);
+            this.parsedCoordinates = JSON.parse(geometry.coordinates);
 
-            const parsedCoordinates = JSON.parse(this.coordinates);
-            this.setControlValue({
-                type: this.type,
-                coordinates: parsedCoordinates,
-            }, dirty);
+            // const parsedCoordinates = JSON.parse(geometry.coordinates);
+            // this.setControlValue({
+            //     type: geometry.type,
+            //     coordinates: parsedCoordinates,
+            // }, dirty);
 
             setTimeout(() => {
                 if (this.type == GeoJsonType.POINT && this.parsedCoordinates?.length == 2) {

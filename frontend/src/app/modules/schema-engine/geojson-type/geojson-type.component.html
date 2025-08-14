@@ -27,36 +27,39 @@
     </div>
 </ng-container>
 <ng-template #form>
-    <div class="form-group type-selector">
-        <!-- <label for="typeDropdown" class="form-label">Type</label> -->
-        <p-dropdown
-            id="typeDropdown"
-            [(ngModel)]="type"
-            [options]="typeOptions"
-            [disabled]="isDisabled"
-            placeholder="None"
-            class="full-width"
-            (onChange)="onTypeChange()">
-        </p-dropdown>
-        <small *ngIf="!type" class="p-error">This field is required.</small>
-    </div>
-
     <div class="map-container">
         <div class="map" #map id="map"></div>
     </div>
+    <div>
+        <div *ngFor="let geometry of geometriesList; let i = index">
+            <div class="form-group type-selector">
+                <!-- <label for="typeDropdown" class="form-label">Type</label> -->
+                <p-dropdown
+                    id="typeDropdown"
+                    [(ngModel)]="geometry.type"
+                    [options]="typeOptions"
+                    [disabled]="isDisabled"
+                    placeholder="None"
+                    class="full-width"
+                    (onChange)="onTypeChange(geometry)">
+                </p-dropdown>
+                <small *ngIf="!type" class="p-error">This field is required.</small>
+            </div>
+            <div class="form-group type-selector">
+                <label for="coordinatesInput" class="form-label coordinates-input">Coordinates:</label>
+                <textarea
+                    id="coordinatesInput"
+                    [(ngModel)]="geometry.coordinates"
+                    [placeholder]="coordinatesPlaceholder"
+                    (ngModelChange)="coordinatesChanged(geometry)"
+                    [disabled]="isDisabled"
+                    pInputTextarea
+                    required
+                    class="full-width"
+                ></textarea>
+            </div>
+        </div>
 
-    <div class="form-group type-selector">
-        <label for="coordinatesInput" class="form-label coordinates-input">Coordinates:</label>
-        <textarea
-            pInputTextarea
-            id="coordinatesInput"
-            [placeholder]="coordinatesPlaceholder"
-            required
-            [(ngModel)]="coordinates"
-            (ngModelChange)="coordinatesChanged()"
-            [disabled]="isDisabled"
-            class="full-width"
-        ></textarea>
+        <button (click)="addGeometry()">Add Geometry</button>
     </div>
-
 </ng-template>
