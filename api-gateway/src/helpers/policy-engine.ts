@@ -725,6 +725,25 @@ export class PolicyEngine extends NatsService {
         return await this.sendMessage(PolicyEngineEvents.CREATE_SAVEPOINT, { policyId, owner, savepointProps });
     }
 
+    public async updateSavepoint(
+        policyId: string,
+        savepointId: string,
+        owner: IOwner,
+        name: string
+    ) {
+        const message = {
+            policyId,
+            savepointId,
+            owner,
+            name
+        };
+
+        return  await this.sendMessage(
+            PolicyEngineEvents.UPDATE_SAVEPOINT,
+            message
+        );
+    }
+
     /**
      * Delete savepoints
      * @param policyId

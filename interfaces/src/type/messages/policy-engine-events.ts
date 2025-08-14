@@ -80,6 +80,7 @@ export enum PolicyEngineEvents {
     GET_SAVEPOINT = 'policy-engine-event-get-savepoint',
     SELECT_SAVEPOINT = 'policy-engine-event-select-savepoint',
     CREATE_SAVEPOINT = 'policy-engine-event-create-savepoint',
+    UPDATE_SAVEPOINT = 'policy-engine-event-update-savepoint',
     DELETE_SAVEPOINTS = 'policy-engine-event-delete-savepoints',
     APPROVE_REMOTE_REQUEST = 'policy-engine-approve-remote-request',
     REJECT_REMOTE_REQUEST = 'policy-engine-reject-remote-request',

@@ -3488,6 +3488,63 @@ export class PolicyApi {
     }
 
     /**
+     * Rename savepoint
+     */
+    @Patch('/:policyId/savepoints/:savepointId')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Rename dry-run savepoint.',
+        description: 'Updates the name of a Dry Run savepoint for the policy.',
+    })
+    @ApiParam({ name: 'policyId', type: String, required: true, example: Examples.DB_ID })
+    @ApiParam({ name: 'savepointId', type: String, required: true, example: Examples.DB_ID })
+    @ApiBody({
+        description: '{ name: string }',
+        schema: {
+            type: 'object',
+            properties: {
+                name: { type: 'string' }
+            },
+            required: ['name']
+        }
+    })
+    @ApiOkResponse({ description: 'Successful operation.' })
+    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async renameSavepoint(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('savepointId') savepointId: string,
+        @Body() body: { name: string },
+        @Req() req
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+        const policy = await engineService.accessPolicy(policyId, owner, 'update');
+
+        if (!PolicyHelper.isDryRunMode(policy)) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN);
+        }
+
+        if (!body?.name || !body.name.trim()) {
+            throw new HttpException('Name is required.', HttpStatus.BAD_REQUEST);
+        }
+
+        const invalidedCacheTags = [
+            `${PREFIXES.POLICIES}${policyId}/navigation`,
+            `${PREFIXES.POLICIES}${policyId}/groups`
+        ];
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
+        try {
+            return await engineService.updateSavepoint(policyId, savepointId, owner, body.name.trim());
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
      * Delete savepoints
      */
     @Delete('/:policyId/savepoints')

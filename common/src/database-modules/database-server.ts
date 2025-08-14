@@ -145,15 +145,72 @@ export class DatabaseServer extends AbstractDatabaseServer {
     /**
      * Get savepoints by policy id
      * @param policyId
+     * @param opts
      */
     public static async getSavepointsByPolicyId(
-        policyId: string
+        policyId: string,
+        opts?: { includeDeleted?: boolean }
     ): Promise<DryRunSavepoint[]> {
+        const includeDeleted: boolean = !!opts?.includeDeleted;
+
+        const where: any = includeDeleted
+            ? { policyId }
+            : {
+                policyId,
+                $or: [
+                    { isDeleted: { $exists: false } },
+                    { isDeleted: { $ne: true } }
+                ]
+            };
+
         return await new DataBaseHelper(DryRunSavepoint).find(
-            { policyId },
+            where,
             { orderBy: { createDate: 'DESC' } as any }
         );
     }
+
+    /**
+     * Set selected savepoint as current (and unset the rest for this policy)
+     * @param policyId
+     * @param savepointId
+     */
+    public static async setCurrentSavepoint(policyId: string, savepointId: string): Promise<void> {
+        const repo = new DataBaseHelper(DryRunSavepoint);
+
+        const all = await repo.find({ policyId } as any);
+
+        if (!all?.length) {
+            throw new Error('No savepoints for this policy');
+        }
+
+        let target: DryRunSavepoint | null = null;
+        const toUpdate: DryRunSavepoint[] = [];
+
+        for (const sp of all) {
+            const shouldBeCurrent = sp.id === savepointId;
+
+            if (shouldBeCurrent) {
+                if (sp.isDeleted === true) {
+                    throw new Error('Savepoint is deleted');
+                }
+                target = sp;
+            }
+
+            if (sp.isCurrent !== shouldBeCurrent) {
+                sp.isCurrent = shouldBeCurrent;
+                toUpdate.push(sp);
+            }
+        }
+
+        if (!target) {
+            throw new Error('Savepoint not found');
+        }
+
+        if (toUpdate.length > 0) {
+            await repo.saveMany(toUpdate);
+        }
+    }
+
 
     /**
      * Create savepoint
@@ -223,33 +280,269 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     *  Create Savepoint States
+     */
+    public static async createSavepointStates(policyId: string, savepointId: string): Promise<void> {
+        const blockStates = await new DataBaseHelper(BlockState).find({ policyId });
+
+        if (!blockStates?.length) {
+            return
+        }
+
+        const blockStatesSavepoint = new DataBaseHelper(BlockStateSavepoint);
+
+        const docs = blockStates
+            .filter(s => s.blockId && s.blockState != null)
+            .map(s => blockStatesSavepoint.create({
+                policyId,
+                savepointId,
+                blockId: s.blockId,
+                blockState: s.blockState,
+            }));
+
+        if (docs.length) {
+            await blockStatesSavepoint.saveMany(docs);
+        }
+    }
+
+    /**
+     *   Update savepoint name
+     */
+    public static async updateSavepointName(
+        policyId: string,
+        savepointId: string,
+        name: string
+    ): Promise<void> {
+        const trimmedName: string = (name ?? '').trim();
+
+        if (!trimmedName) {
+            throw new Error('Name is required');
+        }
+
+        const repo = new DataBaseHelper(DryRunSavepoint);
+
+        const query: any = {
+            policyId,
+            id: savepointId
+        };
+
+        const sp = await repo.findOne(query as any);
+
+        if (!sp) {
+            throw new Error('Savepoint not found');
+        }
+
+        if (sp.isDeleted === true) {
+            throw new Error('Savepoint is deleted');
+        }
+
+        sp.name = trimmedName;
+
+        await repo.save(sp);
+    }
+
+    /**
+     *   RestoreSavepointStates
+     */
+    public static async restoreSavepointStates(policyId: string, savepointId: string): Promise<void> {
+        const snaps = await new DataBaseHelper(BlockStateSavepoint)
+            .find({ policyId, savepointId }, { fields: ['blockId','blockState'] } as any);
+
+        if (!snaps?.length) return;
+
+        const blockState = new DataBaseHelper(BlockState);
+        const docs = [];
+
+        for (const s of snaps) {
+            let row = await blockState.findOne({ policyId, blockId: s.blockId });
+
+            if (row) {
+                row.blockState = s.blockState;
+            } else {
+                row = blockState.create({ policyId, blockId: s.blockId, blockState: s.blockState } as any);
+            }
+
+            docs.push(row);
+        }
+        await blockState.saveMany(docs);
+    }
+
+    /**
      * Delete savepoints (and related snapshots) and detach DryRun records
      * @param policyId
      * @param savepointIds
      */
-    public static async deleteSavepoints(policyId: string, savepointIds: string[]): Promise<void> {
-        if (!Array.isArray(savepointIds) || savepointIds.length === 0) {
+    public static async deleteSavepoints(
+        policyId: string,
+        savepointIds: string[]
+    ): Promise<{ hardDeletedIds: string[]; softMarkedIds: string[] }> {
+        const ids: string[] = Array.isArray(savepointIds)
+            ? Array.from(new Set(savepointIds.filter((v) => typeof v === 'string' && v.trim())))
+            : [];
+
+        if (ids.length === 0) {
+            return { hardDeletedIds: [], softMarkedIds: [] };
+        }
+
+        const hardDeleted: string[] = [];
+        const softMarked: string[]  = [];
+
+        for (const id of ids) {
+            const result = await this.deleteSavepointCascade(policyId, id);
+
+            if (Array.isArray(result.hardDeletedIds)) {
+                for (const x of result.hardDeletedIds) {
+                    if (!hardDeleted.includes(x)) {
+                        hardDeleted.push(x);
+                    }
+                }
+            }
+
+            if (Array.isArray(result.softMarkedIds)) {
+                for (const x of result.softMarkedIds) {
+                    if (!softMarked.includes(x)) {
+                        softMarked.push(x);
+                    }
+                }
+            }
+        }
+
+        return {
+            hardDeletedIds: hardDeleted,
+            softMarkedIds : softMarked
+        };
+    }
+
+    private static async deleteSavepointCascade(
+        policyId: string,
+        savepointId: string
+    ): Promise<{ hardDeletedIds: string[]; softMarkedIds: string[] }> {
+        const repo = new DataBaseHelper(DryRunSavepoint);
+
+        const sp = await repo.findOne({ policyId, id: savepointId } as any);
+        if (!sp) {
+            return { hardDeletedIds: [], softMarkedIds: [] };
+        }
+
+        const hasChildren: boolean = await this.hasAnyChild(policyId, savepointId);
+
+        if (hasChildren) {
+            if (sp.isDeleted !== true) {
+                sp.isDeleted = true;
+                await repo.save(sp);
+            }
+            return {
+                hardDeletedIds: [],
+                softMarkedIds : [savepointId]
+            };
+        }
+
+        const hard: string[] = [];
+        const soft: string[] = [];
+
+        await this.hardDeleteSavepointRows(policyId, [savepointId]);
+        hard.push(savepointId);
+
+        let currentParentId: string | null = sp.parentSavepointId ?? null;
+
+        while (currentParentId) {
+            const parent = await repo.findOne({ policyId, id: currentParentId } as any);
+            if (!parent) {
+                break;
+            }
+
+            const parentHasChildren: boolean = await this.hasAnyChild(policyId, currentParentId);
+            const parentSoftDeleted: boolean = parent.isDeleted === true;
+
+            const canHardDeleteParent: boolean = !parentHasChildren && parentSoftDeleted;
+
+            if (canHardDeleteParent) {
+                const nextParentId: string | null = parent.parentSavepointId ?? null;
+
+                await this.hardDeleteSavepointRows(policyId, [currentParentId]);
+                hard.push(currentParentId);
+
+                currentParentId = nextParentId;
+                continue;
+            }
+
+            break;
+        }
+
+        return {
+            hardDeletedIds: hard,
+            softMarkedIds : soft
+        };
+    }
+
+    private static async hasAnyChild(policyId: string, parentId: string): Promise<boolean> {
+        const repo = new DataBaseHelper(DryRunSavepoint);
+
+        const query: any = {
+            policyId,
+            parentSavepointId: parentId
+        };
+
+        const count = await repo.count(query);
+        return count > 0;
+    }
+
+    private static async hardDeleteSavepointRows(policyId: string, savepointIds: string[]): Promise<void> {
+        const unique = [...new Set(savepointIds)];
+        if (unique.length === 0) {
             return;
         }
 
-        const idsFilter = { $in: savepointIds } as any;
+        const repo = new DataBaseHelper(DryRunSavepoint);
 
-        await new DataBaseHelper(DryRunSavepoint).delete({ policyId, id: idsFilter } as any);
+        const filter: any = {
+            policyId,
+            id: { $in: unique } as any
+        };
 
-        await new DataBaseHelper(BlockStateSavepoint).delete({ policyId, savepointId: idsFilter } as any);
+        await repo.delete(filter);
+    }
+
+    public static async removeBlockStateSnapshots(policyId: string, savepointIds: string[]): Promise<void> {
+        const unique = [...new Set(savepointIds)];
+        if (unique.length === 0) {
+            return;
+        }
+
+        const filter: any = {
+            policyId,
+            savepointId: { $in: unique } as any
+        };
+
+        const repo = new DataBaseHelper(BlockStateSavepoint);
+        await repo.delete(filter);
+    }
+
+    public static async detachDryRunBySavepoints(policyId: string, savepointIds: string[]): Promise<void> {
+        const unique = [...new Set(savepointIds)];
+        if (unique.length === 0) {
+            return;
+        }
 
         const dryRun = new DataBaseHelper(DryRun);
+
+        const filter: any = {
+            policyId,
+            savepointId: { $in: unique } as any
+        };
+
         const limit = { limit: DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE };
-        const filter = { policyId, savepointId: idsFilter } as any;
 
-        const amount = await dryRun.count(filter);
-        const naturalCount = Math.floor(amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
+        const total = await dryRun.count(filter);
+        const batches = Math.floor(total / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
 
-        for (let i = 0; i < naturalCount; i++) {
+        for (let i = 0; i < batches; i++) {
             const batch = await dryRun.find(filter, limit);
+
             for (const row of batch) {
                 row.savepointId = null;
             }
+
             await dryRun.update(batch);
         }
 
@@ -258,10 +551,10 @@ export class DatabaseServer extends AbstractDatabaseServer {
             for (const row of rest) {
                 row.savepointId = null;
             }
+
             await dryRun.update(rest);
         }
     }
-
 
     /**
      * Get schemas
@@ -566,76 +859,6 @@ export class DatabaseServer extends AbstractDatabaseServer {
         filters: FilterQuery<PolicyLabelDocument>
     ): Promise<PolicyLabelDocument | null> {
         return await new DataBaseHelper(PolicyLabelDocument).findOne(filters);
-    }
-
-    /**
-     *  Create Savepoint States
-     */
-    public static async createSavepointStates(policyId: string, savepointId: string): Promise<void> {
-        const blockStates = await new DataBaseHelper(BlockState).find({ policyId });
-
-        if (!blockStates?.length) {
-            return
-        }
-
-        const blockStatesSavepoint = new DataBaseHelper(BlockStateSavepoint);
-
-        const docs = blockStates
-            .filter(s => s.blockId && s.blockState != null)
-            .map(s => blockStatesSavepoint.create({
-                policyId,
-                savepointId,
-                blockId: s.blockId,
-                blockState: s.blockState,
-            }));
-
-        if (docs.length) {
-            await blockStatesSavepoint.saveMany(docs);
-        }
-    }
-
-    /**
-     *   RestoreSavepointStates
-     */
-    public static async restoreSavepointStates(policyId: string, savepointId: string): Promise<void> {
-        const snaps = await new DataBaseHelper(BlockStateSavepoint)
-            .find({ policyId, savepointId }, { fields: ['blockId','blockState'] } as any);
-
-        if (!snaps?.length) return;
-
-        const blockState = new DataBaseHelper(BlockState);
-        const docs = [];
-
-        for (const s of snaps) {
-            let row = await blockState.findOne({ policyId, blockId: s.blockId });
-
-            if (row) {
-                row.blockState = s.blockState;
-            } else {
-                row = blockState.create({ policyId, blockId: s.blockId, blockState: s.blockState } as any);
-            }
-
-            docs.push(row);
-        }
-        await blockState.saveMany(docs);
-    }
-
-    /**
-     *  Delete Savepoint States (bulk)
-     */
-    public static async deleteSavepointStates(policyId: string, savepointIds: string[]): Promise<void> {
-        if (!Array.isArray(savepointIds) || !savepointIds.length) return;
-
-        const ids = [...new Set(savepointIds.filter((id) => typeof id === 'string' && id.trim()))];
-
-        if (!ids.length) {
-            return;
-        }
-
-        await new DataBaseHelper(BlockStateSavepoint).delete({
-            policyId,
-            savepointId: { $in: ids } as any,
-        });
     }
 
     /**
@@ -3327,8 +3550,6 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async getVirtualUsers(policyId: string, savepointIds?: string[]): Promise<DryRun[]> {
         const useIds: boolean = Array.isArray(savepointIds) && savepointIds.length > 0;
-
-        console.log('useIds', useIds, savepointIds)
 
         const filter: any = {
             dryRunId: policyId,

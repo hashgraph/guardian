@@ -7,6 +7,8 @@ import { BaseEntity } from '../models/base-entity.js';
 @Index({ name: 'sp_policy', properties: ['policyId'] })
 @Index({ name: 'sp_parent', properties: ['parentSavepointId'] })
 @Index({ name: 'sp_policy_name', properties: ['policyId', 'name'] })
+@Index({ name: 'sp_policy_deleted', properties: ['policyId', 'isDeleted'] })
+@Index({ name: 'sp_policy_current',  properties: ['policyId', 'isCurrent'] })
 export class DryRunSavepoint extends BaseEntity {
     @Property()
     policyId!: string;
@@ -19,6 +21,12 @@ export class DryRunSavepoint extends BaseEntity {
 
     @Property({ type: 'array' })
     savepointPath: string[] = [];
+
+    @Property({ type: Boolean, default: false })
+    isDeleted: boolean = false;
+
+    @Property({ type: Boolean, default: false })
+    isCurrent: boolean = false;
 
     @BeforeCreate()
     _ensurePathWithId() {
