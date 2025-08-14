@@ -51,3 +51,4 @@ export * from './external-policy-status.type.js';
 export * from './location.type.js';
 export * from './policy-action.type.js';
 export * from './script-language-option.type.js';
+export * from './integration-data.type.js';

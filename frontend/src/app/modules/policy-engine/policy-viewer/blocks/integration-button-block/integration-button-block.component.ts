@@ -5,6 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ToastrService } from 'ngx-toastr';
 import {DialogService} from 'primeng/dynamicdialog';
 import {VCViewerDialog} from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
+import { IntegrationDataTypes } from '@guardian/interfaces';
 
 /**
  * Component for display block of 'Integration Button Block' type.
@@ -129,8 +130,8 @@ export class IntegrationButtonBlockComponent implements OnInit {
                 ],
                 additionalOptionsData: [
                     {
-                        type: 'JSON',
-                        data: JSON.stringify(data, null, 4),
+                        type: data.type || IntegrationDataTypes.JSON,
+                        data: data.type === IntegrationDataTypes.JSON || data.type === IntegrationDataTypes.CSV ? JSON.stringify(data.data, null, 4) : data.data,
                         optionValue: 'integration'
                     }
                 ]

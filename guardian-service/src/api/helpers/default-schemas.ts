@@ -30,8 +30,8 @@ export async function setDefaultSchema() {
         throw new Error(`You need to fill ${SchemaEntity.MINT_TOKEN} field in system-schemas.json file`);
     }
 
-    if (!map.hasOwnProperty(SchemaEntity.INTEGRATION_DATA)) {
-        throw new Error(`You need to fill ${SchemaEntity.INTEGRATION_DATA} field in system-schemas.json file`);
+    if (!map.hasOwnProperty(SchemaEntity.INTEGRATION_DATA_V2)) {
+        throw new Error(`You need to fill ${SchemaEntity.INTEGRATION_DATA_V2} field in system-schemas.json file`);
     }
 
     if (!map.hasOwnProperty(SchemaEntity.POLICY)) {
@@ -74,7 +74,7 @@ export async function setDefaultSchema() {
 
     await fn(map[SchemaEntity.MINT_NFTOKEN]);
     await fn(map[SchemaEntity.MINT_TOKEN]);
-    await fn(map[SchemaEntity.INTEGRATION_DATA]);
+    await fn(map[SchemaEntity.INTEGRATION_DATA_V2]);
     await fn(map[SchemaEntity.RETIRE_TOKEN]);
     await fn(map[SchemaEntity.POLICY]);
     await fn(map[SchemaEntity.STANDARD_REGISTRY]);

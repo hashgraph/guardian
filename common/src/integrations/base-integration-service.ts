@@ -1,3 +1,4 @@
+import { IntegrationDataTypes, ParseTypes } from '@guardian/interfaces';
 import { AxiosRequestConfig } from 'axios';
 
 export type ExecuteParams = Record<string, string | number | boolean | undefined>;
@@ -6,12 +7,15 @@ export type Param = {
   name: string;
   value: string;
   required?: boolean;
+  parseType?: ParseTypes;
 }
 
 export interface MethodDefinition {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
   endpoint: string;
   description: string;
+  type?: IntegrationDataTypes;
+  download?: boolean;
   parameters?: {
     path?: Record<string, Param>;
     query?: Record<string, Param>;
@@ -22,7 +26,7 @@ export interface MethodDefinition {
 export type MethodMap = Record<string, MethodDefinition>;
 
 export abstract class BaseIntegrationService {
-  abstract executeRequest<T = any>(methodName: string, params?: ExecuteParams): Promise<{ data: T; fromCsv?: boolean; }>;
+  abstract executeRequest<T = any, P = any>(methodName: string, params?: ExecuteParams): Promise<{ data: T; type?: IntegrationDataTypes; parsedData?: P; }>;
 
   /**
    * Optional: subclasses can override to define their own base URL
@@ -40,6 +44,7 @@ export abstract class BaseIntegrationService {
     params: ExecuteParams = {},
     fullUrl = false,
     paramNameForSkipReplace = '',
+    additionalParams = {},
   ): AxiosRequestConfig {
     if (!method) {
       throw new Error(`Unsupported method`);
@@ -73,16 +78,22 @@ export abstract class BaseIntegrationService {
       });
     }
 
-    const bodyParams: Record<string, string> = {};
+    const bodyParams: Record<string, any> = {};
 
     if (method.parameters?.body) {
       Object.keys(method.parameters.body).forEach((body) => {
         if (params[body]) {
-          bodyParams[body] = `${params[body]}`;
+          if (method.parameters.body[body]?.parseType === ParseTypes.NUMBER) {
+            bodyParams[body] = Number(params[body]);
+          } else if (method.parameters.body[body]?.parseType === ParseTypes.JSON) {
+            bodyParams[body] = JSON.parse(params[body] as string);
+          } else {
+            bodyParams[body] = params[body];
+          }
         }
 
         if (method.parameters.body[body].required && !params[body]) {
-          throw new Error(`Missing required path parameter: "${body}"`);
+          throw new Error(`Missing required body parameter: "${body}"`);
         }
       });
     }
@@ -94,7 +105,10 @@ export abstract class BaseIntegrationService {
     return {
       url: fullUrl && baseUrl ? `${baseUrl}${endpoint}` : endpoint,
       method: method.method,
-      params: queryParams,
+      params: {
+        ...queryParams,
+        ...additionalParams,
+      },
       data: method.method !== 'GET' ? bodyParams : undefined,
     };
   }
