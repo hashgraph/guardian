@@ -813,6 +813,13 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
             : entitiesToUpdate;
     }
 
+    public async updateManyRaw(filter: unknown, update: unknown): Promise<number> {
+        const repo = this._em.getRepository(this.entityClass);
+        const res = await repo.getCollection().updateMany(filter, update);
+
+        return (res?.modifiedCount ?? res?.result?.nModified ?? 0);
+    }
+
     @CreateRequestContext(() => DataBaseHelper.orm)
     public async updateMany(
         entities: T[],

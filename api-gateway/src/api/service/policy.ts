@@ -3379,6 +3379,39 @@ export class PolicyApi {
         }
     }
 
+    @Get('/:policyId/savepoints/count')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Get dry-run savepoints count.',
+        description: 'Returns the number of savepoints for the policy (Dry Run only).',
+    })
+    @ApiParam({ name: 'policyId', type: String, required: true, example: Examples.DB_ID })
+    @ApiQuery({ name: 'includeDeleted', required: false, type: Boolean })
+    @ApiOkResponse({ description: 'Successful operation.' })
+    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getSavepointsCount(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Query('includeDeleted') includeDeleted?: string
+    ) {
+        const engineService = new PolicyEngine();
+        const owner = new EntityOwner(user);
+        const policy = await engineService.accessPolicy(policyId, owner, 'read');
+
+        if (!PolicyHelper.isDryRunMode(policy)) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN);
+        }
+
+        try {
+            const incDel = includeDeleted === 'true' || includeDeleted === '1';
+            return await engineService.getSavepointsCount(policyId, owner, incDel);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
     /**
      *  Select savepoint by id
      */
@@ -3571,7 +3604,7 @@ export class PolicyApi {
     async deleteSavepoints(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: { savepointIds: string[] },
+        @Body() body: { savepointIds: string[], skipCurrentSavepointGuard: boolean },
         @Req() req
     ) {
         const engineService = new PolicyEngine();
@@ -3586,7 +3619,7 @@ export class PolicyApi {
         await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
         try {
-            return await engineService.deleteSavepoints(policyId, owner, body.savepointIds);
+            return await engineService.deleteSavepoints(policyId, owner, body.savepointIds, body.skipCurrentSavepointGuard);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

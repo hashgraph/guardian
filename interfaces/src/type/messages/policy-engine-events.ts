@@ -78,6 +78,7 @@ export enum PolicyEngineEvents {
     ACCESS_POLICY = 'policy-engine-event-access-policy',
     GET_SAVEPOINTS = 'policy-engine-event-get-savepoints',
     GET_SAVEPOINT = 'policy-engine-event-get-savepoint',
+    GET_SAVEPOINTS_COUNT = 'policy-engine-event-get-savepoints-count',
     SELECT_SAVEPOINT = 'policy-engine-event-select-savepoint',
     CREATE_SAVEPOINT = 'policy-engine-event-create-savepoint',
     UPDATE_SAVEPOINT = 'policy-engine-event-update-savepoint',

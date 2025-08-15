@@ -672,7 +672,6 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         owner: IOwner
     ) {
-        console.log('policyId', policyId)
         return await this.sendMessage(PolicyEngineEvents.GET_SAVEPOINTS, { policyId, owner });
     }
 
@@ -688,6 +687,23 @@ export class PolicyEngine extends NatsService {
         owner: IOwner
     ) {
         return await this.sendMessage(PolicyEngineEvents.GET_SAVEPOINT, { policyId, owner, savepointId });
+    }
+
+    /**
+     * Get savepoints count
+     * @param policyId
+     * @param owner
+     * @param includeDeleted
+     */
+    public async getSavepointsCount(
+        policyId: string,
+        owner: IOwner,
+        includeDeleted?: boolean
+    ): Promise<{ count: number }> {
+        return await this.sendMessage(
+            PolicyEngineEvents.GET_SAVEPOINTS_COUNT,
+            { policyId, owner, includeDeleted }
+        );
     }
 
     /**
@@ -749,13 +765,15 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      * @param savepointIds
      * @param owner
+     * @param skipCurrentSavepointGuard
      */
     public async deleteSavepoints(
         policyId: string,
         owner: IOwner,
         savepointIds: string[],
+        skipCurrentSavepointGuard: boolean
     ) {
-        return await this.sendMessage(PolicyEngineEvents.DELETE_SAVEPOINTS, { policyId, owner, savepointIds });
+        return await this.sendMessage(PolicyEngineEvents.DELETE_SAVEPOINTS, { policyId, owner, savepointIds, skipCurrentSavepointGuard });
     }
 
     /**

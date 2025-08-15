@@ -1989,6 +1989,35 @@ export class PolicyEngineService {
         );
 
         this.channel.getMessages<any, any>(
+            PolicyEngineEvents.GET_SAVEPOINTS_COUNT,
+            async (msg: { policyId: string; owner: IOwner; includeDeleted?: boolean }) => {
+                try {
+                    const { policyId, owner, includeDeleted } = msg;
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+
+                    if (!policy || !policy.config) {
+                        throw new Error('The policy is empty');
+                    }
+                    if (!PolicyHelper.isDryRunMode(policy)) {
+                        throw new Error('Policy is not in Dry Run');
+                    }
+
+                    const count = await DatabaseServer.getSavepointsCount(
+                        policyId,
+                        { includeDeleted: !!includeDeleted }
+                    );
+
+                    return new MessageResponse({ count });
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error);
+                }
+            }
+        );
+
+        this.channel.getMessages<any, any>(
             PolicyEngineEvents.SELECT_SAVEPOINT,
             async (msg: { policyId: string; savepointId: string; owner: IOwner }) => {
                 try {
@@ -2044,6 +2073,12 @@ export class PolicyEngineService {
                         throw new Error(`Policy is not in Dry Run`);
                     }
 
+                    const count = await DatabaseServer.getSavepointsCount(policyId, { includeDeleted: true });
+                    if (!count) {
+                        await DatabaseServer.nullifyInitialDryRunSavepointIds();
+                    }
+
+
                     const savepointId = await DatabaseServer.createSavepoint(policyId, savepointProps);
                     await DatabaseServer.createSavepointStates(policyId, savepointId);
 
@@ -2097,9 +2132,9 @@ export class PolicyEngineService {
 
         this.channel.getMessages<any, any>(
             PolicyEngineEvents.DELETE_SAVEPOINTS,
-            async (msg: { policyId: string; owner: IOwner; savepointIds: string[] }) => {
+            async (msg: { policyId: string; owner: IOwner; savepointIds: string[], skipCurrentSavepointGuard?: boolean }) => {
                 try {
-                    const { policyId, owner, savepointIds } = msg;
+                    const { policyId, owner, savepointIds, skipCurrentSavepointGuard } = msg;
 
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'update');
@@ -2114,32 +2149,28 @@ export class PolicyEngineService {
                         throw new Error('Policy is not in Dry Run');
                     }
 
-                    const result = await DatabaseServer.deleteSavepoints(policyId, savepointIds);
+                    const count = await DatabaseServer.getSavepointsCount(policyId, { includeDeleted: true });
 
-                    const hardIds: string[] = Array.isArray(result?.hardDeletedIds) ? result.hardDeletedIds : [];
-                    const softIds: string[]  = Array.isArray(result?.softMarkedIds)  ? result.softMarkedIds  : [];
-
-                    if (hardIds.length > 0) {
-                        await DatabaseServer.removeBlockStateSnapshots(policyId, hardIds);
+                    if (count > 1) {
+                        await DatabaseServer.ensureCurrentNotInList(policyId, savepointIds, !!skipCurrentSavepointGuard);
                     }
 
-                    if (hardIds.length > 0) {
-                        await DatabaseServer.detachDryRunBySavepoints(policyId, hardIds);
+                    const deletedIds = await DatabaseServer.deleteSavepoints(policyId, savepointIds);
+
+                    if (deletedIds.length) {
+                        await DatabaseServer.removeBlockStateSnapshots(policyId, deletedIds);
+                        await DatabaseServer.deleteDryRunBySavepoints(policyId, deletedIds);
                     }
 
-                    const payload = {
-                        hardDeletedIds: hardIds,
-                        softMarkedIds: softIds
-                    };
-
-                    return new MessageResponse(payload);
+                    return new MessageResponse({
+                        hardDeletedIds: deletedIds,
+                    });
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                     return new MessageError(error);
                 }
             }
         );
-
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_VIRTUAL_DOCUMENTS,
             async (msg: {
