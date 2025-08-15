@@ -210,6 +210,8 @@ A clear and concise description of what you expected to happen.
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4507](https://github.com/hashgraph/guardian/issues/4507)
 
+### ---November---
+
 **Graphical View of formula linked definitions**
 
 * Add the capability to display dependencies and relationships of data feeding into Formula definitions as a diagram similar to 'schema tree view' or 'statistics'.
@@ -229,6 +231,44 @@ Additionally the runs need to be secured as a certified artifact which can be un
 Make the recording of the runs for published policies executions 'on' by default (which can be disabled by the user), with an option to publish the final 'runs' artifact on IPFS which is also 'on' by default.
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3008](https://github.com/hashgraph/guardian/issues/3008)
+
+#### Formula-linked definitions enhancements
+
+1. "Name" column in formula records table should be wider. Now it's unreadable
+2. After creating a formula record I need to find it in a list to edit. It's quite difficult according to point 1
+3. On the top of a formula edit page I see button "Back to policies" but button redirects me to list of formulas
+4. I cannot move a formula item when I'm scrolling the page. Drag-n-drop works only in visible part of screen and it's impossible to add const/variable and move it to the top of a long list
+5. I cannot re-use constants which are defined in another formula in relationships. It makes me to define same constants in different formula records
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4952](https://github.com/hashgraph/guardian/issues/4952)
+
+### ---December---
+
+#### Guardian as a multi-workflow engine for independent data streams
+
+Guardian should be able to inject machine-readable product data and process them simultaneously in multiple independent Policy processing streams, each with an independent ruleset, however with the possibility to coordinate and cross reference the artifacts produced by these streams, all while maintaining and referencing the single original instance of the 'master' data.
+
+1. Extend and adapt the topics architecture to support multi-workflow processing of the master data (from a topic)
+2. Develop a multi-streams Guardian policy coordination mechanisms which were in a single instance and across different Guardian instances, which include
+   * trigger workflow execution based on an event such as NFT issuance, data events.
+   * pause and wait for the availability of specific data
+3. Introduce additional (to token issuance) Guardian policy actions to enable 'final' stages of policy streams executions, such as:
+   * payment execution
+   * certificate (invoice, bill of lading, etc) issuance
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/5018](https://github.com/hashgraph/guardian/issues/5018)
+
+#### Tamper-resistant Policy and Module export/import
+
+* Introduce the signing of Policies and Policy Modules such that on import their authenticity is evaluated - which proves that they have not been tampered with.
+* In an indicator into the Policy grid (or other appropriate place) which would show whether the Policies (and/or their elements such as schemas, modules etc) that have been imported (whether from the file system or IPFS) have been modified from their original state.
+* Introduce the ability to compare all Policies which have been 'created' in the particular instance by import with their original 'just after import' state.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/1887](https://github.com/hashgraph/guardian/issues/1887)
+
+#### Data Entry Updatability
+
+An ability to make schema data that is non-material to calculations updatable, while not changing the token issuance in flight.
 {% endtab %}
 
 {% tab title="Previous Releases" %}
@@ -630,3 +670,4 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/3573](https://githu
 Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/policies/python-implementation-in-guardian](https://docs.hedera.com/guardian/guardian/standard-registry/policies/python-implementation-in-guardian)
 {% endtab %}
 {% endtabs %}
+
