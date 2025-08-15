@@ -1,6 +1,7 @@
 **This folder is dedicated to new methodologies contributed by the hackathon participants.**
 
-If you are willing to contribute to the hackathon, please first read our official guide:[**Methodology Digitization Handbook**](https://docs.hedera.com/guardian/methodology-digitization/methodology-digitization-handbook)  
+We strongly recommend reading the developed to incorporate best practices working with carbon standards and project developers: [**Methodology Digitization Handbook**](https://docs.hedera.com/guardian/methodology-digitization/methodology-digitization-handbook) 
+ 
 
 This Handbook will help you understand:
 - Methodology structure and components
