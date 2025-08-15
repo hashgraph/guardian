@@ -1,7 +1,8 @@
-import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property } from '@mikro-orm/core';
+import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, Entity, OnLoad, Property } from '@mikro-orm/core';
 import { ObjectId } from 'mongodb'
 import { BaseEntity } from '../models/index.js';
 import { DataBaseHelper } from '../helpers/index.js';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 @Entity()
 export class DryRunFiles extends BaseEntity {
@@ -24,77 +25,54 @@ export class DryRunFiles extends BaseEntity {
     @Property({ nullable: true })
     fileId: ObjectId
 
-    /**
-     * old file id
-     */
-    @Property({ persist: false, nullable: true })
-    _fileId?: ObjectId;
-
-    /**
-     * Set defaults
-     */
     @BeforeCreate()
-    async setDefaults() {
-        if (this.file) {
-            this.fileId = await this._createFile(this.file, 'DryRunFiles');
-            delete this.file;
-        }
+    async beforeCreate() {
+        await new Promise<void>((resolve, reject) => {
+            const file = this.file;
+            try {
+                if (this.file) {
+                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                        GenerateUUIDv4()
+                    );
+
+                    this.fileId = fileStream.id
+
+                    fileStream.write(file);
+                    delete this.file;
+                    fileStream.end(() => resolve());
+                } else {
+                    resolve();
+                }
+            } catch (error) {
+                reject(error)
+            }
+        })
+
     }
 
-    /**
-     * Load File
-     */
+    @AfterCreate()
     @OnLoad()
     @AfterUpdate()
-    @AfterCreate()
-    async loadFiles() {
+    async loadDocument() {
         if (this.fileId) {
-            const buffer = await this._loadFile(this.fileId);
-            this.file = buffer;
-        }
-    }
-
-    /**
-     * Update document
-     */
-    @BeforeUpdate()
-    async updateFiles() {
-        if (this.file) {
-            const fileId = await this._createFile(this.file, 'DryRunFiles');
-            if (fileId) {
-                this._fileId = this.fileId;
-                this.fileId = fileId;
+            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
+                this.fileId
+            );
+            const bufferArray = [];
+            for await (const data of fileStream) {
+                bufferArray.push(data);
             }
-            delete this.file;
+            this.file = Buffer.concat(bufferArray);
         }
     }
 
-    /**
-     * Delete File
-     */
-    @AfterUpdate()
-    postUpdateFiles() {
-        if (this._fileId) {
-            DataBaseHelper.gridFS
-                .delete(this._fileId)
-                .catch((reason) => {
-                    console.error(`AfterUpdate: DryRunFiles, ${this._id}, _fileId`)
-                    console.error(reason)
-                });
-            delete this._fileId;
-        }
-    }
-
-    /**
-     * Delete context
-     */
     @AfterDelete()
-    deleteFiles() {
+    deleteDocument() {
         if (this.fileId) {
             DataBaseHelper.gridFS
                 .delete(this.fileId)
                 .catch((reason) => {
-                    console.error(`AfterDelete: DryRunFiles, ${this._id}, fileId`)
+                    console.error(`AfterDelete: DryRunFiles, ${this._id}, documentFileId`)
                     console.error(reason)
                 });
         }

@@ -1,6 +1,8 @@
 import { ApproveStatus, DocumentSignature, DocumentStatus, GenerateUUIDv4, GroupAccessType, GroupRelationshipType, SchemaEntity } from '@guardian/interfaces';
 import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, Index, OnLoad, Property } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
+import ObjGet from 'lodash.get';
+import ObjSet from 'lodash.set';
 import { DataBaseHelper } from '../helpers/index.js';
 import { BaseEntity } from '../models/index.js';
 
@@ -39,7 +41,7 @@ export class DryRun extends BaseEntity {
      * Savepoint
      * @type {boolean}
      */
-    @Property({ nullable: true })
+    @Property({nullable: true})
     savepoint?: boolean;
 
     /**
@@ -739,28 +741,10 @@ export class DryRun extends BaseEntity {
     processDate?: Date;
 
     /**
-     * old file id
-     */
-    @Property({ persist: false, nullable: true })
-    _documentFileId?: ObjectId;
-
-    /**
-     * old file id
-     */
-    @Property({ persist: false, nullable: true })
-    _contextFileId?: ObjectId;
-
-    /**
-     * old file id
-     */
-    @Property({ persist: false, nullable: true })
-    _configFileId?: ObjectId;
-
-    /**
-     * Set defaults
+     * Default document values
      */
     @BeforeCreate()
-    async setDefaults() {
+    setDefaults() {
         this.option = this.option || {};
         this.option.status = this.option.status || ApproveStatus.NEW;
         this.status = this.status || DocumentStatus.NEW;
@@ -773,116 +757,150 @@ export class DryRun extends BaseEntity {
         this.active = this.active || false;
         this.hederaStatus = this.hederaStatus || DocumentStatus.NEW;
         this.signature = this.signature || DocumentSignature.NEW;
-
-        if (this.document) {
-            const document = JSON.stringify(this.document);
-            this.documentFileId = await this._createFile(document, 'DryRun');
-            this.document = this._createFieldCache(this.document, this.documentFields);
-            if (!this.document) {
-                delete this.document;
-            }
-        }
-        if (this.context) {
-            const context = JSON.stringify(this.context);
-            this.contextFileId = await this._createFile(context, 'DryRun');
-            delete this.context;
-        }
-        if (this.config) {
-            const config = JSON.stringify(this.config);
-            this.configFileId = await this._createFile(config, 'DryRun');
-            delete this.config;
-        }
     }
 
     /**
-     * Load File
+     * Create document
      */
-    @OnLoad()
-    @AfterUpdate()
-    @AfterCreate()
-    async loadFiles() {
-        if (this.documentFileId) {
-            const buffer = await this._loadFile(this.documentFileId);
-            this.document = JSON.parse(buffer.toString());
-        }
-        if (this.contextFileId) {
-            const buffer = await this._loadFile(this.contextFileId);
-            this.context = JSON.parse(buffer.toString());
-        }
-        if (this.configFileId) {
-            const buffer = await this._loadFile(this.configFileId);
-            this.config = JSON.parse(buffer.toString());
-        }
+    @BeforeCreate()
+    async createDocument() {
+        await new Promise<void>((resolve, reject) => {
+            try {
+                if (this.document) {
+                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                        GenerateUUIDv4()
+                    );
+                    this.documentFileId = fileStream.id;
+                    fileStream.write(JSON.stringify(this.document));
+                    if (this.documentFields) {
+                        const newDocument: any = {};
+                        for (const field of this.documentFields) {
+                            const fieldValue = ObjGet(this.document, field)
+                            if (
+                                (typeof fieldValue === 'string' &&
+                                    fieldValue.length <
+                                    (+process.env
+                                        .DOCUMENT_CACHE_FIELD_LIMIT ||
+                                        100)) ||
+                                typeof fieldValue === 'number'
+                            ) {
+                                ObjSet(newDocument, field, fieldValue);
+                            }
+                        }
+                        this.document = newDocument;
+                    } else {
+                        delete this.document;
+                    }
+                    fileStream.end(() => resolve());
+                } else {
+                    resolve();
+                }
+            } catch (error) {
+                reject(error)
+            }
+        });
     }
 
     /**
      * Update document
      */
     @BeforeUpdate()
-    async updateFiles() {
+    async updateDocument() {
         if (this.document) {
-            const document = JSON.stringify(this.document);
-            const documentFileId = await this._createFile(document, 'DryRun');
-            if (documentFileId) {
-                this._documentFileId = this.documentFileId;
-                this.documentFileId = documentFileId;
+            if (this.documentFileId) {
+                DataBaseHelper.gridFS
+                    .delete(this.documentFileId)
+                    .catch(console.error);
             }
-            this.document = this._createFieldCache(this.document, this.documentFields);
-            if (!this.document) {
-                delete this.document;
-            }
-        }
-        if (this.context) {
-            const context = JSON.stringify(this.context);
-            const contextFileId = await this._createFile(context, 'DryRun');
-            if (contextFileId) {
-                this._contextFileId = this.contextFileId;
-                this.contextFileId = contextFileId;
-            }
-            delete this.context;
-        }
-        if (this.config) {
-            const config = JSON.stringify(this.config);
-            const configFileId = await this._createFile(config, 'DryRun');
-            if (configFileId) {
-                this._configFileId = this.configFileId;
-                this.configFileId = configFileId;
-            }
-            delete this.config;
+            await this.createDocument();
         }
     }
 
     /**
-     * Delete File
+     * Load document
      */
+    @OnLoad()
     @AfterUpdate()
-    postUpdateFiles() {
-        if (this._documentFileId) {
-            DataBaseHelper.gridFS
-                .delete(this._documentFileId)
-                .catch((reason) => {
-                    console.error(`AfterUpdate: DryRun, ${this._id}, _documentFileId`)
-                    console.error(reason)
-                });
-            delete this._documentFileId;
+    @AfterCreate()
+    async loadDocument() {
+        if (this.documentFileId) {
+            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
+                this.documentFileId
+            );
+            const bufferArray = [];
+            for await (const data of fileStream) {
+                bufferArray.push(data);
+            }
+            const buffer = Buffer.concat(bufferArray);
+            this.document = JSON.parse(buffer.toString());
         }
-        if (this._contextFileId) {
+    }
+
+    /**
+     * Delete document
+     */
+    @AfterDelete()
+    deleteDocument() {
+        if (this.documentFileId) {
             DataBaseHelper.gridFS
-                .delete(this._contextFileId)
-                .catch((reason) => {
-                    console.error(`AfterUpdate: DryRun, ${this._id}, _contextFileId`)
-                    console.error(reason)
-                });
-            delete this._contextFileId;
+                .delete(this.documentFileId)
+                .catch(console.error);
         }
-        if (this._configFileId) {
-            DataBaseHelper.gridFS
-                .delete(this._configFileId)
-                .catch((reason) => {
-                    console.error(`AfterUpdate: DryRun, ${this._id}, _configFileId`)
-                    console.error(reason)
-                });
-            delete this._configFileId;
+    }
+
+    /**
+     * Create context
+     */
+    @BeforeCreate()
+    async createContext() {
+        await new Promise<void>((resolve, reject) => {
+            try {
+                if (this.context) {
+                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                        GenerateUUIDv4()
+                    );
+                    this.contextFileId = fileStream.id;
+                    fileStream.write(JSON.stringify(this.context));
+                    fileStream.end(() => resolve());
+                } else {
+                    resolve();
+                }
+            } catch (error) {
+                reject(error)
+            }
+        });
+    }
+
+    /**
+     * Update context
+     */
+    @BeforeUpdate()
+    async updateContext() {
+        if (this.context) {
+            if (this.contextFileId) {
+                DataBaseHelper.gridFS
+                    .delete(this.contextFileId)
+                    .catch(console.error);
+            }
+            await this.createContext();
+        }
+    }
+
+    /**
+     * Load context
+     */
+    @OnLoad()
+    async loadContext() {
+        if (this.contextFileId && !this.context) {
+            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
+                this.contextFileId
+            );
+            const bufferArray = [];
+            for await (const data of fileStream) {
+                bufferArray.push(data);
+            }
+            const buffer = Buffer.concat(bufferArray);
+            this.context = JSON.parse(buffer.toString());
         }
     }
 
@@ -890,30 +908,79 @@ export class DryRun extends BaseEntity {
      * Delete context
      */
     @AfterDelete()
-    deleteFiles() {
-        if (this.documentFileId) {
-            DataBaseHelper.gridFS
-                .delete(this.documentFileId)
-                .catch((reason) => {
-                    console.error(`AfterDelete: DryRun, ${this._id}, documentFileId`)
-                    console.error(reason)
-                });
-        }
+    deleteContext() {
         if (this.contextFileId) {
             DataBaseHelper.gridFS
                 .delete(this.contextFileId)
-                .catch((reason) => {
-                    console.error(`AfterDelete: DryRun, ${this._id}, contextFileId`)
-                    console.error(reason)
-                });
+                .catch(console.error);
         }
+    }
+
+    /**
+     * Create config
+     */
+    @BeforeCreate()
+    async createConfig() {
+        await new Promise<void>((resolve, reject) => {
+            try {
+                if (this.config) {
+                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                        GenerateUUIDv4()
+                    );
+                    this.configFileId = fileStream.id;
+                    fileStream.write(JSON.stringify(this.config));
+                    fileStream.end(() => resolve());
+                } else {
+                    resolve();
+                }
+            } catch (error) {
+                reject(error)
+            }
+        });
+    }
+
+    /**
+     * Update config
+     */
+    @BeforeUpdate()
+    async updateConfig() {
+        if (this.config) {
+            if (this.configFileId) {
+                DataBaseHelper.gridFS
+                    .delete(this.configFileId)
+                    .catch(console.error);
+            }
+            await this.createConfig();
+        }
+    }
+
+    /**
+     * Load config
+     */
+    @OnLoad()
+    async loadConfig() {
+        if (this.configFileId && !this.config) {
+            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
+                this.configFileId
+            );
+            const bufferArray = [];
+            for await (const data of fileStream) {
+                bufferArray.push(data);
+            }
+            const buffer = Buffer.concat(bufferArray);
+            this.config = JSON.parse(buffer.toString());
+        }
+    }
+
+    /**
+     * Delete context
+     */
+    @AfterDelete()
+    deleteConfig() {
         if (this.configFileId) {
             DataBaseHelper.gridFS
                 .delete(this.configFileId)
-                .catch((reason) => {
-                    console.error(`AfterDelete: DryRun, ${this._id}, configFileId`)
-                    console.error(reason)
-                });
+                .catch(console.error);
         }
     }
 }
