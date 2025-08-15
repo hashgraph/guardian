@@ -304,7 +304,7 @@ export class PolicyRequestsComponent implements OnInit {
             width: '640px',
             styleClass: 'guardian-dialog',
             data: {
-                header: 'Delete key',
+                header: 'Approve request',
                 text: `Are you sure want to approve request?`,
                 buttons: [{
                     name: 'Close',
@@ -335,7 +335,7 @@ export class PolicyRequestsComponent implements OnInit {
             width: '640px',
             styleClass: 'guardian-dialog',
             data: {
-                header: 'Delete key',
+                header: 'Reject request',
                 text: `Are you sure want to reject request?`,
                 buttons: [{
                     name: 'Close',
@@ -366,7 +366,7 @@ export class PolicyRequestsComponent implements OnInit {
             width: '640px',
             styleClass: 'guardian-dialog',
             data: {
-                header: 'Delete key',
+                header: 'Cancel request',
                 text: `Are you sure want to cancel request?`,
                 buttons: [{
                     name: 'Close',
