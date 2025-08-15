@@ -2,6 +2,7 @@ import {
     ApproveStatus,
     DocumentSignature,
     DocumentStatus,
+    GenerateUUIDv4,
     IVC,
     IVCDocument,
 } from '@guardian/interfaces';
@@ -19,6 +20,8 @@ import {
 import { RestoreEntity } from '../models/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers/index.js';
+import ObjGet from 'lodash.get';
+import ObjSet from 'lodash.set';
 import { DeleteCache } from './delete-cache.js';
 
 /**
@@ -202,47 +205,61 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     documentFields?: string[];
 
     /**
-     * old file id
-     */
-    @Property({ persist: false, nullable: true })
-    _documentFileId?: ObjectId;
-
-    /**
-     * old file id
-     */
-    @Property({ persist: false, nullable: true })
-    _encryptedDocumentFileId?: ObjectId;
-
-    /**
      * Document defaults
      */
     @BeforeCreate()
-    async setDefaults() {
+    setDefaults() {
         this.hederaStatus = this.hederaStatus || DocumentStatus.NEW;
         this.signature = this.signature || DocumentSignature.NEW;
         this.option = this.option || {};
         this.option.status = this.option.status || ApproveStatus.NEW;
-
-        if (this.document) {
-            const document = JSON.stringify(this.document);
-            this.documentFileId = await this._createFile(document, 'VcDocument');
-            this.document = this._createFieldCache(this.document, this.documentFields);
-            if (!this.document) {
-                delete this.document;
-            }
-            this._updateDocHash(document);
-        } else {
-            this._updateDocHash('');
-        }
-        if (this.encryptedDocument) {
-            this.encryptedDocumentFileId = await this._createFile(this.encryptedDocument, 'VcDocument');
-            delete this.encryptedDocument;
-        }
-
-        this._updatePropHash(this.createProp());
     }
 
-    private createProp(): any {
+    private _createDocument(field: string, document: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            try {
+                const fileStream = DataBaseHelper.gridFS.openUploadStream(GenerateUUIDv4());
+                this[field] = fileStream.id;
+                fileStream.write(document);
+                fileStream.end(() => resolve());
+            } catch (error) {
+                reject(error)
+            }
+        });
+    }
+
+    private async _loadDocument(fileId: ObjectId): Promise<string> {
+        const fileStream = DataBaseHelper.gridFS.openDownloadStream(fileId);
+        const bufferArray = [];
+        for await (const data of fileStream) {
+            bufferArray.push(data);
+        }
+        const buffer = Buffer.concat(bufferArray);
+        return buffer.toString();
+    }
+
+    private _createFieldCache(fields?: string[]): any {
+        if (fields) {
+            const newDocument: any = {};
+            for (const field of fields) {
+                const fieldValue = ObjGet(this.document, field)
+                if (
+                    typeof fieldValue === 'number' ||
+                    (
+                        typeof fieldValue === 'string' &&
+                        fieldValue.length < (+process.env.DOCUMENT_CACHE_FIELD_LIMIT || 100)
+                    )
+                ) {
+                    ObjSet(newDocument, field, fieldValue);
+                }
+            }
+            return newDocument;
+        } else {
+            return null;
+        }
+    }
+
+    private _createProp(): any {
         const prop: any = {};
         prop.accounts = this.accounts;
         prop.assignedTo = this.assignedTo;
@@ -269,73 +286,67 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     }
 
     /**
-     * Load document
+     * Create document
      */
-    @OnLoad()
-    @AfterUpdate()
-    @AfterCreate()
-    async loadFiles() {
-        if (this.documentFileId) {
-            const buffer = await this._loadFile(this.documentFileId)
-            this.document = JSON.parse(buffer.toString());
+    @BeforeCreate()
+    async createDocument() {
+        if (this.document) {
+            const document = JSON.stringify(this.document);
+            await this._createDocument('documentFileId', document);
+            this.document = this._createFieldCache(this.documentFields);
+            if (!this.document) {
+                delete this.document;
+            }
+            this._updateDocHash(document);
+        } else {
+            this._updateDocHash('');
         }
-        if (this.encryptedDocumentFileId) {
-            const buffer = await this._loadFile(this.encryptedDocumentFileId)
-            this.encryptedDocument = buffer.toString();
+        if (this.encryptedDocument) {
+            await this._createDocument('encryptedDocumentFileId', this.encryptedDocument);
+            delete this.encryptedDocument;
         }
+
+        this._updatePropHash(this._createProp());
     }
 
     /**
      * Update document
      */
     @BeforeUpdate()
-    async updateFiles() {
-        if (this.document) {
-            const document = JSON.stringify(this.document);
-            const documentFileId = await this._createFile(document, 'VcDocument');
-            if (documentFileId) {
-                this._documentFileId = this.documentFileId;
-                this.documentFileId = documentFileId;
-            }
-
-            this.document = this._createFieldCache(this.document, this.documentFields);
-            if (!this.document) {
-                delete this.document;
-            }
-            this._updateDocHash(document);
+    async updateDocument() {
+        if (this.document && this.documentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.documentFileId)
+                .catch((reason) => {
+                    console.error(`BeforeUpdate: VcDocument, ${this._id}, documentFileId`)
+                    console.error(reason)
+                });
         }
-        if (this.encryptedDocument) {
-            const encryptedDocumentFileId = await this._createFile(this.encryptedDocument, 'VcDocument');
-            if (encryptedDocumentFileId) {
-                this._encryptedDocumentFileId = this.encryptedDocumentFileId;
-                this.encryptedDocumentFileId = encryptedDocumentFileId;
-            }
-            delete this.encryptedDocument;
+        if (this.encryptedDocument && this.encryptedDocumentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.encryptedDocumentFileId)
+                .catch((reason) => {
+                    console.error(`BeforeUpdate: VcDocument, ${this._id}, encryptedDocumentFileId`)
+                    console.error(reason)
+                });
         }
+        await this.createDocument();
     }
 
     /**
-     * Delete File
+     * Load document
      */
+    @OnLoad()
     @AfterUpdate()
-    postUpdateFiles() {
-        if (this._documentFileId) {
-            DataBaseHelper.gridFS
-                .delete(this._documentFileId)
-                .catch((reason) => {
-                    console.error(`AfterUpdate: VcDocument, ${this._id}, _documentFileId`)
-                    console.error(reason)
-                });
-            delete this._documentFileId;
+    @AfterCreate()
+    async loadDocument() {
+        if (this.documentFileId) {
+            const buffer = await this._loadDocument(this.documentFileId)
+            this.document = JSON.parse(buffer);
         }
-        if (this._encryptedDocumentFileId) {
-            DataBaseHelper.gridFS
-                .delete(this._encryptedDocumentFileId)
-                .catch((reason) => {
-                    console.error(`AfterUpdate: VcDocument, ${this._id}, _encryptedDocumentFileId`)
-                    console.error(reason)
-                });
-            delete this._encryptedDocumentFileId;
+        if (this.encryptedDocumentFileId) {
+            const buffer = await this._loadDocument(this.encryptedDocumentFileId)
+            this.encryptedDocument = buffer;
         }
     }
 
@@ -343,7 +354,7 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
      * Delete document
      */
     @AfterDelete()
-    deleteFiles() {
+    deleteDocument() {
         if (this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)

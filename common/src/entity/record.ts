@@ -1,5 +1,6 @@
 import { BaseEntity } from '../models/index.js';
-import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property } from '@mikro-orm/core';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { AfterDelete, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers/index.js';
 
@@ -69,65 +70,58 @@ export class Record extends BaseEntity {
     documentFileId?: ObjectId;
 
     /**
-     * old file id
-     */
-    @Property({ persist: false, nullable: true })
-    _documentFileId?: ObjectId;
-
-    /**
-     * Set defaults
+     * Create document
      */
     @BeforeCreate()
-    async setDefaults() {
-        if (this.document) {
-            const document = JSON.stringify(this.document);
-            this.documentFileId = await this._createFile(document, 'Record');
-            delete this.document;
-        }
-    }
-
-    /**
-     * Load File
-     */
-    @OnLoad()
-    @AfterUpdate()
-    @AfterCreate()
-    async loadFiles() {
-        if (this.documentFileId) {
-            const buffer = await this._loadFile(this.documentFileId);
-            this.document = JSON.parse(buffer.toString());
-        }
+    async createDocument() {
+        await new Promise<void>((resolve, reject) => {
+            try {
+                if (this.document) {
+                    const uuid = GenerateUUIDv4();
+                    const fileStream = DataBaseHelper.gridFS.openUploadStream(uuid);
+                    this.documentFileId = fileStream.id;
+                    fileStream.write(JSON.stringify(this.document));
+                    fileStream.end(() => resolve());
+                } else {
+                    resolve();
+                }
+            } catch (error) {
+                reject(error)
+            }
+        });
     }
 
     /**
      * Update document
      */
     @BeforeUpdate()
-    async updateFiles() {
+    async updateDocument() {
         if (this.document) {
-            const document = JSON.stringify(this.document);
-            const documentFileId = await this._createFile(document, 'Record');
-            if (documentFileId) {
-                this._documentFileId = this.documentFileId;
-                this.documentFileId = documentFileId;
+            if (this.documentFileId) {
+                DataBaseHelper.gridFS
+                    .delete(this.documentFileId)
+                    .catch((reason) => {
+                        console.error(`BeforeUpdate: Record, ${this._id}, documentFileId`)
+                        console.error(reason)
+                    });
             }
-            delete this.document;
+            await this.createDocument();
         }
     }
 
     /**
-     * Delete File
+     * Load document
      */
-    @AfterUpdate()
-    postUpdateFiles() {
-        if (this._documentFileId) {
-            DataBaseHelper.gridFS
-                .delete(this._documentFileId)
-                .catch((reason) => {
-                    console.error(`AfterUpdate: Record, ${this._id}, _documentFileId`)
-                    console.error(reason)
-                });
-            delete this._documentFileId;
+    @OnLoad()
+    async loadDocument() {
+        if (this.documentFileId && !this.document) {
+            const fileStream = DataBaseHelper.gridFS.openDownloadStream(this.documentFileId);
+            const bufferArray = [];
+            for await (const data of fileStream) {
+                bufferArray.push(data);
+            }
+            const buffer = Buffer.concat(bufferArray);
+            this.document = JSON.parse(buffer.toString());
         }
     }
 
@@ -135,7 +129,7 @@ export class Record extends BaseEntity {
      * Delete context
      */
     @AfterDelete()
-    deleteFiles() {
+    deleteDocument() {
         if (this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)

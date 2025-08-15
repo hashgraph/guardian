@@ -1,6 +1,7 @@
 import {
     DocumentSignature,
     DocumentStatus,
+    GenerateUUIDv4,
     IVC,
 } from '@guardian/interfaces';
 import {
@@ -17,6 +18,8 @@ import {
 import { BaseEntity } from '../models/index.js';
 import { DataBaseHelper } from '../helpers/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
+import ObjGet from 'lodash.get';
+import ObjSet from 'lodash.set';
 
 /**
  * Documents for aggregate collection
@@ -186,79 +189,90 @@ export class AggregateVC extends BaseEntity {
     sourceDocumentId?: ObjectId;
 
     /**
-     * old file id
-     */
-    @Property({ persist: false, nullable: true })
-    _documentFileId?: ObjectId;
-
-    /**
-     * Set defaults
+     * Create document
      */
     @BeforeCreate()
-    async setDefaults() {
-        if (this.document) {
-            const document = JSON.stringify(this.document);
-            this.documentFileId = await this._createFile(document, 'AggregateVC');
-            this.document = this._createFieldCache(this.document, this.documentFields);
-            if (!this.document) {
-                delete this.document;
+    async createDocument() {
+        await new Promise<void>((resolve, reject) => {
+            try {
+                if (this.document) {
+                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                        GenerateUUIDv4()
+                    );
+                    this.documentFileId = fileStream.id;
+                    fileStream.write(JSON.stringify(this.document));
+                    if (this.documentFields) {
+                        const newDocument: any = {};
+                        for (const field of this.documentFields) {
+                            const fieldValue = ObjGet(this.document, field)
+                            if (
+                                (typeof fieldValue === 'string' &&
+                                    fieldValue.length <
+                                    (+process.env
+                                        .DOCUMENT_CACHE_FIELD_LIMIT ||
+                                        100)) ||
+                                typeof fieldValue === 'number'
+                            ) {
+                                ObjSet(newDocument, field, fieldValue);
+                            }
+                        }
+                        this.document = newDocument;
+                    } else {
+                        delete this.document;
+                    }
+                    fileStream.end(() => resolve());
+                } else {
+                    resolve();
+                }
+            } catch (error) {
+                reject(error)
             }
-        }
-    }
-
-    /**
-     * Load File
-     */
-    @OnLoad()
-    @AfterUpdate()
-    @AfterCreate()
-    async loadFiles() {
-        if (this.documentFileId) {
-            const buffer = await this._loadFile(this.documentFileId);
-            this.document = JSON.parse(buffer.toString());
-        }
+        });
     }
 
     /**
      * Update document
      */
     @BeforeUpdate()
-    async updateFiles() {
+    async updateDocument() {
         if (this.document) {
-            const document = JSON.stringify(this.document);
-            const documentFileId = await this._createFile(document, 'AggregateVC');
-            if (documentFileId) {
-                this._documentFileId = this.documentFileId;
-                this.documentFileId = documentFileId;
+            if (this.documentFileId) {
+                DataBaseHelper.gridFS
+                    .delete(this.documentFileId)
+                    .catch((reason) => {
+                        console.error(`BeforeUpdate: AggregateVC, ${this._id}, documentFileId`)
+                        console.error(reason)
+                    });
             }
-            this.document = this._createFieldCache(this.document, this.documentFields);
-            if (!this.document) {
-                delete this.document;
-            }
+            await this.createDocument();
         }
     }
 
     /**
-     * Delete File
+     * Load document
      */
+    @OnLoad()
     @AfterUpdate()
-    postUpdateFiles() {
-        if (this._documentFileId) {
-            DataBaseHelper.gridFS
-                .delete(this._documentFileId)
-                .catch((reason) => {
-                    console.error(`AfterUpdate: AggregateVC, ${this._id}, _documentFileId`)
-                    console.error(reason)
-                });
-            delete this._documentFileId;
+    @AfterCreate()
+    async loadDocument() {
+        if (this.documentFileId) {
+            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
+                this.documentFileId
+            );
+            const bufferArray = [];
+            for await (const data of fileStream) {
+                bufferArray.push(data);
+            }
+            const buffer = Buffer.concat(bufferArray);
+            this.document = JSON.parse(buffer.toString());
         }
     }
 
     /**
-     * Delete context
+     * Delete document
      */
     @AfterDelete()
-    deleteFiles() {
+    deleteDocument() {
         if (this.documentFileId) {
             DataBaseHelper.gridFS
                 .delete(this.documentFileId)
