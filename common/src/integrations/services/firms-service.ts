@@ -65,7 +65,7 @@ export class FIRMSService extends BaseIntegrationService {
       };
     } catch (err) {
       console.error(err);
-      throw err;
+      throw new Error('The firm is not working right now. Please try again later');
     }
   }
 

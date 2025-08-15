@@ -86,7 +86,7 @@ export abstract class BaseIntegrationService {
           if (method.parameters.body[body]?.parseType === ParseTypes.NUMBER) {
             bodyParams[body] = Number(params[body]);
           } else if (method.parameters.body[body]?.parseType === ParseTypes.JSON) {
-            bodyParams[body] = JSON.parse(params[body] as string);
+            bodyParams[body] = params[body] ? JSON.parse(params[body] as string) : '';
           } else {
             bodyParams[body] = params[body];
           }
