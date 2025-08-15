@@ -2016,6 +2016,7 @@ export class PolicyEngineService {
                     }
 
                     await DatabaseServer.restoreSavepointStates(policyId, savepointId);
+                    await DatabaseServer.removeDryRunWithEmptySavepoint(policyId)
                     await DatabaseServer.setCurrentSavepoint(policyId, savepointId);
 
                     const updated = await DatabaseServer.getSavepointById(policyId, savepointId);

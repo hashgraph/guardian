@@ -387,24 +387,18 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
             ],
             [MAP_DOCUMENT_AGGREGATION_FILTERS.DRY_RUN_SAVEPOINT]: [
                 {
-                    $match: Array.isArray(savepointIds) && savepointIds.length > 0
-                        ? {
-                            $or: [
-                                { savepointId: { $in: savepointIds } },
-                                { savepointId: { $exists: false } },
-                                { savepointId: null },
-                                { savepointId: '' }
-                            ]
-                        }
-                        : {
-                            $or: [
-                                { savepointId: { $exists: false } },
-                                { savepointId: null },
-                                { savepointId: '' }
-                            ]
-                        }
+                    $match: {
+                        $or: [
+                            ...(savepointIds
+                                ? [{ savepointId: { $in: savepointIds } }]
+                                : []),
+                            { savepointId: { $exists: false } },
+                            { savepointId: null },
+                            { savepointId: '' }
+                        ]
+                    }
                 }
-            ],
+            ]
         };
 
         aggregation[aggregateMethod](...filters[nameFilter]);

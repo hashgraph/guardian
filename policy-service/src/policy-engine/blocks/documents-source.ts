@@ -73,7 +73,7 @@ export class InterfaceDocumentsSource {
 
         const enableCommonSorting =
             !!ref.options?.uiMetaData?.enableSorting ||
-            !!(savepointIds && savepointIds.length > 0);
+            !!savepointIds
 
         const sourceAddons = fields
             ?.filter((field) => field.bindGroup)
@@ -167,10 +167,12 @@ export class InterfaceDocumentsSource {
             queryParams = {};
         }
 
-        const { itemsPerPage, page, size, filterByUUID, sortDirection, sortField, useStrict, savepointIds, ...filterIds } = queryParams;
+        const { itemsPerPage, page, size, filterByUUID, sortDirection, sortField, useStrict, savepointIds: rawSavepointIds, ...filterIds } = queryParams;
+
+        const savepointIds = typeof rawSavepointIds === 'string' ? JSON.parse(rawSavepointIds) : rawSavepointIds;
 
         if (this.state?.[user.id]) {
-            if (Array.isArray(savepointIds) && savepointIds.length > 0) {
+            if (savepointIds) {
                 (this.state[user.id] as any).__savepointIds = savepointIds;
             } else if ((this.state[user.id] as any).__savepointIds) {
                 delete (this.state[user.id] as any).__savepointIds;
@@ -233,8 +235,8 @@ export class InterfaceDocumentsSource {
             return addon.blockType === 'historyAddon';
         }) as IPolicyAddonBlock;
 
-        const enableCommonSorting = ref.options.uiMetaData.enableSorting || (sortDirection && sortField) ||
-            (Array.isArray(savepointIds) && savepointIds.length > 0);
+        const enableCommonSorting = ref.options.uiMetaData.enableSorting || (sortDirection && sortField) || savepointIds
+
         let sortState = this.state[user.id] || {};
         if (sortDirection && sortField) {
             sortState = {
@@ -344,7 +346,7 @@ export class InterfaceDocumentsSource {
 
         const aggregation = [...filtersAndDataType.filters] as unknown[];
 
-        if (Array.isArray(savepointIds) && savepointIds.length > 0) {
+        if (savepointIds) {
             ref.databaseServer.getDocumentAggregationFilters({
                 aggregation,
                 aggregateMethod: 'unshift',

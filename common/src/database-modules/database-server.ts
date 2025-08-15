@@ -211,6 +211,17 @@ export class DatabaseServer extends AbstractDatabaseServer {
         }
     }
 
+    public static async removeDryRunWithEmptySavepoint(policyId: string): Promise<void> {
+        const filter: any = {
+            dryRunId: policyId,
+            $or: [
+                { savepointId: { $exists: false } },
+                { savepointId: '' }
+            ]
+        };
+
+        await new DataBaseHelper(DryRun).delete(filter);
+    }
 
     /**
      * Create savepoint
@@ -2262,10 +2273,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         const opt: any =
             options && typeof options === 'object' ? (options as any) : undefined;
 
-        const savepointIds: string[] | undefined =
-            Array.isArray(opt?.savepointIds) && opt.savepointIds.length > 0
-                ? opt.savepointIds
-                : undefined;
+        const savepointIds: string[] | undefined = opt?.savepointIds
 
         const where: any = savepointIds
             ? {
@@ -3549,12 +3557,10 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @virtual
      */
     public static async getVirtualUsers(policyId: string, savepointIds?: string[]): Promise<DryRun[]> {
-        const useIds: boolean = Array.isArray(savepointIds) && savepointIds.length > 0;
-
         const filter: any = {
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers',
-            $or: useIds
+            $or: savepointIds
                 ? [
                     { savepointId: { $in: [...savepointIds, null, '' ] } },
                     { savepointId: { $exists: false } }
