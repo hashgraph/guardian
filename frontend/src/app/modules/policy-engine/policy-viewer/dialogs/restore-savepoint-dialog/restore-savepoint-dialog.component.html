@@ -24,7 +24,7 @@
             class="row"
             *ngFor="let item of items; trackBy: trackById"
             [attr.active]="item.id === currentSavepointId ? true : null">
-            <!-- name -->
+
             <div class="col name" [title]="item.name">
                 <ng-container *ngIf="editingId !== item.id; else editBlock">
                     {{ item.name }}
@@ -34,14 +34,11 @@
                 </ng-template>
             </div>
 
-            <!-- date -->
             <div class="col date">
                 {{ item.createDate | date: 'dd MMM, HH:mm' }}
             </div>
 
-            <!-- actions -->
             <div class="col actions">
-                <!-- режим редактирования -->
                 <ng-container *ngIf="editingId === item.id; else viewActions">
                     <button
                         class="icon-btn"
@@ -64,7 +61,6 @@
                     </button>
                 </ng-container>
 
-                <!-- обычный режим -->
                 <ng-template #viewActions>
                     <button
                         class="icon-btn"

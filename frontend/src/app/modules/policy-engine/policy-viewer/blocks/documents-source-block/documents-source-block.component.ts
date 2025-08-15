@@ -209,7 +209,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
 
     async getBindBlock(blockTag: any) {
         return new Promise<any>(async (resolve, reject) => {
-            this.policyEngineService.getBlockDataByName(blockTag, this.policyId).subscribe((data: any) => {
+            this.policyEngineService.getBlockDataByName(blockTag, this.policyId, this.savepointIds).subscribe((data: any) => {
                 resolve(data);
             }, (e) => {
                 resolve(null);

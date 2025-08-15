@@ -66,8 +66,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     private destroy$: Subject<boolean> = new Subject<boolean>();
     public activeTabIndex = 0;
 
-    public savepointId: string | null = null;
-    public savepointIds: string[] | null = null;
+    public currentSavepoint: any = null;
     private restoreDialogOpened: boolean = false;
     private restoreDialogShownOnce: boolean = false;
 
@@ -103,6 +102,13 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     @ViewChild('recordController')
     public set recordController(value: RecordControllerComponent | undefined) {
         this._recordController = value;
+    }
+
+    public get savepointId(): string | null {
+        return this.currentSavepoint?.id;
+    }
+    public get savepointIds(): string[] | null {
+        return this.currentSavepoint?.savepointPath;
     }
 
     private setType(document: any) {
@@ -217,7 +223,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.isConfirmed = !!(profile && profile.confirmed);
                 this.role = profile ? profile.role : null;
                 if (this.isConfirmed) {
-                    this.loadPolicyById(this.policyId, this.savepointId);
+                    this.loadPolicyById(this.policyId);
                 } else {
                     setTimeout(() => {
                         this.loading = false;
@@ -228,20 +234,11 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             });
     }
 
-    async loadPolicyById(policyId: string, savepointId: string | null) {
-
-        const savepointIds: string[] | undefined | any = savepointId
-            ? await this.policyEngineService.getSavepointPath(policyId, savepointId)
-            : undefined;
-
-        this.savepointIds = savepointIds
-
-        console.log('savepointIds111', savepointIds)
-
-         forkJoin([
+    async loadPolicyById(policyId: string) {
+        forkJoin([
             this.policyEngineService.policy(policyId),
             this.policyEngineService.policyBlock(policyId),
-            this.policyEngineService.getGroups(policyId, savepointIds),
+            this.policyEngineService.getGroups(policyId, this.savepointIds),
             this.externalPoliciesService.getActionRequestsCount({ policyId })
         ]).subscribe(
             (value) => {
@@ -256,12 +253,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.userRole = this.policyInfo.userRole;
                 this.userGroup = this.policyInfo.userGroup?.groupLabel || this.policyInfo.userGroup?.uuid;
 
-                console.log('PolicyStatus.DRY_RUN', PolicyStatus.DRY_RUN)
-
                 if (this.policyInfo?.status === PolicyStatus.DRY_RUN
                     || this.policyInfo?.status === PolicyStatus.DEMO
                 ) {
-                    this.loadDryRunOptions(savepointIds);
+                    this.loadDryRunOptions();
                 } else {
                     setTimeout(() => {
                         this.loading = false;
@@ -282,8 +277,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                             }
                         })
                     })
-                // this.getSavepointState();
-
                 this.openInitRestoreSavepointDialog();
 
                 this.newRequestsExist = count.requestsCount > 0;
@@ -293,9 +286,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             });
     }
 
-    loadDryRunOptions(savepointIds: string[] | null) {
-        console.log('loadDryRunOptions')
-        this.policyEngineService.getVirtualUsers(this.policyInfo.id, savepointIds).subscribe((value) => {
+    loadDryRunOptions() {
+        this.policyEngineService.getVirtualUsers(this.policyInfo.id, this.savepointIds).subscribe((value) => {
             this.virtualUsers = value;
             setTimeout(() => {
                 this.loading = false;
@@ -332,7 +324,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 () => {
                     this.policy = null;
                     this.policyInfo = null;
-                    this.loadPolicyById(this.policyId, this.savepointId);
+                    this.loadPolicyById(this.policyId);
                 }, (e) => {
                     this.loading = false;
                 });
@@ -364,7 +356,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     this.policy = null;
                     this.policyInfo = null;
                     this.isMultipleGroups = false;
-                    this.loadPolicyById(this.policyId, this.savepointId);
+                    this.loadPolicyById(this.policyId);
                 }, (e) => {
                     this.loading = false;
                 });
@@ -382,28 +374,18 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     //     );
     // }
 
-    // public deleteSavepoint() {
+    // public restoreSavepoint() {
     //     this.loading = true;
-    //     this.policyEngineService.deleteSavepoint(this.policyInfo.id).subscribe(() => {
-    //         this.loadPolicyById(this.policyId, this.savepointId);
+    //     this.policyEngineService.restoreSavepoint(this.policyInfo.id).subscribe(() => {
+    //         this.policy = null;
+    //         this.policyInfo = null;
+    //         this.isMultipleGroups = false;
+    //         this.loadPolicyById(this.policyId);
     //     }, (e) => {
     //         this.loading = false;
     //     }
     //     );
     // }
-
-    public restoreSavepoint() {
-        this.loading = true;
-        this.policyEngineService.restoreSavepoint(this.policyInfo.id).subscribe(() => {
-            this.policy = null;
-            this.policyInfo = null;
-            this.isMultipleGroups = false;
-            this.loadPolicyById(this.policyId, this.savepointId);
-        }, (e) => {
-            this.loading = false;
-        }
-        );
-    }
 
     restartDryRun() {
         this.loading = true;
@@ -412,7 +394,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.policy = null;
                 this.policyInfo = null;
                 this.isMultipleGroups = false;
-                this.loadPolicyById(this.policyId, this.savepointId);
+                this.loadPolicyById(this.policyId);
             }, (e) => {
                 this.loading = false;
             });
@@ -615,8 +597,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     public openAddSavepointDialog(): void {
-        if (!this.policyInfo?.id) return;
-
         const ref = this.dialogService.open(AddSavepointDialog, {
             showHeader: false,
             closable: false,
@@ -632,7 +612,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
             this.loading = true;
 
-            const base: string[] = Array.isArray(this.savepointIds) ? [...this.savepointIds] : [];
+            const base: string[] = [...(this.savepointIds ?? [])];
 
             if (this.savepointId) {
                 const last = base[base.length - 1];
@@ -649,11 +629,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             this.policyEngineService
                 .createSavepoint(this.policyId, { name, savepointPath: base })
                 .subscribe({
-                    next: ({ savepointId }) => {
-
-                        this.savepointId = savepointId ?? null;
-                        this.savepointIds = [...base, ...(savepointId ? [savepointId] : [])];
-                        this.loadPolicyById(this.policyId, this.savepointId);
+                    next: ({ savepoint }) => {
+                        this.currentSavepoint = savepoint
+                        this.loadPolicyById(this.policyId);
                     },
                     error: () => { this.loading = false; }
                 });
@@ -674,6 +652,14 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.policyEngineService.getSavepoints(this.policyId).subscribe({
             next: (resp) => {
                 const items = resp?.items ?? [];
+
+                console.log('items', items)
+
+                if (!items.length) {
+                    this.restoreDialogOpened = false;
+                    return;
+                }
+
                 const ref = this.dialogService.open(RestoreSavepointDialog, {
                     showHeader: false,
                     closable: false,
@@ -690,9 +676,22 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
                 ref.onClose.subscribe((result?: IRestoreSavepointAction) => {
                     this.restoreDialogOpened = false;
-                    if (result?.type === 'apply') {
-                        this.savepointId = result.id ?? null;
-                        this.loadPolicyById(this.policyId, this.savepointId);
+                    if (!result) return;
+
+                    if (result.savepoint) {
+                        this.currentSavepoint = result.savepoint;
+
+                        this.policy = null;
+                        this.groups = [];
+                        this.changeDetector.detectChanges();
+
+                        this.loadPolicyById(this.policyId);
+                    } else if (result.type === 'deleteAll') {
+                        this.currentSavepoint = null;
+                        this.policy = null;
+                        this.groups = [];
+                        this.changeDetector.detectChanges();
+                        this.loadPolicyById(this.policyId);
                     }
                 });
             },

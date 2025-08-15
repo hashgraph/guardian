@@ -4,7 +4,6 @@ import { Subscription, Observable, of } from "rxjs";
 import { PolicyEngineService } from "src/app/services/policy-engine.service";
 import { ProfileService } from "src/app/services/profile.service";
 import { WebSocketService } from "src/app/services/web-socket.service";
-import {Input} from "@angular/core";
 
 export abstract class AbstractUIBlockComponent<T> {
     public id!: string;

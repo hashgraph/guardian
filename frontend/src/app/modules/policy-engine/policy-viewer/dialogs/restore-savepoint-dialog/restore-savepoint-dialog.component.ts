@@ -8,6 +8,7 @@ export interface ISavepointItem {
     createDate?: string | Date;
     parentSavepointId?: string | null;
     savepointPath?: string[];
+    isCurrent?: boolean;
 }
 
 export type RestoreSavepointActionType =
@@ -21,6 +22,7 @@ export interface IRestoreSavepointAction {
     type: RestoreSavepointActionType;
     id?: string;
     name?: string;
+    savepoint?: ISavepointItem;
 }
 
 @Component({
@@ -52,109 +54,127 @@ export class RestoreSavepointDialog {
             : [];
 
         this.items = [...incoming];
+
+        if (!this.currentSavepointId) {
+            this.currentSavepointId = this.items.find(i => i.isCurrent)?.id ?? null;
+        }
     }
 
     public trackById(_index: number, item: ISavepointItem): string {
         return item.id;
     }
 
+    private get currentSavepoint(): ISavepointItem | null {
+        return this.items.find(i => i.id === this.currentSavepointId) ?? null;
+    }
+
+    public isBusy(id: string): boolean {
+        return this.deletingIds.has(id) || this.renaming;
+    }
+
     public onClose(): void {
-        this.ref.close(<IRestoreSavepointAction>{ type: 'close' });
+        this.ref.close(<IRestoreSavepointAction>{
+            type: 'close',
+            savepoint: this.currentSavepoint || undefined
+        });
     }
 
     public onApply(item: ISavepointItem): void {
-        this.ref.close(<IRestoreSavepointAction>{ type: 'apply', id: item.id });
+        this.policyEngine.selectSavepoint(this.policyId, item.id).subscribe({
+            next: (res: { savepoint: ISavepointItem }) => {
+                this.ref.close(<IRestoreSavepointAction>{
+                    type: 'apply',
+                    savepoint: res.savepoint
+                });
+            }
+        });
     }
 
     public startRename(item: ISavepointItem): void {
-        if (this.isBusy(item.id)) return;
+        if (this.isBusy(item.id)) {
+            return;
+        }
         this.editingId = item.id;
         this.editingName = item.name ?? '';
     }
 
     public cancelRename(): void {
-        if (this.renaming) return;
+        if (this.renaming) {
+            return;
+        }
         this.editingId = null;
         this.editingName = '';
     }
 
     public saveRename(item: ISavepointItem): void {
         const name = this.editingName.trim();
-        if (!this.editingId || !name || this.renaming) return;
+        if (!this.editingId || !name || this.renaming) {
+            return;
+        }
 
         this.renaming = true;
-        this.policyEngine.updateSavepoint(this.policyId, item.id, { name })
-            .subscribe({
-                next: () => {
-                    const idx = this.items.findIndex(i => i.id === item.id);
-                    if (idx >= 0) {
-                        this.items[idx] = { ...this.items[idx], name };
-                    }
 
-                    this.ref.close(<IRestoreSavepointAction>{
-                        type: 'rename',
-                        id: item.id,
-                        name
-                    });
-                },
-                error: () => {
-                    this.renaming = false;
-                },
-                complete: () => {
-                    this.renaming = false;
-                    this.editingId = null;
-                    this.editingName = '';
+        this.policyEngine.updateSavepoint(this.policyId, item.id, { name }).subscribe({
+            next: () => {
+                const idx = this.items.findIndex(i => i.id === item.id);
+                if (idx >= 0) {
+                    this.items[idx] = { ...this.items[idx], name };
                 }
-            });
+            },
+            error: () => {
+                this.renaming = false;
+            },
+            complete: () => {
+                this.renaming = false;
+                this.editingId = null;
+                this.editingName = '';
+            }
+        });
     }
 
     public onDelete(item: ISavepointItem): void {
-        if (this.isBusy(item.id)) return;
+        if (this.isBusy(item.id)) {
+            return;
+        }
+
         this.deletingIds.add(item.id);
 
-        this.policyEngine.deleteSavepoints(this.policyId, [item.id])
-            .subscribe({
-                next: () => {
-                    this.items = this.items.filter(i => i.id !== item.id);
-
-                    if (this.currentSavepointId === item.id) {
-                        this.currentSavepointId = null;
-                    }
-
-                    this.ref.close(<IRestoreSavepointAction>{ type: 'delete', id: item.id });
-                },
-                error: () => {
-                    this.deletingIds.delete(item.id);
-                },
-                complete: () => {
-                    this.deletingIds.delete(item.id);
+        this.policyEngine.deleteSavepoints(this.policyId, [item.id]).subscribe({
+            next: () => {
+                this.items = this.items.filter(i => i.id !== item.id);
+                if (this.currentSavepointId === item.id) {
+                    this.currentSavepointId = this.items.find(i => i.isCurrent)?.id ?? null;
                 }
-            });
+            },
+            error: () => {
+                this.deletingIds.delete(item.id);
+            },
+            complete: () => {
+                this.deletingIds.delete(item.id);
+            }
+        });
     }
 
     public onDeleteAll(): void {
-        if (this.deletingAll || !this.items.length) return;
+        if (this.deletingAll || !this.items.length) {
+            return;
+        }
 
         this.deletingAll = true;
+
         const ids = this.items.map(i => i.id);
 
-        this.policyEngine.deleteSavepoints(this.policyId, ids)
-            .subscribe({
-                next: () => {
-                    this.items = [];
-                    this.currentSavepointId = null;
-                    this.ref.close(<IRestoreSavepointAction>{ type: 'deleteAll' });
-                },
-                error: () => {
-                    this.deletingAll = false;
-                },
-                complete: () => {
-                    this.deletingAll = false;
-                }
-            });
-    }
-
-    public isBusy(id: string): boolean {
-        return this.deletingIds.has(id) || this.renaming;
+        this.policyEngine.deleteSavepoints(this.policyId, ids).subscribe({
+            next: () => {
+                this.items = [];
+                this.currentSavepointId = null;
+            },
+            error: () => {
+                this.deletingAll = false;
+            },
+            complete: () => {
+                this.deletingAll = false;
+            }
+        });
     }
 }

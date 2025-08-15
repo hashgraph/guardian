@@ -62,7 +62,7 @@
                 <span>Savepoint</span>
             </div>
 
-            <div (click)=" openClickRestoreSavepointDialog()" [attr.disabled]="!savepointId" class="dry-run-action-btn">
+            <div (click)=" openClickRestoreSavepointDialog()" [attr.disabled]="!currentSavepoint ? true : null" class="dry-run-action-btn">
                 <i class="pi pi-undo"></i>
                 <span>Restore</span>
             </div>
