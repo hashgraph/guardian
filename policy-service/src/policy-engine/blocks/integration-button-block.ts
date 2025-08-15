@@ -66,7 +66,7 @@ export class IntegrationButtonBlock {
             if (key.startsWith('path_')) {
                 const keyName = key.split('path_')[1];
 
-                if (!params[keyName]) {
+                if (!params[keyName] && value) {
                     const valueFromPath = this.getFieldByPath(blockData, value);
 
                     if (valueFromPath) {

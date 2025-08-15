@@ -81,19 +81,19 @@ export abstract class BaseIntegrationService {
     const bodyParams: Record<string, any> = {};
 
     if (method.parameters?.body) {
-      Object.keys(method.parameters.body).forEach((body) => {
-        if (params[body]) {
-          if (method.parameters.body[body]?.parseType === ParseTypes.NUMBER) {
-            bodyParams[body] = Number(params[body]);
-          } else if (method.parameters.body[body]?.parseType === ParseTypes.JSON) {
-            bodyParams[body] = params[body] ? JSON.parse(params[body] as string) : '';
+      Object.keys(method.parameters.body).forEach((bodyField) => {
+        if (params[bodyField]) {
+          if (method.parameters.body[bodyField]?.parseType === ParseTypes.NUMBER) {
+            bodyParams[bodyField] = Number(params[bodyField]);
+          } else if (method.parameters.body[bodyField]?.parseType === ParseTypes.JSON) {
+            bodyParams[bodyField] = params[bodyField] ? JSON.parse(params[bodyField] as string) : '';
           } else {
-            bodyParams[body] = params[body];
+            bodyParams[bodyField] = params[bodyField];
           }
         }
 
-        if (method.parameters.body[body].required && !params[body]) {
-          throw new Error(`Missing required body parameter: "${body}"`);
+        if (method.parameters.body[bodyField].required && !params[bodyField]) {
+          throw new Error(`Missing required bodyField parameter: "${bodyField}"`);
         }
       });
     }
