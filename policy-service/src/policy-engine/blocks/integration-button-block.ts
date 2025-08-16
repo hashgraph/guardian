@@ -1,5 +1,5 @@
 import { EventBlock } from '../helpers/decorators/index.js';
-import { LocationType, SchemaEntity, SchemaHelper, DocumentCategoryType } from '@guardian/interfaces';
+import { LocationType, SchemaEntity, SchemaHelper, DocumentCategoryType, IntegrationDataTypes } from '@guardian/interfaces';
 import { IPolicyAddonBlock, IPolicyEventState, IPolicyGetData, IPolicyInterfaceBlock, AnyBlockType } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
@@ -66,7 +66,7 @@ export class IntegrationButtonBlock {
             if (key.startsWith('path_')) {
                 const keyName = key.split('path_')[1];
 
-                if (!params[keyName]) {
+                if (!params[keyName] && value) {
                     const valueFromPath = this.getFieldByPath(blockData, value);
 
                     if (valueFromPath) {
@@ -94,20 +94,33 @@ export class IntegrationButtonBlock {
                 policyId: ref.policyId,
             } as FilterQuery<VcDocument>);
 
-            if (cachedData?.document?.credentialSubject[0]?.data) {
-                return JSON.parse(cachedData.document?.credentialSubject[0]?.data)
+            const credentialSubject = cachedData?.document?.credentialSubject[0];
+
+            if (credentialSubject) {
+                const resData = credentialSubject.data;
+                const resParsedData = credentialSubject.parsedData;
+                const resType = credentialSubject.dataType;
+
+                if (resParsedData || resData) {
+                    return {
+                        data: JSON.parse(resParsedData || resData),
+                        type: resType,
+                    }
+                }
             }
         }
 
         const integrationService = IntegrationServiceFactory.create(ref.options.integrationType);
+
         const {
             data: responseFromRequest,
-            fromCsv,
+            parsedData,
+            type = IntegrationDataTypes.JSON,
         } = await integrationService.executeRequest(methodName, params);
 
         const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, user.userId);
         const policyOwnerDid = await policyOwnerCred.loadDidDocument(ref, user.userId);
-        const integrationVCClass = await this.createIntegrationVC(policyOwnerDid, JSON.stringify(responseFromRequest), ref, user.userId, fromCsv, dataForRequestStr);
+        const integrationVCClass = await this.createIntegrationVC(policyOwnerDid, type === IntegrationDataTypes.GEOTIFF ? responseFromRequest : JSON.stringify(responseFromRequest), ref, user.userId, dataForRequestStr, type, parsedData ? JSON.stringify(parsedData) : '');
 
         const mintVcDocument = PolicyUtils.createVC(ref, user, integrationVCClass);
 
@@ -131,7 +144,10 @@ export class IntegrationButtonBlock {
         }));
         ref.backup();
 
-        return responseFromRequest;
+        return {
+            data: parsedData || responseFromRequest,
+            type,
+        };
     }
 
     /**
@@ -164,7 +180,7 @@ export class IntegrationButtonBlock {
      * @param data
      * @param ref
      * @param userId
-     * @param fromCsv
+     * @param type
      * @private
      */
     private async createIntegrationVC(
@@ -172,18 +188,20 @@ export class IntegrationButtonBlock {
         data: string,
         ref: AnyBlockType,
         userId: string,
-        fromCsv: boolean,
         requestParams: string,
+        type: IntegrationDataTypes,
+        parsedData: string,
     ): Promise<VcDocumentDefinition> {
         const vcHelper = new VcHelper();
-        const policySchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.INTEGRATION_DATA);
+        const policySchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.INTEGRATION_DATA_V2);
         const vcSubject = {
             ...SchemaHelper.getContext(policySchema),
             date: (new Date()).toISOString(),
             data,
             requestParams,
             userId,
-            fromCsv: !!fromCsv,
+            dataType: type || IntegrationDataTypes.JSON,
+            parsedData,
         }
 
         const uuid = await ref.components.generateUUID();

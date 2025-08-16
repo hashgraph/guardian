@@ -1,6 +1,7 @@
 import { IntegrationServiceFactory } from '@guardian/common';
 import { BlockValidator, IBlockProp } from '../../block-validators/index.js';
 import { CommonBlock } from './common.js';
+import { ParseTypes } from '@guardian/interfaces';
 
 /**
  * Document Integration Button Block with UI
@@ -20,8 +21,8 @@ export class IntegrationButtonBlock {
         try {
             await CommonBlock.validate(validator, ref);
 
-            if (validator.schemaNotExist('#IntegrationData')) {
-                validator.addError('Policy outdated. Re-import required — IntegrationData schema unavailable');
+            if (validator.schemaNotExist('#IntegrationDataV2')) {
+                validator.addError('Policy outdated. Re-import required — IntegrationDataV2 schema unavailable');
             }
 
             if(!ref.options.integrationType) {
@@ -39,9 +40,33 @@ export class IntegrationButtonBlock {
                 const method = IntegrationServiceFactory.getAvailableMethods(ref.options.integrationType)[methodName];
 
                 Object.values(method.parameters || {}).forEach((parentWrapper) => {
-                    Object.values(parentWrapper || {}).forEach(({ name, value, required }) => {
+                    Object.values(parentWrapper || {}).forEach(({ name, value, required, parseType }) => {
                         if (!!required && !ref.options.requestParams?.[`path_${value}`] && !ref.options.requestParams?.[value]) {
                             validator.addError(`Option "Path field for ${name}" or "Value for ${name}" is not set`);
+                        }
+
+                        if (ref.options.requestParams?.[`path_${value}`] && ref.options.requestParams?.[value]) {
+                            validator.addError(`Both fields are filled, but only one is allowed — either "Path field for ${name}" or "Value for ${name}"`);
+                        }
+
+                        if (parseType) {
+                            const valueForParse = ref.options.requestParams?.[`path_${value}`] || ref.options.requestParams?.[value];
+
+                            if (valueForParse) {
+                                if (parseType === ParseTypes.JSON) {
+                                    try {
+                                        JSON.parse(valueForParse);
+                                    } catch {
+                                        validator.addError(`Option "Path field for ${name}" or "Value for ${name}" is not a stringify object`);
+                                    }
+                                } else if (parseType === ParseTypes.NUMBER) {
+                                    const numberValue = Number(valueForParse);
+
+                                    if (numberValue !== 0 && !numberValue) {
+                                        validator.addError(`Option "Path field for ${name}" or "Value for ${name}" is not a number`);
+                                    }
+                                }
+                            }
                         }
                     });
                 });

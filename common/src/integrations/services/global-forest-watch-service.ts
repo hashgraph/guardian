@@ -2,31 +2,33 @@ import axios, { AxiosInstance } from 'axios';
 import {
   BaseIntegrationService,
   ExecuteParams,
-  MethodMap
+  MethodMap,
 } from '../base-integration-service.js';
+import { IntegrationDataTypes, ParseTypes } from '@guardian/interfaces';
+import csvParse from 'papaparse';
+import { fromArrayBuffer } from 'geotiff';
 
 type ServiceConfig = {
   token?: string;
 }
 
 export class GlobalForestWatchService extends BaseIntegrationService {
-  // private readonly token: string;
+  private readonly token: string;
   private readonly client: AxiosInstance;
   static readonly baseUrl: string = 'https://data-api.globalforestwatch.org';
 
-  constructor({ token = process.env.GLOBAL_FOREST_WATCH_TOKEN || '' }: ServiceConfig = {}) {
+  constructor({ token = process.env.GLOBAL_FOREST_WATCH_API_KEY || '' }: ServiceConfig = {}) {
     super();
-    // if (!token || token.length < 5) {
-    //   throw new Error('API token is required.');
-    // }
-    // this.token = token;
+    if (!token || token.length < 5) {
+      throw new Error('API token is required.');
+    }
+    this.token = token;
 
     this.client = axios.create({
       baseURL: GlobalForestWatchService.baseUrl,
-      // headers: {
-      //   'Content-Type': 'application/json',
-      //   Authorization: `Bearer ${this.token}`,
-      // },
+      headers: {
+        'x-api-key': this.token
+      },
     });
   }
 
@@ -34,10 +36,10 @@ export class GlobalForestWatchService extends BaseIntegrationService {
     return GlobalForestWatchService.baseUrl;
   }
 
-  public async executeRequest<T = any>(
+  public async executeRequest<T = any, P = any>(
     methodName: string,
     params: ExecuteParams = {}
-  ): Promise<{ data: T }> {
+  ): Promise<{ data: T; type?: IntegrationDataTypes; parsedData: P }> {
     try {
       const method = GlobalForestWatchService.getAvailableMethods()[methodName];
 
@@ -45,18 +47,110 @@ export class GlobalForestWatchService extends BaseIntegrationService {
         throw new Error(`Unsupported method: "${methodName}".`);
       }
 
-      const response = await this.client.request<T>(GlobalForestWatchService.getDataForRequest(
+      const dataForReq = GlobalForestWatchService.getDataForRequest(
         method,
         params,
-      ));
+      );
+
+      if (!dataForReq.params) {
+        dataForReq.params = {}
+      }
+
+      dataForReq.params['x-api-key'] = this.token;
+
+      if (method.type === IntegrationDataTypes.GEOTIFF) {
+        dataForReq.responseType = 'arraybuffer';
+      }
+
+      const response = await this.client.request<T>(dataForReq);
+
+      let result = response.data;
+
+      if (method.type === IntegrationDataTypes.CSV) {
+        result = csvParse.parse(result, {
+          header: true,
+          skipEmptyLines: true,
+          dynamicTyping: true,
+        }).data
+      }
+      let parsedData = null;
+
+      if (method.type === IntegrationDataTypes.GEOTIFF) {
+        parsedData = await this.getResponseDataFromGeoTiff(result as Buffer, params);
+      }
 
       return {
-        data: response.data
+        data: result,
+        type: method.type || IntegrationDataTypes.JSON,
+        parsedData,
       };
     } catch (err) {
       console.error(err);
       throw err;
     }
+  }
+
+  private async getResponseDataFromGeoTiff(
+    buffer: Buffer,
+    params: ExecuteParams = {}
+  ): Promise<{
+      bbox: number[];
+  }> {
+      const MAX_SIZE = 50 * 1024 * 1024; // bytes
+
+      if (buffer.length > MAX_SIZE) {
+        const method = GlobalForestWatchService.getAvailableMethods().getAssets;
+
+        const dataForReq = GlobalForestWatchService.getDataForRequest(
+          method,
+          {
+            dataset: params.dataset,
+            version: params.version,
+            asset_type: 'Raster tile set',
+          }
+        );
+
+        const response = await this.client.request<{ data: { asset_uri: string; asset_id: string; }[] }>(dataForReq);
+
+        const assetId = response.data?.data?.find(({ asset_uri = '' }) => asset_uri.includes(`/${params.pixel_meaning}/`))?.asset_id;
+
+        if (assetId) {
+          const tilesMethod = GlobalForestWatchService.getAvailableMethods().getTilesInfoForAsset;
+
+          const tilesDataForReq = GlobalForestWatchService.getDataForRequest(
+            tilesMethod,
+            {
+              asset_id: assetId,
+            }
+          );
+
+          const tilesInfo = await this.client.request(tilesDataForReq);
+
+          const tilesBbox = tilesInfo.data?.features?.find(({ properties }) => properties?.name?.includes(`/${params.tile_id}.tif`))?.properties?.extent;
+
+          if (tilesBbox?.length >= 4) {
+            return {
+              bbox: tilesBbox
+            };
+          }
+        }
+      }
+
+      if (buffer.length > MAX_SIZE * 2) {
+        return {
+          bbox: null
+        }
+      }
+
+      const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+      const tiff = await fromArrayBuffer(arrayBuffer);
+      const image = await tiff.getImage();
+
+      const resBbox = image.getBoundingBox();
+
+      return {
+          bbox: resBbox,
+      };
   }
 
   /**
@@ -592,7 +686,7 @@ export class GlobalForestWatchService extends BaseIntegrationService {
       queryDatasetJson: {
         method: 'GET',
         endpoint: '/dataset/:dataset/:version/query/json',
-        description: 'Execute a READ-ONLY SQL query on the given dataset version',
+        description: 'Query (JSON) Execute a READ-ONLY SQL query on the given dataset version',
         parameters: {
           path: {
             dataset: {
@@ -625,6 +719,157 @@ export class GlobalForestWatchService extends BaseIntegrationService {
           }
         },
       },
+      queryDatasetJsonPost: {
+        method: 'POST',
+        endpoint: '/dataset/:dataset/:version/query/json',
+        description: 'Query with geometry (JSON) Execute a READ-ONLY SQL query on the given dataset version',
+        parameters: {
+          path: {
+            dataset: {
+              name: 'Dataset',
+              value: 'dataset',
+              required: true,
+            },
+            version: {
+              name: 'Version',
+              value: 'version',
+              required: true,
+            }
+          },
+          body: {
+            sql: {
+              name: 'SQL',
+              value: 'sql',
+              required: true
+            },
+            geometry: {
+              name: 'Geometry (stringify object)',
+              value: 'geometry',
+              required: false,
+              parseType: ParseTypes.JSON,
+            },
+          }
+        },
+      },
+      queryDatasetCsv: {
+        method: 'GET',
+        endpoint: '/dataset/:dataset/:version/query/csv',
+        description: 'Query (CSV) Execute a READ-ONLY SQL query on the given dataset version',
+        type: IntegrationDataTypes.CSV,
+        parameters: {
+          path: {
+            dataset: {
+              name: 'Dataset',
+              value: 'dataset',
+              required: true,
+            },
+            version: {
+              name: 'Version',
+              value: 'version',
+              required: true,
+            }
+          },
+          query: {
+            sql: {
+              name: 'SQL',
+              value: 'sql',
+              required: true
+            },
+            geostore_id: {
+              name: 'Geostore ID',
+              value: 'geostore_id',
+              required: false
+            },
+            geostore_origin: {
+              name: 'Geostore origin',
+              value: 'geostore_origin',
+              required: false
+            }
+          }
+        },
+      },
+      queryDatasetCsvPost: {
+        method: 'POST',
+        endpoint: '/dataset/:dataset/:version/query/csv',
+        description: 'Query with geometry (CSV) Execute a READ-ONLY SQL query on the given dataset version',
+        type: IntegrationDataTypes.CSV,
+        parameters: {
+          path: {
+            dataset: {
+              name: 'Dataset',
+              value: 'dataset',
+              required: true,
+            },
+            version: {
+              name: 'Version',
+              value: 'version',
+              required: true,
+            }
+          },
+          body: {
+            sql: {
+              name: 'SQL',
+              value: 'sql',
+              required: true
+            },
+            geometry: {
+              name: 'Geometry (stringify object)',
+              value: 'geometry',
+              required: false,
+              parseType: ParseTypes.JSON,
+            },
+          }
+        },
+      },
+      queryDatasetListPost: {
+        method: 'POST',
+        endpoint: '/dataset/:dataset/:version/query/batch',
+        description: 'Query execute a READ-ONLY SQL query on the specified raster-based dataset version (batch)',
+        parameters: {
+          path: {
+            dataset: {
+              name: 'Dataset',
+              value: 'dataset',
+              required: true,
+            },
+            version: {
+              name: 'Version',
+              value: 'version',
+              required: true,
+            }
+          },
+          body: {
+            sql: {
+              name: 'SQL',
+              value: 'sql',
+              required: true
+            },
+            feature_collection: {
+              name: 'Feature collection (stringify object)',
+              value: 'feature_collection',
+              required: false,
+              parseType: ParseTypes.JSON,
+            },
+            uri: {
+              name: 'URI to a vector file in a variety of formats supported by Geopandas',
+              value: 'uri',
+              required: false,
+            },
+            geostore_ids: {
+              name: 'An inline list of ResourceWatch geostore ids',
+              value: 'geostore_ids',
+              required: false,
+              parseType: ParseTypes.JSON,
+            },
+            id_field: {
+              name: 'An inline list of ResourceWatch geostore ids',
+              value: 'id_field',
+              required: false,
+              parseType: ParseTypes.JSON,
+            },
+          }
+        },
+      },
       getSingleTask: {
         method: 'GET',
         endpoint: '/task/:task_id',
@@ -637,6 +882,244 @@ export class GlobalForestWatchService extends BaseIntegrationService {
               required: true,
             }
           },
+        },
+      },
+      downloadJSON: {
+        method: 'GET',
+        endpoint: '/dataset/:dataset/:version/download/json',
+        description: '(JSON) Execute a READ-ONLY SQL query on the given dataset version',
+        parameters: {
+          path: {
+            dataset: {
+              name: 'Dataset',
+              value: 'dataset',
+              required: true,
+            },
+            version: {
+              name: 'Version',
+              value: 'version',
+              required: true,
+            }
+          },
+          query: {
+            sql: {
+              name: 'SQL',
+              value: 'sql',
+              required: true
+            },
+            geostore_id: {
+              name: 'Geostore ID',
+              value: 'geostore_id',
+              required: false
+            },
+            geostore_origin: {
+              name: 'Geostore origin',
+              value: 'geostore_origin',
+              required: false
+            },
+          }
+        },
+      },
+      downloadJSONPost: {
+        method: 'POST',
+        endpoint: '/dataset/:dataset/:version/download/json',
+        description: 'With geometry (JSON) Execute a READ-ONLY SQL query on the given dataset version for datasets with (geo-)database tables',
+        parameters: {
+          path: {
+            dataset: {
+              name: 'Dataset',
+              value: 'dataset',
+              required: true,
+            },
+            version: {
+              name: 'Version',
+              value: 'version',
+              required: true,
+            }
+          },
+          body: {
+            sql: {
+              name: 'SQL',
+              value: 'sql',
+              required: true
+            },
+            geometry: {
+              name: 'Geometry (stringify object)',
+              value: 'geometry',
+              required: false,
+              parseType: ParseTypes.JSON,
+            },
+          }
+        },
+      },
+      downloadCSV: {
+        method: 'GET',
+        endpoint: '/dataset/:dataset/:version/download/csv',
+        description: '(CSV) Execute a READ-ONLY SQL query on the given dataset version',
+        type: IntegrationDataTypes.CSV,
+        parameters: {
+          path: {
+            dataset: {
+              name: 'Dataset',
+              value: 'dataset',
+              required: true,
+            },
+            version: {
+              name: 'Version',
+              value: 'version',
+              required: true,
+            }
+          },
+          query: {
+            sql: {
+              name: 'SQL',
+              value: 'sql',
+              required: true
+            },
+            geostore_id: {
+              name: 'Geostore ID',
+              value: 'geostore_id',
+              required: false
+            },
+            geostore_origin: {
+              name: 'Geostore origin',
+              value: 'geostore_origin',
+              required: false
+            },
+          }
+        },
+      },
+      downloadCsvPost: {
+        method: 'POST',
+        endpoint: '/dataset/:dataset/:version/download/csv',
+        description: 'With geometry (CSV) Execute a READ-ONLY SQL query on the given dataset version for datasets with (geo-)database tables',
+        type: IntegrationDataTypes.CSV,
+        parameters: {
+          path: {
+            dataset: {
+              name: 'Dataset',
+              value: 'dataset',
+              required: true,
+            },
+            version: {
+              name: 'Version',
+              value: 'version',
+              required: true,
+            }
+          },
+          body: {
+            sql: {
+              name: 'SQL',
+              value: 'sql',
+              required: true
+            },
+            geometry: {
+              name: 'Geometry (stringify object)',
+              value: 'geometry',
+              required: false,
+              parseType: ParseTypes.JSON,
+            },
+          }
+        },
+      },
+      downloadCSVByAoi: {
+        method: 'GET',
+        endpoint: '/dataset/:dataset/:version/download_by_aoi/csv',
+        description: 'Aoi (CSV) Execute a READ-ONLY SQL query on the given dataset version',
+        type: IntegrationDataTypes.CSV,
+        parameters: {
+          path: {
+            dataset: {
+              name: 'Dataset',
+              value: 'dataset',
+              required: true,
+            },
+            version: {
+              name: 'Version',
+              value: 'version',
+              required: true,
+            }
+          },
+          query: {
+            sql: {
+              name: 'SQL',
+              value: 'sql',
+              required: true
+            },
+            aoi: {
+              name: '	GeostoreAreaOfInterest or AdminAreaOfInterest or Global or WdpaAreaOfInterest',
+              value: 'aoi',
+              required: true
+            },
+          }
+        },
+      },
+      downloadJSONByAoi: {
+        method: 'GET',
+        endpoint: '/dataset/:dataset/:version/download_by_aoi/json',
+        description: 'Aoi (JSON) Execute a READ-ONLY SQL query on the given dataset version',
+        parameters: {
+          path: {
+            dataset: {
+              name: 'Dataset',
+              value: 'dataset',
+              required: true,
+            },
+            version: {
+              name: 'Version',
+              value: 'version',
+              required: true,
+            }
+          },
+          query: {
+            sql: {
+              name: 'SQL',
+              value: 'sql',
+              required: true
+            },
+            aoi: {
+              name: '	GeostoreAreaOfInterest or AdminAreaOfInterest or Global or WdpaAreaOfInterest',
+              value: 'aoi',
+              required: true
+            },
+          }
+        },
+      },
+      downloadGeoTiff: {
+        method: 'GET',
+        endpoint: '/dataset/:dataset/:version/download/geotiff',
+        description: 'Get geotiff raster tile',
+        type: IntegrationDataTypes.GEOTIFF,
+        parameters: {
+          path: {
+            dataset: {
+              name: 'Dataset',
+              value: 'dataset',
+              required: true,
+            },
+            version: {
+              name: 'Version',
+              value: 'version',
+              required: true,
+            }
+          },
+          query: {
+            grid: {
+              name: 'Grid',
+              value: 'grid',
+              required: true
+            },
+            tile_id: {
+              name: 'Tile ID',
+              value: 'tile_id',
+              required: true
+            },
+            pixel_meaning: {
+              name: 'Pixel meaning',
+              value: 'pixel_meaning',
+              required: true
+            }
+          }
         },
       },
     };

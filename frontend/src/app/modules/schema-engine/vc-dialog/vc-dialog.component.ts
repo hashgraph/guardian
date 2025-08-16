@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { Schema, UserPermissions } from '@guardian/interfaces';
+import { Schema, UserPermissions, IntegrationDataTypes } from '@guardian/interfaces';
 import { SchemaService } from '../../../services/schema.service';
 import { forkJoin } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -15,6 +15,7 @@ import { ActivatedRoute, Router } from '@angular/router';
     styleUrls: ['./vc-dialog.component.scss']
 })
 export class VCViewerDialog {
+    public IntegrationDataTypes = IntegrationDataTypes;
     public loading: boolean = true;
     public id: string = '';
     public title: string = '';

@@ -2237,7 +2237,7 @@ export class SchemaApi {
     })
     @ApiParam({
         name: 'schemaEntity',
-        enum: ['STANDARD_REGISTRY', 'USER', 'POLICY', 'MINT_TOKEN', 'INTEGRATION_DATA', 'WIPE_TOKEN', 'MINT_NFTOKEN'],
+        enum: ['STANDARD_REGISTRY', 'USER', 'POLICY', 'MINT_TOKEN', 'INTEGRATION_DATA_V2', 'WIPE_TOKEN', 'MINT_NFTOKEN'],
         description: 'Entity name',
         required: true,
         example: 'STANDARD_REGISTRY'
