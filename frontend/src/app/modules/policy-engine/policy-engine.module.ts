@@ -79,6 +79,8 @@ import { TagsManagerBlockComponent } from './policy-viewer/blocks/tags-manager-b
 import { MessagesReportBlockComponent } from './policy-viewer/blocks/messages-report-block/messages-report-block.component';
 import { ExternalTopicBlockComponent } from './policy-viewer/blocks/external-topic-block/external-topic-block.component';
 import { UploadDocumentBlockComponent } from './policy-viewer/blocks/upload-document-block/upload-document-block.component';
+import { RestoreSavepointDialog } from './policy-viewer/dialogs/restore-savepoint-dialog/restore-savepoint-dialog.component';
+import {AddSavepointDialog} from "./policy-viewer/dialogs/add-savepoint-dialog/add-savepoint-dialog.component";
 //Helpers
 import { HelpIcon } from './helpers/help-icon/help-icon.component';
 import { SavePolicyDialog } from './dialogs/save-policy-dialog/save-policy-dialog.component';
@@ -268,7 +270,9 @@ import { IntegrationButtonBlockComponent } from './policy-viewer/blocks/integrat
         PolicyRequestsComponent,
         SearchExternalPolicyDialog,
         TestCodeDialog,
-        SearchToolDialog
+        SearchToolDialog,
+        RestoreSavepointDialog,
+        AddSavepointDialog
     ],
     imports: [
         CommonModule,

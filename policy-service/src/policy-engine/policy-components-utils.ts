@@ -1125,16 +1125,19 @@ export class PolicyComponentsUtils {
      * Get Policy Groups
      * @param policy
      * @param user
+     * @param savepointIds
      */
     public static async GetGroups(
         policy: IPolicyInstance | IPolicyInterfaceBlock,
-        user: PolicyUser
+        user: PolicyUser,
+        savepointIds?: string[]
     ): Promise<PolicyRoles[]> {
         return await policy.components.databaseServer.getGroupsByUser(
             policy.policyId,
             user.did,
             {
                 fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active'],
+                savepointIds,
             }
         );
     }

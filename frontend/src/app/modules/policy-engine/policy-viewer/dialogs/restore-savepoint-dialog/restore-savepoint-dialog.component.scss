@@ -1,0 +1,120 @@
+:host {
+    display: block;
+    width: 100%;
+}
+
+.dialog-container {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-sizing: border-box;
+}
+
+.dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .title {
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .close-btn {
+        margin-left: 8px;
+    }
+}
+
+.list-header,
+.row {
+    display: grid;
+    grid-template-columns: 1fr 180px 140px;
+    align-items: center;
+    column-gap: 12px;
+}
+
+.list-header {
+    font-size: 12px;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.list {
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04) inset;
+
+    .row {
+        padding: 12px 16px;
+        border-bottom: 1px solid #EEF2F7;
+
+        &[active] {
+            background: #F5F8FF;
+        }
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        .col.name {
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .col.date {
+            color: #4B5563;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .col.actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+    }
+}
+
+.icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid #E5E7EB;
+    background: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+
+    &.danger {
+        color: #E11D48;
+        border-color: #FFE4E6;
+        background: #FFF1F2;
+    }
+}
+
+.footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .spacer {
+        flex: 1;
+    }
+
+    .guardian-button.danger.ghost {
+        background: #FFF1F2;
+        color: #E11D48;
+        border: 1px solid #FFE4E6;
+    }
+}
