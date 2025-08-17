@@ -387,10 +387,11 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_BLOCKS,
             async (msg: {
                 policyId: string,
-                user: IAuthUser
+                user: IAuthUser,
+                params: any
             }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { user, policyId } = msg;
+                    const { user, policyId, params } = msg;
 
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
@@ -403,7 +404,8 @@ export class PolicyEngineService {
                     const blockData = await new GuardiansService()
                         .sendBlockMessage(PolicyEvents.GET_ROOT_BLOCK_DATA, policyId, {
                             user,
-                            policyId
+                            policyId,
+                            params
                         }) as any;
                     return new MessageResponse(blockData);
                 } catch (error) {
@@ -556,15 +558,17 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICY_NAVIGATION,
             async (msg: {
                 user: IAuthUser,
-                policyId: string
+                policyId: string,
+                params: any
             }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { user, policyId } = msg;
+                    const { user, policyId, params } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const navigationData = await new GuardiansService()
                         .sendPolicyMessage(PolicyEvents.GET_POLICY_NAVIGATION, policyId, {
-                            user
+                            user,
+                            params
                         }) as any;
                     return new MessageResponse(navigationData);
                 } catch (error) {

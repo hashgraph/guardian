@@ -965,11 +965,14 @@ export class PolicyApi {
     @HttpCode(HttpStatus.OK)
     async getPolicyNavigation(
         @AuthUser() user: IAuthUser,
-        @Param('policyId') policyId: string
-    ): Promise<any> {
+        @Param('policyId') policyId: string,
+        @Query() query: any
+    ): Promise<BlockDTO> {
         try {
+            query.savepointIds = typeof query.savepointIds === 'string' ? JSON.parse(query.savepointIds) : query.savepointIds;
+
             const engineService = new PolicyEngine();
-            return await engineService.getNavigation(user, policyId);
+            return await engineService.getNavigation(user, policyId, query);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -1800,11 +1803,14 @@ export class PolicyApi {
     @HttpCode(HttpStatus.OK)
     async getPolicyBlocks(
         @AuthUser() user: IAuthUser,
-        @Param('policyId') policyId: string
+        @Param('policyId') policyId: string,
+        @Query() query: any
     ): Promise<BlockDTO> {
         try {
+            query.savepointIds = typeof query.savepointIds === 'string' ? JSON.parse(query.savepointIds) : query.savepointIds;
+
             const engineService = new PolicyEngine();
-            return await engineService.getPolicyBlocks(user, policyId);
+            return await engineService.getPolicyBlocks(user, policyId, query);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -1859,6 +1865,9 @@ export class PolicyApi {
         @Query() query: any
     ): Promise<any> {
         try {
+            query.savepointIds = typeof query.savepointIds === 'string' ? JSON.parse(query.savepointIds) : query.savepointIds;
+            console.log('query.savepointIds', query.savepointIds)
+
             const engineService = new PolicyEngine();
             return await engineService.getBlockData(user, policyId, uuid, query);
         } catch (error) {
@@ -2100,6 +2109,8 @@ export class PolicyApi {
         @Query() query: any
     ): Promise<any> {
         try {
+            query.savepointIds = typeof query.savepointIds === 'string' ? JSON.parse(query.savepointIds) : query.savepointIds;
+
             const engineService = new PolicyEngine();
             return await engineService.getBlockDataByTag(user, policyId, tagName, query);
         } catch (error) {

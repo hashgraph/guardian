@@ -300,6 +300,8 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
             savepointIds
         } = props;
 
+        console.log('savepointIds777', savepointIds)
+
         const filters = {
             [MAP_DOCUMENT_AGGREGATION_FILTERS.BASE]: [
                 {
@@ -394,7 +396,6 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
                                 : []),
                             { savepointId: { $exists: false } },
                             { savepointId: null },
-                            { savepointId: '' }
                         ]
                     }
                 }

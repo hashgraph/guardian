@@ -594,8 +594,9 @@ export interface IPolicySourceBlock extends IPolicyBlock {
      * @param user
      * @param paginationData
      * @param countResult
+     * @param opts
      */
-    getGlobalSources(user: PolicyUser, paginationData: any, countResult?: boolean): Promise<any[] | number>;
+    getGlobalSources(user: PolicyUser, paginationData: any, countResult?: boolean, opts?: { savepointIds?: string[] }): Promise<any[] | number>;
 
     /**
      * Get common addons

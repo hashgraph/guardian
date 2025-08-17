@@ -1151,6 +1151,7 @@ export class PolicyComponentsUtils {
         policy: Policy,
         did: string
     ): Promise<Policy> {
+        console.log('savepointIdsGetGroups')
         const result: any = policy;
         if (policy && did) {
             result.userRoles = [];
@@ -1372,11 +1373,13 @@ export class PolicyComponentsUtils {
      * @param username
      * @param instance
      * @param userId
+     * @param savepointIds
      */
     public static async GetPolicyUserByName(
         username: string,
         instance: IPolicyInstance | AnyBlockType,
-        userId: string | null
+        userId: string | null,
+        savepointIds?: string[],
     ): Promise<PolicyUser> {
         if (!username) {
             return null;
@@ -1399,7 +1402,9 @@ export class PolicyComponentsUtils {
         const groups = await instance
             .components
             .databaseServer
-            .getGroupsByUser(instance.policyId, userFull.did);
+            .getGroupsByUser(instance.policyId, userFull.did, {
+                savepointIds,
+            });
         for (const group of groups) {
             if (group.active !== false) {
                 return userFull.setCurrentGroup(group);

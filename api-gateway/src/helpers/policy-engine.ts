@@ -239,9 +239,10 @@ export class PolicyEngine extends NatsService {
      * Get policy blocks
      * @param user
      * @param policyId
+     * @param params
      */
-    public async getPolicyBlocks(user: IAuthUser, policyId: string): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_BLOCKS, { user, policyId });
+    public async getPolicyBlocks(user: IAuthUser, policyId: string, params: any): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.POLICY_BLOCKS, { user, policyId, params });
     }
 
     /**
@@ -804,12 +805,14 @@ export class PolicyEngine extends NatsService {
      *
      * @param user
      * @param policyId
+     * @param params
      */
     public async getNavigation(
         user: IAuthUser,
-        policyId: string
+        policyId: string,
+        params: any
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_NAVIGATION, { user, policyId });
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_NAVIGATION, { user, policyId, params });
     }
 
     /**

@@ -2262,7 +2262,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         }
 
         const opt: any =
-            options && typeof options === 'object' ? (options as any) : undefined;
+            options && typeof options === 'object' ? options : undefined;
 
         const savepointIds: string[] | undefined = opt?.savepointIds
 
@@ -2274,8 +2274,6 @@ export class DatabaseServer extends AbstractDatabaseServer {
                     { savepointId: { $in: savepointIds } },
                     { savepointId: { $exists: false } },
                     { savepointId: null },
-                    { savepointStep: { $exists: false } },
-                    { savepointStep: null },
                 ],
             }
             : { policyId, did };

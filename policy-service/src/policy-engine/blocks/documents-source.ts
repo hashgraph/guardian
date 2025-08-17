@@ -131,7 +131,6 @@ export class InterfaceDocumentsSource {
         console.log('enableCommonSorting', enableCommonSorting)
         console.log('savepointIds', savepointIds)
 
-
         return enableCommonSorting
             ? await this.getDataByAggregationFilters(
                 ref,
@@ -141,7 +140,7 @@ export class InterfaceDocumentsSource {
                 history,
                 savepointIds
             )
-            : await ref.getGlobalSources(user, paginationData);
+            : await ref.getGlobalSources(user, paginationData, undefined, { savepointIds });
     }
 
     /**
@@ -167,9 +166,7 @@ export class InterfaceDocumentsSource {
             queryParams = {};
         }
 
-        const { itemsPerPage, page, size, filterByUUID, sortDirection, sortField, useStrict, savepointIds: rawSavepointIds, ...filterIds } = queryParams;
-
-        const savepointIds = typeof rawSavepointIds === 'string' ? JSON.parse(rawSavepointIds) : rawSavepointIds;
+        const { itemsPerPage, page, size, filterByUUID, sortDirection, sortField, useStrict, savepointIds, ...filterIds } = queryParams;
 
         if (this.state?.[user.id]) {
             if (savepointIds) {
@@ -235,7 +232,7 @@ export class InterfaceDocumentsSource {
             return addon.blockType === 'historyAddon';
         }) as IPolicyAddonBlock;
 
-        const enableCommonSorting = ref.options.uiMetaData.enableSorting || (sortDirection && sortField) || savepointIds
+        const enableCommonSorting = ref.options.uiMetaData.enableSorting || (sortDirection && sortField) || !!savepointIds
 
         let sortState = this.state[user.id] || {};
         if (sortDirection && sortField) {
@@ -261,10 +258,19 @@ export class InterfaceDocumentsSource {
             !enableCommonSorting && history
         ) {
             for (const document of data) {
+                const filter: any = { documentId: document.id };
+
+                if (Array.isArray(savepointIds) && savepointIds.length > 0) {
+                    filter.$or = [
+                        { savepointId: { $in: savepointIds } },
+                        { savepointId: { $exists: false } },
+                        { savepointId: null },
+                        { savepointId: '' }
+                    ];
+                }
+
                 document.history = (
-                    await ref.databaseServer.getDocumentStates({
-                        documentId: document.id,
-                    })
+                    await ref.databaseServer.getDocumentStates(filter)
                 ).map((state) =>
                     Object.assign(
                         {},
@@ -359,6 +365,7 @@ export class InterfaceDocumentsSource {
             aggregation,
             aggregateMethod: 'push',
             nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.BASE,
+            savepointIds
         });
 
         if (history) {
@@ -373,6 +380,7 @@ export class InterfaceDocumentsSource {
                 timelineLabelPath,
                 timelineDescriptionPath,
                 dryRun,
+                savepointIds
             });
         }
 
@@ -406,7 +414,6 @@ export class InterfaceDocumentsSource {
                 aggregateMethod: 'push',
                 nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.PAGINATION,
                 itemsPerPage,
-
                 page
             });
         }
@@ -418,6 +425,7 @@ export class InterfaceDocumentsSource {
                     aggregateMethod: 'unshift',
                     nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.VC_DOCUMENTS,
                     policyId: ref.policyId,
+                    savepointIds
                 });
 
                 return await ref.databaseServer.getVcDocumentsByAggregation(aggregation);

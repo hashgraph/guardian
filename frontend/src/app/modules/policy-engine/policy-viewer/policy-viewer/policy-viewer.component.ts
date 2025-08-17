@@ -237,7 +237,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     async loadPolicyById(policyId: string) {
         forkJoin([
             this.policyEngineService.policy(policyId),
-            this.policyEngineService.policyBlock(policyId),
+            this.policyEngineService.policyBlock(policyId, this.savepointIds ?? []),
             this.policyEngineService.getGroups(policyId, this.savepointIds),
             this.externalPoliciesService.getActionRequestsCount({ policyId })
         ]).subscribe(
@@ -268,7 +268,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.policyProgressService.data$
                     .pipe(audit(ev => interval(1000)), takeUntil(this.destroy$))
                     .subscribe(() => {
-                        this.policyEngineService.getPolicyNavigation(this.policyId).subscribe((data: any) => {
+                        this.policyEngineService.getPolicyNavigation(this.policyId, this.savepointIds).subscribe((data: any) => {
                             this.updatePolicyProgress(data);
                             if (data && data.length > 0) {
                                 this.policyProgressService.setHasNavigation(true);
@@ -542,7 +542,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public updatePolicy() {
         forkJoin([
             this.policyEngineService.getVirtualUsers(this.policyId, this.savepointIds),
-            this.policyEngineService.policyBlock(this.policyId),
+            this.policyEngineService.policyBlock(this.policyId, this.savepointIds),
             this.policyEngineService.policy(this.policyId),
         ]).subscribe((value) => {
             this.policy = null;
