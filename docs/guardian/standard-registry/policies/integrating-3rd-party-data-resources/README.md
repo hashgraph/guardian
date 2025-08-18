@@ -15,15 +15,15 @@ Once the block configuration is completed, we need to follow the below steps:
 
 ### 1.1 Authentication Requirements <a href="#id-1.1-authentication-requirements" id="id-1.1-authentication-requirements"></a>
 
-**Global forest watch:**\
-You can read doc here [https://data-api.globalforestwatch.org/](https://data-api.globalforestwatch.org/) to get x-api-key but it has limitations. For full access, contact their support.
+**Global Forest Watch:**\
+You can review the documentation at [https://data-api.globalforestwatch.org/](https://data-api.globalforestwatch.org/) for instructions on how to obtain an x-api-key, though please note by default the key comes with certain limitations. For full access, it is recommended to reach out directly to the company's partner team.
 
 <figure><img src="../../../../.gitbook/assets/image (122).png" alt=""><figcaption></figcaption></figure>
 
 \
-**FIRMS:**
+**Fire Information for Resource Management System**(**FIRMS):**
 
-Requires an map\_key. You can get one here [https://firms.modaps.eosdis.nasa.gov/api/map\_key/](https://firms.modaps.eosdis.nasa.gov/api/map_key/), but it has limitations. For full access, contact their support.
+This requires an map\_key which can be found through:  [https://firms.modaps.eosdis.nasa.gov/api/map\_key/](https://firms.modaps.eosdis.nasa.gov/api/map_key/), but it has limitations. For full access, contact their support.
 
 <figure><img src="https://docs.hedera.com/guardian/~gitbook/image?url=https%3A%2F%2F1556785885-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FNYWPEEAknX9Vki1yV5HY%252Fuploads%252FOnszj42ZGs868k0Cc5Fn%252Fimage.png%3Falt%3Dmedia%26token%3Dc1a6aced-c18c-4a25-bf47-bc3df008e997&#x26;width=768&#x26;dpr=4&#x26;quality=100&#x26;sign=e198e324&#x26;sv=2" alt=""><figcaption></figcaption></figure>
 
@@ -55,7 +55,7 @@ You must set KANOP\_IO\_AUTH\_TOKEN in the policy-service config or in the Docke
 **For global forest watch:**\
 You must set GLOBAL\_FOREST\_WATCH\_API\_KEY in the policy-service config or in the Docker configuration.
 
-**For FIRM:**\
+**For FIRMS:**\
 You must set FIRMS\_AUTH\_TOKEN in the policy-service config or in the Docker configuration.\
 You can easily find them using the keyword "**Integrations** **tokens**"
 
