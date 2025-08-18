@@ -7478,6 +7478,86 @@ paths:
       summary: Apply savepoint
       tags:
         - policies
+    patch:
+      description: Updates the name of a Dry Run savepoint for the policy.
+      operationId: PolicyApi_renameSavepoint
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: savepointId
+          required: true
+          in: path
+          schema:
+            example: '000000000000000000000001'
+            type: string
+      requestBody:
+        required: true
+        description: '{ name: string }'
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+              required:
+                - name
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Rename dry-run savepoint.
+      tags:
+        - policies
+  /policies/{policyId}/savepoints/count:
+    get:
+      description: Returns the number of savepoints for the policy (Dry Run only).
+      operationId: PolicyApi_getSavepointsCount
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            example: '000000000000000000000001'
+            type: string
+        - name: includeDeleted
+          required: false
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get dry-run savepoints count.
+      tags:
+        - policies
   /policies/{policyId}/dry-run/restart:
     post:
       description: >-
