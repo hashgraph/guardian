@@ -72,8 +72,7 @@ export class InterfaceDocumentsSource {
         const savepointIds = saved.__savepointIds as string[] | undefined;
 
         const enableCommonSorting =
-            !!ref.options?.uiMetaData?.enableSorting ||
-            !!savepointIds
+            !!ref.options?.uiMetaData?.enableSorting
 
         const sourceAddons = fields
             ?.filter((field) => field.bindGroup)
@@ -232,7 +231,7 @@ export class InterfaceDocumentsSource {
             return addon.blockType === 'historyAddon';
         }) as IPolicyAddonBlock;
 
-        const enableCommonSorting = ref.options.uiMetaData.enableSorting || (sortDirection && sortField) || !!savepointIds
+        const enableCommonSorting = ref.options.uiMetaData.enableSorting || (sortDirection && sortField)
 
         let sortState = this.state[user.id] || {};
         if (sortDirection && sortField) {
