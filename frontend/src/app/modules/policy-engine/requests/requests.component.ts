@@ -456,19 +456,28 @@ export class PolicyRequestsComponent implements OnInit {
         return '';
     }
 
-    public openVCDocument(document: any) {
-        const dialogRef = this.dialogService.open(VCViewerDialog, {
-            showHeader: false,
-            width: '1000px',
-            styleClass: 'guardian-dialog',
-            data: {
-                row: null,
-                document: document,
-                title: 'Document',
-                type: 'JSON',
-            }
-        });
-        dialogRef.onClose.subscribe(async (result) => {
-        });
+    public openVCDocument(row: any) {
+        this.externalPoliciesService
+            .getRequestDocument({ startMessageId: row.startMessageId })
+            .subscribe((response) => {
+                const dialogRef = this.dialogService.open(VCViewerDialog, {
+                    showHeader: false,
+                    width: '1000px',
+                    styleClass: 'guardian-dialog',
+                    data: {
+                        row: null,
+                        document: response,
+                        title: 'Document',
+                        type: 'JSON',
+                    }
+                });
+                dialogRef.onClose.subscribe(async (result) => {
+                });
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                this.loading = false;
+            });
     }
 }

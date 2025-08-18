@@ -2915,7 +2915,6 @@ export class PolicyEngineService {
                             status: '$status',
                             topicId: '$topicId',
                             messageId: '$messageId',
-                            document: '$document',
                             blockTag: '$blockTag',
                             index: '$index',
                             loaded: '$loaded',
@@ -2937,8 +2936,6 @@ export class PolicyEngineService {
                             messageId: { $last: '$messageId' },
                             startMessageId: { $last: '$startMessageId' },
                             blockTag: { $last: '$blockTag' },
-                            document: { $last: '$document' },
-                            documents: { $addToSet: '$document' },
                             loaded: { $last: '$loaded' },
                         }
                     }, {
@@ -2961,8 +2958,6 @@ export class PolicyEngineService {
                             topicId: '$topicId',
                             messageId: '$messageId',
                             startMessageId: '$startMessageId',
-                            document: '$document',
-                            documents: '$documents',
                             blockTag: '$blockTag',
                             loaded: '$loaded'
                         }
@@ -3029,6 +3024,41 @@ export class PolicyEngineService {
                     }
 
                     return new MessageResponse({ items, count });
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_REMOTE_REQUEST_DOCUMENT,
+            async (msg: { options: any, user: IAuthUser }) => {
+                try {
+                    const { options } = msg;
+                    const { filters, startMessageId } = options;
+                    const _filters: any = { ...filters };
+
+                    if (startMessageId) {
+                        _filters.startMessageId = startMessageId;
+                    }
+
+                    const requestDocuments = await DatabaseServer.getRemoteRequests({
+                        ..._filters
+                    }, { orderBy: { updateDate: -1 } });
+
+                    const requestMap = new Map<string, PolicyAction>();
+
+                    requestDocuments.forEach(element => {
+                        if (element && !requestMap.has(element.status)) {
+                            requestMap.set(element.status, element);
+                        }
+                    });
+
+                    const requestDocument: any = requestMap[PolicyActionStatus.ERROR]
+                        || requestMap[PolicyActionStatus.CANCELED]
+                        || requestMap[PolicyActionStatus.REJECTED]
+                        || requestMap[PolicyActionStatus.COMPLETED]
+                        || requestDocuments[0];
+
+                    return new MessageResponse(requestDocument);
                 } catch (error) {
                     return new MessageError(error);
                 }
