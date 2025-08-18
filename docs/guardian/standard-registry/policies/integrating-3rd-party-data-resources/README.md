@@ -4,8 +4,8 @@ icon: mortar-pestle
 
 # Integrating 3rd Party Data Resources
 
-1. [Step By Step](integrating-3rd-party-data-resources.md#id-1.-step-by-step)
-2. [Demo Video](integrating-3rd-party-data-resources.md#id-2.-demo-video)
+1. [Step By Step](./#id-1.-step-by-step)
+2. [Demo Video](./#id-2.-demo-video)
 
 ## 1. Step By Step <a href="#id-1.-step-by-step" id="id-1.-step-by-step"></a>
 
@@ -18,7 +18,7 @@ Once the block configuration is completed, we need to follow the below steps:
 **Global forest watch:**\
 You can read doc here [https://data-api.globalforestwatch.org/](https://data-api.globalforestwatch.org/) to get x-api-key but it has limitations. For full access, contact their support.
 
-<figure><img src="../../../.gitbook/assets/image (122).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (122).png" alt=""><figcaption></figcaption></figure>
 
 \
 **FIRMS:**
