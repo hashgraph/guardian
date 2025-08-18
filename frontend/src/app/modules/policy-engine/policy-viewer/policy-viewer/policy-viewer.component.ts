@@ -19,6 +19,7 @@ import { AddSavepointDialog, AddSavepointResult } from
         'src/app/modules/policy-engine/policy-viewer/dialogs/add-savepoint-dialog/add-savepoint-dialog.component';
 import { DynamicDialogConfig } from 'primeng/dynamicdialog'
 import { firstValueFrom } from 'rxjs';
+import {OnLoadSavepointDialog} from "../dialogs/on-load-savepoint-dialog/on-load-savepoint-dialog.component";
 
 /**
  * Component for choosing a policy and
@@ -68,7 +69,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     public currentSavepoint: any = null;
     private restoreDialogOpened: boolean = false;
-    private restoreDialogShownOnce: boolean = false;
+    private openedOnLoad = false;
 
     constructor(
         private profileService: ProfileService,
@@ -109,6 +110,29 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
     public get savepointIds(): string[] | null {
         return this.currentSavepoint?.savepointPath;
+    }
+
+    readonly MAX_SAVEPOINTS = 5;
+
+    savepointsCount = 0;
+    get canCreateSavepoint(): boolean {
+        return this.savepointsCount < this.MAX_SAVEPOINTS;
+    }
+
+    get canRestoreSavepoint(): boolean {
+        return this.savepointsCount > 0;
+    }
+
+    get savepointLimitTooltip(): string {
+        return this.canCreateSavepoint
+            ? 'Create a new savepoint'
+            : `You can have up to ${this.MAX_SAVEPOINTS} savepoints. Delete one to create a new savepoint.`;
+    }
+
+    private refreshSavepointsCount(): void {
+        if (!this.isDryRun || !this.policyId) return;
+        this.policyEngineService.getSavepointsCount(this.policyId)
+            .subscribe(({ count }) => this.savepointsCount = count);
     }
 
     private setType(document: any) {
@@ -237,7 +261,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     async loadPolicyById(policyId: string) {
         forkJoin([
             this.policyEngineService.policy(policyId),
-            this.policyEngineService.policyBlock(policyId, this.savepointIds ?? []),
+            this.policyEngineService.policyBlock(policyId, []),
             this.policyEngineService.getGroups(policyId, this.savepointIds),
             this.externalPoliciesService.getActionRequestsCount({ policyId })
         ]).subscribe(
@@ -265,6 +289,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
                 this.policyProgressService.updateData({ role: this.policyInfo.userRole });
 
+                this.refreshSavepointsCount();
+
                 this.policyProgressService.data$
                     .pipe(audit(ev => interval(1000)), takeUntil(this.destroy$))
                     .subscribe(() => {
@@ -277,7 +303,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                             }
                         })
                     })
-                this.openInitRestoreSavepointDialog();
+
+                this.openOnLoadRestoreSavepointDialog();
 
                 this.newRequestsExist = count.requestsCount > 0;
                 this.newActionsExist = count.actionsCount > 0 || count.delayCount > 0;
@@ -542,7 +569,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public updatePolicy() {
         forkJoin([
             this.policyEngineService.getVirtualUsers(this.policyId, this.savepointIds),
-            this.policyEngineService.policyBlock(this.policyId, this.savepointIds),
+            this.policyEngineService.policyBlock(this.policyId, []),
             this.policyEngineService.policy(this.policyId),
         ]).subscribe((value) => {
             this.policy = null;
@@ -639,15 +666,14 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     private openRestoreSavepointDialog(
-        force = false,
         data?: Record<string, any>,
         config?: Partial<DynamicDialogConfig>
     ): void {
-        if (this.restoreDialogOpened || !this.isDryRun || !this.policyId) return;
-        if (!force && this.restoreDialogShownOnce) return;
+        if (this.restoreDialogOpened || !this.isDryRun || !this.policyId) {
+            return;
+        }
 
         this.restoreDialogOpened = true;
-        this.restoreDialogShownOnce = true;
 
         this.policyEngineService.getSavepoints(this.policyId).subscribe({
             next: (resp) => {
@@ -663,7 +689,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 const ref = this.dialogService.open(RestoreSavepointDialog, {
                     showHeader: false,
                     closable: false,
-                    width: '720px',
+                    width: '900px',
                     styleClass: 'guardian-dialog restore-savepoint-dialog',
                     data: { policyId: this.policyId, items, currentSavepointId: this.savepointId, ...(data || {}) },
                     ...(config || {})
@@ -699,11 +725,61 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         });
     }
 
-    private openInitRestoreSavepointDialog(): void {
-        this.openRestoreSavepointDialog(false);
+    private openOnLoadRestoreSavepointDialog(): void {
+        if (this.restoreDialogOpened || this.openedOnLoad || !this.isDryRun || !this.policyId) return;
+
+        this.restoreDialogOpened = true;
+
+        this.policyEngineService.getSavepoints(this.policyId).subscribe({
+            next: (resp) => {
+                const items = (resp?.items ?? []) as Array<{
+                    id: string;
+                    name?: string;
+                    createDate?: string | Date;
+                    isCurrent?: boolean;
+                    isSelected?: boolean;
+                }>;
+
+                if (!items.length) {
+                    this.restoreDialogOpened = false;
+                    this.openedOnLoad = true;
+                    return;
+                }
+
+                const currentId =
+                    this.savepointId ??
+                    items.find((i) => i.isCurrent || i.isSelected)?.id ??
+                    null;
+
+                const ref = this.dialogService.open(OnLoadSavepointDialog, {
+                    showHeader: false,
+                    closable: false,
+                    width: '900px',
+                    styleClass: 'guardian-dialog restore-onload-dialog',
+                    data: { policyId: this.policyId, items, currentSavepointId: currentId }
+                });
+
+                ref.onClose.subscribe((res?: { type: 'apply'|'close'; savepoint?: any }) => {
+                    this.restoreDialogOpened = false;
+                    this.openedOnLoad = true;
+
+                    if (res?.savepoint) {
+                        this.currentSavepoint = res.savepoint;
+                        this.policy = null;
+                        this.groups = [];
+                        this.changeDetector.detectChanges();
+                        this.loadPolicyById(this.policyId);
+                    }
+                });
+            },
+            error: () => {
+                this.restoreDialogOpened = false;
+                this.openedOnLoad = true;
+            }
+        });
     }
 
     public openClickRestoreSavepointDialog(extraData?: Record<string, any>): void {
-        this.openRestoreSavepointDialog(true, extraData);
+        this.openRestoreSavepointDialog(extraData);
     }
 }

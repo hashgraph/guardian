@@ -2080,11 +2080,17 @@ export class PolicyEngineService {
                         throw new Error(`Policy is not in Dry Run`);
                     }
 
-                    const count = await DatabaseServer.getSavepointsCount(policyId, { includeDeleted: true });
+                    const count = await DatabaseServer.getSavepointsCount(policyId);
+
+                    const MAX_SAVEPOINTS = 5;
+
+                    if (count > MAX_SAVEPOINTS) {
+                        throw new Error(`Savepoints limit reached (${MAX_SAVEPOINTS}). Delete existing savepoints to create a new one.`);
+                    }
+
                     if (!count) {
                         await DatabaseServer.nullifyInitialDryRunSavepointIds();
                     }
-
 
                     const savepointId = await DatabaseServer.createSavepoint(policyId, savepointProps);
                     await DatabaseServer.createSavepointStates(policyId, savepointId);

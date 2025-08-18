@@ -133,17 +133,23 @@ export class RestoreSavepointDialog {
     }
 
     public onDelete(item: ISavepointItem): void {
-        if (this.isBusy(item.id)) {
-            return;
-        }
+        if (this.isBusy(item.id)) return;
 
         this.deletingIds.add(item.id);
 
         this.policyEngine.deleteSavepoints(this.policyId, [item.id]).subscribe({
             next: () => {
                 this.items = this.items.filter(i => i.id !== item.id);
+
                 if (this.currentSavepointId === item.id) {
                     this.currentSavepointId = this.items.find(i => i.isCurrent)?.id ?? null;
+                }
+
+                if (this.items.length === 0) {
+                    this.currentSavepointId = null;
+                    this.deletingIds.delete(item.id);
+                    this.ref.close(<IRestoreSavepointAction>{ type: 'deleteAll' });
+                    return;
                 }
             },
             error: () => {
@@ -156,23 +162,20 @@ export class RestoreSavepointDialog {
     }
 
     public onDeleteAll(): void {
-        if (this.deletingAll || !this.items.length) {
-            return;
-        }
+        if (this.deletingAll || !this.items.length) return;
 
         this.deletingAll = true;
-
         const ids = this.items.map(i => i.id);
 
         this.policyEngine.deleteSavepoints(this.policyId, ids).subscribe({
             next: () => {
                 this.items = [];
                 this.currentSavepointId = null;
+                this.deletingAll = false;
+
+                this.ref.close(<IRestoreSavepointAction>{ type: 'deleteAll' });
             },
             error: () => {
-                this.deletingAll = false;
-            },
-            complete: () => {
                 this.deletingAll = false;
             }
         });

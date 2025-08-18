@@ -79,8 +79,6 @@ import { TagsManagerBlockComponent } from './policy-viewer/blocks/tags-manager-b
 import { MessagesReportBlockComponent } from './policy-viewer/blocks/messages-report-block/messages-report-block.component';
 import { ExternalTopicBlockComponent } from './policy-viewer/blocks/external-topic-block/external-topic-block.component';
 import { UploadDocumentBlockComponent } from './policy-viewer/blocks/upload-document-block/upload-document-block.component';
-import { RestoreSavepointDialog } from './policy-viewer/dialogs/restore-savepoint-dialog/restore-savepoint-dialog.component';
-import {AddSavepointDialog} from "./policy-viewer/dialogs/add-savepoint-dialog/add-savepoint-dialog.component";
 //Helpers
 import { HelpIcon } from './helpers/help-icon/help-icon.component';
 import { SavePolicyDialog } from './dialogs/save-policy-dialog/save-policy-dialog.component';
@@ -157,6 +155,9 @@ import { TestCodeDialog } from './dialogs/test-code-dialog/test-code-dialog.comp
 import { ProjectDataExportComponent } from './project-data-export/project-data-export.component';
 import { TransformationButtonBlockComponent } from './policy-viewer/blocks/transformation-button-block/transformation-button-block.component';
 import { IntegrationButtonBlockComponent } from './policy-viewer/blocks/integration-button-block/integration-button-block.component';
+import { RestoreSavepointDialog } from './policy-viewer/dialogs/restore-savepoint-dialog/restore-savepoint-dialog.component';
+import { AddSavepointDialog } from "./policy-viewer/dialogs/add-savepoint-dialog/add-savepoint-dialog.component";
+import { OnLoadSavepointDialog } from "./policy-viewer/dialogs/on-load-savepoint-dialog/on-load-savepoint-dialog.component";
 
 @NgModule({
     declarations: [
@@ -272,7 +273,8 @@ import { IntegrationButtonBlockComponent } from './policy-viewer/blocks/integrat
         TestCodeDialog,
         SearchToolDialog,
         RestoreSavepointDialog,
-        AddSavepointDialog
+        AddSavepointDialog,
+        OnLoadSavepointDialog
     ],
     imports: [
         CommonModule,

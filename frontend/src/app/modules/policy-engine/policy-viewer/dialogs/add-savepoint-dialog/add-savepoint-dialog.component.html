@@ -15,8 +15,24 @@
             placeholder="To save the current position, please enter a name" />
     </div>
 
-    <div class="footer">
-        <button class="guardian-button ghost" type="button" (click)="onCancel()">Cancel</button>
-        <button class="guardian-button primary" type="button" (click)="onAdd()" [disabled]="!canAdd">Add</button>
+    <div class="action-buttons footer">
+        <div class="cancel-button">
+            <button
+                (click)="onCancel()"
+                class="button secondary"
+                pButton
+                label="Cancel">
+            </button>
+        </div>
+        <div>
+            <button
+                (click)="onAdd()"
+                class="button"
+                pButton
+                label="Add"
+                [disabled]="!canAdd">
+            </button>
+        </div>
     </div>
 </div>
+
