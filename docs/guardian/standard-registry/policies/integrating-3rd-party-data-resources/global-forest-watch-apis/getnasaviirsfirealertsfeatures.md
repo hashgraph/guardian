@@ -21,3 +21,23 @@ Get Nasa Viirs fire alerts features
 | z           | number | zoom level  |
 | start\_date | Date   | Start Date  |
 | end\_date   | Date   | End Date    |
+
+**Response**
+
+{% tabs %}
+{% tab title="422" %}
+```
+{
+  "detail": [
+    {
+      "loc": [
+        "string"
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+```
+{% endtab %}
+{% endtabs %}

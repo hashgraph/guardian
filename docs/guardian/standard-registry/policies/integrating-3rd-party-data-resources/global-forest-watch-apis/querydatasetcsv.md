@@ -20,3 +20,23 @@ GET /dataset/:dataset/:version/query/csv
 | geostore\_Id     | string | Geostore ID      |
 | sql              | query  | SQL              |
 | geostore\_origin | string | Geostore\_Origin |
+
+**Response**
+
+{% tabs %}
+{% tab title="422" %}
+```
+{
+  "detail": [
+    {
+      "loc": [
+        "string"
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+} 
+```
+{% endtab %}
+{% endtabs %}

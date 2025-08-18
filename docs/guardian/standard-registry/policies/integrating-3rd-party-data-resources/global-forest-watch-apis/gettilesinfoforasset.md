@@ -16,3 +16,23 @@ Get tiles info for asset
 | Name      | Type   | Description |
 | --------- | ------ | ----------- |
 | asset\_Id | string | Asset ID    |
+
+**Response**
+
+{% tabs %}
+{% tab title="422" %}
+```
+{
+  "detail": [
+    {
+      "loc": [
+        "string"
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+```
+{% endtab %}
+{% endtabs %}
