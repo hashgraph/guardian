@@ -36,7 +36,8 @@
 
     <div class="dlg__footer action-buttons">
         <button class="guardian-button ghost" type="button" (click)="onCancel()">Cancel</button>
-        <button class="guardian-button primary" type="button" (click)="onRestore()" [disabled]="!selectedId || applying">
+        <button class="guardian-button primary" type="button" (click)="onRestore()"
+                [disabled]="!selectedId || applying">
             Restore
         </button>
     </div>

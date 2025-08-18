@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { IUser, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
 import { forkJoin, interval, Subject, Subscription, of } from 'rxjs';
-import { audit, takeUntil, map, catchError, switchMap } from 'rxjs/operators';
+import { audit, takeUntil, map, catchError, switchMap, tap } from 'rxjs/operators';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -18,7 +18,6 @@ import { RestoreSavepointDialog, IRestoreSavepointAction } from
 import { AddSavepointDialog, AddSavepointResult } from
         'src/app/modules/policy-engine/policy-viewer/dialogs/add-savepoint-dialog/add-savepoint-dialog.component';
 import { DynamicDialogConfig } from 'primeng/dynamicdialog'
-import { firstValueFrom } from 'rxjs';
 import {OnLoadSavepointDialog} from "../dialogs/on-load-savepoint-dialog/on-load-savepoint-dialog.component";
 
 /**
@@ -70,6 +69,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public currentSavepoint: any = null;
     private restoreDialogOpened: boolean = false;
     private openedOnLoad = false;
+    private forceAdminAfterReload = false;
 
     constructor(
         private profileService: ProfileService,
@@ -155,19 +155,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         }
         return document;
     }
-
-    // private getSavepointState() {
-    //     if (!this.isDryRun) {
-    //         return;
-    //     }
-    //     this.policyEngineService
-    //         .getSavepointState(this.policyInfo.id)
-    //         .subscribe((value) => {
-    //             this.savePointState = value.state;
-    //         }, (e) => {
-    //             this.savePointState = false;
-    //         });
-    // }
 
     ngOnInit() {
         this.loading = true;
@@ -259,12 +246,16 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     async loadPolicyById(policyId: string) {
-        forkJoin([
-            this.policyEngineService.policy(policyId),
-            this.policyEngineService.policyBlock(policyId, []),
-            this.policyEngineService.getGroups(policyId, this.savepointIds),
-            this.externalPoliciesService.getActionRequestsCount({ policyId })
-        ]).subscribe(
+        this.loading = true;
+
+        this.ensureAdminIfNeeded(policyId).pipe(
+            switchMap(() => forkJoin([
+                this.policyEngineService.policy(policyId),
+                this.policyEngineService.policyBlock(policyId, null),
+                this.policyEngineService.getGroups(policyId, this.savepointIds),
+                this.externalPoliciesService.getActionRequestsCount({ policyId })
+            ]))
+        ).subscribe(
             (value) => {
                 this.policyInfo = value[0];
                 this.policy = value[1];
@@ -388,31 +379,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     this.loading = false;
                 });
     }
-
-    // public createSavepoint() {
-    //     this.loading = true;
-    //     this.policyEngineService.createSavepoint(this.policyInfo.id).subscribe(({ savepointId }) => {
-    //         this.savepointId = savepointId;
-    //         this.loadPolicyById(this.policyId, this.savepointId);
-    //         // this.getSavepointState();
-    //     }, (e) => {
-    //         this.loading = false;
-    //     }
-    //     );
-    // }
-
-    // public restoreSavepoint() {
-    //     this.loading = true;
-    //     this.policyEngineService.restoreSavepoint(this.policyInfo.id).subscribe(() => {
-    //         this.policy = null;
-    //         this.policyInfo = null;
-    //         this.isMultipleGroups = false;
-    //         this.loadPolicyById(this.policyId);
-    //     }, (e) => {
-    //         this.loading = false;
-    //     }
-    //     );
-    // }
 
     restartDryRun() {
         this.loading = true;
@@ -569,7 +535,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public updatePolicy() {
         forkJoin([
             this.policyEngineService.getVirtualUsers(this.policyId, this.savepointIds),
-            this.policyEngineService.policyBlock(this.policyId, []),
+            this.policyEngineService.policyBlock(this.policyId, null),
             this.policyEngineService.policy(this.policyId),
         ]).subscribe((value) => {
             this.policy = null;
@@ -658,7 +624,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 .subscribe({
                     next: ({ savepoint }) => {
                         this.currentSavepoint = savepoint
-                        this.loadPolicyById(this.policyId);
+                        this.forceAdminAfterReload = true
+                        this.loadPolicyById(this.policyId)
                     },
                     error: () => { this.loading = false; }
                 });
@@ -707,6 +674,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     if (result.savepoint) {
                         this.currentSavepoint = result.savepoint;
 
+                        this.forceAdminAfterReload = true;
                         this.policy = null;
                         this.groups = [];
                         this.changeDetector.detectChanges();
@@ -726,7 +694,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     private openOnLoadRestoreSavepointDialog(): void {
-        if (this.restoreDialogOpened || this.openedOnLoad || !this.isDryRun || !this.policyId) return;
+        if (this.restoreDialogOpened || this.openedOnLoad || !this.isDryRun || !this.policyId) {
+            return;
+        }
 
         this.restoreDialogOpened = true;
 
@@ -740,7 +710,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     isSelected?: boolean;
                 }>;
 
-                if (!items.length) {
+                if (items.length <= 1) {
                     this.restoreDialogOpened = false;
                     this.openedOnLoad = true;
                     return;
@@ -765,6 +735,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
                     if (res?.savepoint) {
                         this.currentSavepoint = res.savepoint;
+
+                        this.forceAdminAfterReload = true;
                         this.policy = null;
                         this.groups = [];
                         this.changeDetector.detectChanges();
@@ -781,5 +753,29 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     public openClickRestoreSavepointDialog(extraData?: Record<string, any>): void {
         this.openRestoreSavepointDialog(extraData);
+    }
+
+    private findAdminUser(users: any[]): any | null {
+        return users?.find(u =>
+            /admin/i.test(u?.username || '') ||
+            /admin/i.test(u?.role || '') ||
+            u?.isAdmin
+        ) ?? null;
+    }
+
+    private ensureAdminIfNeeded(policyId: string) {
+        if (!this.forceAdminAfterReload) {
+            return of(null);
+        }
+
+        return this.policyEngineService.getVirtualUsers(policyId, this.savepointIds).pipe(
+            map(users => this.findAdminUser(users)),
+            switchMap(admin => admin?.did
+                ? this.policyEngineService.loginVirtualUser(policyId, admin.did)
+                : of(null)
+            ),
+            catchError(() => of(null)),
+            tap(() => { this.forceAdminAfterReload = false; })
+        );
     }
 }

@@ -180,4 +180,35 @@ export class RestoreSavepointDialog {
             }
         });
     }
+
+    private isItemCurrent(item: ISavepointItem): boolean {
+        return this.currentSavepointId
+            ? item.id === this.currentSavepointId
+            : !!item.isCurrent;
+    }
+
+    public isDeleteDisabled(item: ISavepointItem): boolean {
+        const isCurrent = this.isItemCurrent(item);
+        return this.isBusy(item.id) || (isCurrent && this.items.length > 1);
+    }
+
+    public getDeleteTooltip(item: ISavepointItem): string {
+        if (this.isBusy(item.id)) {
+            return 'Please wait…';
+        }
+        const isCurrent = (item.id === this.currentSavepointId) || !!item.isCurrent;
+        if (isCurrent && this.items.length > 1) {
+            return 'You can’t delete the current savepoint. Apply another savepoint or delete others first.';
+        }
+        return 'Delete';
+    }
+
+    public isApplyDisabled(item: ISavepointItem): boolean {
+        return this.isBusy(item.id) || this.isItemCurrent(item);
+    }
+
+    public getApplyTooltip(item: ISavepointItem): string {
+        if (this.isBusy(item.id)) return 'Please wait...';
+        return this.isItemCurrent(item) ? 'Already applied' : 'Apply';
+    }
 }

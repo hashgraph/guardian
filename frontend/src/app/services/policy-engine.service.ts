@@ -114,8 +114,6 @@ export class PolicyEngineService {
     }
 
     public policyBlock(policyId: string, savepointIds: string[] | null): Observable<any> {
-        // console.log('policyBlock', savepointIds);
-        // console.trace();
         let params = new HttpParams();
 
         if (savepointIds) {
@@ -453,8 +451,6 @@ export class PolicyEngineService {
     }
 
     public getPolicyNavigation(policyId: string, savepointIds?: string[] | null): Observable<any> {
-        // console.log('getPolicyNavigation', savepointIds);
-        // console.trace();
         let params = new HttpParams();
 
         if (savepointIds) {
