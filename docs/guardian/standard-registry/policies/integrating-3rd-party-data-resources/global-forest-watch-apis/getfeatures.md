@@ -20,3 +20,23 @@ Get features
 | lat     | number | Latitude    |
 | lng     | number | Longitude   |
 | z       | number | Zoom level  |
+
+**Response**
+
+{% tabs %}
+{% tab title="422" %}
+```
+{
+  "detail": [
+    {
+      "loc": [
+        "string"
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+```
+{% endtab %}
+{% endtabs %}

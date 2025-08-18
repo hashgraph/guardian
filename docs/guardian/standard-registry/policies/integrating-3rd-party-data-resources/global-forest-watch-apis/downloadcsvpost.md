@@ -19,3 +19,23 @@ POST /dataset/:dataset/:version/download/csv
 | Version  | number | version                     |
 | geometry | Object | Geometry (stringify object) |
 | sql      | query  | SQL                         |
+
+**Response**
+
+{% tabs %}
+{% tab title="422" %}
+```
+{
+  "detail": [
+    {
+      "loc": [
+        "string"
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+```
+{% endtab %}
+{% endtabs %}

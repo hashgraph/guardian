@@ -19,3 +19,29 @@ POST /dataset/:dataset/:version/query/json
 | Version  | number | version                     |
 | geometry | Object | Geometry (Stringify object) |
 | sql      | query  | SQL                         |
+
+**Response**
+
+{% tabs %}
+{% tab title="200" %}
+```
+string
+```
+{% endtab %}
+
+{% tab title="422" %}
+```
+{
+  "detail": [
+    {
+      "loc": [
+        "string"
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+```
+{% endtab %}
+{% endtabs %}

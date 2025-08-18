@@ -20,3 +20,23 @@ Get geotiff raster tile
 | grid           | number | Grid          |
 | tile\_id       | number | Tile ID       |
 | pixel\_meaning | string | Pixel Meaning |
+
+**Response**
+
+{% tabs %}
+{% tab title="422" %}
+```
+{
+  "detail": [
+    {
+      "loc": [
+        "string"
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+```
+{% endtab %}
+{% endtabs %}

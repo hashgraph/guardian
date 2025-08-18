@@ -19,3 +19,29 @@ GET /dataset/:dataset/:version/download\_by\_aoi/json
 | Version | number | version                                                                       |
 | sql     | query  | SQL                                                                           |
 | aoi     | string | GeostoreAreaOfInterest or AdminAreaOfInterest or Global or WdpaAreaOfInterest |
+
+Response
+
+{% tabs %}
+{% tab title="200" %}
+```
+string
+```
+{% endtab %}
+
+{% tab title="422" %}
+```
+{
+  "detail": [
+    {
+      "loc": [
+        "string"
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+```
+{% endtab %}
+{% endtabs %}

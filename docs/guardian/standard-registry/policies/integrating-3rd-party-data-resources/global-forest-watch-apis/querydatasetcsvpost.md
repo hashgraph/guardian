@@ -23,20 +23,18 @@ POST /dataset/:dataset/:version/query/csv
 **Response**
 
 {% tabs %}
-{% tab title="200" %}
+{% tab title="422" %}
 ```json
 {
-  "id": 1,
-  "name": "John",
-  "age": 30
-}
-```
-{% endtab %}
-
-{% tab title="400" %}
-```json
-{
-  "error": "Invalid request"
+  "detail": [
+    {
+      "loc": [
+        "string"
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
 }
 ```
 {% endtab %}
