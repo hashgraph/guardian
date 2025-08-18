@@ -552,6 +552,7 @@
       * [Delete Notifications](guardian/standard-registry/notifications/apis-related-to-notification/delete-notifications.md)
   * [Discontinuing Policy Workflow](guardian/standard-registry/discontinuing-policy-workflow/README.md)
     * [User Guide](guardian/standard-registry/discontinuing-policy-workflow/user-guide.md)
+    * [Deprecating VM0042 v1.0 and Migrating to VM0042 v2.1 Using Migration Wizard](guardian/standard-registry/discontinuing-policy-workflow/deprecating-vm0042-v1.0-and-migrating-to-vm0042-v2.1-using-migration-wizard.md)
     * [APIs related to Discontinuing Policy workflow](guardian/standard-registry/discontinuing-policy-workflow/apis-related-to-discontinuing-policy-workflow/README.md)
       * [Discontinue Policy](guardian/standard-registry/discontinuing-policy-workflow/apis-related-to-discontinuing-policy-workflow/discontinue-policy.md)
       * [MigratePolicy Data](guardian/standard-registry/discontinuing-policy-workflow/apis-related-to-discontinuing-policy-workflow/migratepolicy-data.md)
@@ -820,6 +821,20 @@
 * [📚 Methodology Digitization Handbook](methodology-digitization-handbook/README.md)
   * [📋 Table of Contents](methodology-digitization-handbook/table-of-contents.md)
   * [📝 Chapter Outlines](methodology-digitization-handbook/chapter-outlines.md)
+  * [🏗️ Part I: Foundation and Preparation](methodology-digitization-handbook/part-1/README.md)
+    * [Chapter 1: Introduction to Methodology Digitization](methodology-digitization-handbook/part-1/chapter-1/README.md)
+    * [Chapter 2: Understanding VM0033 Methodology](methodology-digitization-handbook/part-1/chapter-2/README.md)
+    * [Chapter 3: Guardian Platform Overview](methodology-digitization-handbook/part-1/chapter-3/README.md)
+  * [🔍 Part II: Analysis and Planning](methodology-digitization-handbook/part-2/README.md)
+    * [Chapter 4: Methodology Analysis and Decomposition](methodology-digitization-handbook/part-2/chapter-4/README.md)
+    * [Chapter 5: Equation Mapping and Parameter Identification](methodology-digitization-handbook/part-2/chapter-5/README.md)
+    * [Chapter 6: Tools and Modules Integration](methodology-digitization-handbook/part-2/chapter-6/README.md)
+    * [Chapter 7: Test Artifact Development](methodology-digitization-handbook/part-2/chapter-7/README.md)
+  * [🔧 Shared Resources](methodology-digitization-handbook/_shared/README.md)
+    * [📄 Templates](methodology-digitization-handbook/_shared/templates/README.md)
+    * [🔗 VM0033 Integration](methodology-digitization-handbook/_shared/vm0033-integration/README.md)
+    * [⚙️ Guardian Integration](methodology-digitization-handbook/_shared/guardian-integration/README.md)
+    * [🗂️ Artifacts Collection](methodology-digitization-handbook/_shared/artifacts/README.md)
 
 ***
 

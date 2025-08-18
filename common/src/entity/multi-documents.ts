@@ -144,6 +144,7 @@ export class MultiDocuments extends RestoreEntity {
             delete this.document;
             this._updateDocHash(document);
         }
+        this._updatePropHash(this.createProp());
     }
 
     /**

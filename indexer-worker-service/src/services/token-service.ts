@@ -24,21 +24,24 @@ export class TokenService {
             data.lastUpdate = Date.now();
 
             const info = await HederaService.getToken(row.tokenId);
-            if (info && row.status !== 'UPDATED') {
-                data.status = 'UPDATED';
-                data.name = info.name;
-                data.symbol = info.symbol;
-                data.type = info.type;
-                data.treasury = info.treasury_account_id;
-                data.memo = info.memo;
+            if (info) {
                 data.totalSupply = info.total_supply;
-                data.decimals = info.decimals;
+
+                if (row.status !== 'UPDATED') {
+                    data.status = 'UPDATED';
+                    data.name = info.name;
+                    data.symbol = info.symbol;
+                    data.type = info.type;
+                    data.treasury = info.treasury_account_id;
+                    data.memo = info.memo;
+                    data.decimals = info.decimals;
+                }
             }
-            
+
             if(!data.createdTimestamp) {
                 data.createdTimestamp = info.created_timestamp;
             }
-            
+
             if(!data.modifiedTimestamp) {
                 data.modifiedTimestamp = info.modified_timestamp;
             }
@@ -83,7 +86,7 @@ export class TokenService {
             await LogService.error(error, 'update token');
         }
     }
-        
+
     public static onTokenFinished(row: any) {
         if (TokenService.CHANNEL && row.priorityTimestamp) {
             TokenService.CHANNEL.publicMessage(IndexerMessageAPI.ON_PRIORITY_DATA_LOADED, {
