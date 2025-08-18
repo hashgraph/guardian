@@ -1254,8 +1254,11 @@ export class PolicyEngineService {
 
                     await this.policyEngine.destroyModel(model.id.toString(), owner?.id);
 
-                    const databaseServer = new DatabaseServer(model.id.toString());
-                    await databaseServer.clear(true);
+                    const savepointsCount = await DatabaseServer.getSavepointsCount(model.id.toString());
+                    if (savepointsCount === 0) {
+                        const databaseServer = new DatabaseServer(model.id.toString());
+                        await databaseServer.clear(true);
+                    }
 
                     return new MessageResponse(true);
                 } catch (error) {
