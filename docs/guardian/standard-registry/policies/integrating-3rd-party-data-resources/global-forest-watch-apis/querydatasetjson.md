@@ -1,0 +1,22 @@
+# queryDatasetJson
+
+GET /dataset/:dataset/:version/query/json
+
+(JSON) Execute a READ-ONLY SQL query on the given dataset version
+
+**Headers**
+
+| Name          | Value              |
+| ------------- | ------------------ |
+| Content-Type  | `application/json` |
+| Authorization | `Bearer <token>`   |
+
+**Body**
+
+| Name             | Type   | Description      |
+| ---------------- | ------ | ---------------- |
+| Dataset          | string | Dataset          |
+| Version          | number | version          |
+| geostore\_Id     | string | Geostore ID      |
+| sql              | query  | SQL              |
+| geostore\_origin | string | Geostore\_Origin |
