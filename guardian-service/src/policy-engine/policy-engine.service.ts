@@ -2910,6 +2910,7 @@ export class PolicyEngineService {
                             createDate: '$createDate',
                             accountId: '$accountId',
                             type: '$type',
+                            documentType: '$document.type',
                             startMessageId: '$startMessageId',
                             policyId: '$policyId',
                             status: '$status',
@@ -2929,6 +2930,7 @@ export class PolicyEngineService {
                         $group: {
                             _id: '$startMessageId',
                             type: { $last: '$type' },
+                            documentType: { $last: '$documentType' },
                             statuses: { $addToSet: '$status' },
                             createDate: { $last: '$createDate' },
                             policyId: { $last: '$policyId' },
@@ -2942,6 +2944,7 @@ export class PolicyEngineService {
                         $project: {
                             statuses: '$statuses',
                             type: '$type',
+                            documentType: '$documentType',
                             status: {
                                 $switch: {
                                     branches: [
