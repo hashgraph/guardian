@@ -109,7 +109,7 @@ export class ExternalPoliciesService {
         return this.http.get<any>(`${this.url}/requests/count`, { observe: 'response', params });
     }
 
-    public getRequestDocument(filters: any): Observable<HttpResponse<any[]>> {
+    public getRequestDocument(filters: any): Observable<HttpResponse<any>> {
         const params = ExternalPoliciesService.getOptions(filters);
         return this.http.get<any>(`${this.url}/requests/document`, { observe: 'response', params });
     }

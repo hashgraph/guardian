@@ -466,7 +466,7 @@ export class PolicyRequestsComponent implements OnInit {
                     styleClass: 'guardian-dialog',
                     data: {
                         row: null,
-                        document: response,
+                        document: response?.body?.document || response?.body,
                         title: 'Document',
                         type: 'JSON',
                     }
