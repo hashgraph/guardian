@@ -116,7 +116,9 @@ export class LargePayloadContainer {
                 res.sendStatus(404);
                 return
             }
-            this.objectsMap.delete(objectID)
+            setTimeout(() => {
+                this.objectsMap.delete(objectID);
+            }, 60 * 1000);
             res.send(buf);
         })
 
@@ -171,7 +173,7 @@ export class LargePayloadContainer {
     private generateRandom(min: number, max: number) {
         const difference = max - min;
         let rand = Math.random();
-        rand = Math.floor( rand * difference);
+        rand = Math.floor(rand * difference);
         rand = rand + min;
         return rand;
     }

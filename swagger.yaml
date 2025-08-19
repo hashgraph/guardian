@@ -9415,7 +9415,7 @@ paths:
               - USER
               - POLICY
               - MINT_TOKEN
-              - INTEGRATION_DATA
+              - INTEGRATION_DATA_V2
               - WIPE_TOKEN
               - MINT_NFTOKEN
             type: string
@@ -17340,7 +17340,7 @@ components:
             - USER
             - POLICY
             - MINT_TOKEN
-            - INTEGRATION_DATA
+            - INTEGRATION_DATA_V2
             - RETIRE
             - WIPE_TOKEN
             - MINT_NFTOKEN

@@ -220,6 +220,7 @@ export class VpDocument extends RestoreEntity implements IVPDocument {
             }
             this._updateDocHash(document);
         }
+        this._updatePropHash(this.createProp());
     }
 
     /**

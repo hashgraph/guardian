@@ -16,7 +16,7 @@ The `customLogicBlock` supports isolated dry-run execution. This means it can be
 
 Execution is controlled through a step-by-step interface in the UI, enabling users to define parameters, input data, and immediately inspect the results.
 
-<figure><img src="../../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 ***
 
@@ -26,7 +26,7 @@ Execution is controlled through a step-by-step interface in the UI, enabling use
 
 Users can adjust various configuration options related to the block directly within the dry-run interface. This avoids the need to navigate back to the main policy editor and streamlines the testing workflow.
 
-<figure><img src="../../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ***
 
@@ -40,21 +40,21 @@ The block can be tested using mock input data. Three primary input methods are s
 * A dynamic form is generated based on the schema, allowing users to fill in relevant fields.
 * Ideal for users who prefer a structured and guided input interface.
 
-<figure><img src="../../../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (3) (1) (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 **b. JSON Editor**
 
 * Directly input JSON-formatted data using the built-in editor.
 * Best suited for advanced users or when precise control over the input format is needed.
 
-<figure><img src="../../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (4) (1) (4).png" alt=""><figcaption></figcaption></figure>
 
 **c. File Upload**
 
 * Upload a JSON file containing the test data.
 * The file must be well-formed JSON.
 
-<figure><img src="../../../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (5) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 > **Note**: Only valid JSON inputs are accepted. Malformed files will cause parsing errors.
 
@@ -75,7 +75,7 @@ To utilize this:
 * Historical data is only available in dry-run mode and is cleared upon exit.
 * Code changes made in dry-run are not persisted. To retain them, re-enter the changes in **Draft Mode** of the policy.
 
-<figure><img src="../../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (7) (1).png" alt=""><figcaption></figcaption></figure>
 
 ***
 
@@ -86,7 +86,7 @@ In the final step:
 * Modify the code as needed.
 * Press the **Test** button to execute.
 
-<figure><img src="../../../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (9) (4).png" alt=""><figcaption></figcaption></figure>
 
 **Debugging Tips**
 
@@ -99,7 +99,7 @@ javascriptCopyEditdebug("Variable Value", variable);
 * Outputs appear in the **Logs** tab.
 * Has no effect (noop) when the policy is in **Published Mode**.
 
-<figure><img src="../../../../.gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (8) (2).png" alt=""><figcaption></figcaption></figure>
 
 ***
 
@@ -114,13 +114,13 @@ Upon completion of the dry-run, the results are split into several tabs:
 | **Output** | Final result VC document (if execution succeeds).               |
 | **Errors** | Any errors encountered during test-run.                         |
 
-<figure><img src="../../../../.gitbook/assets/image (10).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (10) (5).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (11) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (12).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (12) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (13) (1).png" alt=""><figcaption></figcaption></figure>
 
 ***
 

@@ -1068,42 +1068,64 @@ export class HederaSDKHelper {
         if (startTimestamp) {
             url += `?timestamp=gt:${startTimestamp}`;
         }
-        const result = [];
-        const p = {
+
+        const params: any = {
             params: { limit: HederaSDKHelper.REST_API_MAX_LIMIT },
             responseType: 'json'
         }
 
+        const messageMap = new Map<string, any[]>();
         while (goNext) {
-            const res = await axios.get(url, p as any);
-            delete p.params
+            const res = await axios.get(url, params);
+            delete params.params;
 
             if (!res || !res.data || !res.data.messages) {
                 throw new Error(`Invalid topicId '${topicId}'`);
             }
 
             const messages = res.data.messages;
-            if (messages.length === 0) {
-                return result;
-            }
-
-            for (const m of messages) {
-                const buffer = Buffer.from(m.message, 'base64').toString();
-                result.push({
-                    id: m.consensus_timestamp,
-                    payer_account_id: m.payer_account_id,
-                    sequence_number: m.sequence_number,
-                    topicId: m.topic_id,
-                    message: buffer
-                });
-            }
-            if (res.data.links?.next) {
-                url = `${res.request.protocol}//${res.request.host}${res.data.links?.next}`;
+            if (messages.length !== 0) {
+                for (const m of messages) {
+                    let messageId: string;
+                    if (m?.chunk_info?.total !== 1) {
+                        messageId = m.chunk_info?.initial_transaction_id?.transaction_valid_start || m.consensus_timestamp;
+                    } else {
+                        messageId = m.consensus_timestamp;
+                    }
+                    const items = messageMap.get(messageId) || [];
+                    items.push(m);
+                    messageMap.set(messageId, items);
+                }
+                if (res.data.links?.next) {
+                    url = `${res.request.protocol}//${res.request.host}${res.data.links?.next}`;
+                } else {
+                    goNext = false;
+                }
             } else {
                 goNext = false;
             }
         }
 
+        const result = [];
+        for (const items of messageMap.values()) {
+            if (items.length > 1) {
+                items.sort((a, b) => a.chunk_info.number > b.chunk_info.number ? 1 : -1);
+            }
+            const start = items[0];
+            const message = {
+                id: start.consensus_timestamp,
+                payer_account_id: start.payer_account_id,
+                sequence_number: start.sequence_number,
+                topicId: start.topic_id,
+                message: ''
+            }
+            for (const item of items) {
+                const buffer = Buffer.from(item.message, 'base64').toString();
+                message.message += buffer;
+            }
+            result.push(message);
+        }
+        result.sort((a, b) => a.sequence_number > b.sequence_number ? 1 : -1);
         return result;
     }
 

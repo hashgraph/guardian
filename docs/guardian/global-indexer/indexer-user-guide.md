@@ -6,9 +6,9 @@
 
 ## 1. Step By Step Process
 
-Indexer provides a global search facility on the landing page, and other pages’ headers. It allows users to find information by matching string values.&#x20;
+Indexer provides a global search facility on the landing page, and other pages’ headers. It allows users to find information by matching string values.
 
-For example ‘Project Description’ will find all entities which include ‘Project’ word or ‘Description’ word.&#x20;
+For example ‘Project Description’ will find all entities which include ‘Project’ word or ‘Description’ word.
 
 To find an exact phrase you need to use double quotes, e.g. type something like ‘“Project Description”’. Words can be excluded by typing ‘-’ symbol in the request. All searched entities have metadata in Hedera messages, search looks at policy message IDs, schema names, schema message IDs, VC/VP document content/values, schema properties, schema field names, etc…
 
@@ -35,35 +35,26 @@ Please note that it would take minimum 6 hours to load complete Indexer data.
 
 ![](<../../.gitbook/assets/1 (16).png>)
 
-### Indexer UI sections:&#x20;
+### Indexer UI sections:
 
-Accounts, Methodologies, Documents, Others.&#x20;
+Accounts, Methodologies, Documents, Others.
 
 Sections have specific grids for displaying data and filters:
 
-*   Accounts:
-
-    * Standard Registries
-    * Registry Users
-
-
-*   Methodologies:
-
-    * Policies
-    * Tools
-    * Modules
-    * Schemas
-    * Tokens
-    * Roles
-
-
-*   Documents:
-
-    * DIDs
-    * VCs
-    * VPs
-
-
+* Accounts:
+  * Standard Registries
+  * Registry Users
+* Methodologies:
+  * Policies
+  * Tools
+  * Modules
+  * Schemas
+  * Tokens
+  * Roles
+* Documents:
+  * DIDs
+  * VCs
+  * VPs
 * Others:
   * NFTs
   * Topics
@@ -73,7 +64,7 @@ Example of the grid displaying data is seen on the screenshot below:
 
 ![](<../../.gitbook/assets/2 (18).png>)
 
-Majority of the grids provide capability to search by keyword filter, which has some differences in comparison to global search. In the search failed it uses ‘chips’, i.e. type and press ENTER to add values, to search for specified items based on an AND condition.&#x20;
+Majority of the grids provide capability to search by keyword filter, which has some differences in comparison to global search. In the search failed it uses ‘chips’, i.e. type and press ENTER to add values, to search for specified items based on an AND condition.
 
 For example, searching for. schema by typing ‘Project’ and ‘Description’ will find all schemas which contain ‘Project’ and ‘Description’ strings.
 
@@ -152,7 +143,7 @@ VC details has the following tabs:
 * History - document history since it was created.
 * Relationships - document relationships with links to policy, roles, schemas, standard registry, other documents.
 
-<figure><img src="../../.gitbook/assets/image (2) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (2) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 * Raw Data - raw message data.
 

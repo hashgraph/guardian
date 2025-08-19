@@ -90,7 +90,7 @@ Navigate back to the Project Proponent profile to complete the monitoring report
 
 Upon selecting "Add Report", a file will open containing the project details and schemas previously filled out. Here, you can update the information based on the relevant monitoring plan provided by the methodology. After updating the information and including a project area map, you may click on "Ok" to proceed. (For this demo, we utilized the same values from the provided Excel file.)
 
-<figure><img src="../../../.gitbook/assets/image (14) (5) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (14) (5) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Once you have completed the monitoring report, please access the VVB profile and go to the monitoring reports tab. Here, you will find a "Verify" button - select that to proceed.
 

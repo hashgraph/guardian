@@ -85,7 +85,7 @@ export class SignVC {
         );
 
         return {
-            type: PolicyActionType.SignAndSendRole,
+            type: PolicyActionType.SignVC,
             options,
             issuer: user.did,
             document: userVC.getDocument()
