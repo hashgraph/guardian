@@ -2,7 +2,7 @@
 
 This chapter teaches you how to build monitoring report schemas that handle time-series data collection and calculation updates. You'll learn the exact field-by-field process used for VM0033's monitoring schema, building on the PDD foundation from Chapter 9.
 
-By the end of this chapter, you'll know how to create the [VM0033 Monitoring schema](../../../_shared/artifacts/Monitoring-schema.xlsx) structure yourself, understanding temporal data management, annual parameter tracking, and calculation update mechanisms.
+By the end of this chapter, you'll know how to create the [VM0033 Monitoring schema](../../_shared/artifacts/Monitoring-schema.xlsx) structure yourself, understanding temporal data management, annual parameter tracking, and calculation update mechanisms.
 
 ## Monitoring Schema Purpose and Structure
 

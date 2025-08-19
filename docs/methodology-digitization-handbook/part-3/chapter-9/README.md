@@ -2,11 +2,11 @@
 
 This chapter teaches you how to build Guardian schemas step-by-step using the Excel-first approach for PDD implementation. You'll learn the exact field-by-field process used for VM0033, translating methodology analysis from Part II into working Guardian schema structures.
 
-By the end of this chapter, you'll know how to create the [VM0033 PDD schema](../../../_shared/artifacts/PDD-schema.xlsx) like structure yourself, understanding each Guardian field type, conditional logic implementation, and how methodology parameters become functional data collection forms.
+By the end of this chapter, you'll know how to create the [VM0033 PDD schema](../../_shared/artifacts/PDD-schema.xlsx) like structure yourself, understanding each Guardian field type, conditional logic implementation, and how methodology parameters become functional data collection forms.
 
 ## Guardian Schema Development Process
 
-Complex Guardian schemas can be built using Excel templates that define the data structure, and then imported into Guardian. The [schema template](../../../_shared/artifacts/schema-template-excel.xlsx) shows all available field types and their configuration options.
+Complex Guardian schemas can be built using Excel templates that define the data structure, and then imported into Guardian. The [schema template](../../_shared/artifacts/schema-template-excel.xlsx) shows all available field types and their configuration options.
 
 **Alternative Schema Building Methods:**
 - **Excel-first approach** (recommended for complex methodologies): Design in Excel, then import - covered in this chapter
