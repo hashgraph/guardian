@@ -76,15 +76,15 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 </details>
 
 <details>
-<summary><strong>Part III: Schema Design (Chapters 8-12)</strong> - 40-50 minutes</summary>
+<summary><strong>Part III: Schema Design and Development (Chapters 8-12)</strong> - 3-4 hours</summary>
 
-**Purpose**: Design and implement data structures for methodology implementation **Outcome**: Working schemas for all methodology data requirements
+**Purpose**: Practical schema development and Guardian management features **Outcome**: Production-ready PDD and monitoring schemas with testing validation
 
-* Chapter 8: Schema Architecture and Design Principles
+* Chapter 8: Schema Architecture and Foundations
 * Chapter 9: Project Design Document (PDD) Schema Development
 * Chapter 10: Monitoring Report Schema Development
-* Chapter 11: Advanced Schema Techniques
-* Chapter 12: Schema Testing and Validation
+* Chapter 11: Advanced Schema Techniques (API management, Required types, UUIDs)
+* Chapter 12: Schema Testing and Validation Checklist
 
 </details>
 
@@ -210,20 +210,21 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 ### Quick Navigation
 - **📋 [Table of Contents](table-of-contents.md)** - Complete handbook overview with reading time estimates
 - **📝 [Chapter Outlines](chapter-outlines.md)** - Detailed descriptions of all chapters and topics
-- **🏗️ [Part I: Foundation and Preparation](part-1/README.md)** - Start your learning journey here (Available Now!)
-- **🔍 [Part II: Analysis and Planning](part-2/README.md)** - Systematic methodology analysis techniques (Available Now!)
+- **🏗️ [Part I: Foundation and Preparation](part-1/README.md)** - Start your learning journey here (Available Now)
+- **🔍 [Part II: Analysis and Planning](part-2/README.md)** - Systematic methodology analysis techniques (Available Now)
+- **🏗️ [Part III: Schema Design and Development](part-3/README.md)** - Schema development and testing (Available Now)
 
 ### Available Content
 {% hint style="success" %}
-**Part I and Part II are now available** with all seven foundation and analysis chapters complete and ready for use.
+**Parts I, II, and III are now available** with all twelve chapters complete and ready for use, covering the complete foundation through schema development workflow.
 {% endhint %}
 
-| Part             | Status          | Chapters                         | Description                                                          |
-| ---------------- | --------------- | -------------------------------- | -------------------------------------------------------------------- |
-| **Part I**       | ✅ **Available** | [Chapters 1-3](part-1/README.md) | Foundation concepts, VM0033 overview, Guardian platform introduction |
-| **Part II**      | ✅ **Available** | [Chapters 4-7](part-2/README.md) | Methodology analysis, equation mapping, tools integration, test artifacts |
-| **Part III**     | 🚧 Coming Soon   | Chapters 8-12                    | Schema design and development                                        |
-| **Part IV-VIII** | 🚧 Coming Soon   | Chapters 13-27                   | Advanced implementation topics                                       |
+| Part             | Status          | Chapters                          | Description                                                               |
+| ---------------- | --------------- | --------------------------------- | ------------------------------------------------------------------------- |
+| **Part I**       | ✅ **Available** | [Chapters 1-3](part-1/README.md)  | Foundation concepts, VM0033 overview, Guardian platform introduction      |
+| **Part II**      | ✅ **Available** | [Chapters 4-7](part-2/README.md)  | Methodology analysis, equation mapping, tools integration, test artifacts |
+| **Part III**     | ✅ **Available** | [Chapters 8-12](part-3/README.md) | Schema development, field management, testing checklist                   |
+| **Part IV-VIII** | 🚧 Coming Soon   | Chapters 13-27                    | Policy workflows, calculations, deployment, and maintenance               |
 
 ### Shared Resources
 - **🔧 [Shared Resources](_shared/README.md)** - Templates, integration guides, and reference materials
