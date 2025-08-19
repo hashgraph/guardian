@@ -31,25 +31,25 @@ Creating comprehensive test spreadsheets containing all input parameters, output
 
 ## Part III: Schema Design and Development
 
-### Chapter 8: Schema Architecture and Design Principles
+### [Chapter 8: Schema Architecture and Design Principles](part-3/chapter-8/README.md)
 
-Fundamental principles of schema design in Guardian, including schema trees, sub-schemas, and the relationship between schemas and policy workflow blocks.
+Guardian schema system foundations, two-part architecture patterns, and field mapping techniques using VM0033's proven implementation structure. Establishes architectural understanding for schema development.
 
-### Chapter 9: Project Design Document (PDD) Schema Development
+### [Chapter 9: Project Design Document (PDD) Schema Development](part-3/chapter-9/README.md)
 
-Detailed walkthrough of creating PDD schemas, including project details, baseline calculations, project emissions, leakage calculations, and final emission reduction estimates using VM0033 structure.
+Step-by-step guide to building Guardian PDD schemas using the Excel-first approach. Covers field-by-field construction, conditional logic implementation, and methodology parameter translation with VM0033 examples.
 
-### Chapter 10: Monitoring Report Schema Development
+### [Chapter 10: Monitoring Report Schema Development](part-3/chapter-10/README.md)
 
-Designing schemas for ongoing monitoring and reporting, including parameter tracking, data validation, and calculation updates based on VM0033 monitoring requirements.
+Hands-on monitoring schema construction for time-series data collection and calculation updates. Includes temporal data management, annual parameter tracking, and VVB verification workflow integration.
 
-### Chapter 11: Advanced Schema Techniques
+### [Chapter 11: Advanced Schema Techniques](part-3/chapter-11/README.md)
 
-Advanced schema features including conditional fields, enum types, auto-calculations, formula linking, and dynamic field visibility. Includes extensive VM0033 examples.
+Advanced Guardian schema features including conditional visibility, auto-calculations, cross-schema references, and user experience optimization using VM0033's sophisticated implementation patterns.
 
-### Chapter 12: Schema Testing and Validation
+### [Chapter 12: Schema Testing and Validation](part-3/chapter-12/README.md)
 
-Methods for testing schema functionality, validating calculations, and ensuring data integrity before integration into policy workflows.
+Testing frameworks for schema validation, calculation accuracy verification, and production readiness assessment using VM0033's testing methodology and stakeholder validation approaches.
 
 ## Part IV: Policy Workflow Design
 
