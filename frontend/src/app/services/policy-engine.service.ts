@@ -272,8 +272,8 @@ export class PolicyEngineService {
         return this.http.get<any[]>(`${this.url}/${policyId}/dry-run/users`, { params });
     }
 
-    public createVirtualUser(policyId: string): Observable<any> {
-        return this.http.post<any>(`${this.url}/${policyId}/dry-run/user`, null);
+    public createVirtualUser(policyId: string, savepointIds: string[] | null): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/dry-run/user`, { savepointIds });
     }
 
     public loginVirtualUser(policyId: string, did: string): Observable<any> {

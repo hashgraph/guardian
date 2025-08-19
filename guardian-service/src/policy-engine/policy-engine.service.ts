@@ -1804,9 +1804,9 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_VIRTUAL_USER,
-            async (msg: { policyId: string, owner: IOwner }) => {
+            async (msg: { policyId: string, owner: IOwner, savepointIds?: string[] }) => {
                 try {
-                    const { policyId, owner } = msg;
+                    const { policyId, owner, savepointIds } = msg;
 
                     const model = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(model, owner, 'read');
@@ -1823,7 +1823,7 @@ export class PolicyEngineService {
                     const did = didObject.getDid();
                     const document = didObject.getDocument();
 
-                    const count = await DatabaseServer.getVirtualUsers(policyId);
+                    const count = await DatabaseServer.getVirtualUsers(policyId, savepointIds);
                     const username = `Virtual User ${count.length}`;
 
                     await DatabaseServer.createVirtualUser(
@@ -1855,7 +1855,7 @@ export class PolicyEngineService {
                             }
                         });
 
-                    const users = await DatabaseServer.getVirtualUsers(policyId);
+                    const users = await DatabaseServer.getVirtualUsers(policyId, savepointIds);
                     return new MessageResponse(users);
                 } catch (error) {
                     return new MessageError(error);

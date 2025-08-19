@@ -601,12 +601,14 @@ export class PolicyEngine extends NatsService {
      * Create new Virtual User
      * @param policyId
      * @param owner
+     * @param savepointIds
      */
     public async createVirtualUser(
         policyId: string,
-        owner: IOwner
+        owner: IOwner,
+        savepointIds: string[]
     ) {
-        return await this.sendMessage(PolicyEngineEvents.CREATE_VIRTUAL_USER, { policyId, owner });
+        return await this.sendMessage(PolicyEngineEvents.CREATE_VIRTUAL_USER, { policyId, owner, savepointIds });
     }
 
     /**

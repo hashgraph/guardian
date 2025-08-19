@@ -3156,7 +3156,8 @@ export class PolicyApi {
     async setDryRunUser(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Req() req
+        @Body() body: { savepointIds?: string[] },
+        @Req() req,
     ) {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
@@ -3166,7 +3167,7 @@ export class PolicyApi {
         await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
         try {
-            return await engineService.createVirtualUser(policyId, owner);
+            return await engineService.createVirtualUser(policyId, owner, body.savepointIds);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

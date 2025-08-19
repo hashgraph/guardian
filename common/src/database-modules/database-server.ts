@@ -3548,18 +3548,19 @@ export class DatabaseServer extends AbstractDatabaseServer {
         const filter: any = {
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers',
-            $or: savepointIds
-                ? [
-                    { savepointId: { $in: [...savepointIds, null, '' ] } },
-                    { savepointId: { $exists: false } }
-                ]
-                : [
-                    { savepointId: { $in: [null, '' ] } },
-                    { savepointId: { $exists: false } }
-                ]
         };
 
-        const result = await new DataBaseHelper(DryRun).find(filter, {
+        if (!savepointIds) {
+            filter.active = true;
+        } else {
+            filter.$or = [
+                { savepointId: { $in: savepointIds } },
+                { savepointId: null },
+                { savepointId: { $exists: false } },
+            ];
+        }
+
+        return await new DataBaseHelper(DryRun).find(filter, {
             fields: [
                 'id',
                 'did',
@@ -3569,8 +3570,6 @@ export class DatabaseServer extends AbstractDatabaseServer {
             ] as unknown as PopulatePath.ALL[],
             orderBy: { createDate: 1 }
         });
-
-        return result;
     }
 
     /**
