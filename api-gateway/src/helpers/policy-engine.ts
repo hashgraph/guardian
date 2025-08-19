@@ -1223,4 +1223,13 @@ export class PolicyEngine extends NatsService {
     ) {
         return await this.sendMessage(PolicyEngineEvents.RELOAD_REMOTE_ACTION, { messageId, user });
     }
+
+    /**
+     * Get request document
+     * @param filters
+     * @param startMessageId
+     */
+    public async getRequestDocument(options: any, user: IAuthUser): Promise<PolicyRequestCountDTO> {
+        return await this.sendMessage(PolicyEngineEvents.GET_REMOTE_REQUEST_DOCUMENT, { options, user });
+    }
 }

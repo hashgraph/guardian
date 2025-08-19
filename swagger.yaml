@@ -15017,6 +15017,40 @@ paths:
         remote Guardians.
       tags:
         - external-policies
+  /external-policies/requests/document:
+    get:
+      description: Returns the request document by startMessageId.
+      operationId: ExternalPoliciesApi_getRequestDocument
+      parameters:
+        - name: startMessageId
+          required: true
+          in: query
+          description: Start Message Id
+          schema:
+            example: '0000000000.000000001'
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyRequestCountDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Returns the request document by startMessageId.
+      tags:
+        - external-policies
   /policy-labels:
     post:
       description: Creates a new policy label.
