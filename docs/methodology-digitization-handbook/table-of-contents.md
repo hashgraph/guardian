@@ -6,35 +6,28 @@
 
 ## Part I: Foundation and Preparation
 
-### Chapter 1: Introduction to Methodology Digitization
-
+### [Chapter 1: Introduction to Methodology Digitization](part-1/chapter-1/README.md)
 Understanding the digitization process, Guardian platform capabilities, and the role of VM0033 as our reference methodology. This chapter establishes the context and objectives for methodology digitization.
 
-### Chapter 2: Understanding VM0033 Methodology
-
+### [Chapter 2: Understanding VM0033 Methodology](part-1/chapter-2/README.md)
 Deep dive into the VM0033 methodology structure, applicability conditions, baseline scenarios, and emission reduction calculations. This chapter provides the domain knowledge foundation needed before digitization begins.
 
-### Chapter 3: Guardian Platform Overview for Methodology Developers
-
+### [Chapter 3: Guardian Platform Overview for Methodology Developers](part-1/chapter-3/README.md)
 Comprehensive introduction to Guardian's architecture, Policy Workflow Engine (PWE), schema system, and key concepts specifically relevant to methodology digitization.
 
 ## Part II: Analysis and Planning
 
-### Chapter 4: Methodology Analysis and Decomposition
+### [Chapter 4: Methodology Analysis and Decomposition](part-2/chapter-4/README.md)
+Systematic approach to reading and analyzing methodology PDFs, identifying key components, stakeholders, and workflow requirements. Includes techniques for extracting calculation logic and parameter dependencies using industry-proven recursive analysis techniques.
 
-Systematic approach to reading and analyzing methodology PDFs, identifying key components, stakeholders, and workflow requirements. Includes techniques for extracting calculation logic and parameter dependencies.
+### [Chapter 5: Equation Mapping and Parameter Identification](part-2/chapter-5/README.md)
+Step-by-step process for identifying all equations used in baseline emissions, project emissions, and leakage calculations. Covers recursive parameter analysis and dependency mapping using VM0033 examples with comprehensive mathematical component extraction.
 
-### Chapter 5: Equation Mapping and Parameter Identification
+### [Chapter 6: Tools and Modules Integration](part-2/chapter-6/README.md)
+Understanding and incorporating external tools and modules referenced in methodologies. Covers CDM tools, VCS modules, and other standard calculation tools used in VM0033, including unified calculation framework development.
 
-Step-by-step process for identifying all equations used in baseline emissions, project emissions, and leakage calculations. Covers recursive parameter analysis and dependency mapping using VM0033 examples.
-
-### Chapter 6: Tools and Modules Integration
-
-Understanding and incorporating external tools and modules referenced in methodologies. Covers CDM tools, VCS modules, and other standard calculation tools used in VM0033.
-
-### Chapter 7: Test Artifact Development
-
-Creating comprehensive test spreadsheets containing all input parameters, output parameters, and final emission reduction calculations. This artifact becomes the validation benchmark for the digitized policy.
+### [Chapter 7: Test Artifact Development](part-2/chapter-7/README.md)
+Creating comprehensive test spreadsheets containing all input parameters, output parameters, and final emission reduction calculations. This artifact becomes the validation benchmark for the digitized policy, with real VM0033 test artifact examples.
 
 ## Part III: Schema Design and Development
 

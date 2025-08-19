@@ -86,7 +86,7 @@ Request the role
 | -------------------------------------- | ------ | ----------- |
 | role<mark style="color:red;">\*</mark> | String | INSTALLER   |
 
-![](<../../../.gitbook/assets/image (103).png>)
+![](<../../../.gitbook/assets/image (103) (1).png>)
 
 ### 1.6 Request the root block and all contained blocks.
 
