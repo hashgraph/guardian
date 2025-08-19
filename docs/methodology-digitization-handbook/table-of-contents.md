@@ -31,25 +31,25 @@ Creating comprehensive test spreadsheets containing all input parameters, output
 
 ## Part III: Schema Design and Development
 
-### Chapter 8: Schema Architecture and Design Principles
+### [Chapter 8: Schema Architecture and Foundations](part-3/chapter-8/README.md)
 
-Fundamental principles of schema design in Guardian, including schema trees, sub-schemas, and the relationship between schemas and policy workflow blocks.
+Guardian schema system fundamentals, JSON Schema integration, and two-part architecture patterns. Establishes field mapping principles and architectural understanding for methodology schema development.
 
-### Chapter 9: Project Design Document (PDD) Schema Development
+### [Chapter 9: Project Design Document (PDD) Schema Development](part-3/chapter-9/README.md)
 
-Detailed walkthrough of creating PDD schemas, including project details, baseline calculations, project emissions, leakage calculations, and final emission reduction estimates using VM0033 structure.
+Step-by-step Excel-first approach to building comprehensive PDD schemas. Covers Guardian template usage, conditional logic implementation, sub-schema creation, and essential field key management for calculation code readability.
 
-### Chapter 10: Monitoring Report Schema Development
+### [Chapter 10: Monitoring Report Schema Development](part-3/chapter-10/README.md)
 
-Designing schemas for ongoing monitoring and reporting, including parameter tracking, data validation, and calculation updates based on VM0033 monitoring requirements.
+Time-series monitoring schema development with temporal data structures, annual parameter tracking, and field key management for time-series calculations. Includes VVB verification workflow support.
 
-### Chapter 11: Advanced Schema Techniques
+### [Chapter 11: Advanced Schema Techniques](part-3/chapter-11/README.md)
 
-Advanced schema features including conditional fields, enum types, auto-calculations, formula linking, and dynamic field visibility. Includes extensive VM0033 examples.
+API schema management, standardized property definitions, Required field types (None/Hidden/Required/Auto Calculate), and UUID management for efficient schema development and maintenance.
 
-### Chapter 12: Schema Testing and Validation
+### [Chapter 12: Schema Testing and Validation Checklist](part-3/chapter-12/README.md)
 
-Methods for testing schema functionality, validating calculations, and ensuring data integrity before integration into policy workflows.
+Practical schema validation using Guardian's testing features including Default/Suggested/Test values, preview testing, UUID integration, and pre-deployment checklist for production readiness.
 
 ## Part IV: Policy Workflow Design
 
