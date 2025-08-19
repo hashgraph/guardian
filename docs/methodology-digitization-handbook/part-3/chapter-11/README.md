@@ -6,7 +6,7 @@ These techniques are crucial for efficient schema management, especially when wo
 
 ## API-Based Schema Management
 
-While Excel-first approach works well for initial development, API operations become essential for schema updates, bulk operations, and automated workflows. Guardian provides comprehensive schema APIs for create, read, update, and delete operations.
+While Excel-first approach works well for initial development, API operations maybe be helpful for schema updates, bulk operations, and automated workflows if you're familiar with backend programming. Guardian provides comprehensive schema APIs for create, read, update, and delete operations.
 
 ### When to Use Schema APIs
 
