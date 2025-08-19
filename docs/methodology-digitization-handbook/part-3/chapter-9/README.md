@@ -1,6 +1,6 @@
 # Chapter 9: Project Design Document (PDD) Schema Development
 
-This chapter teaches you how to build Guardian schemas step-by-step using the Excel-first approach for PDD implementation. You'll learn the exact field-by-field process used for VM0033, translating methodology analysis from Part II into working Guardian schema structures.
+This chapter teaches you how to build Guardian schemas step-by-step for PDD implementation. You'll learn the exact field-by-field process used for VM0033, translating methodology analysis from Part II into working Guardian schema structures.
 
 By the end of this chapter, you'll know how to create the [VM0033 PDD schema](../../_shared/artifacts/PDD-schema.xlsx) like structure yourself, understanding each Guardian field type, conditional logic implementation, and how methodology parameters become functional data collection forms.
 
