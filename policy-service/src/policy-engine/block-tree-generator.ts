@@ -48,7 +48,6 @@ export class BlockTreeGenerator extends NatsService {
         user: IUser,
         savepointIds?: string[],
     ): Promise<PolicyUser> {
-        console.log('savepointIds4444', savepointIds)
         const policyUser = await PolicyComponentsUtils.GetPolicyUserByName(user?.username, policy, user.id, savepointIds);
         if (!user) {
             throw new Error(`Forbidden`);
@@ -160,13 +159,6 @@ export class BlockTreeGenerator extends NatsService {
 
             const userFull = await this.getUser(policyInstance, user, params.savepointIds);
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
-
-            console.log(
-                '[DBG] block instanceof:',
-                block?.constructor?.name,
-                'blockType:',
-                (block as any)?.blockType,
-            );
 
             // <-- Available
             const error = await PolicyComponentsUtils.isAvailableGetData(block, userFull);

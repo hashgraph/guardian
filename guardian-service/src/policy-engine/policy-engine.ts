@@ -1328,151 +1328,6 @@ export class PolicyEngine extends NatsService {
      * @param demo
      * @param logger
      */
-    // public async dryRunPolicy(
-    //     model: Policy,
-    //     user: IOwner,
-    //     version: string,
-    //     demo: boolean,
-    //     logger: PinoLogger
-    // ): Promise<Policy> {
-    //     if (demo) {
-    //         logger.info('Demo Policy', ['GUARDIAN_SERVICE'], user.id);
-    //     } else {
-    //         logger.info('Dry-run Policy', ['GUARDIAN_SERVICE'], user.id);
-    //     }
-    //
-    //     const dryRunId = model.id.toString();
-    //     const databaseServer = new DatabaseServer(dryRunId);
-    //
-    //     //Create Services
-    //     const [root, topic] = await Promise.all([
-    //         this.users.getHederaAccount(user.owner, user.id),
-    //         TopicConfig.fromObject(
-    //             await DatabaseServer.getTopicById(model.topicId), !demo, user.id
-    //         )
-    //     ])
-    //
-    //     const messageServer = new MessageServer({
-    //         operatorId: root.hederaAccountId,
-    //         operatorKey: root.hederaAccountKey,
-    //         signOptions: root.signOptions,
-    //         dryRun: dryRunId
-    //     }).setTopicObject(topic);
-    //     const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions, dryRunId);
-    //
-    //     //'Publish' policy schemas
-    //     model = await this.dryRunSchemas(model, user);
-    //     model.status = demo ? PolicyStatus.DEMO : PolicyStatus.DRY_RUN;
-    //     model.version = version;
-    //     this.regenerateIds(model.config);
-    //
-    //     //Create instance topic
-    //     const rootTopic = await topicHelper.create({
-    //         type: TopicType.InstancePolicyTopic,
-    //         name: model.name || TopicType.InstancePolicyTopic,
-    //         description: model.topicDescription || TopicType.InstancePolicyTopic,
-    //         owner: user.owner,
-    //         policyId: dryRunId,
-    //         policyUUID: model.uuid
-    //     }, user.id);
-    //     await rootTopic.saveKeys(user.id);
-    //     await databaseServer.saveTopic(rootTopic.toObject());
-    //
-    //     model.instanceTopicId = rootTopic.topicId;
-    //
-    //     //Send Message
-    //     const zip = await PolicyImportExport.generate(model);
-    //     const buffer = await zip.generateAsync({
-    //         type: 'arraybuffer',
-    //         compression: 'DEFLATE',
-    //         compressionOptions: {
-    //             level: 3
-    //         }
-    //     });
-    //     const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
-    //     message.setDocument(model, buffer);
-    //     const result = await messageServer.sendMessage(message, {
-    //         sendToIPFS: true,
-    //         memo: null,
-    //         userId: user.id,
-    //         interception: null
-    //     });
-    //
-    //     //Link topic and message
-    //     await topicHelper.twoWayLink(rootTopic, topic, result.getId(), user.id);
-    //
-    //     //Create Policy VC
-    //     const messageId = result.getId();
-    //     const url = result.getUrl();
-    //     let credentialSubject: any = {
-    //         id: messageId,
-    //         name: model.name || '',
-    //         description: model.description || '',
-    //         topicDescription: model.topicDescription || '',
-    //         version: model.version || '',
-    //         policyTag: model.policyTag || '',
-    //         owner: model.owner || '',
-    //         cid: url.cid || '',
-    //         url: url.url || '',
-    //         uuid: model.uuid || '',
-    //         operation: 'PUBLISH'
-    //     }
-    //     const policySchema = await DatabaseServer.getSchemaByType(model.topicId, SchemaEntity.POLICY);
-    //     if (policySchema) {
-    //         const schemaObject = new Schema(policySchema);
-    //         credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
-    //     }
-    //     const vcHelper = new VcHelper();
-    //     const didDocument = await vcHelper.loadDidDocument(user.owner, user.id);
-    //     const vc = await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
-    //     await databaseServer.saveVC({
-    //         hash: vc.toCredentialHash(),
-    //         owner: user.owner,
-    //         document: vc.toJsonTree(),
-    //         type: SchemaEntity.POLICY,
-    //         policyId: `${model.id}`
-    //     });
-    //
-    //     //Create default user
-    //     await databaseServer.createVirtualUser(
-    //         'Administrator',
-    //         root.did,
-    //         root.hederaAccountId,
-    //         root.hederaAccountKey,
-    //         true
-    //     );
-    //
-    //     let [, retVal] = await Promise.all([
-    //         //Update dry-run table (mark readonly rows)
-    //         DatabaseServer.setSystemMode(dryRunId, true),
-    //         //Update Policy hash and status//Update Policy hash and status
-    //         DatabaseServer.updatePolicy(model)
-    //     ]);
-    //
-    //     retVal = await PolicyImportExportHelper.updatePolicyComponents(retVal, logger, user.id);
-    //
-    //     logger.info('Run Policy', ['GUARDIAN_SERVICE'], user.id);
-    //
-    //     return retVal;
-    // }
-
-    private cleanHeadersRecursive(currentBlock: any, blocks: any[]): void {
-        if (blocks.includes(currentBlock.blockType) && Array.isArray(currentBlock.headers)) {
-            currentBlock.headers = currentBlock.headers.map(header => {
-                if (!header.included) {
-                    delete header.value;
-                }
-                return header
-            });
-        }
-
-        if (Array.isArray(currentBlock.children)) {
-            for (const child of currentBlock.children) {
-                this.cleanHeadersRecursive(child, blocks);
-            }
-        }
-    }
-
     public async dryRunPolicy(
         model: Policy,
         user: IOwner,
@@ -1602,6 +1457,22 @@ export class PolicyEngine extends NatsService {
         return retVal;
     }
 
+    private cleanHeadersRecursive(currentBlock: any, blocks: any[]): void {
+        if (blocks.includes(currentBlock.blockType) && Array.isArray(currentBlock.headers)) {
+            currentBlock.headers = currentBlock.headers.map(header => {
+                if (!header.included) {
+                    delete header.value;
+                }
+                return header
+            });
+        }
+
+        if (Array.isArray(currentBlock.children)) {
+            for (const child of currentBlock.children) {
+                this.cleanHeadersRecursive(child, blocks);
+            }
+        }
+    }
 
     /**
      * Validate and publish policy

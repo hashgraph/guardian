@@ -204,11 +204,11 @@ export class RestoreSavepointDialog {
     }
 
     public isApplyDisabled(item: ISavepointItem): boolean {
-        return this.isBusy(item.id) || this.isItemCurrent(item);
+        return this.isBusy(item.id);
     }
 
     public getApplyTooltip(item: ISavepointItem): string {
         if (this.isBusy(item.id)) return 'Please wait...';
-        return this.isItemCurrent(item) ? 'Already applied' : 'Apply';
+        return 'Apply';
     }
 }

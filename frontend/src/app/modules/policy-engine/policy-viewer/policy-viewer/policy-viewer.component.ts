@@ -646,8 +646,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             next: (resp) => {
                 const items = resp?.items ?? [];
 
-                console.log('items', items)
-
                 if (!items.length) {
                     this.restoreDialogOpened = false;
                     return;

@@ -1866,7 +1866,6 @@ export class PolicyApi {
     ): Promise<any> {
         try {
             query.savepointIds = typeof query.savepointIds === 'string' ? JSON.parse(query.savepointIds) : query.savepointIds;
-            console.log('query.savepointIds', query.savepointIds)
 
             const engineService = new PolicyEngine();
             return await engineService.getBlockData(user, policyId, uuid, query);

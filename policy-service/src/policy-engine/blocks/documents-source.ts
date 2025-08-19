@@ -127,9 +127,6 @@ export class InterfaceDocumentsSource {
         history?,
         savepointIds?: string[]
     ) {
-        console.log('enableCommonSorting', enableCommonSorting)
-        console.log('savepointIds', savepointIds)
-
         return enableCommonSorting
             ? await this.getDataByAggregationFilters(
                 ref,

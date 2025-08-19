@@ -1151,7 +1151,6 @@ export class PolicyComponentsUtils {
         policy: Policy,
         did: string
     ): Promise<Policy> {
-        console.log('savepointIdsGetGroups')
         const result: any = policy;
         if (policy && did) {
             result.userRoles = [];

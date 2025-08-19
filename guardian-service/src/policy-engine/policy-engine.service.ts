@@ -1151,7 +1151,11 @@ export class PolicyEngineService {
                         await this.policyEngine.generateModel(model.id.toString());
                     }
 
-                    await DatabaseServer.nullifyInitialDryRunSavepointIds();
+                    const savepointsCount = await DatabaseServer.getSavepointsCount(policyId);
+
+                    if(savepointsCount === 0) {
+                        await DatabaseServer.nullifyInitialDryRunSavepointIds();
+                    }
 
                     return new MessageResponse({
                         isValid,

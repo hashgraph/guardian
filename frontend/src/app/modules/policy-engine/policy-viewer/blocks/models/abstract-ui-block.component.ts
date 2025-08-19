@@ -57,7 +57,6 @@ export abstract class AbstractUIBlockComponent<T> {
         if (this.static) {
             return of(this.static);
         } else {
-            console.log('_getData')
             return this.policyEngineService.getBlockData<T>(this.id, this.policyId, this.savepointIds);
         }
     }

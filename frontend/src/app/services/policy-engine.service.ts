@@ -124,8 +124,6 @@ export class PolicyEngineService {
     }
 
     public getBlockData<T>(blockId: string, policyId: string, savepointIds?: string[] | null): Observable<T> {
-        console.log('getBlockData', savepointIds);
-        // console.trace();
         let params = new HttpParams();
 
         if (savepointIds) {

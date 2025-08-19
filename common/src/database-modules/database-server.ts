@@ -63,7 +63,6 @@ import { DataBaseHelper, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS } from '../
 import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js';
 import { AbstractDatabaseServer, IAddDryRunIdItem, IAuthUser, IGetDocumentAggregationFilters } from '../interfaces/index.js';
 import { BaseEntity } from '../models/index.js';
-// import {ChangeStream, ChangeStreamDocument, ChangeStreamUpdateDocument, Collection} from "mongodb";
 
 /**
  * Database server
@@ -4892,62 +4891,4 @@ export class DatabaseServer extends AbstractDatabaseServer {
     public static async getDebugContexts(policyId: string, tag: string): Promise<DryRun[]> {
         return await new DataBaseHelper(DryRun).find({ policyId, tag });
     }
-    //
-    // private static _dryRunWatcher?: ChangeStream;
-    //
-    // public static startDryRunShadowUpdateWatcher(orm: MikroORM<MongoDriver>): void {
-    //     const db = orm.em.getConnection().getClient().db();
-    //
-    //     const main   = db.collection('dry_run');
-    //     const shadow = db.collection('dry_run_shadow');
-
-    //     // tslint:disable-next-line:no-empty
-    //     try { DatabaseServer._dryRunWatcher?.close().catch(() => {}); } catch {}
-    //
-    //     const cs = main.watch(
-    //         [
-    //             { $match: { operationType: 'update' } },
-    //             { $project: { fullDocument: 1, updateDescription: 1, documentKey: 1 } }
-    //         ],
-    //         { fullDocument: 'updateLookup' }
-    //     );
-
-    //     const isUpdate = <T>(ev: ChangeStreamDocument<T>): ev is ChangeStreamUpdateDocument<T> =>
-    //         (ev as any).operationType === 'update';
-    //
-    //     cs.on('change', async (ev) => {
-    //         try {
-    //             if (!isUpdate(ev)) { return; }
-    //
-    //             const key = ev.documentKey as { _id: any };
-    //
-    //             // если в shadow нет документа — не создаём, просто пропускаем
-    //             const exists = await shadow.findOne(key, { projection: { _id: 1 } });
-    //             if (!exists) return;
-    //
-    //             const set = ev.updateDescription.updatedFields ?? {};
-    //             const unset = Object.fromEntries(
-    //                 (ev.updateDescription.removedFields ?? []).map((k) => [k, ''])
-    //             );
-    //
-    //             const ops: any = {};
-    //             if (Object.keys(set).length) ops.$set = set;
-    //             if (Object.keys(unset).length) ops.$unset = unset;
-    //
-    //             if (Object.keys(ops).length) {
-    //                 await shadow.updateOne(key, ops, { upsert: false });
-    //             }
-    //         } catch (e) {
-    //             console.error('[DryRun shadow update watcher] error:', e);
-    //         }
-    //     });
-    //
-    //     cs.on('error', (e) => {
-    //         console.error('[DryRun shadow update watcher] stream error:', e);
-    //         // tslint:disable-next-line:no-empty
-    //         try { cs.close().catch(() => {}); } catch {}
-    //     });
-    //
-    //     DatabaseServer._dryRunWatcher = cs;
-    // }
 }
