@@ -3009,9 +3009,13 @@ export class PolicyEngineService {
                     const items = await em.aggregate(aggregate);
 
                     const policyIds = new Set<string>();
-                    items.forEach(row => {
+                    for (const row of items) {
                         policyIds.add(row.policyId);
-                    });
+
+                        row.document = row.document || {};
+                        row.document.type = (await DatabaseServer
+                            .getRemoteRequest({ startMessageId: row.startMessageId, status: PolicyActionStatus.NEW }))?.document?.type
+                    }
 
                     const policies = await DatabaseServer.getPolicies({
                         id: { $in: Array.from(policyIds) }
