@@ -4,10 +4,13 @@ export class TransformationUIAddonCode {
 
     constructor(config: any) {
         this.code = config.expression || '';
-        this.func = new Function('document', 'history', 'params', `
+
+        const code =  `
             ${this.code}
-            return { document, history };
-        `);
+            return { document, history, params };
+        `;
+        console.log(code);
+        this.func = new Function('document', 'history', 'params', code);
     }
 
     public async run(

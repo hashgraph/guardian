@@ -25,18 +25,14 @@ export class HttpRequestUIAddonCode {
             history: any[]
         }
     ) {
-        const url = this.createUrl(document);
+        const url = this.createUrl(data.document);
         const headers = this.createHeaders();
         return new Promise<any>((resolve, reject) => {
             this.policyEngineService
-                .customRequest(this.type, url, document, headers)
+                .customRequest(this.type, url, data.document, headers)
                 .subscribe((response: any) => {
                     data.document = response;
-                    if (!data.history) {
-                        data.history = [];
-                    }
-                    data.history.push(response);
-                    resolve(data)
+                    resolve(data);
                 }, (e) => {
                     reject(e);
                 });

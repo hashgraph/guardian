@@ -249,19 +249,16 @@ export class ActionBlockComponent implements OnInit {
     }
 
     async onTransformation() {
-        debugger;
-
         this.buttonLoading = true;
         try {
             let data = {
                 document: this.data,
-                history: [this.data],
-                params: this.data
+                history: [],
+                params: {}
             }
-                ;
             const children = this.children || [];
             for (const child of children) {
-                data = await child.run(document, history);
+                data = await child.run(data);
                 if (!data) {
                     throw new Error(`An error occurred while sending the data`);
                 }

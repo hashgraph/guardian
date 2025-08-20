@@ -18,6 +18,10 @@ export class TransformationUIAddon {
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
             await CommonBlock.validate(validator, ref);
+
+            if (!ref.options.expression) {
+                validator.addError('Expression can not be empty');
+            }
         } catch (error) {
             validator.addError(`Unhandled exception ${validator.getErrorMessage(error)}`);
         }
