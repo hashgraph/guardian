@@ -432,7 +432,7 @@ export class PolicyRequestsComponent implements OnInit {
 
     getOperationName(row: any) {
         if (row.type === PolicyActionType.REQUEST) {
-            switch (row.documentType) {
+            switch (row.document?.type) {
                 case 'sign-and-send-role':
                     return 'Select role';
                 case 'generate-did':
@@ -450,7 +450,7 @@ export class PolicyRequestsComponent implements OnInit {
                 case 'dissociate-token':
                     return 'Dissociate token';
                 default:
-                    return row.documentType;
+                    return row.document?.type;
             }
         }
         return '';
