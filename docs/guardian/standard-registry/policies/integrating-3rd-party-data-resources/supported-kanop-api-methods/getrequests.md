@@ -1,6 +1,6 @@
 # getRequests
 
-<mark style="color:green;">`GET`</mark>`/projects/:projectId/requests`
+<mark style="color:green;">`GET`</mark>`/projects/{projectId}/requests`
 
 Get Requests
 

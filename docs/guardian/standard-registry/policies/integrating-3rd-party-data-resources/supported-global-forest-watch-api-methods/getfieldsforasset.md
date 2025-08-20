@@ -1,6 +1,6 @@
 # getFieldsForAsset
 
-`GET` `/asset/:asset_id/fields`
+<mark style="color:green;">`GET`</mark> `/asset/{asset_id}/fields`
 
 Get Fields for asset
 
@@ -21,7 +21,7 @@ Get Fields for asset
 
 {% tabs %}
 {% tab title="200" %}
-```
+```javascript
 {
   "data": [
     {
@@ -40,7 +40,7 @@ Get Fields for asset
 {% endtab %}
 
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

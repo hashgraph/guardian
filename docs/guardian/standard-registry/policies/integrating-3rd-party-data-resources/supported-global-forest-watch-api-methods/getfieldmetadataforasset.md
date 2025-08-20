@@ -1,6 +1,6 @@
 # getFieldMetadataForAsset
 
-`GET` `/asset/:asset_id/fields/:field_name`&#x20;
+<mark style="color:green;">`GET`</mark> `/asset/{asset_id}/fields/{field_name}`&#x20;
 
 Get field metadata for asset
 
@@ -22,7 +22,7 @@ Get field metadata for asset
 
 {% tabs %}
 {% tab title="200" %}
-```
+```javascript
 {
   "data": {
     "name": "string",
@@ -39,7 +39,7 @@ Get field metadata for asset
 {% endtab %}
 
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

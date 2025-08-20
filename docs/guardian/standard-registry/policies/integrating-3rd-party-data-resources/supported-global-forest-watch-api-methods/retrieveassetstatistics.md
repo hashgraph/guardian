@@ -1,6 +1,6 @@
 # retrieveAssetStatistics
 
-`GET` `/dataset/:dataset/:version/stats`
+<mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/stats`
 
 Retrieve Asset Statistics
 
@@ -15,14 +15,14 @@ Retrieve Asset Statistics
 
 | Name    | Type   | Description |
 | ------- | ------ | ----------- |
-| Dataset | string | Dataset     |
-| Version | number | version     |
+| dataset | string | Dataset     |
+| version | number | version     |
 
 **Response**
 
 {% tabs %}
 {% tab title="200" %}
-```
+```javascript
 {
   "data": {
     "row_count": 0,
@@ -43,7 +43,7 @@ Retrieve Asset Statistics
 {% endtab %}
 
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

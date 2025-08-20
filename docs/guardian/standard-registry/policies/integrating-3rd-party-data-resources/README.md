@@ -16,7 +16,7 @@ Once the block configuration is completed, we need to follow the below steps:
 ### 1.1 Authentication Requirements <a href="#id-1.1-authentication-requirements" id="id-1.1-authentication-requirements"></a>
 
 **Global Forest Watch:**\
-You can review the documentation at [https://data-api.globalforestwatch.org/](https://data-api.globalforestwatch.org/) for instructions on how to obtain an x-api-key, though please note by default the key comes with certain limitations. For full access, it is recommended to reach out directly to the company's partner team.
+You can review the documentation at [https://data-api.globalforestwatch.org/](https://data-api.globalforestwatch.org/) for instructions on how to obtain an `x-api-key`, though please note by default the key comes with certain limitations. For full access, it is recommended to reach out directly to the company's partner team.
 
 <figure><img src="../../../../.gitbook/assets/image (122).png" alt=""><figcaption></figcaption></figure>
 

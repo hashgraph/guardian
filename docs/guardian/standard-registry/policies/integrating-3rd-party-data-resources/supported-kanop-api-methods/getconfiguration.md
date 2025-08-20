@@ -1,6 +1,6 @@
 # getConfiguration
 
-<mark style="color:green;">`GET`</mark>`/projects/:projectId/configurations`
+<mark style="color:green;">`GET`</mark>`/projects/{projectId}/configurations`
 
 Get Configuration
 

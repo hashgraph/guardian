@@ -1,6 +1,6 @@
 # searchMetadata
 
-<mark style="color:green;">`GET`</mark>` ``/v2/sources/:sourceId/search/:searchTerm`
+<mark style="color:green;">`GET`</mark>` ``/v2/sources/{sourceId}/search/{searchTerm}`
 
 Search metadata by keyword
 

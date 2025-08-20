@@ -1,6 +1,6 @@
 # getStats
 
-`GET` `/asset/:asset_id/stats`
+<mark style="color:green;">`GET`</mark> `/asset/{asset_id}/stats`
 
 Get stats for asset
 
@@ -21,7 +21,7 @@ Get stats for asset
 
 {% tabs %}
 {% tab title="200" %}
-```
+```javascript
 {
   "data": {
     "row_count": 0,
@@ -42,7 +42,7 @@ Get stats for asset
 {% endtab %}
 
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

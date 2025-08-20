@@ -1,6 +1,6 @@
 # getAdvancedData
 
-<mark style="color:green;">`GET`</mark>`/v2/sources/:sourceId/country/:country/series/:series/time/:time/version/:version/data`
+<mark style="color:green;">`GET`</mark>`/v2/sources/{sourceId}/country/{country}/series/{series}/time/{time}/version/{version}/data`
 
 Retrieve data for a combination of concepts (source, country, series, time, version)
 

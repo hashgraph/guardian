@@ -1,6 +1,6 @@
 # getVariationGisFiles
 
-<mark style="color:green;">`GET`</mark>`/projects/:projectId/requests/:requestId/variationGisFiles`
+<mark style="color:green;">`GET`</mark>`/projects/{projectId}/requests/{requestId}/variationGisFiles`
 
 Get Variation Gis Files
 

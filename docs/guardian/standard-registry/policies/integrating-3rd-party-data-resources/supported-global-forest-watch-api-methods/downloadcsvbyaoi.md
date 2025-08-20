@@ -1,6 +1,6 @@
 # downloadCSVByAoi
 
-`GET` `/dataset/:dataset/:version/download_by_aoi/csv`
+<mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/download_by_aoi/csv`
 
 Execute a READ-ONLY SQL query on the given dataset version
 
@@ -15,8 +15,8 @@ Execute a READ-ONLY SQL query on the given dataset version
 
 | Name    | Type   | Description                                                                   |
 | ------- | ------ | ----------------------------------------------------------------------------- |
-| Dataset | string | Dataset                                                                       |
-| Version | number | version                                                                       |
+| dataset | string | Dataset                                                                       |
+| version | number | version                                                                       |
 | sql     | query  | SQL                                                                           |
 | aoi     | string | GeostoreAreaOfInterest or AdminAreaOfInterest or Global or WdpaAreaOfInterest |
 
@@ -24,7 +24,7 @@ Execute a READ-ONLY SQL query on the given dataset version
 
 {% tabs %}
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {
@@ -37,9 +37,5 @@ Execute a READ-ONLY SQL query on the given dataset version
   ]
 }
 ```
-{% endtab %}
-
-{% tab title="Second Tab" %}
-
 {% endtab %}
 {% endtabs %}

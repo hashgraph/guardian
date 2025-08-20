@@ -1,6 +1,6 @@
 # getFields
 
-`GET` `/dataset/:dataset/:version/fields`
+<mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/fields`
 
 Get the fields of a version. For a version with a vector default asset
 
@@ -15,14 +15,14 @@ Get the fields of a version. For a version with a vector default asset
 
 | Name    | Type   | Description |
 | ------- | ------ | ----------- |
-| Dataset | string | dataset     |
-| Version | number | version     |
+| dataset | string | dataset     |
+| version | number | version     |
 
 **Response**
 
 {% tabs %}
 {% tab title="200" %}
-```
+```javascript
 {
   "data": [
     {
@@ -41,7 +41,7 @@ Get the fields of a version. For a version with a vector default asset
 {% endtab %}
 
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

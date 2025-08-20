@@ -1,6 +1,6 @@
 # getExtent
 
-`GET` `/dataset/:dataset/:version/extent`
+<mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/extent`
 
 Get extent
 
@@ -15,14 +15,14 @@ Get extent
 
 | Name    | Type   | Description |
 | ------- | ------ | ----------- |
-| Dataset | string | Dataset     |
-| Version | number | version     |
+| dataset | string | Dataset     |
+| version | number | version     |
 
 **Response**
 
 {% tabs %}
 {% tab title="200" %}
-```
+```javascript
 {
   "data": {
     "features": [
@@ -46,7 +46,7 @@ Get extent
 {% endtab %}
 
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

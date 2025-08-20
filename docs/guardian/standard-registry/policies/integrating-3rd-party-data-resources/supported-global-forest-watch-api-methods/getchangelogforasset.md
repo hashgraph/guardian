@@ -1,6 +1,6 @@
 # getChangeLogForAsset
 
-`GET` `/asset/:asset_id/change_log`
+<mark style="color:green;">`GET`</mark> `/asset/{asset_id}/change_log`
 
 Get change log for asset
 
@@ -21,7 +21,7 @@ Get change log for asset
 
 {% tabs %}
 {% tab title="200" %}
-```
+```javascript
 {
   "data": [
     {
@@ -37,7 +37,7 @@ Get change log for asset
 {% endtab %}
 
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

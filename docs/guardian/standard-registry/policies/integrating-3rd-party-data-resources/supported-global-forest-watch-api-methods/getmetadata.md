@@ -1,6 +1,6 @@
 # getMetadata
 
-`GET` `/dataset/:dataset/:version/metadata`
+<mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/metadata`
 
 Get metadata record for a dataset version
 
@@ -13,17 +13,17 @@ Get metadata record for a dataset version
 
 **Body**
 
-| Name                       | Type   | Description                |
-| -------------------------- | ------ | -------------------------- |
-| Dataset                    | string | dataset                    |
-| Version                    | number | version                    |
-| Include\_dataset\_metadata | string | include\_dataset\_metadata |
+| Name     | Type   | Description                |
+| -------- | ------ | -------------------------- |
+| dataset  | string | dataset                    |
+| version  | number | version                    |
+| metadata | string | include\_dataset\_metadata |
 
 **Response**
 
 {% tabs %}
 {% tab title="200" %}
-```
+```javascript
 {
   "data": {
     "content_date_range": {
@@ -38,7 +38,7 @@ Get metadata record for a dataset version
 {% endtab %}
 
 {% tab title="422" %}
-<pre><code><strong>{
+<pre class="language-javascript"><code class="lang-javascript"><strong>{
 </strong>  "detail": [
     {
       "loc": [

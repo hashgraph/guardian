@@ -1,6 +1,6 @@
 # getAggregationLevelValues
 
-`GET/projects/:projectId/aggregationLevels/:level`
+`GET/projects/{projectId}/aggregationLevels/{level}`
 
 Get Aggregation Level Values
 

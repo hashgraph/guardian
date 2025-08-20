@@ -1,6 +1,6 @@
 # getPolygonsForProject
 
-<mark style="color:green;">`GET`</mark>`/projects/:projectId/polygons`
+<mark style="color:green;">`GET`</mark>`/projects/{projectId}/polygons`
 
 Get Polygons For Project
 

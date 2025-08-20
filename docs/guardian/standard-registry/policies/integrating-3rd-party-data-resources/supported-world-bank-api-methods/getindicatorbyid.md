@@ -1,6 +1,6 @@
 # getIndicatorById
 
-<mark style="color:green;">`GET`</mark>`/v2/indicator/:indicatorId`
+<mark style="color:green;">`GET`</mark>`/v2/indicator/{indicatorId}`
 
 Get metadata about a specific indicator
 

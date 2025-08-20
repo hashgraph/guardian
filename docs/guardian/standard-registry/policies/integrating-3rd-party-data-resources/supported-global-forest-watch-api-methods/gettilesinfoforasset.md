@@ -1,6 +1,6 @@
 # getTilesInfoForAsset
 
-`GET` `/asset/:asset_id/tiles_info`
+<mark style="color:green;">`GET`</mark> `/asset/{asset_id}/tiles_info`
 
 Get tiles info for asset
 
@@ -21,7 +21,7 @@ Get tiles info for asset
 
 {% tabs %}
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

@@ -1,6 +1,6 @@
 # getVersionAsset
 
-`GET` `/dataset/:dataset/:version/assets`
+<mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/assets`
 
 Get all assets for a given dataset version
 
@@ -15,8 +15,8 @@ Get all assets for a given dataset version
 
 | Name        | Type   | Description      |
 | ----------- | ------ | ---------------- |
-| Dataset     | string | Dataset          |
-| Version     | number | Version          |
+| dataset     | string | Dataset          |
+| version     | number | Version          |
 | asset\_type | string | Asset\_Type      |
 | asset\_uri  | string | Asset\_URI       |
 | is\_latest  | string | Is\_Latest       |
@@ -27,7 +27,7 @@ Get all assets for a given dataset version
 
 {% tabs %}
 {% tab title="200" %}
-```
+```javascript
 {
   "data": [
     {
@@ -78,7 +78,7 @@ Get all assets for a given dataset version
 {% endtab %}
 
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

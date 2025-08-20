@@ -1,6 +1,6 @@
 # getTasksForAsset
 
-`GET` `/asset/:asset_id/tasks`
+<mark style="color:green;">`GET`</mark> `/asset/{asset_id}/tasks`
 
 Get tasks for asset
 
@@ -22,7 +22,7 @@ Get tasks for asset
 
 {% tabs %}
 {% tab title="200" %}
-```
+```javascript
 {
   "data": [
     {
@@ -58,7 +58,7 @@ Get tasks for asset
 {% endtab %}
 
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

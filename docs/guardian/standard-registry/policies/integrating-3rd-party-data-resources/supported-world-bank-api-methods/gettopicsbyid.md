@@ -1,6 +1,6 @@
 # getTopicsById
 
-<mark style="color:green;">`GET`</mark>`/v2/topic/:topicIds`
+<mark style="color:green;">`GET`</mark>`/v2/topic/{topicIds}`
 
 Get metadata about one or more topics
 

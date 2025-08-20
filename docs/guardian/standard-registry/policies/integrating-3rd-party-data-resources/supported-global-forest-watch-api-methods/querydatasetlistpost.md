@@ -1,6 +1,6 @@
 # queryDatasetListPost
 
-`POST` `/dataset/:dataset/:version/query/batch`
+<mark style="color:green;">`POST`</mark> `/dataset/{dataset}/{version}/query/batch`
 
 Execute a READ-ONLY SQL query on the specified raster-based dataset version
 
@@ -15,8 +15,8 @@ Execute a READ-ONLY SQL query on the specified raster-based dataset version
 
 | Name                | Type   | Description                                                         |
 | ------------------- | ------ | ------------------------------------------------------------------- |
-| Dataset             | string | Dataset                                                             |
-| Version             | number | version                                                             |
+| dataset             | string | Dataset                                                             |
+| version             | number | version                                                             |
 | feature\_collection | Object | Feature collection (stringify object)                               |
 | sql                 | query  | SQL                                                                 |
 | uri                 | string | URI to a vector file in a variety of formats supported by Geopandas |

@@ -1,6 +1,6 @@
 # getAggregationLevelForProject
 
-<mark style="color:green;">`GET`</mark>`/projects/:projectId/aggregationLevels`
+<mark style="color:green;">`GET`</mark>`/projects/{projectId}/aggregationLevels`
 
 Get Aggregation Level For Project
 

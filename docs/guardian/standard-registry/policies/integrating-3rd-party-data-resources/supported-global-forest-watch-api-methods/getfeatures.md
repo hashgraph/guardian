@@ -1,6 +1,6 @@
 # getFeatures
 
-`GET` `/dataset/:dataset/:version/features`
+<mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/features`
 
 Get features
 
@@ -15,8 +15,8 @@ Get features
 
 | Name    | Type   | Description |
 | ------- | ------ | ----------- |
-| Dataset | string | Dataset     |
-| Version | number | Version     |
+| dataset | string | Dataset     |
+| version | number | Version     |
 | lat     | number | Latitude    |
 | lng     | number | Longitude   |
 | z       | number | Zoom level  |
@@ -25,7 +25,7 @@ Get features
 
 {% tabs %}
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

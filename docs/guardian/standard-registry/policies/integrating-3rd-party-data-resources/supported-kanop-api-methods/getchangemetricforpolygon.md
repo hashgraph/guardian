@@ -1,6 +1,6 @@
 # getChangeMetricForPolygon
 
-<mark style="color:green;">`GET`</mark>`/projects/:projectId/requests/:requestId/geoChange/:indicator`
+<mark style="color:green;">`GET`</mark>`/projects/{projectId}/requests/{requestId}/geoChange/{indicator}`
 
 Get Change Metric For Polygon
 

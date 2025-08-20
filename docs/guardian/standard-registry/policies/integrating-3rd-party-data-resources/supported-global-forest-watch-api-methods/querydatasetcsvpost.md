@@ -1,6 +1,6 @@
 # queryDatasetCSVPost
 
-`POST` `/dataset/:dataset/:version/query/csv`
+<mark style="color:green;">`POST`</mark> `/dataset/{dataset}/{version}/query/csv`
 
 Execute a READ-ONLY SQL query on the given dataset version
 
@@ -15,8 +15,8 @@ Execute a READ-ONLY SQL query on the given dataset version
 
 | Name     | Type   | Description                 |
 | -------- | ------ | --------------------------- |
-| Dataset  | string | Dataset                     |
-| Version  | number | version                     |
+| dataset  | string | Dataset                     |
+| version  | number | version                     |
 | geometry | Object | Geometry (Stringify object) |
 | sql      | query  | SQL                         |
 

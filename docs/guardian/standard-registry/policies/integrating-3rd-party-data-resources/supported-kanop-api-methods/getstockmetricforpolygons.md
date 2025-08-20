@@ -1,6 +1,6 @@
 # getStockMetricForPolygons
 
-<mark style="color:green;">`GET`</mark>`/projects/:projectId/requests/:requestId/geoMetrics/:indicator`
+<mark style="color:green;">`GET`</mark>`/projects/{projectId}/requests/{requestId}/geoMetrics/{indicator}`
 
 Get Stock Metric For Polygons
 

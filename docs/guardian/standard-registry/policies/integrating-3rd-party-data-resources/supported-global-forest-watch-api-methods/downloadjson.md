@@ -1,6 +1,6 @@
 # downloadJSON
 
-`GET` `/dataset/:dataset/:version/download/json`
+<mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/download/json`
 
 Execute a READ-ONLY SQL query on the given dataset version
 
@@ -15,8 +15,8 @@ Execute a READ-ONLY SQL query on the given dataset version
 
 | Name             | Type   | Description      |
 | ---------------- | ------ | ---------------- |
-| Dataset          | string | Dataset          |
-| Version          | number | version          |
+| dataset          | string | Dataset          |
+| version          | number | version          |
 | geostore\_Id     | string | Geostore ID      |
 | sql              | query  | SQL              |
 | geostore\_origin | string | Geostore\_Origin |
@@ -25,7 +25,7 @@ Execute a READ-ONLY SQL query on the given dataset version
 
 {% tabs %}
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

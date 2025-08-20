@@ -1,6 +1,6 @@
 # getCreationOptions
 
-`GET` `/dataset/:dataset/:version/creation_options`
+<mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/creation_options`
 
 Get creation options
 
@@ -15,14 +15,14 @@ Get creation options
 
 | Name    | Type   | Description |
 | ------- | ------ | ----------- |
-| Dataset | string | Dataset     |
-| Version | number | version     |
+| dataset | string | Dataset     |
+| version | number | version     |
 
 **Response**
 
 {% tabs %}
 {% tab title="200" %}
-```
+```javascript
 {
   "data": {
     "has_header": true,
@@ -72,7 +72,7 @@ Get creation options
 {% endtab %}
 
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

@@ -2,7 +2,7 @@
 
 Get basic metadata and available versions for a given dataset
 
-`GET` `/dataset/:dataset`
+<mark style="color:green;">`GET`</mark> `/dataset/{dataset}`
 
 **Headers**
 

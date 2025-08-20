@@ -1,6 +1,6 @@
 # getExtentForAsset
 
-`GET` `/asset/:asset_id/extent`
+<mark style="color:green;">`GET`</mark> `/asset/{asset_id}/extent`
 
 Get extent for asset
 
@@ -21,7 +21,7 @@ Response
 
 {% tabs %}
 {% tab title="200" %}
-```
+```javascript
 {
   "data": {
     "features": [
@@ -45,7 +45,7 @@ Response
 {% endtab %}
 
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

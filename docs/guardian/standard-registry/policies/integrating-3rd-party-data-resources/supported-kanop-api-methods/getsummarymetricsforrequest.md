@@ -1,6 +1,6 @@
 # getSummaryMetricsForRequest
 
-<mark style="color:green;">`GET`</mark>`/projects/:projectId/requests/:requestId/metrics`
+<mark style="color:green;">`GET`</mark>`/projects/{projectId}/requests/{requestId}/metrics`
 
 Get Summary Metrics For Request
 

@@ -1,6 +1,6 @@
 # getMetadataForAsset
 
-`GET` `/asset/:asset_id/metadata`
+<mark style="color:green;">`GET`</mark> `/asset/{asset_id}/metadata`
 
 Get metadata for asset
 
@@ -21,7 +21,7 @@ Response
 
 {% tabs %}
 {% tab title="200" %}
-```
+```javascript
 {
   "data": {
     "tags": [
@@ -46,7 +46,7 @@ Response
 {% endtab %}
 
 {% tab title="422" %}
-```
+```json
 {
   "detail": [
     {

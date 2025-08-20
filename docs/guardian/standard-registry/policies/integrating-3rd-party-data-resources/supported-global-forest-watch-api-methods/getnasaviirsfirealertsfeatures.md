@@ -1,6 +1,6 @@
 # getNasaViirsFireAlertsFeatures
 
-`GET` `/dataset/nasa_viirs_fire_alerts/:version/features`
+<mark style="color:green;">`GET`</mark> `/dataset/nasa_viirs_fire_alerts/{version}/features`
 
 Get Nasa Viirs fire alerts features
 
@@ -15,7 +15,7 @@ Get Nasa Viirs fire alerts features
 
 | Name        | Type   | Description |
 | ----------- | ------ | ----------- |
-| Version     | string | version     |
+| version     | string | version     |
 | lat         | number | Latitude    |
 | lng         | number | Longitude   |
 | z           | number | zoom level  |
@@ -26,7 +26,7 @@ Get Nasa Viirs fire alerts features
 
 {% tabs %}
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

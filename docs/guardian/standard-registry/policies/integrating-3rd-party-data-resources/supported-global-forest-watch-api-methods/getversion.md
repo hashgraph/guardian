@@ -1,6 +1,6 @@
 # getVersion
 
-`GET` `/dataset/:dataset/:version`
+<mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}`
 
 Get basic metadata for a given version
 
@@ -22,7 +22,7 @@ Get basic metadata for a given version
 
 {% tabs %}
 {% tab title="200" %}
-```
+```javascript
 {
   "data": {
     "created_on": "2019-08-24T14:15:22Z",
@@ -47,7 +47,7 @@ Get basic metadata for a given version
 {% endtab %}
 
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

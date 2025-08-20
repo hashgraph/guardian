@@ -1,6 +1,6 @@
 # getProjectTsEvolutionIndicators
 
-<mark style="color:green;">`GET`</mark>`/projects/:projectId/evolution/:indicators`
+<mark style="color:green;">`GET`</mark>`/projects/{projectId}/evolution/{indicators}`
 
 Get Project Ts Evolution Indicators
 

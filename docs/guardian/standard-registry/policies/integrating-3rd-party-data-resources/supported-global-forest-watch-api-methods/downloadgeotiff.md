@@ -1,6 +1,6 @@
 # downloadGeoTiff
 
-`GET` `/dataset/:dataset/:version/download/geotiff`
+<mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/download/geotiff`
 
 Get geotiff raster tile
 
@@ -15,7 +15,7 @@ Get geotiff raster tile
 
 | Name           | Type   | Description   |
 | -------------- | ------ | ------------- |
-| Dataset        | string | Dataset       |
+| dataset        | string | Dataset       |
 | version        | number | Version       |
 | grid           | number | Grid          |
 | tile\_id       | number | Tile ID       |
@@ -25,7 +25,7 @@ Get geotiff raster tile
 
 {% tabs %}
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {
