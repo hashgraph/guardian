@@ -2910,7 +2910,6 @@ export class PolicyEngineService {
                             createDate: '$createDate',
                             accountId: '$accountId',
                             type: '$type',
-                            documentType: '$document.type',
                             startMessageId: '$startMessageId',
                             policyId: '$policyId',
                             status: '$status',
@@ -2930,7 +2929,6 @@ export class PolicyEngineService {
                         $group: {
                             _id: '$startMessageId',
                             type: { $last: '$type' },
-                            documentType: { $last: '$documentType' },
                             statuses: { $addToSet: '$status' },
                             createDate: { $last: '$createDate' },
                             policyId: { $last: '$policyId' },
@@ -2944,7 +2942,6 @@ export class PolicyEngineService {
                         $project: {
                             statuses: '$statuses',
                             type: '$type',
-                            documentType: '$documentType',
                             status: {
                                 $switch: {
                                     branches: [
@@ -3009,9 +3006,13 @@ export class PolicyEngineService {
                     const items = await em.aggregate(aggregate);
 
                     const policyIds = new Set<string>();
-                    items.forEach(row => {
+                    for (const row of items) {
                         policyIds.add(row.policyId);
-                    });
+
+                        row.document = row.document || {};
+                        row.document.type = (await DatabaseServer
+                            .getRemoteRequest({ startMessageId: row.startMessageId, status: PolicyActionStatus.NEW }))?.document?.type
+                    }
 
                     const policies = await DatabaseServer.getPolicies({
                         id: { $in: Array.from(policyIds) }
