@@ -1,6 +1,6 @@
 # getSource
 
-<mark style="color:green;">`GET`</mark>`/v2/sources/:sourceId`
+<mark style="color:green;">`GET`</mark> `/v2/sources/{sourceId}`
 
 Get metadata about specific source
 

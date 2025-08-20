@@ -1,6 +1,6 @@
 # getMetadata
 
-<mark style="color:green;">`GET`</mark>` ``/v2/sources/:sourceId/:conceptId/:variableIds/metatypes/:metatypeId/metadata`
+<mark style="color:green;">`GET`</mark> `/v2/sources/{sourceId}/{conceptId}/{variableIds}/metatypes/{metatypeId}/metadata`
 
 Get metadata values for combinations of concept variables and metatypes
 

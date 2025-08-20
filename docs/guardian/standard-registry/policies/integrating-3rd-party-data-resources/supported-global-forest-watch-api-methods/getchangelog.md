@@ -1,6 +1,6 @@
 # getChangeLog
 
-`GET /dataset/:dataset/:version/change_log`
+<mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/change_log`
 
 Get change log
 
@@ -15,14 +15,14 @@ Get change log
 
 | Name    | Type   | Description |
 | ------- | ------ | ----------- |
-| Dataset | string | Dataset     |
-| Version | number | version     |
+| dataset | string | Dataset     |
+| version | number | version     |
 
 **Response**
 
 {% tabs %}
 {% tab title="200" %}
-```
+```javascript
 {
   "data": [
     {
@@ -38,7 +38,7 @@ Get change log
 {% endtab %}
 
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

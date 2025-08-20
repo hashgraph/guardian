@@ -1,6 +1,6 @@
 # downloadCSVPost
 
-`POST` `/dataset/:dataset/:version/download/csv`
+<mark style="color:green;">`POST`</mark> `/dataset/{dataset}/{version}/download/csv`
 
 Execute a READ-ONLY SQL query on the given dataset version for datasets with (geo-)database tables
 
@@ -15,8 +15,8 @@ Execute a READ-ONLY SQL query on the given dataset version for datasets with (ge
 
 | Name     | Type   | Description                 |
 | -------- | ------ | --------------------------- |
-| Dataset  | string | Dataset                     |
-| Version  | number | version                     |
+| dataset  | string | Dataset                     |
+| version  | number | version                     |
 | geometry | Object | Geometry (stringify object) |
 | sql      | query  | SQL                         |
 
@@ -24,7 +24,7 @@ Execute a READ-ONLY SQL query on the given dataset version for datasets with (ge
 
 {% tabs %}
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

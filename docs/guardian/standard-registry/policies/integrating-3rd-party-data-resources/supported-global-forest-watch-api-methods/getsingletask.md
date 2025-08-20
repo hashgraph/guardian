@@ -1,6 +1,6 @@
 # getSingleTask
 
-`GET` `/task/:task_id`
+<mark style="color:green;">`GET`</mark> `/task/{task_id}`
 
 Get single tasks by task ID
 
@@ -21,7 +21,7 @@ Get single tasks by task ID
 
 {% tabs %}
 {% tab title="200" %}
-```
+```javascript
 {
   "data": {
     "created_on": "2019-08-24T14:15:22Z",
@@ -43,7 +43,7 @@ Get single tasks by task ID
 {% endtab %}
 
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

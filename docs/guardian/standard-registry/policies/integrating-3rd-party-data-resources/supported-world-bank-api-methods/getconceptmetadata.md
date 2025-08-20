@@ -1,6 +1,6 @@
 # getConceptMetadata
 
-<mark style="color:green;">`GET`</mark>`/v2/sources/:sourceId/concepts/:conceptId/metadata`
+<mark style="color:green;">`GET`</mark> `/v2/sources/{sourceId}/concepts/{conceptId}/metadata`
 
 Get metadata (metatypes) for specific concept
 

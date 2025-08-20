@@ -1,6 +1,6 @@
 # getAreaData
 
-`GET` `/api/area/csv/:${FIRMSService.secretTokenParamName}/:source/:area_coordinates/:day_range`
+<mark style="color:green;">`GET`</mark> `/api/area/csv/{${FIRMSService.secretTokenParamName}}/{source}/{area_coordinates}/{day_range}`
 
 Get fire detections for specified bounding box area
 

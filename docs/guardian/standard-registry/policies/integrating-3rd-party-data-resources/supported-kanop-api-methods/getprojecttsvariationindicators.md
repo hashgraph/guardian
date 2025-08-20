@@ -1,6 +1,6 @@
 # getProjectTsVariationIndicators
 
-<mark style="color:green;">`GET`</mark>`/projects/:projectId/variation/:indicators`
+<mark style="color:green;">`GET`</mark>`/projects/{projectId}/variation/{indicators}`
 
 Get Project Ts Variation Indicators
 

@@ -1,6 +1,6 @@
 # getAvailableFilesForRequest
 
-<mark style="color:green;">`GET`</mark>`/projects/:projectId/requests/:requestId/gisFiles`
+<mark style="color:green;">`GET`</mark>`/projects/{projectId}/requests/{requestId}/gisFiles`
 
 Get Available Files For Request
 

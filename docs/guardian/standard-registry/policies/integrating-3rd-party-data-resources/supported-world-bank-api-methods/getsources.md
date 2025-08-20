@@ -1,6 +1,6 @@
 # getSources
 
-`GET` `/v2/sources`
+<mark style="color:green;">`GET`</mark> `/v2/sources`
 
 Get all sources (databases)
 
@@ -10,3 +10,4 @@ Get all sources (databases)
 | ------------- | ------------------ |
 | Content-Type  | `application/json` |
 | Authorization | `Bearer <token>`   |
+

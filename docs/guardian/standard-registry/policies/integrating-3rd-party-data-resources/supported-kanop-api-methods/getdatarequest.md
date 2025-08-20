@@ -1,6 +1,6 @@
 # getDataRequest
 
-<mark style="color:green;">`GET`</mark>`/projects/:projectId/requests/:requestId`
+<mark style="color:green;">`GET`</mark>`/projects/{projectId}/requests/{requestId}`
 
 Get Data Request
 

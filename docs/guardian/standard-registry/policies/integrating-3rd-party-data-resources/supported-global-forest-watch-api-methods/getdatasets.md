@@ -1,8 +1,8 @@
 # getDatasets
 
-## Get list of all datasets
+Get list of all datasets
 
-`GET` `/datasets`
+<mark style="color:green;">`GET`</mark> `/datasets`
 
 **Headers**
 
@@ -21,7 +21,7 @@
 
 {% tabs %}
 {% tab title="200" %}
-```
+```javascript
 {
   "data": [
     {
@@ -65,7 +65,7 @@
 {% endtab %}
 
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

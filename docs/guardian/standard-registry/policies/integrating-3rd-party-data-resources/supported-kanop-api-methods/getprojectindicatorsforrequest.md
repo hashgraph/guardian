@@ -1,6 +1,6 @@
 # getProjectIndicatorsForRequest
 
-<mark style="color:green;">`GET`</mark>`/projects/:projectId/requests/:requestId/metrics/:indicators`
+<mark style="color:green;">`GET`</mark>`/projects/{projectId}/requests/{requestId}/metrics/{indicators}`
 
 Get Project Indicators For Request
 

@@ -1,6 +1,6 @@
 # getCreationOptionsForAsset
 
-`GET` `/asset/:asset_id/creation_options`
+<mark style="color:green;">`GET`</mark> `/asset/{asset_id}/creation_options`
 
 Get creation options for asset
 
@@ -15,13 +15,13 @@ Get creation options for asset
 
 | Name      | Type   | Description |
 | --------- | ------ | ----------- |
-| asset\_Id | string | Asset ID    |
+| asset\_id | string | Asset ID    |
 
 **Response**
 
 {% tabs %}
 {% tab title="200" %}
-```
+```javascript
 {
   "data": {
     "has_header": true,
@@ -71,7 +71,7 @@ Get creation options for asset
 {% endtab %}
 
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

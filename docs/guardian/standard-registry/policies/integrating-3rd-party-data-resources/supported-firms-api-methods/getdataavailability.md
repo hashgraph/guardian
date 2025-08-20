@@ -1,6 +1,6 @@
 # getDataAvailability
 
-`GET` `/api/data_availability/csv/:${FIRMSService.secretTokenParamName}/:sensor`
+<mark style="color:green;">`GET`</mark> `/api/data_availability/csv/{${FIRMSService.secretTokenParamName}}/{sensor}`
 
 Retrieve date range availability for a sensor dataset
 

@@ -1,6 +1,6 @@
 # getCountryByCode
 
-<mark style="color:green;">`GET`</mark>`/v2/country/:countryCode`
+<mark style="color:green;">`GET`</mark>`/v2/country/{countryCode}`
 
 Get detailed info about one country (incl. region, income level, capital, geo‑coords)
 

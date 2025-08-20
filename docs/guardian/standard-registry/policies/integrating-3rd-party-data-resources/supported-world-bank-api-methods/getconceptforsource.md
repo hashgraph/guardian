@@ -1,6 +1,6 @@
 # getConceptForSource
 
-<mark style="color:green;">`Get`</mark>`/v2/sources/:sourceId/concepts/:conceptId/data`
+<mark style="color:green;">`Get`</mark>`/v2/sources/{sourceId}/concepts/{conceptId}/data`
 
 Retrieve list of concepts (dimensions) for a source
 

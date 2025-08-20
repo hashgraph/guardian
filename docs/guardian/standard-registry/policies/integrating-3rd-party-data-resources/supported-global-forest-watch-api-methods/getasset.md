@@ -1,6 +1,6 @@
 # getAsset
 
-`GET` `/asset/:asset_id`
+<mark style="color:green;">`GET`</mark> `/asset/{asset_id}`
 
 Get asset
 
@@ -21,7 +21,7 @@ Get asset
 
 {% tabs %}
 {% tab title="200" %}
-```
+```javascript
 {
   "data": {
     "created_on": "2019-08-24T14:15:22Z",
@@ -58,7 +58,7 @@ Get asset
 {% endtab %}
 
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {

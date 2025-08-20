@@ -1,6 +1,6 @@
 # getAnyGeostore
 
-`GET` `/geostore/:geostore_id`
+<mark style="color:green;">`GET`</mark> `/geostore/{geostore_id}`
 
 Retrieve GeoJSON representation for a given geostore ID of any dataset
 
@@ -21,7 +21,7 @@ Response
 
 {% tabs %}
 {% tab title="200" %}
-```
+```javascript
 {
   "data": {
     "created_on": "2019-08-24T14:15:22Z",
@@ -44,7 +44,7 @@ Response
 {% endtab %}
 
 {% tab title="422" %}
-```
+```javascript
 {
   "detail": [
     {
