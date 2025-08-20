@@ -3,6 +3,23 @@ import { METHOD } from "../support/api/api-const";
 import API from "../support/ApiUrls";
 import CommonElements from "../support/defaultUIElements";
 
+export const whileRequestProccessing = (request, dataToCompare, source, attempts = 0) => {
+    if (attempts < 100) {
+        attempts++
+        cy.wait(3000)
+        cy.request(request).then((response) => {
+            let start = response.body;
+            source.split('.').forEach(part => {
+                start = start?.[part]
+            })
+            cy.log(start);
+            cy.log(start !== dataToCompare);
+            if (start !== dataToCompare)
+                whileRequestProccessing(request, dataToCompare, source, attempts)
+        })
+    }
+}
+
 export const whileWipeRequestCreating = (dataToCompare, request, attempts) => {
     if (attempts < 100) {
         attempts++
