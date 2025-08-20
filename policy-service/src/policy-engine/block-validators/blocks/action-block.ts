@@ -71,6 +71,9 @@ export class InterfaceDocumentActionBlock {
                         }
                         break;
 
+                    case 'transformation':
+                        break;
+
                     default:
                         validator.addError('Option "type" must be a "selector|download|dropdown"');
                 }

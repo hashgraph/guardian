@@ -54,6 +54,8 @@ import BlockIcons from './block-icons';
 import { DataTransformationConfigComponent } from '../policy-configuration/blocks/calculate/data-transformation-config/data-transformation-config.component';
 import { TransformationButtonBlockComponent } from '../policy-viewer/blocks/transformation-button-block/transformation-button-block.component';
 import { IntegrationButtonBlockComponent } from '../policy-viewer/blocks/integration-button-block/integration-button-block.component';
+import { HttpRequestUIAddonCode } from '../policy-viewer/code/http-request-ui-addon';
+import { TransformationUIAddonCode } from '../policy-viewer/code/transformation-ui-addon';
 
 const Container: IBlockSetting = {
     type: BlockType.Container,
@@ -62,6 +64,7 @@ const Container: IBlockSetting = {
     header: BlockHeaders.UIComponents,
     factory: ContainerBlockComponent,
     property: ContainerConfigComponent,
+    code: null,
     allowedChildren: [
         { type: BlockType.Information },
         { type: BlockType.PolicyRoles },
@@ -110,6 +113,7 @@ const Step: IBlockSetting = {
     header: BlockHeaders.UIComponents,
     factory: StepBlockComponent,
     property: null,
+    code: null,
     allowedChildren: [
         { type: BlockType.Information },
         { type: BlockType.PolicyRoles },
@@ -157,7 +161,8 @@ const PolicyRoles: IBlockSetting = {
     group: BlockGroup.Main,
     header: BlockHeaders.UIComponents,
     factory: RolesBlockComponent,
-    property: RolesConfigComponent
+    property: RolesConfigComponent,
+    code: null
 }
 
 const GroupManagerBlock: IBlockSetting = {
@@ -166,7 +171,8 @@ const GroupManagerBlock: IBlockSetting = {
     group: BlockGroup.Main,
     header: BlockHeaders.UIComponents,
     factory: GroupManagerBlockComponent,
-    property: GroupManagerConfigComponent
+    property: GroupManagerConfigComponent,
+    code: null,
 }
 
 const container: IBlockSetting = {
@@ -176,6 +182,7 @@ const container: IBlockSetting = {
     header: BlockHeaders.UIComponents,
     factory: InformationBlockComponent,
     property: InformationConfigComponent,
+    code: null
 }
 
 const Action: IBlockSetting = {
@@ -185,6 +192,7 @@ const Action: IBlockSetting = {
     header: BlockHeaders.UIComponents,
     factory: ActionBlockComponent,
     property: ActionConfigComponent,
+    code: null,
     allowedChildren: [{
         type: BlockType.DocumentsSourceAddon,
         group: BlockGroup.UnGrouped
@@ -217,6 +225,7 @@ const ButtonBlock: IBlockSetting = {
     header: BlockHeaders.UIComponents,
     factory: ButtonBlockComponent,
     property: ButtonConfigComponent,
+    code: null,
     about: {
         output: (value: any, block: PolicyBlock) => {
             const result = value ? value.slice() : [];
@@ -239,6 +248,7 @@ const TransformationButtonBlock: IBlockSetting = {
     header: BlockHeaders.UIComponents,
     factory: TransformationButtonBlockComponent,
     property: null,
+    code: null,
 }
 
 const IntegrationButtonBlock: IBlockSetting = {
@@ -248,6 +258,7 @@ const IntegrationButtonBlock: IBlockSetting = {
     header: BlockHeaders.UIComponents,
     factory: IntegrationButtonBlockComponent,
     property: null,
+    code: null,
 }
 
 const ButtonBlockAddon: IBlockSetting = {
@@ -256,7 +267,8 @@ const ButtonBlockAddon: IBlockSetting = {
     group: BlockGroup.Documents,
     header: BlockHeaders.Addons,
     factory: ButtonBlockAddonComponent,
-    property: null
+    property: null,
+    code: null
 }
 
 const DropdownBlockAddon: IBlockSetting = {
@@ -266,6 +278,7 @@ const DropdownBlockAddon: IBlockSetting = {
     header: BlockHeaders.Addons,
     factory: DropdownBlockAddonComponent,
     property: null,
+    code: null,
     allowedChildren: [
         {
             type: BlockType.DocumentsSourceAddon,
@@ -281,6 +294,7 @@ const RequestBlockAddon: IBlockSetting = {
     header: BlockHeaders.Addons,
     factory: RequestDocumentBlockAddonComponent,
     property: RequestAddonConfigComponent,
+    code: null,
 }
 
 const Switch: IBlockSetting = {
@@ -290,6 +304,7 @@ const Switch: IBlockSetting = {
     header: BlockHeaders.ServerBlocks,
     factory: null,
     property: SwitchConfigComponent,
+    code: null,
     about: {
         output: (value: any, block: PolicyBlock) => {
             const result = value ? value.slice() : [];
@@ -312,6 +327,7 @@ const HttpRequest: IBlockSetting = {
     header: BlockHeaders.ServerBlocks,
     factory: null,
     property: HttpRequestConfigComponent,
+    code: null,
 }
 
 const DocumentsViewer: IBlockSetting = {
@@ -321,6 +337,7 @@ const DocumentsViewer: IBlockSetting = {
     header: BlockHeaders.UIComponents,
     factory: DocumentsSourceBlockComponent,
     property: DocumentSourceComponent,
+    code: null,
     allowedChildren: [
         {
             type: BlockType.FiltersAddon,
@@ -376,6 +393,7 @@ const Request: IBlockSetting = {
     header: BlockHeaders.UIComponents,
     factory: RequestDocumentBlockComponent,
     property: RequestConfigComponent,
+    code: null,
     allowedChildren: [{
         type: BlockType.DocumentsSourceAddon,
         group: BlockGroup.UnGrouped
@@ -392,6 +410,7 @@ const Upload: IBlockSetting = {
     header: BlockHeaders.UIComponents,
     factory: UploadDocumentBlockComponent,
     property: null,
+    code: null,
     allowedChildren: [{
         type: BlockType.DocumentsSourceAddon,
         group: BlockGroup.UnGrouped
@@ -408,6 +427,7 @@ const MultiSignBlock: IBlockSetting = {
     header: BlockHeaders.UIComponents,
     factory: MultiSignBlockComponent,
     property: null,
+    code: null,
 }
 
 const SendToGuardian: IBlockSetting = {
@@ -417,6 +437,7 @@ const SendToGuardian: IBlockSetting = {
     header: BlockHeaders.ServerBlocks,
     factory: null,
     property: SendConfigComponent,
+    code: null,
 }
 
 const ExternalData: IBlockSetting = {
@@ -426,6 +447,7 @@ const ExternalData: IBlockSetting = {
     header: BlockHeaders.ServerBlocks,
     factory: null,
     property: ExternalDataConfigComponent,
+    code: null,
     allowedChildren: [{
         type: BlockType.DocumentValidatorBlock,
         group: BlockGroup.UnGrouped
@@ -439,6 +461,7 @@ const ExternalTopic: IBlockSetting = {
     header: BlockHeaders.UIComponents,
     factory: ExternalTopicBlockComponent,
     property: null,
+    code: null,
     allowedChildren: [{
         type: BlockType.DocumentValidatorBlock,
         group: BlockGroup.UnGrouped
@@ -452,6 +475,7 @@ const AggregateDocument: IBlockSetting = {
     header: BlockHeaders.ServerBlocks,
     factory: null,
     property: AggregateConfigComponent,
+    code: null,
 }
 
 const ReassigningBlock: IBlockSetting = {
@@ -461,6 +485,7 @@ const ReassigningBlock: IBlockSetting = {
     header: BlockHeaders.ServerBlocks,
     factory: null,
     property: ReassigningConfigComponent,
+    code: null,
 }
 
 const RevokeBlock: IBlockSetting = {
@@ -470,6 +495,7 @@ const RevokeBlock: IBlockSetting = {
     header: BlockHeaders.ServerBlocks,
     factory: null,
     property: RevokeConfigComponent,
+    code: null,
 }
 
 const RevocationBlock: IBlockSetting = {
@@ -479,6 +505,7 @@ const RevocationBlock: IBlockSetting = {
     header: BlockHeaders.ServerBlocks,
     factory: null,
     property: null,
+    code: null,
 }
 
 const SetRelationshipsBlock: IBlockSetting = {
@@ -488,6 +515,7 @@ const SetRelationshipsBlock: IBlockSetting = {
     header: BlockHeaders.ServerBlocks,
     factory: null,
     property: null,
+    code: null,
     allowedChildren: [{
         type: BlockType.DocumentsSourceAddon,
         group: BlockGroup.UnGrouped
@@ -501,6 +529,7 @@ const SplitBlock: IBlockSetting = {
     header: BlockHeaders.ServerBlocks,
     factory: null,
     property: null,
+    code: null,
 }
 
 const FiltersAddon: IBlockSetting = {
@@ -510,6 +539,7 @@ const FiltersAddon: IBlockSetting = {
     header: BlockHeaders.Addons,
     factory: FiltersAddonBlockComponent,
     property: FiltersAddonConfigComponent,
+    code: null,
     allowedChildren: [{
         type: BlockType.DocumentsSourceAddon,
         group: BlockGroup.UnGrouped
@@ -523,6 +553,7 @@ const DocumentsSourceAddon: IBlockSetting = {
     header: BlockHeaders.Addons,
     factory: null,
     property: SourceAddonConfigComponent,
+    code: null,
     allowedChildren: [{
         type: BlockType.FiltersAddon,
         group: BlockGroup.UnGrouped
@@ -539,6 +570,7 @@ const PaginationAddon: IBlockSetting = {
     header: BlockHeaders.Addons,
     factory: PaginationAddonBlockComponent,
     property: null,
+    code: null,
 }
 
 const DataTransformationAddon: IBlockSetting = {
@@ -548,6 +580,7 @@ const DataTransformationAddon: IBlockSetting = {
     header: BlockHeaders.Addons,
     factory: null,
     property: DataTransformationConfigComponent,
+    code: null,
 }
 
 const HistoryAddon: IBlockSetting = {
@@ -557,6 +590,7 @@ const HistoryAddon: IBlockSetting = {
     header: BlockHeaders.Addons,
     factory: null,
     property: null,
+    code: null,
 }
 
 const SelectiveAttributes: IBlockSetting = {
@@ -566,6 +600,7 @@ const SelectiveAttributes: IBlockSetting = {
     header: BlockHeaders.Addons,
     factory: null,
     property: null,
+    code: null,
 }
 
 const TimerBlock: IBlockSetting = {
@@ -575,6 +610,7 @@ const TimerBlock: IBlockSetting = {
     header: BlockHeaders.Addons,
     factory: null,
     property: TimerConfigComponent,
+    code: null,
 }
 
 const DocumentValidatorBlock: IBlockSetting = {
@@ -583,7 +619,8 @@ const DocumentValidatorBlock: IBlockSetting = {
     group: BlockGroup.Documents,
     header: BlockHeaders.Addons,
     factory: null,
-    property: DocumentValidatorConfigComponent
+    property: DocumentValidatorConfigComponent,
+    code: null
 }
 
 const ExtractData: IBlockSetting = {
@@ -592,7 +629,8 @@ const ExtractData: IBlockSetting = {
     group: BlockGroup.Documents,
     header: BlockHeaders.ServerBlocks,
     factory: null,
-    property: null
+    property: null,
+    code: null
 }
 
 const CreateToken: IBlockSetting = {
@@ -602,6 +640,7 @@ const CreateToken: IBlockSetting = {
     header: BlockHeaders.UIComponents,
     factory: CreateTokenBlockComponent,
     property: CreateTokenConfigComponent,
+    code: null,
 }
 
 const Mint: IBlockSetting = {
@@ -611,6 +650,7 @@ const Mint: IBlockSetting = {
     header: BlockHeaders.ServerBlocks,
     factory: null,
     property: MintConfigComponent,
+    code: null,
     allowedChildren: [{
         type: BlockType.ImpactAddon,
         group: BlockGroup.UnGrouped,
@@ -624,6 +664,7 @@ const Wipe: IBlockSetting = {
     header: BlockHeaders.ServerBlocks,
     factory: null,
     property: MintConfigComponent,
+    code: null,
 }
 
 const TokenActionBlock: IBlockSetting = {
@@ -633,6 +674,7 @@ const TokenActionBlock: IBlockSetting = {
     header: BlockHeaders.ServerBlocks,
     factory: null,
     property: TokenActionConfigComponent,
+    code: null,
 }
 
 const TokenConfirmationBlock: IBlockSetting = {
@@ -642,6 +684,7 @@ const TokenConfirmationBlock: IBlockSetting = {
     header: BlockHeaders.UIComponents,
     factory: TokenConfirmationBlockComponent,
     property: TokenConfirmationConfigComponent,
+    code: null,
 }
 
 const ImpactAddon: IBlockSetting = {
@@ -651,6 +694,7 @@ const ImpactAddon: IBlockSetting = {
     header: BlockHeaders.Addons,
     factory: null,
     property: null,
+    code: null,
 }
 
 const Calculate: IBlockSetting = {
@@ -660,6 +704,7 @@ const Calculate: IBlockSetting = {
     header: BlockHeaders.ServerBlocks,
     factory: null,
     property: CalculateConfigComponent,
+    code: null,
     allowedChildren: [{
         type: BlockType.CalculateMathAddon,
         group: BlockGroup.UnGrouped,
@@ -676,6 +721,7 @@ const CustomLogicBlock: IBlockSetting = {
     header: BlockHeaders.ServerBlocks,
     factory: null,
     property: CustomLogicConfigComponent,
+    code: null,
 }
 
 const CalculateMathAddon: IBlockSetting = {
@@ -685,6 +731,7 @@ const CalculateMathAddon: IBlockSetting = {
     header: BlockHeaders.Addons,
     factory: null,
     property: CalculateMathConfigComponent,
+    code: null,
 }
 
 const CalculateMathVariables: IBlockSetting = {
@@ -694,6 +741,7 @@ const CalculateMathVariables: IBlockSetting = {
     header: BlockHeaders.Addons,
     factory: null,
     property: null,
+    code: null,
 }
 
 const AutoReport: IBlockSetting = {
@@ -702,7 +750,8 @@ const AutoReport: IBlockSetting = {
     group: BlockGroup.Report,
     header: BlockHeaders.UIComponents,
     factory: MessagesReportBlockComponent,
-    property: null
+    property: null,
+    code: null
 }
 
 const Report: IBlockSetting = {
@@ -712,6 +761,7 @@ const Report: IBlockSetting = {
     header: BlockHeaders.UIComponents,
     factory: ReportBlockComponent,
     property: null,
+    code: null,
     allowedChildren: [{
         type: BlockType.ReportItem,
         group: BlockGroup.UnGrouped
@@ -724,7 +774,8 @@ const ReportItem: IBlockSetting = {
     group: BlockGroup.Report,
     header: BlockHeaders.Addons,
     factory: null,
-    property: ReportItemConfigComponent
+    property: ReportItemConfigComponent,
+    code: null
 }
 
 const TagManager: IBlockSetting = {
@@ -733,7 +784,8 @@ const TagManager: IBlockSetting = {
     group: BlockGroup.Documents,
     header: BlockHeaders.UIComponents,
     factory: TagsManagerBlockComponent,
-    property: null
+    property: null,
+    code: null
 }
 
 const NotificationBlock: IBlockSetting = {
@@ -743,6 +795,27 @@ const NotificationBlock: IBlockSetting = {
     header: BlockHeaders.ServerBlocks,
     factory: null,
     property: null,
+    code: null,
+}
+
+const HttpRequestUIAddon: IBlockSetting = {
+    type: BlockType.HttpRequestUIAddon,
+    icon: BlockIcons[BlockType.HttpRequestUIAddon],
+    group: BlockGroup.Main,
+    header: BlockHeaders.Addons,
+    factory: null,
+    property: null,
+    code: HttpRequestUIAddonCode,
+}
+
+const TransformationUIAddon: IBlockSetting = {
+    type: BlockType.TransformationUIAddon,
+    icon: BlockIcons[BlockType.TransformationUIAddon],
+    group: BlockGroup.Main,
+    header: BlockHeaders.Addons,
+    factory: null,
+    property: null,
+    code: TransformationUIAddonCode,
 }
 
 export default [
@@ -797,4 +870,6 @@ export default [
     DataTransformationAddon,
     TransformationButtonBlock,
     IntegrationButtonBlock,
+    HttpRequestUIAddon,
+    TransformationUIAddon
 ];

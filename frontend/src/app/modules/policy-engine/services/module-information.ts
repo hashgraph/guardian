@@ -11,6 +11,7 @@ const Module: IBlockSetting = {
     header: BlockHeaders.Module,
     factory: ContainerBlockComponent,
     property: ModuleComponent,
+    code: null,
     allowedChildren: [
         { type: BlockType.Information },
         { type: BlockType.PolicyRoles },

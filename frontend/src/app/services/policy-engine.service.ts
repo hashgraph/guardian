@@ -493,4 +493,32 @@ export class PolicyEngineService {
             },
         });
     }
+
+    public customRequest(type: string, url: string, data: any, headers: any): Observable<any> {
+        switch (type) {
+            case 'post': {
+                if (headers) {
+                    return this.http.post<any>(url, data, { headers });
+                } else {
+                    return this.http.post<any>(url, data);
+                }
+            }
+            case 'get': {
+                if (headers) {
+                    return this.http.get<any>(url, { headers });
+                } else {
+                    return this.http.get<any>(url);
+                }
+            }
+            case 'put': {
+                if (headers) {
+                    return this.http.put<any>(url, data, { headers });
+                } else {
+                    return this.http.put<any>(url, data);
+                }
+            }
+            default:
+                throw new Error(`Invalid request type ${type}`);
+        }
+    }
 }
