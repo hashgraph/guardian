@@ -87,7 +87,9 @@ export const defaultTheme = {
                 'buttonBlockAddon',
                 'dropdownBlockAddon',
                 'requestVcDocumentBlockAddon',
-                'dataTransformationAddon'
+                'dataTransformationAddon',
+                'transformationUIAddon',
+                'httpRequestUIAddon',
             ]
         }
     ],

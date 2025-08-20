@@ -18,6 +18,7 @@ export class RegisteredService {
     private icons: { [type: string]: string };
     private allowedChildren: { [type: string]: any };
     private about: { [type: string]: any };
+    private codes: { [type: string]: any };
 
     private blockName: { [type: string]: string };
     private blockTitle: { [type: string]: string };
@@ -32,6 +33,7 @@ export class RegisteredService {
         this.list = [];
         this.factories = {};
         this.properties = {};
+        this.codes = {};
         this.icons = {};
         this.header = {};
         this.group = {};
@@ -84,6 +86,7 @@ export class RegisteredService {
         const type: BlockType = setting.type;
         this.factories[type] = setting.factory;
         this.properties[type] = setting.property;
+        this.codes[type] = setting.code;
         this.icons[type] = setting.icon;
         this.group[type] = setting.group;
         this.header[type] = setting.header;
@@ -96,6 +99,7 @@ export class RegisteredService {
         const type: BlockType = setting.type;
         this.factories[type] = setting.factory;
         this.properties[type] = setting.property;
+        this.codes[type] = setting.code;
         this.icons[type] = setting.icon;
         this.group[type] = setting.group;
         this.header[type] = setting.header;
@@ -107,6 +111,7 @@ export class RegisteredService {
         const type: BlockType = setting.type;
         this.factories[type] = setting.factory;
         this.properties[type] = setting.property;
+        this.codes[type] = setting.code;
         this.icons[type] = setting.icon;
         this.group[type] = setting.group;
         this.header[type] = setting.header;
@@ -164,6 +169,10 @@ export class RegisteredService {
 
     public getFactory(blockType: string): any {
         return this.factories[blockType];
+    }
+
+    public getCode(blockType: string): any {
+        return this.codes[blockType];
     }
 
     public getProperties(blockType: string): any {

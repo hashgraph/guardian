@@ -11,6 +11,7 @@ export interface IBlockSetting {
     header: BlockHeaders;
     factory: any;
     property: any;
+    code: any;
     allowedChildren?: ChildrenDisplaySettings[];
     about?: IBlockDynamicAboutConfig;
 }
