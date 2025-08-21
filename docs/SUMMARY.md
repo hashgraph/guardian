@@ -116,7 +116,6 @@
     * [How to design a Schema of a Methodology](guardian/standard-registry/schemas/demo-on-how-to-create-policy-from-a-standard.md)
     * [Creating Schema using UI](guardian/standard-registry/schemas/creating-system-schema-using-ui.md)
     * [Importing Schema using UI](guardian/standard-registry/schemas/importing-schema-using-ui.md)
-    * [Schema Editing through JSON](guardian/standard-registry/schemas/schema-editing-through-json.md)
     * [Schema APIs](guardian/standard-registry/schemas/schema-creation-using-apis/README.md)
       * [Listing of Schema](guardian/standard-registry/schemas/schema-creation-using-apis/creation-of-a-schema-1.md)
       * [Publishing Schema based on Schema ID](guardian/standard-registry/schemas/schema-creation-using-apis/publishing-schema-based-on-schema-id.md)
