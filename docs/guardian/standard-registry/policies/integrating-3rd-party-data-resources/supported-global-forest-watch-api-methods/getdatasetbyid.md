@@ -25,7 +25,7 @@ Get basic metadata and available versions for a given dataset.
 
 {% tabs %}
 {% tab title="200" %}
-```json
+```json5
   {
   "data": {
     "created_on": "2019-08-24T14:15:22Z",
@@ -55,7 +55,7 @@ Get basic metadata and available versions for a given dataset.
 {% endtab %}
 
 {% tab title="422" %}
-```json
+```json5
 {
   "detail": [
     {
