@@ -1,17 +1,17 @@
 # Export message IDs of Schema
 
-### EXPORTING HEDERA MESSAGED IDS OF PUBLISHED SCHEMA
+<mark style="color:green;">`POST`</mark> `/schemas/{schemaId}/export/message`
 
-{% swagger method="post" path="" baseUrl="/schemas/{schemaId}/export/message" summary="Hedera message IDs of published schemas" %}
-{% swagger-description %}
 Returns Hedera message IDs of the published schemas, these messages contain IPFS CIDs of these schema files. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
 
-{% swagger-parameter in="path" name="schemaID" type="String" required="true" %}
-Selected schema ID
-{% endswagger-parameter %}
+#### Path Parameters
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+| Name                                       | Type   | Description        |
+| ------------------------------------------ | ------ | ------------------ |
+| schemaID<mark style="color:red;">\*</mark> | String | Selected schema ID |
+
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     content:
@@ -20,25 +20,25 @@ Selected schema ID
                 $ref: "#/components/schemas/ExportSchema"
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+{% tab title="401: Unauthorized Unauthorized" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+{% tab title="403: Forbidden Forbidden" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+{% tab title="500: Internal Server Error Internal Server Error" %}
 ```javascript
 {
     content:
@@ -47,5 +47,5 @@ Selected schema ID
                 $ref: '#/components/schemas/Error'
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

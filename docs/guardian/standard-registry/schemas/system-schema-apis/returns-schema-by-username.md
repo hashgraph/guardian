@@ -1,25 +1,24 @@
 # Returns Schema by Username
 
-### RETURNS ALL SYSTEM SCHEMAS BY USERNAME
+<mark style="color:blue;">`GET`</mark> `/schemas/system/{username}`
 
-{% swagger method="get" path="" baseUrl="/schemas/system/{username}" summary="Returns all System Schemas by Username" %}
-{% swagger-description %}
 Return all system schemas by username. Only user with the Standard Registry are allowed to make the request.
-{% endswagger-description %}
 
-{% swagger-parameter in="path" name="username" type="String" required="true" %}
-Username
-{% endswagger-parameter %}
+#### Path Parameters
 
-{% swagger-parameter in="query" name="pageIndex" type="Integer" required="false" %}
-The number of pages to skip before starting to collect the result set.
-{% endswagger-parameter %}
+| Name                                       | Type   | Description |
+| ------------------------------------------ | ------ | ----------- |
+| username<mark style="color:red;">\*</mark> | String | Username    |
 
-{% swagger-parameter in="query" name="pageSize" type="Integer" required="false" %}
-The number of items to return.
-{% endswagger-parameter %}
+#### Query Parameters
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+| Name      | Type    | Description                                                            |
+| --------- | ------- | ---------------------------------------------------------------------- |
+| pageIndex | Integer | The number of pages to skip before starting to collect the result set. |
+| pageSize  | Integer | The number of items to return.                                         |
+
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     headers:
@@ -35,25 +34,25 @@ The number of items to return.
                   $ref: '#/components/schemas/Schema'
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+{% tab title="401: Unauthorized Unauthorized" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+{% tab title="403: Forbidden Forbidden" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+{% tab title="500: Internal Server Error Internal Server Error" %}
 ```javascript
 {
     content:
@@ -62,5 +61,5 @@ The number of items to return.
                 $ref: '#/components/schemas/Error'
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

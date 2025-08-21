@@ -1,27 +1,25 @@
 # Exports Schema Differentiation Results
 
-{% swagger method="post" path="" baseUrl="/analytics/compare/schemas/export" summary="Returns the result of comparing two schemas." %}
-{% swagger-description %}
+<mark style="color:green;">`POST`</mark> `/analytics/compare/schemas/export`
+
 Returns the result of comparing two schemas. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
 
-{% swagger-parameter in="query" name="type" type="String" required="true" %}
-File Type
-{% endswagger-parameter %}
+#### Query Parameters
 
-{% swagger-parameter in="body" name="schemaId1" type="String" required="false" %}
-Schema Identifier 1
-{% endswagger-parameter %}
+| Name                                   | Type   | Description |
+| -------------------------------------- | ------ | ----------- |
+| type<mark style="color:red;">\*</mark> | String | File Type   |
 
-{% swagger-parameter in="body" name="schemaId2" type="String" required="false" %}
-Schema Identifier 2
-{% endswagger-parameter %}
+#### Request Body
 
-{% swagger-parameter in="body" name="idLvl" type="String" required="false" %}
-UUID comparison setting (0/1)
-{% endswagger-parameter %}
+| Name      | Type   | Description                   |
+| --------- | ------ | ----------------------------- |
+| schemaId1 | String | Schema Identifier 1           |
+| schemaId2 | String | Schema Identifier 2           |
+| idLvl     | String | UUID comparison setting (0/1) |
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     content:
@@ -30,25 +28,25 @@ UUID comparison setting (0/1)
                 type: string
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+{% tab title="401: Unauthorized Unauthorized" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+{% tab title="403: Forbidden Forbidden" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+{% tab title="500: Internal Server Error Internal Server Error" %}
 ```javascript
 {
     content:
@@ -57,5 +55,5 @@ UUID comparison setting (0/1)
                 $ref: '#/components/schemas/Error'
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

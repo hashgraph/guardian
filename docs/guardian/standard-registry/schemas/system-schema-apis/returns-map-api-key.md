@@ -1,33 +1,33 @@
 # Returns Map API Key
 
-{% swagger method="get" path="" baseUrl="/map/key" summary="Returns map api key." %}
-{% swagger-description %}
-Returns map api key.
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/map/key`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+Returns map api key.
+
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```
 content:
             application/json:
               schema:
                 type: string
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+{% tab title="401: Unauthorized Unauthorized" %}
 
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+{% tab title="403: Forbidden Forbidden" %}
 
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+{% tab title="500: Internal Server Error Internal Server Error" %}
 ```
 content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
