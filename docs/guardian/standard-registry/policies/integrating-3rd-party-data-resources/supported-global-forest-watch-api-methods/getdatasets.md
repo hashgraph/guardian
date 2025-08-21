@@ -25,7 +25,7 @@ Get list of all datasets.
 
 {% tabs %}
 {% tab title="200" %}
-```javascript
+```json5
 {
   "data": [
     {
@@ -69,7 +69,7 @@ Get list of all datasets.
 {% endtab %}
 
 {% tab title="422" %}
-```javascript
+```json5
 {
   "detail": [
     {
