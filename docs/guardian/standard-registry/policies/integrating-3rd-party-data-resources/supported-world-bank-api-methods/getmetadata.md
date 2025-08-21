@@ -1,8 +1,12 @@
+---
+description: 'API Version: 2.0'
+---
+
 # getMetadata
 
 <mark style="color:green;">`GET`</mark> `/v2/sources/{sourceId}/{conceptId}/{variableIds}/metatypes/{metatypeId}/metadata`
 
-Get metadata values for combinations of concept variables and metatypes
+Get metadata values for combinations of concept variables and metatypes.
 
 **Headers**
 

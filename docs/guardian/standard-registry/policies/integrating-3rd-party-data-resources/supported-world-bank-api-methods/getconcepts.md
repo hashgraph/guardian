@@ -1,8 +1,12 @@
+---
+description: 'API Version: 2.0'
+---
+
 # getConcepts
 
 <mark style="color:green;">`GET`</mark> `/v2/sources/{sourceId}/concepts`
 
-Get list of concepts/dimensions for a source
+Get list of concepts/dimensions for a source.
 
 **Headers**
 

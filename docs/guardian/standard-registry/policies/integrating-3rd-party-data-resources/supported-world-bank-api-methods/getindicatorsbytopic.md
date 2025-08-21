@@ -1,8 +1,12 @@
+---
+description: 'API Version: 2.0'
+---
+
 # getIndicatorsByTopic
 
 <mark style="color:green;">`GET`</mark>`/v2/topic/{topicId}/indicator`
 
-List all indicators under a given topic
+List all indicators under a given topic.
 
 **Headers**
 

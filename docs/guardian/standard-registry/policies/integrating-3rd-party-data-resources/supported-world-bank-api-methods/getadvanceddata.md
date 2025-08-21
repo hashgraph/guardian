@@ -1,8 +1,12 @@
+---
+description: 'API Version: 2.0'
+---
+
 # getAdvancedData
 
 <mark style="color:green;">`GET`</mark>`/v2/sources/{sourceId}/country/{country}/series/{series}/time/{time}/version/{version}/data`
 
-Retrieve data for a combination of concepts (source, country, series, time, version)
+Retrieve data for a combination of concepts (source, country, series, time, version).
 
 **Headers**
 
