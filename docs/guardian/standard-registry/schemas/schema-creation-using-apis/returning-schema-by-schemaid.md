@@ -1,15 +1,17 @@
 # Returning Schema by SchemaID
 
-{% swagger method="get" path="" baseUrl="/schema/{schemaId}" summary="Returns schema by schema ID" %}
-{% swagger-description %}
+<mark style="color:blue;">`GET`</mark> `/schema/{schemaId}`
+
 Returns schema by schema ID
-{% endswagger-description %}
 
-{% swagger-parameter in="path" name="schemaId" type="String" required="true" %}
-Schema ID
-{% endswagger-parameter %}
+#### Path Parameters
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+| Name                                       | Type   | Description |
+| ------------------------------------------ | ------ | ----------- |
+| schemaId<mark style="color:red;">\*</mark> | String | Schema ID   |
+
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
       content:
@@ -18,25 +20,25 @@ Schema ID
                   $ref: '#/components/schemas/Schema'
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+{% tab title="401: Unauthorized Unauthorized" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+{% tab title="403: Forbidden Forbidden" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+{% tab title="500: Internal Server Error Internal Server Error" %}
 ```javascript
 {
     content:
@@ -45,5 +47,5 @@ Schema ID
                 $ref: '#/components/schemas/Error'
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

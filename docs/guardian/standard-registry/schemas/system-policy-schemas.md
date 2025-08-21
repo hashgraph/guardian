@@ -1,6 +1,8 @@
-# Types of Schemas
+---
+icon: clipboard-list
+---
 
-## Schema Demo
+# Types of Schemas
 
 There are four types of Schemas:
 

@@ -1,19 +1,23 @@
 # Publishing Schema
 
-{% swagger method="put" path="" baseUrl="/schemas/push/{schemaId}/publish" summary="Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic." %}
-{% swagger-description %}
+<mark style="color:orange;">`PUT`</mark> `/schemas/push/{schemaId}/publish`
+
 Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
 
-{% swagger-parameter in="path" name="schemaID" type="String" required="true" %}
-Schema ID
-{% endswagger-parameter %}
+#### Path Parameters
 
-{% swagger-parameter in="body" required="true" %}
-Object that contains policy version.
-{% endswagger-parameter %}
+| Name                                       | Type   | Description |
+| ------------------------------------------ | ------ | ----------- |
+| schemaID<mark style="color:red;">\*</mark> | String | Schema ID   |
 
-{% swagger-response status="202: Accepted" description="Accepted" %}
+#### Request Body
+
+| Name                               | Type   | Description                          |
+| ---------------------------------- | ------ | ------------------------------------ |
+| <mark style="color:red;">\*</mark> | String | Object that contains policy version. |
+
+{% tabs %}
+{% tab title="202: Accepted Accepted" %}
 ```javascript
 {
     content:
@@ -22,25 +26,25 @@ Object that contains policy version.
                 $ref: '#/components/schemas/Task'
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+{% tab title="401: Unauthorized Unauthorized" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+{% tab title="403: Forbidden Forbidden" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+{% tab title="500: Internal Server Error Internal Server Error" %}
 ```javascript
 {
     content:
@@ -49,5 +53,5 @@ Object that contains policy version.
                 $ref: '#/components/schemas/Error'
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

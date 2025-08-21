@@ -1,17 +1,17 @@
 # Returns Schema by Type
 
-### FINDING SCHEMA USING JSON DOCUMENT
+<mark style="color:blue;">`GET`</mark> `/schemas/type/{type}`
 
-{% swagger method="get" path="" baseUrl="/schemas/type/{type}" summary="Returns Schema by Type" %}
-{% swagger-description %}
 Finds the schema using the json document type.
-{% endswagger-description %}
 
-{% swagger-parameter in="path" name="type" type="String" required="false" %}
-JSON type
-{% endswagger-parameter %}
+#### Path Parameters
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+| Name | Type   | Description |
+| ---- | ------ | ----------- |
+| type | String | JSON type   |
+
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     content:
@@ -20,25 +20,25 @@ JSON type
                 $ref: '#/components/schemas/Schema'
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+{% tab title="401: Unauthorized Unauthorized" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+{% tab title="403: Forbidden Forbidden" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+{% tab title="500: Internal Server Error Internal Server Error" %}
 ```javascript
 {
     content:
@@ -47,5 +47,5 @@ JSON type
                 $ref: '#/components/schemas/Error'
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

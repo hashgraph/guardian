@@ -6,10 +6,10 @@ Guardian TrustChain represents token retirement operations as special card group
 
 The alternative trustchain view presents the retirement operation as an ordered (by time) sequence of cards featuring the corresponding Contract and User details.
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 Guardian needs access to an Indexer instance for information to put on the cards. When Indexer is not available the information scope is reduced. In such cases Guardian trustchain may also lack information about retirements performed by 3rd party applications directly (without Guardian involvement).
 
-<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 Guardian displays “No data from the indexer. Connect it and click Refresh for full details.” warning when Indexer access is not configured.

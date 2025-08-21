@@ -1,4 +1,4 @@
-# Available Schema Types
+# Available Schema Data Types
 
 ## **Embracing GBBC Specifications for Universal Data Comparability**
 
@@ -54,3 +54,39 @@ The utilization of Schema Types is pivotal for the lifecycle of digital environm
 | URI         | Example link to ipfs files                                                                                                                  | ${schema}://{auth}/….                                                                                                                                  |
 | SentinelHub | Define Geographic rastery imagery coordinates                                                                                               | Height, Width, From and To Date.                                                                                                                       |
 
+Each of the above field types can be marked as either Marked or optional by checking the Required Field checkbox.
+
+{% hint style="info" %}
+**Note: Important points to be noted when "Account" type is selected:**
+
+1. Account field type need to be referred in ‘tokenConfirmationBlock’ and ‘tokenActionBlock’. They can be present both in the parent and child documents.
+2. If there are multiple fields of the ‘Account’ with the same name, then the value from the most immediate scope, i.e. from the current (‘child’) document is used.
+{% endhint %}
+
+{% hint style="info" %}
+**Note: Important points to be noted when "Enum" type is selected:**
+
+1. Enum values can be added by editing or by importing it from link or from file.
+2. If we are importing files by URL. The response should be ({"enum": \["Option1", "Option2", "Option3"]}) or has same format such as importing file (Options separated by new line symbol).
+
+Example of URL which has correct format: [https://ipfs.io/ipfs/bafkreihgbx6fsqup4psfbzjcf57zjdbfwisbjbsqzvwlg4hgx5s5xyqwzm](https://ipfs.io/ipfs/bafkreihgbx6fsqup4psfbzjcf57zjdbfwisbjbsqzvwlg4hgx5s5xyqwzm)
+
+3\. If we put more than five options, it will be automatically loaded to IPFS.
+{% endhint %}
+
+{% hint style="info" %}
+**Note: Important points to be noted when "GeoJSON" type is selected:**
+
+1. Click on map and place the marker’s, polygons, lines.
+2. Polygons and lines can be placed by double clicking on map.
+3. Right Click on the map will remove temporary points for polygons and lines
+4. View type can also be changed by pasting the GeoJSON.
+{% endhint %}
+
+{% hint style="info" %}
+**Note: Important points to be noted when "String" type is selected:**
+
+1. Pattern input field is added in the advanced mode configuration.
+
+Detailed information for patterns is available on [https://json-schema.org/understanding-json-schema/reference/regular\_expressions.html](https://json-schema.org/understanding-json-schema/reference/regular_expressions.html).
+{% endhint %}

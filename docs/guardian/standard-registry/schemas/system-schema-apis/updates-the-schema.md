@@ -1,21 +1,18 @@
 # Updates the Schema
 
-### UPDATES THE SCHEMA
+<mark style="color:orange;">`PUT`</mark> `/schemas/system/{schemaId}`
 
-{% swagger method="put" path="" baseUrl="/schemas/system/{schemaId}" summary="Updates the Schema" %}
-{% swagger-description %}
 Updates the system Schema with the provided Schema ID. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
 
-{% swagger-parameter in="path" name="schemaId" type="String" required="true" %}
-SchemaID
-{% endswagger-parameter %}
+#### Path Parameters
 
-{% swagger-parameter in="path" required="true" %}
-Object that contains valid Schema
-{% endswagger-parameter %}
+| Name                                       | Type   | Description                       |
+| ------------------------------------------ | ------ | --------------------------------- |
+| schemaId<mark style="color:red;">\*</mark> | String | SchemaID                          |
+| <mark style="color:red;">\*</mark>         | String | Object that contains valid Schema |
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     content:
@@ -26,31 +23,31 @@ Object that contains valid Schema
                   $ref: '#/components/schemas/Schema'
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+{% tab title="401: Unauthorized Unauthorized" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+{% tab title="403: Forbidden Forbidden" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
+{% tab title="422: Unprocessable Entity Unprocessable Entity" %}
 ```
 Schema is active.
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+{% tab title="500: Internal Server Error Internal Server Error" %}
 ```javascript
 {
     content:
@@ -59,5 +56,5 @@ Schema is active.
                 $ref: '#/components/schemas/Error'
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

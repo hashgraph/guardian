@@ -52,7 +52,7 @@ Below are the universal software prerequisites, followed by network-specific ite
 4.  Update your `.env`
 
     ```dotenv
-    dotenvCopyEditHEDERA_NET=testnet
+    HEDERA_NET=testnet
     HEDERA_OPERATOR_ID=0.0.987654
     HEDERA_OPERATOR_KEY=-----BEGIN PRIVATE KEY----- … -----END PRIVATE KEY-----
     ```
@@ -62,7 +62,7 @@ Below are the universal software prerequisites, followed by network-specific ite
 1.  **Docker-Compose**
 
     ```bash
-    bashCopyEditdocker compose -f ./deploy/docker-compose.yml --profile all up -d
+    docker compose -f ./deploy/docker-compose.yml --profile all up -d
     ```
 
     _(Detects Testnet/Mainnet from `.env`)_

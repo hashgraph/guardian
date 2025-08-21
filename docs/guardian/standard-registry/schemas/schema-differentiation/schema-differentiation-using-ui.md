@@ -4,9 +4,17 @@ We can compare two schemas by following some steps as follows:
 
 ## 1. Start Comparison by choosing Schemas:
 
-We click on **Compare** button present in Schemas tab as shown below:
+**Step 1:**
 
-<figure><img src="../../../../.gitbook/assets/image (10) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+We click on **Compare** button (last one) <img src="../../../../.gitbook/assets/image (429).png" alt="" data-size="line">present in Schemas tab as shown below:
+
+<figure><img src="../../../../.gitbook/assets/image (428).png" alt=""><figcaption></figcaption></figure>
+
+**Step 2:**
+
+Select two schemas for compare
+
+<figure><img src="../../../../.gitbook/assets/image (431).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Comparison View
 
