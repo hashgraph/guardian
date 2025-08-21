@@ -281,9 +281,6 @@ export class GeojsonTypeComponent implements OnChanges {
             })
             return undefined;
         }
-
-        console.log(value);
-
         if (
             value.type === GeoJsonType.POINT ||
             value.type === GeoJsonType.LINE_STRING ||
@@ -298,13 +295,13 @@ export class GeojsonTypeComponent implements OnChanges {
             })
             return value;
         } else if (value.type === GeoJsonType.FEATURE_COLLECTION && value.features?.length > 0) {
-        console.log(1);
             value.features.forEach((feature: any) => {
-
-                this.geometriesList.push({ 
-                    type: feature.type,
-                    coordinates: feature.coordinates
-                })
+                if (feature && feature.geometry) {
+                    this.geometriesList.push({
+                        type: feature.geometry.type,
+                        coordinates: feature.geometry.coordinates
+                    })
+                }
             });
         } else {
             return undefined;
@@ -329,7 +326,7 @@ export class GeojsonTypeComponent implements OnChanges {
     }
 
     ngAfterViewInit(): void {
-        this.resetCoordinatesStructure();
+        // this.resetCoordinatesStructure();
         if (this.getValue()) {
             this.onViewTypeChange(false);
         } else {
@@ -496,58 +493,59 @@ export class GeojsonTypeComponent implements OnChanges {
     }
 
     private updateMap(updateInput: boolean = false) {
-        const shapeFeatures: any[] = this.geometriesList.map(item => ({
-            type: 'Feature',
-            properties: {},
-            geometry: {
-                type: item.type,
-                coordinates: item.coordinates && JSON.parse(item.coordinates) || [],
+        // try {
+            const shapeFeatures: any[] = this.geometriesList.map(item => ({
+                type: 'Feature',
+                properties: {},
+                geometry: {
+                    type: item.type,
+                    coordinates: item.coordinates?.length > 0 ? item.coordinates : item.coordinates && JSON.parse(item.coordinates) || [],
+                }
+            }));
+
+            if (shapeFeatures.length <= 0) {
+                return;
             }
-        }));
 
-        console.log(shapeFeatures);
-        
+            const features = new GeoJSON({
+                featureProjection: 'EPSG:3857',
+            }).readFeatures({
+                type: 'FeatureCollection',
+                features: shapeFeatures,
+            });
 
-        if (shapeFeatures.length <= 0) {
-            return;
-        }
+            if (this.type == GeoJsonType.POLYGON && this.lastSelectedGeometry) {
+                const coords = this.parsedCoordinates;
+                const clickCoord = this.lastSelectedCoordinates;
 
-        const features = new GeoJSON({
-            featureProjection: 'EPSG:3857',
-        }).readFeatures({
-            type: 'FeatureCollection',
-            features: shapeFeatures,
-        });
-        
-        if (this.type == GeoJsonType.POLYGON && this.lastSelectedGeometry) {
-            const coords = this.parsedCoordinates;
-            const clickCoord = this.lastSelectedCoordinates;
+                for (let i = 0; i < coords.length; i++) {
+                    const ring = new Polygon([coords[i]]);
+                    if (ring.intersectsCoordinate(clickCoord)) {
+                        this.selectedRingIndex = i;
 
-            for (let i = 0; i < coords.length; i++) {
-                const ring = new Polygon([coords[i]]);
-                if (ring.intersectsCoordinate(clickCoord)) {
-                    this.selectedRingIndex = i;
-
-                    break;
+                        break;
+                    }
                 }
             }
-        }
 
-        this.geoShapesSource?.clear(true);
-        this.geoShapesSource?.addFeatures(features);
+            this.geoShapesSource?.clear(true);
+            this.geoShapesSource?.addFeatures(features);
 
-        if (updateInput) {
-            console.log({
-                type: 'FeatureCollection',
-                features: shapeFeatures
-            });
-            
-            this.coordinates = JSON.stringify(this.parsedCoordinates, null, 4);
-            this.setControlValue({
-                type: 'FeatureCollection',
-                features: shapeFeatures
-            }, true);
-        }
+            if (updateInput) {
+                // console.log({
+                //     type: 'FeatureCollection',
+                //     features: shapeFeatures
+                // });
+
+                this.coordinates = JSON.stringify(this.parsedCoordinates, null, 4);
+                this.setControlValue({
+                    type: 'FeatureCollection',
+                    features: shapeFeatures
+                }, true);
+            }
+        // } catch (error) {
+        //     console.log(error);
+        // }
     }
 
     private mapClick(coordinates: any) {
@@ -555,8 +553,11 @@ export class GeojsonTypeComponent implements OnChanges {
             return;
         }
 
+        const firstGeoType = this.geometriesList[0];
+
+
         try {
-            switch (this.type) {
+            switch (firstGeoType.type) {
                 case GeoJsonType.POINT:
                     this.parsedCoordinates = coordinates;
                     break;
@@ -595,6 +596,8 @@ export class GeojsonTypeComponent implements OnChanges {
                     break;
             }
 
+            firstGeoType.coordinates = JSON.stringify(this.parsedCoordinates);
+
             this.updateMap(true);
         }
         catch { }
@@ -628,10 +631,9 @@ export class GeojsonTypeComponent implements OnChanges {
     }
 
     public onTypeChange(geometry: any, dirty = true) {
-        this.resetCoordinatesStructure();
+        this.resetCoordinatesStructure(geometry);
 
-        this.setControlValue({}, dirty);
-        this.coordinates = '';
+        this.setControlValue({}, dirty); // todo
 
         switch (this.type) {
             case GeoJsonType.POINT:
@@ -723,13 +725,19 @@ export class GeojsonTypeComponent implements OnChanges {
             default:
                 break;
         }
-
+        
         this.updateMap(false);
     }
 
     public onViewTypeChange(dirty = true) {
         const value = this.formModel?.getValue();
         if (!value || !value.type) {
+
+        if (!this.isJSON) {
+            this.map = null;
+            this.mapCreated = false;
+            this.setupMap();
+        }
             return;
         }
 
@@ -739,9 +747,27 @@ export class GeojsonTypeComponent implements OnChanges {
 
         if (!this.isJSON || this.isDisabled) {
             this.type = value?.type || GeoJsonType.POINT;
-            this.onTypeChange(null, dirty);
             this.coordinates = JSON.stringify(value?.coordinates, null, 4);
-            this.coordinatesChanged(null, dirty);
+
+
+            this.geometriesList = [];
+
+            value.features.forEach((feature: any) => {
+                if (feature && feature.geometry && feature.geometry.type !== 'GeometryCollection') {
+                    this.geometriesList.push({
+                        type: feature.geometry.type,
+                        coordinates: feature.geometry.coordinates
+                    })
+                }
+            });
+            
+            this.updateMap(false);
+
+            // this.coordinatesChanged(null);
+            // this.onTypeChange(null, dirty);
+            // this.coordinates = JSON.stringify(value?.coordinates, null, 4);
+
+            // this.allCoordinatesChanged();
         }
 
         if (!this.isJSON) {
@@ -753,7 +779,11 @@ export class GeojsonTypeComponent implements OnChanges {
 
     public jsonChanged() {
         try {
-            this.setControlValue(JSON.parse(this.jsonInput));
+            let value = JSON.parse(this.jsonInput);
+            if (value.features) {
+                value.features = value.features.filter((feature: any) => feature?.geometry?.type && feature.geometry.type !== 'GeometryCollection');
+            }
+            this.setControlValue(value);
         } catch {
             this.setControlValue({});
         }
@@ -765,35 +795,41 @@ export class GeojsonTypeComponent implements OnChanges {
             coordinates: undefined
         })
     }
+    // [[[1,1],[1,2]]]
+    public allCoordinatesChanged() {
+        this.geometriesList.forEach(geometry => {
+            this.coordinatesChanged(geometry);
+        })
+    }
 
-    public coordinatesChanged(geometry: any, dirty = true) {
+    public coordinatesChanged(geometry: any) {
         try {
 
-            this.parsedCoordinates = JSON.parse(geometry.coordinates);
+            // this.parsedCoordinates = JSON.parse(geometry.coordinates);
+            const parsedCoordinates = geometry.coordinates;
 
-            // const parsedCoordinates = JSON.parse(geometry.coordinates);
             // this.setControlValue({
             //     type: geometry.type,
             //     coordinates: parsedCoordinates,
             // }, dirty);
 
             setTimeout(() => {
-                if (this.type == GeoJsonType.POINT && this.parsedCoordinates?.length == 2) {
-                    this.center = transform(this.parsedCoordinates, 'EPSG:4326', 'EPSG:3857');
-                } else if (this.type == GeoJsonType.MULTI_POINT && this.parsedCoordinates?.[0]?.length == 2) {
-                    const geometry = new MultiPoint(this.parsedCoordinates);
+                if (geometry.type == GeoJsonType.POINT && parsedCoordinates?.length == 2) {
+                    this.center = transform(parsedCoordinates, 'EPSG:4326', 'EPSG:3857');
+                } else if (geometry.type == GeoJsonType.MULTI_POINT && parsedCoordinates?.[0]?.length == 2) {
+                    const geometry = new MultiPoint(parsedCoordinates);
                     this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
-                } else if (this.type == GeoJsonType.POLYGON && this.parsedCoordinates?.[0]?.[0]?.length == 2) {
-                    const geometry = new Polygon(this.parsedCoordinates);
+                } else if (geometry.type == GeoJsonType.POLYGON && parsedCoordinates?.[0]?.[0]?.length == 2) {
+                    const geometry = new Polygon(parsedCoordinates);
                     this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
-                } else if (this.type == GeoJsonType.MULTI_POLYGON && this.parsedCoordinates?.[0]?.[0]?.[0]?.length == 2) {
-                    const geometry = new MultiPolygon(this.parsedCoordinates);
+                } else if (geometry.type == GeoJsonType.MULTI_POLYGON && parsedCoordinates?.[0]?.[0]?.[0]?.length == 2) {
+                    const geometry = new MultiPolygon(parsedCoordinates);
                     this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
-                } else if (this.type == GeoJsonType.LINE_STRING && this.parsedCoordinates?.[0]?.length == 2) {
-                    const geometry = new LineString(this.parsedCoordinates);
+                } else if (geometry.type == GeoJsonType.LINE_STRING && parsedCoordinates?.[0]?.length == 2) {
+                    const geometry = new LineString(parsedCoordinates);
                     this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
-                } else if (this.type == GeoJsonType.MULTI_LINE_STRING && this.parsedCoordinates?.[0]?.[0]?.length == 2) {
-                    const geometry = new MultiLineString(this.parsedCoordinates);
+                } else if (geometry.type == GeoJsonType.MULTI_LINE_STRING && parsedCoordinates?.[0]?.[0]?.length == 2) {
+                    const geometry = new MultiLineString(parsedCoordinates);
                     this.center = transform(getCenter(geometry.getExtent()), 'EPSG:4326', 'EPSG:3857');
                 } else {
                     this.center = null;
@@ -809,10 +845,11 @@ export class GeojsonTypeComponent implements OnChanges {
                     this.updateMap(true);
                 }
             }, 500)
-        } catch {
-            if (this.coordinates == '') {
+        } catch (e) {
+            if (geometry.coordinates == '') {
                 setTimeout(() => {
-                    this.resetCoordinatesStructure();
+                    this.resetCoordinatesStructure(geometry);
+                    // this.setControlValue({});
                     this.updateMap();
                 }, 100)
             } else {
@@ -820,29 +857,28 @@ export class GeojsonTypeComponent implements OnChanges {
                     // this.coordinates = JSON.stringify(this.parsedCoordinates, null, 4);
                 }, 100)
             }
-            this.setControlValue({});
         }
     }
 
-    private resetCoordinatesStructure() {
-        switch (this.type) {
+    private resetCoordinatesStructure(geometry: any) {
+        switch (geometry.type) {
             case GeoJsonType.POINT:
-                this.parsedCoordinates = [];
+                geometry.coordinates = [];
                 break;
             case GeoJsonType.POLYGON:
-                this.parsedCoordinates = [[]];
+                geometry.coordinates = [[]];
                 break;
             case GeoJsonType.LINE_STRING:
-                this.parsedCoordinates = [[]];
+                geometry.coordinates = [[]];
                 break;
             case GeoJsonType.MULTI_POINT:
-                this.parsedCoordinates = [[]];
+                geometry.coordinates = [[]];
                 break;
             case GeoJsonType.MULTI_POLYGON:
-                this.parsedCoordinates = [[[[]]]];
+                geometry.coordinates = [[[[]]]];
                 break;
             case GeoJsonType.MULTI_LINE_STRING:
-                this.parsedCoordinates = [[]];
+                geometry.coordinates = [[]];
                 break;
             default:
                 break;
@@ -906,7 +942,7 @@ export class GeojsonTypeComponent implements OnChanges {
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(kmlText, 'application/xml');
             const geoJsonData = kml(xmlDoc);
-            
+
             // geoJsonData.features.forEach((feature: any) => {
             //     if (feature.geometry.type === 'Point') {
             //         feature.geometry.coordinates = feature.geometry.coordinates.slice(0, 2);
@@ -915,8 +951,7 @@ export class GeojsonTypeComponent implements OnChanges {
             // geoJsonData = geoJsonData.features[0].geometry;
 
             this.geoJsonService.saveFile(file.name, geoJsonData);
-            // console.log(geoJsonData);
-            
+
             this.getShapeFromFile();
         });
     }
@@ -929,10 +964,13 @@ export class GeojsonTypeComponent implements OnChanges {
 
             if (shapeFile) {
                 if (shapeFile.type === 'FeatureCollection') {
-                    console.log(1);
+                    shapeFile.features = shapeFile.features.map((feature: any) => ({
+                        type: feature.type,
+                        geometry: feature.geometry,
+                        property: {}
+                    }));
                     this.onUploadMultiLocationFile(shapeFile);
                 } else {
-                    console.log(2);
                     this.jsonInput = JSON.stringify(shapeFile.geometry, null, 4);
                     this.jsonChanged();
                 }
@@ -941,21 +979,27 @@ export class GeojsonTypeComponent implements OnChanges {
             }
         }
     }
-    
+
     public onUploadMultiLocationFile(featureCollection: FeatureCollection) {
-        const dialogRef = this.dialogService.open(UploadGeoDataDialog, {
-            header: 'Upload file',
-            width: '860px',
-            styleClass: 'custom-dialog',
-            data: {
-                featureCollection,
-            }
-        });
-        dialogRef.onClose.subscribe(async (result) => {
-            if (result && result.feature) {
-                this.jsonInput = JSON.stringify(result.feature.geometry, null, 4);
-                this.jsonChanged();
-            }
-        });
+
+        if (featureCollection) {
+            this.jsonInput = JSON.stringify(featureCollection, null, 4);
+            this.jsonChanged();
+        }
+
+        // const dialogRef = this.dialogService.open(UploadGeoDataDialog, {
+        //     header: 'Upload file',
+        //     width: '860px',
+        //     styleClass: 'custom-dialog',
+        //     data: {
+        //         featureCollection,
+        //     }
+        // });
+        // dialogRef.onClose.subscribe(async (result) => {
+        //     if (result && result.feature) {
+        //         this.jsonInput = JSON.stringify(result.feature.geometry, null, 4);
+        //         this.jsonChanged();
+        //     }
+        // });
     }
 }
