@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getChangeLog
 
 <mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/change_log`
 
-Get change log
+Get change log.
 
 **Headers**
 

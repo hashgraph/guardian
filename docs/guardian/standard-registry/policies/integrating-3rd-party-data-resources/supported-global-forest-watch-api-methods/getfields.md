@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getFields
 
 <mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/fields`
 
-Get the fields of a version. For a version with a vector default asset
+Get the fields of a version. For a version with a vector default asset.
 
 **Headers**
 

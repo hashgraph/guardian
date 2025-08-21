@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getCreationOptions
 
 <mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/creation_options`
 
-Get creation options
+Get creation options.
 
 **Headers**
 

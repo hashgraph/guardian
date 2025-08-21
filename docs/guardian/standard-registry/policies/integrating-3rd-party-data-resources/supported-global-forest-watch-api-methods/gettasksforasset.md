@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getTasksForAsset
 
 <mark style="color:green;">`GET`</mark> `/asset/{asset_id}/tasks`
 
-Get tasks for asset
+Get tasks for asset.
 
 **Headers**
 

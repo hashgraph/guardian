@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getDatasets
 
-Get list of all datasets
-
 <mark style="color:green;">`GET`</mark> `/datasets`
+
+Get list of all datasets.
 
 **Headers**
 

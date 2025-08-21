@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getFieldsForAsset
 
 <mark style="color:green;">`GET`</mark> `/asset/{asset_id}/fields`
 
-Get Fields for asset
+Get Fields for asset.
 
 **Headers**
 

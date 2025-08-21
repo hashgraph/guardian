@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getSingleTask
 
 <mark style="color:green;">`GET`</mark> `/task/{task_id}`
 
-Get single tasks by task ID
+Get single tasks by task ID.
 
 **Headers**
 

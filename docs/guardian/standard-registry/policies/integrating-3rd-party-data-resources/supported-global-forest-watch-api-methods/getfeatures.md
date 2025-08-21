@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getFeatures
 
 <mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/features`
 
-Get features
+Get features.
 
 **Headers**
 

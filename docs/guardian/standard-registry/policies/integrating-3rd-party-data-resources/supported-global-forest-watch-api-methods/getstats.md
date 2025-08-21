@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getStats
 
 <mark style="color:green;">`GET`</mark> `/asset/{asset_id}/stats`
 
-Get stats for asset
+Get stats for asset.
 
 **Headers**
 

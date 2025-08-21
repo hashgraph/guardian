@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getTilesInfoForAsset
 
 <mark style="color:green;">`GET`</mark> `/asset/{asset_id}/tiles_info`
 
-Get tiles info for asset
+Get tiles info for asset.
 
 **Headers**
 
