@@ -1,6 +1,4 @@
 import { ErrorCode, JSONCodec, NatsError } from 'nats';
-// import util from 'util';
-// import { gzip, unzip } from 'zlib';
 import { LargePayloadContainer } from './large-payload-container.js';
 import axios from 'axios';
 import https from 'https';
@@ -17,17 +15,17 @@ export function ZipCodec() {
                     d = null;
                 }
 
-                // const zipped =  await util.promisify(gzip)(JSON.stringify(d));
                 const zipped =  JSONCodec().encode(d);
                 const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
-                if (Number.isInteger(maxPayload) && maxPayload <= zipped.length) {
+
+                //Add some space reserved for headers
+                const headerReserved = 32 * 1024;
+
+                if (Number.isInteger(maxPayload) && maxPayload <= (zipped.length + headerReserved)) {
                     const directLink = new LargePayloadContainer().addObject(Buffer.from(zipped));
                     return JSONCodec().encode({
                         directLink
                     })
-                    // return  await util.promisify(gzip)(JSON.stringify({
-                    //     directLink
-                    // }))
                 } else {
                     return zipped;
                 }
@@ -39,8 +37,6 @@ export function ZipCodec() {
         async decode(a) {
             try {
                 const parsed = JSONCodec().decode(a) as any;
-                // const decompressed = await util.promisify(unzip)(a);
-                // const parsed = JSON.parse(decompressed.toString());
                 if (parsed?.hasOwnProperty('directLink')) {
                     const directLink = parsed.directLink;
                     if (process.env.TLS_CERT && process.env.TLS_KEY) {
@@ -55,7 +51,6 @@ export function ZipCodec() {
                         responseType: 'arraybuffer'
                     });
                     const compressedData = response.data;
-                    // const _decompressed = await util.promisify(unzip)(compressedData)
                     const _decompressed = compressedData;
                     return JSON.parse(_decompressed.toString());
                 }

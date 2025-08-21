@@ -99,7 +99,7 @@ export class TaskManager {
             const { taskId, statuses, result, error, info } = msg;
             if (taskId) {
                 if (info) {
-                    this.addInfo(taskId, info, statuses);
+                    this.addInfo(taskId, info, []);
                 } else if (statuses) {
                     this.addStatuses(taskId, statuses);
                 }
