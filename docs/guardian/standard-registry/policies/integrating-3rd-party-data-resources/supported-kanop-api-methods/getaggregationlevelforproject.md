@@ -1,8 +1,12 @@
+---
+description: 'API Version: 1.102.0'
+---
+
 # getAggregationLevelForProject
 
 <mark style="color:green;">`GET`</mark>`/projects/{projectId}/aggregationLevels`
 
-Get Aggregation Level For Project
+Get Aggregation Level For Project.
 
 **Headers**
 

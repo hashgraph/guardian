@@ -1,8 +1,12 @@
+---
+description: 'API Version: 1.102.0'
+---
+
 # getChangeMetricForPolygon
 
 <mark style="color:green;">`GET`</mark>`/projects/{projectId}/requests/{requestId}/geoChange/{indicator}`
 
-Get Change Metric For Polygon
+Get Change Metric For Polygon.
 
 **Headers**
 

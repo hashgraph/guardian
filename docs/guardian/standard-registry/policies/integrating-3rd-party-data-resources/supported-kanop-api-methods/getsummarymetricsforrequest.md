@@ -1,8 +1,12 @@
+---
+description: 'API Version: 1.102.0'
+---
+
 # getSummaryMetricsForRequest
 
 <mark style="color:green;">`GET`</mark>`/projects/{projectId}/requests/{requestId}/metrics`
 
-Get Summary Metrics For Request
+Get Summary Metrics For Request.
 
 **Headers**
 

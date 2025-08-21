@@ -1,8 +1,12 @@
+---
+description: 'API Version: 1.102.0'
+---
+
 # getRequests
 
 <mark style="color:green;">`GET`</mark>`/projects/{projectId}/requests`
 
-Get Requests
+Get Requests.
 
 **Headers**
 

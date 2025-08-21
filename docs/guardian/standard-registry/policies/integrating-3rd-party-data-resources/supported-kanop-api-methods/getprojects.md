@@ -1,8 +1,12 @@
+---
+description: 'API Version: 1.102.0'
+---
+
 # getProjects
 
 <mark style="color:green;">`GET`</mark>`/projects/`
 
-Get Projects
+Get Projects.
 
 **Headers**
 
