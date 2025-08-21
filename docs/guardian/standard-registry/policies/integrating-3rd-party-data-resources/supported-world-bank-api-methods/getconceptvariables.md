@@ -1,8 +1,12 @@
+---
+description: 'API Version: 2.0'
+---
+
 # getConceptVariables
 
 <mark style="color:green;">`GET`</mark>`/v2/sources/{sourceId}/:{conceptId}/data`
 
-Retrieve variables within a concept (e.g. country codes for Country concept)
+Retrieve variables within a concept (e.g. country codes for Country concept).
 
 **Headers**
 
