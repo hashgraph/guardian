@@ -7,7 +7,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const PPUser = Cypress.env('PPUser');
-    const VVBUser = Cypress.env('VVBUser');  
+    const VVBUser = Cypress.env('VVBUser');
 
     let tokenId, policyId, SRDid, VVBDid;
 
@@ -87,16 +87,18 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                 policyId = response.body.at(0).id;
-                cy.request({
-                    method: METHOD.PUT,
-                    url: API.ApiServer + API.Policies + policyId + "/" + API.Publish,
-                    body: {
-                        policyVersion: "1.2.5"
-                    },
-                    headers: {
-                        authorization
-                    },
-                    timeout: 18000000,
+                Authorization.getAccessToken(SRUsername).then((authorization) => {
+                    cy.request({
+                        method: METHOD.PUT,
+                        url: API.ApiServer + API.Policies + policyId + "/" + API.Publish,
+                        body: {
+                            policyVersion: "1.2.5"
+                        },
+                        headers: {
+                            authorization
+                        },
+                        timeout: 18000000,
+                    })
                 })
             })
         })
