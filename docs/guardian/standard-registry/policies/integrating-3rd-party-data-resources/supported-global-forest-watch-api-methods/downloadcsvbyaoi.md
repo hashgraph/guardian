@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # downloadCSVByAoi
 
 <mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/download_by_aoi/csv`
 
-Execute a READ-ONLY SQL query on the given dataset version
+Execute a READ-ONLY SQL query on the given dataset version.
 
 **Headers**
 

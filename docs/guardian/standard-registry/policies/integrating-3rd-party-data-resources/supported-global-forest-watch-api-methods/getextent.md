@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getExtent
 
 <mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/extent`
 
-Get extent
+Get extent.
 
 **Headers**
 

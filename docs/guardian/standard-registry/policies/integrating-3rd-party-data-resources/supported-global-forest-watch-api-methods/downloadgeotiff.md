@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # downloadGeoTiff
 
 <mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/download/geotiff`
 
-Get geotiff raster tile
+Get geotiff raster tile.
 
 **Headers**
 

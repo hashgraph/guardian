@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getCreationOptionsForAsset
 
 <mark style="color:green;">`GET`</mark> `/asset/{asset_id}/creation_options`
 
-Get creation options for asset
+Get creation options for asset.
 
 **Headers**
 

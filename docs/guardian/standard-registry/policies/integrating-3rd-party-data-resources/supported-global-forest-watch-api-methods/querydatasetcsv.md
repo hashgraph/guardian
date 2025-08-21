@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # queryDatasetCSV
 
 <mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/query/csv`
 
-Execute a READ-ONLY SQL query on the given dataset version
+Execute a READ-ONLY SQL query on the given dataset version.
 
 **Headers**
 

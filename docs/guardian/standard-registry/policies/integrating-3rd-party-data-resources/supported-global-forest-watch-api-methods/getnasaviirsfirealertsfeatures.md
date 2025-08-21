@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getNasaViirsFireAlertsFeatures
 
 <mark style="color:green;">`GET`</mark> `/dataset/nasa_viirs_fire_alerts/{version}/features`
 
-Get Nasa Viirs fire alerts features
+Get Nasa Viirs fire alerts features.
 
 **Headers**
 

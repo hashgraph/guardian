@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getDatasetById
 
-Get basic metadata and available versions for a given dataset
-
 <mark style="color:green;">`GET`</mark> `/dataset/{dataset}`
+
+Get basic metadata and available versions for a given dataset.
 
 **Headers**
 
