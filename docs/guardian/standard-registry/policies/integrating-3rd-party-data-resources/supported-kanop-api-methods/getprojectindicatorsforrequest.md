@@ -1,8 +1,12 @@
+---
+description: 'API Version: 1.102.0'
+---
+
 # getProjectIndicatorsForRequest
 
 <mark style="color:green;">`GET`</mark>`/projects/{projectId}/requests/{requestId}/metrics/{indicators}`
 
-Get Project Indicators For Request
+Get Project Indicators For Request.
 
 **Headers**
 

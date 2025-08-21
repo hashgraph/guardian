@@ -1,8 +1,12 @@
+---
+description: 'API Version: 1.102.0'
+---
+
 # getVariationGisFiles
 
 <mark style="color:green;">`GET`</mark>`/projects/{projectId}/requests/{requestId}/variationGisFiles`
 
-Get Variation Gis Files
+Get Variation Gis Files.
 
 **Headers**
 

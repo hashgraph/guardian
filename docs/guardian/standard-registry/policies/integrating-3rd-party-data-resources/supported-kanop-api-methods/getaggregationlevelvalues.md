@@ -1,8 +1,12 @@
+---
+description: 'API Version: 1.102.0'
+---
+
 # getAggregationLevelValues
 
 `GET/projects/{projectId}/aggregationLevels/{level}`
 
-Get Aggregation Level Values
+Get Aggregation Level Values.
 
 **Headers**
 

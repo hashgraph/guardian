@@ -1,8 +1,12 @@
+---
+description: 'API Version: 1.102.0'
+---
+
 # getAvailableFilesForRequest
 
 <mark style="color:green;">`GET`</mark>`/projects/{projectId}/requests/{requestId}/gisFiles`
 
-Get Available Files For Request
+Get Available Files For Request.
 
 **Headers**
 

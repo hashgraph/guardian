@@ -1,8 +1,12 @@
+---
+description: 'API Version: 1.102.0'
+---
+
 # getDataRequest
 
 <mark style="color:green;">`GET`</mark>`/projects/{projectId}/requests/{requestId}`
 
-Get Data Request
+Get Data Request.
 
 **Headers**
 

@@ -1,8 +1,12 @@
+---
+description: 'API Version: 1.102.0'
+---
+
 # getProjectReferences
 
 <mark style="color:green;">`GET`</mark>`/projects/references`
 
-Get Project References
+Get Project References.
 
 **Headers**
 
