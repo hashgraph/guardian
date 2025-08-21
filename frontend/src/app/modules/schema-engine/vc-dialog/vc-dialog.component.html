@@ -69,10 +69,15 @@
             <ng-container *ngIf="additionalOptionsData">
                 <ng-container *ngFor="let option of additionalOptionsData">
                     <ng-container *ngIf="option.optionValue === viewDocument">
-                        <div *ngIf="option.type !== 'TEXT'" class="json">
+                        <div *ngIf="option.type === IntegrationDataTypes.JSON || option.type === IntegrationDataTypes.CSV" class="json">
                             {{ option.data }}
                         </div>
-                        <div *ngIf="option.type === 'TEXT'" class="text">
+
+                        <ng-container *ngIf="option.type === IntegrationDataTypes.GEOTIFF || option.type === IntegrationDataTypes.GEOJSON">
+                            <app-geo-image [data]="option.data" />
+                        </ng-container>
+
+                        <div *ngIf="option.type === IntegrationDataTypes.TEXT" class="text">
                             {{ option.data }}
                         </div>
                     </ng-container>

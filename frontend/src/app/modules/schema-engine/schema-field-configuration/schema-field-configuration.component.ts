@@ -207,6 +207,8 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
             }
             if (this.field.autocalculated.value === true) {
                 this.fieldType.setValue('autocalculate')
+                this.field.expression.setValidators([Validators.required]);
+                this.field.expression.updateValueAndValidity();
             } else if (this.field.controlRequired.value === true) {
                 this.fieldType.setValue('required')
             } else if (this.field.hidden.value === true) {

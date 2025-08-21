@@ -1,0 +1,2 @@
+# Supported Kanop API methods
+

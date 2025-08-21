@@ -1,0 +1,188 @@
+.status-grid {
+    display: grid;
+    grid-template-columns: 70% 30%;
+}
+
+.status {
+    text-align: right;
+}
+
+.info {
+    padding-left: 30px;
+}
+
+.content {
+    background-color: white;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99;
+}
+
+.loading-progress {
+    width: 80%;
+    height: 80%;
+}
+
+.loading-progress-info {
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 10px;
+    padding-top: 10px;
+}
+
+.task-not-found {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.task-not-found__icon {
+    font-size: 100px;
+    width: 100px;
+    height: 100px;
+}
+
+.task-not-found__label {
+    font-size: 60px;
+}
+
+/** New design **/
+
+.center-container {
+    position: absolute;
+    left: 48px;
+    right: 48px;
+    bottom: 0;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.task-viewer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translate(0px, -50%);
+    height: 50vh;
+}
+
+.task-viewer>.header {
+    color: #000;
+    font-family: Poppins, sans-serif;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+}
+
+.task-viewer>.header {
+    color: #000;
+    font-family: Poppins, sans-serif;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+}
+
+.task-viewer>.progress-bar-container {
+    width: 100%;
+    margin-top: 24px;
+    height: 10px;
+}
+
+.progress-bar {
+    height: 8px;
+}
+
+.status-items {
+    margin-top: 24px;
+    min-height: 200px;
+    max-height: 400px;
+    color: var(--color-grey-5, #848FA9);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+    overflow-y: auto;
+    width: 100%;
+}
+
+.status-items>.info-part {
+    margin-left: 24px;
+}
+
+.status-items>.non-info-part {
+    display: flex;
+    justify-content: space-between;
+    column-gap: 192px;
+}
+
+:host ::ng-deep .p-progressbar {
+    border-radius: 8px;
+    height: 8px;
+}
+
+:host ::ng-deep .p-progressbar-value {
+    background-color: var(--color-primary);
+}
+
+.step-children {
+    width: 100%;
+    overflow: hidden;
+}
+
+.sub-steps {
+    padding-left: 24px;
+}
+
+.step-body {
+    height: 34px;
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+
+    &:hover {
+        background-color: var(--guardian-disabled-background);
+    }
+
+    .step-name {
+        width: calc(100% - 120px);
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .step-status {
+        width: 100px;
+        display: flex;
+        justify-content: end;
+        padding-right: 10px
+    }
+}
+
+.step-container {
+    width: 100%;
+}
+
+.scroller::ng-deep * {
+    overflow-anchor: none !important;
+}
+
+.scroller .scroller-anchor {
+    overflow-anchor: auto !important;
+    height: 3px;
+}

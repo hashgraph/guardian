@@ -8,11 +8,11 @@ import {
     Formula,
     FormulaImportExport,
     PolicyImportExport,
-    Users
+    Users,
+    NewNotifier
 } from '@guardian/common';
 import { EntityStatus, IOwner, MessageAPI, PolicyStatus, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
 import { getFormulasData, publishFormula } from './helpers/formulas-helpers.js';
-import { emptyNotifier } from '../helpers/notifier.js';
 
 /**
  * Connect to the message broker methods of working with formula.
@@ -444,7 +444,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const root = await (new Users()).getHederaAccount(owner.creator, userId);
-                const result = await publishFormula(item, owner, root, emptyNotifier());
+                const result = await publishFormula(item, owner, root, NewNotifier.empty());
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], userId);

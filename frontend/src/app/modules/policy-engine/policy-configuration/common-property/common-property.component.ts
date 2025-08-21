@@ -1,6 +1,8 @@
-import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation,} from '@angular/core';
-import {RegisteredService} from '../../services/registered.service';
-import {PolicyBlock, RoleVariables, SchemaVariables,} from '../../structures';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation, } from '@angular/core';
+import { RegisteredService } from '../../services/registered.service';
+import { PolicyBlock, RoleVariables, SchemaVariables, } from '../../structures';
+import { DialogService } from 'primeng/dynamicdialog';
+import { CodeEditorDialogComponent } from '../../dialogs/code-editor-dialog/code-editor-dialog.component';
 
 /**
  * common property
@@ -47,7 +49,8 @@ export class CommonPropertyComponent implements OnInit {
     roles!: RoleVariables[];
 
     constructor(
-        private registeredService: RegisteredService
+        private registeredService: RegisteredService,
+        private dialog: DialogService,
     ) {
     }
 
@@ -127,6 +130,28 @@ export class CommonPropertyComponent implements OnInit {
     onSave() {
         this.needUpdate = true;
         this.update.emit();
+    }
+
+    editCode($event: MouseEvent) {
+        const dialogRef = this.dialog.open(CodeEditorDialogComponent, {
+            showHeader: false,
+            width: '80%',
+            styleClass: 'guardian-dialog',
+            data: {
+                test: false,
+                expression: this.value,
+                readonly: this.readonly
+            }
+        })
+        dialogRef.onClose.subscribe(result => {
+            if (result) {
+                this.value = result.expression;
+                if (result.type === 'save') {
+                    this.needUpdate = true;
+                    this.update.emit();
+                }
+            }
+        })
     }
 
     onHide() {

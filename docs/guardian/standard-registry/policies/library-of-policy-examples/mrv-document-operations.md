@@ -42,7 +42,7 @@ In order to mint tokens into another account (not into the account of the mintin
 
 5. Create the token
 
-![image5.png](<../../../../.gitbook/assets/4 (1) (1) (2) (1) (1).png>)
+![image5.png](<../../../../.gitbook/assets/4 (1) (1) (2) (1) (1) (2).png>)
 
 ## **Document Operations**
 
@@ -50,7 +50,7 @@ In order to mint tokens into another account (not into the account of the mintin
 
 #### 1.1 Create a project
 
-![Creating project](<../../../../.gitbook/assets/5 (3) (1).png>)
+![Creating project](<../../../../.gitbook/assets/5 (3) (1) (1).png>)
 
 ### 1.2 Save the project
 
@@ -64,7 +64,7 @@ In order to mint tokens into another account (not into the account of the mintin
 
 1.3.2 To configure the target account for mixed tokens select ‘_Custom_’ value for ‘_Type_’ and the filed in the document from which to take the value for the Account ID (this field must have type: ‘**Account**’)
 
-![Selecting Account Type and Id](<../../../../.gitbook/assets/8 (3) (2).png>)
+![Selecting Account Type and Id](<../../../../.gitbook/assets/8 (3) (2) (1).png>)
 
 1.3.3 By default ’**tokenConfirmationBlock**’ does not have a link to the next block, thus it needs to be manually added
 
@@ -74,11 +74,11 @@ In order to mint tokens into another account (not into the account of the mintin
 
 1.4.1 Add ’**interfaceActionBlock**’ wrapped into a container.
 
-![Adding interfaceActionBlock](<../../../../.gitbook/assets/10 (2).png>)
+![Adding interfaceActionBlock](<../../../../.gitbook/assets/10 (2) (2).png>)
 
 1.4.2 Select **Dropdown** _value_ _for_ **Type**
 
-![Selecting Dropdown value](<../../../../.gitbook/assets/11 (4).png>)
+![Selecting Dropdown value](<../../../../.gitbook/assets/11 (4) (1).png>)
 
 1.4.3 Use system field **assignedTo** to filter documents based on users they are assigned to.
 
@@ -88,7 +88,7 @@ Record value from **assignedTo** _into_ **Field** (This field will be changing o
 
 1.4.4 Configure values from which fields from the document would be labels, and which ones would be values
 
-![Configuring labels and values](<../../../../.gitbook/assets/13 (3) (1).png>)
+![Configuring labels and values](<../../../../.gitbook/assets/13 (3) (1) (1).png>)
 
 1.4.5 Use ‘**documentsSourceAddon**’ for data for **Dropdown**_**.**_
 

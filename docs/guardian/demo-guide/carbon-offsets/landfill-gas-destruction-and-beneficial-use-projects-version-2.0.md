@@ -24,11 +24,11 @@ icon: monument
 
 [Available Roles](landfill-gas-destruction-and-beneficial-use-projects-version-2.0.md#toc184812680)
 
-&#x20;    [1. Project Proponent](landfill-gas-destruction-and-beneficial-use-projects-version-2.0.md#toc184812681)
+[1. Project Proponent](landfill-gas-destruction-and-beneficial-use-projects-version-2.0.md#toc184812681)
 
-&#x20;    [2. Verifier(s)](landfill-gas-destruction-and-beneficial-use-projects-version-2.0.md#toc184812682)
+[2. Verifier(s)](landfill-gas-destruction-and-beneficial-use-projects-version-2.0.md#toc184812682)
 
-&#x20;    [3. Standard Registry](landfill-gas-destruction-and-beneficial-use-projects-version-2.0.md#toc184812683)
+[3. Standard Registry](landfill-gas-destruction-and-beneficial-use-projects-version-2.0.md#toc184812683)
 
 [Important Schemas](landfill-gas-destruction-and-beneficial-use-projects-version-2.0.md#toc184812684)
 
@@ -179,7 +179,7 @@ Emission Reduction Ton (ERT), which represents a verified reduction of one metri
 
 ## Step By Step <a href="#toc184812686" id="toc184812686"></a>
 
-1. Import the policy using IPFS or Policy File. Once imported, you will be redirected to the policy configurator.&#x20;
+1. Import the policy using IPFS or Policy File. Once imported, you will be redirected to the policy configurator.
 
 ![](<../../../.gitbook/assets/1 (1) (1).png>)
 
@@ -189,7 +189,7 @@ Emission Reduction Ton (ERT), which represents a verified reduction of one metri
 
 ![](<../../../.gitbook/assets/4 (1).png>)
 
-2. Set the policy to Dry Run or Publish it using the dropdown. Then select “Go” or “Register”.&#x20;
+2. Set the policy to Dry Run or Publish it using the dropdown. Then select “Go” or “Register”.
 
 ![](<../../../.gitbook/assets/5 (1).png>)
 
@@ -225,11 +225,11 @@ Emission Reduction Ton (ERT), which represents a verified reduction of one metri
 
 ![](<../../../.gitbook/assets/16 (1).png>)
 
-![](<../../../.gitbook/assets/17 (1).png>)
+![](<../../../.gitbook/assets/17 (1) (3).png>)
 
 ![](<../../../.gitbook/assets/18 (1).png>)
 
-8. Log in to the administrator account to review and approve the Verifier registration form. The administrator will have access to the submitted registration forms for each user and can choose to approve or reject them.&#x20;
+8. Log in to the administrator account to review and approve the Verifier registration form. The administrator will have access to the submitted registration forms for each user and can choose to approve or reject them.
 
 ![](<../../../.gitbook/assets/19 (1).png>)
 

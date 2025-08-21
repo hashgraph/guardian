@@ -6,36 +6,36 @@ icon: lightbulb-on
 
 ## Table of Contents
 
-[Introduction ](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc2172532)
+[Introduction](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc2172532)
 
-[Need and Use ](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc717005493)
+[Need and Use](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc717005493)
 
-[Monitoring and Quantification Approach ](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc1454682548)
+[Monitoring and Quantification Approach](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc1454682548)
 
-[Project Eligibility and Additionality ](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc232479138)
+[Project Eligibility and Additionality](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc232479138)
 
-[A1 Project Type](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc1065665469)&#x20;
+[A1 Project Type](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc1065665469)
 
-[Demo Video ](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc1344152182)
+[Demo Video](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc1344152182)
 
-[Policy Workflow](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc705007519)&#x20;
+[Policy Workflow](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc705007519)
 
-[Policy Import ](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc2064975104)
+[Policy Import](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc2064975104)
 
-[Available Roles](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc562353155)&#x20;
+[Available Roles](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc562353155)
 
-1. [Project Owner](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc398305185)&#x20;
-2. [Verifier(s)](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc1014190450)&#x20;
-3. [Standard Registry](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc958255441)&#x20;
-4. [Steering Committee](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc1440346830)&#x20;
+1. [Project Owner](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc398305185)
+2. [Verifier(s)](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc1014190450)
+3. [Standard Registry](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc958255441)
+4. [Steering Committee](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc1440346830)
 
-[Important Schemas](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc849826278)&#x20;
+[Important Schemas](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc849826278)
 
 [Tools Referenced](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#tools-referenced)
 
-[Token (Approved Carbon Credit)](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc251634342)&#x20;
+[Token (Approved Carbon Credit)](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc251634342)
 
-[Step By Step](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc1800598749)&#x20;
+[Step By Step](gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md#toc1800598749)
 
 ## Introduction <a href="#toc2172532" id="toc2172532"></a>
 
@@ -248,17 +248,17 @@ Approved Carbon Credit (ACC), each equivalent to one tonne of CO2.
 
 17. The project owner will now assign the monitoring report to the new verifier.
 
-<figure><img src="../../../.gitbook/assets/image (12) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (12) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 18. The new verifier will select "Add Verification Report" to complete the emission reduction verification report.
 
-<figure><img src="../../../.gitbook/assets/image (13) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (13) (1) (1) (3).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (14) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 19. The administrator must review the report for completeness and choose to approve, reject, or forward with comments. These comments will be visible to the Steering Committee to assist in their decision-making.
 
-<figure><img src="../../../.gitbook/assets/image (16) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (16) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 20. Log in as the steering committee to review the emission reduction verification report and issue ACCs if all the information aligns with the approval.
 

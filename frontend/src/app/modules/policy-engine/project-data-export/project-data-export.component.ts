@@ -34,6 +34,7 @@ export class ProjectDataExportComponent implements OnInit {
     public columns: IColumn[];
     public allPolicies: any[] = [];
     public currentPolicy: any = null;
+    public policyId: string;
 
     public filtersCount: number = 0;
     public showMoreFilters = false;
@@ -146,10 +147,10 @@ export class ProjectDataExportComponent implements OnInit {
     private loadFiltersData() {
         forkJoin([
             this.user.SCHEMAS_SCHEMA_READ
-                ? this.schemaService.getSchemasByPolicy(this.currentPolicy.id)
+                ? this.schemaService.getSchemasByPolicy(this.policyId)
                 : of([]),
-            this.policyEngineService.getPolicyDocumentOwners(this.currentPolicy.id),
-            this.policyEngineService.getPolicyTokens(this.currentPolicy.id),
+            this.policyEngineService.getPolicyDocumentOwners(this.policyId),
+            this.policyEngineService.getPolicyTokens(this.policyId),
         ]).subscribe((value) => {
             const schemas: ISchema[] = value[0] || [];
             const owners: string[] = value[1] || [];
@@ -188,9 +189,9 @@ export class ProjectDataExportComponent implements OnInit {
             });
             this.allPolicies.forEach((p: any) => p.label = p.name);
 
-            const policy = this.route.snapshot.params['id'];
-            if(policy) {
-                this.currentPolicy = this.allPolicies.find((p) => p.id === policy);
+            this.policyId = this.route.snapshot.params['id'];
+            if(this.policyId) {
+                this.currentPolicy = this.allPolicies.find((p) => p.id === this.policyId);
             }
             
             if(!this.currentPolicy) {
@@ -256,7 +257,7 @@ export class ProjectDataExportComponent implements OnInit {
         this.loading = true;
         this.policyEngineService
             .searchDocuments(
-                this.currentPolicy.id,
+                this.policyId,
                 options,
                 this.pageIndex,
                 this.pageSize

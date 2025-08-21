@@ -202,6 +202,10 @@ export class RequestVcDocumentBlock {
     private async setBlockData(user: PolicyUser, _data: IPolicyDocument, ref: IPolicyRequestBlock) {
         try {
             const document = _data.document;
+            if (!document) {
+                throw new BlockActionError('Invalid document.', ref.blockType, ref.uuid);
+            }
+
             PolicyUtils.setAutoCalculateFields(this._schema, document);
             const documentRef = await this.getRelationships(ref, _data.ref);
             const presetCheck = await this.checkPreset(ref, document, documentRef)

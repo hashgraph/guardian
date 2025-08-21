@@ -57,6 +57,8 @@ import { RequestVcDocumentBlockAddon } from './blocks/request-vc-document-block-
 import { DataTransformationAddon } from './blocks/data-transformation-addon.js';
 import { TransformationButtonBlock } from './blocks/transformation-button-block.js';
 import { IntegrationButtonBlock } from './blocks/integration-button-block.js';
+import { HttpRequestUIAddon } from './blocks/http-request-ui-addon.js';
+import { TransformationUIAddon } from './blocks/transformation-ui-addon.js';
 
 export const validators = [
     InterfaceDocumentActionBlock,
@@ -111,6 +113,8 @@ export const validators = [
     DropdownBlockAddon,
     RequestVcDocumentBlockAddon,
     DataTransformationAddon,
+    HttpRequestUIAddon,
+    TransformationUIAddon
 ];
 
 /**
