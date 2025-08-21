@@ -1,8 +1,12 @@
+---
+description: 'API Version: 4.0.39'
+---
+
 # getCountryDataWithDate
 
 <mark style="color:green;">`GET`</mark>`/api/country/csv/{${FIRMSService.secretTokenParamName}}/{source}/{country_code}/{day_range}/{date}`
 
-Get fire detections for a specific country by ISO code with date
+Get fire detections for a specific country by ISO code with date.
 
 **Headers**
 

@@ -1,8 +1,12 @@
+---
+description: 'API Version: 4.0.39'
+---
+
 # getAreaData
 
 <mark style="color:green;">`GET`</mark> `/api/area/csv/{${FIRMSService.secretTokenParamName}}/{source}/{area_coordinates}/{day_range}`
 
-Get fire detections for specified bounding box area
+Get fire detections for specified bounding box area.
 
 **Headers**
 

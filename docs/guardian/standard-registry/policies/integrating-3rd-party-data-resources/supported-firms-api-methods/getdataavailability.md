@@ -1,8 +1,12 @@
+---
+description: 'API Version: 4.0.39'
+---
+
 # getDataAvailability
 
 <mark style="color:green;">`GET`</mark> `/api/data_availability/csv/{${FIRMSService.secretTokenParamName}}/{sensor}`
 
-Retrieve date range availability for a sensor dataset
+Retrieve date range availability for a sensor dataset.
 
 **Headers**
 
