@@ -86,6 +86,27 @@ export class TaskManager {
     ]);
 
     /**
+     * NotifyTask lock
+     */
+    private notifyTaskLock: Set<string> = new Set();
+
+    /**
+     * Notify task progress
+     * @param taskId
+     */
+    private notifyTaskProgress(taskId: string) {
+        // Skip task if already in queue
+        if (this.notifyTaskLock.has(taskId))
+            return;
+        // Send websocket with rate limit
+        setTimeout(() => {
+            this.notifyTaskLock.delete(taskId);
+            this.wsService.notifyTaskProgress(this.tasks[taskId]);
+        }, 1 * 1000);
+        this.notifyTaskLock.add(taskId);
+    }
+
+    /**
      * Set task manager dependecies
      * @param wsService
      * @param cn
@@ -161,7 +182,7 @@ export class TaskManager {
         const task = this.tasks[taskId];
         if (task) {
             task.statuses.push(...statuses);
-            this.wsService.notifyTaskProgress(task);
+            this.notifyTaskProgress(taskId);
         } else if (skipIfNotFound) {
             return;
         } else {
@@ -187,7 +208,7 @@ export class TaskManager {
             if (statuses) {
                 task.statuses.push(...statuses);
             }
-            this.wsService.notifyTaskProgress(task);
+            this.notifyTaskProgress(taskId);
         } else if (skipIfNotFound) {
             return;
         } else {
@@ -225,7 +246,7 @@ export class TaskManager {
         const task = this.tasks[taskId];
         if (task) {
             task.result = result;
-            this.wsService.notifyTaskProgress(task);
+            this.notifyTaskProgress(taskId);
         } else if (skipIfNotFound) {
             return;
         } else {
@@ -247,7 +268,7 @@ export class TaskManager {
         const task = this.tasks[taskId];
         if (task) {
             task.error = error;
-            this.wsService.notifyTaskProgress(task);
+            this.notifyTaskProgress(taskId);
         } else if (skipIfNotFound) {
             return;
         } else {
