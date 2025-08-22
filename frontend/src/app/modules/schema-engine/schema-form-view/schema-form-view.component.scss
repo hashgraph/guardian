@@ -24,6 +24,14 @@ form {
             }
         }
 
+        .label-field-accordion {
+            font-family: Poppins;
+            font-size: 16px;
+            font-weight: 600;
+            line-height: 20px;
+            text-align: left;
+        }
+
         .invalid-type {
             font-family: Inter;
             font-size: 12px;
@@ -212,12 +220,15 @@ form {
                 input {
                     border-color: var(--guardian-warning-color, #DA9B22);
                 }
+
                 p-calendar::ng-deep {
+
                     button,
                     input {
                         border-color: var(--guardian-warning-color, #DA9B22);
                     }
                 }
+
                 p-dropdown::ng-deep {
                     .p-dropdown {
                         border-color: var(--guardian-warning-color, #DA9B22);
@@ -229,12 +240,15 @@ form {
                 input {
                     border-color: var(--guardian-success-color, #19BE47);
                 }
+
                 p-calendar::ng-deep {
+
                     button,
                     input {
                         border-color: var(--guardian-success-color, #19BE47);
                     }
                 }
+
                 p-dropdown::ng-deep {
                     .p-dropdown {
                         border-color: var(--guardian-warning-color, #19BE47);
@@ -253,11 +267,16 @@ form {
             flex-direction: row;
             width: 100%;
         }
+
+        .short-delimiter {
+            margin-bottom: 24px !important;
+
+            &:last-child {
+                margin-bottom: 0px !important;
+            }
+        }
     }
 }
-
-
-
 
 /* form {
     display: flex;

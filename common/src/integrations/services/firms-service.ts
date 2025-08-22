@@ -4,7 +4,8 @@ import {
   ExecuteParams,
   MethodMap
 } from '../base-integration-service.js';
-import { parseCsv } from '../../helpers/index.js';
+import csvParse from 'papaparse';
+import { IntegrationDataTypes } from '@guardian/interfaces';
 
 type ServiceConfig = {
   token?: string;
@@ -35,7 +36,7 @@ export class FIRMSService extends BaseIntegrationService {
   public async executeRequest<T = any>(
     methodName: string,
     params: ExecuteParams = {}
-  ): Promise<{ data: T; fromCsv: boolean; }> {
+  ): Promise<{ data: T; type: IntegrationDataTypes }> {
     try {
       const method = FIRMSService.getAvailableMethods()[methodName];
 
@@ -55,12 +56,16 @@ export class FIRMSService extends BaseIntegrationService {
       const response = await this.client.request<T, { data: string }>(dataForReq);
 
       return {
-        data: parseCsv(response.data) as T,
-        fromCsv: true,
+        data: csvParse.parse(response.data, {
+          header: true,
+          skipEmptyLines: true,
+          dynamicTyping: true,
+        }).data,
+        type: IntegrationDataTypes.CSV
       };
     } catch (err) {
       console.error(err);
-      throw err;
+      throw new Error('The firm is not working right now. Please try again later');
     }
   }
 

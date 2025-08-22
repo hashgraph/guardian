@@ -55,5 +55,7 @@ BlockIcons[BlockType.NotificationBlock] = 'bell';
 BlockIcons[BlockType.ExtractDataBlock] = 'search';
 BlockIcons[BlockType.Tool] = 'wrench';
 BlockIcons[BlockType.Module] = 'folder';
+BlockIcons[BlockType.HttpRequestUIAddon] = 'globe';
+BlockIcons[BlockType.TransformationUIAddon] = 'chart-bar';
 
 export default BlockIcons;

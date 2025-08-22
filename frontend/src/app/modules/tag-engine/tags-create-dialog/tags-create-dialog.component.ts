@@ -31,6 +31,10 @@ export class TagCreateDialog {
         this.schemaForm = fb.group({});
     }
 
+    public initForm($event: any) {
+        this.schemaForm = $event;
+    }
+
     ngOnInit() {
         this.started = true;
     }
@@ -53,7 +57,7 @@ export class TagCreateDialog {
     onAddArtifact(selector: any) {
         this.canAddDocument = true;
 
-        if(this.schemas.length) {
+        if (this.schemas.length) {
             this.schema = this.schemas[0];
         }
 

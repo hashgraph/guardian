@@ -18,9 +18,9 @@ import {
     KEY_TYPE_KEY_ENTITY,
     KeyEntity,
     Token, DatabaseServer,
+    NewNotifier,
 } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, MessageAPI, Schema, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
-import { emptyNotifier } from '../helpers/notifier.js';
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
 
 async function getSchema(
@@ -51,7 +51,7 @@ async function getSchema(
                 owner,
                 messageServer,
                 MessageAction.PublishSystemSchema,
-                emptyNotifier()
+                NewNotifier.empty()
             );
             const result = await dataBaseServer.save(SchemaCollection, item);
             return result;
