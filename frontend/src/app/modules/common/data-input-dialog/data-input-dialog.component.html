@@ -15,10 +15,24 @@
                 </div>
             </div>
             <div class="dialog-actions">
-                <p-button label="Ok" icon="pi pi-check" (onClick)="dialogRef.close(dataForm.value)"
-                          [disabled]="!dataForm.valid" styleClass="p-button-ok p-button-primary"></p-button>
-                <p-button label="Cancel" icon="pi pi-times" (onClick)="onNoClick()"
-                          styleClass="p-button-cancel"></p-button>
+                <button
+                    pButton
+                    class="button secondary"
+                    icon="pi pi-check"
+                    label="Ok"
+                    type="button"
+                    [disabled]="!dataForm.valid"
+                    (click)="dialogRef.close(dataForm.value)">
+                </button>
+
+                <button
+                    pButton
+                    class="button"
+                    icon="pi pi-times"
+                    label="Cancel"
+                    type="button"
+                    (click)="onNoClick()">
+                </button>
             </div>
         </form>
     </div>

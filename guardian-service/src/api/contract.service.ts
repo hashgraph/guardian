@@ -8,6 +8,7 @@ import {
     MessageError,
     MessageResponse,
     MessageServer,
+    NewNotifier,
     NotificationHelper,
     PinoLogger,
     RetirePool,
@@ -23,14 +24,28 @@ import {
     VCMessage,
     Wallet,
     WiperRequest,
-    Workers,
+    Workers
 } from '@guardian/common';
-import { ContractAPI, ContractParamType, ContractType, EntityOwner, IOwner, RetireTokenPool, RetireTokenRequest, Schema, SchemaEntity, SchemaHelper, TokenType, TopicType, UserRole, WorkerTaskType, } from '@guardian/interfaces';
+import {
+    ContractAPI,
+    ContractParamType,
+    ContractType,
+    EntityOwner,
+    IOwner,
+    RetireTokenPool,
+    RetireTokenRequest,
+    Schema,
+    SchemaEntity,
+    SchemaHelper,
+    TokenType,
+    TopicType,
+    UserRole,
+    WorkerTaskType
+} from '@guardian/interfaces';
 import { AccountId, TokenId } from '@hashgraph/sdk';
 import { proto } from '@hashgraph/proto';
 import * as ethers from 'ethers';
-import {contractCall, contractQuery, createContract, createContractV2, customContractCall} from './helpers/index.js';
-import { emptyNotifier } from '../helpers/notifier.js';
+import { contractCall, contractQuery, createContract, createContractV2, customContractCall } from './helpers/index.js';
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
 
 const retireAbi = new ethers.Interface([
@@ -1238,7 +1253,7 @@ async function saveRetireVC(
                 owner,
                 messageServer,
                 MessageAction.PublishSystemSchema,
-                emptyNotifier()
+                NewNotifier.empty()
             );
             await dataBaseServer.save(SchemaCollection, item);
         }

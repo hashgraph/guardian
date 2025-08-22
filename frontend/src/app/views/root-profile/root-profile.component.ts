@@ -91,11 +91,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     ) {
         this.profile = null;
         this.balance = null;
-        this.vcForm.statusChanges.subscribe((result) => {
-            setTimeout(() => {
-                this.validVC = result === 'VALID';
-            });
-        });
+        this.initForm(this.vcForm);
     }
 
     ngOnInit() {
@@ -109,13 +105,21 @@ export class RootProfileComponent implements OnInit, OnDestroy {
             fireBlocksApiKey: '',
             fireBlocksPrivateiKey: ''
         });
-        this.vcForm.setValue({});
         this.loadProfile();
         this.step = 'HEDERA';
     }
 
     ngOnDestroy(): void {
         this.subscriptions.unsubscribe();
+    }
+
+    public initForm($event: any) {
+        this.vcForm = $event;
+        this.vcForm.statusChanges.subscribe((result) => {
+            setTimeout(() => {
+                this.validVC = result === 'VALID';
+            });
+        });
     }
 
     private loadProfile() {
@@ -606,7 +610,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
                 getByUser: true
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {});
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 
     public openDIDDocument(document: any, title: string) {
@@ -623,7 +627,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
                 type: 'JSON',
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {});
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 
     public changePassword(profile: any) {

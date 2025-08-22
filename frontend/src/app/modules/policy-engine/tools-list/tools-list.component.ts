@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { GenerateUUIDv4, IUser, SchemaHelper, TagType, UserPermissions } from '@guardian/interfaces';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject, takeUntil } from 'rxjs';
 import { InformService } from 'src/app/services/inform.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TagsService } from 'src/app/services/tag.service';
@@ -57,6 +57,8 @@ export class ToolsListComponent implements OnInit, OnDestroy {
     public tagSchemas: any[] = [];
     public canPublishAnyTool: boolean = false;
 
+    private _destroy$ = new Subject<void>();
+
     constructor(
         public tagsService: TagsService,
         private profileService: ProfileService,
@@ -78,7 +80,8 @@ export class ToolsListComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
-
+        this._destroy$.next();
+        this._destroy$.complete();
     }
 
     private loadTools() {
@@ -172,24 +175,44 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             if (result) {
                 if (type === 'message') {
                     this.loading = true;
-                    this.toolsService.importByMessage(data, {
-                        tools: result.tools
-                    }).subscribe(
-                        (result) => {
-                            this.loadAllTools();
-                        }, (e) => {
-                            this.loading = false;
-                        });
+                    this.toolsService
+                        .pushImportByMessage(data, {
+                            tools: result.tools
+                        })
+                        .pipe(takeUntil(this._destroy$))
+                        .subscribe(
+                            (result) => {
+                                // this.loadAllTools();
+                                const { taskId, expectation } = result;
+                                this.router.navigate(['task', taskId], {
+                                    queryParams: {
+                                        last: btoa(location.href),
+                                        redir: String(true)
+                                    },
+                                });
+                            }, (e) => {
+                                this.loading = false;
+                            });
                 } else if (type === 'file') {
                     this.loading = true;
-                    this.toolsService.importByFile(data, {
-                        tools: result.tools
-                    }).subscribe(
-                        (result) => {
-                            this.loadAllTools();
-                        }, (e) => {
-                            this.loading = false;
-                        });
+                    this.toolsService
+                        .pushImportByFile(data, {
+                            tools: result.tools
+                        })
+                        .pipe(takeUntil(this._destroy$))
+                        .subscribe(
+                            (result) => {
+                                // this.loadAllTools();
+                                const { taskId, expectation } = result;
+                                this.router.navigate(['task', taskId], {
+                                    queryParams: {
+                                        last: btoa(location.href),
+                                        redir: String(true)
+                                    },
+                                });
+                            }, (e) => {
+                                this.loading = false;
+                            });
                 }
             }
         });

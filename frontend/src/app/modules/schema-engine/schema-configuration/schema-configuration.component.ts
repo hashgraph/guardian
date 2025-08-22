@@ -72,7 +72,7 @@ export class SchemaConfigurationComponent implements OnInit {
     public errors!: any[];
     public schemaTypes!: any[];
     public schemaTypeMap!: any;
-    public buildField!: (fieldConfig: FieldControl, data: any) => SchemaField;
+    public buildField!: (fieldConfig: FieldControl, data: any) => SchemaField | null;
     public destroy$: Subject<boolean> = new Subject<boolean>();
     private _patternByNumberType: any = {
         duration: /^[0-9]+$/,
@@ -588,7 +588,11 @@ export class SchemaConfigurationComponent implements OnInit {
         return !['', undefined, null].includes(value);
     }
 
-    public buildSchemaField(fieldConfig: FieldControl, data: any): SchemaField {
+    public buildSchemaField(fieldConfig: FieldControl, data: any): SchemaField | null {
+        const metadata = fieldConfig.getValue(data);
+        if (!metadata) {
+            return null;
+        }
         const {
             key,
             title,
@@ -611,7 +615,7 @@ export class SchemaConfigurationComponent implements OnInit {
             example,
             autocalculate,
             expression
-        } = fieldConfig.getValue(data);
+        } = metadata;
         const type = this.schemaTypeMap[typeIndex];
         let suggestValue;
         let defaultValue;
@@ -716,11 +720,13 @@ export class SchemaConfigurationComponent implements OnInit {
 
         for (const fieldConfig of this.fields) {
             const schemaField = this.buildSchemaField(fieldConfig, value.fields);
-            fields.push(schemaField);
-            fieldsWithNames.push({
-                field: schemaField,
-                name: fieldConfig.name
-            })
+            if (schemaField) {
+                fields.push(schemaField);
+                fieldsWithNames.push({
+                    field: schemaField,
+                    name: fieldConfig.name
+                })
+            }
         }
 
         const defaultFields = this.defaultFieldsMap[value.entity] || [];
@@ -756,11 +762,15 @@ export class SchemaConfigurationComponent implements OnInit {
 
             for (const thenField of element.thenControls) {
                 const schemaField = this.buildSchemaField(thenField, conditionValue.thenFieldControls);
-                thenFields.push(schemaField);
+                if (schemaField) {
+                    thenFields.push(schemaField);
+                }
             }
             for (const elseField of element.elseControls) {
                 const schemaField = this.buildSchemaField(elseField, conditionValue.elseFieldControls);
-                elseFields.push(schemaField);
+                if (schemaField) {
+                    elseFields.push(schemaField);
+                }
             }
 
             const item = fieldsWithNames.find(item => item.name === conditionValue.ifCondition.field.name);

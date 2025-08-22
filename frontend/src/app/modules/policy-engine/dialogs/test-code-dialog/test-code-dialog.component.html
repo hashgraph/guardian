@@ -148,16 +148,16 @@
                     </div>
                     <div *ngIf="schema" class="schema-body">
                         <form [formGroup]="schemaValue" class="schema-form">
-                            <app-schema-form
-                                [comesFromDialog]="true"
-                                [showButtons]="false"
-                                [formGroup]="schemaValue"
-                                [dryRun]="true"
-                                [policyId]="policyId"
+                            <app-schema-form-root
                                 [schema]="schema"
                                 [preset]="_value"
+                                [policyId]="policyId"
+                                [comesFromDialog]="true"
+                                [showButtons]="false"
+                                [dryRun]="true"
+                                (form)="initForm($event)"
                             >
-                            </app-schema-form>
+                            </app-schema-form-root>
                         </form>
                     </div>
                 </ng-container>

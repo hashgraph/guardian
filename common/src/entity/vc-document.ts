@@ -312,6 +312,7 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
             }
             delete this.encryptedDocument;
         }
+        this._updatePropHash(this.createProp());
     }
 
     /**

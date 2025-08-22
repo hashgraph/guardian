@@ -86,6 +86,27 @@ export class TaskManager {
     ]);
 
     /**
+     * NotifyTask lock
+     */
+    private notifyTaskLock: Set<string> = new Set();
+
+    /**
+     * Notify task progress
+     * @param taskId
+     */
+    private notifyTaskProgress(taskId: string) {
+        // Skip task if already in queue
+        if (this.notifyTaskLock.has(taskId))
+            return;
+        // Send websocket with rate limit
+        setTimeout(() => {
+            this.notifyTaskLock.delete(taskId);
+            this.wsService.notifyTaskProgress(this.tasks[taskId]);
+        }, 1 * 1000);
+        this.notifyTaskLock.add(taskId);
+    }
+
+    /**
      * Set task manager dependecies
      * @param wsService
      * @param cn
@@ -96,9 +117,11 @@ export class TaskManager {
         this.channel.setConnection(cn);
 
         this.channel.subscribe(MessageAPI.UPDATE_TASK_STATUS, async (msg) => {
-            const { taskId, statuses, result, error } = msg;
+            const { taskId, statuses, result, error, info } = msg;
             if (taskId) {
-                if (statuses) {
+                if (info) {
+                    this.addInfo(taskId, info, []);
+                } else if (statuses) {
                     this.addStatuses(taskId, statuses);
                 }
                 if (error) {
@@ -159,7 +182,33 @@ export class TaskManager {
         const task = this.tasks[taskId];
         if (task) {
             task.statuses.push(...statuses);
-            this.wsService.notifyTaskProgress(task);
+            this.notifyTaskProgress(taskId);
+        } else if (skipIfNotFound) {
+            return;
+        } else {
+            throw new Error(`Task ${taskId} not found.`);
+        }
+    }
+
+    /**
+     * Add task statuses
+     * @param taskId
+     * @param statuses
+     * @param skipIfNotFound
+     */
+    public addInfo(
+        taskId: string,
+        info: any,
+        statuses: IStatus[],
+        skipIfNotFound: boolean = true
+    ): void {
+        const task = this.tasks[taskId];
+        if (task) {
+            task.info = info;
+            if (statuses) {
+                task.statuses.push(...statuses);
+            }
+            this.notifyTaskProgress(taskId);
         } else if (skipIfNotFound) {
             return;
         } else {
@@ -197,7 +246,7 @@ export class TaskManager {
         const task = this.tasks[taskId];
         if (task) {
             task.result = result;
-            this.wsService.notifyTaskProgress(task);
+            this.notifyTaskProgress(taskId);
         } else if (skipIfNotFound) {
             return;
         } else {
@@ -219,7 +268,7 @@ export class TaskManager {
         const task = this.tasks[taskId];
         if (task) {
             task.error = error;
-            this.wsService.notifyTaskProgress(task);
+            this.notifyTaskProgress(taskId);
         } else if (skipIfNotFound) {
             return;
         } else {
@@ -324,11 +373,15 @@ class Task {
      * Error of task
      */
     public error: any;
+    /**
+     * Info of task
+     */
+    public info: any;
 
     constructor(
         public action: TaskAction | string,
         public userId: string,
         public expectation: number,
         public taskId: string
-    ) {}
+    ) { }
 }

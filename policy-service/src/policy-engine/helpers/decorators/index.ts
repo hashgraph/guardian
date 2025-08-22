@@ -16,3 +16,4 @@ export * from './state-field.js';
 export * from './token-addon.js';
 export * from './token-block.js';
 export * from './validator-block.js';
+export * from './ui-addon.js';

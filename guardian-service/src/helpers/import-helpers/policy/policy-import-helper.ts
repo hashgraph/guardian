@@ -14,14 +14,14 @@ import {
     PolicyImportExport,
     MessageType,
     PolicyMessage,
-    MessageServer
+    MessageServer,
+    INotificationStep
 } from '@guardian/common';
 import { ImportMode } from '../common/import.interface.js';
 import { ImportPolicyError, ImportPolicyOptions, ImportPolicyResult } from './policy-import.interface.js';
 import { PolicyImport } from './policy-import.js';
 import { ImportSchemaMap } from '../schema/schema-import.interface.js';
 import { PolicyConverterUtils } from './policy-converter-utils.js';
-import { INotifier } from '../../notifier.js';
 import { HashComparator, PolicyLoader } from '../../../analytics/index.js';
 import { importPolicyTags } from '../tag/tag-import-helper.js';
 
@@ -38,7 +38,7 @@ export class PolicyImportExportHelper {
         const schemas = await Promise.all([
             DatabaseServer.getSystemSchema(SchemaEntity.POLICY),
             DatabaseServer.getSystemSchema(SchemaEntity.MINT_TOKEN),
-            DatabaseServer.getSystemSchema(SchemaEntity.INTEGRATION_DATA),
+            DatabaseServer.getSystemSchema(SchemaEntity.INTEGRATION_DATA_V2),
             DatabaseServer.getSystemSchema(SchemaEntity.MINT_NFTOKEN),
             DatabaseServer.getSystemSchema(SchemaEntity.WIPE_TOKEN),
             DatabaseServer.getSystemSchema(SchemaEntity.ISSUER),
@@ -72,7 +72,7 @@ export class PolicyImportExportHelper {
     public static async importPolicy(
         mode: ImportMode,
         options: ImportPolicyOptions,
-        notifier: INotifier,
+        notifier: INotificationStep,
         userId: string | null
     ): Promise<ImportPolicyResult> {
         const helper = new PolicyImport(mode, notifier);
@@ -243,10 +243,10 @@ export class PolicyImportExportHelper {
     public static async loadPolicyMessage(
         messageId: string,
         hederaAccount: IRootConfig,
-        notifier: INotifier,
+        notifier: INotificationStep,
         userId: string | null
     ): Promise<IPolicyComponents> {
-        notifier.start('Load from IPFS');
+        notifier.start();
         const messageServer = new MessageServer({
             operatorId: hederaAccount.hederaAccountId,
             operatorKey: hederaAccount.hederaAccountKey,
@@ -266,13 +266,11 @@ export class PolicyImportExportHelper {
             throw new Error('File in body is empty');
         }
 
-        notifier.completedAndStart('File parsing');
         const policyToImport = await PolicyImportExport.parseZipFile(message.document, true);
 
-        notifier.completedAndStart('Load tags parsing');
         await importPolicyTags(policyToImport, messageId, message.policyTopicId, messageServer, userId);
 
-        notifier.completed();
+        notifier.complete();
 
         return policyToImport;
     }

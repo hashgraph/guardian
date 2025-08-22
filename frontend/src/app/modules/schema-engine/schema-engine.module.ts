@@ -17,6 +17,7 @@ import { SchemaFormViewComponent } from './schema-form-view/schema-form-view.com
 import { DocumentViewComponent } from './document-view/document-view.component';
 import { SetVersionDialog } from './set-version-dialog/set-version-dialog.component';
 import { VCViewerDialog } from './vc-dialog/vc-dialog.component';
+import { GeoImageComponent } from './vc-dialog/components/geo-image.component';
 import { SchemaViewDialog } from './schema-view-dialog/schema-view-dialog.component';
 import { ExportSchemaDialog } from './export-schema-dialog/export-schema-dialog.component';
 import { SchemaFieldConfigurationComponent } from './schema-field-configuration/schema-field-configuration.component';
@@ -40,10 +41,9 @@ import { TooltipModule } from 'primeng/tooltip';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { AccordionModule } from 'primeng/accordion';
 import { DateTimeComponent } from './schema-form/controls/date-time/date-time.component';
-import { EnumComponent } from './schema-form/controls/enum/enum';
-import { InputComponent } from './schema-form/controls/input/input';
 import { FormulasModule } from '../formulas/formulas.module';
 import { DialogService } from 'primeng/dynamicdialog';
+import { SchemaFormRootComponent } from './schema-form-root/schema-form-root.component';
 
 @NgModule({
     declarations: [
@@ -56,6 +56,7 @@ import { DialogService } from 'primeng/dynamicdialog';
         DocumentViewComponent,
         SetVersionDialog,
         VCViewerDialog,
+        GeoImageComponent,
         SchemaViewDialog,
         ExportSchemaDialog,
         SchemaFieldConfigurationComponent,
@@ -67,8 +68,7 @@ import { DialogService } from 'primeng/dynamicdialog';
         SchemaTreeComponent,
         SchemaFormDialog,
         DateTimeComponent,
-        EnumComponent,
-        InputComponent
+        SchemaFormRootComponent
     ],
     imports: [
         CommonModule,
@@ -101,9 +101,11 @@ import { DialogService } from 'primeng/dynamicdialog';
         DocumentViewComponent,
         SetVersionDialog,
         VCViewerDialog,
+        GeoImageComponent,
         ExportSchemaDialog,
         SchemaFieldConfigurationComponent,
-        SchemaFormDialog
+        SchemaFormDialog,
+        SchemaFormRootComponent
     ],
     providers: [
         DialogService

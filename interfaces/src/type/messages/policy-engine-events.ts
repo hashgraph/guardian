@@ -86,4 +86,5 @@ export enum PolicyEngineEvents {
     RELOAD_REMOTE_ACTION = 'policy-engine-reload-remote-action',
     GET_REMOTE_REQUESTS = 'policy-engine-get-remote-requests',
     GET_REMOTE_REQUESTS_COUNT = 'policy-engine-get-remote-requests-count',
+    GET_REMOTE_REQUEST_DOCUMENT = 'policy-engine-get-remote-request-document',
 }
