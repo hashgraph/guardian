@@ -32,6 +32,8 @@ EarthRectify Carbon Sequestration Limited is building an integrated platform tha
 - ✅ Verifier incentive token (VERECO)
 - ✅ Tokenized carbon credits (ERECO) on Hedera blockchain
 
+[View the full diagram](https://ibb.co/pvDdgRsD)
+
 ## Our methodology: Inspired by Verra VM0047 & VM0044
 
 - Our framework, influenced by the principles of Verra VM0044, enables the issuance of ERECO tokens on the Hedera network by aggregating data across the entire carbon sequestration supply chain. These tokens represent verified sequestered carbon and are proportionally allocated to the contributing nodes based on their financial input toward carbon processing.
@@ -110,7 +112,13 @@ Implementation of the Guardian System for Carbon Accounting We established a rob
 - Integration of Wallet for Seamless Onboarding: Our web application now supports HashPack, Metamask, and other hedera supported wallets, allowing users to easily onboard and interact with the Hedera blockchain. This feature improves user experience and accelerates adoption of on-chain functionality.
 Token Minting and Deployment on Hedera We successfully minted our native tokens—ERECO and VERECO—on the Hedera blockchain using the Guildian framework. Additionally, we tested deployment via the standard EVM route using the Hedera Portal Playground, which provided a reliable draft code and confirmed compatibility across environments.
 
+## Quick Links
+- Demo: https://youtu.be/CtfXJd3VZJk
+- WebApp repo: https://github.com/Tolujoh-n/Earthrectify
+- Live test: https://earthrectify.vercel.app/
+
 ## Conclusion
 At EarthRectify Carbon Sequestration Limited, we believe sustainability should be simple, fair, and rewarding.
 By harnessing algae farming, blockchain technology, and real-world payment solutions, we’re building a future where saving the planet also means building personal wealth and community resilience.
 Because when the environment wins—we all win
+
