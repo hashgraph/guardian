@@ -875,3 +875,25 @@ a.go-back-link svg {
     right: inherit !important;
     min-width: 100% !important;
 }
+
+.dry-run-action-btn[disabled="true"],
+.dry-run-group-btn[disabled="true"],
+.dry-run-action-btn[aria-disabled="true"],
+.dry-run-group-btn[aria-disabled="true"] {
+    filter: grayscale(1);
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.dry-run-action-btn[aria-disabled="true"],
+.dry-run-group-btn[aria-disabled="true"] {
+    pointer-events: auto;
+}
+
+.dry-run-action-btn[aria-disabled="true"]:hover,
+.dry-run-group-btn[aria-disabled="true"]:hover,
+.dry-run-action-btn[disabled="true"]:hover,
+.dry-run-group-btn[disabled="true"]:hover {
+    border: 1px solid var(---color-color-grey-white, #FFF);
+    background: var(--color-color-grey-white, #FFF);
+}

@@ -28,6 +28,7 @@ export interface IGetDocumentAggregationFilters extends IGetAggregationFilters {
     itemsPerPage?: number,
     page?: number,
     policyId?: string,
+    savepointIds?: string[]
 }
 
 export interface IOrmConnection {

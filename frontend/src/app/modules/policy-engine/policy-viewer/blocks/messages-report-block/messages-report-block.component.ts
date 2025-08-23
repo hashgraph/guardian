@@ -209,6 +209,7 @@ export class MessagesReportBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
+
     public isActive = false;
     public loading: boolean = true;
     public socket: any;

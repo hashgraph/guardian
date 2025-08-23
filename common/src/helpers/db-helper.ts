@@ -15,7 +15,8 @@ export const MAP_DOCUMENT_AGGREGATION_FILTERS = {
     PAGINATION: 'pagination',
     VC_DOCUMENTS: 'vc-documents',
     VP_DOCUMENTS: 'vp-documents',
-    APPROVE: 'approve'
+    APPROVE: 'approve',
+    DRY_RUN_SAVEPOINT: 'dry-run-savepoint',
 }
 
 export const MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS = {
@@ -296,6 +297,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
             itemsPerPage,
             page,
             policyId,
+            savepointIds
         } = props;
 
         const filters = {
@@ -383,6 +385,19 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
                     }
                 }
             ],
+            [MAP_DOCUMENT_AGGREGATION_FILTERS.DRY_RUN_SAVEPOINT]: [
+                {
+                    $match: {
+                        $or: [
+                            ...(savepointIds
+                                ? [{ savepointId: { $in: savepointIds } }]
+                                : []),
+                            { savepointId: { $exists: false } },
+                            { savepointId: null },
+                        ]
+                    }
+                }
+            ]
         };
 
         aggregation[aggregateMethod](...filters[nameFilter]);
@@ -795,6 +810,13 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
         return entitiesToUpdate.length === 1
             ? entitiesToUpdate[0]
             : entitiesToUpdate;
+    }
+
+    public async updateManyRaw(filter: unknown, update: unknown): Promise<number> {
+        const repo = this._em.getRepository(this.entityClass);
+        const res = await repo.getCollection().updateMany(filter, update);
+
+        return (res?.modifiedCount ?? res?.result?.nModified ?? 0);
     }
 
     @CreateRequestContext(() => DataBaseHelper.orm)

@@ -18,15 +18,6 @@ export class BlockState extends RestoreEntity {
     policyId?: string;
 
     /**
-     * Saved state
-     * @type {string}
-     */
-    @Property({
-        nullable: true
-    })
-    savedState?: string;
-
-    /**
      * Block id
      */
     @Property({
@@ -59,7 +50,6 @@ export class BlockState extends RestoreEntity {
         const prop: any = {};
         prop.blockId = this.blockId;
         prop.blockTag = this.blockTag;
-        prop.savedState = this.savedState;
         prop.policyId = this.policyId;
         this._updatePropHash(prop);
         this._updateDocHash(this.blockState);

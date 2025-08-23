@@ -1,0 +1,87 @@
+<div class="dlg">
+    <div class="dlg__header">
+        <div class="dlg__title">Restore Savepoint</div>
+        <button class="icon-btn dlg__close" type="button" (click)="onClose()" aria-label="Close" pTooltip="Close"
+                tooltipPosition="top">
+            <i class="pi pi-times"></i>
+        </button>
+    </div>
+
+    <div class="list-header">
+        <div class="col name">Name</div>
+        <div class="col date">Date &amp; Time</div>
+        <div class="col actions"></div>
+    </div>
+
+    <div class="list" *ngIf="items && items.length; else emptyState">
+        <div class="row" *ngFor="let item of items; trackBy: trackById"
+             [attr.active]="item.id === currentSavepointId ? true : null">
+            <div class="col name" [title]="item.name">
+                <ng-container *ngIf="editingId !== item.id; else editBlock">{{ item.name }}</ng-container>
+                <ng-template #editBlock>
+                    <input pInputText [(ngModel)]="editingName" [disabled]="renaming"/>
+                </ng-template>
+            </div>
+
+            <div class="col date">{{ item.createDate | date: 'dd MMM, HH:mm' }}</div>
+
+            <div class="col actions">
+                <ng-container *ngIf="editingId === item.id; else viewActions">
+                    <button class="icon-btn" type="button" (click)="saveRename(item)"
+                            [disabled]="renaming || !editingName.trim()" pTooltip="Save" tooltipPosition="top">
+                        <i class="pi pi-check"></i>
+                    </button>
+                    <button class="icon-btn" type="button" (click)="cancelRename()" [disabled]="renaming"
+                            pTooltip="Cancel" tooltipPosition="top">
+                        <i class="pi pi-times"></i>
+                    </button>
+                </ng-container>
+
+                <ng-template #viewActions>
+                    <button class="icon-btn" type="button" (click)="startRename(item)" [disabled]="isBusy(item.id)"
+                            pTooltip="Rename" tooltipPosition="top">
+                        <i class="pi pi-pencil"></i>
+                    </button>
+                    <button
+                        class="icon-btn"
+                        type="button"
+                        (click)="onApply(item)"
+                        [disabled]="isApplyDisabled(item)"
+                        [pTooltip]="getApplyTooltip(item)"
+                        tooltipPosition="top">
+                        <i class="pi pi-undo"></i>
+                    </button>
+                    <button
+                        class="icon-btn danger"
+                        type="button"
+                        (click)="onDelete(item)"
+                        [disabled]="isDeleteDisabled(item)"
+                        [pTooltip]="getDeleteTooltip(item)"
+                        tooltipPosition="top">
+                        <i class="pi pi-trash"></i>
+                    </button>
+                </ng-template>
+            </div>
+        </div>
+    </div>
+
+    <ng-template #emptyState>
+        <div class="empty">No savepoints yet.</div>
+    </ng-template>
+
+    <div class="dlg__footer action-buttons">
+        <button
+            class="guardian-button danger ghost cancel-button"
+            type="button"
+            (click)="onDeleteAll()"
+            [disabled]="!items.length || deletingAll">
+            Delete All Savepoints
+        </button>
+        <button
+            class="guardian-button primary"
+            type="button"
+            (click)="onClose()">
+            Close
+        </button>
+    </div>
+</div>

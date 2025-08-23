@@ -155,6 +155,9 @@ import { TestCodeDialog } from './dialogs/test-code-dialog/test-code-dialog.comp
 import { ProjectDataExportComponent } from './project-data-export/project-data-export.component';
 import { TransformationButtonBlockComponent } from './policy-viewer/blocks/transformation-button-block/transformation-button-block.component';
 import { IntegrationButtonBlockComponent } from './policy-viewer/blocks/integration-button-block/integration-button-block.component';
+import { RestoreSavepointDialog } from './policy-viewer/dialogs/restore-savepoint-dialog/restore-savepoint-dialog.component';
+import { AddSavepointDialog } from "./policy-viewer/dialogs/add-savepoint-dialog/add-savepoint-dialog.component";
+import { OnLoadSavepointDialog } from "./policy-viewer/dialogs/on-load-savepoint-dialog/on-load-savepoint-dialog.component";
 
 @NgModule({
     declarations: [
@@ -268,7 +271,10 @@ import { IntegrationButtonBlockComponent } from './policy-viewer/blocks/integrat
         PolicyRequestsComponent,
         SearchExternalPolicyDialog,
         TestCodeDialog,
-        SearchToolDialog
+        SearchToolDialog,
+        RestoreSavepointDialog,
+        AddSavepointDialog,
+        OnLoadSavepointDialog
     ],
     imports: [
         CommonModule,

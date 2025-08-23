@@ -135,3 +135,35 @@ export function getParentUser(user: IAuthUser): string {
         return user.parent;
     }
 }
+
+export function parseSavepointIdsJson(json?: string): string[] | undefined {
+    if (!json) {
+        return undefined;
+    }
+
+    let parsed: unknown;
+
+    try {
+        parsed = JSON.parse(json);
+    } catch {
+        throw new HttpException(
+            'Query param "savepointIds" must be a JSON array of strings.',
+            HttpStatus.BAD_REQUEST
+        );
+    }
+
+    if (!Array.isArray(parsed)) {
+        throw new HttpException(
+            'Query param "savepointIds" must be a JSON array of strings.',
+            HttpStatus.BAD_REQUEST
+        );
+    }
+
+    const ids = parsed.filter((v) => typeof v === 'string' && v.trim().length > 0) as string[];
+
+    if (ids.length === 0) {
+        return undefined;
+    }
+
+    return Array.from(new Set(ids));
+}

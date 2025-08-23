@@ -16,6 +16,7 @@ export class RenderBlockComponent {
     @Input('static') static!: any;
     @Input('policyId') policyId!: any;
     @Input('dryRun') dryRun!: any;
+    @Input('savepointIds') savepointIds?: string[] | null = null;
 
     @ViewChild('target', { read: ViewContainerRef }) target!: ViewContainerRef;
     @ViewChild('empty', { read: TemplateRef }) empty!: TemplateRef<any>;
@@ -89,6 +90,8 @@ export class RenderBlockComponent {
             this.componentRef.instance.static = this.static;
             this.componentRef.instance.policyId = this.policyId;
             this.componentRef.instance.dryRun = this.dryRun;
+            this.componentRef.instance.savepointIds = this.savepointIds;
+
             this.componentRef.changeDetectorRef.detectChanges();
 
             this.policyProgressService.addComponentRef(this.id, this.componentRef);

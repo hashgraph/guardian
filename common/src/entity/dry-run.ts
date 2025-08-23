@@ -2,7 +2,7 @@ import { ApproveStatus, DocumentSignature, DocumentStatus, GenerateUUIDv4, Group
 import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, Index, OnLoad, Property } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers/index.js';
-import { BaseEntity } from '../models/index.js';
+import { BaseEntity } from '../models/base-entity.js';
 
 /**
  * DryRun document
@@ -36,11 +36,11 @@ export class DryRun extends BaseEntity {
     dryRunId?: string;
 
     /**
-     * Savepoint
-     * @type {boolean}
+     * SavepointId
+     * @type {string}
      */
     @Property({ nullable: true })
-    savepoint?: boolean;
+    savepointId?: string | null;
 
     /**
      * Class
