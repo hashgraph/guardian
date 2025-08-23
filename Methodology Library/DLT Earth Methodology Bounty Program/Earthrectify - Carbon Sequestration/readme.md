@@ -133,6 +133,8 @@ At EarthRectify Carbon Sequestration Limited, we believe sustainability should b
 By harnessing algae farming, blockchain technology, and real-world payment solutions, we’re building a future where saving the planet also means building personal wealth and community resilience.
 Because when the environment wins—we all win
 
+Email: tolujohnofficial@gmail.com
+
 
 
 
