@@ -1,6 +1,7 @@
 # EarthRectify 
 
-![diagram](./earthrecimgs/Earthrec-logo-full.png)
+![logo](./earthrecimgs/Earthrec-logo-full.png)
+
 
 - Solving climate change by enabling large-scale, verifiable carbon capture through nature-based solutions—particularly algae farming and biomass conversion.
 Our vision is simple: to make fighting climate change profitable, fair, and accessible for everyone.
@@ -34,17 +35,23 @@ EarthRectify Carbon Sequestration Limited is building an integrated platform tha
 - ✅ Verifier incentive token (VERECO)
 - ✅ Tokenized carbon credits (ERECO) on Hedera blockchain
 
+![architecture1](./earthrecimgs/architecture1.png)
 
 ## Our methodology: Inspired by Verra VM0047 & VM0044
 
 - Our framework, influenced by the principles of Verra VM0044, enables the issuance of ERECO tokens on the Hedera network by aggregating data across the entire carbon sequestration supply chain. These tokens represent verified sequestered carbon and are proportionally allocated to the contributing nodes based on their financial input toward carbon processing.
 
+![methodology](./earthrecimgs/methodology.png)
+
+![schemas](./earthrecimgs/schemas.png)
 
 - In addition to ERECOs, we also generate VERECO tokens, which serve as incentives for financiers and individuals who validate the supply chain data. These rewards are funded through fees collected from participating nodes within the ecosystem.
 As nodes accumulate ERECOs over time, they become eligible for reduced financing costs related to operations, inventory, and infrastructure—benefits made possible through support from ecosystem partners and financial backers. The issuance of VERECOs follows a diminishing schedule, decreasing annually by the golden ratio. This design encourages early participation and reinforces the reliability of verifiers. These verifiers, whether independent or delegated by VERECO holders, play a critical role in upholding the credibility of our carbon sequestration model.
 To avoid surpassing net-zero emissions and inadvertently triggering extreme cooling events, our system incorporates algorithms that reward the regulated emission of CO₂ by sectors such as agriculture, biofuel, and bioplastics. This ensures that global CO₂ levels remain balanced post-net-zero, preventing a scenario where excessive cooling becomes incentivized in future centuries.
 
 - Our adaptation of the Verra 47 & 44 methodology also includes tools for damage assessment—such as satellite-based detection of field fires. These mechanisms allow for the investigation and potential retirement of ERECO or VERECO tokens when biochar validation fails. Looking ahead, we aim to enhance traceability by identifying biochar batches through unique chemical markers, further strengthening the integrity of our system.
+
+![ethrec-process](./earthrecimgs/eth-process.png)
 
 ## How It Works
 - ✅ Step 1: Grow Algae: Algae farms absorb CO₂ as they grow in open ponds or reactors.
@@ -80,6 +87,8 @@ Benefits
 - ✅ Encourages participation among small farmers and processors
 - ✅ Strengthens local economies while fighting global climate change
 
+![Ereco-atm-card](./earthrecimgs/Ereco-architecture.png)
+
 ## The Earthrectify Tokens
 - ERECO: Certified, blockchain-backed carbon credit. Tradable and spendable.
 - VERECO: Verifier incentive token ensuring system integrity and transparency.
@@ -90,6 +99,8 @@ Minted on the Guardian:
 - ERECO: https://hashscan.io/testnet/token/0.0.6499956
 - VERECO: https://hashscan.io/testnet/token/0.0.6499958
 
+![Ereco-token](./earthrecimgs/guradian-view1-ereco-tokens.png)
+  
 Technology Stack
 - ✅ Frontend: React
 - ✅ Backend: Node.js, Express, Cloudinary
@@ -122,6 +133,7 @@ Token Minting and Deployment on Hedera We successfully minted our native tokens�
 At EarthRectify Carbon Sequestration Limited, we believe sustainability should be simple, fair, and rewarding.
 By harnessing algae farming, blockchain technology, and real-world payment solutions, we’re building a future where saving the planet also means building personal wealth and community resilience.
 Because when the environment wins—we all win
+
 
 
 
