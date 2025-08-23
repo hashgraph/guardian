@@ -33,6 +33,10 @@ EarthRectify Carbon Sequestration Limited is building an integrated platform tha
 - ✅ Tokenized carbon credits (ERECO) on Hedera blockchain
 
 ![diagram](/earthrecimgs/Earthrec-logo-full.png)
+![diagram](../earthrecimgs/Earthrec-logo-full.png)
+![diagram](./earthrecimgs/Earthrec-logo-full.png)
+![diagram](../Earthrec-logo-full.png)
+![diagram](https://ibb.co/pvDdgRsD)
 
 ## Our methodology: Inspired by Verra VM0047 & VM0044
 
@@ -121,6 +125,7 @@ Token Minting and Deployment on Hedera We successfully minted our native tokens�
 At EarthRectify Carbon Sequestration Limited, we believe sustainability should be simple, fair, and rewarding.
 By harnessing algae farming, blockchain technology, and real-world payment solutions, we’re building a future where saving the planet also means building personal wealth and community resilience.
 Because when the environment wins—we all win
+
 
 
 
