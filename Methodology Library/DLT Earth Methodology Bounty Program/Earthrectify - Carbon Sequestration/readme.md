@@ -116,13 +116,12 @@ We want to empower local farmers, processors, verifiers, and investors to partic
 
 ## Key Accomplishments We're Proud Of:
 
-- Team-Based Learning on Hedera Our team successfully completed the Hedera course, which significantly accelerated our ability to build on the Hedera network in a short timeframe. This collaborative learning experience laid a strong foundation for our technical development.
-
 - Launch of a Functional Web Application for Algae Farmers We developed and deployed a live web application that streamlines onboarding and enables algae farmers to monitor their farms and earnings efficiently. The platform enhances transparency and accessibility for users within the carbon farming ecosystem.
 Implementation of the Guardian System for Carbon Accounting We established a robust Guardian system tailored to our company’s needs. This system facilitates accurate calculation of carbon credits and emissions, adhering to standards-based methodologies and supporting our commitment to environmental integrity.
 
 - Integration of Wallet for Seamless Onboarding: Our web application now supports HashPack, Metamask, and other hedera supported wallets, allowing users to easily onboard and interact with the Hedera blockchain. This feature improves user experience and accelerates adoption of on-chain functionality.
-Token Minting and Deployment on Hedera We successfully minted our native tokens—ERECO and VERECO—on the Hedera blockchain using the Guildian framework. Additionally, we tested deployment via the standard EVM route using the Hedera Portal Playground, which provided a reliable draft code and confirmed compatibility across environments.
+  
+- Token Minting and Deployment on Hedera We successfully minted our native tokens—ERECO and VERECO—on the Hedera blockchain using the Guildian framework. Additionally, we tested deployment via the standard EVM route using the Hedera Portal Playground, which provided a reliable draft code and confirmed compatibility across environments.
 
 ## Quick Links
 - Demo: https://youtu.be/CtfXJd3VZJk
@@ -133,6 +132,7 @@ Token Minting and Deployment on Hedera We successfully minted our native tokens�
 At EarthRectify Carbon Sequestration Limited, we believe sustainability should be simple, fair, and rewarding.
 By harnessing algae farming, blockchain technology, and real-world payment solutions, we’re building a future where saving the planet also means building personal wealth and community resilience.
 Because when the environment wins—we all win
+
 
 
 
