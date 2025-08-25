@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getVersion
 
 <mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}`
 
-Get basic metadata for a given version
+Get basic metadata for a given version.
 
 **Headers**
 

@@ -1,8 +1,12 @@
+---
+description: 'API Version: 1.102.0'
+---
+
 # getConfiguration
 
 <mark style="color:green;">`GET`</mark>`/projects/{projectId}/configurations`
 
-Get Configuration
+Get Configuration.
 
 **Headers**
 

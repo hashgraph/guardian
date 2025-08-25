@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getVersionAsset
 
 <mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/assets`
 
-Get all assets for a given dataset version
+Get all assets for a given dataset version.
 
 **Headers**
 

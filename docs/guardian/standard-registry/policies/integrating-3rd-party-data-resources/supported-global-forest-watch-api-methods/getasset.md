@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getAsset
 
 <mark style="color:green;">`GET`</mark> `/asset/{asset_id}`
 
-Get asset
+Get asset.
 
 **Headers**
 

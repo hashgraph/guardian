@@ -1,8 +1,12 @@
+---
+description: 'API Version: 2.0'
+---
+
 # getTopicsById
 
 <mark style="color:green;">`GET`</mark>`/v2/topic/{topicIds}`
 
-Get metadata about one or more topics
+Get metadata about one or more topics.
 
 **Headers**
 

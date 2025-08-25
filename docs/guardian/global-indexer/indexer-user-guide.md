@@ -1,8 +1,7 @@
 # Indexer User Guide
 
-[Step By Step Process](indexer-user-guide.md#id-1.-step-by-step-process)
-
-1. [Demo Video](indexer-user-guide.md#id-2.-demo-video)
+1. [Step By Step Process](indexer-user-guide.md#id-1.-step-by-step-process)
+2. [Demo Video](indexer-user-guide.md#id-2.-demo-video)
 
 ## 1. Step By Step Process
 
@@ -143,7 +142,7 @@ VC details has the following tabs:
 * History - document history since it was created.
 * Relationships - document relationships with links to policy, roles, schemas, standard registry, other documents.
 
-<figure><img src="../../.gitbook/assets/image (2) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 * Raw Data - raw message data.
 

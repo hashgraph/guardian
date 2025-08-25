@@ -1,8 +1,12 @@
+---
+description: 'API Version: 2.0'
+---
+
 # getCountryByCode
 
 <mark style="color:green;">`GET`</mark>`/v2/country/{countryCode}`
 
-Get detailed info about one country (incl. region, income level, capital, geo‑coords)
+Get detailed info about one country (incl. region, income level, capital, geo‑coords).
 
 **Headers**
 

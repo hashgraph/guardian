@@ -1,8 +1,12 @@
+---
+description: 'API Version: 2.0'
+---
+
 # getSource
 
 <mark style="color:green;">`GET`</mark> `/v2/sources/{sourceId}`
 
-Get metadata about specific source
+Get metadata about specific source.
 
 **Headers**
 

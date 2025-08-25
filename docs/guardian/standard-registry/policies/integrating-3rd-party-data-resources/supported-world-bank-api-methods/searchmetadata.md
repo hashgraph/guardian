@@ -1,8 +1,12 @@
+---
+description: 'API Version: 2.0'
+---
+
 # searchMetadata
 
 <mark style="color:green;">`GET`</mark>` ``/v2/sources/{sourceId}/search/{searchTerm}`
 
-Search metadata by keyword
+Search metadata by keyword.
 
 **Headers**
 

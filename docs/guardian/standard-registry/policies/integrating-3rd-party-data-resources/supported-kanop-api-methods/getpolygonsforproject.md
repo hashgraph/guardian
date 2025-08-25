@@ -1,8 +1,12 @@
+---
+description: 'API Version: 1.102.0'
+---
+
 # getPolygonsForProject
 
 <mark style="color:green;">`GET`</mark>`/projects/{projectId}/polygons`
 
-Get Polygons For Project
+Get Polygons For Project.
 
 **Headers**
 

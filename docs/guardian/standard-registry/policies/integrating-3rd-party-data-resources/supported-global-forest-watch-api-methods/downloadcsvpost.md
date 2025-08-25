@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # downloadCSVPost
 
 <mark style="color:green;">`POST`</mark> `/dataset/{dataset}/{version}/download/csv`
 
-Execute a READ-ONLY SQL query on the given dataset version for datasets with (geo-)database tables
+Execute a READ-ONLY SQL query on the given dataset version for datasets with (geo-)database tables.
 
 **Headers**
 

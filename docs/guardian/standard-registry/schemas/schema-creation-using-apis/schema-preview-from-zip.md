@@ -1,17 +1,17 @@
 # Schema Preview from Zip
 
-### PREVIEWING SCHEMA FROM ZIP FILE
+<mark style="color:green;">`POST`</mark> `/schemas/import/file/preview`
 
-{% swagger method="post" path="" baseUrl="/schemas/import/file/preview" summary="Schema preview from a zip file" %}
-{% swagger-description %}
 Previews the schema from a zip file. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
 
-{% swagger-parameter in="body" name="" type="" required="true" %}
-A zip file containing the schema to be viewed
-{% endswagger-parameter %}
+#### Request Body
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+| Name                               | Type | Description                                   |
+| ---------------------------------- | ---- | --------------------------------------------- |
+| <mark style="color:red;">\*</mark> |      | A zip file containing the schema to be viewed |
+
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     content:
@@ -22,25 +22,25 @@ A zip file containing the schema to be viewed
                   $ref: '#/components/schemas/Schema'
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+{% tab title="401: Unauthorized Unauthorized" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+{% tab title="403: Forbidden Forbidden" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+{% tab title="500: Internal Server Error Internal Server Error" %}
 ```javascript
 {
     content:
@@ -49,5 +49,5 @@ A zip file containing the schema to be viewed
                 $ref: '#/components/schemas/Error'
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

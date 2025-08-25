@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getExtentForAsset
 
 <mark style="color:green;">`GET`</mark> `/asset/{asset_id}/extent`
 
-Get extent for asset
+Get extent for asset.
 
 **Headers**
 

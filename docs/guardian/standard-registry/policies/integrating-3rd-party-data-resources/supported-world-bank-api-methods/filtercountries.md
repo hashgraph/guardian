@@ -1,8 +1,12 @@
+---
+description: 'API Version: 2.0'
+---
+
 # filterCountries
 
 <mark style="color:green;">`GET`</mark>`/v2/country`
 
-Filter countries by aggregates
+Filter countries by aggregates.
 
 **Headers**
 

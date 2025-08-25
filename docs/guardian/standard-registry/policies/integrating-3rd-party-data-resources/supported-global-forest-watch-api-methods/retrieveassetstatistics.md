@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # retrieveAssetStatistics
 
 <mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/stats`
 
-Retrieve Asset Statistics
+Retrieve Asset Statistics.
 
 **Headers**
 

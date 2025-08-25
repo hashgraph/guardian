@@ -1,8 +1,12 @@
+---
+description: 'API Version: 2.0'
+---
+
 # getSources
 
 <mark style="color:green;">`GET`</mark> `/v2/sources`
 
-Get all sources (databases)
+Get all sources (databases).
 
 **Headers**
 

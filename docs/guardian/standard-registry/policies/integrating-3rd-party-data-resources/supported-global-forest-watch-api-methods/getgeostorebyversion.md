@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getGeostoreByVersion
 
 <mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/geostore/{geostore_id}`
 
-Retrieve GeoJSON representation for a given geostore ID of a dataset version
+Retrieve GeoJSON representation for a given geostore ID of a dataset version.
 
 **Headers**
 

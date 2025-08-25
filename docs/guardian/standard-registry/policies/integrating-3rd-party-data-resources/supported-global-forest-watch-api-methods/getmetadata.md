@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getMetadata
 
 <mark style="color:green;">`GET`</mark> `/dataset/{dataset}/{version}/metadata`
 
-Get metadata record for a dataset version
+Get metadata record for a dataset version.
 
 **Headers**
 

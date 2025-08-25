@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getChangeLogForAsset
 
 <mark style="color:green;">`GET`</mark> `/asset/{asset_id}/change_log`
 
-Get change log for asset
+Get change log for asset.
 
 **Headers**
 

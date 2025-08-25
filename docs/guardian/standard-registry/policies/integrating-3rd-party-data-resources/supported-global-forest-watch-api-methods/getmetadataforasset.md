@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getMetadataForAsset
 
 <mark style="color:green;">`GET`</mark> `/asset/{asset_id}/metadata`
 
-Get metadata for asset
+Get metadata for asset.
 
 **Headers**
 

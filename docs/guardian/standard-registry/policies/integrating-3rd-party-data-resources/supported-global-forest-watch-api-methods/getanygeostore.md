@@ -1,8 +1,12 @@
+---
+description: 'API Version: 0.3.0'
+---
+
 # getAnyGeostore
 
 <mark style="color:green;">`GET`</mark> `/geostore/{geostore_id}`
 
-Retrieve GeoJSON representation for a given geostore ID of any dataset
+Retrieve GeoJSON representation for a given geostore ID of any dataset.
 
 **Headers**
 

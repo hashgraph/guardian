@@ -1,8 +1,12 @@
+---
+description: 'API Version: 1.102.0'
+---
+
 # getStockMetricForPolygons
 
 <mark style="color:green;">`GET`</mark>`/projects/{projectId}/requests/{requestId}/geoMetrics/{indicator}`
 
-Get Stock Metric For Polygons
+Get Stock Metric For Polygons.
 
 **Headers**
 
