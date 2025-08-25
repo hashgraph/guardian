@@ -43,7 +43,7 @@ Navigate to the **"Policies"** section in the Guardian dashboard.
 
 * Click the **"Discontinue"** button.
 
-<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 * Select the timeframe, when we want to discontinue the policy. For now, we will be selecting immediate in the pop up:
 
@@ -57,11 +57,11 @@ Navigate to the **"Policies"** section in the Guardian dashboard.
 
 #### Step 3: Create/Import VM0042 V2.1 Policy:
 
-<figure><img src="../../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Publishing VM0042 V2.1 Policy:
 
-<figure><img src="../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Part 3: Migrate Data Using Migration Wizard
 
@@ -81,11 +81,16 @@ Publishing VM0042 V2.1 Policy:
 #### Step 6: Map Credentials
 
 * This step of the wizard is where you select the project records to migrate from one policy version to another.
-  * VP Documents are Verifiable Presentations — collections of project information packaged together for sharing and verification.
+
+Each VC and VP have an associated entity or individual which attested to the document validity by creating a cryptographic signature. This entity is referred to as 'owner' of the document, and is identified by Decentralized Identifier (DID).
+
+* VP Documents are Verifiable Presentations — collections of project information packaged together for sharing and verification.
+* VC Documents are Verifiable Credentials — individual digital records that contain the certified data for a project, such as monitoring reports, emission reductions, or validation results.
+* DID is a globally unique identifier that can be resolved to a DID Document containing public cryptographic keys, service endpoints, and other metadata. Only the entity with the private keys matching public keys in the DID can prove ownership of the issued VCs and VPs. More information on DIDs and its relationship with VCs and VPs can be found here: [https://www.w3.org/groups/wg/did/](https://www.w3.org/groups/wg/did/).
+
+More information on VCs and VPs concepts can be found here: [https://www.w3.org/TR/vc-overview](https://www.w3.org/TR/vc-overview).
 
 <figure><img src="../../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
-
-* VC Documents are Verifiable Credentials — individual digital records that contain the certified data for a project, such as monitoring reports, emission reductions, or validation results.
 
 <figure><img src="../../../.gitbook/assets/image (10).png" alt=""><figcaption></figcaption></figure>
 

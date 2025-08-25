@@ -152,7 +152,7 @@ export class PolicyAction extends BaseEntity {
         if (this.document) {
             const document = JSON.stringify(this.document);
             this.documentFileId = await this._createFile(document, 'PolicyAction');
-            // delete this.document;
+            delete this.document;
         }
     }
 
@@ -181,7 +181,7 @@ export class PolicyAction extends BaseEntity {
                 this._documentFileId = this.documentFileId;
                 this.documentFileId = documentFileId;
             }
-            // delete this.document;
+            delete this.document;
         }
     }
 

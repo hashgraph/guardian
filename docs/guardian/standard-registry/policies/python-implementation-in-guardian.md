@@ -21,7 +21,7 @@ A new dropdown setting has been added to the Custom Logic block in the Policy Ed
 
 <figure><img src="../../../.gitbook/assets/image (3) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### 💡 Use Case
 
@@ -62,7 +62,7 @@ This field helps track the Guardian system version that was used to generate or 
 * **Format:** Semantic versioning (e.g., `"3.4.1"`)
 * **Automatically populated?** ✅ Yes
 
-<figure><img src="../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1) (4).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 * Ensure your logic is compatible with the version of Guardian being used, especially when importing Python packages.

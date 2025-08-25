@@ -1,161 +1,104 @@
+---
+icon: cart-plus
+---
+
 # Creating Schema using UI
 
-To create a new Schemas, click on the **New** button at the top right corner.
+#### **1. Log in as a Standard Registry**
 
-![](<../../../.gitbook/assets/image (16) (6).png>)
+* Only a **Standard Registry (SR)** role can create schemas.
+* Sign in to Guardian with your SR account.
 
-After clicking on the New button, you will be asked to enter Schema details such as Schema Name, Policy Dropdown, Entity : VC/MRV/NONE, Schema Description and any other required fields.
+#### **2. Navigate to the Schema Section**
 
-![](<../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
+* From the left-hand navigation panel, go to **Manage** **Schemas**.
+* You’ll see system schemas (default ones) and any custom schemas already created.
 
-In addition to the basic Schema details we also have an option to add Field and Condition to each field.
+<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
 
-![](<../../../.gitbook/assets/image (9) (1) (2) (1).png>)
+#### **3. Create a New Schema**
 
-We can also add Property dropdown field to each field in Schema. these properties are defined by IWA and are in standardized format.
+* Click **“Create Schema”**.
+* Provide basic details:
+  * **Name** → e.g., _Project Registration Schema_
+  * **Policy** → Linking the policy e.g., VM0042 V2.1
+  * **Description** → short explanation of what the schema will be used for
+  * For(Entity) → Select the relevant document.&#x20;
 
-<figure><img src="../../../.gitbook/assets/image (404).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
 
-We can select respective property for that specific field by searching by entering starting alphabet:
+#### **4. Define Schema Fields**
 
-<figure><img src="../../../.gitbook/assets/image (405).png" alt=""><figcaption></figcaption></figure>
+* Add **attributes (fields)** that define the data structure. For each field, you specify:
+  * **Field Name** (e.g., _projectId_, _location_, _CO2Reduced_)
+  * **Property** (property referring to schema field)
+  * **Field Type** (string, number, boolean, array, object, date, etc.)
+  * **Required or Optional**
+  * **Allow multiple answers checkbox**
+  * **Selected values (adding default, suggested, test values)**
+* Example fields for a Project Schema:
+  * `projectId` → number (required)
+
+<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
 
 We can also customize the Field keys and Field Title by clicking on Advanced Tab.
 
-![](<../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
+<figure><img src="../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
 
-Instead of creating a new Schema from scratch, there is also an option to import it via File or via IPFS.
+Schemas can be defined/changed by editing their JSON definitions
 
-To import the Schema, click on the Import button.
+<figure><img src="../../../.gitbook/assets/image (103).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-{% hint style="info" %}
-Files with **.schema** extension are only accepted. These files are in zip format, i.e. they are zip archives of the text file.
-{% endhint %}
+Schema JSON definition contains the following editable fields
 
-#### Import from IPFS
+1. **name** – schema name
+2. **description** – schema description
+3. **entity** – schema type (NONE, VC, EVC)
+4. **fields** – schema fields array
+   1. **key** – key (name) of the field
+   2. **title** – field title
+   3. **description** – schema description (visible to the user)
+   4. **required** – field visibility/type (Auto Calculate, Hidden, Required, None)
+   5. **type** – field value tipe (Number, String, Enum, …) or the sub-schema reference (#be764ef6-…)
+   6. **isArray** – boolean field (true\false) determining whether the field is an array
+   7. **property** – optional field mapping onto the corresponding property from dMRV framework ([https://interworkalliance.github.io/TokenTaxonomyFramework/dmrv/spec/](https://interworkalliance.github.io/TokenTaxonomyFramework/dmrv/spec/))
+   8. **private** – if the field is private (only relevant for ‘selective disclosure’ EVCs)
+   9. **enum** – array of options, or reference to an array of options
+   10. **textSize** – size of the text (only for Help Text)
+   11. **textColor** – color of the text (only for Help Text)
+   12. **textBold** – if the text is bold (only for Help Text)
+   13. **pattern** – regular expression to format the inputted text (only relevant for Strings)
+   14. **expression** – formula for calculating field values (only for ‘Auto Calculate’ fields)
+   15. **unit** – fixed Prefix or Postfix (only for Prefix or Postfix)
+   16. **example** – example values for the field
+   17. **default** – default value for the field
+   18. **suggest** – suggested value for the field
+5. **conditions** – schema name
+   1. **if** – conditions for displaying the fields (only equality is supported)
+      1. **field** – key (name) of the field
+      2. **value** – comparison value for the field value
+   2. **then** – array of fields which is shown when the condition resolves to true (the same format as _fields_)
+   3. **else** – array of fields which is shown when the condition resolves to false (the same format as _fields_)
 
-You can also import Schema from IPFS by entering the correct Schema timestamp.
+**5. Save & Publish the Schema**
 
-Sample iREC Schema timestamp is below:
+* Once all fields are defined → click **Save**.
+* To make it usable in policies, click **Publish**.
+  * Publishing makes the schema immutable and available to others.
 
-```
-1707126011.005978889 (iREC 3 Policy)
-```
+<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (31) (1) (2).png" alt=""><figcaption></figcaption></figure>
-
-Once the Schema is imported, we need to select the Policy from the Policy dropdown to connect the Schema and the Policy.
-
-<figure><img src="../../../.gitbook/assets/image (5) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
-
-<figure><img src="../../../.gitbook/assets/image (3) (1) (2) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
-
-{% hint style="info" %}
-**Note:** The major difference between creating / importing System Schema and Policy Schema is that we only get policy selection dropdown when policy schema is imported.
-{% endhint %}
-
-After selecting the required Policy, click on the Import button.
-
-When the Schema is imported, it will be in draft status.
-
-{% hint style="info" %}
-**Note**: Initially when the Schema is created/imported, it will be in draft status.
-{% endhint %}
-
-Once the Schema is imported, we will have the following options:\
-1\. Export the Schema and save it as .zip file in the local machine
-
-2\. Editing the Schema
-
-3\. Deleting the Schema
-
-4\. Displaying JSON document
-
-To Publish the Schema, click on Publish button.
-
-<figure><img src="../../../.gitbook/assets/image (2) (1) (5) (1).png" alt=""><figcaption></figcaption></figure>
+6. #### Version
 
 After clicking on Publish, you will be prompted to enter the version. After entering the Version and pressing the submit button, the status will change to Published.
+
+<figure><img src="../../../.gitbook/assets/image (426).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Note**: All Schemas connected to a Policy gets published automatically when Policy gets published.
 {% endhint %}
-
-There are different types of Schema Types:
-
-* None
-* Verifiable Credential
-* Encrypted Verifiable Credential
-
-To know more details regarding encrypted Verifiable Credential please look at [Selective Disclosure Demo](../selective-disclosure/selective-disclosure-demo.md)
-
-There are different types of Field Types:
-
-* Number
-* Integer
-* String
-* Boolean
-* Date
-* Time
-* DateTime
-* Duration
-* URL
-* Email
-* Image
-* Account
-* Units of Measure
-  * Prefix
-  * Postfix
-* Enum
-* Help Text
-* GeoJSON
-* URI
-* Sentinel Hub
-
-Each of the above field types can be marked as either Marked or optional by checking the Required Field checkbox.
-
-{% hint style="info" %}
-**Note: Important points to be noted when "Account" type is selected:**
-
-1. Account field type need to be referred in ‘tokenConfirmationBlock’ and ‘tokenActionBlock’. They can be present both in the parent and child documents.
-2. If there are multiple fields of the ‘Account’ with the same name, then the value from the most immediate scope, i.e. from the current (‘child’) document is used.
-{% endhint %}
-
-{% hint style="info" %}
-**Note: Important points to be noted when "Enum" type is selected:**
-
-1. Enum values can be added by editing or by importing it from link or from file.
-2. If we are importing files by URL. The response should be ({"enum": \["Option1", "Option2", "Option3"]}) or has same format such as importing file (Options separated by new line symbol).
-
-Example of URL which has correct format: [https://ipfs.io/ipfs/bafkreihgbx6fsqup4psfbzjcf57zjdbfwisbjbsqzvwlg4hgx5s5xyqwzm](https://ipfs.io/ipfs/bafkreihgbx6fsqup4psfbzjcf57zjdbfwisbjbsqzvwlg4hgx5s5xyqwzm)
-
-3\. If we put more than five options, it will be automatically loaded to IPFS.
-{% endhint %}
-
-{% hint style="info" %}
-**Note: Important points to be noted when "GeoJSON" type is selected:**
-
-1. Click on map and place the marker’s, polygons, lines.
-2. Polygons and lines can be placed by double clicking on map.
-3. Right Click on the map will remove temporary points for polygons and lines
-4. View type can also be changed by pasting the GeoJSON.
-{% endhint %}
-
-{% hint style="info" %}
-**Note: Important points to be noted when "String" type is selected:**
-
-1. Pattern input field is added in the advanced mode configuration.
-
-Detailed information for patterns is available on [https://json-schema.org/understanding-json-schema/reference/regular\_expressions.html](https://json-schema.org/understanding-json-schema/reference/regular_expressions.html).
-{% endhint %}
-
-<figure><img src="../../../.gitbook/assets/image (2) (9).png" alt=""><figcaption></figcaption></figure>
-
-Once the above details are added, click on the Create button.
-
-![](<../../../.gitbook/assets/image (2) (1) (2) (1) (1).png>)
 
 Once the System Schema is created, we have options for activating, deleting, editing and viewing JSON documents.
 
