@@ -13,6 +13,14 @@ import { BaseEntity } from '../models/index.js';
     name: 'iri_index',
 })
 @Index({
+    properties: ['topicId'],
+    name: 'topicId_index',
+})
+@Index({
+    properties: ['iri', 'topicId'],
+    name: 'topicId_iri_index',
+})
+@Index({
     properties: ['defs'],
     name: 'defs_index',
 })

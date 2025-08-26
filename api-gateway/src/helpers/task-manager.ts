@@ -1,5 +1,5 @@
 import { WebSocketsService } from '../api/service/websockets.js';
-import { MessageResponse, NatsService } from '@guardian/common';
+import { INotificationInfo, MessageResponse, NatsService } from '@guardian/common';
 import {
     GenerateUUIDv4,
     IStatus,
@@ -120,7 +120,7 @@ export class TaskManager {
             const { taskId, statuses, result, error, info } = msg;
             if (taskId) {
                 if (info) {
-                    this.addInfo(taskId, info, []);
+                    this.addInfo(taskId, info);
                 } else if (statuses) {
                     this.addStatuses(taskId, statuses);
                 }
@@ -198,15 +198,17 @@ export class TaskManager {
      */
     public addInfo(
         taskId: string,
-        info: any,
-        statuses: IStatus[],
+        info: INotificationInfo,
         skipIfNotFound: boolean = true
     ): void {
         const task = this.tasks[taskId];
         if (task) {
-            task.info = info;
-            if (statuses) {
-                task.statuses.push(...statuses);
+            if (
+                !task.info ||
+                !task.info.timestamp ||
+                info.timestamp >= task.info.timestamp
+            ) {
+                task.info = info;
             }
             this.notifyTaskProgress(taskId);
         } else if (skipIfNotFound) {
