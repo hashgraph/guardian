@@ -324,6 +324,7 @@ export class SchemaImport {
         step: INotificationStep,
         userId: string | null
     ): Promise<void> {
+        step.start();
         let index = 0;
         for (const file of schemas) {
             const _step = step.addStep(`${file.name || '-'}`);
@@ -345,42 +346,13 @@ export class SchemaImport {
                 schemaObject.status = SchemaStatus.ERROR;
             }
 
-            // const errorsCount = await DatabaseServer.getSchemasCount({
-            //     iri: {
-            //         $eq: schemaObject.iri
-            //     },
-            //     $or: [{
-            //         topicId: { $ne: schemaObject.topicId }
-            //     }, {
-            //         uuid: { $ne: schemaObject.uuid }
-            //     }]
-            // } as FilterObject<SchemaCollection>);
-            // if (errorsCount > 0) {
-            //     throw new Error('Schema identifier already exist');
-            // }
-
-            // if (this.mode === ImportMode.COMMON) {
-            //     if (this.topicRow) {
-            //         const message = new SchemaMessage(MessageAction.CreateSchema);
-            //         message.setDocument(schemaObject);
-            //         await this.messageServer
-            //             .setTopicObject(this.topicRow)
-            //             .sendMessage(message, {
-            //                 sendToIPFS: true,
-            //                 memo: null,
-            //                 userId: this.owner.id,
-            //                 interception: this.owner.id,
-            //                 notifier: _step.minimize(true)
-            //             });
-            //     }
-            // }
-
             const row = await DatabaseServer.saveSchema(schemaObject);
 
             this.schemasMapping[index].newID = row.id.toString();
             _step.complete();
             index++;
         }
+        step.complete();
     }
 
     /**
@@ -442,12 +414,13 @@ export class SchemaImport {
         const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
         const STEP_RESOLVE_TOPIC = 'Resolve topic';
         const STEP_UPDATE_UUID = 'Update UUID';
+        const STEP_SAVE = 'Save';
         // Steps -->
 
         this.notifier.addStep(STEP_RESOLVE_ACCOUNT, 1);
         this.notifier.addStep(STEP_RESOLVE_TOPIC, 1);
         this.notifier.addStep(STEP_UPDATE_UUID, 1);
-        this.notifier.addEstimate(components.length);
+        this.notifier.addStep(STEP_SAVE, 1, true);
         this.notifier.start();
 
         await this.resolveAccount(
@@ -467,7 +440,7 @@ export class SchemaImport {
             components,
             user,
             false,
-            this.notifier,
+            this.notifier.getStep(STEP_SAVE),
             userId
         );
 
@@ -476,7 +449,11 @@ export class SchemaImport {
         await this.validateDefs(components);
         this.notifier.completeStep(STEP_UPDATE_UUID);
 
-        await this.saveSchemas(components, this.notifier, userId);
+        await this.saveSchemas(
+            components,
+            this.notifier.getStep(STEP_SAVE),
+            userId
+        );
 
         this.notifier.complete();
 

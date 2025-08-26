@@ -319,15 +319,35 @@ export async function publishSchemasPackage(options: {
         owner,
         server,
         schemaMap,
-        staticSchemas
+        staticSchemas,
+        notifier
     } = options;
 
+    // <-- Steps
+    const STEP_RESOLVE_TOPIC = 'Resolve topic';
+    const STEP_SCHEMA_MAP = 'Create schemas map';
+    const STEP_UPDATE_UUID = 'Update UUID';
+    const STEP_PUBLISH = 'Publish';
+    const STEP_SAVE = 'Save';
+    // Steps -->
+
+    notifier.addStep(STEP_RESOLVE_TOPIC, 1);
+    notifier.addStep(STEP_SCHEMA_MAP, 10);
+    notifier.addStep(STEP_UPDATE_UUID, 1);
+    notifier.addStep(STEP_PUBLISH, 5);
+    notifier.addStep(STEP_SAVE, 1);
+
+    // <-- Topic
+    notifier.startStep(STEP_RESOLVE_TOPIC);
     const topicId = server.getTopic();
-
-    const idsMap = schemaMap || new Map<string, string>();
-
-    const map = new Map<string, SchemaCollection>();
     const publishedTopics = await getPublishedTopics(topicId);
+    notifier.completeStep(STEP_RESOLVE_TOPIC);
+    // Topic -->
+
+    // <-- Map
+    notifier.startStep(STEP_SCHEMA_MAP);
+    const idsMap = schemaMap || new Map<string, string>();
+    const map = new Map<string, SchemaCollection>();
     for (const schema of schemas) {
         await searchSchemaDefs(schema, publishedTopics, map);
     }
@@ -341,8 +361,11 @@ export async function publishSchemasPackage(options: {
             publishedSchemas.push(item);
         }
     }
+    notifier.completeStep(STEP_SCHEMA_MAP);
+    // Map -->
 
     // <-- Update uuid & version
+    notifier.startStep(STEP_UPDATE_UUID);
     for (const item of draftSchemas) {
         if (checkForCircularDependency(item)) {
             throw new Error(`There is circular dependency in schema: ${item.iri}`);
@@ -385,8 +408,11 @@ export async function publishSchemasPackage(options: {
             draftSchemas[i].document = parsedSchemas[i].document;
         }
     }
+    notifier.completeStep(STEP_UPDATE_UUID);
     // Update uuid & version -->
 
+    // <-- Publish
+    notifier.startStep(STEP_PUBLISH);
     const packageDocuments = generatePackage({ ...options, schemas: draftSchemas });
 
     const message = new SchemaPackageMessage(type);
@@ -409,7 +435,11 @@ export async function publishSchemasPackage(options: {
         item.contextURL = contextUrl;
         item.messageId = messageId;
     }
+    notifier.completeStep(STEP_PUBLISH);
+    // Publish -->
 
+    // <-- Save
+    notifier.startStep(STEP_SAVE);
     for (const schema of draftSchemas) {
         if (schema.id) {
             await DatabaseServer.updateSchema(schema.id, schema);
@@ -425,6 +455,8 @@ export async function publishSchemasPackage(options: {
     for (const schema of draftSchemas) {
         await publishSchemaTags(schema, owner, server);
     }
+    notifier.completeStep(STEP_SAVE);
+    // Save -->
 
     return idsMap;
 }
