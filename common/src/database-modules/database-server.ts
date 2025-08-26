@@ -3548,16 +3548,14 @@ export class DatabaseServer extends AbstractDatabaseServer {
         const filter: any = {
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers',
+            $or: [
+                { savepointId: null },
+                { savepointId: { $exists: false } }
+            ]
         };
 
-        if (!savepointIds) {
-            filter.active = true;
-        } else {
-            filter.$or = [
-                { savepointId: { $in: savepointIds } },
-                { savepointId: null },
-                { savepointId: { $exists: false } },
-            ];
+        if (savepointIds) {
+            filter.$or.push({ savepointId: { $in: savepointIds } });
         }
 
         return await new DataBaseHelper(DryRun).find(filter, {
@@ -3568,7 +3566,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 'hederaAccountId',
                 'active'
             ] as unknown as PopulatePath.ALL[],
-            orderBy: { createDate: 1 }
+            orderBy: {
+                createDate: 1
+            }
         });
     }
 
