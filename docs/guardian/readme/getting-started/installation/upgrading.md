@@ -25,8 +25,8 @@ Depending on how large the upgrades are, there could be a lot of work keeping ve
 Related requirements:
 
 1. Find a qualified source to create an enterprise-grade version of Guardian;
-2. Consolidate, package, and normalize the solution architecture to match development best practices, supporting existing Hedera environments (currently defined as a local node, testnet, previewnet, or mainnet) **deployed on-premises and on clouds**;
-3. **Cloud Infrastructure**: All Guardian source code and secrets should be deployed via **Infrastructure as Code in cloud**. In particular, the repo should contain all the artifacts and the documentation for the deployment of the Guardian on **Amazon Web Services**, **Google Cloud Platform** and **Microsoft Azure.**
+2. Consolidate, package, and normalize the solution architecture to match development best practices, supporting existing Hedera environments (currently defined as a local node, testnet, previewnet, or mainnet) deployed on-premises and on clouds;
+3. Cloud Infrastructure: All Guardian source code and secrets should be deployed via Infrastructure as Code in cloud. In particular, the repo should contain all the artifacts and the documentation for the deployment of the Guardian on Amazon Web Services, Google Cloud Platform and Microsoft Azure.
 
 ### **Data Upgrading Process**
 

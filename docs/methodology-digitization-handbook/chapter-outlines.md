@@ -2,8 +2,7 @@
 
 ## Part I: Foundation and Preparation
 
-### Chapter 1: Introduction to Methodology Digitization
-
+### [Chapter 1: Introduction to Methodology Digitization](part-1/chapter-1/README.md)
 **Purpose**: Establish the foundation for understanding methodology digitization on Guardian platform.
 
 **Key Topics**:
@@ -18,8 +17,7 @@
 
 **VM0033 Context**: Introduction to VM0033's significance in blue carbon markets and its complexity as a comprehensive tidal wetland restoration methodology.
 
-### Chapter 2: Understanding VM0033 Methodology
-
+### [Chapter 2: Understanding VM0033 Methodology](part-1/chapter-2/README.md)
 **Purpose**: Provide deep domain knowledge of VM0033 before beginning technical implementation.
 
 **Key Topics**:
@@ -34,8 +32,7 @@
 
 **VM0033 Context**: Complete walkthrough of the methodology document structure, highlighting sections that will be digitized and their interdependencies.
 
-### Chapter 3: Guardian Platform Overview for Methodology Developers
-
+### [Chapter 3: Guardian Platform Overview for Methodology Developers](part-1/chapter-3/README.md)
 **Purpose**: Provide methodology developers with Guardian-specific knowledge needed for digitization.
 
 **Key Topics**:
@@ -65,7 +62,7 @@
 * Understanding temporal boundaries and crediting periods
 * Identifying calculation dependencies and parameter relationships
 
-**VM0033 Context**: Step-by-step analysis of VM0033 document, breaking down its 117 pages into digestible components and identifying digitization priorities.
+**VM0033 Context**: Step-by-step analysis of VM0033 document, breaking down its content into digestible components and identifying digitization priorities.
 
 ### Chapter 5: Equation Mapping and Parameter Identification
 
@@ -95,7 +92,7 @@
 * Creating unified calculation frameworks
 * Managing tool dependencies and conflicts
 
-**VM0033 Context**: Integration of all tools referenced in VM0033, including AR-Tool02, AR-Tool03, AR-Tool14, and various VMD modules.
+**VM0033 Context**: Integration of subset of tools referenced in VM0033, limited to AR-Tool05, AR-Tool14, AFLOU Non permanence risk tool.
 
 ### Chapter 7: Test Artifact Development
 
@@ -114,82 +111,80 @@
 
 ## Part III: Schema Design and Development
 
-### Chapter 8: Schema Architecture and Design Principles
+### Chapter 8: Schema Architecture and Foundations
 
-**Purpose**: Establish best practices for schema design in Guardian.
+**Purpose**: Understand Guardian's schema system fundamentals and architectural patterns.
 
 **Key Topics**:
 
-* Schema tree architecture and hierarchy design
-* Sub-schema patterns and reusability
-* Field types and their appropriate usage
-* Validation rules and constraints
-* User experience considerations in schema design
-* Performance implications of schema structure
-* Versioning and evolution strategies
+* Guardian's JSON Schema integration with Verifiable Credentials
+* Two-part schema architecture (Project Description + Calculations)
+* Field type selection and parameter mapping principles
+* Schema template structure and organization
+* Basic conditional logic and field visibility
+* Performance considerations for schema design
 
-**VM0033 Context**: Design principles applied to VM0033's complex data requirements, including multiple calculation methods and conditional logic.
+**VM0033 Context**: VM0033's two-part architecture demonstrating how complex wetland restoration methodology translates into Guardian schema structure with 400+ components.
 
 ### Chapter 9: Project Design Document (PDD) Schema Development
 
-**Purpose**: Create comprehensive PDD schemas that capture all project information.
+**Purpose**: Build comprehensive PDD schemas using Excel-first approach with step-by-step implementation.
 
 **Key Topics**:
 
-* Project information and metadata schemas
-* Baseline scenario documentation
-* Project activity descriptions and justifications
-* Stakeholder consultation schemas
-* Environmental impact assessments
-* Emission reduction estimation schemas
-* Supporting document attachments
+* Excel schema template usage and structure
+* Step-by-step PDD schema construction process
+* Conditional logic implementation with enum selections
+* Sub-schema creation and organization
+* Field key management for calculation code readability
+* Guardian import process and testing
 
-**VM0033 Context**: Complete PDD schema for VM0033 tidal wetland projects, including all required sections and conditional fields based on project type.
+**VM0033 Context**: Complete walkthrough of building VM0033 PDD schema from Excel template, including certification pathway conditionals and calculation parameter capture.
 
 ### Chapter 10: Monitoring Report Schema Development
 
-**Purpose**: Design schemas for ongoing monitoring and verification.
+**Purpose**: Create time-series monitoring schemas that handle annual data collection and calculation updates.
 
 **Key Topics**:
 
-* Monitoring parameter schemas and data collection
-* Temporal data handling and time series
-* Quality assurance and quality control fields
-* Evidence and documentation requirements
-* Calculation update mechanisms
-* Verification and validation workflows
+* Temporal data structures for monitoring periods
+* Annual parameter tracking and time-series organization
+* Quality control fields and evidence documentation
+* Field key management for time-series calculations
+* VVB verification workflow support
+* Integration with PDD schema parameters
 
-**VM0033 Context**: VM0033 monitoring report schema covering all required monitoring parameters, including water table depth, vegetation coverage, and emission measurements.
+**VM0033 Context**: VM0033 monitoring schema development covering herbaceous vegetation monitoring, carbon stock tracking, and temporal boundary management over 100-year crediting periods.
 
 ### Chapter 11: Advanced Schema Techniques
 
-**Purpose**: Master advanced schema features for complex methodologies.
+**Purpose**: Master API schema management, field properties, and advanced Guardian features.
 
 **Key Topics**:
 
-* Conditional field visibility and dynamic forms
-* Enum types and controlled vocabularies
-* Auto-calculation fields and formula integration
-* Cross-schema references and relationships
-* File upload and document management
-* Multi-language support and localization
+* API-based schema operations and updates
+* Field key naming best practices for calculation code
+* Standardized Property Definitions from GBBC specifications
+* Four Required field types: None, Hidden, Required, Auto Calculate
+* Schema UUID management for efficient development
+* Bulk operations and version control strategies
 
-**VM0033 Context**: Implementation of VM0033's complex conditional logic, including different calculation methods based on wetland type and restoration activity.
+**VM0033 Context**: Advanced schema management techniques used in VM0033 development, including Auto Calculate field implementation for equation results and UUID management for policy integration.
 
-### Chapter 12: Schema Testing and Validation
+### Chapter 12: Schema Testing and Validation Checklist
 
-**Purpose**: Ensure schema quality and functionality before policy integration.
+**Purpose**: Validate schemas using Guardian's testing features before deployment.
 
 **Key Topics**:
 
-* Schema validation techniques and tools
-* User acceptance testing for schemas
-* Data integrity and constraint testing
-* Performance testing with large datasets
-* Cross-browser and device compatibility
-* Accessibility and usability testing
+* Default Values, Suggested Values, and Test Values configuration
+* Schema preview testing and functionality validation
+* UUID integration into policy workflow blocks
+* Test artifact completeness checking
+* Field validation rules and user experience optimization
+* Pre-deployment checklist and user testing
 
-**VM0033 Context**: Comprehensive testing approach for VM0033 schemas, including validation of complex calculation logic and conditional field behavior.
+**VM0033 Context**: Practical testing approach used for VM0033 schema validation, including systematic testing of conditional logic and calculation field behavior.
 
 ## Part IV: Policy Workflow Design
 

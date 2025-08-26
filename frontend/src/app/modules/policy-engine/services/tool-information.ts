@@ -17,6 +17,7 @@ const Tool: IBlockSetting = {
     header: BlockHeaders.Tool,
     factory: ContainerBlockComponent,
     property: ToolComponent,
+    code: null,
     allowedChildren: [
         { type: BlockType.Information },
         { type: BlockType.PolicyRoles },

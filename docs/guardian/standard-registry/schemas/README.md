@@ -1,5 +1,26 @@
 # Schemas
 
-From an Environmental perspective, schemas contain environmentally-oriented vocabularies of terms for representing machine- and human-comprehensible structured data. In other words, they are linguistic “templates”, “frames”, or “patterns” together with rules for using them to specify a potentially infinite multitude of numbers, phrases, sentences, or arguments, which represent environmental data.
+A Schema in Guardian is a structured data definition that describes the format, attributes, and validation rules for Verifiable Credentials (VCs) and Verifiable Presentations (VPs) within policies and methodologies.
 
-In Guardian, various environmental data produced in the course of executing policy workflows are packaged into JSON documents such as verifiable credentials and verifiable presentations. Schemas define the structure and content of these verifiable documents, enabling their automatic processing and provenance verification. It’s critical that all data required to be presented and or collected during a policy workflow has a well-defined verifiable credential schema. The schema will be used in the structural conformance verification of a document within a policy workflow.
+Schemas ensure that all participants (Standard Registries, Project Developers, Auditors, Validators, Buyers, etc.) use a common, consistent, and machine-readable structure when exchanging sustainability-related data on the Hedera network.
+
+#### **Key Characteristics of Schemas**
+
+1. **Standardized Data Model**
+   * Defines the fields, data types, and relationships for a specific entity (e.g., a project description, monitoring report, or carbon credit issuance record).
+   * Guarantees interoperability across policies, methodologies, and different Standard Registries.
+2. **Validation Rules**
+   * Enforces constraints like required fields, value ranges, or enumerations.
+   * Ensures data integrity and consistency before being issued on-chain.
+3. **Reusability**
+   * Once published, schemas can be reused across multiple policies and methodologies.
+   * Promotes standardization across ecosystems (e.g., all carbon projects may use the same Emission Reduction Schema).
+4. **Version Control**
+   * Schemas are versioned, enabling updates or modifications without breaking existing data structures.
+   * Allows migration from old to new schema versions when standards evolve.
+
+#### **Types of Schemas in Guardian**
+
+* **System Schemas** → Provided by Guardian (for core functions like DID, VP, VC, token definitions).
+* **Custom Schemas** → Defined by Standard Registries or methodology authors for their specific workflows (e.g., Project Registration Schema, Monitoring Report Schema).
+* **Policy-bound Schemas** → Linked directly to a policy to structure its credentials and reports.

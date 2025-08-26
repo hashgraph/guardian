@@ -1,17 +1,17 @@
 # Schema Type
 
-### FINDS THE SCHEMA USING SCHEMA TYPE
+<mark style="color:blue;">`GET`</mark> `/schemas/system/entity/{schemaEntity}`
 
-{% swagger method="get" path="" baseUrl="/schemas/system/entity/{schemaEntity}" summary="Returns Schema by Schema Type" %}
-{% swagger-description %}
 Finds the schema using Schema Type.
-{% endswagger-description %}
 
-{% swagger-parameter in="path" name="schemaEntity" type="String" required="true" %}
-Schema Type
-{% endswagger-parameter %}
+#### Path Parameters
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+| Name                                           | Type   | Description |
+| ---------------------------------------------- | ------ | ----------- |
+| schemaEntity<mark style="color:red;">\*</mark> | String | Schema Type |
+
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     content:
@@ -20,31 +20,31 @@ Schema Type
                 $ref: '#/components/schemas/Schema'
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+{% tab title="401: Unauthorized Unauthorized" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+{% tab title="403: Forbidden Forbidden" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="404: Not Found" description="Not Found" %}
+{% tab title="404: Not Found Not Found" %}
 ```
 Schema not found.
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+{% tab title="500: Internal Server Error Internal Server Error" %}
 ```javascript
 {
     content:
@@ -53,5 +53,5 @@ Schema not found.
                 $ref: '#/components/schemas/Error'
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

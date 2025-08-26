@@ -1,21 +1,23 @@
 # Updating Schema
 
-### UPDATING SCHEMA BASED ON SCHEMA ID
+<mark style="color:orange;">`PUT`</mark> `/schemas/{schemaId}`
 
-{% swagger method="put" path="" baseUrl="/schemas/{schemaId}" summary="Updates the schema" %}
-{% swagger-description %}
 Updates the schema matching the id in the request body. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
 
-{% swagger-parameter in="path" name="schemaID" type="String" required="true" %}
-Schema ID
-{% endswagger-parameter %}
+#### Path Parameters
 
-{% swagger-parameter in="body" type="schema" required="true" %}
-Object that contains a valid schema including the id of the schema that is to be update
-{% endswagger-parameter %}
+| Name                                       | Type   | Description |
+| ------------------------------------------ | ------ | ----------- |
+| schemaID<mark style="color:red;">\*</mark> | String | Schema ID   |
 
-{% swagger-response status="200: OK" description="Succesful Operation" %}
+#### Request Body
+
+| Name                               | Type   | Description                                                                             |
+| ---------------------------------- | ------ | --------------------------------------------------------------------------------------- |
+| <mark style="color:red;">\*</mark> | schema | Object that contains a valid schema including the id of the schema that is to be update |
+
+{% tabs %}
+{% tab title="200: OK Succesful Operation" %}
 ```javascript
 {
     content:
@@ -26,29 +28,29 @@ Object that contains a valid schema including the id of the schema that is to be
                   $ref: '#/components/schemas/Schema'
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+{% tab title="401: Unauthorized Unauthorized" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+{% tab title="403: Forbidden Forbidden" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="422: Unprocessable Entity" description="" %}
+{% tab title="422: Unprocessable Entity " %}
 
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+{% tab title="500: Internal Server Error Internal Server Error" %}
 ```javascript
 {
     content:
@@ -57,5 +59,5 @@ Object that contains a valid schema including the id of the schema that is to be
                 $ref: '#/components/schemas/Error'
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

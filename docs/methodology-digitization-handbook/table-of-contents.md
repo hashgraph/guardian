@@ -6,57 +6,50 @@
 
 ## Part I: Foundation and Preparation
 
-### Chapter 1: Introduction to Methodology Digitization
-
+### [Chapter 1: Introduction to Methodology Digitization](part-1/chapter-1/README.md)
 Understanding the digitization process, Guardian platform capabilities, and the role of VM0033 as our reference methodology. This chapter establishes the context and objectives for methodology digitization.
 
-### Chapter 2: Understanding VM0033 Methodology
-
+### [Chapter 2: Understanding VM0033 Methodology](part-1/chapter-2/README.md)
 Deep dive into the VM0033 methodology structure, applicability conditions, baseline scenarios, and emission reduction calculations. This chapter provides the domain knowledge foundation needed before digitization begins.
 
-### Chapter 3: Guardian Platform Overview for Methodology Developers
-
+### [Chapter 3: Guardian Platform Overview for Methodology Developers](part-1/chapter-3/README.md)
 Comprehensive introduction to Guardian's architecture, Policy Workflow Engine (PWE), schema system, and key concepts specifically relevant to methodology digitization.
 
 ## Part II: Analysis and Planning
 
-### Chapter 4: Methodology Analysis and Decomposition
+### [Chapter 4: Methodology Analysis and Decomposition](part-2/chapter-4/README.md)
+Systematic approach to reading and analyzing methodology PDFs, identifying key components, stakeholders, and workflow requirements. Includes techniques for extracting calculation logic and parameter dependencies using industry-proven recursive analysis techniques.
 
-Systematic approach to reading and analyzing methodology PDFs, identifying key components, stakeholders, and workflow requirements. Includes techniques for extracting calculation logic and parameter dependencies.
+### [Chapter 5: Equation Mapping and Parameter Identification](part-2/chapter-5/README.md)
+Step-by-step process for identifying all equations used in baseline emissions, project emissions, and leakage calculations. Covers recursive parameter analysis and dependency mapping using VM0033 examples with comprehensive mathematical component extraction.
 
-### Chapter 5: Equation Mapping and Parameter Identification
+### [Chapter 6: Tools and Modules Integration](part-2/chapter-6/README.md)
+Understanding and incorporating external tools and modules referenced in methodologies. Covers CDM tools, VCS modules, and other standard calculation tools used in VM0033, including unified calculation framework development.
 
-Step-by-step process for identifying all equations used in baseline emissions, project emissions, and leakage calculations. Covers recursive parameter analysis and dependency mapping using VM0033 examples.
-
-### Chapter 6: Tools and Modules Integration
-
-Understanding and incorporating external tools and modules referenced in methodologies. Covers CDM tools, VCS modules, and other standard calculation tools used in VM0033.
-
-### Chapter 7: Test Artifact Development
-
-Creating comprehensive test spreadsheets containing all input parameters, output parameters, and final emission reduction calculations. This artifact becomes the validation benchmark for the digitized policy.
+### [Chapter 7: Test Artifact Development](part-2/chapter-7/README.md)
+Creating comprehensive test spreadsheets containing all input parameters, output parameters, and final emission reduction calculations. This artifact becomes the validation benchmark for the digitized policy, with real VM0033 test artifact examples.
 
 ## Part III: Schema Design and Development
 
-### Chapter 8: Schema Architecture and Design Principles
+### [Chapter 8: Schema Architecture and Foundations](part-3/chapter-8/README.md)
 
-Fundamental principles of schema design in Guardian, including schema trees, sub-schemas, and the relationship between schemas and policy workflow blocks.
+Guardian schema system fundamentals, JSON Schema integration, and two-part architecture patterns. Establishes field mapping principles and architectural understanding for methodology schema development.
 
-### Chapter 9: Project Design Document (PDD) Schema Development
+### [Chapter 9: Project Design Document (PDD) Schema Development](part-3/chapter-9/README.md)
 
-Detailed walkthrough of creating PDD schemas, including project details, baseline calculations, project emissions, leakage calculations, and final emission reduction estimates using VM0033 structure.
+Step-by-step Excel-first approach to building comprehensive PDD schemas. Covers Guardian template usage, conditional logic implementation, sub-schema creation, and essential field key management for calculation code readability.
 
-### Chapter 10: Monitoring Report Schema Development
+### [Chapter 10: Monitoring Report Schema Development](part-3/chapter-10/README.md)
 
-Designing schemas for ongoing monitoring and reporting, including parameter tracking, data validation, and calculation updates based on VM0033 monitoring requirements.
+Time-series monitoring schema development with temporal data structures, annual parameter tracking, and field key management for time-series calculations. Includes VVB verification workflow support.
 
-### Chapter 11: Advanced Schema Techniques
+### [Chapter 11: Advanced Schema Techniques](part-3/chapter-11/README.md)
 
-Advanced schema features including conditional fields, enum types, auto-calculations, formula linking, and dynamic field visibility. Includes extensive VM0033 examples.
+API schema management, standardized property definitions, Required field types (None/Hidden/Required/Auto Calculate), and UUID management for efficient schema development and maintenance.
 
-### Chapter 12: Schema Testing and Validation
+### [Chapter 12: Schema Testing and Validation Checklist](part-3/chapter-12/README.md)
 
-Methods for testing schema functionality, validating calculations, and ensuring data integrity before integration into policy workflows.
+Practical schema validation using Guardian's testing features including Default/Suggested/Test values, preview testing, UUID integration, and pre-deployment checklist for production readiness.
 
 ## Part IV: Policy Workflow Design
 

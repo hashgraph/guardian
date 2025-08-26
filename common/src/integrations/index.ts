@@ -71,7 +71,9 @@ export class IntegrationServiceFactory {
   ): AxiosRequestConfig {
     switch (type) {
       case globalforestwatch:
-        return GlobalForestWatchService.getDataForRequest(method, params, true);
+        return GlobalForestWatchService.getDataForRequest(method, params, true, undefined, {
+          'x-api-key': 'secret_api_key'
+        });
       case kanopio:
         return KanopioService.getDataForRequest(method, params, true);
       case worldbank:

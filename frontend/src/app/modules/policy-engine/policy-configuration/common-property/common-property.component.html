@@ -74,6 +74,24 @@
     </tr>
 </ng-container>
 
+<ng-container *ngIf="property.type === 'Code' && visible(property.visible)">
+    <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName" [title]="property.title">
+            <span *ngIf="property.required" class="required-fields">*</span> {{ property.label }}
+        </td>
+        <td class="propRowCell">
+            <input 
+                class="prop-input" 
+                [(ngModel)]="value" 
+                [readonly]="true"
+                (click)="editCode($event)"
+                (blur)="onSave()"
+            >
+        </td>
+    </tr>
+</ng-container>
+
 <ng-container *ngIf="property.type === 'Checkbox' && visible(property.visible)">
     <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
         <td class="propRowCol"></td>

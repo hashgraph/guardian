@@ -24,6 +24,16 @@
     </p-dropdown>
 </div>
 
+<div *ngIf="type == 'transformation'" class="content" [attr.readonly-block]="readonly">
+    <p-button 
+        (click)="onTransformation()" 
+        class="transformation-button"
+        [disabled]="buttonLoading"
+    >
+        {{ title }}
+    </p-button>
+</div>
+
 <ng-template #preloader>
     <div class="preloader-image"></div>
 </ng-template>
