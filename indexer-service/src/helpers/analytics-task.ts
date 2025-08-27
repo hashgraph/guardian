@@ -10,6 +10,7 @@ import { Collection } from 'mongodb';
 import { PolicyLoader, HashComparator } from '../analytics/index.js';
 import { parsePolicyFile } from './parsers/policy.parser.js';
 import { LoadingQueueService } from '../api/loading-queue.service.js';
+import { SchemaFileHelper } from './schema-file-helper.js';
 
 /**
  * Synchronization task
@@ -145,7 +146,7 @@ export class AnalyticsTask {
             type: { $in: [MessageType.VC_DOCUMENT, MessageType.VP_DOCUMENT] },
             consensusTimestamp: { $in: Array.from(consensusTimestamps) }
         });
-        
+
         const messagesResult: Message[] = [];
         const fileIds: Set<string> = new Set<string>();
         while (await messages.hasNext()) {
@@ -163,13 +164,16 @@ export class AnalyticsTask {
             const documentFile = this.parseFile(buffer);
             const subject = this.getSubject(documentFile);
             if (subject) {
-                const schemaContextCID = this.getContext(documentFile);
-                schemaContextCIDs.add(schemaContextCID);
+                const schemaContext = SchemaFileHelper.getDocumentContext(documentFile);
+                if (schemaContext) {
+                    schemaContextCIDs.add(schemaContext.context);
+                    schemaContextCIDs.add(schemaContext.context + '#' + schemaContext.type);
+                }
             }
         }
 
         const topicMap = await this.loadTopics(messageCollection, consensusTimestamps, policyTopicIds);
-        
+
         const policyMap = await this.loadPolicies(messageCollection, policyTopicIds);
 
         const schemaMap = await this.loadSchemas(messageCollection, schemaContextCIDs, schemaFileIds);
@@ -185,7 +189,7 @@ export class AnalyticsTask {
                     row.analytics = this.createVCAnalytics(document, policyMap, topicMap, schemaMap, fileMap, schemaFileMap);
                     row.analyticsUpdate = Date.now();
                     break;
-            
+
                 case MessageType.VP_DOCUMENT:
                     row.analytics = this.createVPAnalytics(document, policyMap, topicMap, schemaMap, fileMap, labelDocumentMap, schemaFileMap);
                     row.analyticsUpdate = Date.now();
@@ -299,7 +303,7 @@ export class AnalyticsTask {
                 policyTopicIds.add(topic.options.childId);
             }
         }
-        
+
         return topicMap;
     }
 
@@ -322,25 +326,28 @@ export class AnalyticsTask {
         return topicsMap;
     }
 
-    private async loadSchemas(collection: Collection<Message>, schemaContextCIDs: Set<string>, schemaFileIds: Set<string>) {
+    private async loadSchemas(
+        collection: Collection<Message>,
+        schemaContextCIDs: Set<string>,
+        schemaFileIds: Set<string>
+    ) {
         console.log(`Sync Analytics: load schemas`)
         const schemaMap = new Map<string, Message>();
-        const schemas = collection.find({ 
-            type: MessageType.SCHEMA, 
-            files: { $in: Array.from(schemaContextCIDs) } 
+        const schemas = collection.find({
+            type: MessageType.SCHEMA,
+            files: { $in: Array.from(schemaContextCIDs) }
         });
         while (await schemas.hasNext()) {
             const schema = await schemas.next();
-            if (schema.files) {
-                if (schema.files[0]) {
-                    schemaFileIds.add(schema.files[0]);
-                }
-                if (schema.files[0]) {
-                    schemaMap.set(schema.files[0], schema);
-                }
-                if (schema.files[1]) {
-                    schemaMap.set(schema.files[1], schema);
-                }
+            const documentCID = SchemaFileHelper.getDocumentFile(schema);
+            if (documentCID) {
+                schemaFileIds.add(documentCID);
+            }
+            if (schema.files && schema.files[0]) {
+                schemaMap.set(schema.files[0], schema);
+            }
+            if (schema.files && schema.files[1]) {
+                schemaMap.set(schema.files[1], schema);
             }
         }
         return schemaMap;
@@ -456,9 +463,9 @@ export class AnalyticsTask {
                 documentAnalytics.textSearch += `|${[...documentFields].join('|')}`;
             }
 
-            const schemaContextCID = this.getContext(documentFile);
-            if (schemaContextCID) {
-                const schemaMessage = schemaMap.get(schemaContextCID);
+            const schemaContext = SchemaFileHelper.getDocumentContext(documentFile);
+            if (schemaContext) {
+                const schemaMessage = SchemaFileHelper.findInMap(schemaMap, schemaContext);
                 if (schemaMessage) {
                     documentAnalytics.schemaId = schemaMessage.consensusTimestamp;
                     const schemaDocumentFileString = schemaFileMap.get(schemaMessage.files?.[0]);
@@ -472,7 +479,7 @@ export class AnalyticsTask {
         }
         return documentAnalytics;
     }
-    
+
     private createVPAnalytics(
         document: Message,
         policyMap: Map<string, Message>,
@@ -514,9 +521,9 @@ export class AnalyticsTask {
                         if (documentFields.size > 0) {
                             documentAnalytics.textSearch += `|${[...documentFields].join('|')}`;
                         }
-                        const schemaContextCID = this.getContext(vc);
-                        if (schemaContextCID) {
-                            const schemaMessage = schemaMap.get(schemaContextCID);
+                        const schemaContext = SchemaFileHelper.getDocumentContext(vc);
+                        if (schemaContext) {
+                            const schemaMessage = SchemaFileHelper.findInMap(schemaMap, schemaContext);
                             if (schemaMessage) {
                                 if (!documentAnalytics.schemaIds) {
                                     documentAnalytics.schemaIds = [];
@@ -589,21 +596,6 @@ export class AnalyticsTask {
     private getSubject(documentFile: any): any {
         if (documentFile && documentFile.credentialSubject) {
             return documentFile.credentialSubject[0] || documentFile.credentialSubject
-        }
-        return null;
-    }
-
-    private getContext(documentFile: any): any {
-        let contexts = documentFile['@context'];
-        contexts = Array.isArray(contexts) ? contexts : [contexts];
-        for (const context of contexts) {
-            if (typeof context === 'string') {
-                const matches = context?.match(IPFS_CID_PATTERN);
-                const contextCID = matches && matches[0];
-                if (contextCID) {
-                    return contextCID;
-                }
-            }
         }
         return null;
     }

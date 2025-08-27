@@ -65,6 +65,7 @@ import { parsePageParams } from '../utils/parse-page-params.js';
 import axios from 'axios';
 import { SchemaTreeNode } from '../utils/schema-tree.js';
 import { IPFSService } from '../helpers/ipfs-service.js';
+import { SchemaFileHelper } from '../helpers/schema-file-helper.js';
 
 //#region UTILS
 const pageOptions = new Set([
@@ -125,6 +126,20 @@ async function getPolicy(row: Message): Promise<Message> {
     return policyMessage;
 }
 
+function getFileNames(row: Message): string[] {
+    if (Array.isArray(row.files)) {
+        if (row.type === MessageType.SCHEMA) {
+            return [
+                SchemaFileHelper.getDocumentFile(row),
+                SchemaFileHelper.getContextFile(row)
+            ]
+        } else {
+            return row.files;
+        }
+    }
+    return [];
+}
+
 async function loadDocuments(
     row: Message,
     tryLoad: boolean,
@@ -136,13 +151,13 @@ async function loadDocuments(
             return result;
         }
 
-        if (tryLoad) {
+        if (!row.virtual && tryLoad) {
             await checkDocuments(result, 20 * 1000);
             await saveDocuments(result);
         }
 
         result.documents = [];
-        for (const fileName of result.files) {
+        for (const fileName of getFileNames(result)) {
             const file = await DataBaseHelper.loadFile(fileName);
             if (prepare) {
                 result.documents.push(prepare(file));
@@ -156,13 +171,33 @@ async function loadDocuments(
     }
 }
 
+async function checkDocuments(row: Message, timeout: number): Promise<Message> {
+    if (row?.files?.length) {
+        const fns: Promise<string | null>[] = [];
+        for (const fileName of row.files) {
+            fns.push(loadFiles(fileName, timeout));
+        }
+        const files = await Promise.all(fns);
+        for (const fileId of files) {
+            if (fileId === null) {
+                throw Error('Failed to upload files');
+            }
+        }
+        row.documents = files;
+        return row;
+    } else {
+        throw Error('Files not found');
+    }
+}
+
 async function loadSchemaDocument(row: Message): Promise<Message> {
     try {
         const result = { ...row };
-        if (!result?.files?.length) {
+        const schemaDocumentCID = SchemaFileHelper.getDocumentFile(result);
+        if (!schemaDocumentCID) {
             return result;
         }
-        const file = await DataBaseHelper.loadFile(result.files[0]);
+        const file = await DataBaseHelper.loadFile(schemaDocumentCID);
         result.documents = [file];
         return result;
     } catch (error) {
@@ -181,22 +216,19 @@ async function loadSchema(
             return null;
         }
 
-        const schemaContextCID = getContext(document);
-        if (!schemaContextCID) {
+        const schemaContext = SchemaFileHelper.getDocumentContext(document);
+        if (!schemaContext) {
             return null;
         }
 
         const em = DataBaseHelper.getEntityManager();
-        const schemaMessage = await em.findOne(Message, {
-            type: MessageType.SCHEMA,
-            'files.1': schemaContextCID,
-        } as any);
+        const schemaMessage = await em.findOne(Message, SchemaFileHelper.getSchemaFilter(schemaContext));
 
         if (!schemaMessage) {
             return null;
         }
 
-        const schemaDocumentCID = schemaMessage.files?.[0];
+        const schemaDocumentCID = SchemaFileHelper.getDocumentFile(schemaMessage);
 
         if (!schemaDocumentCID) {
             return null;
@@ -241,7 +273,7 @@ async function loadFormulas(
     }
 }
 
-async function loadSchemas(topicId: string,): Promise<IMessage[]> {
+async function loadSchemas(topicId: string): Promise<IMessage[]> {
     try {
         const em = DataBaseHelper.getEntityManager();
         const schemas = await em.find(Message, {
@@ -261,25 +293,6 @@ async function loadSchemas(topicId: string,): Promise<IMessage[]> {
         return schemas;
     } catch (error) {
         return [];
-    }
-}
-
-async function checkDocuments(row: Message, timeout: number): Promise<Message> {
-    if (row?.files?.length) {
-        const fns: Promise<string | null>[] = [];
-        for (const fileName of row.files) {
-            fns.push(loadFiles(fileName, timeout));
-        }
-        const files = await Promise.all(fns);
-        for (const fileId of files) {
-            if (fileId === null) {
-                throw Error('Failed to upload files');
-            }
-        }
-        row.documents = files;
-        return row;
-    } else {
-        throw Error('Files not found');
     }
 }
 
@@ -326,26 +339,6 @@ async function saveDocuments(row: Message): Promise<Message> {
         }
     );
     return row;
-}
-
-function getContext(file: string): any {
-    try {
-        const document = JSON.parse(file);
-        let contexts = document['@context'];
-        contexts = Array.isArray(contexts) ? contexts : [contexts];
-        for (const context of contexts) {
-            if (typeof context === 'string') {
-                const matches = context?.match(IPFS_CID_PATTERN);
-                const contextCID = matches && matches[0];
-                if (contextCID) {
-                    return contextCID;
-                }
-            }
-        }
-        return null;
-    } catch (error) {
-        return null;
-    }
 }
 
 async function findRelationships(target: Message): Promise<Message[]> {
@@ -1038,7 +1031,7 @@ export class EntityService {
                 },
             });
             const row = await em.findOne(MessageCache, {
-                consensusTimestamp: messageId,
+                consensusTimestamp: item?.options?.packageMessageId || messageId,
             });
 
             const vcs = await em.count(Message, {
@@ -1899,9 +1892,9 @@ export class EntityService {
             }
 
             //formulas
-            let formulasData:any = null;
+            let formulasData: any = null;
             const formulas = await loadFormulas(item);
-            if(formulas && formulas.length) {
+            if (formulas && formulas.length) {
                 const policy = await getPolicy(item);
                 const relationships = await findRelationships(item);
                 const schemas = await loadSchemas(policy?.topicId);
@@ -2136,7 +2129,7 @@ export class EntityService {
                 sr: message.analytics.issuer,
             }
 
-            var newRow = {...row, analytics};
+            var newRow = { ...row, analytics };
 
             return new MessageResponse<NFTDetails>({
                 id: tokenId,
@@ -2359,6 +2352,9 @@ export class EntityService {
             const item = await em.findOne(Message, {
                 consensusTimestamp: messageId,
             });
+            if (item.virtual) {
+                return new MessageResponse<any>(item);
+            }
             await checkDocuments(item, 2 * 60 * 1000);
             await saveDocuments(item);
             await loadDocuments(item, false);

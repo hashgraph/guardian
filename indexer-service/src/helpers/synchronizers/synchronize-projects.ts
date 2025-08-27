@@ -3,6 +3,7 @@ import { safetyRunning } from '../../utils/safety-running.js';
 import { MessageType, MessageAction, IPFS_CID_PATTERN } from '@indexer/interfaces';
 import { SynchronizationTask } from '../synchronization-task.js';
 import { loadFiles } from '../load-files.js';
+import { SchemaFileHelper } from '../../helpers/schema-file-helper.js';
 
 interface ICoord {
     coordinates: string,
@@ -53,8 +54,10 @@ export class SynchronizationProjects extends SynchronizationTask {
         const schemas = collection.find({ type: MessageType.SCHEMA });
         while (await schemas.hasNext()) {
             const schema = await schemas.next();
-            if (schema.files && schema.files[Files.CONTEXT_FILE]) {
-                fileIds.add(schema.files[Files.CONTEXT_FILE]);
+            const contextCID = SchemaFileHelper.getContextFile(schema);
+
+            if (contextCID) {
+                fileIds.add(contextCID);
             }
         }
 
@@ -89,6 +92,7 @@ export class SynchronizationProjects extends SynchronizationTask {
         if (!subject) {
             return null;
         }
+
         const schemaContexts = this.getContexts(documentFile, fileMap);
         for (const context of schemaContexts) {
             this.checkForGeoJson(

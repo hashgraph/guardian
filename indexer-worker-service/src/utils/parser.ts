@@ -74,6 +74,16 @@ export class Parser {
                         message.files.push(json.context_cid);
                     }
                     break;
+                case MessageType.SCHEMA_PACKAGE:
+                    message.options.name = json.name;
+                    message.options.owner = json.owner;
+                    message.options.version = json.version;
+                    if (json.document_cid) {
+                        message.files.push(json.document_cid);
+                        message.files.push(json.context_cid);
+                        message.files.push(json.metadata_cid);
+                    }
+                    break;
                 case MessageType.POLICY:
                 case MessageType.INSTANCE_POLICY:
                     message.options.uuid = json.uuid;

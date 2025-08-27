@@ -81,4 +81,8 @@ export interface Message<O = any, A = any> {
      * Sequence number
      */
     sequenceNumber?: number;
+    /**
+     * Virtual message
+     */
+    virtual?: boolean;
 }

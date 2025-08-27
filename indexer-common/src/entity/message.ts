@@ -56,6 +56,9 @@ export class Message implements IMessage {
     @Property({ nullable: true })
     options: any;
 
+    @Property({ nullable: true })
+    virtual?: boolean;
+
     @Property({ nullable: true, type: 'unknown' })
     analytics?: {
         registryId?: string;
@@ -79,6 +82,7 @@ export class Message implements IMessage {
         labels?: string[];
         labelName?: string;
         dynamicTopics?: string[];
+        unpacked?: boolean;
     };
 
     @Property({ nullable: true })
