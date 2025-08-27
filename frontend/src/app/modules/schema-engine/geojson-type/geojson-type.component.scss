@@ -39,6 +39,31 @@
     z-index: 10;
 }
 
+.map-control-block {
+    display: flex;
+    flex-direction: column;
+    margin-top: 8px;
+    gap: 16px;
+
+    .map-control-buttons {
+        display: flex;
+        gap: 8px;
+    }
+}
+
+.add-feature-button {
+    width: 146;
+    height: 28;
+    border-radius: 6px;
+    opacity: 1;
+    border-width: 1px;
+    padding-top: 6px;
+    padding-right: 16px;
+    padding-bottom: 6px;
+    padding-left: 16px;
+    gap: 8px;
+}
+
 ::ng-deep p-dropdown {
     width: 100%;
     & > div {

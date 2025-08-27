@@ -47,6 +47,8 @@ export class VCViewerDialog {
         optionValue: string | number | boolean;
     }[];
 
+    public fileSize: number = 0;
+
     constructor(
         public dialogRef: DynamicDialogRef,
         public dialogConfig: DynamicDialogConfig,
@@ -96,6 +98,10 @@ export class VCViewerDialog {
         this.title = title;
         this.json = document ? JSON.stringify((document), null, 4) : '';
         this.text = document || '';
+
+        const fileSizeBytes = new Blob([typeof document === 'string' ? document : JSON.stringify(document)]).size;
+        this.fileSize = Math.round((fileSizeBytes / (1024 * 1024)));
+
         this.document = document;
         this.type = type || 'JSON';
         this.toggle = toggle !== false;
