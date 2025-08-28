@@ -708,7 +708,20 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     isSelected?: boolean;
                 }>;
 
-                if (items.length <= 1) {
+                if (items.length === 1) {
+                    this.restoreDialogOpened = false;
+                    this.openedOnLoad = true;
+
+                    this.currentSavepoint = items[0];
+                    this.forceAdminAfterReload = true;
+                    this.policy = null;
+                    this.groups = [];
+                    this.changeDetector.detectChanges();
+                    this.loadPolicyById(this.policyId);
+                    return;
+                }
+
+                if (items.length === 0) {
                     this.restoreDialogOpened = false;
                     this.openedOnLoad = true;
                     return;
@@ -739,6 +752,22 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                         this.groups = [];
                         this.changeDetector.detectChanges();
                         this.loadPolicyById(this.policyId);
+                        return;
+                    }
+
+                    if (currentId) {
+                        const current =
+                            items.find(i => i.id === currentId) ||
+                            items.find(i => i.isCurrent || i.isSelected);
+
+                        if (current) {
+                            this.currentSavepoint = current;
+                            this.forceAdminAfterReload = true;
+                            this.policy = null;
+                            this.groups = [];
+                            this.changeDetector.detectChanges();
+                            this.loadPolicyById(this.policyId);
+                        }
                     }
                 });
             },

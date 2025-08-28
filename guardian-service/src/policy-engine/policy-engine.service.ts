@@ -1153,9 +1153,12 @@ export class PolicyEngineService {
 
                     const savepointsCount = await DatabaseServer.getSavepointsCount(policyId);
 
-                    if(savepointsCount === 0) {
+                    if (savepointsCount === 0) {
                         await DatabaseServer.nullifyInitialDryRunSavepointIds();
+                    } else {
+                        await DatabaseServer.removeDryRunWithEmptySavepoint(policyId);
                     }
+
 
                     return new MessageResponse({
                         isValid,
