@@ -59,7 +59,8 @@ import {
     Formula,
     FormulaDetails,
     FormulaRelationships,
-    PolicyActivity
+    PolicyActivity,
+    SchemasPackageDetails
 } from '@indexer/interfaces';
 import { parsePageParams } from '../utils/parse-page-params.js';
 import axios from 'axios';
@@ -753,6 +754,16 @@ export class EntityService {
                 },
                 topicId: row.topicId,
             } as any);
+            const schemaPackages = await em.count(Message, {
+                type: MessageType.SCHEMA_PACKAGE,
+                action: {
+                    $in: [
+                        MessageAction.PublishSchemas,
+                        MessageAction.PublishSystemSchemas,
+                    ],
+                },
+                topicId: row.topicId,
+            } as any);
             const vcs = await em.count(Message, {
                 type: MessageType.VC_DOCUMENT,
                 'analytics.policyId': row.consensusTimestamp,
@@ -772,6 +783,7 @@ export class EntityService {
 
             const activity: PolicyActivity = {
                 schemas,
+                schemaPackages,
                 vcs,
                 vps,
                 roles,
@@ -1070,6 +1082,7 @@ export class EntityService {
             return new MessageError(error, error.code);
         }
     }
+
     @MessagePattern(IndexerMessageAPI.GET_SCHEMA_TREE)
     async getSchemaTree(
         @Payload() msg: { messageId: string }
@@ -1105,6 +1118,96 @@ export class EntityService {
             });
         } catch (error) {
             console.log(error);
+            return new MessageError(error, error.code);
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_SCHEMAS_PACKAGES)
+    async getSchemasPackages(
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<ISchema>>> {
+        try {
+            const options = parsePageParams(msg);
+            const filters = parsePageFilters(msg);
+            filters.type = MessageType.SCHEMA_PACKAGE;
+            filters.action = {
+                $in: [
+                    MessageAction.PublishSchemas,
+                    MessageAction.PublishSystemSchemas
+                ]
+            };
+            const em = DataBaseHelper.getEntityManager();
+            const [rows, count] = (await em.findAndCount(
+                Message,
+                filters,
+                options
+            )) as [ISchema[], number];
+            const result = {
+                items: rows.map((item) => {
+                    delete item.analytics;
+                    return item;
+                }),
+                pageIndex: options.offset / options.limit,
+                pageSize: options.limit,
+                total: count,
+                order: options.orderBy,
+            };
+            return new MessageResponse<Page<ISchema>>(result);
+        } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
+
+
+    @MessagePattern(IndexerMessageAPI.GET_SCHEMAS_PACKAGE)
+    async getSchemasPackage(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<SchemasPackageDetails>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            let item = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.SCHEMA_PACKAGE,
+                action: {
+                    $in: [
+                        MessageAction.PublishSchemas,
+                        MessageAction.PublishSystemSchemas,
+                    ],
+                },
+            });
+            const row = await em.findOne(MessageCache, {
+                consensusTimestamp: messageId,
+            });
+
+            const schemas = await em.count(Message, {
+                type: MessageType.SCHEMA,
+                'options.packageMessageId': row.consensusTimestamp,
+            } as any);
+
+
+            const activity: any = {
+                schemas,
+            };
+
+            if (!item) {
+                return new MessageResponse<SchemasPackageDetails>({
+                    id: messageId,
+                    row,
+                    activity,
+                });
+            }
+
+            item = await loadDocuments(item, true);
+
+            return new MessageResponse<SchemasPackageDetails>({
+                id: messageId,
+                uuid: item.uuid,
+                item,
+                row,
+                activity,
+            });
+        } catch (error) {
             return new MessageError(error, error.code);
         }
     }

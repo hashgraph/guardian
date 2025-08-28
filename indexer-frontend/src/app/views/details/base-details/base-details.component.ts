@@ -103,6 +103,8 @@ export abstract class BaseDetailsComponent {
                 return () => this.onOpenUsers();
             case Activity.Formulas:
                 return () => this.onOpenFormulas();
+            case Activity.SchemaPackages:
+                return () => this.onOpenSchemaPackage();
             default:
                 throw new Error(`Unknown activity: ${activity}`);
         }
@@ -130,6 +132,10 @@ export abstract class BaseDetailsComponent {
 
     protected onOpenSchemas() {
         this.router.navigate(['/schemas']);
+    }
+
+    protected onOpenSchemaPackage() {
+        this.router.navigate(['/schemas-packages']);
     }
 
     protected onOpenTokens() {

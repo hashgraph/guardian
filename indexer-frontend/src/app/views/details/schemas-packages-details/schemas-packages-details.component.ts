@@ -17,16 +17,15 @@ import {
 } from '@components/overview-form/overview-form.component';
 import { ActivityComponent } from '@components/activity/activity.component';
 import { InputTextareaModule } from 'primeng/inputtextarea';
-import { ColumnType } from '@components/table/table.component';
-import { createChart } from '../base-details/relationships-chart.config';
-import { EChartsOption } from 'echarts';
+import { OrganizationChartModule } from 'primeng/organizationchart';
+import CID from 'cids';
 
 @Component({
-    selector: 'policy-details',
-    templateUrl: './policy-details.component.html',
+    selector: 'schemas-packages-details',
+    templateUrl: './schemas-packages-details.component.html',
     styleUrls: [
         '../base-details/base-details.component.scss',
-        './policy-details.component.scss',
+        './schemas-packages-details.component.scss',
     ],
     standalone: true,
     imports: [
@@ -42,50 +41,43 @@ import { EChartsOption } from 'echarts';
         OverviewFormComponent,
         ActivityComponent,
         InputTextareaModule,
+        OrganizationChartModule,
     ],
 })
-export class PolicyDetailsComponent extends BaseDetailsComponent {
+export class SchemasPackageDetailsComponent extends BaseDetailsComponent {
+    public title!: string;
+    public itemNumber?: string;
 
-    public chartOption: EChartsOption = createChart();
-
-    tabs: any[] = ['overview', 'activity', 'relationships', 'raw'];
+    tabs: any[] = ['overview', 'document', 'activity', 'raw'];
     overviewFields: OverviewFormField[] = [
         {
-            label: 'details.policy.overview.topic_id',
+            label: 'details.schema.overview.topic_id',
             path: 'topicId',
             link: '/topics',
         },
         {
-            label: 'details.policy.overview.instance_topic_id',
-            path: 'options.instanceTopicId',
-            link: '/topics',
-        },
-        {
-            label: 'details.policy.overview.owner',
+            label: 'details.schema.overview.owner',
             path: 'options.owner',
         },
         {
-            label: 'details.policy.overview.name',
+            label: 'details.schema.overview.name',
             path: 'options.name',
         },
         {
-            label: 'details.policy.overview.description',
+            label: 'details.schema.overview.description',
             path: 'options.description',
         },
         {
-            label: 'details.policy.overview.version',
+            label: 'details.schema.overview.version',
             path: 'options.version',
         },
         {
-            label: 'details.policy.overview.policy_tag',
-            path: 'options.policyTag',
-        },
-        {
-            label: 'details.policy.overview.registry',
-            path: 'analytics.registryId',
-            link: '/registries',
+            label: 'details.schema.overview.policy',
+            path: 'analytics.policyIds',
+            link: '/policies',
         },
     ];
+    tree?: any;
 
     constructor(
         entitiesService: EntitiesService,
@@ -97,8 +89,17 @@ export class PolicyDetailsComponent extends BaseDetailsComponent {
 
     protected override loadData(): void {
         if (this.id) {
+            const items = this.id.split('_');
+            if (items.length > 1) {
+                this.title = items[0];
+                this.itemNumber = items[1];
+            } else {
+                this.title = items[0];
+                this.itemNumber = '';
+            }
+
             this.loading = true;
-            this.entitiesService.getPolicy(this.id).subscribe({
+            this.entitiesService.getSchemasPackage(this.id).subscribe({
                 next: (result) => {
                     this.setResult(result);
                     setTimeout(() => {
@@ -111,27 +112,12 @@ export class PolicyDetailsComponent extends BaseDetailsComponent {
                 },
             });
         } else {
+            this.title = this.id;
             this.setResult();
         }
     }
 
     protected override onNavigate(): void {
-        if (this.id && this.tab === 'relationships') {
-            this.loading = true;
-            this.entitiesService.getPolicyRelationships(this.id).subscribe({
-                next: (result) => {
-                    this.setRelationships(result);
-                    this.setChartData();
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
-                },
-                error: ({ message }) => {
-                    this.loading = false;
-                    console.error(message);
-                },
-            });
-        }
     }
 
     protected override getTabIndex(name: string): number {
@@ -151,65 +137,67 @@ export class PolicyDetailsComponent extends BaseDetailsComponent {
         }
     }
 
-    private setChartData() {
-        this.chartOption = createChart(this.relationships);
+    openSchema(id: string) {
+        this.tree = null;
+        this.router.navigate(['schemas', id]);
     }
 
-    public onSelect(event: any) {
-        if (event.dataType === 'node') {
-            this.toEntity(
-                String(event.data?.entityType),
-                event.name,
-                'relationships'
-            );
+    protected override onOpenSchemas() {
+        this.router.navigate(['/schemas'], {
+            queryParams: {
+                keywords: JSON.stringify([this.id]),
+                topicId: this.row.topicId,
+            },
+        });
+    }
+
+    protected override setFiles(item: any) {
+        if (item) {
+            if (Array.isArray(item.files)) {
+                item._ipfs = [];
+                item._ipfsStatus = true;
+                for (let i = 0; i < item.files.length; i++) {
+                    const fullUrl = item.files[i];
+                    const { url, uuid } = this.parsUrl(fullUrl);
+
+                    const document = item.documents?.[i];
+                    const json = this.getDocument(document);
+                    const documentObject = this.getDocumentObject(document);
+                    const credentialSubject = this.getCredentialSubject(documentObject);
+                    const verifiableCredential = this.getVerifiableCredential(documentObject);
+                    const cid = new CID(url);
+                    const ipfs = {
+                        version: cid.version,
+                        cid: url,
+                        uuid: uuid,
+                        global: cid.toV1().toString('base32'),
+                        document,
+                        json,
+                        documentObject,
+                        credentialSubject,
+                        verifiableCredential
+                    }
+                    if (!document) {
+                        item._ipfsStatus = false;
+                    }
+                    item._ipfs.push(ipfs);
+                }
+            }
         }
     }
 
-    public override onOpenSchemas() {
-        this.router.navigate(['/schemas'], {
-            queryParams: {
-                topicId: this.row.topicId,
-            },
-        });
-    }
-
-    public override onOpenSchemaPackage() {
-        this.router.navigate(['/schemas-packages'], {
-            queryParams: {
-                topicId: this.row.topicId,
-            },
-        });
-    }
-
-    public override onOpenRoles() {
-        this.router.navigate(['/roles'], {
-            queryParams: {
-                'analytics.policyId': this.id,
-            },
-        });
-    }
-
-    public override onOpenVCs() {
-        this.router.navigate(['/vc-documents'], {
-            queryParams: {
-                'analytics.policyId': this.id,
-            },
-        });
-    }
-
-    public override onOpenVPs() {
-        this.router.navigate(['/vp-documents'], {
-            queryParams: {
-                'analytics.policyId': this.id,
-            },
-        });
-    }
-
-    public override onOpenFormulas() {
-        this.router.navigate(['/formulas'], {
-            queryParams: {
-                topicId: this.row.topicId,
-            },
-        });
+    private parsUrl(url: string) {
+        if (url && url.indexOf('#')) {
+            const items = url.split('#');
+            return {
+                url: items[0],
+                uuid: items[1],
+            }
+        } else {
+            return {
+                url,
+                uuid: null,
+            }
+        }
     }
 }

@@ -150,6 +150,7 @@
             "roles": "Roles",
             "dids": "Decentralized Identifiers",
             "schemas": "Schemas",
+            "schemaPackages": "Schema Packages",
             "tokens": "Tokens",
             "contracts": "Contracts",
             "users": "Users",

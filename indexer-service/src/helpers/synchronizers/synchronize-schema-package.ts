@@ -59,6 +59,7 @@ export class SynchronizationSchemaPackage extends SynchronizationTask {
             const row = em.getReference(Message, item._id);
             await this.unpack(em, allSchemas, item, fileMap);
             row.analytics = {
+                textSearch: textSearch(row),
                 unpacked: true
             };
             em.persist(row);
