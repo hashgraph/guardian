@@ -128,7 +128,6 @@ export class SynchronizationSchemaPackage extends SynchronizationTask {
                     uuid: schema.uuid,
                     version: schema.version,
                     codeVersion: schema.codeVersion,
-                    relationships: schema.relationships,
                     packageMessageId: item.consensusTimestamp,
                     unpacked: true
                 },

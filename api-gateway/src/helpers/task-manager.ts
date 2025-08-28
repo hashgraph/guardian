@@ -94,16 +94,21 @@ export class TaskManager {
      * Notify task progress
      * @param taskId
      */
-    private notifyTaskProgress(taskId: string) {
-        // Skip task if already in queue
-        if (this.notifyTaskLock.has(taskId))
-            return;
-        // Send websocket with rate limit
-        setTimeout(() => {
-            this.notifyTaskLock.delete(taskId);
+    private notifyTaskProgress(taskId: string, canSkip: boolean = false) {
+        if (canSkip) {
+            // Skip task if already in queue
+            if (this.notifyTaskLock.has(taskId)) {
+                return;
+            }
+            // Send websocket with rate limit
+            setTimeout(() => {
+                this.notifyTaskLock.delete(taskId);
+                this.wsService.notifyTaskProgress(this.tasks[taskId]);
+            }, 1 * 1000);
+            this.notifyTaskLock.add(taskId);
+        } else {
             this.wsService.notifyTaskProgress(this.tasks[taskId]);
-        }, 1 * 1000);
-        this.notifyTaskLock.add(taskId);
+        }
     }
 
     /**
@@ -210,7 +215,7 @@ export class TaskManager {
             ) {
                 task.info = info;
             }
-            this.notifyTaskProgress(taskId);
+            this.notifyTaskProgress(taskId, true);
         } else if (skipIfNotFound) {
             return;
         } else {
