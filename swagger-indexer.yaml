@@ -3104,6 +3104,9 @@ components:
             - Policy-Statistic
             - Policy-Label
             - Formula
+            - Schema-Package
+            - Policy-Diff
+            - Policy-Action
           example: Standard Registry
         action:
           type: string
@@ -3116,10 +3119,12 @@ components:
             - delete-policy
             - create-schema
             - publish-schema
+            - publish-schemas
             - delete-schema
             - create-topic
             - create-vp-document
             - publish-system-schema
+            - publish-system-schemas
             - Init
             - change-message-status
             - revoke-document
@@ -3434,6 +3439,9 @@ components:
             - Policy-Statistic
             - Policy-Label
             - Formula
+            - Schema-Package
+            - Policy-Diff
+            - Policy-Action
         category:
           type: number
           description: Category
@@ -3612,6 +3620,9 @@ components:
             - Policy-Statistic
             - Policy-Label
             - Formula
+            - Schema-Package
+            - Policy-Diff
+            - Policy-Action
           example: DID-Document
         action:
           type: string
@@ -3624,10 +3635,12 @@ components:
             - delete-policy
             - create-schema
             - publish-schema
+            - publish-schemas
             - delete-schema
             - create-topic
             - create-vp-document
             - publish-system-schema
+            - publish-system-schemas
             - Init
             - change-message-status
             - revoke-document
@@ -3772,6 +3785,9 @@ components:
             - Policy-Statistic
             - Policy-Label
             - Formula
+            - Schema-Package
+            - Policy-Diff
+            - Policy-Action
           example: DID-Document
         action:
           type: string
@@ -3784,10 +3800,12 @@ components:
             - delete-policy
             - create-schema
             - publish-schema
+            - publish-schemas
             - delete-schema
             - create-topic
             - create-vp-document
             - publish-system-schema
+            - publish-system-schemas
             - Init
             - change-message-status
             - revoke-document
@@ -4111,6 +4129,9 @@ components:
             - Policy-Statistic
             - Policy-Label
             - Formula
+            - Schema-Package
+            - Policy-Diff
+            - Policy-Action
           example: Policy
         action:
           type: string
@@ -4123,10 +4144,12 @@ components:
             - delete-policy
             - create-schema
             - publish-schema
+            - publish-schemas
             - delete-schema
             - create-topic
             - create-vp-document
             - publish-system-schema
+            - publish-system-schemas
             - Init
             - change-message-status
             - revoke-document
@@ -4371,6 +4394,9 @@ components:
             - Policy-Statistic
             - Policy-Label
             - Formula
+            - Schema-Package
+            - Policy-Diff
+            - Policy-Action
           example: Tool
         action:
           type: string
@@ -4383,10 +4409,12 @@ components:
             - delete-policy
             - create-schema
             - publish-schema
+            - publish-schemas
             - delete-schema
             - create-topic
             - create-vp-document
             - publish-system-schema
+            - publish-system-schemas
             - Init
             - change-message-status
             - revoke-document
@@ -4606,6 +4634,9 @@ components:
             - Policy-Statistic
             - Policy-Label
             - Formula
+            - Schema-Package
+            - Policy-Diff
+            - Policy-Action
           example: Module
         action:
           type: string
@@ -4618,10 +4649,12 @@ components:
             - delete-policy
             - create-schema
             - publish-schema
+            - publish-schemas
             - delete-schema
             - create-topic
             - create-vp-document
             - publish-system-schema
+            - publish-system-schemas
             - Init
             - change-message-status
             - revoke-document
@@ -4834,6 +4867,9 @@ components:
             - Policy-Statistic
             - Policy-Label
             - Formula
+            - Schema-Package
+            - Policy-Diff
+            - Policy-Action
           example: Schema
         action:
           type: string
@@ -4846,10 +4882,12 @@ components:
             - delete-policy
             - create-schema
             - publish-schema
+            - publish-schemas
             - delete-schema
             - create-topic
             - create-vp-document
             - publish-system-schema
+            - publish-system-schemas
             - Init
             - change-message-status
             - revoke-document
@@ -5032,6 +5070,9 @@ components:
             - Policy-Statistic
             - Policy-Label
             - Formula
+            - Schema-Package
+            - Policy-Diff
+            - Policy-Action
           example: Schema
         action:
           type: string
@@ -5044,10 +5085,12 @@ components:
             - delete-policy
             - create-schema
             - publish-schema
+            - publish-schemas
             - delete-schema
             - create-topic
             - create-vp-document
             - publish-system-schema
+            - publish-system-schemas
             - Init
             - change-message-status
             - revoke-document
@@ -5433,6 +5476,9 @@ components:
             - Policy-Statistic
             - Policy-Label
             - Formula
+            - Schema-Package
+            - Policy-Diff
+            - Policy-Action
           example: VP-Document
         action:
           type: string
@@ -5445,10 +5491,12 @@ components:
             - delete-policy
             - create-schema
             - publish-schema
+            - publish-schemas
             - delete-schema
             - create-topic
             - create-vp-document
             - publish-system-schema
+            - publish-system-schemas
             - Init
             - change-message-status
             - revoke-document
@@ -5652,6 +5700,9 @@ components:
             - Policy-Statistic
             - Policy-Label
             - Formula
+            - Schema-Package
+            - Policy-Diff
+            - Policy-Action
           example: Role-Document
         action:
           type: string
@@ -5664,10 +5715,12 @@ components:
             - delete-policy
             - create-schema
             - publish-schema
+            - publish-schemas
             - delete-schema
             - create-topic
             - create-vp-document
             - publish-system-schema
+            - publish-system-schemas
             - Init
             - change-message-status
             - revoke-document
@@ -5882,6 +5935,9 @@ components:
             - Policy-Statistic
             - Policy-Label
             - Formula
+            - Schema-Package
+            - Policy-Diff
+            - Policy-Action
           example: Policy-Label
         action:
           type: string
@@ -5894,10 +5950,12 @@ components:
             - delete-policy
             - create-schema
             - publish-schema
+            - publish-schemas
             - delete-schema
             - create-topic
             - create-vp-document
             - publish-system-schema
+            - publish-system-schemas
             - Init
             - change-message-status
             - revoke-document
@@ -6129,6 +6187,9 @@ components:
             - Policy-Statistic
             - Policy-Label
             - Formula
+            - Schema-Package
+            - Policy-Diff
+            - Policy-Action
           example: VC-Document
         action:
           type: string
@@ -6141,10 +6202,12 @@ components:
             - delete-policy
             - create-schema
             - publish-schema
+            - publish-schemas
             - delete-schema
             - create-topic
             - create-vp-document
             - publish-system-schema
+            - publish-system-schemas
             - Init
             - change-message-status
             - revoke-document
@@ -6343,6 +6406,9 @@ components:
             - Policy-Statistic
             - Policy-Label
             - Formula
+            - Schema-Package
+            - Policy-Diff
+            - Policy-Action
           example: Policy-Label
         action:
           type: string
@@ -6355,10 +6421,12 @@ components:
             - delete-policy
             - create-schema
             - publish-schema
+            - publish-schemas
             - delete-schema
             - create-topic
             - create-vp-document
             - publish-system-schema
+            - publish-system-schemas
             - Init
             - change-message-status
             - revoke-document
@@ -6570,6 +6638,9 @@ components:
             - Policy-Statistic
             - Policy-Label
             - Formula
+            - Schema-Package
+            - Policy-Diff
+            - Policy-Action
           example: VP-Document
         action:
           type: string
@@ -6582,10 +6653,12 @@ components:
             - delete-policy
             - create-schema
             - publish-schema
+            - publish-schemas
             - delete-schema
             - create-topic
             - create-vp-document
             - publish-system-schema
+            - publish-system-schemas
             - Init
             - change-message-status
             - revoke-document
@@ -6781,6 +6854,9 @@ components:
             - Policy-Statistic
             - Policy-Label
             - Formula
+            - Schema-Package
+            - Policy-Diff
+            - Policy-Action
           example: Formula
         action:
           type: string
@@ -6793,10 +6869,12 @@ components:
             - delete-policy
             - create-schema
             - publish-schema
+            - publish-schemas
             - delete-schema
             - create-topic
             - create-vp-document
             - publish-system-schema
+            - publish-system-schemas
             - Init
             - change-message-status
             - revoke-document
@@ -7026,6 +7104,9 @@ components:
             - Policy-Statistic
             - Policy-Label
             - Formula
+            - Schema-Package
+            - Policy-Diff
+            - Policy-Action
           example: DID-Document
         action:
           type: string
@@ -7038,10 +7119,12 @@ components:
             - delete-policy
             - create-schema
             - publish-schema
+            - publish-schemas
             - delete-schema
             - create-topic
             - create-vp-document
             - publish-system-schema
+            - publish-system-schemas
             - Init
             - change-message-status
             - revoke-document
@@ -7186,6 +7269,9 @@ components:
             - Policy-Statistic
             - Policy-Label
             - Formula
+            - Schema-Package
+            - Policy-Diff
+            - Policy-Action
           example: DID-Document
         action:
           type: string
@@ -7198,10 +7284,12 @@ components:
             - delete-policy
             - create-schema
             - publish-schema
+            - publish-schemas
             - delete-schema
             - create-topic
             - create-vp-document
             - publish-system-schema
+            - publish-system-schemas
             - Init
             - change-message-status
             - revoke-document
@@ -7410,6 +7498,9 @@ components:
             - Policy-Statistic
             - Policy-Label
             - Formula
+            - Schema-Package
+            - Policy-Diff
+            - Policy-Action
           example: VC-Document
         action:
           type: string
@@ -7422,10 +7513,12 @@ components:
             - delete-policy
             - create-schema
             - publish-schema
+            - publish-schemas
             - delete-schema
             - create-topic
             - create-vp-document
             - publish-system-schema
+            - publish-system-schemas
             - Init
             - change-message-status
             - revoke-document
@@ -7826,6 +7919,9 @@ components:
             - Policy-Statistic
             - Policy-Label
             - Formula
+            - Schema-Package
+            - Policy-Diff
+            - Policy-Action
           example: Topic
         action:
           type: string
@@ -7838,10 +7934,12 @@ components:
             - delete-policy
             - create-schema
             - publish-schema
+            - publish-schemas
             - delete-schema
             - create-topic
             - create-vp-document
             - publish-system-schema
+            - publish-system-schemas
             - Init
             - change-message-status
             - revoke-document
@@ -8137,6 +8235,9 @@ components:
             - Policy-Statistic
             - Policy-Label
             - Formula
+            - Schema-Package
+            - Policy-Diff
+            - Policy-Action
           example: Contract
         action:
           type: string
@@ -8149,10 +8250,12 @@ components:
             - delete-policy
             - create-schema
             - publish-schema
+            - publish-schemas
             - delete-schema
             - create-topic
             - create-vp-document
             - publish-system-schema
+            - publish-system-schemas
             - Init
             - change-message-status
             - revoke-document
