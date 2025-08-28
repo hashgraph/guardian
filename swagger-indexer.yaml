@@ -833,6 +833,122 @@ paths:
       summary: Get schema tree
       tags:
         - entities
+  /entities/schemas-packages:
+    get:
+      description: Returns schemas packages
+      operationId: EntityApi_getSchemasPackages
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: Page index
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: Page size
+          schema:
+            type: number
+            maximum: 100
+        - name: orderField
+          required: false
+          in: query
+          description: Order field
+          schema:
+            example: consensusTimestamp
+            type: string
+        - name: orderDir
+          required: false
+          in: query
+          description: Order direction
+          examples:
+            ASC:
+              value: ASC
+              description: Ascending ordering
+            DESC:
+              value: DESC
+              description: Descending ordering
+          schema:
+            type: string
+        - name: keywords
+          required: false
+          in: query
+          description: Keywords to search
+          examples:
+            0.0.1960:
+              description: >-
+                Search schemas packages, which are related to specific topic
+                identifier
+              value: '["0.0.1960"]'
+          schema:
+            type: string
+        - name: topicId
+          required: false
+          in: query
+          description: Policy topic identifier
+          schema:
+            example: 0.0.1960
+            type: string
+        - name: options.owner
+          required: false
+          in: query
+          description: Schema owner
+          schema:
+            example: >-
+              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+            type: string
+      responses:
+        '200':
+          description: Schemas
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageDTO'
+                  - properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/SchemaGridDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Get schemas packages
+      tags:
+        - entities
+  /entities/schemas-packages/{messageId}:
+    get:
+      description: Returns schemas package
+      operationId: EntityApi_getSchemasPackage
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Message identifier
+          schema:
+            example: '1706823227.586179534'
+            type: string
+      responses:
+        '200':
+          description: Schemas package details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemasPackageDetailsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Get schemas package
+      tags:
+        - entities
   /entities/tokens:
     get:
       description: Returns tokens
@@ -4208,6 +4324,10 @@ components:
           type: number
           description: Schemas
           example: 10
+        schemaPackages:
+          type: number
+          description: Schemas Packages
+          example: 10
         vcs:
           type: number
           description: VCs
@@ -4226,6 +4346,7 @@ components:
           example: 10
       required:
         - schemas
+        - schemaPackages
         - vcs
         - vps
         - roles
@@ -5243,6 +5364,38 @@ components:
         - id
         - item
         - root
+    SchemasPackageActivityDTO:
+      type: object
+      properties:
+        schemas:
+          type: number
+          description: Schemas
+          example: 10
+      required:
+        - schemas
+    SchemasPackageDetailsDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        item:
+          $ref: '#/components/schemas/SchemaDetailsItemDTO'
+        row:
+          $ref: '#/components/schemas/RawMessageDTO'
+        activity:
+          $ref: '#/components/schemas/SchemasPackageActivityDTO'
+      required:
+        - id
+        - uuid
+        - item
+        - row
+        - activity
     TokenDTO:
       type: object
       properties:
