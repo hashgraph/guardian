@@ -89,57 +89,58 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 </details>
 
 <details>
-<summary><strong>Part IV: Policy Workflow (Chapters 13-16)</strong> - 30-40 minutes</summary>
+<summary><strong>Part IV: Policy Workflow Design and Implementation (Chapters 13-17)</strong> - 3-4 hours</summary>
 
-**Purpose**: Design and configure the complete certification workflow **Outcome**: Functional policy workflow with proper stakeholder interactions
+**Purpose**: Transform Part III schemas into complete Guardian policies with automated workflows **Outcome**: Production-ready policies with stakeholder workflows and token minting
 
-* Chapter 13: Stakeholder Analysis and Role Definition
-* Chapter 14: Carbon Credit Certification Workflow Design
-* Chapter 15: Policy Workflow Block Configuration
-* Chapter 16: Document Flow and State Management
+* Chapter 13: Policy Workflow Architecture and Design Principles
+* Chapter 14: Guardian Workflow Blocks and Configuration
+* Chapter 15: VM0033 Policy Implementation Deep Dive
+* Chapter 16: Advanced Policy Patterns and Testing
+* Chapter 17: Policy Deployment and Production Management
 
 </details>
 
 <details>
-<summary><strong>Part V: Calculation Logic (Chapters 17-20)</strong> - 30-40 minutes</summary>
+<summary><strong>Part V: Calculation Logic (Chapters 18-21)</strong> - 30-40 minutes</summary>
 
 **Purpose**: Implement mathematical calculations and validation logic **Outcome**: Accurate, tested calculation implementations
 
-* Chapter 17: Custom Logic Block Development
-* Chapter 18: Formula Linked Definitions (FLDs)
-* Chapter 19: Data Validation and Error Handling
-* Chapter 20: Calculation Testing and Verification
+* Chapter 18: Custom Logic Block Development
+* Chapter 19: Formula Linked Definitions (FLDs)
+* Chapter 20: Data Validation and Error Handling
+* Chapter 21: Calculation Testing and Verification
 
 </details>
 
 <details>
-<summary><strong>Part VI: Integration and Testing (Chapters 21-22)</strong> - 20-30 minutes</summary>
+<summary><strong>Part VI: Integration and Testing (Chapters 22-23)</strong> - 20-30 minutes</summary>
 
 **Purpose**: Comprehensive testing and API integration **Outcome**: Production-ready methodology implementation
 
-* Chapter 21: End-to-End Policy Testing
-* Chapter 22: API Integration and Automation
+* Chapter 22: End-to-End Policy Testing
+* Chapter 23: API Integration and Automation
 
 </details>
 
 <details>
-<summary><strong>Part VII: Deployment and Maintenance (Chapters 23-25)</strong> - 10-20 minutes</summary>
+<summary><strong>Part VII: Deployment and Maintenance (Chapters 24-26)</strong> - 10-20 minutes</summary>
 
 **Purpose**: Deploy, monitor, and maintain methodology implementations **Outcome**: Operational methodology with ongoing support procedures
 
-* Chapter 23: User Management and Role Assignment
-* Chapter 24: Monitoring and Analytics - Guardian Indexer
-* Chapter 25: Maintenance and Updates
+* Chapter 24: User Management and Role Assignment
+* Chapter 25: Monitoring and Analytics - Guardian Indexer
+* Chapter 26: Maintenance and Updates
 
 </details>
 
 <details>
-<summary><strong>Part VIII: Advanced Topics (Chapters 26-27)</strong> - 30-40 minutes</summary>
+<summary><strong>Part VIII: Advanced Topics (Chapters 27-28)</strong> - 30-40 minutes</summary>
 
 **Purpose**: Advanced integration techniques and troubleshooting **Outcome**: Expert-level understanding and problem-solving capabilities
 
-* Chapter 26: Integration with External Systems
-* Chapter 27: Troubleshooting and Common Issues
+* Chapter 27: Integration with External Systems
+* Chapter 28: Troubleshooting and Common Issues
 
 </details>
 
@@ -213,18 +214,20 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 - **🏗️ [Part I: Foundation and Preparation](part-1/README.md)** - Start your learning journey here (Available Now)
 - **🔍 [Part II: Analysis and Planning](part-2/README.md)** - Systematic methodology analysis techniques (Available Now)
 - **🏗️ [Part III: Schema Design and Development](part-3/README.md)** - Schema development and testing (Available Now)
+- **⚙️ [Part IV: Policy Workflow Design and Implementation](part-4/README.md)** - Complete policy workflow development (Available Now)
 
 ### Available Content
 {% hint style="success" %}
-**Parts I, II, and III are now available** with all twelve chapters complete and ready for use, covering the complete foundation through schema development workflow.
+**Parts I-IV are now available** with all seventeen chapters complete and ready for use, covering the complete foundation through production-ready policy implementation.
 {% endhint %}
 
-| Part             | Status          | Chapters                          | Description                                                               |
-| ---------------- | --------------- | --------------------------------- | ------------------------------------------------------------------------- |
-| **Part I**       | ✅ **Available** | [Chapters 1-3](part-1/README.md)  | Foundation concepts, VM0033 overview, Guardian platform introduction      |
-| **Part II**      | ✅ **Available** | [Chapters 4-7](part-2/README.md)  | Methodology analysis, equation mapping, tools integration, test artifacts |
-| **Part III**     | ✅ **Available** | [Chapters 8-12](part-3/README.md) | Schema development, field management, testing checklist                   |
-| **Part IV-VIII** | 🚧 Coming Soon   | Chapters 13-27                    | Policy workflows, calculations, deployment, and maintenance               |
+| Part             | Status          | Chapters                           | Description                                                               |
+| ---------------- | --------------- | ---------------------------------- | ------------------------------------------------------------------------- |
+| **Part I**       | ✅ **Available** | [Chapters 1-3](part-1/README.md)   | Foundation concepts, VM0033 overview, Guardian platform introduction      |
+| **Part II**      | ✅ **Available** | [Chapters 4-7](part-2/README.md)   | Methodology analysis, equation mapping, tools integration, test artifacts |
+| **Part III**     | ✅ **Available** | [Chapters 8-12](part-3/README.md)  | Schema development, field management, testing checklist                   |
+| **Part IV**      | ✅ **Available** | [Chapters 13-17](part-4/README.md) | Policy workflow design, VM0033 implementation, production deployment      |
+| **Part V-VIII**  | 🚧 Coming Soon   | Chapters 18-28                     | Calculation logic, integration testing, deployment, and advanced topics   |
 
 ### Shared Resources
 - **🔧 [Shared Resources](_shared/README.md)** - Templates, integration guides, and reference materials

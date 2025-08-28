@@ -51,23 +51,23 @@ API schema management, standardized property definitions, Required field types (
 
 Practical schema validation using Guardian's testing features including Default/Suggested/Test values, preview testing, UUID integration, and pre-deployment checklist for production readiness.
 
-## Part IV: Policy Workflow Design
+## Part IV: Policy Workflow Design and Implementation
 
-### Chapter 13: Stakeholder Analysis and Role Definition
+### [Chapter 13: Policy Workflow Architecture and Design Principles](part-4/chapter-13/README.md)
 
-Identifying and defining all stakeholders in the methodology workflow (Standard Registry, VVB, Project Developer) and their interactions in the VM0033 context.
+Guardian policy architecture fundamentals, workflow block system, event-driven communication, and design patterns. Establishes core concepts for building production-ready environmental policies using VM0033 as the implementation reference.
 
-### Chapter 14: Carbon Credit Certification Workflow Design
+### [Chapter 14: Guardian Workflow Blocks and Configuration](part-4/chapter-14/README.md)
 
-Designing the complete certification workflow from project registration through credit issuance, including validation, verification, and approval processes.
+Complete guide to Guardian's workflow blocks including interfaceDocumentsSourceBlock, buttonBlock, requestVcDocumentBlock, and role management. Covers block configuration, permissions, event routing, and UI integration with practical VM0033 examples.
 
-### Chapter 15: Policy Workflow Block Configuration
+### [Chapter 15: VM0033 Implementation Deep Dive](part-4/chapter-15/README.md)
 
-Detailed guide to configuring each type of policy workflow block, including request blocks, send blocks, interface containers, and role management blocks.
+Deep technical analysis of VM0033 policy implementation using actual JSON configurations. Covers VVB approval workflows, project submission processes, and role-based access patterns with real Guardian block configurations extracted from production policy.
 
-### Chapter 16: Document Flow and State Management
+### [Chapter 16: Advanced Policy Patterns](part-4/chapter-16/README.md)
 
-Managing document states, transitions, and approvals throughout the certification process. Includes status tracking and workflow orchestration.
+Advanced policy implementation patterns including transformation blocks for Verra API integration, document validation blocks, external data integration, policy testing frameworks, and demo mode configuration using VM0033 production examples.
 
 ## Part V: Calculation Logic Implementation
 
