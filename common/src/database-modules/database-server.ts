@@ -63,6 +63,7 @@ import { DataBaseHelper, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS } from '../
 import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js';
 import { AbstractDatabaseServer, IAddDryRunIdItem, IAuthUser, IGetDocumentAggregationFilters } from '../interfaces/index.js';
 import { BaseEntity } from '../models/index.js';
+import {DryRunSavepointSnapshot} from "../entity/dry-run-savepoint-snapshot.js";
 
 /**
  * Database server
@@ -309,6 +310,67 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Create a full snapshot of DryRun options for the savepoint:
+     * collects all DryRun docs visible at this savepoint (its path + itself)
+     * and writes them into DryRunSavepointSnapshot.
+     */
+    public static async createSavepointSnapshot(
+        policyId: string,
+        savepointId: string
+    ): Promise<void> {
+        const spRepo = new DataBaseHelper(DryRunSavepoint);
+        const snapshotRepo = new DataBaseHelper(DryRunSavepointSnapshot);
+        const dryRun = new DataBaseHelper(DryRun);
+
+        const sp = await spRepo.findOne({ policyId, id: savepointId });
+        if (!sp) {
+            throw new Error('Savepoint not found');
+        }
+
+        const path: string[] = Array.isArray(sp.savepointPath) ? [...sp.savepointPath] : [];
+        if (!path.includes(savepointId)) {
+            path.push(savepointId);
+        }
+        if (path.length === 0) {
+            return;
+        }
+
+        const filter: any = {
+            dryRunId: policyId,
+            $or: [
+                { savepointId: { $in: path } },
+                { savepointId: { $exists: false } },
+                { savepointId: null },
+            ],
+        };
+
+        const total = await dryRun.count(filter);
+        if (!total) return;
+
+        const chunkSize = DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE;
+        const pages = Math.ceil(total / chunkSize);
+
+        for (let i = 0; i < pages; i++) {
+            const items = await dryRun.find(
+                filter,
+                { limit: chunkSize, offset: i * chunkSize, orderBy: { _id: 1 } } as any
+            );
+            if (!items?.length) continue;
+
+            const snapshots = items.map(item =>
+                snapshotRepo.create({
+                    policyId,
+                    savepointId,
+                    sourceId: item.id,
+                    options: item.option ?? null,
+                })
+            );
+
+            await snapshotRepo.insertMany(snapshots as unknown as DryRunSavepointSnapshot[]);
+        }
+    }
+
+    /**
      *  Create Savepoint States
      */
     public static async createSavepointStates(policyId: string, savepointId: string): Promise<void> {
@@ -396,6 +458,51 @@ export class DatabaseServer extends AbstractDatabaseServer {
             docs.push(row);
         }
         await blockState.saveMany(docs);
+    }
+
+    /**
+     * Restore for DryRun documents from savepoint snapshots
+     */
+    public static async restoreSavepointOptions(policyId: string, savepointId: string): Promise<void> {
+        const spRepo = new DataBaseHelper(DryRunSavepoint);
+        const sp = await spRepo.findOne({ policyId, id: savepointId });
+        if (!sp) {
+            throw new Error(`Savepoint not found: ${savepointId}`);
+        }
+        const path: string[] = sp.savepointPath ?? [savepointId];
+        if (!path.length) {
+            return;
+        }
+
+        const snaps = await new DataBaseHelper(DryRunSavepointSnapshot)
+            .find({ policyId, savepointId: { $in: path } }, { fields: ['sourceId','options','savepointId'] } as any);
+
+        if (!snaps?.length) {
+            return;
+        }
+
+        const latestOptions = new Map<string, any>();
+        for (const spId of path) {
+            for (const s of snaps) {
+                if (s.savepointId === spId) {
+                    latestOptions.set(s.sourceId, s.options);
+                }
+            }
+        }
+
+        const dryRun = new DataBaseHelper(DryRun);
+        const docs = [];
+        for (const [sourceId, opt] of latestOptions.entries()) {
+            const row = await dryRun.findOne({ id: sourceId });
+            if (row) {
+                row.option = opt;
+                docs.push(row);
+            }
+        }
+
+        if (docs.length) {
+            await dryRun.update(docs);
+        }
     }
 
     public static async getCurrentSavepointId(policyId: string): Promise<string | null> {
@@ -553,6 +660,21 @@ export class DatabaseServer extends AbstractDatabaseServer {
 
         const dryRun = new DataBaseHelper(DryRun);
         await dryRun.delete({
+            savepointId: { $in: unique }
+        });
+    }
+
+    /**
+     * Delete snapshots by savepoints
+     */
+    public static async deleteSnapshotsBySavepoints(policyId: string, savepointIds: string[]): Promise<void> {
+        const unique = Array.from(new Set(savepointIds)).filter(Boolean);
+        if (unique.length === 0) {
+            return;
+        }
+
+        const repo = new DataBaseHelper(DryRunSavepointSnapshot);
+        await repo.delete({
             savepointId: { $in: unique }
         });
     }
@@ -4702,7 +4824,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
             throw new Error('Can not be granted kyc');
         }
         if (item.tokenMap[tokenId].kyc === true) {
-            throw new Error('Token already granted kyc');
+            // throw new Error('Token already granted kyc');
         }
         item.tokenMap[tokenId].kyc = true;
         await new DataBaseHelper(DryRun).update(item);

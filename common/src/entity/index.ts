@@ -11,6 +11,7 @@ export * from './did-document.js';
 export * from './document-state.js';
 export * from './dry-run.js';
 export * from './dry-run-savepoint.js';
+export * from './dry-run-savepoint-snapshot.js';
 export * from './external-document.js';
 export * from './module.js';
 export * from './multi-documents.js';

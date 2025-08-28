@@ -2058,6 +2058,7 @@ export class PolicyEngineService {
                     }
 
                     await DatabaseServer.restoreSavepointStates(policyId, savepointId);
+                    await DatabaseServer.restoreSavepointOptions(policyId, savepointId);
                     await DatabaseServer.removeDryRunWithEmptySavepoint(policyId)
                     await DatabaseServer.setCurrentSavepoint(policyId, savepointId);
 
@@ -2095,6 +2096,7 @@ export class PolicyEngineService {
                     }
 
                     const savepointId = await DatabaseServer.createSavepoint(policyId, savepointProps);
+                    await DatabaseServer.createSavepointSnapshot(policyId, savepointId);
                     await DatabaseServer.createSavepointStates(policyId, savepointId);
 
                     const created = await DatabaseServer.getSavepointById(policyId, savepointId);
@@ -2175,6 +2177,7 @@ export class PolicyEngineService {
                     if (deletedIds.length) {
                         await DatabaseServer.removeBlockStateSnapshots(policyId, deletedIds);
                         await DatabaseServer.deleteDryRunBySavepoints(policyId, deletedIds);
+                        await DatabaseServer.deleteSnapshotsBySavepoints(policyId, deletedIds);
                     }
 
                     return new MessageResponse({
