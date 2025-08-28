@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild, } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { GeoJsonType } from '@guardian/interfaces';
+import { GenerateUUIDv4, GeoJsonType } from '@guardian/interfaces';
 import 'ol/ol.css';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import Map from 'ol/Map.js';
@@ -288,6 +288,7 @@ export class GeojsonTypeComponent implements OnChanges {
     private lastSelectedCoordinates: any[] = [];
 
     public geometriesList: {
+        id: string,
         type: GeoJsonType,
         coordinates: any,
         coordinatesString?: string;
@@ -295,6 +296,12 @@ export class GeojsonTypeComponent implements OnChanges {
     }[] = [];
 
     public displayedLocations: {
+        type: GeoJsonType,
+        coordinates: any
+    }[] = [];
+
+    public allImportedLocations: {
+        id: string,
         type: GeoJsonType,
         coordinates: any
     }[] = [];
@@ -545,7 +552,7 @@ export class GeojsonTypeComponent implements OnChanges {
         if (!feature.ol_uid) {
             return;
         }
-
+            
         const importedLocation = this.importedLocations.find(location => location.id === feature.getId());
         if (importedLocation) {
             this.addGeometry(importedLocation);
@@ -554,11 +561,20 @@ export class GeojsonTypeComponent implements OnChanges {
             this.importedLocations = this.importedLocations.filter(location => location.id !== feature.getId());
 
             this.updateMap(true);
+        } else if (feature.getId()) {
+            const location = this.allImportedLocations.find(item => item.id === feature.getId());
+            if (location) {
+                this.deleteGeometry(feature.getId())
+                const newGeometry = {
+                    id: location.id || GenerateUUIDv4(),
+                    type: location.type,
+                    coordinates: Array.isArray(location.coordinates) ? location.coordinates : location.coordinates && JSON.parse(location.coordinates) || [],
+                    coordinatesString: Array.isArray(location.coordinates) ? JSON.stringify(location.coordinates, null, 4) : location.coordinates
+                };
+                
+                this.addImportedLocation(newGeometry);
+            }
         }
-    }
-
-    public displayLocationEditor() {
-        return this.geometriesList.length <= 500;
     }
 
     public selectAllImportedFeatures() {
@@ -574,10 +590,15 @@ export class GeojsonTypeComponent implements OnChanges {
         this.updateMap(true);
     }
 
+    public displayLocationEditor() {
+        return this.geometriesList.length <= 500;
+    }
+
     public clearSelectionFeatures() {
         this.geometriesList = [];
         this.geoShapesSource?.clear(true);
 
+        this.allImportedLocations = [];
         this.importedLocations = [];
         this.importedShapesSource?.clear();
 
@@ -586,6 +607,7 @@ export class GeojsonTypeComponent implements OnChanges {
 
     private updateMap(updateInput: boolean = false) {
         const shapeFeatures: any[] = this.geometriesList.map(item => ({
+            id: item.id,
             type: 'Feature',
             properties: {},
             geometry: {
@@ -595,6 +617,7 @@ export class GeojsonTypeComponent implements OnChanges {
         }));
 
         if (shapeFeatures.length <= 0) {
+            this.geoShapesSource?.clear(true);
             return;
         }
 
@@ -631,6 +654,7 @@ export class GeojsonTypeComponent implements OnChanges {
         }
     }
 
+    // todo for multiple locations
     private mapClick(coordinates: any) {
         if (this.isDisabled) {
             return;
@@ -689,7 +713,7 @@ export class GeojsonTypeComponent implements OnChanges {
         catch { }
     }
 
-    // todo
+    // todo for multiple locations
     private mapRightclick(featureIndex = 0, ringIndex = 0) {
         switch (this.type) {
             case GeoJsonType.POINT:
@@ -786,6 +810,7 @@ export class GeojsonTypeComponent implements OnChanges {
     public addGeometry(geometry?: any): any {
         if (geometry) {
             const newGeometry = {
+                id: geometry.id || GenerateUUIDv4(),
                 type: geometry.type,
                 coordinates: Array.isArray(geometry.coordinates) ? geometry.coordinates : geometry.coordinates && JSON.parse(geometry.coordinates) || [],
                 coordinatesString: Array.isArray(geometry.coordinates) ? JSON.stringify(geometry.coordinates, null, 4) : geometry.coordinates
@@ -795,6 +820,7 @@ export class GeojsonTypeComponent implements OnChanges {
             return newGeometry;
         } else {
             const newGeometry = {
+                id: GenerateUUIDv4(),
                 type: GeoJsonType.POINT,
                 coordinates: [],
                 coordinatesString: undefined
@@ -803,6 +829,13 @@ export class GeojsonTypeComponent implements OnChanges {
             this.resetCoordinatesStructure(newGeometry);
 
             return newGeometry;
+        }
+    }
+
+    public deleteGeometry(geometryId: string): any {
+        if (geometryId) {
+            this.geometriesList = this.geometriesList.filter(item => item.id !== geometryId);
+            this.updateMap(true);
         }
     }
 
@@ -1078,6 +1111,8 @@ export class GeojsonTypeComponent implements OnChanges {
             const shapeFile = this.geoJsonService.getFile(id);
 
             if (shapeFile) {
+                this.clearImportedLocations();
+
                 if (shapeFile.type === 'FeatureCollection') {
                     shapeFile.features = shapeFile.features.map((feature: any) => ({
                         type: feature.type,
@@ -1086,7 +1121,7 @@ export class GeojsonTypeComponent implements OnChanges {
                     }));
                     this.onUploadMultiLocationFile(shapeFile);
                 } else {
-                    this.onUploadLocationFile(shapeFile);
+                    this.addImportedLocation(shapeFile);
                 }
             } else {
                 this.setControlValue({});
@@ -1094,21 +1129,26 @@ export class GeojsonTypeComponent implements OnChanges {
         }
     }
 
+    private clearImportedLocations() {
+        this.allImportedLocations = [];
+        this.importedLocations = [];
+    }
+
     public onUploadMultiLocationFile(featureCollection: FeatureCollection) {
         if (featureCollection) {
-            this.importedLocations = [];
-
             if (featureCollection.features) {
                 featureCollection.features = featureCollection.features.filter((feature: any) => feature?.geometry?.type && feature.geometry.type !== 'GeometryCollection');
             }
 
             featureCollection.features.forEach((feature: any, i) => {
                 if (feature && feature.geometry && feature.geometry.type !== 'GeometryCollection') {
-                    this.importedLocations.push({
-                        id: 'feature_' + i,
+                    const location = {
+                        id: GenerateUUIDv4(),
                         type: feature.geometry.type,
                         coordinates: feature.geometry.coordinates
-                    })
+                    };
+                    this.importedLocations.push(location);
+                    this.allImportedLocations.push(location);
                 }
             });
 
@@ -1153,14 +1193,14 @@ export class GeojsonTypeComponent implements OnChanges {
         // });
     }
 
-    private onUploadLocationFile(feature: any) {
-        this.importedLocations = [];
-
-        this.importedLocations.push({
-            id: 'feature_0',
-            type: feature.geometry.type,
-            coordinates: feature.geometry.coordinates
-        })
+    private addImportedLocation(feature: any) {
+        const location = {
+            id: GenerateUUIDv4(),
+            type: feature?.geometry?.type || feature?.type,
+            coordinates: feature?.geometry?.coordinates || feature?.coordinates
+        };
+        this.importedLocations.push(location);
+        this.allImportedLocations.push(location);
 
         const shapeFeatures: any[] = this.importedLocations.map(item => ({
             id: item.id,

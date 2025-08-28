@@ -65,31 +65,40 @@
 
         <ng-container *ngIf="displayLocationEditor(); else tooManyFeaturesAdded">
             <div *ngFor="let geometry of geometriesList; let i = index">
-                <div class="form-group type-selector">
-                    <!-- <label for="typeDropdown" class="form-label">Type</label> -->
-                    <p-dropdown
-                        id="typeDropdown"
-                        [(ngModel)]="geometry.type"
-                        [options]="typeOptions"
-                        [disabled]="isDisabled"
-                        placeholder="None"
-                        class="full-width"
-                        (onChange)="onTypeChange(geometry)">
-                    </p-dropdown>
-                    <small *ngIf="!type" class="p-error">This field is required.</small>
-                </div>
-                <div class="form-group type-selector">
-                    <label for="coordinatesInput" class="form-label coordinates-input">Coordinates:</label>
-                    <textarea
-                        id="coordinatesInput"
-                        [(ngModel)]="geometry.coordinatesString"
-                        [placeholder]="geometry.coordinatesPlaceholder"
-                        (ngModelChange)="coordinatesChanged($event, geometry)"
-                        [disabled]="isDisabled"
-                        pInputTextarea
-                        required
-                        class="full-width"
-                    ></textarea>
+                <div class="location-control">
+                    <p class="location-name">Location: {{i}}</p>
+                    <div class="form-group type-selector">
+                        <p class="location-form-label">Type</p>
+                        <p-dropdown
+                            id="typeDropdown"
+                            [(ngModel)]="geometry.type"
+                            [options]="typeOptions"
+                            [disabled]="isDisabled"
+                            placeholder="None"
+                            class="full-width"
+                            (onChange)="onTypeChange(geometry)">
+                        </p-dropdown>
+                        <small *ngIf="!type" class="p-error">This field is required.</small>
+                    </div>
+                    <div class="form-group type-selector">
+                        <p class="location-form-label">Coordinates</p>
+                        <textarea
+                            id="coordinatesInput"
+                            [(ngModel)]="geometry.coordinatesString"
+                            [placeholder]="geometry.coordinatesPlaceholder"
+                            (ngModelChange)="coordinatesChanged($event, geometry)"
+                            [disabled]="isDisabled"
+                            pInputTextarea
+                            required
+                            class="full-width location-coordinates"
+                        ></textarea>
+                    </div>
+                    <button
+                        (click)="deleteGeometry(geometry.id)"
+                        pButton
+                        class="delete-feature-button guardian-button guardian-button-delete"
+                        label="Delete Geometry"
+                    ></button>
                 </div>
             </div>
         </ng-container>
