@@ -920,19 +920,7 @@ export class GeojsonTypeComponent implements OnChanges {
             geometry.coordinatesString = value;
 
             this.centerMap(geometry);
-
-            // this.setControlValue({
-            //     type: geometry.type,
-            //     coordinates: parsedCoordinates,
-            // }, dirty);
         } catch (e) {
-            if (geometry.coordinates == '') {
-                setTimeout(() => {
-                    this.resetCoordinatesStructure(geometry);
-                    // this.setControlValue({});
-                    this.updateMap();
-                }, 100)
-            }
         }
     }
 
