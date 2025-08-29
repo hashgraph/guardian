@@ -16,6 +16,7 @@ import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { MergeUtils } from 'src/app/utils';
 import { ToastrService } from 'ngx-toastr';
+import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
 
 interface IRequestDocumentData {
     readonly: boolean;
@@ -95,7 +96,8 @@ export class RequestDocumentBlockComponent
         private dialogService: DialogService,
         private router: Router,
         private changeDetectorRef: ChangeDetectorRef,
-        private toastr: ToastrService
+        private toastr: ToastrService,
+        private savepointFlow: SavepointFlowService,
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
@@ -360,6 +362,9 @@ export class RequestDocumentBlockComponent
     }
 
     private showDraftDialog(callback?: any) {
+
+        this.savepointFlow.markBusy();
+
         const dialogOptionRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
@@ -384,12 +389,15 @@ export class RequestDocumentBlockComponent
             if (result != 'Cancel') {
                 if (result === 'Continue with Draft') {
                     this.draftRestore();
+                    this.savepointFlow.setSkipOnce();
                 }
 
                 if (callback) {
                     callback.call(this);
                 }
             }
+
+            this.savepointFlow.markReady();
         });
     }
 
