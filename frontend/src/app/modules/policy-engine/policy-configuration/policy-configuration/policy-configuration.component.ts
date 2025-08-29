@@ -1946,17 +1946,19 @@ export class PolicyConfigurationComponent implements OnInit {
         this.policyEngineService.getSavepoints(this.policyId).subscribe({
             next: (resp) => {
                 const items = resp?.items ?? [];
-                if (!items.length) return;
+                if (!items.length) {
+                    return;
+                }
 
                 const names = items.map((i: any) => (i?.name?.trim() || i?.id));
                 const count = names.length;
                 const list = names.map((n: any) => `• ${n}`).join('\n');
 
                 const text =
-                    `This policy already has ${count} ${count === 1 ? 'savepoint' : 'savepoints'}:\n\n` +
+                    `This policy has ${count} ${count === 1 ? 'savepoint' : 'savepoints'} configured:\n\n` +
                     `${list}\n\n` +
-                    `Changes to the configuration may make these savepoints unusable or cause issues during restore. ` +
-                    `If you're planning significant edits, consider applying the needed savepoint first or removing the ones you won't use.`;
+                    `Edits to the policy workflow in the area prior to the savepoints may result in errors or ` +
+                    `inconsistencies during restore. Delete existing savepoints if you plan to make such changes.`;
 
                 this.dialogService.open(CustomConfirmDialogComponent, {
                     showHeader: false,
