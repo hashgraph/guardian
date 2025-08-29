@@ -3355,41 +3355,6 @@ export class PolicyApi {
         }
     }
 
-    /**
-     * Get savepoint by id
-     */
-    @Get('/:policyId/savepoints/:savepointId')
-    @Auth(Permissions.POLICIES_POLICY_UPDATE)
-    @ApiOperation({
-        summary: 'Get dry-run savepoint by id.',
-        description: 'Returns the savepoint by its id (Dry Run only).',
-    })
-    @ApiParam({ name: 'policyId', type: String, required: true, example: Examples.DB_ID })
-    @ApiParam({ name: 'savepointId', type: String, required: true, example: Examples.DB_ID })
-    @ApiOkResponse({ description: 'Successful operation.' })
-    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO })
-    @ApiExtraModels(InternalServerErrorDTO)
-    @HttpCode(HttpStatus.OK)
-    async getSavepoint(
-        @AuthUser() user: IAuthUser,
-        @Param('policyId') policyId: string,
-        @Param('savepointId') savepointId: string,
-    ) {
-        const engineService = new PolicyEngine();
-        const owner = new EntityOwner(user);
-        const policy = await engineService.accessPolicy(policyId, owner, 'read');
-
-        if (!PolicyHelper.isDryRunMode(policy)) {
-            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN);
-        }
-
-        try {
-            return await engineService.getSavepoint(policyId, savepointId, owner);
-        } catch (error) {
-            await InternalException(error, this.logger, user.id);
-        }
-    }
-
     @Get('/:policyId/savepoints/count')
     @Auth(Permissions.POLICIES_POLICY_UPDATE)
     @ApiOperation({

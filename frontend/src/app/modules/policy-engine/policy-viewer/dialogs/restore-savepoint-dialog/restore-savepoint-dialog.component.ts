@@ -167,7 +167,7 @@ export class RestoreSavepointDialog {
         this.deletingAll = true;
         const ids = this.items.map(i => i.id);
 
-        this.policyEngine.deleteSavepoints(this.policyId, ids).subscribe({
+        this.policyEngine.deleteSavepoints(this.policyId, ids, true).subscribe({
             next: () => {
                 this.items = [];
                 this.currentSavepointId = null;

@@ -296,10 +296,6 @@ export class PolicyEngineService {
         return this.http.get<any>(`${this.url}/${policyId}/savepoints`);
     }
 
-    public getSavepoint(policyId: string, savepointId: string): Observable<any> {
-        return this.http.get<any>(`${this.url}/${policyId}/savepoints/${savepointId}`);
-    }
-
     public getSavepointsCount(
         policyId: string,
         includeDeleted = false

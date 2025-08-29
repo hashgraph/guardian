@@ -1381,6 +1381,36 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Clear BlockStateSavepoint rows for policy
+     */
+    public static async clearBlockStateSavepoints(policyId: string): Promise<void> {
+        await new DataBaseHelper(BlockStateSavepoint).delete({ policyId });
+    }
+
+    /**
+     * Clear DryRunSavepointSnapshot rows for policy
+     */
+    public static async clearDryRunSavepointSnapshots(policyId: string): Promise<void> {
+        await new DataBaseHelper(DryRunSavepointSnapshot).delete({ policyId });
+    }
+
+    /**
+     * Clear DryRunSavepoint rows for policy
+     */
+    public static async clearDryRunSavepoints(policyId: string): Promise<void> {
+        await new DataBaseHelper(DryRunSavepoint).delete({ policyId });
+    }
+
+    /**
+     * Clear all savepoint-related collections for policy
+     */
+    public static async clearAllSavepointData(policyId: string): Promise<void> {
+        await this.clearBlockStateSavepoints(policyId);
+        await this.clearDryRunSavepointSnapshots(policyId);
+        await this.clearDryRunSavepoints(policyId);
+    }
+
+    /**
      * Clear policy cache data
      * @param cachePolicyId Cache policy id
      */

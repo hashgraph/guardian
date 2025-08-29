@@ -1902,6 +1902,9 @@ export class PolicyEngineService {
                     }
 
                     await DatabaseServer.clearDryRun(policyId, false);
+
+                    await DatabaseServer.clearAllSavepointData(policyId);
+
                     const users = await DatabaseServer.getVirtualUsers(policyId);
                     await DatabaseServer.setVirtualUser(policyId, users[0]?.did);
                     const filters = await this.policyEngine.addAccessFilters({}, owner);
