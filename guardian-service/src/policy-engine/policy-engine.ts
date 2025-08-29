@@ -1349,13 +1349,13 @@ export class PolicyEngine extends NatsService {
         const dryRunId = model.id.toString();
         const databaseServer = new DatabaseServer(dryRunId);
 
-        //Create Services
+        // Create Services
         const [root, topic] = await Promise.all([
             this.users.getHederaAccount(user.owner, user.id),
             TopicConfig.fromObject(
                 await DatabaseServer.getTopicById(model.topicId), !demo, user.id
             )
-        ])
+        ]);
 
         const messageServer = new MessageServer({
             operatorId: root.hederaAccountId,
@@ -1369,7 +1369,11 @@ export class PolicyEngine extends NatsService {
         model = await this.dryRunSchemas(model, user);
         model.status = demo ? PolicyStatus.DEMO : PolicyStatus.DRY_RUN;
         model.version = version;
-        this.regenerateIds(model.config);
+
+        const savepointsCount = await DatabaseServer.getSavepointsCount(dryRunId);
+        if (demo || savepointsCount === 0) {
+            this.regenerateIds(model.config);
+        }
 
         //Create instance topic
         const rootTopic = await topicHelper.create({
@@ -1390,9 +1394,7 @@ export class PolicyEngine extends NatsService {
         const buffer = await zip.generateAsync({
             type: 'arraybuffer',
             compression: 'DEFLATE',
-            compressionOptions: {
-                level: 3
-            }
+            compressionOptions: { level: 3 }
         });
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
@@ -1403,7 +1405,7 @@ export class PolicyEngine extends NatsService {
             interception: null
         });
 
-        //Link topic and message
+        // Link topic and message
         await topicHelper.twoWayLink(rootTopic, topic, result.getId(), user.id);
 
         //Create Policy VC
@@ -1421,7 +1423,7 @@ export class PolicyEngine extends NatsService {
             url: url.url || '',
             uuid: model.uuid || '',
             operation: 'PUBLISH'
-        }
+        };
         const policySchema = await DatabaseServer.getSchemaByType(model.topicId, SchemaEntity.POLICY);
         if (policySchema) {
             const schemaObject = new Schema(policySchema);
@@ -1457,7 +1459,6 @@ export class PolicyEngine extends NatsService {
         retVal = await PolicyImportExportHelper.updatePolicyComponents(retVal, logger, user.id);
 
         logger.info('Run Policy', ['GUARDIAN_SERVICE'], user.id);
-
         return retVal;
     }
 

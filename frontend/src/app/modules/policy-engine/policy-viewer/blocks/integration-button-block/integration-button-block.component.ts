@@ -30,7 +30,7 @@ export class IntegrationButtonBlockComponent implements OnInit {
     readonly: boolean = false;
     commonVisible: boolean = false;
     integrationType: string;
-    
+
     // private readonly _commentField: string = 'option.comment';
 
     constructor(

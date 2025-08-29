@@ -134,6 +134,8 @@ export class PolicyConfigurationComponent implements OnInit {
         body: null
     }
 
+    private savepointsWarnShown = false;
+
     private _destroy$ = new Subject<void>();
 
     constructor(
@@ -482,6 +484,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
         setTimeout(() => {
             this.loading = false;
+            this.maybeShowSavepointsWarning()
         }, 500);
     }
 
@@ -1921,4 +1924,54 @@ export class PolicyConfigurationComponent implements OnInit {
         document.body.classList.remove('pointer-events-children-none');
         document.body.style.cursor = '';
     }
+
+    private shouldShowSavepointsWarning(): boolean {
+        if (this.rootType !== 'Policy') {
+            return false
+        }
+
+        const isDryOrDemo = this.policyTemplate?.isDryRun || this.policyTemplate?.isDemo;
+        if (isDryOrDemo) {
+            return false;
+        }
+
+        return this.compareState(this.rootTemplate.getJSON(), this.storage.current);
+    }
+
+    private maybeShowSavepointsWarning(): void {
+        if (!this.shouldShowSavepointsWarning()) {
+            return
+        };
+
+        this.policyEngineService.getSavepoints(this.policyId).subscribe({
+            next: (resp) => {
+                const items = resp?.items ?? [];
+                if (!items.length) {
+                    return;
+                }
+
+                const names = items.map((i: any) => (i?.name?.trim() || i?.id));
+                const count = names.length;
+                const list = names.map((n: any) => `• ${n}`).join('\n');
+
+                const text =
+                    `This policy has ${count} ${count === 1 ? 'savepoint' : 'savepoints'} configured:\n\n` +
+                    `${list}\n\n` +
+                    `Edits to the policy workflow in the area prior to the savepoints may result in errors or ` +
+                    `inconsistencies during restore. Delete existing savepoints if you plan to make such changes.`;
+
+                this.dialogService.open(CustomConfirmDialogComponent, {
+                    showHeader: false,
+                    width: '640px',
+                    styleClass: 'guardian-dialog warning-dialog',
+                    data: {
+                        header: 'Savepoints found',
+                        text,
+                        buttons: [{ name: 'OK', class: 'primary' }]
+                    },
+                });
+            }
+        });
+    }
+
 }
