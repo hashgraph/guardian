@@ -36,6 +36,10 @@ export class SchemaPackageMessage extends Message {
      */
     public version: string;
     /**
+     * Schemas count
+     */
+    public schemas: number;
+    /**
      * Documents
      */
     public documents: any[];
@@ -100,6 +104,7 @@ export class SchemaPackageMessage extends Message {
             relationships: Array.from(ids)
         };
         this.documents = [this.document, this.context, this.metadata];
+        this.schemas = metadata.length;
     }
 
     /**
@@ -136,6 +141,7 @@ export class SchemaPackageMessage extends Message {
             name: this.name,
             owner: this.owner,
             version: this.version,
+            schemas: this.schemas,
             document_cid: this.getDocumentUrl(UrlType.cid),
             document_uri: this.getDocumentUrl(UrlType.url),
             context_cid: this.getContextUrl(UrlType.cid),
@@ -204,6 +210,7 @@ export class SchemaPackageMessage extends Message {
         message.name = json.name;
         message.owner = json.owner;
         message.version = json.version;
+        message.schemas = json.schemas;
         const urls = [{
             cid: json.document_cid,
             url: json.document_url || json.document_uri
@@ -266,6 +273,7 @@ export class SchemaPackageMessage extends Message {
         result.name = this.name;
         result.owner = this.owner;
         result.version = this.version;
+        result.schemas = this.schemas;
         result.documentUrl = this.getDocumentUrl(UrlType.url);
         result.contextUrl = this.getContextUrl(UrlType.url);
         result.metadataUrl = this.getMetadataUrl(UrlType.url);
@@ -286,6 +294,7 @@ export class SchemaPackageMessage extends Message {
         result.name = json.name;
         result.owner = json.owner;
         result.version = json.version;
+        result.schemas = json.schemas;
         result.documents = [
             json.document,
             json.context,

@@ -873,6 +873,10 @@ export interface SchemaPackageMessageBody extends MessageBody {
      */
     version: string;
     /**
+     * Schemas counts
+     */
+    schemas: number;
+    /**
      * Document CID
      */
     document_cid: string;
