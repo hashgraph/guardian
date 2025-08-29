@@ -7409,10 +7409,10 @@ paths:
       summary: Delete dry-run savepoints.
       tags:
         - policies
-  /policies/{policyId}/savepoints/{savepointId}:
+  /policies/{policyId}/savepoints/count:
     get:
-      description: Returns the savepoint by its id (Dry Run only).
-      operationId: PolicyApi_getSavepoint
+      description: Returns the number of savepoints for the policy (Dry Run only).
+      operationId: PolicyApi_getSavepointsCount
       parameters:
         - name: policyId
           required: true
@@ -7420,12 +7420,11 @@ paths:
           schema:
             example: '000000000000000000000001'
             type: string
-        - name: savepointId
-          required: true
-          in: path
+        - name: includeDeleted
+          required: false
+          in: query
           schema:
-            example: '000000000000000000000001'
-            type: string
+            type: boolean
       responses:
         '200':
           description: Successful operation.
@@ -7441,9 +7440,10 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       security:
         - bearer: []
-      summary: Get dry-run savepoint by id.
+      summary: Get dry-run savepoints count.
       tags:
         - policies
+  /policies/{policyId}/savepoints/{savepointId}:
     put:
       description: >-
         Restores Dry Run state to the selected savepoint and returns its
@@ -7522,40 +7522,6 @@ paths:
       security:
         - bearer: []
       summary: Rename dry-run savepoint.
-      tags:
-        - policies
-  /policies/{policyId}/savepoints/count:
-    get:
-      description: Returns the number of savepoints for the policy (Dry Run only).
-      operationId: PolicyApi_getSavepointsCount
-      parameters:
-        - name: policyId
-          required: true
-          in: path
-          schema:
-            example: '000000000000000000000001'
-            type: string
-        - name: includeDeleted
-          required: false
-          in: query
-          schema:
-            type: boolean
-      responses:
-        '200':
-          description: Successful operation.
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-      security:
-        - bearer: []
-      summary: Get dry-run savepoints count.
       tags:
         - policies
   /policies/{policyId}/dry-run/restart:
