@@ -88,7 +88,7 @@ export class TaskManager {
     /**
      * NotifyTask lock
      */
-    private notifyTaskLock: Set<string> = new Set();
+    private readonly notifyTaskLock: Set<string> = new Set();
 
     /**
      * Notify task progress
