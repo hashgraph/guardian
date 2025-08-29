@@ -1,4 +1,14 @@
-import { ChangeDetectorRef, Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild, } from '@angular/core';
+import {
+    AfterViewInit,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    Input,
+    OnChanges,
+    OnInit,
+    SimpleChanges,
+    ViewChild,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { GenerateUUIDv4, GeoJsonType } from '@guardian/interfaces';
 import 'ol/ol.css';
@@ -253,12 +263,13 @@ function importedStyleFunction(feature: any) {
     templateUrl: './geojson-type.component.html',
     styleUrls: ['./geojson-type.component.scss'],
 })
-export class GeojsonTypeComponent implements OnChanges {
+export class GeojsonTypeComponent implements OnChanges, OnInit, AfterViewInit {
     @ViewChild('map', { static: false }) mapElementRef!: ElementRef;
 
     @Input('preset') presetDocument: any = null;
     @Input('form-model') formModel!: GeoForm;
     @Input('disabled') isDisabled: boolean = false;
+    @Input('available-options') availableOptions?: string[] = [];
 
     type: GeoJsonType = GeoJsonType.POINT;
     parsedCoordinates: any;
@@ -275,7 +286,7 @@ export class GeojsonTypeComponent implements OnChanges {
     ];
 
     public map!: Map | null;
-    public mapCreated: boolean = false;;
+    public mapCreated: boolean = false;
     private vectorSource: VectorSource = new VectorSource();
     private geoShapesSource: VectorSource = new VectorSource();
     private importedShapesSource: VectorSource = new VectorSource();
@@ -293,6 +304,7 @@ export class GeojsonTypeComponent implements OnChanges {
         coordinates: any,
         coordinatesString?: string;
         coordinatesPlaceholder?: string;
+        validation?: { valid: boolean; errors: string[] };
     }[] = [];
 
     public displayedLocations: {
@@ -320,36 +332,358 @@ export class GeojsonTypeComponent implements OnChanges {
 
     public fileImportName: string = '';
     public fileImportSize: number = 0;
-
+    public jsonValidation?: { valid: boolean; errors: string[] } = { valid: true, errors: [] };
     constructor(
         private cdkRef: ChangeDetectorRef,
         private geoJsonService: GeoJsonService
     ) { }
 
-    private getValue() {
-        const value = this.formModel?.getValue();
-        if (!value || !value.type) {
-            // this.addGeometry();
-            return undefined;
+    private isNumber(n: any): n is number {
+        return typeof n === 'number' && isFinite(n);
+    }
+
+    private validatePayload(value: any): { valid: boolean; errors: string[] } {
+        const errors: string[] = [];
+
+        if (!value || typeof value !== 'object') {
+            return { valid: false, errors: ['A GeoJSON object is required'] };
         }
-        if (
-            value.type === GeoJsonType.POINT ||
-            value.type === GeoJsonType.LINE_STRING ||
-            value.type === GeoJsonType.POLYGON ||
-            value.type === GeoJsonType.MULTI_POINT ||
-            value.type === GeoJsonType.MULTI_LINE_STRING ||
-            value.type === GeoJsonType.MULTI_POLYGON
-        ) {
-            this.addGeometry(value);
-            return value;
-        } else if (value.type === GeoJsonType.FEATURE_COLLECTION && value.features?.length > 0) {
-            value.features.forEach((feature: any) => {
-                if (feature && feature.geometry) {
-                    this.addGeometry(feature.geometry);
+
+        if (value.type === 'FeatureCollection') {
+            if (!Array.isArray(value.features)) {
+                return { valid: false, errors: ['FeatureCollection: the "features" field must be an array'] };
+            }
+            value.features
+                .filter((f: any) => f && f.geometry && f.geometry.type !== 'GeometryCollection')
+                .forEach((f: any, i: number) => {
+                    if (!f.geometry?.type) {
+                        errors.push(`Feature #${i}: "geometry.type" is missing`);
+                        return;
+                    }
+                    const coords = Array.isArray(f.geometry.coordinates)
+                        ? f.geometry.coordinates
+                        : (f.geometry.coordinates && this.safeParse(f.geometry.coordinates)) || [];
+
+                    const r = this.validateGeometryCore(f.geometry.type, coords);
+                    if (!r.valid) errors.push(...r.errors.map(e => `Feature #${i}: ${e}`));
+                });
+
+            return { valid: errors.length === 0, errors };
+        }
+
+        if (value.type === 'Feature') {
+            if (!value.geometry?.type) {
+                return { valid: false, errors: ['Feature: "geometry.type" is missing'] };
+            }
+            const coords = Array.isArray(value.geometry.coordinates)
+                ? value.geometry.coordinates
+                : (value.geometry.coordinates && this.safeParse(value.geometry.coordinates)) || [];
+
+            const r = this.validateGeometryCore(value.geometry.type, coords);
+            if (!r.valid) errors.push(...r.errors);
+            return { valid: errors.length === 0, errors };
+        }
+
+        if (typeof value.type === 'string' && 'coordinates' in value) {
+            const coords = Array.isArray(value.coordinates)
+                ? value.coordinates
+                : (value.coordinates && this.safeParse(value.coordinates)) || [];
+            const r = this.validateGeometryCore(value.type, coords);
+            if (!r.valid) errors.push(...r.errors);
+            return { valid: errors.length === 0, errors };
+        }
+
+        return { valid: false, errors: ['Unrecognized GeoJSON format'] };
+    }
+
+    private isLonLat(coord: any): boolean {
+        if (!Array.isArray(coord) || coord.length < 2) return false;
+        const [lon, lat] = coord;
+        return this.isNumber(lon) && this.isNumber(lat) && lon >= -180 && lon <= 180 && lat >= -90 && lat <= 90;
+    }
+
+    private validatePoint(coords: any): string[] {
+        const errors: string[] = [];
+        if (!Array.isArray(coords) || coords.length < 2) {
+            errors.push('Point must be an array [longitude, latitude]');
+            return errors;
+        }
+        if (!this.isLonLat(coords)) errors.push('Invalid Point coordinates: expected lon ∈ [-180, 180] and lat ∈ [-90, 90]');
+        return errors;
+    }
+
+    private validateLineString(coords: any): string[] {
+        const errors: string[] = [];
+        if (!Array.isArray(coords) || coords.length < 2) {
+            errors.push('LineString must contain at least 2 points');
+            return errors;
+        }
+        coords.forEach((c: any, i: number) => { if (!this.isLonLat(c)) errors.push(`LineString: invalid point #${i}`); });
+        return errors;
+    }
+
+    private validatePolygon(coords: any): string[] {
+        const errors: string[] = [];
+        if (!Array.isArray(coords) || coords.length < 1) {
+            errors.push('Polygon must contain at least one ring');
+            return errors;
+        }
+        coords.forEach((ring: any, ri: number) => {
+            if (!Array.isArray(ring) || ring.length < 3) {
+                errors.push(`Polygon: ring #${ri} must contain at least 3 points (excluding the closing point)`);
+                return;
+            }
+            ring.forEach((c: any, ci: number) => { if (!this.isLonLat(c)) errors.push(`Polygon: invalid point #${ci} in ring #${ri}`); });
+        });
+        return errors;
+    }
+
+    private validateMultiPoint(coords: any): string[] {
+        const errors: string[] = [];
+        if (!Array.isArray(coords) || coords.length < 1) {
+            errors.push('MultiPoint must contain at least one point');
+            return errors;
+        }
+        coords.forEach((c: any, i: number) => { if (!this.isLonLat(c)) errors.push(`MultiPoint: invalid point #${i}`); });
+        return errors;
+    }
+
+    private validateMultiLineString(coords: any): string[] {
+        const errors: string[] = [];
+        if (!Array.isArray(coords) || coords.length < 1) {
+            errors.push('MultiLineString must contain at least one line');
+            return errors;
+        }
+        coords.forEach((line: any, li: number) => {
+            if (!Array.isArray(line) || line.length < 2) {
+                errors.push(`MultiLineString: line #${li} must contain at least 2 points`);
+                return;
+            }
+            line.forEach((c: any, ci: number) => { if (!this.isLonLat(c)) errors.push(`MultiLineString: invalid point #${ci} in line #${li}`); });
+        });
+        return errors;
+    }
+
+    private validateMultiPolygon(coords: any): string[] {
+        const errors: string[] = [];
+        if (!Array.isArray(coords) || coords.length < 1) {
+            errors.push('MultiPolygon must contain at least one polygon');
+            return errors;
+        }
+        coords.forEach((poly: any, pi: number) => {
+            if (!Array.isArray(poly) || poly.length < 1) {
+                errors.push(`MultiPolygon: polygon #${pi} must contain at least one ring`);
+                return;
+            }
+            poly.forEach((ring: any, ri: number) => {
+                if (!Array.isArray(ring) || ring.length < 3) {
+                    errors.push(`MultiPolygon: in polygon #${pi}, ring #${ri} must contain at least 3 points`);
+                    return;
                 }
+                ring.forEach((c: any, ci: number) => { if (!this.isLonLat(c)) errors.push(`MultiPolygon: invalid point #${ci} in polygon #${pi}, ring #${ri}`); });
             });
-        } else {
-            return undefined;
+        });
+        return errors;
+    }
+
+    private validateGeometryCore(type: string, coords: any): { valid: boolean; errors: string[] } {
+        let errors: string[] = [];
+        switch (type) {
+            case GeoJsonType.POINT: errors = this.validatePoint(coords); break;
+            case GeoJsonType.LINE_STRING: errors = this.validateLineString(coords); break;
+            case GeoJsonType.POLYGON: errors = this.validatePolygon(coords); break;
+            case GeoJsonType.MULTI_POINT: errors = this.validateMultiPoint(coords); break;
+            case GeoJsonType.MULTI_LINE_STRING: errors = this.validateMultiLineString(coords); break;
+            case GeoJsonType.MULTI_POLYGON: errors = this.validateMultiPolygon(coords); break;
+            default:
+                errors = ['Unsupported geometry type'];
+        }
+        return { valid: errors.length === 0, errors };
+    }
+
+    private validateGeometry(geometry: any): { valid: boolean; errors: string[] } {
+        if (!geometry || !geometry.type) return { valid: false, errors: ['Empty geometry'] };
+        const raw = Array.isArray(geometry.coordinates)
+            ? geometry.coordinates
+            : (geometry.coordinates && this.safeParse(geometry.coordinates)) || [];
+        return this.validateGeometryCore(geometry.type, raw);
+    }
+
+    private safeParse(s: string): any { try { return JSON.parse(s); } catch { return []; } }
+
+    private validateAllGeometries(): boolean {
+        let allValid = true;
+        this.geometriesList = this.geometriesList.map(g => {
+            const res = this.validateGeometry(g);
+            (g as any).validation = res;
+            if (!res.valid) allValid = false;
+            return g;
+        });
+        return allValid;
+    }
+
+    private sameCoord(a: any, b: any): boolean {
+        if (!Array.isArray(a) || !Array.isArray(b)) return false;
+        const len = Math.min(a.length, b.length, 3); // lon, lat, alt
+        for (let i = 0; i < len; i++) if (a[i] !== b[i]) return false;
+        return true;
+    }
+
+    private closeRing(ring: any[]): any[] {
+        if (!Array.isArray(ring)) return ring;
+        const n = ring.length;
+        if (n >= 3 && !this.sameCoord(ring[0], ring[n - 1])) {
+            return [...ring, Array.isArray(ring[0]) ? [...ring[0]] : ring[0]];
+        }
+        return ring;
+    }
+
+    private normalizeGeometryForTransport(geom: any): any {
+        if (!geom || typeof geom !== 'object') return geom;
+
+        if (geom.type === 'Polygon') {
+            const rings = Array.isArray(geom.coordinates)
+                ? geom.coordinates.map((ring: any) => this.closeRing(ring))
+                : geom.coordinates;
+            return { ...geom, coordinates: rings };
+        }
+
+        if (geom.type === 'MultiPolygon') {
+            const polys = Array.isArray(geom.coordinates)
+                ? geom.coordinates.map((poly: any) =>
+                    Array.isArray(poly) ? poly.map((ring: any) => this.closeRing(ring)) : poly
+                )
+                : geom.coordinates;
+            return { ...geom, coordinates: polys };
+        }
+        return geom;
+    }
+
+    private normalizeGeoJSON(value: any): any {
+        if (!value || typeof value !== 'object') return value;
+
+        if (value.type === 'FeatureCollection' && Array.isArray(value.features)) {
+            return {
+                type: 'FeatureCollection',
+                features: value.features
+                    .filter((f: any) => f && f.geometry && f.geometry.type !== 'GeometryCollection')
+                    .map((f: any) => ({
+                        ...f,
+                        geometry: this.normalizeGeometryForTransport(f.geometry),
+                    })),
+            };
+        }
+        if (value.type === 'Feature' && value.geometry) {
+            return { ...value, geometry: this.normalizeGeometryForTransport(value.geometry) };
+        }
+
+        if (typeof value.type === 'string' && 'coordinates' in value) {
+            return this.normalizeGeometryForTransport(value);
+        }
+
+        return value;
+    }
+
+    private buildExportObject(): any {
+        const v = this.formModel?.getValue?.() || {};
+
+        if (v && typeof v === 'object' && v.type === 'FeatureCollection' && Array.isArray(v.features)) {
+            const features = v.features
+                .filter((f: any) => f && f.geometry && f.geometry.type !== 'GeometryCollection')
+                .map((f: any) => ({ ...f, geometry: this.normalizeGeometryForTransport(f.geometry) }));
+            return { type: 'FeatureCollection', features };
+        }
+
+        const isGeometry =
+            v && typeof v === 'object' && typeof v.type === 'string' && 'coordinates' in v;
+
+        if (isGeometry) {
+            return {
+                type: 'FeatureCollection',
+                features: [
+                    {
+                        type: 'Feature',
+                        properties: {},
+                        geometry: this.normalizeGeometryForTransport({ type: v.type, coordinates: v.coordinates }),
+                    },
+                ],
+            };
+        }
+
+        if (Array.isArray(this.geometriesList) && this.geometriesList.length > 0) {
+            const features = this.geometriesList.map(item => {
+                const rawCoords = Array.isArray(item.coordinates)
+                    ? item.coordinates
+                    : (item.coordinates && JSON.parse(item.coordinates)) || [];
+                return {
+                    type: 'Feature',
+                    properties: {},
+                    geometry: this.normalizeGeometryForTransport({ type: item.type, coordinates: rawCoords }),
+                };
+            });
+            return { type: 'FeatureCollection', features };
+        }
+
+        return { type: 'FeatureCollection', features: [] };
+    }
+
+    public canDownload(strict = false): boolean {
+        try {
+            if (this.isJSON) {
+                if (strict && (!this.jsonValidation || !this.jsonValidation.valid)) return false;
+            } else {
+                if (strict && !this.validateAllGeometries()) return false;
+            }
+
+            const obj = this.buildExportObject();
+
+            if (!obj?.type) {
+                return false;
+            }
+
+            if (obj.type === 'FeatureCollection' && Array.isArray(obj.features)) {
+                if (!obj.features.length) {
+                    return false;
+                }
+                if (strict) {
+                    const hasBad = obj.features.some((f: any) => {
+                        const r = this.validateGeometryCore(f.geometry?.type, f.geometry?.coordinates);
+                        return !r.valid;
+                    });
+                    if (hasBad) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    private makeFileName(): string {
+        const pad = (n: number) => String(n).padStart(2, '0');
+        const d = new Date();
+        return `geojson-${Date.now()}.geojson`;
+    }
+
+    public downloadGeoJSON(): void {
+        try {
+            const obj = this.buildExportObject();
+            const json = JSON.stringify(obj, null, 2);
+            const blob = new Blob([json], { type: 'application/geo+json;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = this.makeFileName();
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            console.error('Failed to export GeoJSON:', e);
         }
     }
 
@@ -362,9 +696,13 @@ export class GeojsonTypeComponent implements OnChanges {
             });
             this.formModel.build();
         }
+        this.applyAvailableOptionsFilter();
     }
 
     ngOnChanges(changes: SimpleChanges): void {
+        if (changes?.availableOptions) {
+            this.applyAvailableOptionsFilter();
+        }
         if (changes?.isDisabled && !changes?.isDisabled.firstChange) {
             this.onViewTypeChange();
         }
@@ -381,8 +719,36 @@ export class GeojsonTypeComponent implements OnChanges {
         this.setupMap();
     }
 
+    private applyAvailableOptionsFilter(): void {
+        if (!this.availableOptions || this.availableOptions.length === 0) return;
+        this.typeOptions = this.typeOptions.filter(o => this.availableOptions!.includes(o.value));
+    }
+
+    private getValue() {
+        const value = this.formModel?.getValue();
+        if (!value || !value.type) return undefined;
+
+        if (
+            value.type === GeoJsonType.POINT ||
+            value.type === GeoJsonType.LINE_STRING ||
+            value.type === GeoJsonType.POLYGON ||
+            value.type === GeoJsonType.MULTI_POINT ||
+            value.type === GeoJsonType.MULTI_LINE_STRING ||
+            value.type === GeoJsonType.MULTI_POLYGON
+        ) {
+            this.addGeometry(value);
+            return value;
+        } else if (value.type === GeoJsonType.FEATURE_COLLECTION && value.features?.length > 0) {
+            value.features.forEach((feature: any) => {
+                if (feature && feature.geometry) this.addGeometry(feature.geometry);
+            });
+        }
+        return undefined;
+    }
+
     private setControlValue(value: any, dirty = true) {
-        this.formModel?.setControlValue(value, dirty);
+        const normalized = this.normalizeGeoJSON(value);
+        this.formModel?.setControlValue(normalized, dirty);
     }
 
     private setupMap() {
@@ -586,7 +952,6 @@ export class GeojsonTypeComponent implements OnChanges {
 
         this.importedShapesSource?.clear();
         this.importedLocations = [];
-
         this.updateMap(true);
     }
 
@@ -606,24 +971,31 @@ export class GeojsonTypeComponent implements OnChanges {
     }
 
     private updateMap(updateInput: boolean = false) {
-        const shapeFeatures: any[] = this.geometriesList.map(item => ({
-            id: item.id,
-            type: 'Feature',
-            properties: {},
-            geometry: {
+        const shapeFeatures: any[] = this.geometriesList.map(item => {
+            const rawCoords = Array.isArray(item.coordinates)
+                ? item.coordinates
+                : (item.coordinates && JSON.parse(item.coordinates)) || [];
+
+            const normalizedGeometry = this.normalizeGeometryForTransport({
                 type: item.type,
-                coordinates: item.coordinates,
+                coordinates: rawCoords,
+            });
+
+            return {
+                id: item.id,
+                type: 'Feature',
+                properties: {},
+                geometry: normalizedGeometry,
             }
-        }));
+        })
 
         if (shapeFeatures.length <= 0) {
             this.geoShapesSource?.clear(true);
+            // if (updateInput) this.setControlValue({ type: 'FeatureCollection', features: [] }, true);
             return;
         }
 
-        const features = new GeoJSON({
-            featureProjection: 'EPSG:3857',
-        }).readFeatures({
+        const features = new GeoJSON({ featureProjection: 'EPSG:3857' }).readFeatures({
             type: 'FeatureCollection',
             features: shapeFeatures,
         });
@@ -711,7 +1083,7 @@ export class GeojsonTypeComponent implements OnChanges {
             }
 
             firstGeoType.coordinatesString = JSON.stringify(firstGeoType.coordinates, null, 4);
-
+            firstGeoType.validation = this.validateGeometry(firstGeoType);
             this.updateMap(true);
         }
         catch { }
@@ -742,25 +1114,28 @@ export class GeojsonTypeComponent implements OnChanges {
                 break;
         }
 
+        // todo for multiple locations
+        const g = this.geometriesList[0];
+        if (g) g.validation = this.validateGeometry(g);
         this.updateMap(true);
     }
 
     public onTypeChange(geometry: any, dirty = true) {
         this.resetCoordinatesStructure(geometry);
-
+        geometry.validation = this.validateGeometry(geometry);
         this.setControlValue({}, dirty); // todo ?
-
         this.updateMap(true);
     }
 
     public onViewTypeChange(dirty = true) {
         const value = this.formModel?.getValue();
-        
         if (!value || !value.type) {
             if (!this.isJSON) {
                 this.map = null;
                 this.mapCreated = false;
                 this.setupMap();
+            } else {
+                this.jsonValidation = { valid: true, errors: [] };
             }
             return;
         }
@@ -768,6 +1143,7 @@ export class GeojsonTypeComponent implements OnChanges {
 
         if (this.isJSON || this.isDisabled) {
             this.jsonInput = JSON.stringify(value, null, 4);
+            this.jsonValidation = this.validatePayload(value);
         }
 
         if (!this.isJSON || this.isDisabled) {
@@ -782,7 +1158,7 @@ export class GeojsonTypeComponent implements OnChanges {
             } else {
                 this.addGeometry(value);
             }
-
+            this.validateAllGeometries();
             this.updateMap(false);
 
             // this.onTypeChange(null, dirty);
@@ -794,7 +1170,6 @@ export class GeojsonTypeComponent implements OnChanges {
             this.map = null;
             this.mapCreated = false;
             this.setupMap();
-            
             this.centerMap();
         }
     }
@@ -805,8 +1180,11 @@ export class GeojsonTypeComponent implements OnChanges {
             if (value.features) {
                 value.features = value.features.filter((feature: any) => feature?.geometry?.type && feature.geometry.type !== 'GeometryCollection');
             }
+            this.jsonValidation = this.validatePayload(value);
             this.setControlValue(value);
+            this.onViewTypeChange(false);
         } catch {
+            this.jsonValidation = { valid: false, errors: ['Invalid JSON'] };
             this.setControlValue({});
         }
     }
@@ -817,17 +1195,19 @@ export class GeojsonTypeComponent implements OnChanges {
                 id: geometry.id || GenerateUUIDv4(),
                 type: geometry.type,
                 coordinates: Array.isArray(geometry.coordinates) ? geometry.coordinates : geometry.coordinates && JSON.parse(geometry.coordinates) || [],
-                coordinatesString: Array.isArray(geometry.coordinates) ? JSON.stringify(geometry.coordinates, null, 4) : geometry.coordinates
+                coordinatesString: Array.isArray(geometry.coordinates) ? JSON.stringify(geometry.coordinates, null, 4) : geometry.coordinates,
+                validation: { valid: true, errors: [] as string[] }
             };
+            newGeometry.validation = this.validateGeometry(newGeometry);
             this.geometriesList.push(newGeometry);
-
             return newGeometry;
         } else {
             const newGeometry = {
                 id: GenerateUUIDv4(),
                 type: GeoJsonType.POINT,
                 coordinates: [],
-                coordinatesString: undefined
+                coordinatesString: undefined,
+                validation: { valid: false, errors: ['Specify point coordinates'] }
             };
             this.geometriesList.push(newGeometry);
             this.resetCoordinatesStructure(newGeometry);
@@ -919,7 +1299,10 @@ export class GeojsonTypeComponent implements OnChanges {
             geometry.coordinates = parsedCoordinates;
             geometry.coordinatesString = value;
 
+            geometry.validation = this.validateGeometry(geometry);
+
             this.centerMap(geometry);
+            this.updateMap(true);
         } catch (e) {
         }
     }
@@ -1039,7 +1422,7 @@ export class GeojsonTypeComponent implements OnChanges {
         this.fileImportName = file.name;
         this.fileImportSize = Math.round((fileSizeBytes / (1024 * 1024)));
 
-        if (fileType === 'json') {
+        if (fileType === 'json' || fileType === 'geojson') {
             this.importJsonFile(file);
         } else if (fileType === 'kml') {
             this.importKmlFile(file);

@@ -108,3 +108,20 @@
         width: 100%;
     }
 }
+
+.invalid-field {
+    border-color: #f44336;
+}
+
+.validation-errors {
+    margin: .25rem 0 0;
+    padding-left: 1rem;
+}
+
+.map-container .download-geo {
+    margin-top: 0.25rem;
+}
+
+.download-geo {
+    width: 180px;
+}
