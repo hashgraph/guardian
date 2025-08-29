@@ -44,6 +44,7 @@ import { DateTimeComponent } from './schema-form/controls/date-time/date-time.co
 import { FormulasModule } from '../formulas/formulas.module';
 import { DialogService } from 'primeng/dynamicdialog';
 import { SchemaFormRootComponent } from './schema-form-root/schema-form-root.component';
+import { UploadGeoDataDialog } from './upload-geo-data-dialog/upload-geo-data-dialog.component';
 
 @NgModule({
     declarations: [
@@ -63,6 +64,7 @@ import { SchemaFormRootComponent } from './schema-form-root/schema-form-root.com
         EnumEditorDialog,
         CompareSchemaDialog,
         GeojsonTypeComponent,
+        UploadGeoDataDialog,
         SentinelHubTypeComponent,
         ServiceUnavailableDialog,
         SchemaTreeComponent,
