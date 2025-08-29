@@ -1159,7 +1159,6 @@ export class PolicyEngineService {
                         await DatabaseServer.removeDryRunWithEmptySavepoint(policyId);
                     }
 
-
                     return new MessageResponse({
                         isValid,
                         errors

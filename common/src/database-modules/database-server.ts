@@ -63,7 +63,7 @@ import { DataBaseHelper, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS } from '../
 import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js';
 import { AbstractDatabaseServer, IAddDryRunIdItem, IAuthUser, IGetDocumentAggregationFilters } from '../interfaces/index.js';
 import { BaseEntity } from '../models/index.js';
-import {DryRunSavepointSnapshot} from "../entity/dry-run-savepoint-snapshot.js";
+import {DryRunSavepointSnapshot} from '../entity/dry-run-savepoint-snapshot.js';
 
 /**
  * Database server
@@ -250,7 +250,6 @@ export class DatabaseServer extends AbstractDatabaseServer {
         );
     }
 
-
     /**
      * Create savepoint
      * @param policyId
@@ -345,7 +344,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
         };
 
         const total = await dryRun.count(filter);
-        if (!total) return;
+        if (!total) {
+            return;
+        }
 
         const chunkSize = DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE;
         const pages = Math.ceil(total / chunkSize);
@@ -355,7 +356,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 filter,
                 { limit: chunkSize, offset: i * chunkSize, orderBy: { _id: 1 } } as any
             );
-            if (!items?.length) continue;
+            if (!items?.length) {
+                continue;
+            }
 
             const snapshots = items.map(item =>
                 snapshotRepo.create({
@@ -383,7 +386,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         const blockStatesSavepoint = new DataBaseHelper(BlockStateSavepoint);
 
         const docs = blockStates
-            .filter(s => s.blockId && s.blockState != null)
+            .filter(s => s.blockId && s.blockState !== null)
             .map(s => blockStatesSavepoint.create({
                 policyId,
                 savepointId,
@@ -523,7 +526,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
             return;
         }
 
-        const currentId = await this.getCurrentSavepointId(policyId);
+        const currentId = await DatabaseServer.getCurrentSavepointId(policyId);
         if (currentId && ids.includes(currentId)) {
             throw new Error('Cannot delete the current savepoint');
         }
@@ -1405,9 +1408,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * Clear all savepoint-related collections for policy
      */
     public static async clearAllSavepointData(policyId: string): Promise<void> {
-        await this.clearBlockStateSavepoints(policyId);
-        await this.clearDryRunSavepointSnapshots(policyId);
-        await this.clearDryRunSavepoints(policyId);
+        await DatabaseServer.clearBlockStateSavepoints(policyId);
+        await DatabaseServer.clearDryRunSavepointSnapshots(policyId);
+        await DatabaseServer.clearDryRunSavepoints(policyId);
     }
 
     /**

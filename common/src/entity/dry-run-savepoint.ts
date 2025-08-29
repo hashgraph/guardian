@@ -36,7 +36,7 @@ export class DryRunSavepoint extends BaseEntity {
 
         const savepointId = this._id.toHexString();
 
-        if (this.parentSavepointId == null) {
+        if (this.parentSavepointId === null) {
             this.parentSavepointId = this.savepointPath.length
                 ? this.savepointPath[this.savepointPath.length - 1]
                 : null;

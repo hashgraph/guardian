@@ -300,7 +300,9 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                             {savepointId: null},
                         ]
                     };
-                    if (!_globalFilters.$and) _globalFilters.$and = [];
+                    if (!_globalFilters.$and) {
+                        _globalFilters.$and = [];
+                    }
                     _globalFilters.$and.push(bySavepoint);
                 }
 
