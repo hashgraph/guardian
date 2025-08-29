@@ -649,7 +649,11 @@ export class GeojsonTypeComponent implements OnChanges {
         if (updateInput) {
             this.setControlValue({
                 type: 'FeatureCollection',
-                features: shapeFeatures
+                features: shapeFeatures.map(item => ({
+                    type: item.type,
+                    properties: item.properties,
+                    geometry: item.geometry
+                }))
             }, true);
         }
     }
@@ -877,21 +881,21 @@ export class GeojsonTypeComponent implements OnChanges {
                         this.center = transform(getCenter(extent), 'EPSG:4326', 'EPSG:3857');
                     }
                 }
-            } else if (geometry.type == GeoJsonType.POINT && parsedCoordinates?.length == 2) {
+            } else if (geometry.type == GeoJsonType.POINT && parsedCoordinates?.length >= 2) {
                 this.center = transform(parsedCoordinates, 'EPSG:4326', 'EPSG:3857');
-            } else if (geometry.type == GeoJsonType.MULTI_POINT && parsedCoordinates?.[0]?.length == 2) {
+            } else if (geometry.type == GeoJsonType.MULTI_POINT && parsedCoordinates?.[0]?.length >= 2) {
                 const geom = new MultiPoint(parsedCoordinates);
                 this.center = transform(getCenter(geom.getExtent()), 'EPSG:4326', 'EPSG:3857');
-            } else if (geometry.type == GeoJsonType.POLYGON && parsedCoordinates?.[0]?.[0]?.length == 2) {
+            } else if (geometry.type == GeoJsonType.POLYGON && parsedCoordinates?.[0]?.[0]?.length >= 2) {
                 const geom = new Polygon(parsedCoordinates);
                 this.center = transform(getCenter(geom.getExtent()), 'EPSG:4326', 'EPSG:3857');
-            } else if (geometry.type == GeoJsonType.MULTI_POLYGON && parsedCoordinates?.[0]?.[0]?.[0]?.length == 2) {
+            } else if (geometry.type == GeoJsonType.MULTI_POLYGON && parsedCoordinates?.[0]?.[0]?.[0]?.length >= 2) {
                 const geom = new MultiPolygon(parsedCoordinates);
                 this.center = transform(getCenter(geom.getExtent()), 'EPSG:4326', 'EPSG:3857');
-            } else if (geometry.type == GeoJsonType.LINE_STRING && parsedCoordinates?.[0]?.length == 2) {
+            } else if (geometry.type == GeoJsonType.LINE_STRING && parsedCoordinates?.[0]?.length >= 2) {
                 const geom = new LineString(parsedCoordinates);
                 this.center = transform(getCenter(geom.getExtent()), 'EPSG:4326', 'EPSG:3857');
-            } else if (geometry.type == GeoJsonType.MULTI_LINE_STRING && parsedCoordinates?.[0]?.[0]?.length == 2) {
+            } else if (geometry.type == GeoJsonType.MULTI_LINE_STRING && parsedCoordinates?.[0]?.[0]?.length >= 2) {
                 const geom = new MultiLineString(parsedCoordinates);
                 this.center = transform(getCenter(geom.getExtent()), 'EPSG:4326', 'EPSG:3857');
             } else {

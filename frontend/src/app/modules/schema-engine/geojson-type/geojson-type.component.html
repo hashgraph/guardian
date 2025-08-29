@@ -66,7 +66,7 @@
         <ng-container *ngIf="displayLocationEditor(); else tooManyFeaturesAdded">
             <div *ngFor="let geometry of geometriesList; let i = index">
                 <div class="location-control">
-                    <p class="location-name">Location: {{i}}</p>
+                    <p class="location-name">Location: {{i + 1}}</p>
                     <div class="form-group type-selector">
                         <p class="location-form-label">Type</p>
                         <p-dropdown
