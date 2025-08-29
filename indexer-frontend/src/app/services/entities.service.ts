@@ -182,6 +182,22 @@ export class EntitiesService {
             `${this.url}/${entity}/${messageId}/tree`
         ) as any;
     }
+
+    public getSchemasPackages(filters: PageFilters): Observable<Page<ISchema>> {
+        const entity = 'schemas-packages';
+        const options = ApiUtils.getOptions(filters);
+        return this.http.get<Page<ISchema>>(
+            `${this.url}/${entity}`,
+            options
+        ) as any;
+    }
+
+    public getSchemasPackage(messageId: string): Observable<SchemaDetails> {
+        const entity = 'schemas-packages';
+        return this.http.get<SchemaDetails>(
+            `${this.url}/${entity}/${messageId}`
+        ) as any;
+    }
     //#endregion
     //#region TOKENS
     public getTokens(filters: PageFilters): Observable<Page<Token>> {
@@ -423,6 +439,12 @@ export class EntitiesService {
 
     public updateFiles<T>(messageId: string): Observable<T> {
         return this.http.post<T>(`${this.url}/update-files`, {
+            messageId
+        }) as any;
+    }
+
+    public unpackSchemas<T>(messageId: string): Observable<T> {
+        return this.http.post<T>(`${this.url}/unpack-schemas`, {
             messageId
         }) as any;
     }

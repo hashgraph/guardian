@@ -3,80 +3,108 @@ import { Message } from './message.js';
 import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
-import { SchemaMessageBody } from './message-body.interface.js';
+import { SchemaPackageMessageBody } from './message-body.interface.js';
+
+interface IMetadata {
+    schemas: {
+        id: string,
+        uuid: string,
+        name: string,
+        description: string,
+        entity: string,
+        owner: string,
+        version: string,
+        codeVersion: string,
+    }[],
+    relationships: string[]
+}
 
 /**
  * Schema message
  */
-export class SchemaMessage extends Message {
+export class SchemaPackageMessage extends Message {
     /**
      * Name
      */
     public name: string;
     /**
-     * Description
-     */
-    public description: string;
-    /**
-     * Entity
-     */
-    public entity: string;
-    /**
      * Owner
      */
     public owner: string;
     /**
-     * UUID
-     */
-    public uuid: string;
-    /**
      * Version
      */
     public version: string;
-
     /**
-     * Code Version
+     * Schemas count
      */
-    public codeVersion: string;
-
+    public schemas: number;
     /**
      * Documents
      */
     public documents: any[];
 
-    /**
-     * Relationships
-     */
-    public relationships: string[];
+    private document: any;
+    private context: any;
+    private metadata: IMetadata;
 
     constructor(action: MessageAction) {
-        super(action, MessageType.Schema);
+        super(action, MessageType.SchemaPackage);
     }
 
     /**
      * Set document
      * @param schema
      */
-    public setDocument(schema: Schema): void {
-        this.name = schema.name;
-        this.description = schema.description;
-        this.entity = schema.entity;
-        this.owner = schema.owner;
-        this.uuid = schema.uuid;
-        this.version = schema.version;
-        this.codeVersion = schema.codeVersion;
-        const document = schema.document;
-        const context = schema.context;
-        this.documents = [document, context];
+    public setDocument(packageDocuments: {
+        name: string,
+        owner: string,
+        version: string,
+        document: any,
+        context: any
+    }): void {
+        this.name = packageDocuments.name;
+        this.owner = packageDocuments.owner;
+        this.version = packageDocuments.version;
+
+        this.document = packageDocuments.document;
+        this.context = packageDocuments.context;
+        this.documents = [this.document, this.context, this.metadata];
     }
 
-    public setRelationships(relationships: Schema[]): void {
-        this.relationships = [];
-        for (const relationship of relationships) {
-            if (relationship.messageId) {
-                this.relationships.push(relationship.messageId);
+    public setMetadata(
+        schemas: Schema[],
+        relationships: Schema[]
+    ): void {
+        const metadata: any[] = [];
+        const ids = new Set<string>();
+        if (schemas) {
+            for (const schema of schemas) {
+                metadata.push({
+                    id: schema.iri,
+                    uuid: schema.uuid,
+                    name: schema.name,
+                    description: schema.description,
+                    entity: schema.entity,
+                    owner: schema.owner,
+                    version: schema.version,
+                    codeVersion: schema.codeVersion
+                })
             }
         }
+        if (relationships) {
+            for (const schema of relationships) {
+                if (schema.messageId) {
+                    ids.add(schema.messageId);
+                }
+            }
+        }
+        this.metadata = {
+            schemas: metadata,
+            relationships: Array.from(ids)
+        };
+        this.documents = [this.document, this.context, this.metadata];
+        this.schemas = metadata.length;
     }
 
     /**
@@ -94,9 +122,16 @@ export class SchemaMessage extends Message {
     }
 
     /**
+     * Get context
+     */
+    public getMetadata(): IMetadata | undefined {
+        return this.documents[2];
+    }
+
+    /**
      * To message object
      */
-    public override toMessageObject(): SchemaMessageBody {
+    public override toMessageObject(): SchemaPackageMessageBody {
         return {
             id: null,
             status: null,
@@ -104,17 +139,15 @@ export class SchemaMessage extends Message {
             action: this.action,
             lang: this.lang,
             name: this.name,
-            description: this.description,
-            entity: this.entity,
             owner: this.owner,
-            uuid: this.uuid,
             version: this.version,
-            relationships: this.relationships,
+            schemas: this.schemas,
             document_cid: this.getDocumentUrl(UrlType.cid),
             document_uri: this.getDocumentUrl(UrlType.url),
             context_cid: this.getContextUrl(UrlType.cid),
             context_uri: this.getContextUrl(UrlType.url),
-            code_version: this.codeVersion
+            metadata_cid: this.getMetadataUrl(UrlType.cid),
+            metadata_uri: this.getMetadataUrl(UrlType.url),
         };
     }
 
@@ -123,8 +156,8 @@ export class SchemaMessage extends Message {
      */
     public async toDocuments(): Promise<ArrayBuffer[]> {
         if (
-            this.action === MessageAction.PublishSchema ||
-            this.action === MessageAction.PublishSystemSchema
+            this.action === MessageAction.PublishSchemas ||
+            this.action === MessageAction.PublishSystemSchemas
         ) {
             const result = new Array(this.documents.length);
             for (let i = 0; i < this.documents.length; i++) {
@@ -141,7 +174,7 @@ export class SchemaMessage extends Message {
      * Load documents
      * @param documents
      */
-    public loadDocuments(documents: string[]): SchemaMessage {
+    public loadDocuments(documents: string[]): SchemaPackageMessage {
         if (documents && Array.isArray(documents)) {
             this.documents = documents.map(e => JSON.parse(e));
         }
@@ -152,36 +185,32 @@ export class SchemaMessage extends Message {
      * From message
      * @param message
      */
-    public static fromMessage(message: string): SchemaMessage {
+    public static fromMessage(message: string): SchemaPackageMessage {
         if (!message) {
             throw new Error('Message Object is empty');
         }
 
         const json = JSON.parse(message);
-        return SchemaMessage.fromMessageObject(json);
+        return SchemaPackageMessage.fromMessageObject(json);
     }
 
     /**
      * From message object
      * @param json
      */
-    public static fromMessageObject(json: SchemaMessageBody): SchemaMessage {
+    public static fromMessageObject(json: SchemaPackageMessageBody): SchemaPackageMessage {
         if (!json) {
             throw new Error('JSON Object is empty');
         }
 
-        let message = new SchemaMessage(json.action);
+        let message = new SchemaPackageMessage(json.action);
         message = Message._fromMessageObject(message, json);
         message._id = json.id;
         message._status = json.status;
         message.name = json.name;
-        message.description = json.description;
-        message.entity = json.entity;
         message.owner = json.owner;
-        message.uuid = json.uuid;
         message.version = json.version;
-        message.codeVersion = json.code_version;
-        message.relationships = json.relationships;
+        message.schemas = json.schemas;
         const urls = [{
             cid: json.document_cid,
             url: json.document_url || json.document_uri
@@ -189,6 +218,10 @@ export class SchemaMessage extends Message {
         {
             cid: json.context_cid,
             url: json.context_url || json.context_uri
+        },
+        {
+            cid: json.metadata_cid,
+            url: json.metadata_url || json.metadata_uri
         }];
         message.setUrls(urls);
         return message;
@@ -218,6 +251,14 @@ export class SchemaMessage extends Message {
     }
 
     /**
+     * Get context URL
+     * @param type
+     */
+    public getMetadataUrl(type: UrlType): string | null {
+        return this.getUrlValue(2, type);
+    }
+
+    /**
      * Validate
      */
     public override validate(): boolean {
@@ -230,37 +271,35 @@ export class SchemaMessage extends Message {
     public override toJson(): any {
         const result = super.toJson();
         result.name = this.name;
-        result.description = this.description;
-        result.entity = this.entity;
         result.owner = this.owner;
-        result.uuid = this.uuid;
         result.version = this.version;
-        result.codeVersion = this.codeVersion;
-        result.relationships = this.relationships;
+        result.schemas = this.schemas;
         result.documentUrl = this.getDocumentUrl(UrlType.url);
         result.contextUrl = this.getContextUrl(UrlType.url);
+        result.metadataUrl = this.getMetadataUrl(UrlType.url);
         if (this.documents) {
             result.document = this.documents[0];
             result.context = this.documents[1];
+            result.metadata = this.documents[2];
         }
         return result;
     }
 
-    public static fromJson(json: any): SchemaMessage {
+    public static fromJson(json: any): SchemaPackageMessage {
         if (!json) {
             throw new Error('JSON Object is empty');
         }
 
-        const result = Message._fromJson(new SchemaMessage(json.action), json);
+        const result = Message._fromJson(new SchemaPackageMessage(json.action), json);
         result.name = json.name;
-        result.description = json.description;
-        result.entity = json.entity;
         result.owner = json.owner;
-        result.uuid = json.uuid;
         result.version = json.version;
-        result.codeVersion = json.codeVersion;
-        result.relationships = json.relationships;
-        result.documents = [json.document, json.context];
+        result.schemas = json.schemas;
+        result.documents = [
+            json.document,
+            json.context,
+            json.metadata
+        ];
         return result;
     }
 

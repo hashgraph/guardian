@@ -54,15 +54,13 @@ import {
     deleteDemoSchema,
     deleteSchema,
     findAndDryRunSchema,
-    findAndPublishSchema,
     ImportMode,
     ImportPolicyOptions,
     importTag,
-    incrementSchemaVersion,
     PolicyImportExportHelper,
     publishPolicyTags,
-    publishSystemSchemas,
-    sendSchemaMessage
+    publishSchemasPackage,
+    publishSystemSchemasPackage
 } from '../helpers/import-helpers/index.js';
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
 import { ISerializedErrors } from './policy-validation-results-container.js';
@@ -345,15 +343,15 @@ export class PolicyEngine extends NatsService {
             topicId: { $eq: 'draft' },
             owner: owner.owner
         });
-        const users = new Users();
+        // const users = new Users();
         for (const schema of schemas) {
+            // const topic = await TopicConfig.fromObject(
+            //     await DatabaseServer.getTopicById(policyTopicId),
+            //     true,
+            //     owner.id
+            // );
+            // const root = await users.getHederaAccount(owner.creator, owner.id);
             schema.topicId = policyTopicId;
-            const topic = await TopicConfig.fromObject(
-                await DatabaseServer.getTopicById(policyTopicId),
-                true,
-                owner.id
-            );
-            const root = await users.getHederaAccount(owner.creator, owner.id);
             const dependencySchemas = await DatabaseServer.getSchemas({
                 $and: [
                     { iri: { $in: schema.defs } },
@@ -364,22 +362,10 @@ export class PolicyEngine extends NatsService {
             } as FilterObject<SchemaCollection>);
             for (const dependencySchema of dependencySchemas) {
                 dependencySchema.topicId = policyTopicId;
-                await sendSchemaMessage(
-                    owner,
-                    root,
-                    topic,
-                    MessageAction.CreateSchema,
-                    dependencySchema
-                );
+                // await sendSchemaMessage(owner, root, topic, MessageAction.CreateSchema, dependencySchema);
             }
             await DatabaseServer.updateSchemas(dependencySchemas);
-            await sendSchemaMessage(
-                owner,
-                root,
-                topic,
-                MessageAction.CreateSchema,
-                schema
-            );
+            // await sendSchemaMessage(owner, root, topic, MessageAction.CreateSchema, schema);
         }
         await DatabaseServer.updateSchemas(schemas);
     }
@@ -510,12 +496,20 @@ export class PolicyEngine extends NatsService {
 
             step.startStep(STEP_PUBLISH_SYSTEM_SCHEMAS);
             const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
-            await publishSystemSchemas(
+            /*await publishSystemSchemas(
                 systemSchemas,
                 messageServer,
                 user,
                 step.getStep(STEP_PUBLISH_SYSTEM_SCHEMAS)
-            );
+            );*/
+            await publishSystemSchemasPackage({
+                name: model.name,
+                version: model.version,
+                schemas: systemSchemas,
+                owner: user,
+                server: messageServer,
+                notifier
+            })
             step.completeStep(STEP_PUBLISH_SYSTEM_SCHEMAS);
 
             newTopic = await DatabaseServer.saveTopic(topic.toObject());
@@ -838,43 +832,53 @@ export class PolicyEngine extends NatsService {
      */
     public async publishSchemas(
         model: Policy,
-        user: IOwner,
+        owner: IOwner,
         root: IRootConfig,
+        server: MessageServer,
         notifier: INotificationStep,
         schemaMap: Map<string, string>,
         userId: string | null
     ): Promise<Policy> {
         const schemas = await DatabaseServer.getSchemas({ topicId: model.topicId });
-        notifier.setEstimate(schemas.length);
+        await publishSchemasPackage({
+            name: model.name,
+            version: model.version,
+            type: MessageAction.PublishSchemas,
+            schemas,
+            owner,
+            server,
+            schemaMap,
+            notifier
+        })
 
-        let num: number = 0;
-        for (const row of schemas) {
-            const step = notifier.addStep(`${row.name || '-'}`);
-            step.setId(row.id);
-            step.minimize(true);
-            num++;
-        }
-        for (const row of schemas) {
-            const step = notifier.getStepById(row.id);
+        // notifier.setEstimate(schemas.length);
+        // let num: number = 0;
+        // for (const row of schemas) {
+        //     const step = notifier.addStep(`${row.name || '-'}`);
+        //     step.setId(row.id);
+        //     step.minimize(true);
+        //     num++;
+        // }
+        // for (const row of schemas) {
+        //     const step = notifier.getStepById(row.id);
+        //     const schema = await incrementSchemaVersion(row.topicId, row.iri, user);
+        //     if (!schema || schema.status === SchemaStatus.PUBLISHED) {
+        //         step.skip();
+        //         continue;
+        //     }
+        //     step.start();
+        //     await findAndPublishSchema(
+        //         schema.id,
+        //         schema.version,
+        //         user,
+        //         root,
+        //         step,
+        //         schemaMap,
+        //         userId
+        //     );
+        //     step.complete();
+        // }
 
-            const schema = await incrementSchemaVersion(row.topicId, row.iri, user);
-            if (!schema || schema.status === SchemaStatus.PUBLISHED) {
-                step.skip();
-                continue;
-            }
-
-            step.start();
-            await findAndPublishSchema(
-                schema.id,
-                schema.version,
-                user,
-                root,
-                step,
-                schemaMap,
-                userId
-            );
-            step.complete();
-        }
         return model;
     }
 
@@ -1037,6 +1041,7 @@ export class PolicyEngine extends NatsService {
                 model,
                 user,
                 root,
+                messageServer,
                 notifier.getStep(STEP_PUBLISH_SCHEMAS),
                 schemaMap,
                 userId

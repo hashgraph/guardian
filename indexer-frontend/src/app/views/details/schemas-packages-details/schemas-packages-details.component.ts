@@ -21,11 +21,11 @@ import { OrganizationChartModule } from 'primeng/organizationchart';
 import CID from 'cids';
 
 @Component({
-    selector: 'schema-details',
-    templateUrl: './schema-details.component.html',
+    selector: 'schemas-packages-details',
+    templateUrl: './schemas-packages-details.component.html',
     styleUrls: [
         '../base-details/base-details.component.scss',
-        './schema-details.component.scss',
+        './schemas-packages-details.component.scss',
     ],
     standalone: true,
     imports: [
@@ -44,11 +44,11 @@ import CID from 'cids';
         OrganizationChartModule,
     ],
 })
-export class SchemaDetailsComponent extends BaseDetailsComponent {
+export class SchemasPackageDetailsComponent extends BaseDetailsComponent {
     public title!: string;
     public itemNumber?: string;
 
-    tabs: any[] = ['overview', 'document', 'tree', 'activity', 'raw'];
+    tabs: any[] = ['overview', 'document', 'activity', 'raw'];
     overviewFields: OverviewFormField[] = [
         {
             label: 'details.schema.overview.topic_id',
@@ -70,6 +70,10 @@ export class SchemaDetailsComponent extends BaseDetailsComponent {
         {
             label: 'details.schema.overview.version',
             path: 'options.version',
+        },
+        {
+            label: 'details.schema.overview.schemas',
+            path: 'options.schemas',
         },
         {
             label: 'details.schema.overview.policy',
@@ -99,7 +103,7 @@ export class SchemaDetailsComponent extends BaseDetailsComponent {
             }
 
             this.loading = true;
-            this.entitiesService.getSchema(this.id).subscribe({
+            this.entitiesService.getSchemasPackage(this.id).subscribe({
                 next: (result) => {
                     this.setResult(result);
                     setTimeout(() => {
@@ -118,15 +122,6 @@ export class SchemaDetailsComponent extends BaseDetailsComponent {
     }
 
     protected override onNavigate(): void {
-        if (this.id && this.tab === 'tree') {
-            this.loading = true;
-            this.entitiesService.getSchemaTree(this.id).subscribe({
-                next: (result) => {
-                    this.tree = result;
-                },
-                complete: () => (this.loading = false),
-            });
-        }
     }
 
     protected override getTabIndex(name: string): number {
@@ -151,18 +146,11 @@ export class SchemaDetailsComponent extends BaseDetailsComponent {
         this.router.navigate(['schemas', id]);
     }
 
-    protected override onOpenVCs(): void {
-        this.router.navigate(['/vc-documents'], {
+    protected override onOpenSchemas() {
+        this.router.navigate(['/schemas'], {
             queryParams: {
-                'analytics.schemaId': this.id,
-            },
-        });
-    }
-
-    protected override onOpenVPs(): void {
-        this.router.navigate(['/vp-documents'], {
-            queryParams: {
-                'analytics.schemaIds': this.id,
+                keywords: JSON.stringify([this.id]),
+                topicId: this.row.topicId,
             },
         });
     }
@@ -198,6 +186,7 @@ export class SchemaDetailsComponent extends BaseDetailsComponent {
                     }
                     item._ipfs.push(ipfs);
                 }
+                item._unpacked = !!(item?.analytics?.unpacked);
             }
         }
     }
@@ -215,5 +204,26 @@ export class SchemaDetailsComponent extends BaseDetailsComponent {
                 uuid: null,
             }
         }
+    }
+
+    public onUnpack(item: any) {
+        this.loading = true;
+        this.entitiesService
+            .unpackSchemas(item.consensusTimestamp)
+            .subscribe({
+                next: (result) => {
+                    if (result) {
+                        this.first = result;
+                        this.setFiles(this.first);
+                    }
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                },
+                error: ({ message }) => {
+                    this.loading = false;
+                    console.error(message);
+                },
+            });
     }
 }

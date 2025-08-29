@@ -23,11 +23,11 @@ import { InputTextModule } from 'primeng/inputtext';
 import { HederaType } from '@components/hedera-explorer/hedera-explorer.component';
 
 @Component({
-    selector: 'schemas',
-    templateUrl: './schemas.component.html',
+    selector: 'schemas-packages',
+    templateUrl: './schemas-packages.component.html',
     styleUrls: [
         '../base-grid/base-grid.component.scss',
-        './schemas.component.scss',
+        './schemas-packages.component.scss',
     ],
     standalone: true,
     imports: [
@@ -51,7 +51,7 @@ import { HederaType } from '@components/hedera-explorer/hedera-explorer.componen
         InputGroupAddonModule,
     ],
 })
-export class SchemasComponent extends BaseGridComponent {
+export class SchemasPackagesComponent extends BaseGridComponent {
     columns: any[] = [
         {
             type: ColumnType.HEDERA,
@@ -140,7 +140,7 @@ export class SchemasComponent extends BaseGridComponent {
     protected loadData(): void {
         const filters = this.getFilters();
         this.loadingData = true;
-        this.entitiesService.getSchemas(filters).subscribe({
+        this.entitiesService.getSchemasPackages(filters).subscribe({
             next: (result) => {
                 this.setResult(result);
                 setTimeout(() => {
