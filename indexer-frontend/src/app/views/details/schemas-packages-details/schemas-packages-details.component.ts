@@ -72,6 +72,10 @@ export class SchemasPackageDetailsComponent extends BaseDetailsComponent {
             path: 'options.version',
         },
         {
+            label: 'details.schema.overview.schemas',
+            path: 'options.schemas',
+        },
+        {
             label: 'details.schema.overview.policy',
             path: 'analytics.policyIds',
             link: '/policies',
@@ -182,6 +186,7 @@ export class SchemasPackageDetailsComponent extends BaseDetailsComponent {
                     }
                     item._ipfs.push(ipfs);
                 }
+                item._unpacked = !!(item?.analytics?.unpacked);
             }
         }
     }
@@ -199,5 +204,26 @@ export class SchemasPackageDetailsComponent extends BaseDetailsComponent {
                 uuid: null,
             }
         }
+    }
+
+    public onUnpack(item: any) {
+        this.loading = true;
+        this.entitiesService
+            .unpackSchemas(item.consensusTimestamp)
+            .subscribe({
+                next: (result) => {
+                    if (result) {
+                        this.first = result;
+                        this.setFiles(this.first);
+                    }
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                },
+                error: ({ message }) => {
+                    this.loading = false;
+                    console.error(message);
+                },
+            });
     }
 }

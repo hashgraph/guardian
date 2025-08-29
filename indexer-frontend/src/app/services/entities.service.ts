@@ -442,4 +442,10 @@ export class EntitiesService {
             messageId
         }) as any;
     }
+
+    public unpackSchemas<T>(messageId: string): Observable<T> {
+        return this.http.post<T>(`${this.url}/unpack-schemas`, {
+            messageId
+        }) as any;
+    }
 }

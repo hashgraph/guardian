@@ -1,9 +1,9 @@
 import { DataBaseHelper, Message } from '@indexer/common';
 import { SynchronizationTask } from '../synchronization-task.js';
 import { loadFiles } from '../load-files.js';
-import { MongoDriver, MongoEntityManager } from '@mikro-orm/mongodb';
 import { SchemaField, MessageType, MessageAction, Schema } from '@indexer/interfaces';
 import { textSearch } from '../text-search-options.js';
+import { SchemaFileHelper } from '../../helpers/schema-file-helper.js';
 
 export class SynchronizationSchemaPackage extends SynchronizationTask {
     public readonly name: string = 'schema-package';
@@ -57,7 +57,7 @@ export class SynchronizationSchemaPackage extends SynchronizationTask {
         const allSchemas: Message[] = [];
         for (const item of allPackages) {
             const row = em.getReference(Message, item._id);
-            await this.unpack(em, allSchemas, item, fileMap);
+            await SchemaFileHelper.unpack(em, item, allSchemas, fileMap);
             row.analytics = {
                 textSearch: textSearch(row),
                 unpacked: true
@@ -82,116 +82,6 @@ export class SynchronizationSchemaPackage extends SynchronizationTask {
 
         console.log(`Sync schemas: flush`)
         await em.flush();
-    }
-
-    private async unpack(
-        em: MongoEntityManager<MongoDriver>,
-        allSchemas: Message[],
-        item: Message,
-        fileMap: Map<string, string>
-    ) {
-        const documentFileId = item.files[0];
-        const contextFileId = item.documents[1];
-        const metadataFileId = item.files[2];
-        const documentString = fileMap.get(documentFileId);
-        const metadataString = fileMap.get(metadataFileId);
-
-        const documentMap = this.parseDocument(documentString);
-        const schemas = this.parseMetadata(metadataString);
-
-        for (let index = 0; index < schemas.length; index++) {
-            const schema = schemas[index];
-            const document = documentMap[schema.id];
-            const documentId = await this.saveDocument(document, documentFileId + schema.id);
-            const json = {
-                topicId: item.topicId,
-                consensusTimestamp: `${item.consensusTimestamp}_${index + 1}`,
-                owner: item.owner,
-                sequenceNumber: item.sequenceNumber,
-                status: item.status,
-                statusReason: item.statusReason,
-                lang: item.lang,
-                responseType: item.responseType,
-                type: MessageType.SCHEMA,
-                action: (
-                    item.action === MessageAction.PublishSchemas ?
-                        MessageAction.PublishSchema :
-                        MessageAction.PublishSystemSchema
-                ),
-                uuid: item.uuid,
-                options: {
-                    id: schema.id,
-                    name: schema.name,
-                    description: schema.description,
-                    entity: schema.entity,
-                    owner: schema.owner,
-                    uuid: schema.uuid,
-                    version: schema.version,
-                    codeVersion: schema.codeVersion,
-                    packageMessageId: item.consensusTimestamp,
-                    unpacked: true
-                },
-                documents: [documentId, contextFileId],
-                files: [
-                    item.files[0] + schema.id,
-                    item.files[1] + schema.id,
-                ],
-                virtual: true,
-                loaded: true,
-                lastUpdate: Date.now()
-            }
-            const row = em.create(Message, json);
-            allSchemas.push(row);
-        }
-    }
-
-    private parseMetadata(file: string): any[] | null {
-        try {
-            if (file) {
-                const metadata = JSON.parse(file);
-                const schemas = metadata.schemas;
-                if (Array.isArray(schemas)) {
-                    return schemas;
-                }
-            }
-            return null;
-        } catch (error) {
-            return null;
-        }
-    }
-
-    private parseDocument(file: string): any {
-        try {
-            if (file) {
-                const map = JSON.parse(file);
-                if (typeof map === 'object') {
-                    return map;
-                }
-            }
-            return {};
-        } catch (error) {
-            return {};
-        }
-    }
-
-    private saveDocument(document: any, name: string) {
-        return new Promise<string>((resolve, reject) => {
-            try {
-                if (!document) {
-                    resolve(null);
-                    return;
-                }
-                const text = JSON.stringify(document);
-                const fileStream = DataBaseHelper.gridFS.openUploadStream(name);
-                fileStream.write(text);
-                fileStream.end(() => {
-                    resolve(fileStream.id?.toString());
-                });
-            } catch (error) {
-                console.log(error);
-                reject(error);
-            }
-        });
     }
 
     private createAnalytics(

@@ -67,6 +67,7 @@ import axios from 'axios';
 import { SchemaTreeNode } from '../utils/schema-tree.js';
 import { IPFSService } from '../helpers/ipfs-service.js';
 import { SchemaFileHelper } from '../helpers/schema-file-helper.js';
+import { textSearch } from '../helpers/text-search-options.js';
 
 //#region UTILS
 const pageOptions = new Set([
@@ -76,6 +77,18 @@ const pageOptions = new Set([
     'orderDir',
     'keywords',
 ]);
+
+function getErrorCode(error: any): number {
+    if (error && error.code) {
+        if (error.code < 100 || error.code > 999) {
+            return 500;
+        } else {
+            return error.code;
+        }
+    } else {
+        return 500;
+    }
+}
 
 function createRegex(text: string) {
     return {
@@ -152,7 +165,7 @@ async function loadDocuments(
             return result;
         }
 
-        if (!row.virtual && tryLoad) {
+        if (!result.virtual && tryLoad) {
             await checkDocuments(result, 20 * 1000);
             await saveDocuments(result);
         }
@@ -426,7 +439,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Registry>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -519,7 +532,7 @@ export class EntityService {
                 },
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -554,7 +567,7 @@ export class EntityService {
             });
         } catch (error) {
             console.log(error);
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -616,7 +629,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<RegistryUser>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -688,7 +701,7 @@ export class EntityService {
                 },
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -725,7 +738,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Policy>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -805,7 +818,7 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -841,7 +854,7 @@ export class EntityService {
             });
         } catch (error) {
             console.log(error);
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -870,7 +883,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Tool>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -926,7 +939,7 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -955,7 +968,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Module>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -989,7 +1002,7 @@ export class EntityService {
                 row,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -1021,7 +1034,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<ISchema>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -1079,7 +1092,7 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -1118,7 +1131,7 @@ export class EntityService {
             });
         } catch (error) {
             console.log(error);
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -1154,7 +1167,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<ISchema>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -1208,7 +1221,7 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -1257,7 +1270,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Token>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -1284,7 +1297,7 @@ export class EntityService {
                 labels
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -1312,7 +1325,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Role>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -1358,7 +1371,7 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -1387,7 +1400,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Statistic>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -1439,7 +1452,7 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_STATISTIC_DOCUMENTS)
@@ -1473,7 +1486,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<VC>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -1503,7 +1516,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Statistic>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -1555,7 +1568,7 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -1587,7 +1600,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Formula>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -1625,7 +1638,7 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -1682,7 +1695,7 @@ export class EntityService {
             });
         } catch (error) {
             console.log(error);
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -1713,7 +1726,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<DID>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_DID_DOCUMENT)
@@ -1762,7 +1775,7 @@ export class EntityService {
                 row,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_DID_RELATIONSHIPS)
@@ -1794,7 +1807,7 @@ export class EntityService {
             });
         } catch (error) {
             console.log(error);
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -1822,7 +1835,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<VP>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -1880,7 +1893,7 @@ export class EntityService {
                 row,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -1915,7 +1928,7 @@ export class EntityService {
             });
         } catch (error) {
             console.log(error);
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -1950,7 +1963,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<VC>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_VC_DOCUMENT)
@@ -2021,7 +2034,7 @@ export class EntityService {
                 formulasData
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_VC_RELATIONSHIPS)
@@ -2055,7 +2068,7 @@ export class EntityService {
             });
         } catch (error) {
             console.log(error);
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -2084,7 +2097,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<VP>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -2142,7 +2155,7 @@ export class EntityService {
                 row,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -2198,7 +2211,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<NFT>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
 
@@ -2241,7 +2254,7 @@ export class EntityService {
                 history: nftHistory.data?.transactions || [],
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -2271,7 +2284,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Topic>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_TOPIC)
@@ -2380,7 +2393,7 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -2409,7 +2422,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Contract>>(result);
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_CONTRACT)
@@ -2440,7 +2453,7 @@ export class EntityService {
                 row,
             });
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
     //#endregion
@@ -2452,10 +2465,14 @@ export class EntityService {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            let item = await em.findOne(Message, {
                 consensusTimestamp: messageId,
             });
+            if (!item) {
+                throw Error('Message not found');
+            }
             if (item.virtual) {
+                item = await loadDocuments(item, false);
                 return new MessageResponse<any>(item);
             }
             await checkDocuments(item, 2 * 60 * 1000);
@@ -2468,9 +2485,58 @@ export class EntityService {
                 return new MessageResponse<any>(item);
             }
         } catch (error) {
-            return new MessageError(error, error.code);
+            return new MessageError(error, getErrorCode(error.code));
         }
     }
-    //#endregion
+
+    @MessagePattern(IndexerMessageAPI.UNPACK_SCHEMAS)
+    async unpackSchemas(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<any>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            let item = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.SCHEMA_PACKAGE
+            });
+            if (!item) {
+                throw Error('Message not found');
+            }
+            if (item.virtual) {
+                item = await loadDocuments(item, false);
+                return new MessageResponse<any>(item);
+            }
+            if (item.analytics?.unpacked) {
+                item = await loadDocuments(item, false);
+                return new MessageResponse<any>(item);
+            }
+
+            await checkDocuments(item, 2 * 60 * 1000);
+            await saveDocuments(item);
+            item = await loadDocuments(item, false);
+
+            const fileMap = new Map<string, string>();
+            for (let i = 0; i < item.files.length; i++) {
+                const name = item.files[i];
+                fileMap.set(name, item.documents[i])
+            }
+
+            const row = em.getReference(Message, item._id);
+            await SchemaFileHelper.unpack(em, item, [], fileMap);
+            row.analytics = {
+                textSearch: textSearch(row),
+                unpacked: true
+            };
+            em.persist(row);
+            await em.flush();
+
+            item.analytics = row.analytics;
+
+            return new MessageResponse<any>(item);
+        } catch (error) {
+            return new MessageError(error, getErrorCode(error.code));
+        }
+    }
     //#endregion
 }

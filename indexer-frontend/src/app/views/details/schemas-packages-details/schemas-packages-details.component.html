@@ -16,7 +16,19 @@
             <p-tabView [activeIndex]="tabIndex" (activeIndexChange)="onTab($event)">
                 @if (target) {
                     <p-tabPanel [header]="'details.schema.tabs.overview' | transloco">
-                        <app-overview-form [target]="target" [fields]="overviewFields"></app-overview-form>
+                        <div class="details-container">
+                            <app-overview-form [target]="target" [fields]="overviewFields"></app-overview-form>
+                        </div>
+                        @if (!target._unpacked) {
+                            <div class="document-container">
+                                <div class="document-container-error">
+                                    <div class="document-container-error-header">
+                                        {{ 'details.schemas_not_unpacked' | transloco }}
+                                    </div>
+                                    <p-button class="document-container-error-btn" [label]="'details.try_unpacked' | transloco" (onClick)="onUnpack(first)"/>
+                                </div>
+                            </div>
+                        }
                     </p-tabPanel>
                     <p-tabPanel [header]="'details.schema.tabs.document' | transloco">
                         @if (first._ipfs) {

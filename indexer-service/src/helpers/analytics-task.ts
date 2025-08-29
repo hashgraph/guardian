@@ -11,6 +11,7 @@ import { PolicyLoader, HashComparator } from '../analytics/index.js';
 import { parsePolicyFile } from './parsers/policy.parser.js';
 import { LoadingQueueService } from '../api/loading-queue.service.js';
 import { SchemaFileHelper } from './schema-file-helper.js';
+import { MongoDriver, MongoEntityManager } from '@mikro-orm/mongodb';
 
 /**
  * Synchronization task
@@ -171,6 +172,8 @@ export class AnalyticsTask {
                 }
             }
         }
+
+        await this.unpackingSchemas(em, messageCollection, policyTopicIds);
 
         const topicMap = await this.loadTopics(messageCollection, consensusTimestamps, policyTopicIds);
 
@@ -734,4 +737,39 @@ export class AnalyticsTask {
         analytics.tags = [];
     }
     //#endregion
+
+    private async unpackingSchemas(
+        em: MongoEntityManager<MongoDriver>,
+        collection: Collection<Message>,
+        policyTopicIds: Set<string>
+    ) {
+        const schemasPackages = collection.find({
+            type: MessageType.SCHEMA_PACKAGE,
+            topicId: { $in: Array.from(policyTopicIds) },
+            loaded: true,
+            analytics: { $exists: false }
+        });
+        const allPackages: Message[] = [];
+        const fileIds: Set<string> = new Set<string>();
+        while (await schemasPackages.hasNext()) {
+            const item = await schemasPackages.next();
+            allPackages.push(item);
+            fileIds.add(item.files?.[0]);
+            fileIds.add(item.files?.[2]);
+        }
+
+        const fileMap = await fastLoadFiles(fileIds);
+
+        const allSchemas: Message[] = [];
+        for (const item of allPackages) {
+            const row = em.getReference(Message, item._id);
+            await SchemaFileHelper.unpack(em, item, allSchemas, fileMap);
+            row.analytics = {
+                textSearch: textSearch(row),
+                unpacked: true
+            };
+            em.persist(row);
+        }
+        return allSchemas;
+    }
 }

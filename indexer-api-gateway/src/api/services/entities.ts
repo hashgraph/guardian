@@ -1983,7 +1983,7 @@ export class EntityApi extends ApiClient {
     //#region FILES
     @Post('/update-files')
     @ApiOperation({
-        summary: 'Try load ipfs files',
+        summary: 'Try to load ipfs files',
         description: 'Returns ipfs files',
     })
     @ApiBody({
@@ -2002,6 +2002,31 @@ export class EntityApi extends ApiClient {
     async search(@Body() body: UpdateFileDTO) {
         return await this.send(
             IndexerMessageAPI.UPDATE_FILES,
+            body
+        );
+    }
+
+    @Post('/unpack-schemas')
+    @ApiOperation({
+        summary: 'Try to unpack schemas',
+        description: 'Returns schemas',
+    })
+    @ApiBody({
+        description: 'Entity Timestamp',
+        type: UpdateFileDTO,
+    })
+    @ApiOkResponse({
+        description: 'Try to unpack schemas',
+        type: DetailsDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO,
+    })
+    @HttpCode(HttpStatus.OK)
+    async unpackSchemas(@Body() body: UpdateFileDTO) {
+        return await this.send(
+            IndexerMessageAPI.UNPACK_SCHEMAS,
             body
         );
     }

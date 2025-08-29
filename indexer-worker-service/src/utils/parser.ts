@@ -78,6 +78,7 @@ export class Parser {
                     message.options.name = json.name;
                     message.options.owner = json.owner;
                     message.options.version = json.version;
+                    message.options.schemas = json.schemas;
                     if (json.document_cid) {
                         message.files.push(json.document_cid);
                         message.files.push(json.context_cid);
