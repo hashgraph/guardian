@@ -2619,7 +2619,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      summary: Try load ipfs files
+      summary: Try to load ipfs files
+      tags:
+        - entities
+  /entities/unpack-schemas:
+    post:
+      description: Returns schemas
+      operationId: EntityApi_unpackSchemas
+      parameters: []
+      requestBody:
+        required: true
+        description: Entity Timestamp
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFileDTO'
+      responses:
+        '200':
+          description: Try to unpack schemas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetailsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      summary: Try to unpack schemas
       tags:
         - entities
   /landing/analytics:
