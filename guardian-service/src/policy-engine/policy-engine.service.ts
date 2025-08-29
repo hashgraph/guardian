@@ -1969,9 +1969,6 @@ export class PolicyEngineService {
                     if (!policy || !policy.config) {
                         throw new Error('The policy is empty');
                     }
-                    if (!PolicyHelper.isDryRunMode(policy)) {
-                        throw new Error('Policy is not in Dry Run');
-                    }
 
                     const items = await DatabaseServer.getSavepointsByPolicyId(policyId, { includeDeleted: false });
 

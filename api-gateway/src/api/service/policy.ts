@@ -3342,11 +3342,6 @@ export class PolicyApi {
     ) {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
-        const policy = await engineService.accessPolicy(policyId, owner, 'read');
-
-        if (!PolicyHelper.isDryRunMode(policy)) {
-            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN);
-        }
 
         try {
             return await engineService.getSavepoints(policyId, owner);

@@ -134,6 +134,8 @@ export class PolicyConfigurationComponent implements OnInit {
         body: null
     }
 
+    private savepointsWarnShown = false;
+
     private _destroy$ = new Subject<void>();
 
     constructor(
@@ -482,6 +484,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
         setTimeout(() => {
             this.loading = false;
+            this.maybeShowSavepointsWarning()
         }, 500);
     }
 
@@ -1921,4 +1924,52 @@ export class PolicyConfigurationComponent implements OnInit {
         document.body.classList.remove('pointer-events-children-none');
         document.body.style.cursor = '';
     }
+
+    private shouldShowSavepointsWarning(): boolean {
+        if (this.rootType !== 'Policy') {
+            return false
+        }
+
+        const isDryOrDemo = this.policyTemplate?.isDryRun || this.policyTemplate?.isDemo;
+        if (isDryOrDemo) {
+            return false;
+        }
+
+        return this.compareState(this.rootTemplate.getJSON(), this.storage.current);
+    }
+
+    private maybeShowSavepointsWarning(): void {
+        if (!this.shouldShowSavepointsWarning()) {
+            return
+        };
+
+        this.policyEngineService.getSavepoints(this.policyId).subscribe({
+            next: (resp) => {
+                const items = resp?.items ?? [];
+                if (!items.length) return;
+
+                const names = items.map((i: any) => (i?.name?.trim() || i?.id));
+                const count = names.length;
+                const list = names.map((n: any) => `• ${n}`).join('\n');
+
+                const text =
+                    `This policy already has ${count} ${count === 1 ? 'savepoint' : 'savepoints'}:\n\n` +
+                    `${list}\n\n` +
+                    `Changes to the configuration may make these savepoints unusable or cause issues during restore. ` +
+                    `If you're planning significant edits, consider applying the needed savepoint first or removing the ones you won't use.`;
+
+                this.dialogService.open(CustomConfirmDialogComponent, {
+                    showHeader: false,
+                    width: '640px',
+                    styleClass: 'guardian-dialog warning-dialog',
+                    data: {
+                        header: 'Savepoints found',
+                        text,
+                        buttons: [{ name: 'OK', class: 'primary' }]
+                    },
+                });
+            }
+        });
+    }
+
 }
