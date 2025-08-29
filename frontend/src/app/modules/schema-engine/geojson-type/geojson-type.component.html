@@ -33,8 +33,8 @@
         <app-file-drag-n-drop
             *ngIf="!isDisabled"
             (onFileLoaded)="importFromFile($event)"
-            [dropZoneLabel]="'Upload file (.json, .kml)'"
-            [fileExtension]="'json, .kml, .geojson'"
+            [dropZoneLabel]="'Upload file (.json, .kml, .geojson)'"
+            [fileExtension]="'.json, .kml, .geojson'"
         ></app-file-drag-n-drop>
     </div>
 </ng-container>
