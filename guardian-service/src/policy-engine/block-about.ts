@@ -1510,4 +1510,3 @@ export const BlockAbout = {
  * Block About (String)
  */
 export const BlockAboutString = JSON.stringify(BlockAbout);
-//'visible': 'authentication === "bearerToken"',
