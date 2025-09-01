@@ -1373,10 +1373,10 @@
   dependencies:
     is-negated-glob "^1.0.0"
 
-"@hashgraph/cryptography@1.6.0":
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/@hashgraph/cryptography/-/cryptography-1.6.0.tgz#c4c709d347253ba69a0ea15ea427f7d2ef377c87"
-  integrity sha512-XcmZe5dSq9ASqERxQzlwvQA+UVeYEaKy3g/1LHJrZ2KkSVvSWmvO3Q0cx4+tL2EEzuIF5m1yYJ6rsoG1w3IWPw==
+"@hashgraph/cryptography@1.9.0":
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/@hashgraph/cryptography/-/cryptography-1.9.0.tgz#eda84887e5909a850b013575d87f8bdb9e9393f9"
+  integrity sha512-0UItolO1W/f8YIsGBrIxvjY+cSdvs4sEdzXOL49ThYEfPskJUprG3vhMhosRFoA4d0hxdJ7/glB7f7He8RW9xg==
   dependencies:
     "@noble/curves" "^1.8.1"
     asn1js "^3.0.6"
@@ -1391,26 +1391,26 @@
     tweetnacl "^1.0.3"
     utf8 "^3.0.0"
 
-"@hashgraph/proto@2.17.0-beta.1":
-  version "2.17.0-beta.1"
-  resolved "https://registry.yarnpkg.com/@hashgraph/proto/-/proto-2.17.0-beta.1.tgz#7a1a11a0e6d2cc3fe6c2b9e8e4eb2b2d1075e358"
-  integrity sha512-WPML6aXHkp6hD/wUz0WJyDBGUMgBHpH+eBVRqfU3BiP9de7HkmDHA0YB2IbPDv/29DMxiLi0O65+o7XXIKAb2g==
+"@hashgraph/proto@2.22.0":
+  version "2.22.0"
+  resolved "https://registry.yarnpkg.com/@hashgraph/proto/-/proto-2.22.0.tgz#15af710f096e680455a84f1f56f75e5497042b45"
+  integrity sha512-+h2qqk+KwpV+rr1AN4ip1Gel3X4v0DvFO9WH7o0ZR3gQX9pfzurptKGs30DlBnH21xPqDH61v90bZvVknE27NA==
   dependencies:
     long "^5.2.3"
     protobufjs "7.2.5"
 
-"@hashgraph/sdk@2.63.0":
-  version "2.63.0"
-  resolved "https://registry.yarnpkg.com/@hashgraph/sdk/-/sdk-2.63.0.tgz#c88ac22d7f79e48f1dae621857afcedba7895747"
-  integrity sha512-OS/wbsxvX1H0nCMS/Z8JYRcOlsUSV7q2AcoALnZaMTWAmq9cyrr1MRFpEVSFZ2DNSDf4mBGjOoWvYT9LLCtjFQ==
+"@hashgraph/sdk@2.72.0":
+  version "2.72.0"
+  resolved "https://registry.yarnpkg.com/@hashgraph/sdk/-/sdk-2.72.0.tgz#f55e905e1cc0e37d8d064c2447c1cfbd93e0cb4e"
+  integrity sha512-w35M77OAkJutENG4CldUGzfT+qubDjEYCQR5Ran75uHB+SLeCodR87AXWJ3ocr5vPaZ7lsflBXEYZLhgCi1G2g==
   dependencies:
     "@ethersproject/abi" "^5.8.0"
     "@ethersproject/bignumber" "^5.8.0"
     "@ethersproject/bytes" "^5.8.0"
     "@ethersproject/rlp" "^5.8.0"
     "@grpc/grpc-js" "^1.12.6"
-    "@hashgraph/cryptography" "1.6.0"
-    "@hashgraph/proto" "2.17.0-beta.1"
+    "@hashgraph/cryptography" "1.9.0"
+    "@hashgraph/proto" "2.22.0"
     bignumber.js "^9.1.1"
     bn.js "^5.1.1"
     crypto-js "^4.2.0"
