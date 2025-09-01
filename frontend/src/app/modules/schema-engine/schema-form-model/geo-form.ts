@@ -25,13 +25,14 @@ export class GeoForm {
             ajvSchemaValidator(new ajv().compile(GeoJsonSchema))
         );
         if (this.presetDocument) {
-            const type = this.presetDocument.type;
-            const coordinates = this.presetDocument.coordinates;
+            const type = this.presetDocument?.geometry?.type || this.presetDocument.type;
+            const coordinates = this.presetDocument?.geometry?.coordinates || this.presetDocument.coordinates;
+            const features = this.presetDocument.features;
             this.form.patchValue({
                 type,
                 coordinates,
+                features,
             }, { emitEvent: false, onlySelf: true });
-
         }
 
         // this.form.updateValueAndValidity();

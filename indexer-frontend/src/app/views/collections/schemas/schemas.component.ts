@@ -60,6 +60,12 @@ export class SchemasComponent extends BaseGridComponent {
             width: '250px',
             sort: true,
             hederaType: HederaType.TRANSACTION,
+            formatValue: (value: any) => {
+                if (value && value.length > 20) {
+                    value = value.substr(0, 20);
+                }
+                return value;
+            }
         },
         {
             type: ColumnType.TEXT,
@@ -68,6 +74,9 @@ export class SchemasComponent extends BaseGridComponent {
             width: '250px',
             sort: true,
             formatValue: (value: any) => {
+                if (value && value.length > 20) {
+                    value = value.substr(0, 20);
+                }
                 const fixedTimestamp = Math.floor(value * 1000);
                 value = new Date(fixedTimestamp);
                 const formattedDate = value.toLocaleString();
@@ -146,17 +155,6 @@ export class SchemasComponent extends BaseGridComponent {
     }
 
     protected loadFilters(): void {
-        this.loadingFilters = true;
-        this.filtersService.getVcFilters().subscribe({
-            next: (result) => {
-                setTimeout(() => {
-                    this.loadingFilters = false;
-                }, 500);
-            },
-            error: ({ message }) => {
-                this.loadingFilters = false;
-                console.error(message);
-            },
-        });
+        this.loadingFilters = false;
     }
 }

@@ -1,6 +1,5 @@
 import { configAPI } from './api/config.service.js';
 import { documentsAPI } from './api/documents.service.js';
-import { loaderAPI } from './api/loader.service.js';
 import { profileAPI } from './api/profile.service.js';
 import { schemaAPI } from './api/schema.service.js';
 import { tokenAPI } from './api/token.service.js';
@@ -162,7 +161,6 @@ Promise.all([
         await configAPI(logger);
         await schemaAPI(logger);
         await tokenAPI(dataBaseServer, logger);
-        await loaderAPI(dataBaseServer, logger);
         await profileAPI(logger);
         await documentsAPI(dataBaseServer);
         await demoAPI(dataBaseServer, logger);
