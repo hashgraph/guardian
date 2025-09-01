@@ -1452,6 +1452,14 @@ export const BlockAbout = {
                 'default': ''
             },
             {
+                'name': 'authenticationURL',
+                'label': 'Authentication Url',
+                'title': 'Authentication Url',
+                'type': 'Input',
+                'visible': 'authentication === "bearerToken"',
+                'default': ''
+            },
+            {
                 'name': 'headers',
                 'label': 'Headers',
                 'title': 'Headers',
@@ -1502,3 +1510,4 @@ export const BlockAbout = {
  * Block About (String)
  */
 export const BlockAboutString = JSON.stringify(BlockAbout);
+//'visible': 'authentication === "bearerToken"',
