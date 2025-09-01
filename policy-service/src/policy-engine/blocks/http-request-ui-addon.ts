@@ -130,4 +130,3 @@ export class HttpRequestUIAddon {
         };
     }
 }
-                //visible: 'authentication === "bearerToken"',
