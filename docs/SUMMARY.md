@@ -899,9 +899,9 @@
 
 ## Methodology Digitization
 
-* [рџ“љ Methodology Digitization Handbook](methodology-digitization-handbook/README.md)
-  * [рџ“‹ Table of Contents](methodology-digitization-handbook/table-of-contents.md)
-  * [рџ“ќ Chapter Outlines](methodology-digitization-handbook/chapter-outlines.md)
+* [📚 рџ“љ Methodology Digitization Handbook](methodology-digitization-handbook/README.md)
+  * [📋 рџ“‹ Table of Contents](methodology-digitization-handbook/table-of-contents.md)
+  * [📝 рџ“ќ Chapter Outlines](methodology-digitization-handbook/chapter-outlines.md)
   * [рџЏ—пёЏ Part I: Foundation and Preparation](methodology-digitization-handbook/part-1/README.md)
     * [Chapter 1: Introduction to Methodology Digitization](methodology-digitization-handbook/part-1/chapter-1/README.md)
     * [Chapter 2: Understanding VM0033 Methodology](methodology-digitization-handbook/part-1/chapter-2/README.md)
