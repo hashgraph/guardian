@@ -181,6 +181,7 @@
         * [Create a new rule from the file](guardian/standard-registry/schemas/schema-rules/apis-related-to-schema-rules/create-a-new-rule-from-the-file.md)
         * [Load the file and return its preview](guardian/standard-registry/schemas/schema-rules/apis-related-to-schema-rules/load-the-file-and-return-its-preview.md)
         * [Export the selected rule (by ID) into the file](guardian/standard-registry/schemas/schema-rules/apis-related-to-schema-rules/export-the-selected-rule-by-id-into-the-file.md)
+    * [How to handle large location files?](guardian/standard-registry/schemas/how-to-handle-large-location-files.md)
   * [Policies](guardian/standard-registry/policies/README.md)
     * [Policy Glossary](guardian/standard-registry/policies/policy-glossary.md)
     * [Versioning and Deprecation Policy](guardian/standard-registry/policies/versioning-and-deprecation-policy/README.md)

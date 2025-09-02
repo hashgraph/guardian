@@ -81,6 +81,7 @@ Example of URL which has correct format: [https://ipfs.io/ipfs/bafkreihgbx6fsqup
 2. Polygons and lines can be placed by double clicking on map.
 3. Right Click on the map will remove temporary points for polygons and lines
 4. View type can also be changed by pasting the GeoJSON.
+5. We can upload .kml, .json files to add locations. More details on this can be found in this [doc](how-to-handle-large-location-files.md).
 {% endhint %}
 
 {% hint style="info" %}
