@@ -53,7 +53,8 @@ import {
     VpDocument as VpDocumentCollection,
     ExternalPolicy,
     PolicyAction,
-    PolicyKey
+    PolicyKey,
+    PolicyComment
 } from '../entity/index.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { Theme } from '../entity/theme.js';
@@ -63,7 +64,7 @@ import { DataBaseHelper, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS } from '../
 import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js';
 import { AbstractDatabaseServer, IAddDryRunIdItem, IAuthUser, IGetDocumentAggregationFilters } from '../interfaces/index.js';
 import { BaseEntity } from '../models/index.js';
-import {DryRunSavepointSnapshot} from '../entity/dry-run-savepoint-snapshot.js';
+import { DryRunSavepointSnapshot } from '../entity/dry-run-savepoint-snapshot.js';
 
 /**
  * Database server
@@ -255,8 +256,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param policyId
      * @param savepointProps
      */
-    public static async createSavepoint(policyId: string, savepointProps: {name: string, savepointPath: string[]}): Promise<string> {
-        const {name, savepointPath = []} = savepointProps
+    public static async createSavepoint(policyId: string, savepointProps: { name: string, savepointPath: string[] }): Promise<string> {
+        const { name, savepointPath = [] } = savepointProps
 
         const dryRunSavepoint = new DataBaseHelper(DryRunSavepoint);
         const savepoint = dryRunSavepoint.create({
@@ -440,7 +441,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async restoreSavepointStates(policyId: string, savepointId: string): Promise<void> {
         const snaps = await new DataBaseHelper(BlockStateSavepoint)
-            .find({ policyId, savepointId }, { fields: ['blockId','blockState'] } as any);
+            .find({ policyId, savepointId }, { fields: ['blockId', 'blockState'] } as any);
 
         if (!snaps?.length) {
             return;
@@ -478,7 +479,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         }
 
         const snaps = await new DataBaseHelper(DryRunSavepointSnapshot)
-            .find({ policyId, savepointId: { $in: path } }, { fields: ['sourceId','options','savepointId'] } as any);
+            .find({ policyId, savepointId: { $in: path } }, { fields: ['sourceId', 'options', 'savepointId'] } as any);
 
         if (!snaps?.length) {
             return;
@@ -1044,6 +1045,66 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async removeFormula(formula: Formula): Promise<void> {
         return await new DataBaseHelper(Formula).remove(formula);
+    }
+
+    /**
+     * Create Policy Comment
+     * @param comment
+     */
+    public static async createPolicyComment(
+        comment: FilterObject<PolicyComment>
+    ): Promise<PolicyComment> {
+        const item = new DataBaseHelper(PolicyComment).create(comment);
+        return await new DataBaseHelper(PolicyComment).save(item);
+    }
+
+    /**
+     * Get Policy Comments
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyCommentsAndCount(
+        filters?: FilterObject<PolicyComment>,
+        options?: FindOptions<object>
+    ): Promise<[PolicyComment[], number]> {
+        return await new DataBaseHelper(PolicyComment).findAndCount(filters, options);
+    }
+
+    /**
+     * Get Policy Comment
+     * @param filters
+     */
+    public static async getPolicyComment(
+        filters: FilterQuery<PolicyComment>
+    ): Promise<PolicyComment | null> {
+        return await new DataBaseHelper(PolicyComment).findOne(filters);
+    }
+
+
+    /**
+     * Get Policy Comments
+     * @param filters
+     */
+    public static async getPolicyComments(
+        filters: FilterQuery<PolicyComment>
+    ): Promise<PolicyComment[]> {
+        return await new DataBaseHelper(PolicyComment).find(filters);
+    }
+
+    /**
+     * Update Policy Comment
+     * @param comment
+     */
+    public static async updatePolicyComment(comment: PolicyComment): Promise<PolicyComment> {
+        return await new DataBaseHelper(PolicyComment).update(comment);
+    }
+
+    /**
+     * Delete Policy Comment
+     * @param comment
+     */
+    public static async removePolicyComment(comment: PolicyComment): Promise<void> {
+        return await new DataBaseHelper(PolicyComment).remove(comment);
     }
 
     /**

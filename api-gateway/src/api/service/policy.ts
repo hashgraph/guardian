@@ -4316,4 +4316,177 @@ export class PolicyApi {
     }
 
     //#endregion
+
+    //#region Comment
+
+    /**
+     * Create policy comment
+     */
+    @Post('/:policyId/comments/:documentId')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE
+    )
+    @ApiOperation({
+        summary: 'Create policy comment.',
+        description: 'Create policy comment',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'documentId',
+        type: String,
+        description: 'Document Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'Data',
+        type: Object
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: BlockDTO
+    })
+    @ApiServiceUnavailableResponse({
+        description: 'Block Unavailable.',
+        type: ServiceUnavailableErrorDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(BlockDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async createPolicyComment(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('documentId') documentId: string,
+        @Body() body: any
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.createPolicyComment(user, policyId, documentId, body);
+        } catch (error) {
+            error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+
+    /**
+     * Return a list of comments
+     */
+    @Get('/:policyId/comments/:documentId/')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Return a list of comments.',
+        description: 'Returns comments.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'documentId',
+        type: String,
+        description: 'Document Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiQuery({
+        name: 'anchor',
+        type: String,
+        description: '',
+        required: false,
+        example: ''
+    })
+    @ApiQuery({
+        name: 'sender',
+        type: String,
+        description: '',
+        required: false,
+        example: ''
+    })
+    @ApiQuery({
+        name: 'senderRole',
+        type: String,
+        description: '',
+        required: false,
+        example: ''
+    })
+    @ApiQuery({
+        name: 'privateMessages',
+        type: Boolean,
+        description: '',
+        required: false,
+        example: false
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: PolicyDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getPolicyComments(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Param('policyId') policyId: string,
+        @Param('documentId') documentId: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+        @Param('anchor') anchor?: string,
+        @Param('sender') sender?: string,
+        @Param('senderRole') senderRole?: string,
+        @Param('private') privateMessages?: boolean,
+    ): Promise<any> {
+        try {
+            const params = {
+                pageIndex,
+                pageSize,
+                anchor,
+                sender,
+                senderRole,
+                private: privateMessages,
+            };
+            const engineService = new PolicyEngine();
+            const { comments, count } = await engineService.getPolicyComments(user, policyId, documentId, params);
+            return res.header('X-Total-Count', count).send(comments);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    //#endregion
 }

@@ -757,7 +757,7 @@ export class PolicyEngine extends NatsService {
             name
         };
 
-        return  await this.sendMessage(
+        return await this.sendMessage(
             PolicyEngineEvents.UPDATE_SAVEPOINT,
             message
         );
@@ -1300,5 +1300,59 @@ export class PolicyEngine extends NatsService {
      */
     public async getRequestDocument(options: any, user: IAuthUser): Promise<PolicyRequestCountDTO> {
         return await this.sendMessage(PolicyEngineEvents.GET_REMOTE_REQUEST_DOCUMENT, { options, user });
+    }
+
+
+
+
+
+
+
+    /**
+     * Create policy comment
+     * @param user
+     * @param policyId
+     * @param documentId
+     * @param data
+     */
+    public async createPolicyComment(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+        data: {
+            anchor?: string;
+            //recipient
+            recipient?: string;
+            recipientRole?: string;
+            //document
+            text?: string;
+            attachedFiles?: string[];
+        }
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.CREATE_POLICY_COMMENT, { user, documentId, policyId, data });
+    }
+
+    /**
+     * Get policy comments
+     * @param user
+     * @param policyId
+     * @param documentId
+     * @param params
+     */
+    public async getPolicyComments(
+        user: IAuthUser,
+        policyId: string,
+        documentId: string,
+        params: {
+            pageIndex?: string | number,
+            pageSize?: string | number
+            anchor?: string,
+
+            sender?: string,
+            senderRole?: string;
+            private?: boolean,
+        }
+    ): Promise<{ comments: any[], count: number }> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_COMMENTS, { user, documentId, policyId, params });
     }
 }
