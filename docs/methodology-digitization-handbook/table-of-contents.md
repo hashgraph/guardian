@@ -69,31 +69,31 @@ Deep technical analysis of VM0033 policy implementation using actual JSON config
 
 Advanced policy implementation patterns including transformation blocks for Verra API integration, document validation blocks, external data integration, policy testing frameworks, and demo mode configuration using VM0033 production examples.
 
-## Part V: Calculation Logic Implementation
+## ✅ Part V: Calculation Logic Implementation
 
-### Chapter 17: Custom Logic Block Development
+### [Chapter 18: Custom Logic Block Development](part-5/chapter-18/README.md)
 
-Comprehensive guide to writing JavaScript/Python code for emission reduction(or removal) calculations, including VM0033-specific calculation examples and best practices.
+Comprehensive guide to implementing VM0033 emission reduction calculations using Guardian's customLogicBlock. Covers baseline emissions, project emissions, leakage calculations, and final net emission reductions using real JavaScript implementation with VM0033 test artifacts validation.
 
-### Chapter 18: Formula Linked Definitions (FLDs)
+### [Chapter 19: Formula Linked Definitions (FLDs)](part-5/chapter-19/README.md)
 
-Understanding and implementing FLDs for complex calculation dependencies and parameter relationships in environmental methodologies.
+Brief foundation chapter establishing FLD concepts for parameter relationship management in Guardian methodologies. Covers parameter reuse patterns and integration with customLogicBlock calculations using VM0033 examples.
 
-### Chapter 19: Data Validation and Error Handling
+### [Chapter 20: Guardian Tools Architecture and Implementation](part-5/chapter-20/README.md)
 
-Implementing robust data validation, error handling, and edge case management in calculation logic.
+Complete guide to building Guardian Tools using AR Tool 14 as practical example. Covers Tools as mini-policies, extractDataBlock workflows, customLogicBlock integration, and production implementation patterns for standardized calculation tools that integrate with multiple methodologies.
 
-### Chapter 20: Calculation Testing and Verification
+### [Chapter 21: Calculation Testing and Validation](part-5/chapter-21/README.md)
 
-Methods for testing calculation logic against test artifacts, debugging calculation errors, and ensuring mathematical accuracy.
+Comprehensive testing using Guardian's built-in testing capabilities including dry-run mode and customLogicBlock testing interface. Covers interactive testing with three input methods, validation against VM0033 test artifacts, testing at every calculation stage, and API-based automated testing using Guardian's REST APIs.
 
 ## Part VI: Integration and Testing
 
-### Chapter 21: End-to-End Policy Testing
+### Chapter 22: End-to-End Policy Testing
 
 Comprehensive testing strategies including dry runs, role-based testing, and workflow validation using VM0033 scenarios.
 
-### Chapter 22: API Integration and Automation
+### Chapter 23: API Integration and Automation
 
 Using Guardian APIs for automated testing, data submission, and integration with external systems. Includes practical examples for VM0033 data submission.
 

@@ -248,71 +248,75 @@
 
 **VM0033 Context**: Real implementation examples from VM0033 production policy including dataTransformationAddon for Verra API integration, documentValidatorBlock configurations, and comprehensive testing approaches.
 
-## Part V: Calculation Logic Implementation
+## ✅ Part V: Calculation Logic Implementation
 
-### Chapter 17: Custom Logic Block Development
+### Chapter 17: (Reserved for Part IV completion)
 
-**Purpose**: Implement complex calculation logic using JavaScript in Guardian.
+**Purpose**: Reserved for additional Part IV content.
 
-**Key Topics**:
+### Chapter 18: Custom Logic Block Development
 
-* JavaScript/Python development environment setup
-* Guardian calculation block architecture
-* Input/output document handling
-* Mathematical operations and precision handling
-* Error handling and validation
-* Performance optimization techniques
-* Debugging and testing strategies
-
-**VM0033 Context**: Complete implementation of VM0033 emission reduction calculations, including baseline emissions, project emissions, and net emission reductions.
-
-### Chapter 18: Formula Linked Definitions (FLDs)
-
-**Purpose**: Implement complex parameter relationships and dependencies.
+**Purpose**: Implement emission reduction calculations using JavaScript in Guardian's customLogicBlock.
 
 **Key Topics**:
 
-* FLD concept and architecture
-* Parameter linking and dependency management
-* Dynamic calculation updates
-* Circular dependency detection and resolution
-* Performance implications of complex FLDs
-* Documentation and maintenance strategies
+* Guardian customLogicBlock architecture and JavaScript execution environment
+* Document input/output handling with credentialSubject field access
+* VM0033 baseline emissions, project emissions, and net emission reduction calculations
+* Schema field integration and Auto Calculate field implementation
+* Error handling and validation within calculation blocks
+* Testing calculation logic outside and within Guardian environment
 
-**VM0033 Context**: Implementation of VM0033's complex parameter relationships, including soil organic carbon calculations and biomass estimations.
+**VM0033 Context**: Complete implementation of VM0033 emission reduction calculations using real production JavaScript from er-calculations.js artifact, including field mapping to PDD and monitoring report schemas.
 
-### Chapter 19: Data Validation and Error Handling
+### Chapter 19: Formula Linked Definitions (FLDs)
 
-**Purpose**: Ensure data quality and system reliability through robust validation.
-
-**Key Topics**:
-
-* Input validation strategies and techniques
-* Business rule validation implementation
-* Error message design and user feedback
-* Data sanitization and security considerations
-* Graceful error recovery mechanisms
-* Logging and monitoring for validation issues
-
-**VM0033 Context**: Comprehensive validation rules for VM0033 data inputs, including range checks, consistency validations, and methodology-specific business rules.
-
-### Chapter 20: Calculation Testing and Verification
-
-**Purpose**: Validate calculation accuracy against test artifacts and methodology requirements.
+**Purpose**: Brief foundation chapter establishing FLD concepts for parameter relationship management in Guardian methodologies.
 
 **Key Topics**:
 
-* Unit testing for calculation functions
-* Integration testing with complete workflows
-* Test data generation and management
-* Performance testing for large datasets
-* Regression testing for methodology updates
+* FLD concept and basic architectural understanding
+* Parameter reuse across multiple schema documents in policy workflows 
+* VM0033 parameter relationship examples suitable for FLD implementation
+* Integration patterns with customLogicBlock calculations
+* Basic design principles for FLD frameworks
 
-**VM0033 Context**: Complete testing suite for VM0033 calculations, comparing results against manually calculated test cases and methodology examples.
+**VM0033 Context**: Concise overview establishing FLD concepts with VM0033 parameter relationship examples, focusing on foundational understanding rather than detailed implementation.
+
+### Chapter 20: Guardian Tools Architecture and Implementation
+
+**Purpose**: Build Guardian Tools using extractDataBlock and customLogicBlock patterns, with AR Tool 14 as practical example.
+
+**Key Topics**:
+
+* Guardian Tools architecture as mini-policies with three-block pattern
+* ExtractDataBlock workflows for schema-based data input/output operations
+* CustomLogicBlock integration for standardized calculation implementations
+* AR Tool 14 complete implementation with stratified random sampling
+* Tool versioning, schema evolution, and production deployment patterns
+* Tool integration patterns for use across multiple methodologies
+
+**VM0033 Context**: Real AR Tool 14 implementation from Guardian production artifacts showing complete biomass calculation tool that integrates with VM0033 wetland restoration methodology.
+
+### Chapter 21: Calculation Testing and Validation
+
+**Purpose**: Comprehensive testing using Guardian's dry-run mode and customLogicBlock testing interface with VM0033 and AR Tool 14 test artifacts.
+
+**Key Topics**:
+
+* Guardian's customLogicBlock testing interface with three input methods (schema-based, JSON editor, file upload)
+* Interactive testing and debugging with Guardian's built-in debug() function
+* Dry-run mode for complete policy workflow testing without blockchain transactions
+* Test artifact validation using final-PDD-vc.json and official methodology spreadsheets
+* Testing at every calculation stage: baseline, project, leakage, and net ERR
+* API-based automated testing using Guardian's REST APIs and Cypress framework
+* Best practices for test data management and systematic testing approaches
+
+**VM0033 Context**: Practical testing implementation using VM0033_Allcot_Test_Case_Artifact.xlsx and final-PDD-vc.json with Guardian's testing interface, demonstrating complete validation workflow from individual calculations to full policy testing.
 
 ## Part VI: Integration and Testing
 
-### Chapter 21: End-to-End Policy Testing
+### Chapter 22: End-to-End Policy Testing
 
 **Purpose**: Validate complete policy functionality across all user roles and scenarios.
 
