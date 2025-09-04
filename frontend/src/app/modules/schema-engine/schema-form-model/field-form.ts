@@ -693,7 +693,7 @@ export class FieldForm {
 
     public removeItem(item: IFieldControl<any>, listItem: IFieldIndexControl<any>) {
         if (item.list) {
-            listItem.model?.destroy();
+            listItem.model?.destroy?.();
             const index = item.list.indexOf(listItem);
             item.control.removeAt(index);
             item.list.splice(index, 1);
