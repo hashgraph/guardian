@@ -102,14 +102,14 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 </details>
 
 <details>
-<summary><strong>Part V: Calculation Logic (Chapters 18-21)</strong> - 30-40 minutes</summary>
+<summary><strong>Part V: Calculation Logic Implementation (Chapters 18-21)</strong> - 2-3 hours</summary>
 
-**Purpose**: Implement mathematical calculations and validation logic **Outcome**: Accurate, tested calculation implementations
+**Purpose**: Convert methodology equations into executable code and implement comprehensive testing **Outcome**: Production-ready calculation implementations with Guardian's testing framework
 
 * Chapter 18: Custom Logic Block Development
 * Chapter 19: Formula Linked Definitions (FLDs)
-* Chapter 20: Data Validation and Error Handling
-* Chapter 21: Calculation Testing and Verification
+* Chapter 20: Guardian Tools Architecture and Implementation
+* Chapter 21: Calculation Testing and Validation
 
 </details>
 
@@ -215,10 +215,11 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 - **🔍 [Part II: Analysis and Planning](part-2/README.md)** - Systematic methodology analysis techniques (Available Now)
 - **🏗️ [Part III: Schema Design and Development](part-3/README.md)** - Schema development and testing (Available Now)
 - **⚙️ [Part IV: Policy Workflow Design and Implementation](part-4/README.md)** - Complete policy workflow development (Available Now)
+- **🧮 [Part V: Calculation Logic Implementation](part-5/README.md)** - CustomLogicBlock development, Guardian Tools, and testing (Available Now)
 
 ### Available Content
 {% hint style="success" %}
-**Parts I-IV are now available** with all seventeen chapters complete and ready for use, covering the complete foundation through production-ready policy implementation.
+**Parts I-V are now available** with all twenty-one chapters complete and ready for use, covering the complete foundation through calculation logic implementation and testing.
 {% endhint %}
 
 | Part             | Status          | Chapters                           | Description                                                               |
@@ -227,7 +228,8 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 | **Part II**      | ✅ **Available** | [Chapters 4-7](part-2/README.md)   | Methodology analysis, equation mapping, tools integration, test artifacts |
 | **Part III**     | ✅ **Available** | [Chapters 8-12](part-3/README.md)  | Schema development, field management, testing checklist                   |
 | **Part IV**      | ✅ **Available** | [Chapters 13-17](part-4/README.md) | Policy workflow design, VM0033 implementation, production deployment      |
-| **Part V-VIII**  | 🚧 Coming Soon   | Chapters 18-28                     | Calculation logic, integration testing, deployment, and advanced topics   |
+| **Part V**       | ✅ **Available** | [Chapters 18-21](part-5/README.md) | Calculation logic, customLogicBlock development, Guardian Tools, testing  |
+| **Part VI-VIII** | 🚧 Coming Soon   | Chapters 22-28                     | Integration testing, deployment, and advanced topics                      |
 
 ### Shared Resources
 - **🔧 [Shared Resources](_shared/README.md)** - Templates, integration guides, and reference materials
