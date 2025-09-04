@@ -463,7 +463,11 @@ export class SchemaFormComponent implements OnInit {
             case 'integer':
                 return messages.Integer;
             case 'url':
-                return messages.URL;
+                if (item.control?.errors?.[item.id]) {
+                    return item.control.errors[item.id];
+                } else {
+                    return messages.URL;
+                }
             case 'uri':
                 return messages.URI;
             case 'date-time':
@@ -471,7 +475,11 @@ export class SchemaFormComponent implements OnInit {
             case 'date':
                 return messages.Date;
             default:
-                return messages.Other;
+                if (item.control?.errors?.[item.id]) {
+                    return item.control.errors[item.id];
+                } else {
+                    return messages.Other;
+                }
         }
     }
 

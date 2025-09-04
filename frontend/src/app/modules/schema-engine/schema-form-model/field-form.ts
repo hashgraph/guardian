@@ -378,6 +378,16 @@ export class FieldForm {
 
         if (item.required) {
             validators.push(Validators.required);
+            validators.push(({ value }: any) => {
+                const errors = this.validateMaybeIpfs(`${value}`, this.isIPFS(item.pattern));
+                if (errors) {
+                    return {
+                        [item.id]: errors,
+                    }
+                }
+
+                return null;
+            })
         }
 
         if (item.pattern) {
@@ -410,6 +420,80 @@ export class FieldForm {
         }
 
         return validators;
+    }
+
+    private isIPFS(pattern: string): boolean {
+        return pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+'
+            || pattern === '^ipfs:\/\/.+';
+    }
+
+    private validateMaybeIpfs(
+        input: string,
+        forceIpfs: boolean = false
+    ): string | null {
+        const value = (input ?? '').trim();
+        if (!value) {
+            return null;
+        }
+
+        const ipfsLike = forceIpfs || this.looksLikeIpfs(value);
+        if (!ipfsLike) {
+            return null;
+        }
+
+        const cid = this.extractCid(value);
+        if (!cid) {
+            return 'Invalid IPFS link: CID not found';
+        }
+
+        if (!this.isLikelyCid(cid)) {
+            return 'Invalid IPFS CID/URL';
+        }
+
+        return null;
+    }
+
+    private looksLikeIpfs(s: string): boolean {
+        if (s.startsWith('ipfs://')) return true;
+        if (/\/ipfs\/[^/?#]+/i.test(s)) return true;
+        return this.isLikelyCid(s);
+    }
+
+    private extractCid(s: string): string | null {
+        if (s.startsWith('ipfs://')) {
+            const after = s.slice('ipfs://'.length);
+            const cid = after.split(/[/?#]/, 1)[0];
+            return cid || null;
+        }
+        const m = /\/ipfs\/([^/?#]+)/i.exec(s);
+        if (m?.[1]) return m[1];
+
+        return s;
+    }
+
+    private isLikelyCid(s: string): boolean {
+        return this.isCidV0(s) || this.isCidV1Base32Lower(s) || this.isCidV1Base32Upper(s) || this.isCidV1Base36Lower(s);
+    }
+
+    /** CIDv0 */
+    private isCidV0(s: string): boolean {
+        const base58 = /^[1-9A-HJ-NP-Za-km-z]+$/;
+        return s.length === 46 && s.startsWith('Qm') && base58.test(s);
+    }
+
+    /** CIDv1 (base32 lower) */
+    private isCidV1Base32Lower(s: string): boolean {
+        return /^b[a-z2-7]{30,}$/.test(s);
+    }
+
+    /** CIDv1 (base32 upper) */
+    private isCidV1Base32Upper(s: string): boolean {
+        return /^B[A-Z2-7]{30,}$/.test(s);
+    }
+
+    /** CIDv1 (base36 lower) */
+    private isCidV1Base36Lower(s: string): boolean {
+        return /^k[0-9a-z]{30,}$/.test(s);
     }
 
     private isNumberOrEmptyValidator(): ValidatorFn {
@@ -733,4 +817,8 @@ export class FieldForm {
         item.control?.markAsDirty();
         item.subject.next();
     }
+
+    // public getErrors(): Record<string | number, string[]> {
+    //     return this.form.errors?.[this.errorsFieldName] || {};
+    // }
 }

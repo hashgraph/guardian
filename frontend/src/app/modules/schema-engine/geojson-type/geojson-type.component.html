@@ -20,9 +20,9 @@
                 (ngModelChange)="jsonChanged()"
                 class="full-width">
             </textarea>
-            <ng-container *ngIf="jsonValidation && !jsonValidation.valid">
+            <ng-container *ngIf="haveErrors()">
                 <ul class="p-error validation-errors">
-                    <li *ngFor="let err of jsonValidation.errors">{{ err }}</li>
+                    <li *ngFor="let err of getAllErrors()">{{ err }}</li>
                 </ul>
             </ng-container>
         </ng-container>
@@ -42,7 +42,7 @@
     <div class="map-container">
         <div class="map" #map id="map"></div>
         <button
-            *ngIf="canDownload(true) && isDisabled"
+            *ngIf="canDownload() && isDisabled"
             pButton
             class="add-feature-button download-geo"
             label="Download GeoJSON"
@@ -74,7 +74,7 @@
                 label="Add Geometry"
             ></button>
             <button
-                *ngIf="canDownload(true)"
+                *ngIf="canDownload()"
                 pButton
                 class="add-feature-button download-geo"
                 label="Download GeoJSON"
@@ -111,9 +111,9 @@
                             required
                             class="full-width location-coordinates"
                         ></textarea>
-                        <ng-container *ngIf="geometry.validation && !geometry.validation.valid">
+                        <ng-container *ngIf="getErrorsByIndex(i)?.length">
                             <ul class="p-error validation-errors">
-                            <li *ngFor="let err of geometry.validation.errors">{{ err }}</li>
+                                <li *ngFor="let err of getErrorsByIndex(i)">{{ err }}</li>
                             </ul>
                         </ng-container>
                     </div>
