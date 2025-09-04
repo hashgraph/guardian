@@ -321,6 +321,7 @@ export class GeojsonTypeComponent implements OnChanges {
 
     public fileImportName: string = '';
     public fileImportSize: number = 0;
+    public loading: boolean = false;
 
     constructor(
         private cdkRef: ChangeDetectorRef,
@@ -594,7 +595,7 @@ export class GeojsonTypeComponent implements OnChanges {
                 geoShapesLayer,
                 clusterLayer
             ],
-            target: this.mapElementRef.nativeElement,
+            target: this.mapElementRef?.nativeElement,
             view: new View(MAP_OPTIONS),
         });
         const selectHover = new Select({
@@ -759,8 +760,10 @@ export class GeojsonTypeComponent implements OnChanges {
         this.geometriesList = [];
         this.geoShapesSource?.clear(true);
 
-        this.allImportedLocations = [];
-        this.importedLocations = [];
+        this.fileImportName = '';
+        this.fileImportSize = 0;
+
+        this.clearImportedLocations();
         this.importedShapesSource?.clear();
 
         this.setControlValue({});
@@ -932,7 +935,6 @@ export class GeojsonTypeComponent implements OnChanges {
             }
             return;
         }
-
 
         if (this.isJSON || this.isDisabled) {
             this.jsonInput = JSON.stringify(value, null, 4);
@@ -1203,6 +1205,7 @@ export class GeojsonTypeComponent implements OnChanges {
     }
 
     public importFromFile(file: any) {
+        this.loading = true;
         const fileType = file.name.split('.').pop()?.toLowerCase();
         const fileSizeBytes = file.size;
         this.fileImportName = file.name;
@@ -1288,6 +1291,11 @@ export class GeojsonTypeComponent implements OnChanges {
                 this.setControlValue({});
             }
         }
+
+        this.isJSON = false
+        this.loading = false;
+
+        this.onViewTypeChange();
     }
 
     private clearImportedLocations() {

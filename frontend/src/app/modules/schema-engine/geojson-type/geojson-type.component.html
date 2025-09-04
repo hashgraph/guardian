@@ -3,6 +3,7 @@
         [on-label]="'JSON'" 
         [off-label]="'Form'" 
         [(value)]="isJSON"
+        [disalbed]="loading"
         (valueChange)="onViewTypeChange()">
     </switch-button>
 </div>
@@ -27,7 +28,7 @@
             </ng-container>
         </ng-container>
         <ng-template #fileIsTooBigTemplate>
-            <b class="form-label" class="form-label coordinates-input">This file is too large to view.</b>
+            <b class="form-label" class="form-label coordinates-input">File was imported successfully, but it’s too large to view.</b>
             <p class="form-label" class="form-label coordinates-input">{{ fileImportName }} ({{ fileImportSize }} MB) exceeds in-browser preview limits.</p>
         </ng-template>
         <app-file-drag-n-drop
