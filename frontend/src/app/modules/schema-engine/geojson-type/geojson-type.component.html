@@ -106,7 +106,7 @@
                             id="coordinatesInput"
                             [(ngModel)]="geometry.coordinatesString"
                             [placeholder]="geometry.coordinatesPlaceholder"
-                            (ngModelChange)="coordinatesChanged($event, geometry)"
+                            (ngModelChange)="coordinatesChanged($event, geometry, i)"
                             [disabled]="isDisabled"
                             pInputTextarea
                             required

@@ -63,6 +63,20 @@ export class GeoForm {
         return this.form?.value;
     }
 
+    public setExternalErrors(errors?: Record<string | number, string[]>): void {
+        const current = this.form.errors || {};
+
+        if (errors && Object.keys(errors).length) {
+            this.form.setErrors({
+                ...current,
+                [this.errorsFieldName]: {
+                    ...(current?.[this.errorsFieldName] || {}),
+                    ...errors,
+                },
+            });
+        }
+    }
+
     public getErrors(): Record<string | number, string[]> {
         return this.form.errors?.[this.errorsFieldName] || {};
     }

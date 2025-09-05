@@ -826,6 +826,18 @@ export class GeojsonTypeComponent implements OnChanges {
                     geometry: item.geometry
                 }))
             }, true);
+
+            this.geometriesList.forEach((item, i) => {
+                try {
+                    if (item.coordinatesString) {
+                        JSON.parse(item.coordinatesString)
+                    }
+                } catch {
+                    this.formModel.setExternalErrors({
+                        [i]: ["Unrecognized GeoJSON format"]
+                    })
+                }
+            })
         }
     }
 
@@ -1083,7 +1095,7 @@ export class GeojsonTypeComponent implements OnChanges {
         }, 500);
     }
 
-    public coordinatesChanged(value: string, geometry: any) {
+    public coordinatesChanged(value: string, geometry: any, index: number) {
         try {
             const parsedCoordinates = JSON.parse(value);
             geometry.coordinates = parsedCoordinates;
@@ -1092,6 +1104,11 @@ export class GeojsonTypeComponent implements OnChanges {
             this.centerMap(geometry);
             // this.updateMap(true);
         } catch (e) {
+            geometry.coordinatesString = value;
+
+            this.formModel.setExternalErrors({
+                [index]: ["Unrecognized GeoJSON format"]
+            })
         }
     }
 
