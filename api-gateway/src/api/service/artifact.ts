@@ -354,4 +354,77 @@ export class ArtifactApi {
             await InternalException(error, this.logger, user.id);
         }
     }
+
+    @Get('/files/:fileId')
+    @Auth(Permissions.ARTIFACTS_FILE_READ)
+    @ApiOperation({ summary: 'Download file by id', description: 'Returns file from GridFS' })
+    @ApiParam({ name: 'fileId', type: String, required: true, description: 'File _id' })
+    @HttpCode(HttpStatus.OK)
+    async downloadFile(
+        @AuthUser() user: IAuthUser,
+        @Param('fileId') fileId: string,
+        @Response() res: any,
+    ) {
+        try {
+            if (!fileId) {
+                throw new HttpException('fileId is required', HttpStatus.BAD_REQUEST);
+            }
+
+            const guardian = new Guardians();
+            const { buffer, filename, contentType } = await guardian.csvGetFile(fileId, user);
+
+            res.setHeader('Content-Type', contentType || 'application/octet-stream');
+            res.setHeader('X-Content-Type-Options', 'nosniff');
+            res.setHeader('Content-Disposition', `attachment; filename="${(filename || fileId).replace(/"/g, '')}"`);
+
+            return res.send(Buffer.from(buffer));
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    @Post('/files')
+    @Auth(Permissions.ARTIFACTS_FILE_CREATE)
+    @ApiOperation({ summary: 'Uploads/overwrites file', description: 'Uploads/overwrites file in GridFS' })
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        required: true,
+        schema: {
+            type: 'object',
+            properties: {
+                file: { type: 'string', format: 'binary' },
+                fileId: { type: 'string', description: 'Existing file _id to overwrite (optional)' }
+            }
+        }
+    })
+    @UseInterceptors(AnyFilesInterceptor({
+        allowedFields: ['file', 'fileId'],
+        requiredFields: ['file']
+    }))
+    @HttpCode(HttpStatus.CREATED)
+    async upsertFile(
+        @AuthUser() user: IAuthUser,
+        @UploadedFiles() files: any,
+        @Req() req,
+    ) {
+        try {
+            const guardian = new Guardians();
+
+            const file = (files || []).find((f: any) => f.fieldname === 'file');
+            if (!file?.buffer) {
+                throw new HttpException('File is required', HttpStatus.BAD_REQUEST);
+            }
+
+            return  await guardian.upsertFile({
+                file: {
+                    buffer: file.buffer,
+                    originalname: file.originalname,
+                    mimetype: file.mimetype
+                },
+                fileId: req.body?.fileId || undefined
+            }, user);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
 }

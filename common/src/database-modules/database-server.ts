@@ -4060,6 +4060,35 @@ export class DatabaseServer extends AbstractDatabaseServer {
         return DataBaseHelper.saveFile(uuid, buffer);
     }
 
+    public static async upsertGridFile(params: {
+        buffer: Buffer,
+        fileId?: string,
+        filename?: string,
+        contentType?: string
+    }): Promise<{ fileId: string; filename: string; contentType: string }> {
+        const { buffer, fileId, filename, contentType } = params;
+
+        const uuid = GenerateUUIDv4();
+        const name = (filename || 'file').trim();
+        const type = contentType || 'application/octet-stream';
+
+        if (fileId) {
+            const _id = new ObjectId(String(fileId));
+            await DataBaseHelper.overwriteFile(_id, uuid, buffer);
+            return { fileId: _id.toString(), filename: name, contentType: type };
+        } else {
+            const id = await DataBaseHelper.saveFile(uuid, buffer);
+            return { fileId: id.toString(), filename: name, contentType: type };
+        }
+    }
+
+    public static async getGridFile(fileId: string): Promise<{ buffer: Buffer; filename: string; contentType: string }> {
+        const _id = new ObjectId(String(fileId));
+        const buffer = await DataBaseHelper.loadFile(_id);
+
+        return { buffer, filename: 'file', contentType: 'application/octet-stream' };
+    }
+
     /**
      * Save many
      * @param entityClass
