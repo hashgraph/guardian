@@ -314,6 +314,7 @@ export class SchemaFormComponent implements OnInit {
                 item.format !== 'time' &&
                 item.format !== 'date-time'
             ) && !item.remoteLink && !item.enum
+            && item.customType !== 'csv-table'
         );
     }
 

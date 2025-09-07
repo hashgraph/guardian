@@ -224,15 +224,15 @@
                             <div class="label-field-accordion">{{item.description}}</div>
                         </ng-template>
                         <ng-container *ngIf="item.open">
-                            <div 
-                                *ngFor="let listItem of getItemsPage(item)" 
+                            <div
+                                *ngFor="let listItem of getItemsPage(item)"
                                 class="form-field-array-item short-delimiter"
                                 [attr.index]="item.list.indexOf(listItem)">
                                 <div class="form-field-group">
                                     <ng-container [ngSwitch]="item.customType">
-                                        <app-geojson-type 
-                                            *ngSwitchCase="'geo'" 
-                                            [preset]="listItem" 
+                                        <app-geojson-type
+                                            *ngSwitchCase="'geo'"
+                                            [preset]="listItem"
                                             [disabled]="true">
                                         </app-geojson-type>
                                         <app-sentinel-hub-type

@@ -8,6 +8,8 @@ import { GeojsonTypeComponent } from './geojson-type/geojson-type.component';
 import { MaterialModule } from '../common/material.module';
 import { CommonComponentsModule } from '../common/common-components.module';
 import { ArtifactEngineModule } from '../artifact-engine/artifact-engine.module';
+import { DynamicDialogModule } from 'primeng/dynamicdialog';
+import { AgGridModule } from 'ag-grid-angular';
 //Components
 import { SchemaDialog } from './schema-dialog/schema-dialog.component';
 import { SchemaFormComponent } from './schema-form/schema-form.component';
@@ -45,6 +47,8 @@ import { FormulasModule } from '../formulas/formulas.module';
 import { DialogService } from 'primeng/dynamicdialog';
 import { SchemaFormRootComponent } from './schema-form-root/schema-form-root.component';
 import { UploadGeoDataDialog } from './upload-geo-data-dialog/upload-geo-data-dialog.component';
+import {CsvTableModalComponent} from './csv-table-modal/csv-table-modal.component';
+import {CsvTableComponent} from './csv-table/csv-table.component';
 
 @NgModule({
     declarations: [
@@ -70,7 +74,9 @@ import { UploadGeoDataDialog } from './upload-geo-data-dialog/upload-geo-data-di
         SchemaTreeComponent,
         SchemaFormDialog,
         DateTimeComponent,
-        SchemaFormRootComponent
+        SchemaFormRootComponent,
+        CsvTableComponent,
+        CsvTableModalComponent
     ],
     imports: [
         CommonModule,
@@ -92,7 +98,9 @@ import { UploadGeoDataDialog } from './upload-geo-data-dialog/upload-geo-data-di
         SelectButtonModule,
         AccordionModule,
         FormulasModule,
-        AngularSvgIconModule.forRoot()
+        AngularSvgIconModule.forRoot(),
+        DynamicDialogModule,
+        AgGridModule
     ],
     exports: [
         SchemaDialog,
@@ -107,7 +115,8 @@ import { UploadGeoDataDialog } from './upload-geo-data-dialog/upload-geo-data-di
         ExportSchemaDialog,
         SchemaFieldConfigurationComponent,
         SchemaFormDialog,
-        SchemaFormRootComponent
+        SchemaFormRootComponent,
+        CsvTableComponent
     ],
     providers: [
         DialogService

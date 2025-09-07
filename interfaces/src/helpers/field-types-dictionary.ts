@@ -133,7 +133,15 @@ export class FieldTypesDictionary {
             pattern: undefined,
             isRef: true,
             customType: 'sentinel'
-        }
+        },
+        {
+            name: 'CSV Table',
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            isRef: false,
+            customType: 'csv-table'
+        },
     ];
 
     public static readonly CustomFieldTypes = [

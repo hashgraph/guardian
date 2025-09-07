@@ -1,0 +1,19 @@
+<div class="p-4 flex flex-col gap-3" style="height: 70vh;">
+    <div class="flex gap-2">
+        <button class="p-button p-component" (click)="addRow()">Add Row</button>
+        <button class="p-button p-component" (click)="addCol()">Add Column</button>
+    </div>
+
+    <ag-grid-angular
+            class="ag-theme-balham"
+            style="flex: 1"
+            [columnDefs]="columnDefs"
+            [rowData]="rowData"
+            (gridReady)="onGridReady($event)">
+    </ag-grid-angular>
+
+    <div class="flex justify-end gap-2">
+        <button class="p-button p-component p-button-outlined" (click)="cancel()">Cancel</button>
+        <button class="p-button p-component p-button-primary" (click)="save()">Save</button>
+    </div>
+</div>
